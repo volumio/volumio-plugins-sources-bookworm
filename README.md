@@ -4,7 +4,13 @@ The repo for Volumio Bookworm plugins.
 
 Bookworm version of Volumio required some adjustement for plugins due to new node and kernel version.
 
-First in package.json
+Clone this repo
+```
+git clone https://github.com/volumio/volumio-plugins-sources-bookworm --depth=1
+```
+
+Create or copy your plugin folder and cd to it.
+In package.json
 
 See:
 ```
@@ -40,11 +46,11 @@ See:
         },
         "dependencies": { 
                 "fs-extra": "*",
-                "kew": "*",                            <--------------------ADJUST DEPENDENNCIES VERSION IF NEEDED
+                "kew": "*",                            <--------------------ADJUST DEPENDENCIES VERSION IF NEEDED
                 "systeminformation": "*",
                 "v-conf": "*"
         }
 }
 ```
-
+Test carefully your plugin before sending a PR and submit from a BOOKWORM DEVICE!
 
