@@ -47,7 +47,7 @@ In package.json, change
         },
         "dependencies": { 
                 "fs-extra": "*",
-                "kew": "*",                            <---------ADJUST DEPENDENCIES VERSION IF NEEDED
+                "kew": "*",                  <---------ADJUST DEPENDENCIES VERSION IF NEEDED
                 "systeminformation": "*",
                 "v-conf": "*"
         }
