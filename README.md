@@ -3,7 +3,9 @@
 The repo for Volumio Bookworm plugins.
 
 Bookworm version of Volumio required some adjustement for plugins due to new node and kernel version.
+
 First in package.json
+
 See:
 ```
                                                                                
