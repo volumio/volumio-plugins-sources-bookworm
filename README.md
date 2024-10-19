@@ -18,7 +18,7 @@ In package.json, change
                                                                                
 {
         "name": "Systeminfo",
-        "version": "3.0.7", <-----------------------------------------------------------PLUGIN VERSION
+        "version": "3.0.7", <-----------------------------------------------PLUGIN VERSION
         "description": "Information about your system",
         "main": "index.js",
         "scripts": {
