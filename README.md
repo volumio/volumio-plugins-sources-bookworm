@@ -10,9 +10,10 @@ git clone https://github.com/volumio/volumio-plugins-sources-bookworm --depth=1
 ```
 
 Create or copy your plugin folder and cd to it.
-In package.json
 
-See:
+In package.json, change
+
+
 ```
                                                                                
 {
