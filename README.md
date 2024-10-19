@@ -18,7 +18,7 @@ In package.json, change
                                                                                
 {
         "name": "Systeminfo",
-        "version": "3.0.7", <-----------------------------------------------PLUGIN VERSION
+        "version": "3.0.7", <------------------------------------PLUGIN VERSION
         "description": "Information about your system",
         "main": "index.js",
         "scripts": {
@@ -36,18 +36,18 @@ In package.json, change
                         "armhf"
                 ],
                 "os": [
-                        "bookworm" <-------------------------------------------OS VERSION
+                        "bookworm" <--------------------------------OS VERSION
                 ],
                 "details": "Gives information about your system",
                 "changelog": "bookworm version"
         },
         "engines": {
-                "node": ">=20", <-------------------------------------------NODE VERSION
-                "volumio": ">=0" <-------------------------------------------VOLUMIO VERSION >=0 DURING ALPHA TEST
+                "node": ">=20", <-------------------------------NODE VERSION
+                "volumio": ">=0" <---------------------VOLUMIO VERSION >=0 DURING ALPHA TEST
         },
         "dependencies": { 
                 "fs-extra": "*",
-                "kew": "*",                            <--------------------ADJUST DEPENDENCIES VERSION IF NEEDED
+                "kew": "*",                            <---------ADJUST DEPENDENCIES VERSION IF NEEDED
                 "systeminformation": "*",
                 "v-conf": "*"
         }
