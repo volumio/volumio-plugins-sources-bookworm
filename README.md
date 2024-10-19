@@ -38,7 +38,7 @@ See:
         },
         "dependencies": { 
                 "fs-extra": "*",
-                "kew": "*",                                  <-------------------------------------------ADJUST DEPENDENNCIES VERSION IF NEEDED
+                "kew": "*",                            <--------------------ADJUST DEPENDENNCIES VERSION IF NEEDED
                 "systeminformation": "*",
                 "v-conf": "*"
         }
