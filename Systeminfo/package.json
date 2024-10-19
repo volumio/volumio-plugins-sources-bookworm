@@ -1,0 +1,36 @@
+{
+	"name": "Systeminfo",
+	"version": "3.0.7",
+	"description": "Information about your system",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Balbuze",
+	"license": "",
+	"repository": "https://github.com/balbuze/volumio-plugins-sources",
+	"volumio_info": {
+		"prettyName": "System information",
+		"plugin_type": "user_interface",
+		"icon": "fa-info-circle",
+		"architectures": [
+			"amd64",
+			"armhf"
+		],
+		"os": [
+			"bookworm"
+		],
+		"details": "Gives information about your system",
+		"changelog": "bookworm version"
+	},
+	"engines": {
+		"node": ">=20",
+		"volumio": ">=0"
+	},
+	"dependencies": {
+		"fs-extra": "*",
+		"kew": "*",
+		"systeminformation": "*",
+		"v-conf": "*"
+	}
+}
