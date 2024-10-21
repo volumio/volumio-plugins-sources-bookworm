@@ -4,7 +4,7 @@ The repo for Volumio Bookworm plugins.
 
 Bookworm version of Volumio required some adjustement for plugins due to new node and kernel version.
 
-Clone the Bookworm dedicated plugin repo
+Clone the Bookworm dedicated plugin repo:
 ```
 git clone https://github.com/volumio/volumio-plugins-sources-bookworm --depth=1
 ```
