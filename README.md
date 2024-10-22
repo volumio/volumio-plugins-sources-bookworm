@@ -4,6 +4,15 @@ The repo for Volumio Bookworm plugins.
 
 Bookworm version of Volumio required some adjustement for plugins due to new node and kernel version.
 
+## Volumio Bookworm 
+
+We are working on OTA delivery system. Until this is completed, the link updated here:
+
+| Version | Link |
+| --- | --- |
+| 0.012 | [Download](https://dev-updates.volumio.org/pi/volumio/0.012/Volumio-0.012-2024-10-19-pi.zip) |
+
+
 Clone the Bookworm dedicated plugin repo:
 ```
 git clone https://github.com/volumio/volumio-plugins-sources-bookworm --depth=1
