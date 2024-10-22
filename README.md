@@ -13,7 +13,7 @@ We are working on OTA delivery system. Until this is completed, the link updated
 | 0.012 | [Download](https://dev-updates.volumio.org/pi/volumio/0.012/Volumio-0.012-2024-10-19-pi.zip) |
 
 
-Clone the Bookworm dedicated plugin repo:
+From a running Volumio Bookworm system, clone the Bookworm dedicated plugin repo:
 ```
 git clone https://github.com/volumio/volumio-plugins-sources-bookworm --depth=1
 ```
