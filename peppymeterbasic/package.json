@@ -13,7 +13,7 @@
     "plugin_type": "user_interface",
     "icon": "fa-bar-chart",
     "os": [
-      "buster"
+      "bookworm"
     ],
     "changelog": "bookworm version",
     "details": "Easy install Basic-Peppy-meter",
