@@ -50,7 +50,7 @@ In package.json make changes as shown in the example below:
                 "changelog": "bookworm version"
         },
         "engines": {
-                "node": ">=20", <-------------------------------NODE VERSION
+                "node": ">=20", <-------------------------------NODE VERSION >=20
                 "volumio": ">=0" <---------------------VOLUMIO VERSION >=0 DURING ALPHA TEST
         },
         "dependencies": { 
