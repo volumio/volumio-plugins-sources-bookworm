@@ -8,7 +8,7 @@
 	},
 	"author": "Volumio Team, gvolt",
 	"license": "ISC",
-	"repository": "https://github.com/volumio/volumio-plugins-sources/tree/master/ir_controller",
+	"repository": "https://github.com/volumio/volumio-plugins-sources-bookworm/tree/master/ir_controller",
 	"volumio_info": {
 		"prettyName": "IR Remote Controller",
 		"icon": "fa-magic",
