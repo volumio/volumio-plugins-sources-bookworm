@@ -101,8 +101,12 @@ rotaryencoder2.prototype.onStart = function() {
 		self.lastTime = data.seek - Date.now();
 	})
 
-	self.installOverlays([...Array(maxRotaries).keys()])
-	.then(_ => {return self.attachListeners([...Array(maxRotaries).keys()])})
+	self.installAllOverlays([...Array(maxRotaries).keys()])
+	.then(_ => {return self.attachAllListeners([...Array(maxRotaries).keys()])})
+	.then(_ => {
+		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] onStart: Attach Event-handles now.');
+		self.addAllEventHandles();
+	})
 	// self.activateRotaries([...Array(maxRotaries).keys()])
 	// .then(_ =>{
 	// 	return self.activateButtons([...Array(maxRotaries).keys()])
@@ -127,7 +131,11 @@ rotaryencoder2.prototype.onStop = function() {
 
 	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] onStop: Stopping Plugin.');
 
-	self.uninstallOverlays([...Array(maxRotaries).keys()])
+	
+	self.detachAllListeners([...Array(maxRotaries).keys()])
+	.then(_ => {
+		return self.uninstallAllOverlays([...Array(maxRotaries).keys()])
+	})
 	// self.deactivateRotaries([...Array(maxRotaries).keys()])
 	// .then(_=>{
 	// 	return self.deactivateButtons([...Array(maxRotaries).keys()])
@@ -242,13 +250,10 @@ rotaryencoder2.prototype.updateEncoder = function(data){
 		//disable all rotaries before we make changes
 		//this is necessary, since there seems to be an issue in the Kernel, that breaks the
 		//eventHandlers if a dtoverlay with low index is removed and others with higher index exist
-		return self.deactivateRotaries([...Array(maxRotaries).keys()])
-		.then(_=>{
-			return self.deactivateButtons([...Array(maxRotaries).keys()])
-		})
-		.then(_=> {
-			return self.removeAllOverlays();
-		})
+		return self.detachAllListeners([...Array(maxRotaries).keys()])
+	})
+	.then(_ => {
+		return self.uninstallAllOverlays([...Array(maxRotaries).keys()])
 	})
 	.then(_ => {
 		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] updateEncoder: Changing Encoder '+(rotaryIndex + 1)+' Settings to new values');
@@ -279,9 +284,11 @@ rotaryencoder2.prototype.updateEncoder = function(data){
 		} else {
 			self.config.set('enabled'+rotaryIndex, false);
 		}
-		return self.activateRotaries([...Array(maxRotaries).keys()])
-		.then(_=>{
-			return self.activateButtons([...Array(maxRotaries).keys()])
+		return self.installAllOverlays([...Array(maxRotaries).keys()])
+		.then(_ => {return self.attachAllListeners([...Array(maxRotaries).keys()])})
+		.then(_ => {
+			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] onStart: Attach Event-handles now.');
+			self.addAllEventHandles();
 		})
 	})
 	.then(_ => {
@@ -406,17 +413,17 @@ rotaryencoder2.prototype.setConf = function(varName, varValue) {
 };
 
 //Function to recursively install all device tree overlays 
-rotaryencoder2.prototype.installOverlays = function (rotaryIndexArray) {
+rotaryencoder2.prototype.installAllOverlays = function (rotaryIndexArray) {
 	var self = this;
 	var defer = libQ.defer();
 	var rotaryIndex;
 
-	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] installOverlays: ' + rotaryIndexArray.map(i =>  {return i + 1}));
+	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] installAllOverlays: ' + rotaryIndexArray.map(i =>  {return i + 1}));
 
 	if (Array.isArray(rotaryIndexArray)){
 		if (rotaryIndexArray.length > 0) {
 			rotaryIndex = rotaryIndexArray[rotaryIndexArray.length - 1];
-			return self.installOverlays(rotaryIndexArray.slice(0,rotaryIndexArray.length - 1))
+			return self.installAllOverlays(rotaryIndexArray.slice(0,rotaryIndexArray.length - 1))
 			.then(_ => {
 				if (self.config.get('enabled'+rotaryIndex)) {
 					return self.addOverlay(self.config.get('pinA'+rotaryIndex),self.config.get('pinB'+rotaryIndex),self.config.get('rotaryType'+rotaryIndex))
@@ -437,29 +444,100 @@ rotaryencoder2.prototype.installOverlays = function (rotaryIndexArray) {
 				}
 			})
 		} else {
-			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] installOverlays: end of recursion.');
+			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] installAllOverlays: end of recursion.');
 			defer.resolve();
 		}
 	} else {
-		self.logger.error('[ROTARYENCODER2] installOverlays: rotaryIndexArray must be an Array');
+		self.logger.error('[ROTARYENCODER2] installAllOverlays: rotaryIndexArray must be an Array');
 		defer.reject('rotaryIndexArray must be an Array of integers')
 	}
 	return defer.promise;
 }
 
+rotaryencoder2.prototype.addOverlay = function (pinA, pinB, stepsPerPeriod, activeLow,gpioPull) {
+	var self = this;	
+	var defer = libQ.defer();
+	if (pinB!=undefined && stepsPerPeriod!=undefined) {
+		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] addOverlay for Rotary: ' + pinA + ' ' + pinB + ' ' + stepsPerPeriod);
+		var cmdString = '/usr/bin/sudo /usr/bin/dtoverlay ' + 'rotary-encoder pin_a='+pinA+' pin_b='+pinB+' relative_axis=true steps-per-period='+stepsPerPeriod+' &';
+		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] addOverlay: executing command: ' + cmdString);
+		exec(cmdString, {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
+			if (stderr) {
+				self.logger.error('[ROTARYENCODER2] addOverlay: ' + stderr);
+				defer.reject(stderr);
+			} else {
+				if (self.debugLogging) {
+					exec('/bin/ls -R /dev/input', {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
+						self.logger.info(stdout)
+					})
+				}
+				setTimeout(() => {
+					defer.resolve(stdout);
+				}, 1000);
+			}
+		})		
+	} else if (activeLow!=undefined && gpioPull!=undefined) {
+		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] addOverlay for Button: ' + pinA + ' ' + activeLow + ' ' + gpioPull);
+		if (activeLow=="true" || activeLow==true || activeLow=="True") {activeLow = 1
+		} else if (activeLow=="false" || activeLow==false || activeLow== "False") {activeLow = 0};
+		gpioPull = "up";
+		var cmdString = '/usr/bin/sudo /usr/bin/dtoverlay ' + 'gpio-key gpio=' + pinA + ' active_low=' + activeLow + ' gpio_pull=' + gpioPull + ' keycode=20 &'
+		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] addOverlay: executing command: ' + cmdString);
+		exec(cmdString, {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
+			if (stderr) {
+				self.logger.error('[ROTARYENCODER2] addOverlay: ' + stderr);
+				defer.reject(stderr);
+			} else {
+				if (self.debugLogging) {
+					exec('/bin/ls -R /dev/input', {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
+						self.logger.info(stdout)
+					})
+				}
+				setTimeout(() => {
+					defer.resolve(stdout);
+				}, 1000);
+			}
+		})		
+	}
+	return defer.promise;
+}
+
+rotaryencoder2.prototype.removeOverlay = function(idx) {
+	var self = this;
+	var defer = libQ.defer();
+
+	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] removeOverlay: ' + idx);
+	if (idx > -1) {
+		exec('/usr/bin/sudo /usr/bin/dtoverlay -r '+idx+' &', {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
+			if (stderr) {
+				defer.reject(stderr);
+			} else {
+				if (self.debugLogging) self.logger.info('[ROTARYENCODER2] removeOverlay: ' + idx + ' returned: ' + stdout);
+				exec('/usr/bin/sudo /usr/bin/dtoverlay -l', {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
+					if (self.debugLogging) self.logger.info('[ROTARYENCODER2] removeOverlay: "overlay -l" returned: ' + stdout + stderr);
+					defer.resolve(stdout);
+				})
+			}
+		})
+	} else {
+		defer.resolve();
+	}
+	return defer.promise;
+}
+
 //Function to recursively uninstall all device tree overlays
-rotaryencoder2.prototype.uninstallOverlays = function (rotaryIndexArray) {
+rotaryencoder2.prototype.uninstallAllOverlays = function (rotaryIndexArray) {
 	var self = this;
 	var defer = libQ.defer();
 	var rotaryIndex;
 	var overlays = [];
 
-	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] uninstallOverlays: ' + rotaryIndexArray.map(i =>  {return i + 1}));
+	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] uninstallAllOverlays: ' + rotaryIndexArray.map(i =>  {return i + 1}));
 
 	if (Array.isArray(rotaryIndexArray)){
 		if (rotaryIndexArray.length > 0) {
 			rotaryIndex = rotaryIndexArray[0];
-			self.uninstallOverlays(rotaryIndexArray.slice(1,rotaryIndexArray.length))
+			self.uninstallAllOverlays(rotaryIndexArray.slice(1,rotaryIndexArray.length))
 			.then(_ => {
 				if (self.config.get('enabled'+rotaryIndex)) {
 					return self.checkOverlayExists(rotaryIndex, 'rotary')
@@ -474,11 +552,11 @@ rotaryencoder2.prototype.uninstallOverlays = function (rotaryIndexArray) {
 						}
 					})
 					.then(_ => {
-						if (self.debugLogging) self.logger.info('[ROTARYENCODER2] uninstallOverlays: overlays to remove: ' + overlays);
+						if (self.debugLogging) self.logger.info('[ROTARYENCODER2] uninstallAllOverlays: overlays to remove: ' + overlays);
 						return defer.resolve(overlays);
 					})
 					.fail(msg => {
-						if (self.debugLogging) self.logger.error('[ROTARYENCODER2] uninstallOverlays: failed to lookup overlays for ' + (rotaryIndex + 1));
+						if (self.debugLogging) self.logger.error('[ROTARYENCODER2] uninstallAllOverlays: failed to lookup overlays for ' + (rotaryIndex + 1));
 						self.commandRouter.pushToastMessage('error', self.getI18nString('ROTARYENCODER2.TOAST_WRONG_PARAMETER'), self.getI18nString('ROTARYENCODER2.TOAST_KILL_HANDLE_FAIL'));
 						return defer.resolve();
 					})
@@ -487,34 +565,116 @@ rotaryencoder2.prototype.uninstallOverlays = function (rotaryIndexArray) {
 				}
 			})
 		} else {
-			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] uninstallOverlays: end of recursion.');
+			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] uninstallAllOverlays: end of recursion.');
 			defer.resolve();
 		}
 	} else {
-		self.logger.error('[ROTARYENCODER2] uninstallOverlays: rotaryIndexArray must be an Array: ' + rotaryIndexArray);
+		self.logger.error('[ROTARYENCODER2] uninstallAllOverlays: rotaryIndexArray must be an Array: ' + rotaryIndexArray);
 		defer.reject('rotaryIndexArray must be an Array of integers')
 	}
 	return defer.promise;
 }
 
+rotaryencoder2.prototype.removeAllOverlays = function(){
+	var self = this;
+	var defer = libQ.defer();
+
+	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] removeAllOverlays');
+	exec('/usr/bin/sudo /usr/bin/dtoverlay -R &', {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
+		if (stderr) {
+			if (self.debugLogging) self.logger.error('[ROTARYENCODER2] removeAllOverlays returned: ' + stderr);
+				defer.resolve();
+		} else {
+			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] removeAllOverlays returned: ' + stdout);
+			exec('/usr/bin/sudo /usr/bin/dtoverlay -l', {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
+				if (self.debugLogging) self.logger.info('[ROTARYENCODER2] removeAllOverlays: "overlay -l" returned: ' + stdout + stderr);
+				defer.resolve(stdout);
+			})
+		}
+	})
+	return defer.promise;
+}
+
+/**
+ * Function looks for rotary-encoder overlays that alread use one of the provided GPIOs.
+ * It returns an array with the index numbers of the overlay list returned by "dtoverlay -l"
+ * If no matches are found, the returned array is empty
+ * @param {Number} pin_a
+ * @param {Number} pin_b
+ * @returns Array
+ */
+ rotaryencoder2.prototype.checkOverlayExists = function(rotaryIndex, type='rotary') {
+	var self = this;
+	var defer = libQ.defer();
+    var match;
+    var overlay = -1;
+
+	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] checkOverlayExists: Checking for existing overlays for Rotary: ' + (rotaryIndex + 1)+ ' type: ' + type);
+	if (type == 'rotary') {
+		var pin_a = self.config.get('pinA' + rotaryIndex);
+		var pin_b = self.config.get('pinB' + rotaryIndex);
+	} else if (type == 'button') {
+		pin_a = self.config.get('pinPush' + rotaryIndex);
+		pin_b = undefined
+	}
+	if (self.config.get('enabled'+rotaryIndex)){
+		exec('/usr/bin/sudo /usr/bin/dtoverlay -l', {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
+			if(err) {
+				self.logger.error('[ROTARYENCODER2] checkOverlayExists: "dtoverlays -l" returned: ' + stderr);
+				defer.resolve();
+			} else {
+				if (self.debugLogging) self.logger.info('[ROTARYENCODER2] checkOverlayExists: check pinA=' + pin_a + 'pinB=' + pin_b + ' in ' + stdout);
+				if (type == 'rotary') {
+					dtoverlayRegexRot.lastIndex = 0;
+					while (match = dtoverlayRegexRot.exec(stdout)) {
+						if ((pin_a == match[2]) && (pin_b == match[3]))  {
+							if (self.debugLogging) self.logger.info('[ROTARYENCODER2] checkOverlayExists: ' + type + ' ' + (rotaryIndex + 1) + ' uses overlay ' + match[1]);
+							overlay = match[1];
+						}
+					}
+				} else if (type == 'button') {
+					dtoverlayRegexBut.lastIndex = 0;
+					while (match = dtoverlayRegexBut.exec(stdout)) {
+						if ((pin_a == match[2]))  {
+							if (self.debugLogging) self.logger.info('[ROTARYENCODER2] checkOverlayExists: ' + type + ' ' + (rotaryIndex + 1) + ' uses overlay ' + match[1]);
+							overlay = match[1];
+						}
+					}
+				}
+				
+				if (overlay > -1) {
+					defer.resolve(overlay);
+				} else {
+					if (self.debugLogging) self.logger.info('[ROTARYENCODER2] checkOverlayExists: ' + type + ' ' + (rotaryIndex + 1) + ' not using any overlay.');
+					defer.resolve(overlay);
+				}
+			}
+		});
+	} else {
+		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] checkOverlayExists: ' + type + ' ' + (rotaryIndex + 1) + ' is not active.');
+		defer.resolve(-1);
+	}
+	return defer.promise;
+}
+
 //Function to recursively attach Listeners to all device tree overlays
-rotaryencoder2.prototype.attachListeners = function (rotaryIndexArray) {
+rotaryencoder2.prototype.attachAllListeners = function (rotaryIndexArray) {
 	var self = this;
 	var defer = libQ.defer();
 	var rotaryIndex;
 
-	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] attachListeners: ' + rotaryIndexArray.map(i =>  {return i + 1}));
+	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] attachAllListeners: ' + rotaryIndexArray.map(i =>  {return i + 1}));
 
 	if (Array.isArray(rotaryIndexArray)){
 		if (rotaryIndexArray.length > 0) {
 			rotaryIndex = rotaryIndexArray[rotaryIndexArray.length - 1];
-			return self.attachListeners(rotaryIndexArray.slice(0,rotaryIndexArray.length - 1))
+			return self.attachAllListeners(rotaryIndexArray.slice(0,rotaryIndexArray.length - 1))
 			.then(_ => {
 				if (self.config.get('enabled'+rotaryIndex)) {
 					return self.checkOverlayExists(rotaryIndex, 'rotary')
 					.then(idx => {
 						if (idx > -1) {
-							if (self.debugLogging) self.logger.info('[ROTARYENCODER2] attachListeners: attach rotary ' + (rotaryIndex + 1));
+							if (self.debugLogging) self.logger.info('[ROTARYENCODER2] attachAllListeners: attach rotary ' + (rotaryIndex + 1));
 							return self.attachListener(self.config.get('pinA' + rotaryIndex),'rotary')
 						} else {
 							return defer.resolve();
@@ -528,7 +688,7 @@ rotaryencoder2.prototype.attachListeners = function (rotaryIndexArray) {
 					})
 					.then(idx => {
 						if (idx > -1) {
-							if (self.debugLogging) self.logger.info('[ROTARYENCODER2] attachListeners: attach button '  + (rotaryIndex + 1));
+							if (self.debugLogging) self.logger.info('[ROTARYENCODER2] attachAllListeners: attach button '  + (rotaryIndex + 1));
 							return self.attachListener(self.config.get('pinPush' + rotaryIndex),'button')
 						} else {
 							return defer.resolve();
@@ -541,243 +701,154 @@ rotaryencoder2.prototype.attachListeners = function (rotaryIndexArray) {
 						return defer.resolve()
 					})
 					.fail(err => {
-						if (self.debugLogging) self.logger.error('[ROTARYENCODER2] attachListeners: failed: ' + err);
+						if (self.debugLogging) self.logger.error('[ROTARYENCODER2] attachAllListeners: failed: ' + err);
 						self.commandRouter.pushToastMessage('error', self.getI18nString('ROTARYENCODER2.TOAST_WRONG_PARAMETER'), self.getI18nString('ROTARYENCODER2.TOAST_ERR_ATTACH_LISTENER_FAILED'));
 						return defer.resolve();
 					})
 				} else {
-					if (self.debugLogging) self.logger.info('[ROTARYENCODER2] attachListeners rotaries: ' + JSON.stringify(self.handles));
-					if (self.debugLogging) self.logger.info('[ROTARYENCODER2] attachListeners buttons: ' + JSON.stringify(self.buttons));
+					if (self.debugLogging) self.logger.info('[ROTARYENCODER2] attachAllListeners rotaries: ' + JSON.stringify(self.handles));
+					if (self.debugLogging) self.logger.info('[ROTARYENCODER2] attachAllListeners buttons: ' + JSON.stringify(self.buttons));
 					return defer.resolve();
 				}
 			})
 		} else {
-			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] attachListeners: end of recursion.');
+			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] attachAllListeners: end of recursion.');
 			defer.resolve();
 		}
 	} else {
-		self.logger.error('[ROTARYENCODER2] attachListeners: rotaryIndexArray must be an Array');
+		self.logger.error('[ROTARYENCODER2] attachAllListeners: rotaryIndexArray must be an Array');
 		defer.reject('rotaryIndexArray must be an Array of integers')
 	}
 	return defer.promise;
 }
 
-//Function to recursively activate all rotaries that are passed by Index in an Array
-rotaryencoder2.prototype.activateRotaries = function (rotaryIndexArray) {
+rotaryencoder2.prototype.attachListener = function (pinA,type="rotary"){
+	var self = this;
+	var defer = libQ.defer();
+	var pinHex = Number(pinA).toString(16);
+
+	if (type=="rotary") {
+		var path = "/dev/input/by-path/platform-rotary\@"+pinHex+"-event";
+	} else if (type=="button") {
+		var path = "/dev/input/by-path/platform-button\@"+pinHex+"-event";
+	}
+	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] attachListener: path: ' + path + ', type: ' + type);
+	var handle = spawn("/bin/cat", [path],{uid: 1000, gid: 1000});
+	defer.resolve(handle);
+	return defer.promise;
+}
+
+rotaryencoder2.prototype.detachListener = function (handle){
+	var self = this;
+	var defer = libQ.defer();
+    if (handle!=undefined) {
+		handle.stdout.removeAllListeners('end');
+		handle.stdout.removeAllListeners('data');
+		handle.stderr.removeAllListeners('data');
+		handle.removeAllListeners('close');
+		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] detachListener: ' + JSON.stringify(handle));
+	    if (handle.kill()) {
+        	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] detachListener: successfully killed handler process');
+        	defer.resolve();
+        } else {
+            self.logger.error('[ROTARYENCODER2] detachListener: could not kill handler process ' +  JSON.stringify(handle));
+			self.commandRouter.pushToastMessage('error', self.getI18nString('ROTARYENCODER2.TOAST_WRONG_PARAMETER'), self.getI18nString('ROTARYENCODER2.TOAST_KILL_HANDLE_FAIL'));
+            defer.resolve();
+        }
+
+    } else {
+        if (self.debugLogging) self.logger.info('[ROTARYENCODER2] detachListener: no handler process to kill');
+        defer.resolve();
+    }
+	return defer.promise;
+}
+
+//Function to recursively detach Listeners from all device tree overlays
+rotaryencoder2.prototype.detachAllListeners = function (rotaryIndexArray) {
 	var self = this;
 	var defer = libQ.defer();
 	var rotaryIndex;
 
-	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] activateRotaries: ' + rotaryIndexArray.map(i =>  {return i + 1}));
+	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] detachAllListeners: ' + rotaryIndexArray.map(i =>  {return i + 1}));
 
 	if (Array.isArray(rotaryIndexArray)){
 		if (rotaryIndexArray.length > 0) {
 			rotaryIndex = rotaryIndexArray[rotaryIndexArray.length - 1];
-			return self.activateRotaries(rotaryIndexArray.slice(0,rotaryIndexArray.length - 1))
+			return self.detachAllListeners(rotaryIndexArray.slice(0,rotaryIndexArray.length - 1))
 			.then(_ => {
-				if (self.config.get('enabled'+rotaryIndex)) {
-					return self.addOverlay(self.config.get('pinA'+rotaryIndex),self.config.get('pinB'+rotaryIndex),self.config.get('rotaryType'+rotaryIndex))
-					.then(_=>{
-						return self.attachListener(self.config.get('pinA'+rotaryIndex));
-					})
-					.then(handle => {
-						self.addEventHandle(handle, rotaryIndex)
-					})
-					.fail(err => {
-						self.commandRouter.pushToastMessage('error', self.getI18nString('ROTARYENCODER2.TOAST_WRONG_PARAMETER'), self.getI18nString('TOAST_ERR_ACT_ROTARY_FAILED'));
-						return defer.reject()
-					})
-				} else {
-					return defer.resolve();
-				}
-			})
-		} else {
-			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] activateRotaries: end of recursion.');
-			defer.resolve();
-		}
-	} else {
-		self.logger.error('[ROTARYENCODER2] activateRotaries: rotaryIndexArray must be an Array');
-		defer.reject('rotaryIndexArray must be an Array of integers')
-	}
-	return defer.promise;
-}
-
-//Function to recursively deactivate all rotaries that are passed by Index in an Array
-rotaryencoder2.prototype.deactivateRotaries = function (rotaryIndexArray) {
-	var self = this;
-	var defer = libQ.defer();
-	var rotaryIndex;
-
-	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] deactivateRotaries: ' + rotaryIndexArray.map(i =>  {return i + 1}));
-
-	if (Array.isArray(rotaryIndexArray)){
-		if (rotaryIndexArray.length > 0) {
-			rotaryIndex = rotaryIndexArray[0];
-			self.deactivateRotaries(rotaryIndexArray.slice(1,rotaryIndexArray.length))
-			.then(_=> {
-				if (self.config.get('enabled'+rotaryIndex)) {
-					return self.detachListener(self.handles[rotaryIndex])
-					// .then(_=>{ return self.checkOverlayExists(rotaryIndex)})
-					// .then(idx=>{if (idx > -1) return self.removeOverlay(idx)})
-					.then(_=>{
-						if (self.debugLogging) self.logger.info('[ROTARYENCODER2] deactivateRotaries: deactivated rotary' + (rotaryIndex + 1));
-						return defer.resolve();
-					})
-					.fail(msg => {
-						if (self.debugLogging) self.logger.error('[ROTARYENCODER2] deactivateRotaries: failed to deactivate rotary' + (rotaryIndex + 1));
-						self.commandRouter.pushToastMessage('error', self.getI18nString('ROTARYENCODER2.TOAST_WRONG_PARAMETER'), self.getI18nString('ROTARYENCODER2.TOAST_KILL_HANDLE_FAIL'));
-						return defer.resolve();
-					})
-				} else {
-					return defer.resolve()
-				}
-			})
-		} else {
-			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] deactivateRotaries: end of recursion.');
-			defer.resolve();
-		}
-	} else {
-		self.logger.error('[ROTARYENCODER2] deactivateRotaries: rotaryIndexArray must be an Array: ' + rotaryIndexArray);
-		defer.reject('rotaryIndexArray must be an Array of integers')
-	}
-	return defer.promise;
-}
-
-rotaryencoder2.prototype.activateButtons = function (rotaryIndexArray) {
-	var self = this;
-	var defer = libQ.defer();
-	var rotaryIndex;
-
-	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] activateButtons: ' + rotaryIndexArray.map(i =>  {return i + 1}));
-
-	if (Array.isArray(rotaryIndexArray)){
-		if (rotaryIndexArray.length > 0) {
-			rotaryIndex = rotaryIndexArray[rotaryIndexArray.length - 1];
-			return self.activateButtons(rotaryIndexArray.slice(0,rotaryIndexArray.length - 1))
-			.then(_=> {
-				if (self.config.get('enabled'+rotaryIndex)) {
-					var gpio = self.config.get('pinPush'+rotaryIndex);
-					//configure pushButton if not disabled
-					if (Number.isInteger(gpio) && (gpio > 0)) {
-						var debounce = self.config.get('pinPushDebounce'+rotaryIndex);
-						if (!Number.isInteger(debounce)){
-							debounce = 50
-						} else {
-							debounce = parseInt(debounce);
-						};
-						if (self.debugLogging) self.logger.info('[ROTARYENCODER2] activateButtons: Now assign push button for Rotary: ' + (rotaryIndex + 1) + ' on GPIO: '+ gpio + ', debounce: ' + debounce + ', activeLow: ' + self.config.get('pushState'+rotaryIndex) + ',gpioPull: ');
-						return self.addOverlay(gpio, undefined, undefined, self.config.get('pushState'+rotaryIndex),'up')
-						.then(_=>{
-							return self.attachListener(gpio, 'button');
-						})
-						.then(handle => {
-							self.addEventHandle(handle, rotaryIndex,'button')
-						})
-						.fail(err => {
-							self.commandRouter.pushToastMessage('error', self.getI18nString('ROTARYENCODER2.TOAST_WRONG_PARAMETER'), self.getI18nString('TOAST_ERR_ACT_ROTARY_FAILED'));
-							return defer.reject()
-						})
-					} else {
-						if (self.debugLogging) self.logger.info('[ROTARYENCODER2] Push Button '+(rotaryIndex+1)+' is disabled (no Gpio).');
-						return defer.resolve();
-					}
-				} else {
-					return defer.resolve();
-				}
-			})
-		} else {
-			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] activateButtons: end of recursion.');
-			defer.resolve();
-		}
-	} else {
-		self.logger.error('[ROTARYENCODER2] activateButtons: rotaryIndexArray must be an Array');
-		defer.reject('rotaryIndexArray must be an Array of integers')
-	}
-
-	return defer.promise;
-}
-
-//Function to recursively deactivate all buttons that are passed by Index in an Array
-rotaryencoder2.prototype.deactivateButtons = function (rotaryIndexArray) {
-	var self = this;
-	var defer = libQ.defer();
-	var rotaryIndex;
-
-	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] deactivateButtons: ' + rotaryIndexArray.map(i =>  {return i + 1}));
-
-	if (Array.isArray(rotaryIndexArray)){
-		if (rotaryIndexArray.length > 0) {
-			rotaryIndex = rotaryIndexArray[0];
-			self.deactivateButtons(rotaryIndexArray.slice(1,rotaryIndexArray.length))
-			.then(_=>{
-				var btnGPIO = self.config.get('pinPush'+rotaryIndex);
-				if (self.config.get('enabled'+rotaryIndex)) {
-					if (Number.isInteger(btnGPIO) && (btnGPIO > 0)) {				
-						if (self.debugLogging) self.logger.info('[ROTARYENCODER2] deactivateButtons: Calling detachListener for button: ' + btnGPIO + ' of Rotary: ' + (rotaryIndex+1));
+				return self.detachListener(self.handles[rotaryIndex])
+				.then(_ => {
+					if (self.buttons[rotaryIndex] != undefined) {
 						return self.detachListener(self.buttons[rotaryIndex])
-						// .then(_=>{ return self.checkOverlayExists(rotaryIndex, type='button')})
-						// .then(idx=>{if (idx > -1) return self.removeOverlay(idx)})
-						.then(_=>{
-							if (self.debugLogging) self.logger.info('[ROTARYENCODER2] deactivateButtons: deactivated button for rotary' + (rotaryIndex + 1));
-							return defer.resolve();
-						})
-						.fail(msg => {
-							if (self.debugLogging) self.logger.error('[ROTARYENCODER2] deactivateButtons: failed to deactivate button for rotary' + (rotaryIndex + 1));
-							self.commandRouter.pushToastMessage('error', self.getI18nString('ROTARYENCODER2.TOAST_WRONG_PARAMETER'), self.getI18nString('ROTARYENCODER2.TOAST_KILL_HANDLE_FAIL'));
-							return defer.resolve();
-						})
 					} else {
-						if (self.debugLogging) self.logger.info('[ROTARYENCODER2] deactivateButtons: No button configured for Rotary: ' + (rotaryIndex + 1));
 						return defer.resolve()
 					}
-				} else {
-					if (self.debugLogging) self.logger.info('[ROTARYENCODER2] deactivateButtons: Rotary: ' + (rotaryIndex + 1) + 'is disabled.');
-					return defer.resolve()
-				}
+				})
+				.fail(err => {
+					if (self.debugLogging) self.logger.error('[ROTARYENCODER2] detachAllListeners: failed: ' + err);
+					self.commandRouter.pushToastMessage('error', self.getI18nString('ROTARYENCODER2.TOAST_WRONG_PARAMETER'), self.getI18nString('ROTARYENCODER2.TOAST_ERR_ATTACH_LISTENER_FAILED'));
+					return defer.resolve();
+				})
 			})
 		} else {
-			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] deactivateButtons: end of recursion.');
+			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] detachAllListeners: end of recursion.');
 			defer.resolve();
 		}
 	} else {
-		self.logger.error('[ROTARYENCODER2] deactivateButtons: rotaryIndexArray must be an Array');
+		self.logger.error('[ROTARYENCODER2] detachAllListeners: rotaryIndexArray must be an Array');
 		defer.reject('rotaryIndexArray must be an Array of integers')
 	}
 	return defer.promise;
+}
+
+//recursively attach Event handles to all listeners
+rotaryencoder2.prototype.addAllEventHandles = function(){
+	var self = this;
+	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] Now addAllEventHandles for rotaries. ');
+
+	for (let i = 0; i < maxRotaries; i++) {
+		if (self.handles[i] != undefined) {
+			self.addEventHandle(self.handles[i],i,'rotary');		
+		}
+	}
+	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] Now addAllEventHandles for buttons. ');
+	for (let j = 0; j < maxRotaries; j++) {
+		if (self.buttons[j] != undefined) {
+			self.addEventHandle(self.buttons[j],j,'button')
+		}
+	}
 }
 
 rotaryencoder2.prototype.addEventHandle = function (handle, rotaryIndex, handleType = "rotary") {
 	var self = this;
 	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] addEventHandle for rotary: ' + (rotaryIndex + 1) + ' type: ' + handleType);
 	if (handleType == "rotary") {
-		self.handles[rotaryIndex]=handle;
-		self.handles[rotaryIndex].stdout.on("data", function (chunk) {
+		handle.stdout.on("data", function (chunk) {
 			var i=0;
 			while (chunk.length - i >= 16) {
-				var type = chunk.readUInt16LE(i+8)
+				var type = chunk.readUInt16LE(i+8);
 				//var code = chunk.readUInt16LE(i+10) //would additionally read the key-code assigned to a button, but we do not need this for the plugin
-				var value = chunk.readInt32LE(i+12)
-				i += 16
+				var value = chunk.readInt32LE(i+12);
+				i += 16;
 				if (type == 2) {
 					if (self.debugLogging) self.logger.info('[ROTARYENCODER2] addEventHandle received from rotary: '+(rotaryIndex +1) + ' -> Dir: '+value)
 					self.emitDialCommand(value,rotaryIndex)
 				}
 			}
 		});
-		self.handles[rotaryIndex].stdout.on('end', function(){
+		handle.stdout.on('end', function(){
 			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] addEventHandle: Stream from rotary encoder ended.');
 		});
-		self.handles[rotaryIndex].stderr.on('data', (data) => {
+		handle.stderr.on('data', (data) => {
 			self.logger.error('[ROTARYENCODER2] addEventHandle: ' + `stderr: ${data}`);
 			self.commandRouter.pushToastMessage('error', self.getI18nString('ROTARYENCODER2.TOAST_WRONG_PARAMETER'), self.getI18nString('ROTARYENCODER2.TOAST_ERR_FROM_STREAM') + '(' + data + ')');
 		});
-		self.handles[rotaryIndex].on('close', (code) => {
+		handle.on('close', (code) => {
 			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] addEventHandle: ' + `child process exited with code ${code} `);
 		});		
 	} else if (handleType == "button") {
 		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] addEventHandle: adding handle :' + JSON.stringify(handle));
-		self.buttons[rotaryIndex]=handle;
-		self.buttons[rotaryIndex].stdout.on("data", function (chunk) {
+		handle.stdout.on("data", function (chunk) {
 			var i=0;
 			while (chunk.length - i >= 16) {
 				var type = chunk.readUInt16LE(i+8)
@@ -849,14 +920,14 @@ rotaryencoder2.prototype.addEventHandle = function (handle, rotaryIndex, handleT
 				} 
 			}
 		});
-		self.buttons[rotaryIndex].stdout.on('end', function(){
+		handle.stdout.on('end', function(){
 			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] addEventHandle: Stream from button ended.');
 		});
-		self.buttons[rotaryIndex].stderr.on('data', (data) => {
+		handle.stderr.on('data', (data) => {
 			self.logger.error('[ROTARYENCODER2] addEventHandle: ' + `stderr: ${data}`);
 			self.commandRouter.pushToastMessage('error', self.getI18nString('ROTARYENCODER2.TOAST_WRONG_PARAMETER'), self.getI18nString('ROTARYENCODER2.TOAST_ERR_FROM_STREAM') + '(' + data + ')');
 		});
-		self.buttons[rotaryIndex].on('close', (code) => {
+		handle.on('close', (code) => {
 			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] addEventHandle: ' + `child process exited with code ${code} `);
 		});		
 	}
@@ -1049,200 +1120,6 @@ rotaryencoder2.prototype.emitPushCommand = function(type,rotaryIndex){
 		default:
 			break;
 	}
-}
-
-rotaryencoder2.prototype.addOverlay = function (pinA, pinB, stepsPerPeriod, activeLow,gpioPull) {
-	var self = this;	
-	var defer = libQ.defer();
-	if (pinB!=undefined && stepsPerPeriod!=undefined) {
-		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] addOverlay for Rotary: ' + pinA + ' ' + pinB + ' ' + stepsPerPeriod);
-		var cmdString = '/usr/bin/sudo /usr/bin/dtoverlay ' + 'rotary-encoder pin_a='+pinA+' pin_b='+pinB+' relative_axis=true steps-per-period='+stepsPerPeriod+' &';
-		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] addOverlay: executing command: ' + cmdString);
-		exec(cmdString, {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
-			if (stderr) {
-				self.logger.error('[ROTARYENCODER2] addOverlay: ' + stderr);
-				defer.reject(stderr);
-			} else {
-				if (self.debugLogging) {
-					exec('/bin/ls -R /dev/input', {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
-						self.logger.info(stdout)
-					})
-				}
-				setTimeout(() => {
-					defer.resolve(stdout);
-				}, 1000);
-			}
-		})		
-	} else if (activeLow!=undefined && gpioPull!=undefined) {
-		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] addOverlay for Button: ' + pinA + ' ' + activeLow + ' ' + gpioPull);
-		if (activeLow=="true" || activeLow==true || activeLow=="True") {activeLow = 1
-		} else if (activeLow=="false" || activeLow==false || activeLow== "False") {activeLow = 0};
-		gpioPull = "up";
-		var cmdString = '/usr/bin/sudo /usr/bin/dtoverlay ' + 'gpio-key gpio=' + pinA + ' active_low=' + activeLow + ' gpio_pull=' + gpioPull + ' keycode=20 &'
-		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] addOverlay: executing command: ' + cmdString);
-		exec(cmdString, {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
-			if (stderr) {
-				self.logger.error('[ROTARYENCODER2] addOverlay: ' + stderr);
-				defer.reject(stderr);
-			} else {
-				if (self.debugLogging) {
-					exec('/bin/ls -R /dev/input', {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
-						self.logger.info(stdout)
-					})
-				}
-				setTimeout(() => {
-					defer.resolve(stdout);
-				}, 1000);
-			}
-		})		
-	}
-	return defer.promise;
-}
-
-rotaryencoder2.prototype.removeOverlay = function(idx) {
-	var self = this;
-	var defer = libQ.defer();
-
-	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] removeOverlay: ' + idx);
-	if (idx > -1) {
-		exec('/usr/bin/sudo /usr/bin/dtoverlay -r '+idx+' &', {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
-			if (stderr) {
-				defer.reject(stderr);
-			} else {
-				if (self.debugLogging) self.logger.info('[ROTARYENCODER2] removeOverlay: ' + idx + ' returned: ' + stdout);
-				exec('/usr/bin/sudo /usr/bin/dtoverlay -l', {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
-					if (self.debugLogging) self.logger.info('[ROTARYENCODER2] removeOverlay: "overlay -l" returned: ' + stdout + stderr);
-					defer.resolve(stdout);
-				})
-			}
-		})
-	} else {
-		defer.resolve();
-	}
-	return defer.promise;
-}
-
-rotaryencoder2.prototype.removeAllOverlays = function(){
-	var self = this;
-	var defer = libQ.defer();
-
-	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] removeAllOverlays');
-	exec('/usr/bin/sudo /usr/bin/dtoverlay -R &', {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
-		if (stderr) {
-			if (self.debugLogging) self.logger.error('[ROTARYENCODER2] removeAllOverlays returned: ' + stderr);
-				defer.resolve();
-		} else {
-			if (self.debugLogging) self.logger.info('[ROTARYENCODER2] removeAllOverlays returned: ' + stdout);
-			exec('/usr/bin/sudo /usr/bin/dtoverlay -l', {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
-				if (self.debugLogging) self.logger.info('[ROTARYENCODER2] removeAllOverlays: "overlay -l" returned: ' + stdout + stderr);
-				defer.resolve(stdout);
-			})
-		}
-	})
-	return defer.promise;
-}
-
-/**
- * Function looks for rotary-encoder overlays that alread use one of the provided GPIOs.
- * It returns an array with the index numbers of the overlay list returned by "dtoverlay -l"
- * If no matches are found, the returned array is empty
- * @param {Number} pin_a
- * @param {Number} pin_b
- * @returns Array
- */
- rotaryencoder2.prototype.checkOverlayExists = function(rotaryIndex, type='rotary') {
-	var self = this;
-	var defer = libQ.defer();
-    var match;
-    var overlay = -1;
-
-	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] checkOverlayExists: Checking for existing overlays for Rotary: ' + (rotaryIndex + 1)+ ' type: ' + type);
-	if (type == 'rotary') {
-		var pin_a = self.config.get('pinA' + rotaryIndex);
-		var pin_b = self.config.get('pinB' + rotaryIndex);
-	} else if (type == 'button') {
-		pin_a = self.config.get('pinPush' + rotaryIndex);
-		pin_b = undefined
-	}
-	if (self.config.get('enabled'+rotaryIndex)){
-		exec('/usr/bin/sudo /usr/bin/dtoverlay -l', {uid: 1000, gid: 1000}, function (err, stdout, stderr) {
-			if(err) {
-				self.logger.error('[ROTARYENCODER2] checkOverlayExists: "dtoverlays -l" returned: ' + stderr);
-				defer.resolve();
-			} else {
-				if (self.debugLogging) self.logger.info('[ROTARYENCODER2] checkOverlayExists: check pinA=' + pin_a + 'pinB=' + pin_b + ' in ' + stdout);
-				if (type == 'rotary') {
-					dtoverlayRegexRot.lastIndex = 0;
-					while (match = dtoverlayRegexRot.exec(stdout)) {
-						if ((pin_a == match[2]) && (pin_b == match[3]))  {
-							if (self.debugLogging) self.logger.info('[ROTARYENCODER2] checkOverlayExists: ' + type + ' ' + (rotaryIndex + 1) + ' uses overlay ' + match[1]);
-							overlay = match[1];
-						}
-					}
-				} else if (type == 'button') {
-					dtoverlayRegexBut.lastIndex = 0;
-					while (match = dtoverlayRegexBut.exec(stdout)) {
-						if ((pin_a == match[2]))  {
-							if (self.debugLogging) self.logger.info('[ROTARYENCODER2] checkOverlayExists: ' + type + ' ' + (rotaryIndex + 1) + ' uses overlay ' + match[1]);
-							overlay = match[1];
-						}
-					}
-				}
-				
-				if (overlay > -1) {
-					defer.resolve(overlay);
-				} else {
-					if (self.debugLogging) self.logger.info('[ROTARYENCODER2] checkOverlayExists: ' + type + ' ' + (rotaryIndex + 1) + ' not using any overlay.');
-					defer.resolve(overlay);
-				}
-			}
-		});
-	} else {
-		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] checkOverlayExists: ' + type + ' ' + (rotaryIndex + 1) + ' is not active.');
-		defer.resolve(-1);
-	}
-	return defer.promise;
-}
-
-rotaryencoder2.prototype.attachListener = function (pinA,type="rotary"){
-	var self = this;
-	var defer = libQ.defer();
-	var pinHex = Number(pinA).toString(16);
-
-	if (type=="rotary") {
-		var path = "/dev/input/by-path/platform-rotary\@"+pinHex+"-event";
-	} else if (type=="button") {
-		var path = "/dev/input/by-path/platform-button\@"+pinHex+"-event";
-	}
-	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] attachListener: path: ' + path + ', type: ' + type);
-	var handle = spawn("/bin/cat", [path],{uid: 1000, gid: 1000});
-	defer.resolve(handle);
-	return defer.promise;
-}
-
-rotaryencoder2.prototype.detachListener = function (handle){
-	var self = this;
-	var defer = libQ.defer();
-    if (handle!=undefined) {
-		handle.stdout.removeAllListeners('end');
-		handle.stdout.removeAllListeners('data');
-		handle.stderr.removeAllListeners('data');
-		handle.removeAllListeners('close');
-		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] detachListener: ' + JSON.stringify(handle));
-	    if (handle.kill()) {
-        	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] detachListener: successfully killed handler process');
-        	defer.resolve();
-        } else {
-            self.logger.error('[ROTARYENCODER2] detachListener: could not kill handler process ' +  JSON.stringify(handle));
-			self.commandRouter.pushToastMessage('error', self.getI18nString('ROTARYENCODER2.TOAST_WRONG_PARAMETER'), self.getI18nString('ROTARYENCODER2.TOAST_KILL_HANDLE_FAIL'));
-            defer.resolve();
-        }
-
-    } else {
-        if (self.debugLogging) self.logger.info('[ROTARYENCODER2] detachListener: no handler process to kill');
-        defer.resolve();
-    }
-	return defer.promise;
 }
 
 // Retrieve a string
