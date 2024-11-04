@@ -277,7 +277,11 @@
     },
     "logging": {
       "type": "boolean",
-      "value": true
+      "value": false
+    },
+    "loggingJSON": {
+      "type": "boolean",
+      "value": false
     }
 }
   
