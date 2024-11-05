@@ -21,7 +21,7 @@
 		],
 		"has_alsa_contribution": false,
 		"details": "Use up to 3 rotary encoders connected to the GPIOs of a Volumio system. Uses Linux kernel level drivers based on 'dtoverlay'.<br>Also provides a function to send commands via Websock.<br>Help and hardware tipps in the <a href=\"https://github.com/volumio/volumio-plugins-sources/blob/master/rotaryencoder2/readme.md\"><u>Documentation</u></a>",
-		"changelog": "Initial version for bookworm - using dtoverlay i.s.o. onoff and other improvements."
+		"changelog": "Initial version for bookworm -  using dtoverlay i.s.o. onoff and other improvements."
 	},
 	"engines": {
 		"node": ">=20",
