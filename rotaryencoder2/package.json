@@ -8,7 +8,7 @@
 	},
 	"author": "7h0mas-R",
 	"license": "ISC",
-	"repository": "https://github.com/7h0mas-R/volumio-plugins-sources",
+	"repository": "https://github.com/7h0mas-R/volumio-plugins-sources-bookworm",
 	"volumio_info": {
 		"prettyName": "Rotary Encoder II",
 		"icon": "fa-circle-o-notch",
