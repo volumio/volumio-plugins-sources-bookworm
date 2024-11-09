@@ -540,7 +540,6 @@ rotaryencoder2.prototype.uninstallAllOverlays = function (rotaryIndexArray) {
 	var self = this;
 	var defer = libQ.defer();
 	var rotaryIndex;
-	var overlays = [];
 
 	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] uninstallAllOverlays: ' + rotaryIndexArray.map(i =>  {return i + 1}));
 
@@ -552,18 +551,17 @@ rotaryencoder2.prototype.uninstallAllOverlays = function (rotaryIndexArray) {
 				if (self.config.get('enabled'+rotaryIndex)) {
 					return self.checkOverlayExists(rotaryIndex, 'rotary')
 					.then(idx => {
-						if (idx > -1) {
-							overlays.push(idx);
-						}
-						return self.checkOverlayExists(rotaryIndex,'button') 
-					})
-					.then(idx => {if (idx > -1) {
-							overlays.push(idx);
-						}
+						return this.removeOverlay(idx);
 					})
 					.then(_ => {
-						if (self.debugLogging) self.logger.info('[ROTARYENCODER2] uninstallAllOverlays: overlays to remove: ' + overlays);
-						return defer.resolve(overlays);
+						return self.checkOverlayExists(rotaryIndex,'button') 
+					})
+					.then(idx => {
+						return this.removeOverlay(idx);
+					})
+					.then(_ => {
+						if (self.debugLogging) self.logger.info('[ROTARYENCODER2] uninstallAllOverlays: overlays removed');
+						return defer.resolve();
 					})
 					.fail(msg => {
 						if (self.debugLogging) self.logger.error('[ROTARYENCODER2] uninstallAllOverlays: failed to lookup overlays for ' + (rotaryIndex + 1));
