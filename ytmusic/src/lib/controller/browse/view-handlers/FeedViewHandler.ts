@@ -27,6 +27,7 @@ type RenderableItem = ContentItem.Channel |
   ContentItem.EndpointLink |
   ContentItem.Album |
   ContentItem.Playlist |
+  ContentItem.Podcast |
   ContentItem.MusicItem |
   PageElement.Option |
   ContinuationBundleOption;
@@ -300,6 +301,8 @@ export default abstract class FeedViewHandler<V extends FeedView = FeedView> ext
         return this.getRenderer(RendererType.Channel).renderToHeader(data);
       case 'playlist':
         return this.getRenderer(RendererType.Playlist).renderToHeader(data as PageElement.PlaylistHeader);
+      case 'podcast':
+        return this.getRenderer(RendererType.Podcast).renderToHeader(data as PageElement.PodcastHeader);
       case 'album':
         return this.getRenderer(RendererType.Album).renderToHeader(data as PageElement.AlbumHeader);
       default:
@@ -396,6 +399,8 @@ export default abstract class FeedViewHandler<V extends FeedView = FeedView> ext
         return this.getRenderer(RendererType.EndpointLink).renderToListItem(data);
       case 'playlist':
         return this.getRenderer(RendererType.Playlist).renderToListItem(data);
+      case 'podcast':
+        return this.getRenderer(RendererType.Podcast).renderToListItem(data);
       case 'album':
         return this.getRenderer(RendererType.Album).renderToListItem(data);
       case 'video':

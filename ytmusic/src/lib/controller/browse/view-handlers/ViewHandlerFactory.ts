@@ -5,6 +5,7 @@ import GenericViewHandler from './GenericViewHandler';
 import MusicItemViewHandler from './MusicItemViewHandler';
 import OptionSelectionViewHandler from './OptionSelectionViewHandler';
 import PlaylistViewHandler from './PlaylistViewHandler';
+import PodcastViewHandler from './PodcastViewHandler';
 import RootViewHandler from './RootViewHandler';
 import SearchViewHandler from './SearchViewHandler';
 import type View from './View';
@@ -20,6 +21,7 @@ const VIEW_NAME_TO_CLASS: Record<string, HandlerClass<any, any>> = {
   'song': MusicItemViewHandler,
   'album': AlbumViewHandler,
   'playlist': PlaylistViewHandler,
+  'podcast': PodcastViewHandler,
   'optionSelection': OptionSelectionViewHandler,
   'search': SearchViewHandler
 };

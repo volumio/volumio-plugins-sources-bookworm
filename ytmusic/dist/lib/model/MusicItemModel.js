@@ -169,13 +169,13 @@ async function _MusicItemModel_getTrackInfo(innertube, endpoint) {
     }
     const videoId = endpoint.payload.videoId;
     const match = playlistPanel.contents.find((data) => {
-        if (data instanceof volumio_youtubei_js_1.YTNodes.PlaylistPanelVideoWrapper) {
+        if (data.is(volumio_youtubei_js_1.YTNodes.PlaylistPanelVideoWrapper)) {
             if (data.primary?.video_id === videoId) {
                 return true;
             }
             return data.counterpart?.find((item) => item.video_id === videoId);
         }
-        else if (data instanceof volumio_youtubei_js_1.YTNodes.PlaylistPanelVideo) {
+        else if (data.is(volumio_youtubei_js_1.YTNodes.PlaylistPanelVideo)) {
             return data.video_id === videoId;
         }
     });

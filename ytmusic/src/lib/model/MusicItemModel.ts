@@ -164,13 +164,13 @@ export default class MusicItemModel extends BaseModel {
     }
     const videoId = endpoint.payload.videoId;
     const match = playlistPanel.contents.find((data) => {
-      if (data instanceof YTNodes.PlaylistPanelVideoWrapper) {
+      if (data.is(YTNodes.PlaylistPanelVideoWrapper)) {
         if (data.primary?.video_id === videoId) {
           return true;
         }
         return data.counterpart?.find((item) => item.video_id === videoId);
       }
-      else if (data instanceof YTNodes.PlaylistPanelVideo) {
+      else if (data.is(YTNodes.PlaylistPanelVideo)) {
         return data.video_id === videoId;
       }
     });

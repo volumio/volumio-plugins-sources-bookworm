@@ -81,6 +81,8 @@ class FeedViewHandler extends ExplodableViewHandler_1.default {
                 return this.getRenderer(renderers_1.RendererType.Channel).renderToHeader(data);
             case 'playlist':
                 return this.getRenderer(renderers_1.RendererType.Playlist).renderToHeader(data);
+            case 'podcast':
+                return this.getRenderer(renderers_1.RendererType.Podcast).renderToHeader(data);
             case 'album':
                 return this.getRenderer(renderers_1.RendererType.Album).renderToHeader(data);
             default:
@@ -166,6 +168,8 @@ class FeedViewHandler extends ExplodableViewHandler_1.default {
                 return this.getRenderer(renderers_1.RendererType.EndpointLink).renderToListItem(data);
             case 'playlist':
                 return this.getRenderer(renderers_1.RendererType.Playlist).renderToListItem(data);
+            case 'podcast':
+                return this.getRenderer(renderers_1.RendererType.Podcast).renderToListItem(data);
             case 'album':
                 return this.getRenderer(renderers_1.RendererType.Album).renderToListItem(data);
             case 'video':
