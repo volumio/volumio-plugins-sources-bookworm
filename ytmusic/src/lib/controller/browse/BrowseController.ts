@@ -33,6 +33,7 @@ export default class BrowseController {
    * - video[@explodeTrackData=...]
    * - song[@explodeTrackData=...]
    * - playlist[@endpoints=...]
+   * - podcast[@endpoints=...]
    * - generic[@endpoint=...]
    *
    * Legacy (pre v1.0) uris:

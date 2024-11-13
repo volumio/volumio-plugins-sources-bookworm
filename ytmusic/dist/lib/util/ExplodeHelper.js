@@ -62,6 +62,8 @@ class ExplodeHelper {
             case 'album':
                 // Endpoints object must exist (pre-v1.0 is just albumId / playlistId)
                 return view.endpoints && typeof view.endpoints === 'object';
+            case 'podcast':
+                return true;
             case 'generic':
                 // Endpoint must be an object (pre-v1.0 is stringified)
                 return view.endpoint && typeof view.endpoint === 'object';

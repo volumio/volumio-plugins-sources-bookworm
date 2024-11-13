@@ -58,4 +58,12 @@ export default class EndpointHelper {
     return endpoint.payload.browseId.startsWith('MPR') ||
       endpoint.payload.browseId.startsWith('FEmusic_library_privately_owned_release');
   }
+
+  static isPodcastEndpoint(endpoint?: Endpoint | null): endpoint is BrowseEndpoint {
+    if (!this.isType(endpoint, EndpointType.Browse)) {
+      return false;
+    }
+
+    return endpoint.payload.browseId.startsWith('MPSPPL');
+  }
 }

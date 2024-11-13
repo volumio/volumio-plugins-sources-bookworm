@@ -122,6 +122,9 @@ class BaseViewHandler {
                 case renderers_1.RendererType.Playlist:
                     renderer = renderers_1.default.getInstance(renderers_1.RendererType.Playlist, __classPrivateFieldGet(this, _BaseViewHandler_uri, "f"), __classPrivateFieldGet(this, _BaseViewHandler_currentView, "f"), __classPrivateFieldGet(this, _BaseViewHandler_previousViews, "f"));
                     break;
+                case renderers_1.RendererType.Podcast:
+                    renderer = renderers_1.default.getInstance(renderers_1.RendererType.Podcast, __classPrivateFieldGet(this, _BaseViewHandler_uri, "f"), __classPrivateFieldGet(this, _BaseViewHandler_currentView, "f"), __classPrivateFieldGet(this, _BaseViewHandler_previousViews, "f"));
+                    break;
                 case renderers_1.RendererType.MusicItem:
                     renderer = renderers_1.default.getInstance(renderers_1.RendererType.MusicItem, __classPrivateFieldGet(this, _BaseViewHandler_uri, "f"), __classPrivateFieldGet(this, _BaseViewHandler_currentView, "f"), __classPrivateFieldGet(this, _BaseViewHandler_previousViews, "f"));
                     break;

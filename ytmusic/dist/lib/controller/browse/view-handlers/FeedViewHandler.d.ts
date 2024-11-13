@@ -15,7 +15,7 @@ import { type PageContent } from '../../../types/Content';
 export interface FeedView extends View {
     endpoint?: BrowseEndpoint | BrowseContinuationEndpoint | SearchEndpoint | SearchContinuationEndpoint | WatchEndpoint;
 }
-type RenderableItem = ContentItem.Channel | ContentItem.EndpointLink | ContentItem.Album | ContentItem.Playlist | ContentItem.MusicItem | PageElement.Option | ContinuationBundleOption;
+type RenderableItem = ContentItem.Channel | ContentItem.EndpointLink | ContentItem.Album | ContentItem.Playlist | ContentItem.Podcast | ContentItem.MusicItem | PageElement.Option | ContinuationBundleOption;
 export default abstract class FeedViewHandler<V extends FeedView = FeedView> extends ExplodableViewHandler<V> {
     #private;
     browse(): Promise<RenderedPage>;

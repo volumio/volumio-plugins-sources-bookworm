@@ -34,7 +34,14 @@ export default class OptionValueRenderer extends BaseRenderer<PageElement.Option
           name: 'generic'
         };
       }
-      targetView.endpoint = data.endpoint;
+
+      // MusicFolderView types store browse endpoint in `endpoints` obj
+      if (Reflect.has(targetView, 'endpoints') && Reflect.has(targetView.endpoints, 'browse')) {
+        targetView.endpoints.browse = data.endpoint;
+      }
+      else {
+        targetView.endpoint = data.endpoint;
+      }
 
       if (opts?.extraUriParams) {
         for (const [ key, value ] of Object.entries(opts.extraUriParams)) {

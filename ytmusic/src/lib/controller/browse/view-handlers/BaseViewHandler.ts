@@ -113,6 +113,10 @@ export default class BaseViewHandler<V extends View> implements ViewHandler {
           renderer = Renderer.getInstance(RendererType.Playlist, this.#uri,
             this.#currentView, this.#previousViews);
           break;
+        case RendererType.Podcast:
+          renderer = Renderer.getInstance(RendererType.Podcast, this.#uri,
+            this.#currentView, this.#previousViews);
+          break;
         case RendererType.MusicItem:
           renderer = Renderer.getInstance(RendererType.MusicItem, this.#uri,
             this.#currentView, this.#previousViews);

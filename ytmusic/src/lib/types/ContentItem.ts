@@ -48,6 +48,10 @@ export interface Playlist extends MusicFolder {
   items?: MusicItem[];
 }
 
+export interface Podcast extends MusicFolder {
+  type: 'podcast';
+}
+
 export interface EndpointLink {
   type: 'endpointLink';
   title: string;
