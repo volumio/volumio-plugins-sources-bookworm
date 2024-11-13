@@ -18,7 +18,7 @@
     "prettyName": "SoundCloud",
     "plugin_type": "music_service",
     "os": [
-      "buster"
+      "bookworm"
     ],
     "icon": "fa-music",
     "boot_priority": 10,
