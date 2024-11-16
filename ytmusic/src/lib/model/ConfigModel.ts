@@ -21,7 +21,7 @@ export const PLUGIN_CONFIG_SCHEMA: PluginConfigSchema = {
   addToHistory: { defaultValue: true, json: false },
   prefetch: { defaultValue: true, json: false },
   preferOpus: { defaultValue: false, json: false },
-  authCredentials: { defaultValue: undefined, json: true }
+  cookie: { defaultValue: '', json: false }
 };
 
 export default class ConfigModel extends BaseModel {
