@@ -4,16 +4,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const volumio_youtubei_js_1 = require("volumio-youtubei.js");
-const Auth_1 = require("../util/Auth");
 const BaseModel_1 = require("./BaseModel");
 const InnertubeResultParser_1 = __importDefault(require("./InnertubeResultParser"));
+const AccountModelHelper_1 = require("./AccountModelHelper");
 class AccountModel extends BaseModel_1.BaseModel {
     async getInfo() {
-        const { innertube, auth } = await this.getInnertube();
-        if (auth.getStatus().status !== Auth_1.AuthStatus.SignedIn) {
-            return null;
+        const { innertube } = await this.getInnertube();
+        const { isSignedIn, response } = await (0, AccountModelHelper_1.getAccountInitialInfo)(innertube);
+        if (!isSignedIn) {
+            return {
+                isSignedIn: false,
+                info: null
+            };
         }
-        const info = await innertube.account.getInfo();
+        const info = new volumio_youtubei_js_1.YT.AccountInfo(response);
         // This plugin supports single sign-in, so there should only be one account in contents.
         // But we still get the 'selected' one just to be sure.
         const account = info.contents?.contents.find((ac) => ac.is(volumio_youtubei_js_1.YTNodes.AccountItem) && ac.is_selected);
@@ -24,10 +28,13 @@ class AccountModel extends BaseModel_1.BaseModel {
                     name,
                     photo: InnertubeResultParser_1.default.parseThumbnail(account.account_photo)
                 };
-                return result;
+                return {
+                    isSignedIn: true,
+                    info: result
+                };
             }
         }
-        return null;
+        throw Error('Signed in but unable to get account info');
     }
 }
 exports.default = AccountModel;
