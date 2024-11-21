@@ -10,7 +10,7 @@ We are working on OTA delivery system. Until this is completed, the link updated
 
 | Version | Link |
 | --- | --- |
-| 0.015 | [Download](https://dev-updates.volumio.org/pi/volumio/0.015/Volumio-0.015-2024-11-17-pi.zip) |
+| 0.016 | [Download](https://dev-updates.volumio.org/pi/volumio/0.016/Volumio-0.016-2024-11-21-pi.zip) |
 
 
 From a running Volumio Bookworm system, clone the Bookworm dedicated plugin repo:
