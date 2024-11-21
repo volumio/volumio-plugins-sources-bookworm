@@ -7,6 +7,7 @@ var exec = require('child_process').exec;
 var spawn = require('child_process').spawn
 
 const io = require('socket.io-client');
+const dtoverlayRegex = /^([0-9]+):\s+(rotary-encoder|gpio-key)\s+(?:pin_a|gpio)=([0-9]+) (?:pin_b|active_low)=([0-9]+) (?:relative_axis|gpio_pull)=(up|down|true|false) (?:steps-per-period|keycode)=([a-f0-9]*).*$/gm
 const dtoverlayRegexRot = /^([0-9]+):\s+rotary-encoder\s+pin_a=([0-9]+) pin_b=([0-9]+).*$/gm
 const dtoverlayRegexBut = /^([0-9]+):\s+gpio-key\s+gpio=([0-9]+)\s+active_low=([01])\s+gpio_pull=(up|down|off) keycode=([0-9x]+).*$/gm
 
@@ -103,7 +104,8 @@ rotaryencoder2.prototype.onStart = function() {
 		self.lastTime = data.seek - Date.now();
 	})
 
-	self.installAllOverlays([...Array(maxRotaries).keys()])
+	self.dtoverlayL()
+	.then(_=> {return self.installAllOverlays([...Array(maxRotaries).keys()])})
 	.then(_ => {return self.attachAllListeners([...Array(maxRotaries).keys()])})
 	.then(_ => {
 		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] onStart: Attach Event-handles now.');
@@ -118,6 +120,7 @@ rotaryencoder2.prototype.onStart = function() {
 		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] onStart: Plugin successfully started.');
 		defer.resolve();
 	})
+	.then(_ => {return self.dtoverlayL()})
 	.fail(error => {
 		self.commandRouter.pushToastMessage('error',"Rotary Encoder II", self.getI18nString('ROTARYENCODER2.TOAST_START_FAIL'))
 		self.logger.error('[ROTARYENCODER2] onStart: Rotarys not initialized: '+error);
@@ -665,6 +668,51 @@ rotaryencoder2.prototype.removeAllOverlays = function(){
 	return defer.promise;
 }
 
+//Wrapper for dtoverlay -l
+rotaryencoder2.prototype.dtoverlayL = function () {
+	var self = this;
+	var resolver = libQ.defer();
+	var defer = libQ.defer();
+	var overlays = [];
+	var matchFound = [];
+	var ovlObject;
+
+	if (self.debugLogging) self.logger.info('[ROTARYENCODER2] dtoverlayL');
+	exec('/usr/bin/sudo /usr/bin/dtoverlay -l &', {uid: 1000, gid: 1000}, resolver.makeNodeResolver());
+	resolver.promise
+	.then(stdout =>  {
+		while ((matchFound = dtoverlayRegex.exec(stdout))!==null) {
+			ovlObject = {
+				"no": parseInt(matchFound[1]),
+				"type": matchFound[2],
+				"gpio1": parseInt(matchFound[3]),
+			};
+			if (ovlObject.type == "rotary-encoder") {
+				ovlObject = {
+					...ovlObject,
+					"gpio2": parseInt(matchFound[4]),
+					"relative-axis": matchFound[5]=="true",
+					"steps-per-period": parseInt(matchFound[6])
+				}
+			} else {
+				ovlObject = {
+					...ovlObject,
+					"active-low": matchFound[4]==1,
+					"gpio-pull": matchFound[5],
+					"keycode": matchFound[6]
+				}
+			}
+			overlays.push(ovlObject);
+		};
+		if (self.debugLogging) self.logger.info('[ROTARYENCODER2] dtoverlayL returned: ' + JSON.stringify(overlays));
+		defer.resolve()
+	})
+	.fail(stderr => {
+		if (self.debugLogging) self.logger.error('[ROTARYENCODER2] dtoverlayL failed: ' + stderr);
+		defer.resolve()
+	})
+	return defer.promise
+}
 //Function to recursively attach Listeners to all device tree overlays
 rotaryencoder2.prototype.attachAllListeners = function (rotaryIndexArray) {
 	var self = this;
