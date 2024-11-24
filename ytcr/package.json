@@ -1,0 +1,66 @@
+{
+	"name": "ytcr",
+	"version": "2.0.0",
+	"description": "YouTube Cast Receiver for Volumio.  Supports casting from YouTube and YouTube Music.",
+	"main": "./dist/index.js",
+	"scripts": {
+		"build": "rm -rf dist && npx tsc -p tsconfig.json && bash fixup.sh",
+		"lint": "npx eslint ./src && npx eslint ./scripts",
+		"lint:fix": "npx eslint ./src --fix && npx eslint ./scripts --fix",
+		"i18n-conf": "npx ts-node -P ./tsconfig.json ./scripts/gen-i18n-conf.ts -o ./src/config/i18n.json"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/patrickkfkan/volumio-ytcr.git"
+	},
+	"author": "Patrick Kan",
+	"license": "MIT",
+	"volumio_info": {
+		"prettyName": "YouTube Cast Receiver",
+		"plugin_type": "music_service",
+		"os": [
+			"bookworm"
+		],
+		"icon": "fa-youtube",
+		"boot_priority": 10,
+		"details": "YouTube Cast Receiver for Volumio.  Supports casting from YouTube and YouTube Music.",
+		"changelog": "",
+		"architectures": [
+			"amd64",
+			"armhf"
+		]
+	},
+	"engines": {
+		"node": ">=20",
+		"volumio": ">=0"
+	},
+	"devDependencies": {
+		"@types/fs-extra": "^8.1.2",
+		"@types/jsdom": "^21.1.7",
+		"@types/network-interfaces": "^1.1.0",
+		"@types/node": "^20.5.1",
+		"@types/semver": "^7.5.8",
+		"@types/string-format": "^2.0.0",
+		"@types/tough-cookie": "^4.0.2",
+		"@typescript-eslint/eslint-plugin": "^8.6.0",
+		"@typescript-eslint/parser": "^8.6.0",
+		"eslint": "^9.10.0",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.5.4",
+		"typescript-eslint": "^8.6.0",
+		"winston": "^3.8.2"
+	},
+	"dependencies": {
+		"bgutils-js": "^3.0.0",
+		"jsdom": "^25.0.1",
+		"kew": "^0.7.0",
+		"mpd-api": "^1.1.2",
+		"network-interfaces": "^1.1.0",
+		"now-playing-common": "git+https://github.com/patrickkfkan/volumio-now-playing-common#v0.3.2",
+		"semver": "^7.6.2",
+		"string-format": "^2.0.0",
+		"v-conf": "^1.4.2",
+		"volumio-youtubei.js": "file:dep/volumio-youtubei.js-1.2.1.tgz",
+		"yt-cast-receiver": "^1.3.0"
+	}
+}
