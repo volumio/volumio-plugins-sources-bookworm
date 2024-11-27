@@ -1,11 +1,10 @@
 {
 	"name": "rotaryencoder2",
-
-  "version": "1.1.1",
+	"version": "1.1.1",
 	"description": "Alternative implementation of Rotary Encoder controls using the Linux Kernel driver for Rotaries.",
 	"main": "index.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "jest --coverage"
 	},
 	"author": "7h0mas-R",
 	"license": "ISC",
@@ -29,10 +28,14 @@
 		"volumio": ">=0"
 	},
 	"dependencies": {
+		"@types/jest": "^29.5.14",
 		"fs-extra": "^5.0.0",
 		"kew": "^0.7.0",
 		"path": "^0.12.7",
 		"socket.io-client": "^2.4.1",
 		"v-conf": "^1.4.0"
+	},
+	"devDependencies": {
+		"jest": "^29.7.0"
 	}
 }
