@@ -29,7 +29,8 @@ exports.PLUGIN_CONFIG_SCHEMA = {
     addToHistory: { defaultValue: true, json: false },
     prefetch: { defaultValue: true, json: false },
     preferOpus: { defaultValue: false, json: false },
-    cookie: { defaultValue: '', json: false }
+    cookie: { defaultValue: '', json: false },
+    activeChannelHandle: { defaultValue: '', json: false }
 };
 class ConfigModel extends BaseModel_1.BaseModel {
     constructor() {

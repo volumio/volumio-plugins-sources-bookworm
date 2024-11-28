@@ -94,17 +94,16 @@ class MusicItemModel extends BaseModel_1.BaseModel {
     }
 }
 _MusicItemModel_instances = new WeakSet(), _MusicItemModel_getTrackInfo = 
-// Based on Innertube.Music.#fetchInfoFromListItem(), which requires MusicTwoRowItem which we don't have.
+// Based on Innertube.Music.#fetchInfoFromEndpoint()
 async function _MusicItemModel_getTrackInfo(innertube, endpoint) {
-    const innertubeEndpoint = new volumio_youtubei_js_1.YTNodes.NavigationEndpoint({});
-    innertubeEndpoint.metadata.api_url = volumio_youtubei_js_1.Endpoints.PlayerEndpoint.PATH;
-    innertubeEndpoint.payload = volumio_youtubei_js_1.Endpoints.PlayerEndpoint.build({
-        video_id: endpoint.payload.videoId,
-        playlist_id: endpoint.payload.playlistId,
-        params: endpoint.payload.params,
-        sts: innertube.session.player?.sts
-    });
-    const player_response = innertubeEndpoint.call(innertube.actions, {
+    const watchEndpoint = new volumio_youtubei_js_1.YTNodes.NavigationEndpoint({ watchEndpoint: {
+            videoId: endpoint.payload.videoId,
+            playlistId: endpoint.payload.playlistId,
+            params: endpoint.payload.params,
+            sts: innertube.session.player?.sts
+        } });
+    const nextEndpoint = new volumio_youtubei_js_1.YTNodes.NavigationEndpoint({ watchNextEndpoint: { videoId: endpoint.payload.videoId } });
+    const player_response = watchEndpoint.call(innertube.actions, {
         client: 'YTMUSIC',
         playbackContext: {
             contentPlaybackContext: {
@@ -114,10 +113,9 @@ async function _MusicItemModel_getTrackInfo(innertube, endpoint) {
             }
         }
     });
-    const next_response = innertubeEndpoint.call(innertube.actions, {
+    const next_response = nextEndpoint.call(innertube.actions, {
         client: 'YTMUSIC',
-        enablePersistentPlaylistPanel: true,
-        override_endpoint: '/next'
+        enablePersistentPlaylistPanel: true
     });
     const cpn = volumio_youtubei_js_1.Utils.generateRandomString(16);
     const response = await Promise.all([player_response, next_response]);

@@ -1,27 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
@@ -39,7 +16,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var _a, _InnertubeLoader_innertube, _InnertubeLoader_pendingPromise, _InnertubeLoader_poTokenRefreshTimer, _InnertubeLoader_recreateWithPOToken, _InnertubeLoader_createInstance, _InnertubeLoader_clearPOTokenRefreshTimer, _InnertubeLoader_resolveGetInstanceResult, _InnertubeLoader_refreshPOToken, _InnertubeLoader_generatePoToken;
 Object.defineProperty(exports, "__esModule", { value: true });
 const YTMusicContext_1 = __importDefault(require("../YTMusicContext"));
-const volumio_youtubei_js_1 = __importStar(require("volumio-youtubei.js"));
+const volumio_youtubei_js_1 = __importDefault(require("volumio-youtubei.js"));
 const bgutils_js_1 = __importDefault(require("bgutils-js"));
 const jsdom_1 = require("jsdom");
 const AccountModelHelper_1 = require("./AccountModelHelper");
@@ -99,31 +76,26 @@ _a = InnertubeLoader, _InnertubeLoader_recreateWithPOToken = async function _Inn
     else {
         const account = await (0, AccountModelHelper_1.getAccountInitialInfo)(innertube);
         if (account.isSignedIn) {
-            YTMusicContext_1.default.getLogger().info('[ytmusic] InnertubeLoader: fetching datasyncIdToken...');
-            let accountItemSections;
-            try {
-                const user = await innertube.account.getInfo();
-                accountItemSections = user.page.contents_memo?.getType(volumio_youtubei_js_1.YTNodes.AccountItemSection);
-            }
-            catch (error) {
-                YTMusicContext_1.default.getLogger().error(YTMusicContext_1.default.getErrorMessage('[ytmusic] InnertubeLoader: signed in but could not get account info', error, false));
-            }
-            if (accountItemSections) {
-                const accountItemSection = accountItemSections.first();
-                const accountItem = accountItemSection.contents.first();
-                const tokens = accountItem.endpoint.payload.supportedTokens;
-                let datasyncIdToken = null;
-                if (Array.isArray(tokens)) {
-                    datasyncIdToken = tokens.find((v) => typeof v === 'object' &&
-                        Reflect.has(v, 'datasyncIdToken') &&
-                        typeof v.datasyncIdToken === 'object' &&
-                        Reflect.has(v.datasyncIdToken, 'datasyncIdToken') &&
-                        typeof v.datasyncIdToken.datasyncIdToken === 'string')?.datasyncIdToken.datasyncIdToken;
+            const activeChannelHandle = YTMusicContext_1.default.getConfigValue('activeChannelHandle');
+            let target;
+            if (activeChannelHandle && account.list.length > 1) {
+                target = account.list.find((ac) => ac.handle === activeChannelHandle);
+                if (!target) {
+                    YTMusicContext_1.default.toast('warning', YTMusicContext_1.default.getI18n('YTMUSIC_ERR_UNKNOWN_CHANNEL_HANDLE', activeChannelHandle));
+                    target = account.active;
                 }
-                identifier = datasyncIdToken ? {
+            }
+            else {
+                target = account.active;
+            }
+            const pageId = target?.pageId || undefined;
+            const datasyncIdToken = target?.datasyncIdToken || undefined;
+            if (datasyncIdToken) {
+                identifier = {
                     type: 'datasyncIdToken',
-                    value: datasyncIdToken
-                } : null;
+                    value: datasyncIdToken,
+                    pageId
+                };
             }
             else {
                 YTMusicContext_1.default.getLogger().warn('[ytmusic] InnertubeLoader: signed in but could not get datasyncIdToken for fetching po_token - will use visitorData instead');
@@ -160,10 +132,19 @@ _a = InnertubeLoader, _InnertubeLoader_recreateWithPOToken = async function _Inn
     YTMusicContext_1.default.getLogger().warn('[ytmusic] InnertubeLoader: po_token was not used to create Innertube instance. Playback of YouTube content might fail.');
     __classPrivateFieldGet(this, _a, "m", _InnertubeLoader_resolveGetInstanceResult).call(this, innertube, resolve);
 }, _InnertubeLoader_createInstance = async function _InnertubeLoader_createInstance(stage, resolve, poToken) {
-    YTMusicContext_1.default.getLogger().info(`[ytmusic] InnertubeLoader: creating Innertube instance${poToken?.value ? ' with po_token' : ''}...`);
+    const usedParams = [];
+    if (poToken?.value) {
+        usedParams.push('po_token');
+    }
+    if (poToken?.params.identifier.pageId) {
+        usedParams.push('page_id');
+    }
+    const usedParamsStr = usedParams.length > 0 ? ` with ${usedParams.join(' + ')}` : '';
+    YTMusicContext_1.default.getLogger().info(`[ytmusic] InnertubeLoader: creating Innertube instance${usedParamsStr}...`);
     const innertube = await volumio_youtubei_js_1.default.create({
         cookie: YTMusicContext_1.default.getConfigValue('cookie') || undefined,
         visitor_data: poToken?.params.visitorData,
+        on_behalf_of_user: poToken?.params.identifier.pageId,
         po_token: poToken?.value
     });
     switch (stage) {

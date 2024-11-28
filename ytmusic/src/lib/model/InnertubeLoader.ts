@@ -19,6 +19,7 @@ interface POToken {
     identifier: {
       type: 'visitorData' | 'datasyncIdToken';
       value: string;
+      pageId?: string;
     };
   }
   value: string;
@@ -67,32 +68,26 @@ export default class InnertubeLoader {
     else {
       const account = await getAccountInitialInfo(innertube);
       if (account.isSignedIn) {
-        ytmusic.getLogger().info('[ytmusic] InnertubeLoader: fetching datasyncIdToken...');
-        let accountItemSections;
-        try {
-          const user = await innertube.account.getInfo();
-          accountItemSections = user.page.contents_memo?.getType(YTNodes.AccountItemSection);
-        }
-        catch (error: unknown) {
-          ytmusic.getLogger().error(ytmusic.getErrorMessage('[ytmusic] InnertubeLoader: signed in but could not get account info', error, false));
-        }
-        if (accountItemSections) {
-          const accountItemSection = accountItemSections.first();
-          const accountItem = accountItemSection.contents.first();
-          const tokens = accountItem.endpoint.payload.supportedTokens;
-          let datasyncIdToken: string | null = null;
-          if (Array.isArray(tokens)) {
-            datasyncIdToken = tokens.find((v) =>
-              typeof v === 'object' &&
-              Reflect.has(v, 'datasyncIdToken') &&
-              typeof v.datasyncIdToken === 'object' &&
-              Reflect.has(v.datasyncIdToken, 'datasyncIdToken') &&
-              typeof v.datasyncIdToken.datasyncIdToken === 'string')?.datasyncIdToken.datasyncIdToken;
+        const activeChannelHandle = ytmusic.getConfigValue('activeChannelHandle');
+        let target;
+        if (activeChannelHandle && account.list.length > 1) {
+          target = account.list.find((ac) => ac.handle === activeChannelHandle);
+          if (!target) {
+            ytmusic.toast('warning', ytmusic.getI18n('YTMUSIC_ERR_UNKNOWN_CHANNEL_HANDLE', activeChannelHandle));
+            target = account.active;
           }
-          identifier = datasyncIdToken ? {
+        }
+        else {
+          target = account.active;
+        }
+        const pageId = target?.pageId || undefined;
+        const datasyncIdToken = target?.datasyncIdToken || undefined;
+        if (datasyncIdToken) {
+          identifier = {
             type: 'datasyncIdToken',
-            value: datasyncIdToken
-          } : null;
+            value: datasyncIdToken,
+            pageId
+          };
         }
         else {
           ytmusic.getLogger().warn('[ytmusic] InnertubeLoader: signed in but could not get datasyncIdToken for fetching po_token - will use visitorData instead');
@@ -133,10 +128,19 @@ export default class InnertubeLoader {
   static async #createInstance(stage: Stage.PO, resolve: (value: InnertubeLoaderGetInstanceResult) => void, poToken: POToken): Promise<void>;
   static async #createInstance(stage: Stage.Init, resolve: (value: InnertubeLoaderGetInstanceResult) => void, poToken?: undefined): Promise<void>;
   static async #createInstance(stage: Stage.Init | Stage.PO, resolve: (value: InnertubeLoaderGetInstanceResult) => void, poToken?: POToken) {
-    ytmusic.getLogger().info(`[ytmusic] InnertubeLoader: creating Innertube instance${poToken?.value ? ' with po_token' : ''}...`);
+    const usedParams: string[] = [];
+    if (poToken?.value) {
+      usedParams.push('po_token');
+    }
+    if (poToken?.params.identifier.pageId) {
+      usedParams.push('page_id');
+    }
+    const usedParamsStr = usedParams.length > 0 ? ` with ${usedParams.join(' + ')}` : '';
+    ytmusic.getLogger().info(`[ytmusic] InnertubeLoader: creating Innertube instance${usedParamsStr}...`);
     const innertube = await Innertube.create({
       cookie: ytmusic.getConfigValue('cookie') || undefined,
       visitor_data: poToken?.params.visitorData,
+      on_behalf_of_user: poToken?.params.identifier.pageId,
       po_token: poToken?.value
     });
     switch (stage) {
