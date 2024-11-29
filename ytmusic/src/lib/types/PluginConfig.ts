@@ -16,6 +16,7 @@ export interface PluginConfigSchema {
   prefetch: PluginConfigSchemaEntry<boolean>;
   preferOpus: PluginConfigSchemaEntry<boolean>;
   cookie: PluginConfigSchemaEntry<string>;
+  activeChannelHandle: PluginConfigSchemaEntry<string>
 }
 
 export interface I18nOptions {
@@ -37,4 +38,8 @@ export interface I18nOptionValue {
 export interface Account {
   name: string;
   photo: string | null;
+  active: boolean;
+  handle: string;
+  pageId?: string;
+  datasyncIdToken: string;
 }

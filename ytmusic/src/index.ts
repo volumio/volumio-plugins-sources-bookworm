@@ -70,12 +70,28 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
         // Account
         const cookie = ytmusic.getConfigValue('cookie');
         let authStatusDescription;
-        if (account?.isSignedIn && account.info) {
-          if (account.info.name) {
-            authStatusDescription = ytmusic.getI18n('YTMUSIC_AUTH_STATUS_SIGNED_IN_AS', account.info.name);
-          }
-          else {
-            authStatusDescription = ytmusic.getI18n('YTMUSIC_AUTH_STATUS_SIGNED_IN');
+        if (account?.isSignedIn && account.active) {
+          authStatusDescription = ytmusic.getI18n('YTMUSIC_AUTH_STATUS_SIGNED_IN_AS', account.active.name);
+          if (account.list.length > 1) {
+            const accountSelect = {
+              id: 'activeChannelHandle',
+              element: 'select',
+              label: ytmusic.getI18n('YTMUSIC_ACTIVE_CHANNEL'),
+              value: {
+                label: account.active.name,
+                value: account.active.handle
+              },
+              options: account.list.map((ac) => ({
+                label: ac.name,
+                value: ac.handle
+              }))
+            };
+            accountUIConf.content = [
+              accountUIConf.content[0],
+              accountSelect,
+              ...accountUIConf.content.slice(1)
+            ];
+            accountUIConf.saveButton.data.push('activeChannelHandle');
           }
         }
         else if (cookie) {
@@ -218,12 +234,23 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
   configSaveAccount(data: any) {
     const oldCookie = ytmusic.hasConfigKey('cookie') ? ytmusic.getConfigValue('cookie') : null;
     const cookie = data.cookie?.trim();
+    const oldActiveChannelHandle = ytmusic.getConfigValue('activeChannelHandle');
+    const activeChannelHandle = data.activeChannelHandle?.value || '';
+    let resetInnertube = false;
     if (oldCookie !== cookie) {
       ytmusic.setConfigValue('cookie', cookie);
+      ytmusic.deleteConfigValue('activeChannelHandle');
+      resetInnertube = true;
+    }
+    else if (oldActiveChannelHandle !== activeChannelHandle) {
+      ytmusic.setConfigValue('activeChannelHandle', activeChannelHandle);
+      resetInnertube =  true;
+    }
+    ytmusic.toast('success', ytmusic.getI18n('YTMUSIC_SETTINGS_SAVED'));
+    if (resetInnertube) {
       InnertubeLoader.reset();
       ytmusic.refreshUIConfig();
     }
-    ytmusic.toast('success', ytmusic.getI18n('YTMUSIC_SETTINGS_SAVED'));
   }
 
   configSaveBrowse(data: any) {

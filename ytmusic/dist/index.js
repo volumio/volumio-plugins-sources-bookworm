@@ -91,12 +91,28 @@ class ControllerYTMusic {
             // Account
             const cookie = YTMusicContext_1.default.getConfigValue('cookie');
             let authStatusDescription;
-            if (account?.isSignedIn && account.info) {
-                if (account.info.name) {
-                    authStatusDescription = YTMusicContext_1.default.getI18n('YTMUSIC_AUTH_STATUS_SIGNED_IN_AS', account.info.name);
-                }
-                else {
-                    authStatusDescription = YTMusicContext_1.default.getI18n('YTMUSIC_AUTH_STATUS_SIGNED_IN');
+            if (account?.isSignedIn && account.active) {
+                authStatusDescription = YTMusicContext_1.default.getI18n('YTMUSIC_AUTH_STATUS_SIGNED_IN_AS', account.active.name);
+                if (account.list.length > 1) {
+                    const accountSelect = {
+                        id: 'activeChannelHandle',
+                        element: 'select',
+                        label: YTMusicContext_1.default.getI18n('YTMUSIC_ACTIVE_CHANNEL'),
+                        value: {
+                            label: account.active.name,
+                            value: account.active.handle
+                        },
+                        options: account.list.map((ac) => ({
+                            label: ac.name,
+                            value: ac.handle
+                        }))
+                    };
+                    accountUIConf.content = [
+                        accountUIConf.content[0],
+                        accountSelect,
+                        ...accountUIConf.content.slice(1)
+                    ];
+                    accountUIConf.saveButton.data.push('activeChannelHandle');
                 }
             }
             else if (cookie) {
@@ -173,12 +189,23 @@ class ControllerYTMusic {
     configSaveAccount(data) {
         const oldCookie = YTMusicContext_1.default.hasConfigKey('cookie') ? YTMusicContext_1.default.getConfigValue('cookie') : null;
         const cookie = data.cookie?.trim();
+        const oldActiveChannelHandle = YTMusicContext_1.default.getConfigValue('activeChannelHandle');
+        const activeChannelHandle = data.activeChannelHandle?.value || '';
+        let resetInnertube = false;
         if (oldCookie !== cookie) {
             YTMusicContext_1.default.setConfigValue('cookie', cookie);
+            YTMusicContext_1.default.deleteConfigValue('activeChannelHandle');
+            resetInnertube = true;
+        }
+        else if (oldActiveChannelHandle !== activeChannelHandle) {
+            YTMusicContext_1.default.setConfigValue('activeChannelHandle', activeChannelHandle);
+            resetInnertube = true;
+        }
+        YTMusicContext_1.default.toast('success', YTMusicContext_1.default.getI18n('YTMUSIC_SETTINGS_SAVED'));
+        if (resetInnertube) {
             InnertubeLoader_1.default.reset();
             YTMusicContext_1.default.refreshUIConfig();
         }
-        YTMusicContext_1.default.toast('success', YTMusicContext_1.default.getI18n('YTMUSIC_SETTINGS_SAVED'));
     }
     configSaveBrowse(data) {
         YTMusicContext_1.default.setConfigValue('loadFullPlaylists', data.loadFullPlaylists);
