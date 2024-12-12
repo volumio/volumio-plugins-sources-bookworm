@@ -1,7 +1,7 @@
 import { writeFileSync } from 'fs';
 import { EOL } from 'os';
 import path from 'path';
-import { DEFAULT_I18N_OPTIONS, type I18nOptions, type I18nOptionValue } from './i18n/common';
+import { DEFAULT_I18N_OPTIONS, type I18nOptions } from './i18n/common';
 import { getI18nOptions as ytGetI18nOptions } from './i18n/yt';
 import { getI18nOptions as ytmusicGetI18nOptions } from './i18n/ytmusic';
 
