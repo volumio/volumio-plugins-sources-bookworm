@@ -571,7 +571,13 @@ _MPDPlayer_config = new WeakMap(), _MPDPlayer_currentVideoInfo = new WeakMap(), 
         __classPrivateFieldSet(this, _MPDPlayer_currentVideoInfo, __classPrivateFieldGet(this, _MPDPlayer_prefetchedAndQueuedVideoInfo, "f"), "f");
         __classPrivateFieldGet(this, _MPDPlayer_instances, "m", _MPDPlayer_clearPrefetchedVideoExpiryTimer).call(this);
         __classPrivateFieldSet(this, _MPDPlayer_prefetchedAndQueuedVideoInfo, null, "f");
-        await this.queue.next();
+        const nextInQueue = await this.queue.next();
+        if (!nextInQueue) { // Already at end of queue - check if prefetched video is autoplay
+            const autoplay = this.queue.getState().autoplay;
+            if (autoplay?.id === __classPrivateFieldGet(this, _MPDPlayer_currentVideoInfo, "f").id) {
+                this.queue.setAsCurrent(autoplay);
+            }
+        }
         await this.notifyExternalStateChange(yt_cast_receiver_1.Constants.PLAYER_STATUSES.PLAYING);
         __classPrivateFieldGet(this, _MPDPlayer_instances, "m", _MPDPlayer_checkAndStartPrefetch).call(this, mpdStatus);
         return;
@@ -614,7 +620,7 @@ _MPDPlayer_config = new WeakMap(), _MPDPlayer_currentVideoInfo = new WeakMap(), 
                     songIdInfo = await __classPrivateFieldGet(this, _MPDPlayer_mpdClient, "f").api.queue.id(__classPrivateFieldGet(this, _MPDPlayer_currentVideoInfo, "f").mpdSongId);
                 }
             }
-            catch (error) {
+            catch (_error) {
                 songIdInfo = null;
             }
             __classPrivateFieldSet(this, _MPDPlayer_currentVideoInfo, null, "f");
