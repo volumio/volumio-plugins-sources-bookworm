@@ -8,9 +8,10 @@ Bookworm version of Volumio required some adjustement for plugins due to new nod
 
 We are working on OTA delivery system. Until this is completed, the link updated here:
 
-| Version | Link |
-| --- | --- |
-| 0.018 | [Download](https://dev-updates.volumio.org/pi/volumio/0.018/Volumio-0.018-2024-11-22-pi.zip) |
+| HW | Version | Link |
+| --- | --- | --- |
+| Pi | 0.019 | [Download](https://dev-updates.volumio.org/pi/volumio/0.019/Volumio-0.019-2024-12-12-pi.zip) |
+| x64 | 0.019 | [Download](https://dev-updates.volumio.org/x86_amd64/volumio/0.019/Volumio-0.019-2024-12-12-x86_amd64.zip) |
 
 
 From a running Volumio Bookworm system, clone the Bookworm dedicated plugin repo:
