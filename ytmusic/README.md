@@ -6,6 +6,10 @@ Credit goes to the [YouTube.js](https://github.com/LuanRT/YouTube.js) project. T
 
 ## Changelog
 
+2.2.3
+- Fix search sometimes unresponsive
+- Fix synced lyrics not fetched
+
 2.2.2
 - Fix broken playback due to YT changes, again (credit: [#837](https://github.com/LuanRT/YouTube.js/pull/837))
 
