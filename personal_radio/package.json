@@ -13,7 +13,7 @@
 		"icon": "fa-headphones",
 		"plugin_type": "music_service",
 		"os": [
-			"buster"
+			"bookworm"
 		],
 		"details": "<p>Korean Radio Stations(KBS, MBC, SBS) and Linn Radio plugin for Volumio.</p><ul><li>KBS(Korean Broadcasting System): commercial broadcaster in Korea</li><li>MBC(Munhwa Broadcasting Corporation): commercial broadcaster in Korea</li><li>SBS(Seoul Broadcasting System): commercial broadcaster in Korea</li><li>Linn: Highest quality web radio that includes radio, classical, jazz chanel stations</li></ul>",
 		"changelog": "add KBS radio program ablum image and change the album image automatically during playing; add KBS radio program schedule at setup page",
