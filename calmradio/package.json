@@ -28,7 +28,7 @@
 		"boot_priority": 10,
 		"prettyName": "Calm Radio",
 		"os": [
-			"buster"
+			"bookworm"
 		],
 		"details": "Calm Radio plugin for Volumio ",
 		"changelog": "2.2.4: bookworm",
