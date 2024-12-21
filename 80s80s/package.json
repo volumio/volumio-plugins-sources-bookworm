@@ -15,7 +15,7 @@
 		"os": [
 			"bookworm"
 		],
-		"details": "80s80s Radio Plugin for Volumio2",
+		"details": "80s80s Radio Plugin for Volumio",
 		"changelog": "",
 		"architectures": [
 			"amd64",
