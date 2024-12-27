@@ -1,0 +1,24 @@
+
+devices:
+  samplerate: ${outputsamplerate}
+  chunksize: ${chunksize}
+  silence_threshold: -60
+  silence_timeout: 3.0
+  queuelimit: 1
+  target_level: 1024
+  adjust_period: 10
+  enable_rate_adjust: true
+${resampling}
+  capture:
+    type: File
+    channels: 2
+    format: S32LE
+    filename: "/tmp/fusiondspfifo"
+    extra_samples: 4096
+
+${composeout}
+
+filters:
+${resulteq}
+${mixers}
+${composedpipeline}
