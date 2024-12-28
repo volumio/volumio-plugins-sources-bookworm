@@ -132,6 +132,18 @@ rm /tmp/camilladsp-linux-armv6.tar.gz
 cp $LIB/c/hw_params_armv6l $LIB/hw_params
 chmod +x $LIB/hw_params
 touch /data/plugins/audio_interface/fusiondsp/cpuarmv6l
+
+
+echo "Downloading camillagui ... Please wait!"
+cd $LIB
+
+wget https://github.com/balbuze/volumio-plugins-xtra/raw/refs/heads/main/cgui-venv-2.1.1.tar.gz
+tar -xzvf cgui-venv-2.1.1.tar.gz
+#chmod -R 777 cgui
+chown -R volumio cgui
+chgrp -R volumio cgui
+rm cgui-venv-2.1.1.tar.gz
+
 else
     echo "Sorry, cpu is $cpu and your device is not yet supported !"
 	echo "exit now..."
