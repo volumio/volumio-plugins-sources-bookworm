@@ -11,7 +11,7 @@ We are working on OTA delivery system. Until this is completed, the link updated
 | HW | Version | Link |
 | --- | --- | --- |
 | Pi | 0.022 | [Download](https://dev-updates.volumio.org/pi/volumio/0.022/Volumio-0.022-2024-12-19-pi.zip) |
-| x64 | 0.022 | [Download](https://dev-updates.volumio.org/x86_amd64/volumio/0.022/Volumio-0.022-2024-12-19-x86_amd64.zip) |
+| x64 | 0.023 | [Download](https://dev-updates.volumio.org/x86_amd64/volumio/0.023/Volumio-0.023-2024-12-28-x86_amd64.zip) |
 
 
 From a running Volumio Bookworm system, clone the Bookworm dedicated plugin repo:
