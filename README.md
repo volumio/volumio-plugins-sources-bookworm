@@ -14,13 +14,19 @@ We are working on OTA delivery system. Until this is completed, the link updated
 | Pi | 0.034 | [Download](https://dev-updates.volumio.org/pi/volumio/0.034/Volumio-0.034-2025-01-21-pi.zip) |
 | x64 | 0.034 | [Download](https://dev-updates.volumio.org/x86_amd64/volumio/0.034/Volumio-0.034-2025-01-24-x86_amd64.zip) |
 
-
-From a running Volumio Bookworm system, clone the Bookworm dedicated plugin repo:
+Steps to create/modify a plugin
+# 1. Fork the Repository
+  - Click the Fork button (top-right corner) to create a copy of the repository under your own GitHub account.
+# 2. Clone your forked repository
+  - From a running Volumio Bookworm system, clone the Bookworm dedicated plugin repo:
 ```
-git clone https://github.com/volumio/volumio-plugins-sources-bookworm --depth=1
+git clone https://github.com/YOUR-USERNAME/REPOSITORY-NAME.git --depth=1
 ```
-
-Create or copy your plugin folder and cd to it.
+# 3. Create a new branch
+```
+git checkout -b your-branch-name
+```
+# 4. Create or copy your plugin folder and cd to it.
 
 In package.json make changes as shown in the example below:
 
@@ -64,23 +70,30 @@ In package.json make changes as shown in the example below:
 }
 ```
 
-To install on your system, use :
+# 5. To install on your system, use :
 ```
 volumio plugin install
 ```
-Test carefully your plugin before sending a PR to Github and submit from a BOOKWORM DEVICE!
+Test carefully your plugin!
+If ok, uninstall the plugin (important to check it works!)
+Remove node_modules
+```
+rm -Rf node_modules
+```
+# 5. Send a PR to Github and submit from a BOOKWORM DEVICE!
 
 For Github
 ```
 git add *
 git comit -m 'pluginname - mode descriprion'
-git push origin master
+git push origin your-branch-name```
 ```
 
 To submit
 ```
 volumio plugin submit
 ```
+
 Your plugin is now in beta state, available in the store when "plugin test mode" is enabled.
 
 It will be released as stable once checked by volumio team.
