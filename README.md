@@ -86,7 +86,7 @@ For Github
 ```
 git add *
 git comit -m 'pluginname - mode descriprion'
-git push origin your-branch-name```
+git push origin your-branch-name
 ```
 
 To submit
