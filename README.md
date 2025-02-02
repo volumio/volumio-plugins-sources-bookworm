@@ -15,18 +15,18 @@ We are working on OTA delivery system. Until this is completed, the link updated
 | x64 | 0.034 | [Download](https://dev-updates.volumio.org/x86_amd64/volumio/0.034/Volumio-0.034-2025-01-24-x86_amd64.zip) |
 
 Steps to create/modify a plugin
-# 1. Fork the Repository
+## 1. Fork the Repository
   - Click the Fork button (top-right corner) to create a copy of the repository under your own GitHub account.
-# 2. Clone your forked repository
+## 2. Clone your forked repository
   - From a running Volumio Bookworm system, clone the Bookworm dedicated plugin repo:
 ```
 git clone https://github.com/YOUR-USERNAME/REPOSITORY-NAME.git --depth=1
 ```
-# 3. Create a new branch
+## 3. Create a new branch
 ```
 git checkout -b your-branch-name
 ```
-# 4. Create or copy your plugin folder and cd to it.
+## 4. Create or copy your plugin folder and cd to it.
 
 In package.json make changes as shown in the example below:
 
@@ -70,7 +70,7 @@ In package.json make changes as shown in the example below:
 }
 ```
 
-# 5. To install on your system, use :
+## 5. To install on your system, use :
 ```
 volumio plugin install
 ```
@@ -80,7 +80,7 @@ Remove node_modules
 ```
 rm -Rf node_modules
 ```
-# 5. Send a PR to Github and submit from a BOOKWORM DEVICE!
+## 6. Send a PR to Github and submit from a BOOKWORM DEVICE!
 
 For Github
 ```
