@@ -85,7 +85,7 @@ rm -Rf node_modules
 For Github
 ```
 git add *
-git comit -m 'pluginname - mode descriprion'
+git commit -m 'pluginname - change description'
 git push origin your-branch-name
 ```
 
