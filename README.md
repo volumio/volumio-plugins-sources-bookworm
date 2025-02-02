@@ -70,7 +70,7 @@ In package.json make changes as shown in the example below:
 }
 ```
 
-## 5. To install on your system, use :
+## 5. To install the plugin on your system, use :
 ```
 volumio plugin install
 ```
