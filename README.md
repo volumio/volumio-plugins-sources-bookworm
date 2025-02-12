@@ -11,8 +11,8 @@ We are working on OTA delivery system. Until this is completed, the link updated
 
 | HW | Version | Link |
 | --- | --- | --- |
-| Pi | 0.034 | [Download](https://dev-updates.volumio.org/pi/volumio/0.034/Volumio-0.034-2025-01-21-pi.zip) |
-| x64 | 0.034 | [Download](https://dev-updates.volumio.org/x86_amd64/volumio/0.034/Volumio-0.034-2025-01-24-x86_amd64.zip) |
+| Pi | 0.035 | [Download](https://dev-updates.volumio.org/pi/volumio/0.035/Volumio-0.035-2025-02-12-pi.zip) |
+| x64 | 0.035 | [Download](https://dev-updates.volumio.org/x86_amd64/volumio/0.035/Volumio-0.035-2025-02-12-x86_amd64.zip) |
 
 Steps to create/modify a plugin
 ## 1. Fork the Repository
