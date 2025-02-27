@@ -46,29 +46,61 @@ serialampcontroller.prototype.onStart = function() {
     self.loadAmpDefinitions() //load amp definitions from file
     .then(_=> self.listSerialDevices()) //initialize list of serial devices available to the system
     .then(_ => self.setActiveAmp()) // set the active amp
-    //configure the serial interface and open it
-    .then(_ => {
-        if (self.portType == 'TCPIP' && self.selectedAmp!==undefined && Object.keys(self.selectedAmp).count>0) {
-            return self.openTcpIp()
-        } else {
-            return self.openSerialPort()
-        }
-    })
-    // //update Volume Settings and announce the updated settings to Volumio
-    // .then(_ => self.alsavolume(this.config.get('startupVolume')))
-    // .then(_ => self.initVolumeSettings())
-	// // Once the Plugin has successfull started resolve the promise
+    .then(_=> self.activate())
     .then(function(){
             if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] onStart: successfully started plugin');
             defer.resolve();
     })
     .fail(err => {
-        self.logger.error('[SERIALAMPCONTROLLER] onStart: FAILED to start plugin: ' + err);
-        defer.reject(err);
+        self.logger.error('[SERIALAMPCONTROLLER] onStart: ' + err);
+        defer.resolve();
     })
     return defer.promise;
 };
 
+serialampcontroller.prototype.activate = function () {
+    var self = this;
+    var defer = libQ.defer();
+    //Check if selected interface is physically available and if selected amp supports selected interface
+    if (self.selectedInterfaceExists() && self.selectedAmpSupportsInterface()) {
+        //Activate Websock listener to react on messages from volumio
+        self.activateSocketIO();
+        //Open selected interface
+        if (self.selectedAmp!==undefined && Object.keys(self.selectedAmp).length>0) {
+            if (self.config.get('tcpip') == true) {
+                return self.openTcpIp()
+            } else {
+                return self.openSerialPort()
+            }
+        } else defer.reject(new Error('Amp not defined yet.'))
+        //Activate Parser
+        //Activate events
+    } else {
+        defer.reject(new Error('The selected Interface does not exist or the selected amp does not support it. Check Settings.'))
+    }
+
+    // //configure the serial interface and open it
+    // .then(_ => {
+    // })
+    // // //update Volume Settings and announce the updated settings to Volumio
+    // .then(_ => self.alsavolume(this.config.get('startupVolume')))
+    // .then(_ => self.initVolumeSettings())
+    return defer.promise;
+}
+
+serialampcontroller.prototype.deactivate = function () {
+    var self = this;
+    var defer = libQ.defer();
+    self.closePort();
+    self.socket.removeAllListeners();
+    self.socket.disconnect();
+    //Check if selected interface is physically available
+    //check if selected amp supports selected interface
+    //Activate Websock listener to react on messages from volumio
+    //Open selected interface
+    //Activate Parser
+    //Activate events
+}
 
 // Load Amp Definition file and initialize the list of Vendor/Amp for settings
 serialampcontroller.prototype.loadAmpDefinitions = function() {
@@ -77,13 +109,18 @@ serialampcontroller.prototype.loadAmpDefinitions = function() {
     var ampDefinitionFile = this.commandRouter.pluginManager.getConfigurationFile(this.context,'ampCommands.json');
     self.ampDefinitions = new(require('v-conf'))();
     self.ampDefinitions.loadFile(ampDefinitionFile);
-    if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] loadAmpDefinitions: loaded AmpDefinitions: ' + JSON.stringify(self.ampDefinitions));
+    // if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] loadAmpDefinitions: loaded AmpDefinitions: ' + JSON.stringify(self.ampDefinitions));
     //Generate list of Amp Names as combination of Vendor + Model
     self.ampVendorModelList = {'RS232':[],'TCPIP':[]};
     for (var n = 0; n < self.ampDefinitions.data.amps.length; n++)
     {
-        if ((self.ampDefinitions.data.amps[n].interfaces !== undefined) && (self.ampDefinitions.data.amps[n].interfaces.includes('TCP/IP'))) {
-            self.ampVendorModelList.TCPIP.push(self.ampDefinitions.data.amps[n].vendor + ' - ' + self.ampDefinitions.data.amps[n].model);
+        if (self.ampDefinitions.data.amps[n].interfaces !== undefined) {
+            if (self.ampDefinitions.data.amps[n].interfaces.includes('TCP/IP')) {
+                self.ampVendorModelList.TCPIP.push(self.ampDefinitions.data.amps[n].vendor + ' - ' + self.ampDefinitions.data.amps[n].model);
+            }
+            if (self.ampDefinitions.data.amps[n].interfaces.includes('RS232')) {
+                self.ampVendorModelList.RS232.push(self.ampDefinitions.data.amps[n].vendor + ' - ' + self.ampDefinitions.data.amps[n].model);
+            }
         } else {
             self.ampVendorModelList.RS232.push(self.ampDefinitions.data.amps[n].vendor + ' - ' + self.ampDefinitions.data.amps[n].model);
         }
@@ -101,9 +138,7 @@ serialampcontroller.prototype.listSerialDevices = function() {
     .then(
         ports => {
             self.serialDevices = ports;
-            if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] listSerialDevices: ' + JSON.stringify(self.serialDevices));
             self.serialDevices = self.serialDevices.filter(function(dev){
-                if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] listSerialDevices: ' + JSON.stringify(dev));
                 return ((dev.pnpId !== undefined || dev.manufacturer !== undefined) && dev.path !== undefined && dev.path !== "/dev/ttyAMA0"); 
             })
             if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] listSerialDevices: found ' + self.serialDevices.length + ' devices.' + JSON.stringify(self.serialDevices));
@@ -111,7 +146,7 @@ serialampcontroller.prototype.listSerialDevices = function() {
         },
         err => {
             self.logger.error('[SERIALAMPCONTROLLER] listSerialDevices: Cannot get list of serial devices - ' + err)
-            defer.reject();
+            defer.reject(new Error('Failed to load list serial devices via Serialport.io.'));
         }
     )
 
@@ -162,21 +197,21 @@ serialampcontroller.prototype.updateAmpType = function (data) {
     if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] updateAmpType: Saving Amplifier Settings:' + JSON.stringify(data));
     self.config.set('ampType', data['amp_type'].label);
     self.config.set('volumioInput', "...");
-    self.setActiveAmp()
-    .then(_ => {return self.commandRouter.getUIConfigOnPlugin('system_hardware', 'serialampcontroller', {})})
+    self.setActiveAmp();
+    return self.commandRouter.getUIConfigOnPlugin('system_hardware', 'serialampcontroller', {})
     .then(config => {self.commandRouter.broadcastMessage('pushUiConfig', config)})
     //configure the serial interface and open it
-    .then(_ => self.closePort())
-    .then(_ => {
-        if (self.portType == 'TCPIP') {
-            return self.openTcpIp()
-        } else {
-            return self.openSerialPort()
-        }
-    })
-    //update Volume Settings and announce the updated settings to Volumio
-    .then(_ => self.alsavolume(this.config.get('startupVolume')))
-    .then(_ => self.initVolumeSettings())
+    // .then(_ => self.closePort())
+    // .then(_ => {
+    //     if (self.portType == 'TCPIP') {
+    //         return self.openTcpIp()
+    //     } else {
+    //         return self.openSerialPort()
+    //     }
+    // })
+    // //update Volume Settings and announce the updated settings to Volumio
+    // .then(_ => self.alsavolume(this.config.get('startupVolume')))
+    // .then(_ => self.initVolumeSettings())
     .then(_=> {
         defer.resolve();        
         self.commandRouter.pushToastMessage('success', self.getI18nString('TOAST_SAVE_SUCCESS'), self.getI18nString('TOAST_AMP_TYPE_SAVE'));
@@ -231,11 +266,12 @@ serialampcontroller.prototype.updateDebugSettings = function (data) {
     return libQ.resolve();
 };
 
-serialampcontroller.prototype.activateSockerIO = function () {
+serialampcontroller.prototype.activateSocketIO = function () {
+    var self = this;
     self.socket = io.connect('http://localhost:3000');
 	self.socket.emit('getState');
 	self.socket.on('pushState',function(data){
-        if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] on.pushState: ' + JSON.stringify(self.volumioStatus) + ' - ' + data.status);
+        if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] on:pushState: ' + JSON.stringify(self.volumioStatus) + ' - ' + data.status);
         if ((self.volumioStatus == undefined || self.volumioStatus.status == 'stop' || self.volumioStatus.status == 'pause' ) && data.status=='play') {
             //status changed to play
             if (self.ampStatus.power == 'standby') {
@@ -271,7 +307,7 @@ serialampcontroller.prototype.getAmpStatus = function() {
 serialampcontroller.prototype.setActiveAmp = function() {
     var self = this;
     var tcpIp = false;
-    var ampType = ''
+    var ampType = '';
     if ((self.config.get('tcpip')!==undefined)) {
         tcpIp = self.config.get('tcpip')
     }
@@ -303,7 +339,6 @@ serialampcontroller.prototype.setActiveAmp = function() {
         if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] setActiveAmp: not yet configured');
         self.selectedAmp = {};
     }
-    return libQ.resolve();
 }
 
 serialampcontroller.prototype.getConfigurationFiles = function() {
@@ -314,17 +349,19 @@ serialampcontroller.prototype.onStop = function() {
     var self = this;
     var defer=libQ.defer();
 
-    // self.socket.off('pushState');
-    self.closePort()
-    .then(_ => {
-        // self.resetVolumeSettings();
-        defer.resolve();
-    })
-    .fail(err => {
-        if (self.debugLogging) self.logger.error('[SERIALAMPCONTROLLER] onStop: failed to stop plugin: ' + err); 
-        defer.resolve()       
-    })
-    return defer.promise;
+    self.deactivate()
+    // // self.socket.off('pushState');
+    // self.closePort()
+    // .then(_ => {
+    //     // self.resetVolumeSettings();
+    //     defer.resolve();
+    // })
+    // .fail(err => {
+    //     if (self.debugLogging) self.logger.error('[SERIALAMPCONTROLLER] onStop: failed to stop plugin: ' + err); 
+    //     defer.resolve()       
+    // })
+    // return defer.promise;
+    return defer.resolve();
 };
 
 
@@ -500,6 +537,37 @@ serialampcontroller.prototype.attachParser = function (){
     });
 }
 
+serialampcontroller.prototype.selectedInterfaceExists = function(){
+    var self = this;
+    if ((self.config.get('tcpip')!==undefined) &&  (self.config.get('tcpip')==true)){
+        if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] selectedInterfaceExists: TCP/IP selected. Expect network connection to exist.');
+        return true; //system should always have a network card, so return true
+    } else {
+        if ((self.config.get('serialInterfaceDev')!==undefined) && (self.config.get('serialInterfaceDev')!=='...')) {
+            //lookup the path to the selected device
+            self.serialInterfaceDev = undefined;
+            self.serialInterfaceDev = self.serialDevices.filter(dev => {
+                return (dev.pnpId === self.config.get('serialInterfaceDev') || dev.manufacturer === self.config.get('serialInterfaceDev'))
+            });
+            if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] selectedInterfaceExists: ' + self.config.get('serialInterfaceDev') + ' in ' + JSON.stringify(self.serialDevices) + '?: ' + (self.serialInterfaceDev !== undefined));
+            return (self.serialInterfaceDev !== undefined);
+        }
+    }
+}
+
+serialampcontroller.prototype.selectedAmpSupportsInterface = function(){
+    var self = this;
+    var tcpip = ((self.config.get('tcpip')!==undefined) &&  (self.config.get('tcpip')==true))
+    if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] selectedAmpSupportsInterface: ' + (tcpip?'TCP/IP':'RS232') + ' in ' + (JSON.stringify(self.selectedAmp.interfaces) || '[]'));
+    if (tcpip){
+        return (self.selectedAmp.interfaces!==undefined &&
+                self.selectedAmp.interfaces.includes('TCP/IP') &&
+                self.selectedAmp.tcpport!==undefined)
+    } else {
+        return (self.selectedAmp.interfaces==undefined || self.selectedAmp.interfaces.includes('RS232'))
+    }
+}
+
 //configure serial interface according to ampDefinition file
 serialampcontroller.prototype.openSerialPort = function (){
     var self = this;
@@ -545,10 +613,10 @@ serialampcontroller.prototype.openSerialPort = function (){
                     self.logger.error('[SERIALAMPCONTROLLER] serial port [event:error]: Port generated an error: ' + err);
                 });
                 self.port.on('open', ()=>{
-                    self.attachParser()
-                    //determine the current settings of the amp
-                    self.getAmpStatus();
-                    self.initVolumeSettings();
+                    // self.attachParser()
+                    // //determine the current settings of the amp
+                    // self.getAmpStatus();
+                    // self.initVolumeSettings();
                 });
                 self.port.open(err=>{
                     if (err) {
@@ -597,7 +665,7 @@ serialampcontroller.prototype.closePort = function () {
             })
         } else if (self.port instanceof SerialPort) { //open Serialport needs to be closed
             if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] closePorts: closing RS232');     
-            self.parser.removeAllListeners();
+            // self.parser.removeAllListeners();
             self.port.unpipe();
             self.port.resume();
             self.port.removeAllListeners();
@@ -688,7 +756,7 @@ serialampcontroller.prototype.openTcpIp = function (){
                 self.port.setKeepAlive(true, 1000);
                 if (self.port.listenerCount('close') == 0) self.port.on('close', self.onTcpClose.bind(self));
                 if (self.port.listenerCount('error') == 0) self.port.on('error', self.onTcpError.bind(self));
-                if (self.port.listenerCount('ready') == 0) self.port.on('ready', self.connectTcpIp.bind(self));
+                // if (self.port.listenerCount('ready') == 0) self.port.on('ready', self.connectTcpIp.bind(self));
                 defer.resolve();
             } else {
                 self.logger.error('[SERIALAMPCONTROLLER] openTcpIp: AmpCommands.js has no TCP/IP parameters for ' + self.selectedAmp.vendor + " - " + self.selectedAmp.model);
@@ -750,8 +818,6 @@ serialampcontroller.prototype.sendCommand  = function(...cmd) {
                 cmdString = cmdString + self.selectedAmp.commands.muteOff;
                 break;
             case  "source": 
-                // cmdString = cmdString + self.selectedAmp.commands.source;
-                // var count = (cmdString.match(/#/g) || []).length;
                 if (cmd[1]!=='...') {
                     self.logger.info('[SERIALAMPCONTROLLER] sendCommand: switch to source: ' + cmd[1]);
                     cmdString =  self.selectedAmp.sourceCmd[self.selectedAmp.sources.indexOf(cmd[1])];
@@ -1158,7 +1224,6 @@ serialampcontroller.prototype.loadI18nStrings = function() {
         var language_code = this.commandRouter.sharedVars.get('language_code');
         if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] loadI18nStrings: '+__dirname + '/i18n/strings_' + language_code + ".json");
         self.i18nStrings = fs.readJsonSync(__dirname + '/i18n/strings_' + language_code + ".json");
-        if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] loadI18nStrings: loaded: '+JSON.stringify(self.i18nStrings));
     }
     catch (e) {
         if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] loadI18nStrings: ' + language_code + ' not found. Fallback to en');
