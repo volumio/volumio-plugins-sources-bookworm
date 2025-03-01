@@ -1,5 +1,5 @@
 /*--------------------
-// FusionDsp plugin for volumio 3. By balbuze August 2025
+// FusionDsp plugin for volumio 3. By balbuze Mars 2025
 contribution : Paolo Sabatino
 Multi Dsp features
 Based on CamillaDsp
@@ -180,7 +180,7 @@ FusionDsp.prototype.createCamillaWebsocket = function () {
       };
 
       self.connection.onerror = function (error) {
-        self.logger.error(logPrefix+'WebSocket error:', error);
+        self.logger.error(logPrefix + 'WebSocket error:', error);
       };
 
       self.connection.onclose = function () {
@@ -192,7 +192,7 @@ FusionDsp.prototype.createCamillaWebsocket = function () {
     if (self.connection && self.connection.readyState === WebSocket.OPEN) {
       self.connection.send(data);
     } else {
-      self.logger.error(logPrefix+'WebSocket is not connected');
+      self.logger.error(logPrefix + 'WebSocket is not connected');
     }
   };
 
@@ -248,29 +248,7 @@ FusionDsp.prototype.getUIConfig = function (address) {
   const self = this;
   let defer = libQ.defer();
   const langCode = this.commandRouter.sharedVars.get('language_code');
-  /*
-    let lang_code = this.commandRouter.sharedVars.get('language_code');
-    self.commandRouter.i18nJson(__dirname + '/i18n/strings_' + lang_code + '.json',
-      __dirname + '/i18n/strings_en.json',
-      __dirname + '/UIConfig.json')
-  
-  
-  let langCode = lang_code || 'en';
-  const langFile = path.join(__dirname, 'i18n', `strings_${langCode}.json`);
-  const fallbackFile = path.join(__dirname, 'i18n', 'strings_en.json');
-  const uiConfigFile = path.join(__dirname, 'UIConfig.json');
-  
-  // Ensure the language file exists; fallback to English if it doesn't
-  if (!fs.existsSync(langFile)) {
-      langCode = 'en';
-  }
-  
-  self.commandRouter.i18nJson(
-      path.join(__dirname, 'i18n', `strings_${langCode}.json`),
-      fallbackFile,
-      uiConfigFile
-  )
-  */
+
   self.commandRouter.i18nJson(path.join(__dirname, 'i18n', 'strings_' + langCode + '.json'),
     path.join(__dirname, 'i18n', 'strings_en.json'),
     path.join(__dirname, 'UIConfig.json'))
@@ -285,1047 +263,604 @@ FusionDsp.prototype.getUIConfig = function (address) {
 
       //--------section 0-------------------
       //let dspoptions
-      let selectedsp = self.config.get('selectedsp');
-      switch (selectedsp) {
+      // Get the selected DSP or default to 'EQ15'
+      const selectedsp = self.config.get('selectedsp') || 'EQ15'; // Default fallback
 
-        case ("EQ3"):
-          var dsplabel = self.commandRouter.getI18nString('EQ3_LABEL')
-          break;
-        case ("EQ15"):
-          var dsplabel = self.commandRouter.getI18nString('EQ15_LABEL')
-          break;
-        case ("2XEQ15"):
-          var dsplabel = self.commandRouter.getI18nString('2XEQ15_LABEL')
-          break;
-        case ("PEQ"):
-          var dsplabel = self.commandRouter.getI18nString('PEQ_LABEL')
-          break;
-        case ("convfir"):
-          var dsplabel = self.commandRouter.getI18nString('CONV_LABEL')
-          break;
-        case ("purecgui"):
-          var dsplabel = "Pure CamillaDsp gui"
-          break;
-        default: "EQ15"
+      // Map of DSP options to their labels
+      const dspLabelMap = {
+        EQ3: self.commandRouter.getI18nString('EQ3_LABEL'),
+        EQ15: self.commandRouter.getI18nString('EQ15_LABEL'),
+        '2XEQ15': self.commandRouter.getI18nString('2XEQ15_LABEL'),
+        PEQ: self.commandRouter.getI18nString('PEQ_LABEL'),
+        convfir: self.commandRouter.getI18nString('CONV_LABEL'),
+        purecgui: 'Pure CamillaDsp Gui'
+      };
+
+      // Get the display label for the selected DSP, defaulting to EQ15 if invalid
+      const dsplabel = dspLabelMap[selectedsp] || dspLabelMap.EQ15;
+
+      // Check CPU compatibility for convolution synchronously
+      let dspOptions;
+      try {
+        fs.accessSync('/data/plugins/audio_interface/fusiondsp/cpuarmv6l', fs.F_OK);
+        // If the file exists, convolution is not available for armv6l
+        dspOptions = [
+          { value: 'EQ3', label: dspLabelMap.EQ3 },
+          { value: 'EQ15', label: dspLabelMap.EQ15 },
+          { value: '2XEQ15', label: dspLabelMap['2XEQ15'] },
+          { value: 'PEQ', label: dspLabelMap.PEQ }
+        ];
+        self.logger.info(`${logPrefix} >>>> armv6l Convolution not available for cpu armv6l!`);
+      } catch (err) {
+        // If the file does not exist, convolution is available
+        dspOptions = [
+          { value: 'EQ3', label: dspLabelMap.EQ3 },
+          { value: 'EQ15', label: dspLabelMap.EQ15 },
+          { value: '2XEQ15', label: dspLabelMap['2XEQ15'] },
+          { value: 'PEQ', label: dspLabelMap.PEQ },
+          { value: 'convfir', label: dspLabelMap.convfir },
+          { value: 'purecgui', label: dspLabelMap.purecgui }
+        ];
+        self.logger.info(`${logPrefix} << convolution filters available`);
       }
-      // No convolution if cpu is armv6l
-      fs.access("/data/plugins/audio_interface/fusiondsp/cpuarmv6l", fs.F_OK, (err) => {
-        if (err) {
-          //  self.logger.info(logPrefix + ' << convolution filters available');
-          var dspoptions = [{
-            "value": "EQ3",
-            "label": self.commandRouter.getI18nString('EQ3_LABEL')
-          },
-          {
-            "value": "EQ15",
-            "label": self.commandRouter.getI18nString('EQ15_LABEL')
-          },
-          {
-            "value": "2XEQ15",
-            "label": self.commandRouter.getI18nString('2XEQ15_LABEL')
-          },
-          {
-            "value": "PEQ",
-            "label": self.commandRouter.getI18nString('PEQ_LABEL')
-          },
-          {
-            "value": "convfir",
-            "label": self.commandRouter.getI18nString('CONV_LABEL')
-          },
-          {
-            "value": "purecgui",
-            "label": "Pure CamillaDsp Gui"
-          }]
-          self.configManager.setUIConfigParam(uiconf, 'sections[0].content[0].value.value', selectedsp);
-          self.configManager.setUIConfigParam(uiconf, 'sections[0].content[0].value.label', dsplabel);
 
-          for (let c in dspoptions) {
-            self.configManager.pushUIConfigParam(uiconf, 'sections[0].content[0].options', {
-              value: dspoptions[c].value,
-              label: dspoptions[c].label
-            }
-            )
-          };
-        } else {
-          self.logger.info(logPrefix + ' >>>>>>>>>>>>> armv6l')
-          self.logger.info(logPrefix + ' Convolution not available for cpu armv6l !');
-          var dspoptions = [{
-            "value": "EQ3",
-            "label": self.commandRouter.getI18nString('EQ3_LABEL')
-          },
-          {
-            "value": "EQ15",
-            "label": self.commandRouter.getI18nString('EQ15_LABEL')
-          },
-          {
-            "value": "2XEQ15",
-            "label": self.commandRouter.getI18nString('2XEQ15_LABEL')
-          },
-          {
-            "value": "PEQ",
-            "label": self.commandRouter.getI18nString('PEQ_LABEL')
-          }]
-          self.configManager.setUIConfigParam(uiconf, 'sections[0].content[0].value.value', selectedsp);
-          self.configManager.setUIConfigParam(uiconf, 'sections[0].content[0].value.label', dsplabel);
-
-          for (let c in dspoptions) {
-            self.configManager.pushUIConfigParam(uiconf, 'sections[0].content[0].options', {
-              value: dspoptions[c].value,
-              label: dspoptions[c].label
-            }
-            )
-          };
-        }
-      })
+      // Update UI config
+      self.configManager.setUIConfigParam(uiconf, 'sections[0].content[0].value', { value: selectedsp, label: dsplabel });
+      self.configManager.setUIConfigParam(uiconf, 'sections[0].content[0].options', dspOptions);
       //-------------section 1----------
       if (selectedsp == 'PEQ') {
         //----------------PEQ section----------------------
+        if (selectedsp !== 'PEQ') return; // Early exit if not PEQ
 
-        uiconf.sections[1].content[0].hidden = true;
-        uiconf.sections[1].content[1].hidden = true;
-        uiconf.sections[1].content[2].hidden = true;
-        uiconf.sections[1].content[3].hidden = true;
-        uiconf.sections[1].content[4].hidden = true;
+        // Hide unnecessary sections and content
+        const section1Content = uiconf.sections[1].content;
+        [0, 1, 2, 3, 4].forEach(i => section1Content[i].hidden = true);
         uiconf.sections[7].hidden = true;
         uiconf.sections[9].hidden = true;
 
-        let n = 1
-        let eqval = self.config.get('mergedeq')
-        let subtypex = eqval.toString().split('|')
+        // EQ type options map
+        const eqTypeOptions = [
+          { value: 'None', label: 'None' },
+          { value: 'Peaking', label: 'Peaking Hz,dB,Q' },
+          { value: 'Peaking2', label: 'Peaking Hz,dB,bandwidth Octave' },
+          { value: 'Lowshelf', label: 'Lowshelf Hz,dB,slope dB/Octave' },
+          { value: 'Lowshelf2', label: 'Lowshelf Hz,dB,Q' },
+          { value: 'Highshelf', label: 'Highshelf Hz,dB,slope dB/Octave' },
+          { value: 'Highshelf2', label: 'Highshelf Hz,dB,Q' },
+          { value: 'LowshelfFO', label: 'LowshelfFO Hz,dB' },
+          { value: 'HighshelfFO', label: 'HighshelfFO Hz,dB' },
+          { value: 'Notch', label: 'Notch Hz,Q' },
+          { value: 'Notch2', label: 'Notch Hz,bandwidth Octave' },
+          { value: 'Highpass', label: 'Highpass Hz,Q' },
+          { value: 'Lowpass', label: 'Lowpass Hz,Q' },
+          { value: 'HighpassFO', label: 'HighpassFO Hz' },
+          { value: 'LowpassFO', label: 'LowpassFO Hz' },
+          { value: 'LinkwitzTransform', label: 'LinkwitzTransform Fa Hz,Qa,FT Hz,Qt' },
+          { value: 'ButterworthHighpass', label: 'ButterworthHighpass Hz, order' },
+          { value: 'ButterworthLowpass', label: 'ButterworthLowpass Hz, order' },
+          { value: 'Remove', label: 'Remove' }
+        ];
 
-        for (n; n <= ncontent; n++) {
+        // Parse EQ values
+        const eqval = self.config.get('mergedeq') || '';
+        const subtypex = eqval.toString().split('|');
 
-          let typeinui = subtypex[((n - 1) * 4) + 1]
-          let peqlabel
-          // if (typeinui == undefined) {
-          // typeinui = 'None'
-          switch (typeinui) {
-            case ("undefined"):
-              peqlabel = "None"
-              typeinui = 'None'
-              break;
-            case ("None"):
-              peqlabel = "None"
-              break;
-            case ("Peaking"):
-              peqlabel = "Peaking Hz,dB,Q"
-              break;
-            case ("Peaking2"):
-              peqlabel = "Peaking Hz,dB,bandwidth Octave"
-              break;
-            case ("Lowshelf"):
-              peqlabel = "Lowshelf Hz,dB,slope dB/Octave"
-              break;
-            case ("Lowshelf2"):
-              peqlabel = "Lowshelf Hz,dB,Q"
-              break;
-            case ("Highshelf"):
-              peqlabel = "Highshelf Hz,dB,slope dB/Octave"
-              break;
-            case ("Highshelf2"):
-              peqlabel = "Highshelf Hz,dB,Q"
-              break;
-            case ("Highpass"):
-              peqlabel = "Highpass Hz,Q"
-              break;
-            case ("Lowpass"):
-              peqlabel = "Lowpass Hz,Q"
-              break;
-            case ("LowpassFO"):
-              peqlabel = "LowpassFO Hz"
-              break;
-            case ("HighpassFO"):
-              peqlabel = "HighpassFO Hz"
-              break;
-            case ("LowshelfFO"):
-              peqlabel = "LowshelfFO Hz,dB"
-              break;
-            case ("HighshelfFO"):
-              peqlabel = "HighshelfFO Hz,dB"
-              break;
-            case ("Notch"):
-              peqlabel = "Notch Hz,Q"
-              break;
-            case ("Notch2"):
-              peqlabel = "Notch Hz,bandwidth Octave"
-              break;
-            case ("LinkwitzTransform"):
-              peqlabel = "LinkwitzTransform Fa Hz,Qa,FT Hz,Qt"
-              break;
-            case ("ButterworthHighpass"):
-              peqlabel = "ButterworthHighpass Hz, order"
-              break;
-            case ("ButterworthLowpass"):
-              peqlabel = "ButterworthLowpass Hz, order"
-              break;
-            default: "None"
-          }
+        // Generate EQ fields dynamically
+        for (let n = 1; n <= ncontent; n++) {
+          const idx = (n - 1) * 4;
+          const typeinui = subtypex[idx + 1] || 'None';
+          const scopeinui = subtypex[idx + 2] || 'L+R';
+          const eqinui = subtypex[idx + 3] || '0,0,0';
 
-          let scopeinui = subtypex[((n - 1) * 4) + 2]
-          if (scopeinui == undefined) {
-            scopeinui = 'L+R'
-          }
+          const peqlabel = eqTypeOptions.find(opt => opt.value === typeinui)?.label || 'None';
 
-          let eqinui = subtypex[((n - 1) * 4) + 3]
-          if (eqinui == undefined) {
-            eqinui = '0,0,0'
-          }
+          // Add Type select
+          section1Content.push({
+            id: `type${n}`,
+            element: 'select',
+            label: `Type Eq${n}`,
+            doc: self.commandRouter.getI18nString('TYPEEQ_DOC'),
+            value: { value: typeinui, label: peqlabel },
+            options: eqTypeOptions,
+            visibleIf: { field: 'showeq', value: true }
+          });
 
-          let options = [{ "value": "None", "label": "None" },
-          { "value": "Peaking", "label": "Peaking Hz,dB,Q" },
-          { "value": "Peaking2", "label": "Peaking Hz,dB,bandwidth Octave" },
-          { "value": "Lowshelf", "label": "Lowshelf Hz,dB,slope dB/Octave" },
-          { "value": "Lowshelf2", "label": "Lowshelf Hz,dB,Q" },
-          { "value": "Highshelf", "label": "Highshelf Hz,dB,slope dB/Octave" },
-          { "value": "Highshelf2", "label": "Highshelf Hz,dB,Q" },
-          { "value": "LowshelfFO", "label": "LowshelfFO Hz,dB" },
-          { "value": "HighshelfFO", "label": "HighshelfFO Hz,dB" },
-          { "value": "Notch", "label": "Notch Hz,Q" },
-          { "value": "Notch2", "label": "Notch Hz,bandwidth Octave" },
-          { "value": "Highpass", "label": "Highpass Hz,Q" },
-          { "value": "Lowpass", "label": "Lowpass Hz,Q" },
-          { "value": "HighpassFO", "label": "HighpassFO Hz" },
-          { "value": "LowpassFO", "label": "LowpassFO Hz" },
-          { "value": "LinkwitzTransform", "label": "Linkwitz Transform Fa Hz,Qa,FT Hz,Qt" },
-          { "value": "ButterworthHighpass", "label": "ButterworthHighpass Hz, order" },
-          { "value": "ButterworthLowpass", "label": "ButterworthLowpass Hz, order" },
-          { "value": "Remove", "label": "Remove" }]
-
-          uiconf.sections[1].content.push(
-
+          // Add Scope and EQ input
+          section1Content.push(
             {
-              "id": "type" + n,
-              "element": "select",
-              "label": "Type Eq" + n,
-              "doc": self.commandRouter.getI18nString("TYPEEQ_DOC"),
-              "value": { "value": typeinui, "label": peqlabel },
-              "options": options,
-              "visibleIf": {
-                "field": "showeq",
-                "value": true
-              }
-            }
-          )
-
-          uiconf.sections[1].content.push(
-            {
-              "id": "scope" + n,
-              "element": "select",
-              "doc": self.commandRouter.getI18nString('EQSCOPE_DOC'),
-              "label": self.commandRouter.getI18nString('EQSCOPE') + n,
-              "value": { "value": scopeinui, "label": scopeinui },
-              "options": [{ "value": "L+R", "label": "L+R" }, { "value": "L", "label": "L" }, { "value": "R", "label": "R" }],
-              "visibleIf": {
-                "field": "showeq",
-                "value": true
-              }
+              id: `scope${n}`,
+              element: 'select',
+              doc: self.commandRouter.getI18nString('EQSCOPE_DOC'),
+              label: `${self.commandRouter.getI18nString('EQSCOPE')} ${n}`,
+              value: { value: scopeinui, label: scopeinui },
+              options: [
+                { value: 'L+R', label: 'L+R' },
+                { value: 'L', label: 'L' },
+                { value: 'R', label: 'R' }
+              ],
+              visibleIf: { field: 'showeq', value: true }
             },
             {
-              "id": "eq" + n,
-              "element": "input",
-              "doc": self.commandRouter.getI18nString("EQ_DOC"),
-              "label": "Eq " + n,
-              "value": eqinui,
-              "visibleIf": {
-                "field": "showeq",
-                "value": true
-              }
+              id: `eq${n}`,
+              element: 'input',
+              doc: self.commandRouter.getI18nString('EQ_DOC'),
+              label: `Eq ${n}`,
+              value: eqinui,
+              visibleIf: { field: 'showeq', value: true }
             }
           );
 
-          var eqn = 'eq' + n;
-          uiconf.sections[1].saveButton.data.push(eqn);
-          uiconf.sections[1].saveButton.data.push('type' + n);
-          uiconf.sections[1].saveButton.data.push('scope' + n);
+          // Add to saveButton data
+          uiconf.sections[1].saveButton.data.push(`eq${n}`, `type${n}`, `scope${n}`);
         }
 
+        // Add buttons conditionally
+        const addButton = {
+          id: 'addeq',
+          element: 'button',
+          label: self.commandRouter.getI18nString('ADD_EQ'),
+          doc: self.commandRouter.getI18nString('ADD_EQ_DESC'),
+          onClick: {
+            type: 'plugin',
+            endpoint: 'audio_interface/fusiondsp',
+            method: 'addeq',
+            data: []
+          },
+          visibleIf: { field: 'showeq', value: true }
+        };
 
-        if (ncontent <= tnbreq) {
-          uiconf.sections[1].content.push(
-            {
-              "id": "addeq",
-              "element": "button",
-              "label": self.commandRouter.getI18nString('ADD_EQ'),
-              "doc": self.commandRouter.getI18nString('ADD_EQ_DESC'),
-              "onClick": {
-                "type": "plugin",
-                "endpoint": "audio_interface/fusiondsp",
-                "method": "addeq",
-                "data": []
-              },
-              "visibleIf": {
-                "field": "showeq",
-                "value": true
-              }
-            }
-          )
-        }
-        if (ncontent > 1) {
-          uiconf.sections[1].content.push(
-            {
-              "id": "removeeq",
-              "element": "button",
-              "label": self.commandRouter.getI18nString("REMOVE_EQ"),
-              "doc": self.commandRouter.getI18nString('REMOVE_EQ_DESC'),
-              "onClick": {
-                "type": "plugin",
-                "endpoint": "audio_interface/fusiondsp",
-                "method": "removeeq",
-                "data": []
-              },
-              "visibleIf": {
-                "field": "showeq",
-                "value": true
-              }
+        const removeButtons = [
+          {
+            id: 'removeeq',
+            element: 'button',
+            label: self.commandRouter.getI18nString('REMOVE_EQ'),
+            doc: self.commandRouter.getI18nString('REMOVE_EQ_DESC'),
+            onClick: {
+              type: 'plugin',
+              endpoint: 'audio_interface/fusiondsp',
+              method: 'removeeq',
+              data: []
             },
-            {
-              "id": "removealleq",
-              "element": "button",
-              "label": self.commandRouter.getI18nString("REMOVEALL_EQ"),
-              "doc": self.commandRouter.getI18nString('REMOVEALL_EQ_DESC'),
-              "onClick": {
-                "type": "plugin",
-                "endpoint": "audio_interface/fusiondsp",
-                "method": "removealleq",
-                "data": []
-              },
-              "visibleIf": {
-                "field": "showeq",
-                "value": true
-              }
-            }
-          )
-        }
+            visibleIf: { field: 'showeq', value: true }
+          },
+          {
+            id: 'removealleq',
+            element: 'button',
+            label: self.commandRouter.getI18nString('REMOVEALL_EQ'),
+            doc: self.commandRouter.getI18nString('REMOVEALL_EQ_DESC'),
+            onClick: {
+              type: 'plugin',
+              endpoint: 'audio_interface/fusiondsp',
+              method: 'removealleq',
+              data: []
+            },
+            visibleIf: { field: 'showeq', value: true }
+          }
+        ];
+
+        if (ncontent <= tnbreq) section1Content.push(addButton);
+        if (ncontent > 1) section1Content.push(...removeButtons);
 
         //------end of PEQ section----------
       } else if ((selectedsp == 'EQ15') || (selectedsp == '2XEQ15')) {
         //------------EQ 15 section---------
-
-        uiconf.sections[1].content[0].hidden = true;
-        uiconf.sections[1].content[1].hidden = true;
-        uiconf.sections[1].content[2].hidden = true;
-        uiconf.sections[1].content[3].hidden = true;
-        uiconf.sections[1].content[4].hidden = true;
+        const section1 = uiconf.sections[1];
+        [0, 1, 2, 3, 4].forEach(i => section1.content[i].hidden = true);
         uiconf.sections[9].hidden = true;
+        [4, 5, 7].forEach(i => uiconf.sections[i].hidden = true);
 
-
-        uiconf.sections[4].hidden = true;
-        uiconf.sections[5].hidden = true;
-        uiconf.sections[7].hidden = true;
-
-        let listeq
-        let eqtext
-        if (selectedsp == 'EQ15') {
-          listeq = ['geq15']
-          eqtext = self.commandRouter.getI18nString('LANDRCHAN')
-
-        } if (selectedsp == '2XEQ15') {
-          listeq = ['geq15', 'x2geq15']
-          eqtext = (self.commandRouter.getI18nString('LEFTCHAN') + ',' + self.commandRouter.getI18nString('RIGHTCHAN'))
-        }
-
-        for (var i in listeq) {
-          let neq = eqtext.split(',')[i]
-
-          let geq15 = self.config.get(listeq[i])
-          uiconf.sections[1].content.push(
-            {
-              "id": listeq[i],
-              "element": "equalizer",
-              "label": neq,
-              "description": "",
-              "doc": self.commandRouter.getI18nString('DOCEQ'),
-              "visibleIf": {
-                "field": "showeq",
-                "value": true
-              },
-              "config": {
-                "orientation": "vertical",
-                "bars": [
-                  {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq15.split(',')[0],
-                    "ticksLabels": [
-                      eq15range[0]
-                    ],
-                    "tooltip": "show"
-                  },
-                  {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq15.split(',')[1],
-                    "ticksLabels": [
-                      eq15range[1]
-                    ],
-                    "tooltip": "show"
-                  }, {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq15.split(',')[2],
-                    "ticksLabels": [
-                      eq15range[2]
-                    ],
-                    "tooltip": "show"
-                  }, {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq15.split(',')[3],
-                    "ticksLabels": [
-                      eq15range[3]
-                    ],
-                    "tooltip": "show"
-                  }, {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq15.split(',')[4],
-                    "ticksLabels": [
-                      eq15range[4]
-                    ],
-                    "tooltip": "show"
-                  }, {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq15.split(',')[5],
-                    "ticksLabels": [
-                      eq15range[5]
-                    ],
-                    "tooltip": "show"
-                  },
-                  {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq15.split(',')[6],
-                    "ticksLabels": [
-                      eq15range[6]
-                    ],
-                    "tooltip": "show"
-                  },
-                  {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq15.split(',')[7],
-                    "ticksLabels": [
-                      eq15range[7]
-                    ],
-                    "tooltip": "show"
-                  },
-                  {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq15.split(',')[8],
-                    "ticksLabels": [
-                      eq15range[8]
-                    ],
-                    "tooltip": "show"
-                  },
-                  {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq15.split(',')[9],
-                    "ticksLabels": [
-                      eq15range[9]
-                    ],
-                    "tooltip": "show"
-                  },
-                  {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq15.split(',')[10],
-                    "ticksLabels": [
-                      eq15range[10]
-                    ],
-                    "tooltip": "show"
-                  },
-                  {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq15.split(',')[11],
-                    "ticksLabels": [
-                      eq15range[11]
-                    ],
-                    "tooltip": "show"
-                  },
-                  {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq15.split(',')[12],
-                    "ticksLabels": [
-                      eq15range[12]
-                    ],
-                    "tooltip": "show"
-                  },
-                  {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq15.split(',')[13],
-                    "ticksLabels": [
-                      eq15range[13]
-                    ],
-                    "tooltip": "show"
-                  },
-                  {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq15.split(',')[14],
-                    "ticksLabels": [
-                      eq15range[14]
-                    ],
-                    "tooltip": "show"
-                  }
-                ]
-              }
-            }
-
-          )
-          uiconf.sections[1].saveButton.data.push(listeq[i]);
-        }
-        uiconf.sections[1].content.push(
-          {
-            "id": "reset",
-            "element": "button",
-            "label": self.commandRouter.getI18nString("RESETEQ"),
-            "doc": self.commandRouter.getI18nString("RESETEQ_DOC"),
-            "onClick": {
-              "type": "plugin",
-              "endpoint": "audio_interface/fusiondsp",
-              "method": "reseteq",
-              "data": [],
-
-            },
-            "visibleIf": {
-              "field": "showeq",
-              "value": true
-            }
+        // Configuration based on selectedsp
+        const eqConfig = {
+          EQ15: {
+            listeq: ['geq15'],
+            eqtext: self.commandRouter.getI18nString('LANDRCHAN')
+          },
+          '2XEQ15': {
+            listeq: ['geq15', 'x2geq15'],
+            eqtext: `${self.commandRouter.getI18nString('LEFTCHAN')},${self.commandRouter.getI18nString('RIGHTCHAN')}`
           }
-        )
+        };
+
+        const { listeq, eqtext } = eqConfig[selectedsp] || {};
+        if (!listeq) return; // Exit if invalid selectedsp
+
+        // Define equalizer bar configuration using existing eq15range
+        const createBars = values => eq15range.map((label, idx) => ({
+          min: -10,
+          max: 10,
+          step: '0.5',
+          value: values[idx] || 0,
+          ticksLabels: [label],
+          tooltip: 'show'
+        }));
+
+        // Generate equalizer sections
+        listeq.forEach((eqId, i) => {
+          const neq = eqtext.split(',')[i];
+          const geq15 = (self.config.get(eqId) || '').split(',');
+
+          section1.content.push({
+            id: eqId,
+            element: 'equalizer',
+            label: neq,
+            description: '',
+            doc: self.commandRouter.getI18nString('DOCEQ'),
+            visibleIf: { field: 'showeq', value: true },
+            config: {
+              orientation: 'vertical',
+              bars: createBars(geq15)
+            }
+          });
+
+          section1.saveButton.data.push(eqId);
+        });
+
+        // Add reset button
+        section1.content.push({
+          id: 'reset',
+          element: 'button',
+          label: self.commandRouter.getI18nString('RESETEQ'),
+          doc: self.commandRouter.getI18nString('RESETEQ_DOC'),
+          onClick: {
+            type: 'plugin',
+            endpoint: 'audio_interface/fusiondsp',
+            method: 'reseteq',
+            data: []
+          },
+          visibleIf: { field: 'showeq', value: true }
+        });
         //----End EQ15-------------
       } else if (selectedsp == 'EQ3') {
         //------------EQ 3 section---------
+        if (selectedsp !== 'EQ3') return; // Early exit if not EQ3
 
-        uiconf.sections[1].content[0].hidden = true;
-        uiconf.sections[1].content[1].hidden = true;
-        uiconf.sections[1].content[2].hidden = true;
-        uiconf.sections[1].content[3].hidden = true;
-        uiconf.sections[1].content[4].hidden = true;
-        // uiconf.sections[1].content[7].hidden = true;
-        //   uiconf.sections[1].content[6].hidden = true;
+        const section1 = uiconf.sections[1];
+        [0, 1, 2, 3, 4].forEach(i => section1.content[i].hidden = true);
+        [2, 3, 4, 5, 6, 7, 8, 9].forEach(i => uiconf.sections[i].hidden = true);
 
+        const listeq3 = ['geq3'];
+        const neq = self.commandRouter.getI18nString('LANDRCHAN');
 
-        uiconf.sections[2].hidden = true;
-        uiconf.sections[3].hidden = true;
+        // Define equalizer bar configuration
+        const eq3Labels = [
+          self.commandRouter.getI18nString('EQ3_LOW'),
+          self.commandRouter.getI18nString('EQ3_MID'),
+          self.commandRouter.getI18nString('EQ3_HIGH')
+        ];
 
-        uiconf.sections[4].hidden = true;
-        uiconf.sections[5].hidden = true;
-        uiconf.sections[6].hidden = true;
+        const createBars = values => eq3Labels.map((label, idx) => ({
+          min: -10,
+          max: 10,
+          step: '0.5',
+          value: values[idx] || 0,
+          ticksLabels: [label],
+          tooltip: 'show'
+        }));
 
-        uiconf.sections[7].hidden = true;
-        uiconf.sections[8].hidden = true;
-        uiconf.sections[9].hidden = true;
+        // Generate equalizer section
+        listeq3.forEach(eqId => {
+          const geq3 = (self.config.get(eqId) || '').split(',');
 
-
-
-        selectedsp == 'EQ3'
-        var listeq3 = ['geq3']
-        var neq = self.commandRouter.getI18nString('LANDRCHAN')//self.commandRouter.getI18nString('EQ3_LABEL')
-
-
-        for (var i in listeq3) {
-          //  let neq = eqtext.split(',')[i]
-
-          let geq3 = self.config.get(listeq3[i])
-          uiconf.sections[1].content.push(
-            {
-              "id": listeq3[i],
-              "element": "equalizer",
-              "label": neq,
-              "description": "",
-              "doc": self.commandRouter.getI18nString('DOCEQ'),
-              "config": {
-                "orientation": "vertical",
-                "bars": [
-                  {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq3.split(',')[0],
-                    "ticksLabels": [self.commandRouter.getI18nString('EQ3_LOW')
-                    ],
-                    "tooltip": "show"
-                  },
-                  {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq3.split(',')[1],
-                    "ticksLabels": [self.commandRouter.getI18nString('EQ3_MID')
-                    ],
-                    "tooltip": "show"
-                  }, {
-                    "min": -10,
-                    "max": 10,
-                    "step": "0.5",
-                    "value": geq3.split(',')[2],
-                    "ticksLabels": [self.commandRouter.getI18nString('EQ3_HIGH')
-                    ],
-                    "tooltip": "show"
-                  }
-                ]
-              }
+          section1.content.push({
+            id: eqId,
+            element: 'equalizer',
+            label: neq,
+            description: '',
+            doc: self.commandRouter.getI18nString('DOCEQ'),
+            config: {
+              orientation: 'vertical',
+              bars: createBars(geq3)
             }
+          });
 
-          )
-          uiconf.sections[1].saveButton.data.push(listeq3[i]);
-        }
+          section1.saveButton.data.push(eqId);
+        });
 
         //----End EQ3-------------
         //----------------------convfir section-------------------
 
       } else if (selectedsp == 'convfir') {
-        //self.logger.info(logPrefix + ' ---------convfir selected-------------')
-        //uiconf.sections[2].hidden = true;
-        //uiconf.sections[3].hidden = true;
-        uiconf.sections[4].hidden = true;
-        uiconf.sections[5].hidden = true;
-        uiconf.sections[9].hidden = true;
+        var section1 = uiconf.sections[1];
+        var filterFolder = filterfolder;
 
-        var value
-        var valuestored
-        let valuestoredl
-        let valuestoredr
+        // Hide sections
+        [4, 5, 9].forEach(i => uiconf.sections[i].hidden = true);
 
-        valuestoredl = self.config.get('leftfilter');
-        var valuestoredllabel = valuestoredl.replace("$samplerate$", "variable samplerate")
-        self.configManager.setUIConfigParam(uiconf, 'sections[1].content[0].value.value', valuestoredl);
-        self.configManager.setUIConfigParam(uiconf, 'sections[1].content[0].value.label', valuestoredllabel);
+        // Left filter
+        const leftFilter = self.config.get('leftfilter') || 'None';
+        const leftFilterLabel = leftFilter.replace('$samplerate$', 'variable samplerate');
+        self.configManager.setUIConfigParam(uiconf, 'sections[1].content[0].value', {
+          value: leftFilter,
+          label: leftFilterLabel
+        });
 
-        value = self.config.get('attenuationl');
-        self.configManager.setUIConfigParam(uiconf, 'sections[1].content[1].value.value', value);
-        self.configManager.setUIConfigParam(uiconf, 'sections[1].content[1].value.label', value);
+        // Left attenuation
+        const attenuationL = self.config.get('attenuationl') || 0;
+        self.configManager.setUIConfigParam(uiconf, 'sections[1].content[1].value', {
+          value: attenuationL,
+          label: attenuationL
+        });
 
-        valuestoredr = self.config.get('rightfilter');
-        var valuestoredrlabel = valuestoredr.replace("$samplerate$", "variable samplerate")
-        self.configManager.setUIConfigParam(uiconf, 'sections[1].content[2].value.value', valuestoredr);
-        self.configManager.setUIConfigParam(uiconf, 'sections[1].content[2].value.label', valuestoredrlabel);
-        value = self.config.get('attenuationr');
-        self.configManager.setUIConfigParam(uiconf, 'sections[1].content[3].value.value', value);
-        self.configManager.setUIConfigParam(uiconf, 'sections[1].content[3].value.label', value);
+        // Right filter
+        const rightFilter = self.config.get('rightfilter') || 'None';
+        const rightFilterLabel = rightFilter.replace('$samplerate$', 'variable samplerate');
+        self.configManager.setUIConfigParam(uiconf, 'sections[1].content[2].value', {
+          value: rightFilter,
+          label: rightFilterLabel
+        });
 
+        // Right attenuation
+        const attenuationR = self.config.get('attenuationr') || 0;
+        self.configManager.setUIConfigParam(uiconf, 'sections[1].content[3].value', {
+          value: attenuationR,
+          label: attenuationR
+        });
 
-        for (let n = 0; n < 22; n = n + 0.5) {
-          self.configManager.pushUIConfigParam(uiconf, 'sections[1].content[1].options', {
-            value: (n),
-            label: (n)
-          });
-          self.configManager.pushUIConfigParam(uiconf, 'sections[1].content[3].options', {
-            value: (n),
-            label: (n)
-          });
+        // Attenuation options (0 to 21 in 0.5 steps)
+        const attenuationOptions = Array.from({ length: 43 }, (_, i) => {
+          const n = i * 0.5;
+          return { value: n, label: n };
+        });
+        self.configManager.setUIConfigParam(uiconf, 'sections[1].content[1].options', attenuationOptions);
+        self.configManager.setUIConfigParam(uiconf, 'sections[1].content[3].options', attenuationOptions);
 
-        }
+        // Filter options
         try {
-
-          fs.readdir(filterfolder, function (err, item) {
-            let allfilter = 'None,' + item;
-            let litems = allfilter.split(',');
-            for (let a in litems) {
-
-              self.configManager.pushUIConfigParam(uiconf, 'sections[1].content[0].options', {
-                value: litems[a],
-                label: litems[a]
-              });
-              self.configManager.pushUIConfigParam(uiconf, 'sections[1].content[2].options', {
-                value: litems[a],
-                label: litems[a]
-              });
-            }
-          });
+          const litems = ['None', ...fs.readdirSync(filterFolder, 'utf8')]
+            .map(item => ({ value: item, label: item }));
+          self.configManager.setUIConfigParam(uiconf, 'sections[1].content[0].options', litems);
+          self.configManager.setUIConfigParam(uiconf, 'sections[1].content[2].options', litems);
         } catch (e) {
-          self.logger.error(logPrefix + ' CAN not read file: ' + e)
+          self.logger.error(`${logPrefix}Cannot read files in ${filterFolder}: ${e}`);
         }
-        uiconf.sections[1].content[4].value = self.config.get('enableclipdetect');
 
-        uiconf.sections[1].saveButton.data.push('leftfilter');
-        uiconf.sections[1].saveButton.data.push('attenuationl');
-        uiconf.sections[1].saveButton.data.push('rightfilter');
-        uiconf.sections[1].saveButton.data.push('attenuationr');
-        uiconf.sections[1].saveButton.data.push('enableclipdetect');
+        // Enable clip detect
+        section1.content[4].value = self.config.get('enableclipdetect') || false;
+
+        // Save button data
+        section1.saveButton.data.push(
+          'leftfilter', 'attenuationl', 'rightfilter', 'attenuationr', 'enableclipdetect'
+        );
 
         //----------------end of convfir section------------
 
         //----------------Pure CamillaDsp section------------
       } else if (selectedsp == "purecgui") {
 
-        var IPaddress = self.config.get('address')
-        var purecamillainstalled = self.config.get('purecgui')
-        uiconf.sections[1].hidden = true;
-        uiconf.sections[2].hidden = true;
-        uiconf.sections[3].hidden = true;
-        uiconf.sections[4].hidden = true;
-        uiconf.sections[5].hidden = true;
-        uiconf.sections[6].hidden = true;
-        uiconf.sections[7].hidden = true;
-        uiconf.sections[8].hidden = true;
+        const IPaddress = self.config.get('address') || '';
+        const pureCamillaInstalled = self.config.get('purecgui');
+        const section9Content = uiconf.sections[9].content;
 
-        if (purecamillainstalled == true) {
+        // Hide sections 1-8
+        for (let i = 1; i <= 8; i++) uiconf.sections[i].hidden = true;
 
-          self.logger.info(logPrefix + ' IP adress is ---------------------------' + IPaddress)
-          uiconf.sections[9].content.push(
-            {
-              "id": "camillagui",
-              "element": "button",
-              "label": "Access to Camilla Gui",
-              "doc": "CamillaGui",
-              "onClick": {
-                "type": "openUrl",
-                "url": "http://" + IPaddress + ":5011"
-              }
-            }
-          )
-        } else if (purecamillainstalled == false) {
-          uiconf.sections[9].content.push(
+        const buttonConfig = pureCamillaInstalled
+          ? {
+            id: 'camillagui',
+            element: 'button',
+            label: 'Access to Camilla Gui',
+            doc: 'CamillaGui',
+            onClick: { type: 'openUrl', url: `http://${IPaddress}:5011` }
+          }
+          : {
+            id: 'installcamillagui',
+            element: 'button',
+            label: 'First use. Install Camilla GUI',
+            doc: 'First use. Install Camilla GUI',
+            onClick: { type: 'plugin', endpoint: 'audio_interface/fusiondsp', method: 'installcamillagui', data: [] }
+          };
 
-            {
-              "id": "installcamillagui",
-              "element": "button",
-              "label": "First use. Install Camilla GUI",
-              "doc": "First use. Install Camilla GUI",
-              "onClick": {
-                "type": "plugin",
-                "endpoint": "audio_interface/fusiondsp",
-                "method": "installcamillagui",
-                "data": [],
-
-              }
-            }
-          )
+        if (pureCamillaInstalled !== undefined) {
+          self.logger.info(`${logPrefix}IP address is ---------------------------${IPaddress}`);
+          section9Content.push(buttonConfig);
         }
       }
 
       //---------------more settings---------------------
       var moresettings = self.config.get('moresettings')
-      if ((moresettings == false) && (selectedsp != "EQ3")) {
-        uiconf.sections[1].content.push(
-          {
-            "id": "moresettings",
-            "element": "button",
-            "label": self.commandRouter.getI18nString('MORE_SETTINGS'),
-            "doc": self.commandRouter.getI18nString('MORE_SETTINGS_DOC'),
-            "onClick": {
-              "type": "plugin",
-              "endpoint": "audio_interface/fusiondsp",
-              "method": "moresettings",
-              "data": [],
+      if (selectedsp === 'EQ3') return; // Early exit if selectedsp is "EQ3"
 
-            },
-            "visibleIf": {
-              "field": "showeq",
-              "value": true
-            }
-          }
-        )
-      } else if ((moresettings) && (selectedsp != "EQ3")) {
-        uiconf.sections[1].content.push(
-          {
-            "id": "lesssettings",
-            "element": "button",
-            "label": self.commandRouter.getI18nString('LESS_SETTINGS'),
-            "doc": self.commandRouter.getI18nString('LESS_SETTINGS_DOC'),
-            "onClick": {
-              "type": "plugin",
-              "endpoint": "audio_interface/fusiondsp",
-              "method": "lesssettings",
-              "data": []
-            },
-            "visibleIf": {
-              "field": "showeq",
-              "value": true
-            }
-          }
-        )
-      }
+      const isMoreSettings = !moresettings; // Toggle based on moresettings value
+      const buttonConfig = {
+        id: isMoreSettings ? 'moresettings' : 'lesssettings',
+        element: 'button',
+        label: self.commandRouter.getI18nString(isMoreSettings ? 'MORE_SETTINGS' : 'LESS_SETTINGS'),
+        doc: self.commandRouter.getI18nString(isMoreSettings ? 'MORE_SETTINGS_DOC' : 'LESS_SETTINGS_DOC'),
+        onClick: {
+          type: 'plugin',
+          endpoint: 'audio_interface/fusiondsp',
+          method: isMoreSettings ? 'moresettings' : 'lesssettings',
+          data: []
+        },
+        visibleIf: { field: 'showeq', value: true }
+      };
 
+      uiconf.sections[1].content.push(buttonConfig);
       if (moresettings) {
 
 
         //-----------------crossfeed -------------
-        var crossconfig = self.config.get('crossfeed')
-        switch (crossconfig) {
-          case ("None"):
-            var crosslabel = 'None'
-            break;
-          case ("bauer"):
-            var crosslabel = "Bauer 700Hz/4.5dB"
-            break;
-          case ("chumoy"):
-            var crosslabel = "Chu Moy 700Hz/6dB"
-            break;
-          case ("jameier"):
-            var crosslabel = "Jan Meier 650Hz/9.5dB"
-            break;
-          case ("linkwitz"):
-            var crosslabel = "Linkwitz 700Hz/2dB"
-            break;
-          case ("nc_11_30"):
-            var crosslabel = "Natural Crossfeed 1.1, 30 deg"
-            break;
-          case ("nc_11_50"):
-            var crosslabel = "Natural Crossfeed 1.1, 50 deg"
-            break;
-          case ("sadie_d1"):
-            var crosslabel = "SADIE D1 HRTF (KU100 Dummy Head)"
-            break;
-          case ("sadie_h15m"):
-            var crosslabel = "SADIE H15m HRTF (Human Subject)"
-            break;
-          default: "None"
-        }
-        if (selectedsp != "convfir") {
-          uiconf.sections[1].content.push(
-            {
-              "id": "autoatt",
-              "element": "switch",
-              "doc": self.commandRouter.getI18nString('AUTO_ATT_DOC'),
-              "label": self.commandRouter.getI18nString('AUTO_ATT'),
-              "value": self.config.get('autoatt'),
-              "visibleIf": {
-                "field": "showeq",
-                "value": true
-              }
-            }
-          )
-        }
-        uiconf.sections[1].content.push(
+        // Crossfeed options map
+        // Centralized crossfeed options
+        let crossfeedOptions = Object.freeze({
+          None: 'None',
+          bauer: 'Bauer 700Hz/4.5dB',
+          chumoy: 'Chu Moy 700Hz/6dB',
+          jameier: 'Jan Meier 650Hz/9.5dB',
+          linkwitz: 'Linkwitz 700Hz/2dB',
+          nc_11_30: 'Natural Crossfeed 1.1, 30 deg',
+          nc_11_50: 'Natural Crossfeed 1.1, 50 deg',
+          sadie_d1: 'SADIE D1 HRTF (KU100 Dummy Head)',
+          sadie_h15m: 'SADIE H15m HRTF (Human Subject)'
+        });
 
-          {
-            "id": "monooutput",
-            "element": "switch",
-            "doc": self.commandRouter.getI18nString('MONOOUTPUT_DOC'),
-            "label": self.commandRouter.getI18nString('MONOOUTPUT'),
-            "value": self.config.get('monooutput'),
-            "visibleIf": {
-              "field": "showeq",
-              "value": true
-            }
-          },
-          {
-            "id": "permutchannel",
-            "element": "switch",
-            "doc": self.commandRouter.getI18nString('PERMUT_CHANNEL_DOC'),
-            "label": self.commandRouter.getI18nString('PERMUT_CHANNEL'),
-            "value": self.config.get('permutchannel'),
-            "visibleIf": {
-              "field": "showeq",
-              "value": true
-            }
-          },
-          {
-            "id": "muteleft",
-            "element": "switch",
-            "doc": self.commandRouter.getI18nString('MUTE_LEFT_DOC'),
-            "label": self.commandRouter.getI18nString('MUTE_LEFT'),
-            "value": self.config.get('muteleft'),
-            "visibleIf": {
-              "field": "showeq",
-              "value": true
-            }
-          },
-          {
-            "id": "muteright",
-            "element": "switch",
-            "doc": self.commandRouter.getI18nString('MUTE_RIGHT_DOC'),
-            "label": self.commandRouter.getI18nString('MUTE_RIGHT'),
-            "value": self.config.get('muteright'),
-            "visibleIf": {
-              "field": "showeq",
-              "value": true
-            }
-          },
-          {
-            "id": "crossfeed",
-            "element": "select",
-            "doc": self.commandRouter.getI18nString('CROSSFEED_DOC'),
-            "label": self.commandRouter.getI18nString('CROSSFEED'),
-            "value": { "value": self.config.get('crossfeed'), "label": crosslabel },
-            "options": [{ "value": "None", "label": "None" }, { "value": "bauer", "label": "Bauer 700Hz/4.5dB" }, { "value": "chumoy", "label": "Chu Moy 700Hz/6dB" }, { "value": "jameier", "label": "Jan Meier 650Hz/9.5dB" }, { "value": "linkwitz", "label": "Linkwitz 700Hz/2dB" }, { "value": "nc_11_30", "label": "Natural Crossfeed 1.1, 30 deg" }, { "value": "nc_11_50", "label": "Natural Crossfeed 1.1, 50 deg" }, { "value": "sadie_d1", "label": "SADIE D1 HRTF (KU100 Dummy Head)" }, { "value": "sadie_h15m", "label": "SADIE H15m HRTF (Human Subject)" }],
-            "visibleIf": {
-              "field": "showeq",
-              "value": true
-            }
-          }
-        )
+        const crossfeedValue = self.config.get('crossfeed') || 'None';
+        const section1Content = uiconf.sections[1].content;
+        var visibleIf = Object.freeze({ field: 'showeq', value: true });
+
+        // Helper to create switch elements
+        const createSwitch = (id, labelKey, docKey, configKey) => ({
+          id,
+          element: 'switch',
+          doc: self.commandRouter.getI18nString(docKey),
+          label: self.commandRouter.getI18nString(labelKey),
+          value: self.config.get(configKey),
+          visibleIf
+        });
+
+        // Conditional autoatt switch
+        if (selectedsp !== 'convfir') {
+          section1Content.push(createSwitch('autoatt', 'AUTO_ATT', 'AUTO_ATT_DOC', 'autoatt'));
+        }
+
+        // Base switches
+        [
+          ['monooutput', 'MONOOUTPUT', 'MONOOUTPUT_DOC', 'monooutput'],
+          ['permutchannel', 'PERMUT_CHANNEL', 'PERMUT_CHANNEL_DOC', 'permutchannel'],
+          ['muteleft', 'MUTE_LEFT', 'MUTE_LEFT_DOC', 'muteleft'],
+          ['muteright', 'MUTE_RIGHT', 'MUTE_RIGHT_DOC', 'muteright']
+        ].forEach(([id, label, doc, key]) => section1Content.push(createSwitch(id, label, doc, key)));
+
+        // Crossfeed select
+        section1Content.push({
+          id: 'crossfeed',
+          element: 'select',
+          doc: self.commandRouter.getI18nString('CROSSFEED_DOC'),
+          label: self.commandRouter.getI18nString('CROSSFEED'),
+          value: { value: crossfeedValue, label: crossfeedOptions[crossfeedValue] || 'None' },
+          options: Object.entries(crossfeedOptions).map(([value, label]) => ({ value, label })),
+          visibleIf
+        });
+
+        // Loudness section
         if (self.config.get('showloudness')) {
-          uiconf.sections[1].content.push(
-
+          section1Content.push(
+            createSwitch('loudness', 'LOUDNESS', 'LOUDNESS_DOC', 'loudness'),
             {
-              "id": "loudness",
-              "element": "switch",
-              "doc": self.commandRouter.getI18nString('LOUDNESS_DOC'),
-              "label": self.commandRouter.getI18nString('LOUDNESS'),
-              "value": self.config.get('loudness'),
-              "visibleIf": {
-                "field": "showeq",
-                "value": true
-              }
-            },
-            {
-              "id": "loudnessthreshold",
-              "element": "equalizer",
-              "label": self.commandRouter.getI18nString("LOUDNESS_THRESHOLD"),
-              "doc": self.commandRouter.getI18nString('LOUDNESS_THRESHOLD_DOC'),
-              "visibleIf": {
-                "field": "showeq",
-                "value": true
-              },
-              "config": {
-                "orientation": "horizontal",
-                "bars": [
-                  {
-                    "min": "10",
-                    "max": "100",
-                    "step": "1",
-                    "value": self.config.get('loudnessthreshold'),
-                    "ticksLabels": [
-                      "%"
-                    ],
-                    "tooltip": "always"
-                  }
-                ]
+              id: 'loudnessthreshold',
+              element: 'equalizer',
+              label: self.commandRouter.getI18nString('LOUDNESS_THRESHOLD'),
+              doc: self.commandRouter.getI18nString('LOUDNESS_THRESHOLD_DOC'),
+              visibleIf,
+              config: {
+                orientation: 'horizontal',
+                bars: [{
+                  min: 10,
+                  max: 100,
+                  step: 1,
+                  value: self.config.get('loudnessthreshold'),
+                  ticksLabels: ['%'],
+                  tooltip: 'always'
+                }]
               }
             }
-          )
+          );
         }
-        if (self.config.get('manualdelay') == false) {
 
-          uiconf.sections[1].content.push(
+        // Delay section
+        const isManualDelay = self.config.get('manualdelay');
+        const saveButtonData = uiconf.sections[1].saveButton.data;
+
+        if (!isManualDelay) {
+          section1Content.push(
             {
-              "id": "manualdelay",
-              "element": "button",
-              "label": self.commandRouter.getI18nString('DELAY_MANUAL'),
-              "doc": self.commandRouter.getI18nString('DELAY_MANUAL_DOC'),
-              "onClick": {
-                "type": "plugin",
-                "endpoint": "audio_interface/fusiondsp",
-                "method": "manualdelay",
-                "data": []
-              },
-              "visibleIf": {
-                "field": "showeq",
-                "value": true
-              }
+              id: 'manualdelay',
+              element: 'button',
+              label: self.commandRouter.getI18nString('DELAY_MANUAL'),
+              doc: self.commandRouter.getI18nString('DELAY_MANUAL_DOC'),
+              onClick: { type: 'plugin', endpoint: 'audio_interface/fusiondsp', method: 'manualdelay', data: [] },
+              visibleIf
+            },
+            ...['ldistance', 'rdistance'].map(id => ({
+              id,
+              element: 'input',
+              type: 'number',
+              label: self.commandRouter.getI18nString(`DELAY_${id === 'ldistance' ? 'LEFT' : 'RIGHT'}_SPEAKER_DIST`),
+              doc: self.commandRouter.getI18nString(`DELAY_${id === 'ldistance' ? 'LEFT' : 'RIGHT'}_SPEAKER_DIST_DOC`),
+              attributes: [{ placeholder: '0 centimeter' }, { maxlength: 5 }, { min: 0 }, { step: 1 }],
+              value: self.config.get(id),
+              visibleIf
+            }))
+          );
+          saveButtonData.push('ldistance', 'rdistance');
+        } else {
+          section1Content.push(
+            {
+              id: 'speakerdistance',
+              element: 'button',
+              label: self.commandRouter.getI18nString('DELAY_AUTO'),
+              doc: self.commandRouter.getI18nString('DELAY_AUTO_DOC'),
+              onClick: { type: 'plugin', endpoint: 'audio_interface/fusiondsp', method: 'speakerdistance', data: [] },
+              visibleIf
             },
             {
-              "id": "ldistance",
-              "element": "input",
-              "type": "number",
-              "label": self.commandRouter.getI18nString('DELAY_LEFT_SPEAKER_DIST'),
-              "doc": self.commandRouter.getI18nString('DELAY_LEFT_SPEAKER_DIST_DOC'),
-              "attributes": [
-                { "placeholder": "0 centimeter" },
-                { "maxlength": 5 },
-                { "min": 0 },
-                { "step": 1 }
-              ],
-              "value": self.config.get("ldistance"),
-              "visibleIf": {
-                "field": "showeq",
-                "value": true
-              }
+              id: 'delayscope',
+              element: 'select',
+              doc: self.commandRouter.getI18nString('DELAY_SCOPE_DOC'),
+              label: self.commandRouter.getI18nString('DELAY_SCOPE'),
+              value: { value: self.config.get('delayscope'), label: self.config.get('delayscope') },
+              options: ['None', 'L', 'R', 'L+R'].map(v => ({ value: v, label: v })),
+              visibleIf
             },
             {
-              "id": "rdistance",
-              "element": "input",
-              "type": "number",
-              "label": self.commandRouter.getI18nString('DELAY_RIGHT_SPEAKER_DIST'),
-              "doc": self.commandRouter.getI18nString('DELAY_RIGHT_SPEAKER_DIST_DOC'),
-              "attributes": [
-                { "placeholder": "0 centimeter" },
-                { "maxlength": 5 },
-                { "min": 0 },
-                { "step": 1 }
-              ],
-              "value": self.config.get("rdistance"),
-              "visibleIf": {
-                "field": "showeq",
-                "value": true
-              }
+              id: 'delay',
+              element: 'input',
+              type: 'number',
+              label: self.commandRouter.getI18nString('DELAY_VALUE'),
+              doc: self.commandRouter.getI18nString('DELAY_VALUE_DOC'),
+              attributes: [{ placeholder: '0ms' }, { maxlength: 4 }, { min: 0 }, { max: 1000.1 }, { step: 0.1 }],
+              value: self.config.get('delay'),
+              visibleIf
             }
-          )
-          uiconf.sections[1].saveButton.data.push('ldistance');
-          uiconf.sections[1].saveButton.data.push('rdistance');
+          );
+          saveButtonData.push('delay', 'delayscope');
         }
-
-        if (self.config.get('manualdelay')) {
-          uiconf.sections[1].content.push(
-
-            {
-              "id": "speakerdistance",
-              "element": "button",
-              "label": self.commandRouter.getI18nString('DELAY_AUTO'),
-              "doc": self.commandRouter.getI18nString('DELAY_AUTO_DOC'),
-              "onClick": {
-                "type": "plugin",
-                "endpoint": "audio_interface/fusiondsp",
-                "method": "speakerdistance",
-                "data": []
-              },
-              "visibleIf": {
-                "field": "showeq",
-                "value": true
-              }
-            },
-            {
-              "id": "delayscope",
-              "element": "select",
-              "doc": self.commandRouter.getI18nString('DELAY_SCOPE_DOC'),
-              "label": self.commandRouter.getI18nString('DELAY_SCOPE'),
-              "value": { "value": self.config.get("delayscope"), "label": self.config.get("delayscope") },
-              "options": [{ "value": "None", "label": "None" }, { "value": "L", "label": "L" }, { "value": "R", "label": "R" }, { "value": "L+R", "label": "L+R" }],
-              "visibleIf": {
-                "field": "showeq",
-                "value": true
-              }
-            },
-            {
-              "id": "delay",
-              "element": "input",
-              "type": "number",
-              "label": self.commandRouter.getI18nString('DELAY_VALUE'),
-              "doc": self.commandRouter.getI18nString("DELAY_VALUE_DOC"),
-              "attributes": [
-                { "placeholder": "0ms" },
-                { "maxlength": 4 },
-                { "min": 0 },
-                { "max": 1000.1 },
-                { "step": 0.1 }
-              ],
-              "value": self.config.get("delay"),
-              "visibleIf": {
-                "field": "showeq",
-                "value": true
-              }
-            }
-          )
-        }
-        uiconf.sections[1].saveButton.data.push('delay');
-        uiconf.sections[1].saveButton.data.push('delayscope');
-
       }
+
+      if (self.config.get('manualdelay')) { //return; // Early exit if manualdelay is false}
+
+        var visibleIf = { field: 'showeq', value: true };
+        var section1Content = uiconf.sections[1].content;
+
+        section1Content.push(
+          {
+            id: 'speakerdistance',
+            element: 'button',
+            label: self.commandRouter.getI18nString('DELAY_AUTO'),
+            doc: self.commandRouter.getI18nString('DELAY_AUTO_DOC'),
+            onClick: { type: 'plugin', endpoint: 'audio_interface/fusiondsp', method: 'speakerdistance', data: [] },
+            visibleIf
+          },
+          {
+            id: 'delayscope',
+            element: 'select',
+            doc: self.commandRouter.getI18nString('DELAY_SCOPE_DOC'),
+            label: self.commandRouter.getI18nString('DELAY_SCOPE'),
+            value: { value: self.config.get('delayscope') || 'None', label: self.config.get('delayscope') || 'None' },
+            options: ['None', 'L', 'R', 'L+R'].map(v => ({ value: v, label: v })),
+            visibleIf
+          },
+          {
+            id: 'delay',
+            element: 'input',
+            type: 'number',
+            label: self.commandRouter.getI18nString('DELAY_VALUE'),
+            doc: self.commandRouter.getI18nString('DELAY_VALUE_DOC'),
+            attributes: [
+              { placeholder: '0ms' },
+              { maxlength: 4 },
+              { min: 0 },
+              { max: 1000.1 },
+              { step: 0.1 }
+            ],
+            value: self.config.get('delay') || 0,
+            visibleIf
+          }
+        );
+      }
+      uiconf.sections[1].saveButton.data.push('delay');
+      uiconf.sections[1].saveButton.data.push('delayscope');
+
       //------------experimental
 
       var devicename = self.commandRouter.sharedVars.get('system.name');
@@ -1335,222 +870,137 @@ FusionDsp.prototype.getUIConfig = function (address) {
       // }
       // self.logger.info(logPrefix + ' effect ' + effect)
 
-      if (effect == true) {
-        uiconf.sections[1].content.push(
-          {
-            "id": "disableeffect",
-            "element": "button",
-            "label": self.commandRouter.getI18nString('DISABLE_EFFECT'),
-            "doc": self.commandRouter.getI18nString('DISABLE_EFFECT_DESC'),
-            "onClick": {
-              "type": "plugin",
-              "endpoint": "audio_interface/fusiondsp",
-              "method": "disableeffect",
-              "data": []
-            }
-          }
-        )
-      } else if (effect == false) {
-        uiconf.sections[1].content.push(
-          {
-            "id": "enableeffect",
-            "element": "button",
-            "label": self.commandRouter.getI18nString('ENABLE_EFFECT'),
-            "doc": self.commandRouter.getI18nString('ENABLE_EFFECT_DESC'),
-            "onClick": {
-              "type": "plugin",
-              "endpoint": "audio_interface/fusiondsp",
-              "method": "enableeffect",
-              "data": []
-            }
-          }
-        )
-      }
+      if (effect === undefined) return; // Early exit if effect is undefined
+
+      const isEffectEnabled = effect; // Boolean toggle
+      uiconf.sections[1].content.push({
+        id: isEffectEnabled ? 'disableeffect' : 'enableeffect',
+        element: 'button',
+        label: self.commandRouter.getI18nString(isEffectEnabled ? 'DISABLE_EFFECT' : 'ENABLE_EFFECT'),
+        doc: self.commandRouter.getI18nString(isEffectEnabled ? 'DISABLE_EFFECT_DESC' : 'ENABLE_EFFECT_DESC'),
+        onClick: {
+          type: 'plugin',
+          endpoint: 'audio_interface/fusiondsp',
+          method: isEffectEnabled ? 'disableeffect' : 'enableeffect',
+          data: []
+        }
+      });
       if (moresettings) {
 
+        var visibleIf = { field: 'showeq', value: true };
+        var attributes = [
+          { placeholder: '0 dB' }, // Specific placeholder
+          { maxlength: 4 },       // Assumed reasonable maxlength
+          { min: -20 },
+          { max: 0 },
+          { step: 0.5 }
+        ];
+
         uiconf.sections[1].content.push(
-          {
-            "id": "leftlevel",
-            "element": "input",
-            "type": "number",
-            "label": self.commandRouter.getI18nString("LEFTLEVEL"),
-            "doc": self.commandRouter.getI18nString('LEFTLEVEL_DESC'),
-            "visibleIf": {
-              "field": "showeq",
-              "value": true
-            },
-            "attributes": [
-              { "placeholder": {} },
-              { "maxlength": {} },
-              { "min": -20 },
-              { "max": 0 },
-              { "step": 0.5 }
-            ],
-            "value": self.config.get('leftlevel')
+          ...['leftlevel', 'rightlevel'].map(id => ({
+            id,
+            element: 'input',
+            type: 'number',
+            label: self.commandRouter.getI18nString(id.toUpperCase()),
+            doc: self.commandRouter.getI18nString(`${id.toUpperCase()}_DESC`),
+            visibleIf,
+            attributes,
+            value: self.config.get(id) || 0
+          }))
 
-          },
-          {
-            "id": "rightlevel",
-            "element": "input",
-            "type": "number",
-            "label": self.commandRouter.getI18nString('RIGHTLEVEL'),
-            "doc": self.commandRouter.getI18nString("RIGHTLEVEL_DESC"),
-            "visibleIf": {
-              "field": "showeq",
-              "value": true
-            },
-            "attributes": [
-              { "placeholder": {} },
-              { "maxlength": {} },
-              { "min": -20 },
-              { "max": 0 },
-              { "step": 0.5 }
-            ],
-            "value": self.config.get('rightlevel')
-
-          }
         )
       }
       if (selectedsp != "EQ3") {
 
-        uiconf.sections[1].content.push(
+        const section1 = uiconf.sections[1];
 
-          {
-            "id": "showeq",
-            "element": "switch",
-            "doc": self.commandRouter.getI18nString('SHOW_SETTINGS_DOC'),
-            "label": self.commandRouter.getI18nString('SHOW_SETTINGS'),
-            "value": self.config.get('showeq')
-          }
-        )
+        // Add showeq switch
+        section1.content.push({
+          id: 'showeq',
+          element: 'switch',
+          doc: self.commandRouter.getI18nString('SHOW_SETTINGS_DOC'),
+          label: self.commandRouter.getI18nString('SHOW_SETTINGS'),
+          value: self.config.get('showeq')
+        });
 
-        uiconf.sections[1].saveButton.data.push('autoatt');
-        uiconf.sections[1].saveButton.data.push('leftlevel');
-        uiconf.sections[1].saveButton.data.push('rightlevel');
-        uiconf.sections[1].saveButton.data.push('crossfeed');
-        uiconf.sections[1].saveButton.data.push('monooutput');
-        uiconf.sections[1].saveButton.data.push('muteleft');
-        uiconf.sections[1].saveButton.data.push('muteright');
-        uiconf.sections[1].saveButton.data.push('permutchannel');
+        // Base save button data
+        const saveData = [
+          'autoatt', 'leftlevel', 'rightlevel', 'crossfeed',
+          'monooutput', 'muteleft', 'muteright', 'permutchannel', 'showeq'
+        ];
 
-
-
-
+        // Conditionally add loudness items
         if (self.config.get('showloudness')) {
-          uiconf.sections[1].saveButton.data.push('loudness');
-          uiconf.sections[1].saveButton.data.push('loudnessthreshold');
+          saveData.push('loudness', 'loudnessthreshold');
         }
-        // }
-        uiconf.sections[1].saveButton.data.push('showeq');
+
+        // Push all save button data at once
+        section1.saveButton.data.push(...saveData);
       }
 
       //--------section 2-------------------
+      var value = self.config.get('usethispreset') || '';
+      const pFolder = `${presetFolder}/${selectedsp}`;
+      const plabel = (self.config.get(`${selectedsp}preset`) || '').replace(/^\.|\.json$/g, '');
 
-      var value = self.config.get('usethispreset');
-      const pFolder = presetFolder + "/" + selectedsp;
-      var plabel = (self.config.get(selectedsp + "preset") || "")
-        .replace(/^\./, "")
-        .replace(/\.json$/, "");
-      self.logger.info(logPrefix + plabel)
-      self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.value', value);
-      self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.label', plabel);
+      self.logger.info(`${logPrefix}${plabel}`);
+      self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value', { value, label: plabel });
 
       try {
+        const items = fs.readdirSync(pFolder, 'utf8')
+          .map(item => ({
+            value: item,
+            label: item.replace(/^\.|\.json$/g, '')
+          }));
 
-        fs.readdir(pFolder, function (err, item) {
-          let allpreset = '' + item;
-          let items = allpreset.split(',');
-          let itemsf = items.map(item => item.replace(/^\./, "").replace(/\.json$/, ""));
-          self.logger.info(logPrefix + items)
-
-          for (let i in items) {
-
-            self.configManager.pushUIConfigParam(uiconf, 'sections[2].content[0].options', {
-              value: items[i],
-              label: itemsf[i]
-            });
-          }
-        });
+        self.logger.info(`${logPrefix}${items.map(i => i.value).join(', ')}`);
+        self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].options', items);
       } catch (err) {
-        self.logger.error(logPrefix + ' failed to read local file' + err);
+        self.logger.error(`${logPrefix}Failed to read local files in ${pFolder}: ${err}`);
       }
-
       //-------------section 3-----------savepreset
-    
+
 
       uiconf.sections[3].content[0].value = self.config.get('renpreset');
 
       //-----------section 4---------
-      value = self.config.get('importeq');
-      var label = self.commandRouter.getI18nString('CHOOSE_HEADPHONE')
-      self.configManager.setUIConfigParam(uiconf, 'sections[4].content[0].value.value', value);
-      self.configManager.setUIConfigParam(uiconf, 'sections[4].content[0].value.label', value);
-
-
+      var value = self.config.get('importeq') || '';
+      var label = self.commandRouter.getI18nString('CHOOSE_HEADPHONE');
+      
+      // Set initial UI config values once
+      self.configManager.setUIConfigParam(uiconf, 'sections[4].content[0].value', { value, label });
+      
       try {
-        let listf = fs.readFileSync('/data/plugins/audio_interface/fusiondsp/downloadedlist.txt', "utf8");
-        var result = (listf.split('\n'));
-        let i;
-
-        for (i = 15; i < result.length; i++) {
-          var preparedresult = result[i].replace(/- \[/g, "").replace("](.", ",").slice(0, -1);
-
-          var param = preparedresult.split(',')
-          var namel = (param[0])
-          var linkl = param[1]
-
-          self.configManager.pushUIConfigParam(uiconf, 'sections[4].content[0].options', {
-            value: linkl,
-            label: +i - 14 + "  " + namel
-          });
-        }
-
-
+        const headphoneOptions = JSON.parse(fs.readFileSync('/data/plugins/audio_interface/fusiondsp/headphone_options.json', 'utf8'));
+        self.configManager.setUIConfigParam(uiconf, 'sections[4].content[0].options', headphoneOptions);
       } catch (err) {
-        self.logger.error(logPrefix + ' failed to read downloadedlist.txt' + err);
+        self.logger.error(`${logPrefix}Failed to load headphone_options.json: ${err}`);
       }
 
       //----------section 5------------
-      value = self.config.get('importlocal');
-      var label = self.commandRouter.getI18nString('CHOOSE_LOCALEQ')
+      const localEQfolder = '/data/INTERNAL/FusionDsp/peq';
+      const section5Content = uiconf.sections[5].content;
 
-      self.configManager.setUIConfigParam(uiconf, 'sections[5].content[0].value.value', value);
-      self.configManager.setUIConfigParam(uiconf, 'sections[5].content[0].value.label', label);
+      // Import local EQ
+      var value = self.config.get('importlocal') || '';
+      var label = self.commandRouter.getI18nString('CHOOSE_LOCALEQ');
+      self.configManager.setUIConfigParam(uiconf, 'sections[5].content[0].value', { value, label });
 
-
-      var localEQfolder = '/data/INTERNAL/FusionDsp/peq'
       try {
-        fs.readdir(localEQfolder, function (err, item) {
-
-          let allfilter = '' + item;
-          let items = allfilter.split(',');
-          for (let i in items) {
-
-            self.configManager.pushUIConfigParam(uiconf, 'sections[5].content[0].options', {
-              value: items[i],
-              label: items[i]
-            });
-          }
-
-        });
+        var items = fs.readdirSync(localEQfolder, 'utf8').map(item => ({ value: item, label: item }));
+        self.configManager.setUIConfigParam(uiconf, 'sections[5].content[0].options', items);
       } catch (err) {
-        self.logger.error(logPrefix + ' failed to read local file' + err);
+        self.logger.error(`${logPrefix}Failed to read local files in ${localEQfolder}: ${err}`);
       }
 
-      value = self.config.get('localscope');
-      self.configManager.setUIConfigParam(uiconf, 'sections[5].content[1].value.value', value);
-      self.configManager.setUIConfigParam(uiconf, 'sections[5].content[1].value.label', value);
+      // Local scope
+      value = self.config.get('localscope') || '';
+      self.configManager.setUIConfigParam(uiconf, 'sections[5].content[1].value', { value, label: value });
+      const scopeOptions = ['L', 'R', 'L+R'].map(v => ({ value: v, label: v }));
+      self.configManager.setUIConfigParam(uiconf, 'sections[5].content[1].options', scopeOptions);
 
-      let sitemsl = ('L,R,L+R').split(',');
-      for (let i in sitemsl) {
-        self.configManager.pushUIConfigParam(uiconf, 'sections[5].content[1].options', {
-          value: sitemsl[i],
-          label: sitemsl[i]
-        });
-      }
-
-      var addreplace = self.config.get('addreplace')
-      uiconf.sections[5].content[2].value = addreplace;
+      // Add/replace
+      section5Content[2].value = self.config.get('addreplace') || false;
 
       //-------------End section 5--------------
 
@@ -1600,7 +1050,6 @@ FusionDsp.prototype.getUIConfig = function (address) {
               value: fitems[i],
               label: fitems[i]
             });
-            //  self.logger.info(logPrefix+' available impulses to convert :' + fitems[i]);
           }
         });
       } catch (e) {
@@ -1639,44 +1088,32 @@ FusionDsp.prototype.getUIConfig = function (address) {
       //-------------end section 7----------
 
       //-------------section 8------------
-      let ttools = self.config.get('toolsinstalled');
+      const section8Content = uiconf.sections[8].content;
+      const toolsInstalled = self.config.get('toolsinstalled');
+      const toolsFileToPlay = self.config.get('toolsfiletoplay') || '';
+      const toolspathFolder = `/data/${toolspath}`;
 
-      let toolsfiletoplay = self.config.get('toolsfiletoplay');
-      self.configManager.setUIConfigParam(uiconf, 'sections[8].content[0].value.value', toolsfiletoplay);
-      self.configManager.setUIConfigParam(uiconf, 'sections[8].content[0].value.label', toolsfiletoplay);
+      // Set tools file to play
+      self.configManager.setUIConfigParam(uiconf, 'sections[8].content[0].value', {
+        value: toolsFileToPlay,
+        label: toolsFileToPlay
+      });
 
+      // Populate options from folder
       try {
-        fs.readdir('/data/' + toolspath, function (err, bitem) {
-          let filetools = '' + bitem;
-
-          let bitems = filetools.replace('folder.png', '').slice(0, -1).split(',');
-
-          //console.log(bitems)
-          for (let i in bitems) {
-            self.configManager.pushUIConfigParam(uiconf, 'sections[8].content[0].options', {
-              value: bitems[i],
-              label: bitems[i]
-            });
-            //  self.logger.info(logPrefix+' tools file to play :' + bitems[i]);
-
-          }
-        });
+        const bitems = fs.readdirSync(toolspathFolder, 'utf8')
+          .filter(item => item !== 'folder.png')
+          .map(item => ({ value: item, label: item }));
+        self.configManager.setUIConfigParam(uiconf, 'sections[8].content[0].options', bitems);
       } catch (e) {
-        self.logger.error(logPrefix + ' Could not read file: ' + e)
+        self.logger.error(`${logPrefix}Could not read files in ${toolspathFolder}: ${e}`);
       }
 
-
-      if (ttools == false) {
-        uiconf.sections[8].content[0].hidden = true;
-
-        uiconf.sections[8].content[1].hidden = true;
-        uiconf.sections[8].content[2].hidden = false;
-
-      } else {
-        uiconf.sections[8].content[1].hidden = false;
-        uiconf.sections[8].content[2].hidden = true;
-
-      }
+      // Toggle visibility based on toolsInstalled
+      const hideTools = toolsInstalled === false;
+      section8Content[0].hidden = hideTools;
+      section8Content[1].hidden = hideTools;
+      section8Content[2].hidden = !hideTools;
       //--------------end section 8----------
       defer.resolve(uiconf);
     })
@@ -1696,7 +1133,7 @@ FusionDsp.prototype.refreshUI = function () {
       self.commandRouter.broadcastMessage('pushUiConfig', config);
     });
     self.commandRouter.closeModals();
-  }, 110);
+  }, 510);
 }
 
 FusionDsp.prototype.choosedsp = function (data) {
@@ -3150,11 +2587,11 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
       composedpipeline += '  - type: Mixer\n'
       composedpipeline += '    name: mono\n'
       composedpipeline += '  - type: Filter\n'
-      composedpipeline += '    channel: 0\n'
+      composedpipeline += '    channels: [0]\n'
       composedpipeline += '    names:\n'
       composedpipeline += '      - ' + pipelinelr + '\n'
       composedpipeline += '  - type: Filter\n'
-      composedpipeline += '    channel: 1\n'
+      composedpipeline += '    channels: [1]\n'
       composedpipeline += '    names:\n'
       composedpipeline += '      - ' + pipelinerr + '\n'
       composedpipeline += '\n'
@@ -3184,11 +2621,11 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
       composedpipeline += '  - type: Mixer\n'
       composedpipeline += '    name: stereo\n'
       composedpipeline += '  - type: Filter\n'
-      composedpipeline += '    channel: 0\n'
+      composedpipeline += '    channels: [0]\n'
       composedpipeline += '    names:\n'
       composedpipeline += '      - ' + pipelinelr + '\n'
       composedpipeline += '  - type: Filter\n'
-      composedpipeline += '    channel: 1\n'
+      composedpipeline += '    channels: [1]\n'
       composedpipeline += '    names:\n'
       composedpipeline += '      - ' + pipelinerr + '\n'
       composedpipeline += '\n'
@@ -3257,37 +2694,37 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
     composedpipeline += '   - type: Mixer\n'
     composedpipeline += '     name: 2to4\n'
     composedpipeline += '   - type: Filter\n'
-    composedpipeline += '     channel: 0\n'
+    composedpipeline += '     channels: [0]\n'
     composedpipeline += '     names:\n'
     composedpipeline += '       - highcross\n'
     composedpipeline += '   - type: Filter\n'
-    composedpipeline += '     channel: 1\n'
+    composedpipeline += '     channels: [1]\n'
     composedpipeline += '     names:\n'
     composedpipeline += '       - lpcross\n'
     composedpipeline += '   - type: Filter\n'
-    composedpipeline += '     channel: 1\n'
+    composedpipeline += '     channels: [1]\n'
     composedpipeline += '     names:\n'
     composedpipeline += '       - delay\n'
     composedpipeline += '   - type: Filter\n'
-    composedpipeline += '     channel: 2\n'
+    composedpipeline += '     channels: [2]\n'
     composedpipeline += '     names:\n'
     composedpipeline += '       - lpcross\n'
     composedpipeline += '   - type: Filter\n'
-    composedpipeline += '     channel: 2\n'
+    composedpipeline += '     channels: [2]\n'
     composedpipeline += '     names:\n'
     composedpipeline += '       - delay\n'
     composedpipeline += '   - type: Filter\n'
-    composedpipeline += '     channel: 3\n'
+    composedpipeline += '     channels: [3]\n'
     composedpipeline += '     names:\n'
     composedpipeline += '       - highcross\n'
     composedpipeline += '   - type: Mixer\n'
     composedpipeline += '     name: stereo\n'
     composedpipeline += '   - type: Filter\n'
-    composedpipeline += '     channel: 0\n'
+    composedpipeline += '     channels: [0]\n'
     composedpipeline += '     names:\n'
     composedpipeline += '      - ' + pipelinelr + '\n'
     composedpipeline += '   - type: Filter\n'
-    composedpipeline += '     channel: 1\n'
+    composedpipeline += '     channels: [1]\n'
     composedpipeline += '     names:\n'
     composedpipeline += '      - ' + pipelinerr + '\n'
 
@@ -3355,29 +2792,29 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
     composedpipeline += '   - type: Mixer\n'
     composedpipeline += '     name: 2to4\n'
     composedpipeline += '   - type: Filter\n'
-    composedpipeline += '     channel: 0\n'
+    composedpipeline += '     channels: [0]\n'
     composedpipeline += '     names:\n'
     composedpipeline += '       - hrtf_conv_ll\n'
     composedpipeline += '   - type: Filter\n'
-    composedpipeline += '     channel: 1\n'
+    composedpipeline += '     channels: [1]\n'
     composedpipeline += '     names:\n'
     composedpipeline += '       - hrtf_conv_lr\n'
     composedpipeline += '   - type: Filter\n'
-    composedpipeline += '     channel: 2\n'
+    composedpipeline += '     channels: [2]\n'
     composedpipeline += '     names:\n'
     composedpipeline += '       - hrtf_conv_rl\n'
     composedpipeline += '   - type: Filter\n'
-    composedpipeline += '     channel: 3\n'
+    composedpipeline += '     channels: [3]\n'
     composedpipeline += '     names:\n'
     composedpipeline += '       - hrtf_conv_rr\n'
     composedpipeline += '   - type: Mixer\n'
     composedpipeline += '     name: stereo\n'
     composedpipeline += '   - type: Filter\n'
-    composedpipeline += '     channel: 0\n'
+    composedpipeline += '     channels: [0]\n'
     composedpipeline += '     names:\n'
     composedpipeline += '      - ' + pipelinelr + '\n'
     composedpipeline += '   - type: Filter\n'
-    composedpipeline += '     channel: 1\n'
+    composedpipeline += '     channels: [1]\n'
     composedpipeline += '     names:\n'
     composedpipeline += '      - ' + pipelinerr + '\n'
 
@@ -3998,7 +3435,7 @@ FusionDsp.prototype.saveequalizerpreset = function (data) {
   // Check if the file already exists
   if (fs.existsSync(filePath)) {
     var responseData = {
-      title:  `A file ${dynamicKey} already exists!`,//self.commandRouter.getI18nString('SAMPLE_WARNING_TITLE'),
+      title: `A file ${dynamicKey} already exists!`,//self.commandRouter.getI18nString('SAMPLE_WARNING_TITLE'),
       message: "Overwrite this file?",//self.commandRouter.getI18nString('SAMPLE_WARNING_MESS'),
       size: 'lg',
       buttons: [
@@ -4131,16 +3568,16 @@ FusionDsp.prototype.usethispreset = function (data) {
       callback(null, jsonData[key]);
     });
   }
-  self.logger.info(logPrefix+"Value for usedpreset: ", usedpreset);
+  self.logger.info(logPrefix + "Value for usedpreset: ", usedpreset);
 
   let presetforkey = "parameters";
 
   readValueFromJsonFile(usedpreset, presetforkey, (err, value) => {
     if (err) {
-      self.logger.error(logPrefix+"Error reading JSON file:", err);
+      self.logger.error(logPrefix + "Error reading JSON file:", err);
     }// else {
     try {
-      self.logger.error(logPrefix+"Value reading JSON file:", value);
+      self.logger.error(logPrefix + "Value reading JSON file:", value);
 
       const eqrx = value.geq15;
       const x2eqrx = value.x2geq15;
@@ -4159,7 +3596,7 @@ FusionDsp.prototype.usethispreset = function (data) {
         }
         self.config.set('mergedeq', test);
         self.config.set("nbreq", 15);
-       
+
       } else if (selectedsp == '2XEQ15') {
         geq15 = eqrx.split(',')
         x2geq15 = x2eqrx.split(',')
@@ -4182,7 +3619,7 @@ FusionDsp.prototype.usethispreset = function (data) {
         self.config.set("nbreq", 30);
 
       }
-      
+
       if ((selectedsp == 'EQ15') || (selectedsp == '2XEQ15')) {
         self.config.set('geq15', eqrx)
         self.config.set('x2geq15', x2eqrx);
@@ -4202,7 +3639,7 @@ FusionDsp.prototype.usethispreset = function (data) {
         self.config.set("attenuationl", value.attenuationl);
         self.config.set("attenuationr", value.attenuationr);
       }
-     
+
       let state4preset = state4presetx;
 
       self.logger.info(logPrefix + ' value state4preset ' + state4preset)
@@ -4556,7 +3993,7 @@ FusionDsp.prototype.convertimportedeq = function () {
 
 FusionDsp.prototype.updatelist = function (data) {
   const self = this;
-  let path = 'https://raw.githubusercontent.com/jaakkopasanen/AutoEq//master/results';
+  let path = 'https://raw.githubusercontent.com/jaakkopasanen/AutoEq//master/results/';
   let name = 'README.md';
   let defer = libQ.defer();
   var destpath = ' \'/data/plugins/audio_interface/fusiondsp';
@@ -4575,8 +4012,44 @@ FusionDsp.prototype.updatelist = function (data) {
     self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('LIST_FAIL_UPDATE'))
     self.logger.error(logPrefix + ' failed to  download file ' + err);
   }
+  self.preporcessingfile();
   return defer.promise;
 }
+
+FusionDsp.prototype.preporcessingfile = function () {
+  const self = this;
+  function preprocessHeadphoneList(inputFile, outputFile) {
+    try {
+      const listf = fs.readFileSync(inputFile, 'utf8');
+      const lines = listf.split('\n').slice(15); // Skip first 15 lines
+
+      const headphoneOptions = lines.map((line, index) => {
+        // Match - [name](link) pattern
+        const match = line.match(/^- \[(.+?)\]\((.+?)\)$/);
+        if (!match) return null; // Skip malformed lines
+
+        const [, name, link] = match; // name is between [], link is between ()
+        return {
+          value: link.trim().replace(/^\./, ''), // Remove only the leading .
+          label: `${index + 1}  ${name.trim()}`
+        };
+      }).filter(Boolean); // Remove null entries
+
+      fs.writeFileSync(outputFile, JSON.stringify(headphoneOptions, null, 2), 'utf8');
+      console.log(`Preprocessed ${headphoneOptions.length} lines into ${outputFile}`);
+    } catch (err) {
+      console.error(`Failed to preprocess ${inputFile}: ${err}`);
+    }
+  }
+
+  // Run the preprocessing
+  preprocessHeadphoneList(
+    '/data/plugins/audio_interface/fusiondsp/downloadedlist.txt',
+    '/data/plugins/audio_interface/fusiondsp/headphone_options.json'
+  );
+
+}
+
 
 FusionDsp.prototype.resampling = function (data) {
   const self = this;
@@ -4738,32 +4211,43 @@ FusionDsp.prototype.installtools = function (data) {
   const self = this;
   return new Promise(function (resolve, reject) {
     try {
+      // Show modal to inform the user about the installation
       let modalData = {
         title: self.commandRouter.getI18nString('TOOLS_INSTALL_TITLE'),
         message: self.commandRouter.getI18nString('TOOLS_INSTALL_WAIT'),
         size: 'lg'
       };
-      //self.commandRouter.pushToastMessage('info', 'Please wait while installing ( up to 30 seconds)');
       self.commandRouter.broadcastMessage("openModal", modalData);
 
-      // let cpz = execSync('/bin/rm /tmp/tools.tar.xz');
-      let cp3 = execSync('/usr/bin/wget -P /tmp https://github.com/balbuze/volumio-plugins/raw/alsa_modular/plugins/audio_interface/FusionDsp/tools/tools.tar.xz');
-      //  let cp4 = execSync('/bin/mkdir ' + toolspath);
-      let cp5 = execSync('tar -xvf /tmp/tools.tar.xz -C /data/' + toolspath);
-      let cp6 = execSync('/bin/rm /tmp/tools.tar.xz*');
+      // Download and install tools
+      execSync('/usr/bin/wget -P /tmp https://github.com/balbuze/volumio-plugins/raw/alsa_modular/plugins/audio_interface/FusionDsp/tools/tools.tar.xz');
+      execSync(`tar -xvf /tmp/tools.tar.xz -C /data/${toolspath}`);
+      execSync('/bin/rm /tmp/tools.tar.xz*');
+
+      // Update configuration
       self.config.set('toolsfiletoplay', self.commandRouter.getI18nString('TOOLS_CHOOSE_FILE'));
       self.config.set('toolsinstalled', true);
+
+      // Refresh UI and emit update after a delay
       self.refreshUI();
       setTimeout(function () {
-
         self.socket.emit('updateDb');
-      }, 1500)
-    } catch (err) {
-      self.logger.error(logPrefix + ' An error occurs while downloading or installing tools');
-      self.commandRouter.pushToastMessage('error', 'An error occurs while downloading or installing tools');
-    }
+        self.logger.info(logPrefix + ' Updapting dB for tools ');
 
-    resolve();
+      }, 1500);
+
+      // Close the modal and resolve the promise
+      self.commandRouter.broadcastMessage("closeModal");
+      resolve();
+    } catch (err) {
+      // Log the error and notify the user
+      self.logger.error(logPrefix + ' An error occurred while downloading or installing tools: ' + err.message);
+      self.commandRouter.pushToastMessage('error', 'An error occurred while downloading or installing tools');
+
+      // Close the modal and reject the promise
+      self.commandRouter.broadcastMessage("closeModal");
+      reject(err);
+    }
   });
 };
 

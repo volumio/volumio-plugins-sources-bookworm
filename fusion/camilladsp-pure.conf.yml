@@ -4,7 +4,7 @@ devices:
   chunksize: ${chunksize}
   capture_samplerate: ${capturesamplerate}
   capture:
-    type: File
+    type: RawFile
     channels: 2
     format: S32LE
     filename: "/tmp/fusiondspfifo"

@@ -10,7 +10,7 @@ devices:
   enable_rate_adjust: true
 ${resampling}
   capture:
-    type: File
+    type: RawFile
     channels: 2
     format: S32LE
     filename: "/tmp/fusiondspfifo"
