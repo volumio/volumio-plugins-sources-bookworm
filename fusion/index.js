@@ -17,6 +17,8 @@ const net = require('net');
 const path = require('path');
 const WebSocket = require('ws');
 const { CamillaDsp } = require('./camilladsp-js');
+const url = 'ws://localhost:9876';
+
 
 //---global Eq Variables
 const tnbreq = 50// Nbre total of Eq
@@ -72,6 +74,7 @@ FusionDsp.prototype.onStart = function () {
     self.hwinfo();
     self.purecamillagui();
     self.getIP();
+    self.monitorClippedSamples();
     self.socket = io.connect('http://localhost:3000');
     self.reportFusionEnabled();
     self.checksamplerate();
@@ -108,6 +111,8 @@ FusionDsp.prototype.onStop = function () {
   self.logger.info(logPrefix + ' Stopping FusionDsp service');
   self.camillaProcess.stop();
   self.camillaProcess = null;
+  if (this.stopReloadConnection) this.stopReloadConnection();
+  if (this.stopClippedSamplesMonitor) this.stopClippedSamplesMonitor();
 
   exec("/usr/bin/sudo /bin/systemctl stop fusiondsp.service", {
     uid: 1000,
@@ -582,7 +587,6 @@ function configureEq3Section(self, uiconf) {
   uiconf.sections[1].saveButton.data.push('geq3');
 }
 function configureConvfirSection(self, uiconf) {
-  const logPrefix = '[FusionDsp] ';
   self.logger.info(logPrefix + 'Configuring convfir section');
 
   // Ensure section 1 is visible and reset content
@@ -681,8 +685,6 @@ function configureConvfirSection(self, uiconf) {
     'attenuationr',
     'enableclipdetect'
   ];
-
-  self.logger.info(logPrefix + 'convfir section configured: ' + JSON.stringify(uiconf.sections[1].content));
 }
 
 function configurePureCamillaSection(self, uiconf) {
@@ -864,7 +866,7 @@ function configurePresetSelection(self, uiconf, selectedsp) {
       self.configManager.pushUIConfigParam(uiconf, 'sections[2].content[0].options', { value: item, label: itemsf[i] });
     });
   } catch (e) {
-    self.logger.error('[FusionDsp] failed to read local file: ' + e);
+    self.logger.error(logPrefix + ' failed to read local file: ' + e);
   }
 }
 
@@ -880,7 +882,7 @@ function configureImportEq(self, uiconf) {
       self.configManager.pushUIConfigParam(uiconf, 'sections[4].content[0].options', { value: linkl, label: `${i + 1}  ${namel}` });
     });
   } catch (e) {
-    self.logger.error('[FusionDsp] failed to read downloadedlist.txt: ' + e);
+    self.logger.error(logPrfix + ' failed to read downloadedlist.txt: ' + e);
   }
 }
 
@@ -894,7 +896,7 @@ function configureLocalEqImport(self, uiconf) {
       self.configManager.pushUIConfigParam(uiconf, 'sections[5].content[0].options', { value: item, label: item });
     });
   } catch (e) {
-    self.logger.error('[FusionDsp] failed to read local file: ' + e);
+    self.logger.error(logPrefix + ' failed to read local file: ' + e);
   }
 
   const localscope = self.config.get('localscope');
@@ -934,7 +936,7 @@ function configureDrc(self, uiconf) {
       self.configManager.pushUIConfigParam(uiconf, 'sections[7].content[0].options', { value: item, label: item });
     });
   } catch (e) {
-    self.logger.error('[FusionDsp] Could not read file: ' + e);
+    self.logger.error(logPrefix + ' Could not read file: ' + e);
   }
 
   const drcSampleRate = self.config.get('drc_sample_rate');
@@ -949,7 +951,7 @@ function configureDrc(self, uiconf) {
       self.configManager.pushUIConfigParam(uiconf, 'sections[7].content[2].options', { value: item, label: item });
     });
   } catch (e) {
-    self.logger.error('[FusionDsp] Could not read file: ' + e);
+    self.logger.error(logPrefix + ' Could not read file: ' + e);
   }
 
   const drcconfig = self.config.get('drcconfig');
@@ -969,7 +971,7 @@ function configureTools(self, uiconf) {
       self.configManager.pushUIConfigParam(uiconf, 'sections[8].content[0].options', { value: item, label: item });
     });
   } catch (e) {
-    self.logger.error('[FusionDsp] Could not read file: ' + e);
+    self.logger.error(logPrefix + ' Could not read file: ' + e);
   }
 
   uiconf.sections[8].content[0].hidden = !ttools;
@@ -1318,49 +1320,138 @@ FusionDsp.prototype.getAdditionalConf = function (type, controller, data) {
 //------------Here we define a function to send a command to CamillaDsp through websocket---------------------
 FusionDsp.prototype.sendCommandToCamilla = function () {
   const self = this;
-  const url = 'ws://localhost:9876';
-  const connection = new WebSocket(url);
-  const ccmd = '\"Reload\"';
-  const ccmd2 = '\"GetClippedSamples\"';
-  const ccmd3 = '\"GetCaptureSignalPeak\"';
-
-  connection.onopen = () => {
-    connection.send(ccmd);
+ // const url = 'ws://localhost:9876';
+  const commands = {
+    reload: '"Reload"'
   };
 
-  connection.onerror = (error) => {
-    self.logger.error(logPrefix + `WebSocket error: ${error}`);
-  };
+  // Use existing connection if available, otherwise create a new one
+  if (!this.reloadConnection || this.reloadConnection.readyState !== WebSocket.OPEN) {
+    this.reloadConnection = new WebSocket(url);
+    setupReloadConnection(this.reloadConnection);
+  }
 
-  connection.onmessage = (e) => {
-    self.logger.info(logPrefix + e.data);
-    let replyString = Buffer.from(e.data).toString();
-    let parsed = {};
-    try {
-      parsed = JSON.parse(replyString);
-    } catch (err) {
-      self.logger.error(logPrefix + 'Parse error ', err);
+  function setupReloadConnection(connection) {
+    connection.onopen = () => {
+      //   self.logger.info(logPrefix + 'Reload WebSocket connection opened');
+      connection.send(commands.reload);
+    };
+
+    connection.onerror = (error) => {
+      self.logger.error(logPrefix + `Reload WebSocket error: ${error}`);
+    };
+
+    connection.onmessage = (event) => {
+      self.logger.info(logPrefix + 'Reload response: ' + Buffer.from(event.data).toString());
+    };
+
+    connection.onclose = () => {
+      //   self.logger.info(logPrefix + 'Reload WebSocket connection closed');
+    };
+  }
+
+  // Send reload if connection is already open
+  if (this.reloadConnection.readyState === WebSocket.OPEN) {
+    this.reloadConnection.send(commands.reload);
+    //  self.logger.info(logPrefix + 'Sent Reload command');
+  }
+
+  // Cleanup method (optional)
+  this.stopReloadConnection = () => {
+    if (this.reloadConnection && this.reloadConnection.readyState === WebSocket.OPEN) {
+      this.reloadConnection.close();
     }
-    if (parsed.hasOwnProperty('GetClippedSamples')) {
-      let result = parsed.GetClippedSamples.value;
-      if (result !== "0") {
-        self.logger.info(logPrefix + 'GetCaptureSignalPeak response received', result);
-        self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('CLIPPING_WARNING'));
-      }
-    }
+    self.logger.info(logPrefix + 'Reload connection stopped');
   };
-  //connection.close();
-  /*
-    setInterval(function () {
-      connection.onopen = () => {
-        connection.send(ccmd2);
-        connection.close();
-      };
-    }, 30000);
-    */
 };
+FusionDsp.prototype.monitorClippedSamples = function () {
+  const self = this;
+//  const url = 'ws://localhost:9876';
+  const commands = {
+    getClippedSamples: '"GetClippedSamples"',
+    resetClippedSamples: '"ResetClippedSamples"'
+  };
 
+  // Initialize persistent WebSocket connection
+  if (!this.monitorConnection || this.monitorConnection.readyState !== WebSocket.OPEN) {
+    this.monitorConnection = new WebSocket(url);
+    setupMonitorConnection(this.monitorConnection);
+  }
 
+  function setupMonitorConnection(connection) {
+    connection.onopen = () => {
+      //  self.logger.info(logPrefix + 'Monitor WebSocket connection opened');
+    };
+
+    connection.onerror = (error) => {
+      //   self.logger.error(logPrefix + `Monitor WebSocket error: ${error}`);
+    };
+
+    connection.onmessage = (event) => {
+      const replyString = Buffer.from(event.data).toString();
+      //   self.logger.info(logPrefix + 'Monitor response: ' + replyString);
+
+      let parsed;
+      try {
+        parsed = JSON.parse(replyString);
+      } catch (err) {
+        //  self.logger.error(logPrefix + 'Parse error: ' + err);
+        return;
+      }
+
+      if (parsed.hasOwnProperty('GetClippedSamples')) {
+        const clippedSamples = parsed.GetClippedSamples.value;
+        if (clippedSamples >= '100') { // String comparison as per your spec
+          self.logger.info(logPrefix + 'Clipped samples detected: ' + clippedSamples);
+          self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('CLIPPING_WARNING'));
+        }
+      }
+      // Note: ResetClippedSamples response could be logged here if needed
+    };
+
+    connection.onclose = () => {
+      self.logger.info(logPrefix + 'Monitor WebSocket connection closed, attempting reconnect');
+      setTimeout(() => {
+        self.monitorClippedSamples(); // Reconnect and restart monitoring
+      }, 2000);
+    };
+  }
+
+  // Send periodic GetClippedSamples followed by ResetClippedSamples
+  const sendPeriodicCommands = () => {
+    if (self.monitorConnection.readyState === WebSocket.OPEN) {
+      // Send GetClippedSamples
+      self.monitorConnection.send(commands.getClippedSamples);
+      // self.logger.info(logPrefix + 'Sent GetClippedSamples command');
+
+      // Send ResetClippedSamples immediately after
+      setTimeout(() => {
+        self.monitorConnection.send(commands.resetClippedSamples);
+        // self.logger.info(logPrefix + 'Sent ResetClippedSamples command');
+      }, 100); // Small delay to ensure sequential processing
+    } else {
+      self.logger.warn(logPrefix + 'Monitor WebSocket not open, skipping commands');
+    }
+  };
+
+  // Start periodic monitoring if not already running
+  if (!this.monitorIntervalId) {
+    this.monitorIntervalId = setInterval(sendPeriodicCommands, 30000);
+    sendPeriodicCommands(); // Initial call to start immediately
+  }
+
+  // Cleanup method
+  this.stopClippedSamplesMonitor = () => {
+    if (this.monitorIntervalId) {
+      clearInterval(this.monitorIntervalId);
+      this.monitorIntervalId = null;
+    }
+    if (this.monitorConnection && this.monitorConnection.readyState === WebSocket.OPEN) {
+      this.monitorConnection.close();
+    }
+    // self.logger.info(logPrefix + 'Clipped samples monitor stopped');
+  };
+};
 //------------Fir features----------------
 
 //-----------here we define how to swap filters----------------------
@@ -3889,9 +3980,9 @@ FusionDsp.prototype.preporcessingfile = function () {
       }).filter(Boolean); // Remove null entries
 
       fs.writeFileSync(outputFile, JSON.stringify(headphoneOptions, null, 2), 'utf8');
-      self.logger.info(`${logprefix} Preprocessed ${headphoneOptions.length} lines into ${outputFile}`);
+      self.logger.info(`${logPrefix} Preprocessed ${headphoneOptions.length} lines into ${outputFile}`);
     } catch (err) {
-      self.logger.error(`${logprefix} Failed to preprocess ${inputFile}: ${err}`);
+      self.logger.error(`${logPrefix} Failed to preprocess ${inputFile}: ${err}`);
     }
   }
 
