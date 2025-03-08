@@ -313,5 +313,6 @@
     "convtype": {
         "type": "string",
         "value": "Raw"
-    }
+    },
+    "state4Clipping": {}
 }

@@ -249,22 +249,6 @@ FusionDsp.prototype.hwinfo = function () {
 
 // Configuration methods------------------------------------------------------------------------
 
-/*
-FusionDsp.prototype.getUIConfig = function () {
-  const self = this;
-  const defer = libQ.defer();
-  const langCode = self.commandRouter.sharedVars.get('language_code');
-
-  self.commandRouter.i18nJson(path.join(__dirname, 'i18n', 'strings_' + langCode + '.json'),
-    path.join(__dirname, 'i18n', 'strings_en.json'),
-    path.join(__dirname, 'UIConfig.json'))
-
-
-    .then(function (uiconf)  {const path = require('path');
-    const fs = require('fs');
-    */
-
-
 FusionDsp.prototype.getUIConfig = function () {
   const self = this;
   let defer = libQ.defer();
@@ -587,7 +571,7 @@ function configureEq3Section(self, uiconf) {
   uiconf.sections[1].saveButton.data.push('geq3');
 }
 function configureConvfirSection(self, uiconf) {
-  self.logger.info(logPrefix + 'Configuring convfir section');
+  // self.logger.info(logPrefix + 'Configuring convfir section');
 
   // Ensure section 1 is visible and reset content
   uiconf.sections[1].hidden = false;
@@ -1320,7 +1304,7 @@ FusionDsp.prototype.getAdditionalConf = function (type, controller, data) {
 //------------Here we define a function to send a command to CamillaDsp through websocket---------------------
 FusionDsp.prototype.sendCommandToCamilla = function () {
   const self = this;
- // const url = 'ws://localhost:9876';
+  // const url = 'ws://localhost:9876';
   const commands = {
     reload: '"Reload"'
   };
@@ -1366,7 +1350,7 @@ FusionDsp.prototype.sendCommandToCamilla = function () {
 };
 FusionDsp.prototype.monitorClippedSamples = function () {
   const self = this;
-//  const url = 'ws://localhost:9876';
+  //  const url = 'ws://localhost:9876';
   const commands = {
     getClippedSamples: '"GetClippedSamples"',
     resetClippedSamples: '"ResetClippedSamples"'
@@ -1410,7 +1394,7 @@ FusionDsp.prototype.monitorClippedSamples = function () {
     };
 
     connection.onclose = () => {
-      self.logger.info(logPrefix + 'Monitor WebSocket connection closed, attempting reconnect');
+      //   self.logger.info(logPrefix + 'Monitor WebSocket connection closed, attempting reconnect');
       setTimeout(() => {
         self.monitorClippedSamples(); // Reconnect and restart monitoring
       }, 2000);
@@ -1532,19 +1516,24 @@ FusionDsp.prototype.testclipping = function () {
     self.createCamilladspfile();
   }, 300);
 
-  setTimeout(function () {
 
-    try {
-      let cmd = ('/usr/bin/aplay -c2 --device=volumio ' + track);
-      self.commandRouter.pushToastMessage('info', 'Clipping detection in progress...');
-      setTimeout(function () {
-        execSync(cmd);
-      }, 50);
+  try {
+    let cmd = '/usr/bin/aplay -c2 --device=volumio ' + track;
 
-    } catch (e) {
-      self.logger.error(cmd);
-    };
-  }, 1500);
+    // Execute the command asynchronously
+    exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+        self.logger.error(logPrefix + ' Error executing aplay: ' + error.message);
+        return;
+      }
+      if (stderr) {
+        self.logger.warn(logPrefix + ' aplay stderr: ' + stderr);
+      }
+      self.logger.info(logPrefix + ' aplay stdout: ' + stdout);
+    });
+  } catch (error) {
+    self.logger.error(logPrefix + ' Error in clipping detection: ' + error.message);
+  }
 
   setTimeout(function () {
 
@@ -1594,6 +1583,24 @@ FusionDsp.prototype.testclipping = function () {
     test = ltest + rtest
     self.config.set('mergedeq', test);
     self.config.set('savedmergedeqfir', test)
+    // Read the saved state4Clipping object
+    let restoreState4Clipping = self.config.get("state4Clipping");
+
+    const state = restoreState4Clipping
+
+    self.config.set('crossfeed', state.crossfeed || "None");
+    self.config.set('monooutput', state.monooutput || false);
+    self.config.set('loudness', state.loudness || false);
+    self.config.set('leftlevel', state.leftlevel || 0);
+    self.config.set('rightlevel', state.rightlevel || 0);
+    self.config.set('delay', state.delay || 0);
+    self.config.set('delayscope', state.delayscope || "None");
+    self.config.set('muteleft', state.muteleft || false);
+    self.config.set('muteright', state.muteright || false);
+    self.config.set('ldistance', state.ldistance || 0);
+    self.config.set('rdistance', state.rdistance || 0);
+    self.config.set('permutchannel', state.permutchannel || false);
+    self.logger.error(logPrefix + ' Restored State4Clipping: ' + JSON.stringify(restoreState4Clipping, null, 2));
 
     self.refreshUI();
     self.createCamilladspfile();
@@ -3240,6 +3247,25 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
       self.config.set('enableclipdetect', enableclipdetect);
       if (enableclipdetect && ((rightfilter != 'None') || (leftfilter != 'None'))) {
 
+        let state4Clipping = {
+          crossfeed: data['crossfeed'].value,
+          monooutput: data['monooutput'],
+          loudness: data['loudness'],
+          loudnessthreshold: data['loudnessthreshold'],
+          leftlevel: data.leftlevel,
+          rightlevel: data.rightlevel,
+          delay: data['delay'] || 0,
+          delayscope: data['delayscope']?.value || "None",
+          muteleft: data['muteleft'],
+          muteright: data['muteright'],
+          ldistance: data['ldistance'],
+          rdistance: data['rdistance'],
+          permutchannel: data['permutchannel']
+        }
+        self.config.set("state4Clipping", state4Clipping)
+        self.logger.info(logPrefix + ' State4Clipping saved: ' + JSON.stringify(state4Clipping, null, 2));
+        self.commandRouter.pushToastMessage('info', 'Clipping detection in progress. Please wait!');
+
         self.testclipping()
 
       }
@@ -3611,7 +3637,7 @@ FusionDsp.prototype.usethispreset = function (data) {
       }
       self.config.set('permutchannel', state4preset[13]);
       self.config.set(selectedsp + "preset", preset);
-      self.commandRouter.pushToastMessage('info', presetforkey.replace(/^\./, "") + self.commandRouter.getI18nString('PRESET_LOADED_USED'))
+      self.commandRouter.pushToastMessage('info', preset.replace(".json", "").replace(/^\./, "") + self.commandRouter.getI18nString('PRESET_LOADED_USED'))
 
     } catch (e) {
       self.logger.error(logPrefix + ' failed processing JSON value: ' + e);
