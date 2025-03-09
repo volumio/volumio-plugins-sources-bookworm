@@ -1,5 +1,5 @@
 /*--------------------
-// FusionDsp plugin for volumio 3. By balbuze Mars 2025
+// FusionDsp plugin for volumio 3. By balbuze March 2025
 contribution : Paolo Sabatino
 Multi Dsp features
 Based on CamillaDsp
@@ -19,7 +19,6 @@ const WebSocket = require('ws');
 const { CamillaDsp } = require('./camilladsp-js');
 const url = 'ws://localhost:9876';
 
-
 //---global Eq Variables
 const tnbreq = 50// Nbre total of Eq
 const filterfolder = "/data/INTERNAL/FusionDsp/filters/";
@@ -37,7 +36,6 @@ const coefQ3 = [0.82, 0.4, 0.82]//Q for graphic EQ3
 const eq3type = ["Lowshelf2", "Peaking", "Highshelf2"] //Filter type for EQ3
 const sv = 34300 // sound velocity cm/s
 const logPrefix = "FusionDsp - "
-
 const fileStreamParams = "/tmp/fusiondsp_stream_params.log";
 
 // Define the Parameq class
@@ -165,7 +163,7 @@ FusionDsp.prototype.loadalsastuff = function () {
     defer.reject(err);
   }
 };
-
+/*
 FusionDsp.prototype.createCamillaWebsocket = function () {
   const self = this;
   var defer = libQ.defer();
@@ -173,7 +171,7 @@ FusionDsp.prototype.createCamillaWebsocket = function () {
   self.connection = null;
   function MyWebSocket() {
     self.connect = function () {
-      const url = 'ws://localhost:9876';
+    //  const url = 'ws://localhost:9876';
       self.connection = new WebSocket(url);
 
       self.connection.onopen = function () {
@@ -213,7 +211,7 @@ FusionDsp.prototype.createCamillaWebsocket = function () {
 
 
 };
-
+*/
 //------------------Hw detection--------------------
 
 //here we detect hw info
@@ -1490,7 +1488,6 @@ FusionDsp.prototype.areSampleswitch = function () {
   };
   self.refreshUI()
 };
-
 //------------Here we detect if clipping occurs while playing ------
 FusionDsp.prototype.testclipping = function () {
   const self = this;
@@ -1600,7 +1597,7 @@ FusionDsp.prototype.testclipping = function () {
     self.config.set('ldistance', state.ldistance || 0);
     self.config.set('rdistance', state.rdistance || 0);
     self.config.set('permutchannel', state.permutchannel || false);
-    self.logger.error(logPrefix + ' Restored State4Clipping: ' + JSON.stringify(restoreState4Clipping, null, 2));
+    self.logger.info(logPrefix + ' Restored State4Clipping: ' + JSON.stringify(restoreState4Clipping, null, 2));
 
     self.refreshUI();
     self.createCamilladspfile();
@@ -1610,106 +1607,74 @@ FusionDsp.prototype.testclipping = function () {
 
 };
 
-//here we determine filter type and apply skip value if needed
 FusionDsp.prototype.dfiltertype = function (data) {
   const self = this;
   let skipvalue = '';
-  let filtername = self.config.get('leftfilterlabel');
-  var auto_filter_format;
-  let filext = self.config.get('leftfilterlabel').split('.').pop().toString();
-  var wavetype;
-  let filelength
-  let convtype = "Raw"
+  const filtername = self.config.get('leftfilterlabel');
+  const filext = filtername.split('.').pop().toString();
+  let auto_filter_format;
+  let filelength;
+  let convtype = "Raw";
 
-  if (filext == 'pcm') {
-    try {
-      filelength = (execSync('/usr/bin/stat -c%s ' + filterfolder + filtername, 'utf8').slice(0, -1) / 4);
-      //  self.logger.info(logPrefix+' filelength ' + filelength)
-    } catch (err) {
-      self.logger.error(logPrefix + ' An error occurs while reading file');
-    }
-    self.config.set('filter_size', filelength);
-    auto_filter_format = 'FLOAT32LE';
-  }
-  else if (filext == 'txt') {
-    let filelength;
-    try {
-      filelength = execSync('/bin/cat ' + filterfolder + filtername + ' |wc -l').slice(0, -1);
-    } catch (err) {
-      self.logger.error(logPrefix + ' An error occurs while reading file');
-    }
-    self.config.set('filter_size', filelength);
-    auto_filter_format = 'TEXT';
-    // self.logger.info(logPrefix+' Filter length' + filelength);
+  const fileExtensions = {
+    pcm: { format: 'FLOAT32LE', sizeDivisor: 4 },
+    txt: { format: 'TEXT', sizeCommand: '/bin/cat', sizeDivisor: 1 },
+    raw: { format: 'FLOAT32LE', sizeDivisor: 4 },
+    dbl: { format: 'FLOAT64LE', sizeDivisor: 8 },
+    wav: { convtype: "Wav" },
+    None: { format: 'TEXT' }
+  };
 
-  }
-  else if (filext == 'raw') {
-    try {
-      filelength = (execSync('/usr/bin/stat -c%s ' + filterfolder + filtername).slice(0, -1) / 4);
-    } catch (err) {
-      self.logger.error(logPrefix + ' An error occurs while reading file');
-    }
-    self.config.set('filter_size', filelength);
-    auto_filter_format = 'FLOAT32LE';
-  }
-  else if (filext == 'dbl') {
-    try {
-      filelength = (execSync('/usr/bin/stat -c%s ' + filterfolder + filtername).slice(0, -1) / 8);
-    } catch (err) {
-      self.logger.error(logPrefix + ' An error occurs while reading file');
-    }
-    self.config.set('filter_size', filelength);
-    auto_filter_format = 'FLOAT64LE';
-  }
-  else if (filext == 'None') {
+  const extensionData = fileExtensions[filext];
 
-    auto_filter_format = 'TEXT';
-  }
-  else if (filext == 'wav') {
-    convtype = "Wav"
+  if (extensionData) {
+    auto_filter_format = extensionData.format;
+    convtype = extensionData.convtype || convtype;
 
+    if (extensionData.sizeDivisor) {
+      try {
+        filelength = execSync(`/usr/bin/stat -c%s ${filterfolder}${filtername}`, 'utf8').slice(0, -1) / extensionData.sizeDivisor;
+        self.config.set('filter_size', filelength);
+      } catch (err) {
+        self.logger.error(`${logPrefix} An error occurs while reading file`);
+      }
+    } else if (extensionData.sizeCommand) {
+      try {
+        filelength = execSync(`${extensionData.sizeCommand} ${filterfolder}${filtername} | wc -l`).slice(0, -1);
+        self.config.set('filter_size', filelength);
+      } catch (err) {
+        self.logger.error(`${logPrefix} An error occurs while reading file`);
+      }
+    }
   } else {
-    let modalData = {
+    const modalData = {
       title: self.commandRouter.getI18nString('FILTER_FORMAT_TITLE'),
       message: self.commandRouter.getI18nString('FILTER_FORMAT_MESS'),
       size: 'lg',
       buttons: [{
         name: 'CloseModals',
         class: 'btn btn-warning'
-      },]
+      }]
     };
     self.commandRouter.broadcastMessage("openModal", modalData);
   }
 
   filelength = self.config.get('filter_size');
-
   self.config.set('filter_format', auto_filter_format);
   self.config.set('convtype', convtype);
 
-  // self.logger.info(logPrefix+' --------->filter format ' + filext + ' ' + auto_filter_format);
-  //self.logger.info(logPrefix+' --------->filter size ' + filelength);
+  const validSizes = [2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144];
+  const valfound = validSizes.includes(Number(filelength));
 
-
-  var arr = [2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144];
-  var check = Number(filelength);
-  var valfound = false;
-  if (arr.indexOf(check) > -1) {
-    valfound = true;
-  }
   if (valfound) {
-    self.logger.info(logPrefix + ' File size found in array!');
+    self.logger.info(`${logPrefix} File size found in array!`);
+  } else {
+    self.logger.error(`${logPrefix} File size not found in array!`);
   }
-  if (valfound === false) {
-    self.logger.error(logPrefix + ' File size not found in array!');
-  };
 
-  var obj = {
-    skipvalue: skipvalue,
-    valfound: valfound
-  };
-  return obj;
-
+  return { skipvalue, valfound };
 };
+
 
 // Guard against multiple samplerate change events in short amount of time
 let isSamplerateUpdating = false;
@@ -1788,16 +1753,11 @@ FusionDsp.prototype.checksamplerate = function () {
   // Install a file watcher over fileStreamParams
   // when the file changes, read the content and update the samplerate
   try {
-
     let watcher = fs.watch(fileStreamParams);
     watcher.on("change", callbackRead);
-
     self.logger.info(logPrefix + " ---- installed callbackRead");
-
   } catch (e) {
-
     self.logger.error(logPrefix + "### ERROR: could not watch file " + fileStreamParams + " for sampling rate check");
-
   }
 
 };
@@ -3248,20 +3208,20 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
       if (enableclipdetect && ((rightfilter != 'None') || (leftfilter != 'None'))) {
 
         let state4Clipping = {
-          crossfeed: data['crossfeed'].value,
-          monooutput: data['monooutput'],
-          loudness: data['loudness'],
-          loudnessthreshold: data['loudnessthreshold'],
-          leftlevel: data.leftlevel,
-          rightlevel: data.rightlevel,
-          delay: data['delay'] || 0,
-          delayscope: data['delayscope']?.value || "None",
-          muteleft: data['muteleft'],
-          muteright: data['muteright'],
-          ldistance: data['ldistance'],
-          rdistance: data['rdistance'],
-          permutchannel: data['permutchannel']
-        }
+          crossfeed: data['crossfeed']?.value || "None", // Default: "None"
+          monooutput: data['monooutput'] || false, // Default: false
+          loudness: data['loudness'] || false, // Default: false
+          loudnessthreshold: data['loudnessthreshold']?.[0] || 50, // Default: 0 (first element of array)
+          leftlevel: data.leftlevel || 0, // Default: 0
+          rightlevel: data.rightlevel || 0, // Default: 0
+          delay: data['delay'] || 0, // Default: 0
+          delayscope: data['delayscope']?.value || "None", // Default: "None"
+          muteleft: data['muteleft'] || false, // Default: false
+          muteright: data['muteright'] || false, // Default: false
+          ldistance: data['ldistance'] || 0, // Default: 0
+          rdistance: data['rdistance'] || 0, // Default: 0
+          permutchannel: data['permutchannel'] || false // Default: false
+        };
         self.config.set("state4Clipping", state4Clipping)
         self.logger.info(logPrefix + ' State4Clipping saved: ' + JSON.stringify(state4Clipping, null, 2));
         self.commandRouter.pushToastMessage('info', 'Clipping detection in progress. Please wait!');
