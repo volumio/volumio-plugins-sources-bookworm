@@ -840,7 +840,7 @@ function configurePresetSelection(self, uiconf, selectedsp) {
 
   self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.value', value);
   self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.label', plabel);
-
+/*
   try {
     const items = fs.readdirSync(pFolder);
     const itemsf = items.map(item => item.replace(/^\./, '').replace(/\.json$/, ''));
@@ -849,7 +849,23 @@ function configurePresetSelection(self, uiconf, selectedsp) {
     });
   } catch (e) {
     self.logger.error(logPrefix + ' failed to read local file: ' + e);
+  }*/
+  try {
+    const items = fs.readdirSync(pFolder);
+    const itemsf = items.map(item => item.replace(/^\./, '').replace(/\.json$/, ''));
+  
+    if (items.length === 0) {
+      // Default to 'No preset' if no items are found
+      self.configManager.pushUIConfigParam(uiconf, 'sections[2].content[0].options', { value: 'No preset', label: 'No preset' });
+    } else {
+      items.forEach((item, i) => {
+        self.configManager.pushUIConfigParam(uiconf, 'sections[2].content[0].options', { value: item, label: itemsf[i] });
+      });
+    }
+  } catch (e) {
+    self.logger.error(`${logPrefix} failed to read local file: ${e}`);
   }
+  
 }
 
 function configureImportEq(self, uiconf) {
@@ -1117,42 +1133,52 @@ FusionDsp.prototype.removeeq = function () {
 
 FusionDsp.prototype.removealleq = function () {
   const self = this;
-
+  let selectedsp=self.config.get("selectedsp")
   self.config.set('effect', true)
   self.config.set('nbreq', 1)
   self.config.set('mergedeq', "Eq0|None|L+R|0,0,0|")
   self.config.set('savedmergedeq', "Eq0|None|L+R|0,0,0|")
   self.config.set('savednbreq', 1)
   self.config.set('usethispreset', 'no preset used');
+  self.config.set(selectedsp + "preset", "no preset used");
 
   setTimeout(function () {
     self.createCamilladspfile()
-  }, 100);
+  }, 300);
   self.refreshUI();
 };
 
 FusionDsp.prototype.reseteq = function () {
   const self = this;
-  if (self.config.get("selectedsp") == 'EQ15') {
+  const selectedsp = self.config.get("selectedsp");
+
+  const defaultEQ15 = "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0";
+  const defaultMergedEQ15 = "Eq0|Peaking|L+R|25,0,1.85|Eq1|Peaking|L+R|40,0,1.85|Eq2|Peaking|L+R|63,0,1.85|Eq3|Peaking|L+R|100,0,1.85|Eq4|Peaking|L+R|160,0,1.85|Eq5|Peaking|L+R|250,0,1.85|Eq6|Peaking|L+R|400,0,1.85|Eq7|Peaking|L+R|630,0,1.85|Eq8|Peaking|L+R|1000,0,1.85|Eq9|Peaking|L+R|1600,0,1.85|Eq10|Peaking|L+R|2500,0,1.85|Eq11|Peaking|L+R|4000,0,1.85|Eq12|Peaking|L+R|6300,0,1.85|Eq13|Peaking|L+R|10000,0,1.85|Eq14|Peaking|L+R|16000,0,1.85";
+  const defaultMerged2XEQ15 = "Eq0|Peaking|L|25,0,1.85|Eq1|Peaking|L|40,0,1.85|Eq2|Peaking|L|63,0,1.85|Eq3|Peaking|L|100,0,1.85|Eq4|Peaking|L|160,0,1.85|Eq5|Peaking|L|250,0,1.85|Eq6|Peaking|L|400,0,1.85|Eq7|Peaking|L|630,0,1.85|Eq8|Peaking|L|1000,0,1.85|Eq9|Peaking|L|1600,0,1.85|Eq10|Peaking|L|2500,0,1.85|Eq11|Peaking|L|4000,0,1.85|Eq12|Peaking|L|6300,0,1.85|Eq13|Peaking|L|10000,0,1.85|Eq14|Peaking|L|16000,0,1.85|undefinedEq0|Peaking|R|25,0,1.85|Eq1|Peaking|R|40,0,1.85|Eq2|Peaking|R|63,0,1.85|Eq3|Peaking|R|100,0,1.85|Eq4|Peaking|R|160,0,1.85|Eq5|Peaking|R|250,0,1.85|Eq6|Peaking|R|400,0,1.85|Eq7|Peaking|R|630,0,1.85|Eq8|Peaking|R|1000,0,1.85|Eq9|Peaking|R|1600,0,1.85|Eq10|Peaking|R|2500,0,1.85|Eq11|Peaking|R|4000,0,1.85|Eq12|Peaking|R|6300,0,1.85|Eq13|Peaking|R|10000,0,1.85|Eq14|Peaking|R|16000,0,1.85";
+
+  if (selectedsp === 'EQ15') {
     self.config.set('usethispreset', 'no preset used');
-    self.config.set("geq15", "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0")
-    self.config.set("savedgeq15", "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0")
-    self.config.set('nbreq', 15)
-    self.config.set('mergedeq', "Eq0|Peaking|L+R|25,0,1.85|Eq1|Peaking|L+R|40,0,1.85|Eq2|Peaking|L+R|63,0,1.85|Eq3|Peaking|L+R|100,0,1.85|Eq4|Peaking|L+R|160,0,1.85|Eq5|Peaking|L+R|250,0,1.85|Eq6|Peaking|L+R|400,0,1.85|Eq7|Peaking|L+R|630,0,1.85|Eq8|Peaking|L+R|1000,0,1.85|Eq9|Peaking|L+R|1600,0,1.85|Eq10|Peaking|L+R|2500,0,1.85|Eq11|Peaking|L+R|4000,0,1.85|Eq12|Peaking|L+R|6300,0,1.85|Eq13|Peaking|L+R|10000,0,1.85|Eq14|Peaking|L+R|16000,0,1.85|")
-  }
-  if (self.config.get("selectedsp") == '2XEQ15') {
+    self.config.set(`${selectedsp}preset`, 'no preset used');
+    self.config.set("geq15", defaultEQ15);
+    self.config.set("savedgeq15", defaultEQ15);
+    self.config.set('nbreq', 15);
+    self.config.set('mergedeq', defaultMergedEQ15);
+  } else if (selectedsp === '2XEQ15') {
+    self.config.set(`${selectedsp}preset`, 'no preset used');
     self.config.set('usethispreset', 'no preset used');
-    self.config.set("x2geq15", "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0")
-    self.config.set("geq15", "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0")
-    self.config.set('nbreq', 30)
-    self.config.set('mergedeq', "Eq0|Peaking|L|25,0,1.85|Eq1|Peaking|L|40,0,1.85|Eq2|Peaking|L|63,0,1.85|Eq3|Peaking|L|100,0,1.85|Eq4|Peaking|L|160,0,1.85|Eq5|Peaking|L|250,0,1.85|Eq6|Peaking|L|400,0,1.85|Eq7|Peaking|L|630,0,1.85|Eq8|Peaking|L|1000,0,1.85|Eq9|Peaking|L|1600,0,1.85|Eq10|Peaking|L|2500,0,1.85|Eq11|Peaking|L|4000,0,1.85|Eq12|Peaking|L|6300,0,1.85|Eq13|Peaking|L|10000,0,1.85|Eq14|Peaking|L|16000,0,1.85|undefinedEq0|Peaking|R|25,0,1.85|Eq1|Peaking|R|40,0,1.85|Eq2|Peaking|R|63,0,1.85|Eq3|Peaking|R|100,0,1.85|Eq4|Peaking|R|160,0,1.85|Eq5|Peaking|R|250,0,1.85|Eq6|Peaking|R|400,0,1.851|Eq7|Peaking|R|630,0,1.85|Eq8|Peaking|R|1000,0,1.85|Eq9|Peaking|R|1600,0,1.85|Eq10|Peaking|R|2500,0,1.85|Eq11|Peaking|R|4000,0,1.85|Eq12|Peaking|R|6300,0,1.85|Eq13|Peaking|R|10000,0,1.85|Eq14|Peaking|R|16000,0,1.85|")
+    self.config.set("x2geq15", defaultEQ15);
+    self.config.set("geq15", defaultEQ15);
+    self.config.set('nbreq', 30);
+    self.config.set('mergedeq', defaultMerged2XEQ15);
   }
-  setTimeout(function () {
-    self.createCamilladspfile()
-    self.refreshUI();
+
+  setTimeout(() => {
+    self.createCamilladspfile();
   }, 300);
 
+  self.refreshUI();
 };
+
 
 FusionDsp.prototype.moresettings = function () {
   const self = this;
@@ -1210,39 +1236,36 @@ FusionDsp.prototype.manualdelay = function () {
 
 FusionDsp.prototype.autocalculdelay = function () {
   const self = this;
-  let delay
-  let sldistance = self.config.get('ldistance');
-  let srdistance = self.config.get('rdistance');
-  let diff;
+  const sldistance = self.config.get('ldistance');
+  const srdistance = self.config.get('rdistance');
   let cdelay;
-  // let sv = 34300; // sound velocity cm/s
+  let delay;
 
   if (sldistance > srdistance) {
-    diff = sldistance - srdistance
-    cdelay = (diff * 1000 / sv).toFixed(4)
-    delay = ('0,' + cdelay)
-    self.logger.info(logPrefix + ' l>r ' + delay)
-    self.config.set('delayscope', 'R')
-    self.config.set('delay', cdelay)
+    cdelay = ((sldistance - srdistance) * 1000 / sv).toFixed(4);
+    delay = `0,${cdelay}`;
+    self.logger.info(`${logPrefix} l>r ${delay}`);
+    self.config.set('delayscope', 'R');
+  } else if (sldistance < srdistance) {
+    cdelay = ((srdistance - sldistance) * 1000 / sv).toFixed(4);
+    delay = `${cdelay},0`;
+    self.logger.info(`${logPrefix} l<r ${delay}`);
+    self.config.set('delayscope', 'L');
+  } else {
+    self.logger.info(`${logPrefix} no delay needed`);
+    delay = '0,0';
+    self.config.set('delayscope', 'None');
+    cdelay = 0;
+  }
 
-  }
-  if (sldistance < srdistance) {
-    diff = srdistance - sldistance
-    cdelay = (diff * 1000 / sv).toFixed(4)
-    delay = (cdelay + ',0')
-    self.logger.info(logPrefix + ' l<r ' + delay)
-    self.config.set('delayscope', 'L')
-    self.config.set('delay', cdelay)
-  }
-  if (sldistance == srdistance) {
-    self.logger.info(logPrefix + ' no delay needed');
-    delay = ('0,0')
-    self.config.set('delayscope', 'None')
-    self.config.set('delay', 0)
-    self.config.set('ldistance', 0)
-    self.config.set('rdistance', 0)
+  self.config.set('delay', cdelay);
+
+  if (sldistance === srdistance) {
+    self.config.set('ldistance', 0);
+    self.config.set('rdistance', 0);
   }
 };
+
 
 FusionDsp.prototype.autocaldistancedelay = function () {
   const self = this;
@@ -4161,7 +4184,9 @@ FusionDsp.prototype.installtools = function (data) {
       // Refresh UI and emit update after a delay
       self.refreshUI();
       setTimeout(function () {
-        self.socket.emit('updateDb');
+      //  self.socket.emit('updateDb');
+        self.commandRouter.executeOnPlugin('music_service', 'mpd', 'updateMpdDB');
+
         self.logger.info(logPrefix + ' Updapting dB for tools ');
 
       }, 1500);
@@ -4200,7 +4225,9 @@ FusionDsp.prototype.removetools = function (data) {
     self.config.set('toolsinstalled', false);
     self.config.set('toolsfiletoplay', self.commandRouter.getI18nString('TOOLS_NO_FILE'));
     self.refreshUI();
-    self.socket.emit('updateDb');
+    //self.socket.emit('updateDb');
+    self.commandRouter.executeOnPlugin('music_service', 'mpd', 'updateMpdDB');
+
 
   });
 };
