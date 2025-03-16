@@ -77,7 +77,7 @@ if [ $cpu = "armv7l" ] || [ $cpu = "aarch64" ]
 then
 cd /tmp
 wget https://github.com/HEnquist/camilladsp/releases/download/v3.0.0/camilladsp-linux-armv7.tar.gz
-tar -xvf camilladsp-linux-armv7.tar.gz -C /tmp
+tar -xf camilladsp-linux-armv7.tar.gz -C /tmp
 chown volumio camilladsp
 chgrp volumio camilladsp
 chmod +x camilladsp
@@ -92,7 +92,7 @@ echo "Downloading camillagui ... Please wait!"
 cd $LIB
 
 wget https://github.com/balbuze/volumio-plugins-xtra/raw/refs/heads/main/cgui-venv-3.0.2.tar.gz
-tar -xzvf cgui-venv-3.0.2.tar.gz
+tar -xzf cgui-venv-3.0.2.tar.gz
 #chmod -R 777 cgui
 chown -R volumio cgui
 chgrp -R volumio cgui
@@ -103,7 +103,7 @@ then
 cd /tmp
 wget https://github.com/HEnquist/camilladsp/releases/download/v3.0.0/camilladsp-linux-amd64.tar.gz
 #wget https://github.com/balbuze/volumio-plugins/raw/alsa_modular/plugins/audio_interface/FusionDsp/bin/camilladsp-linux-amd64-1.0.2.tar.gz
-tar -xvf camilladsp-linux-amd64.tar.gz -C /tmp
+tar -xf camilladsp-linux-amd64.tar.gz -C /tmp
 #tar -xvf camilladsp-linux-amd64-1.0.2.tar.gz -C /tmp
 chown volumio camilladsp
 chgrp volumio camilladsp
@@ -120,7 +120,7 @@ echo "Downloading camillagui ... Please wait!"
 cd $LIB
 
 wget https://github.com/balbuze/volumio-plugins-xtra/raw/refs/heads/main/cgui-venvx86-3.0.2.tar.gz
-tar -xzvf cgui-venvx86-3.0.2.tar.gz
+tar -xzf cgui-venvx86-3.0.2.tar.gz
 #chmod -R 777 cgui
 chown -R volumio cgui
 chgrp -R volumio cgui
@@ -131,7 +131,7 @@ then
 cd /tmp
 wget https://github.com/HEnquist/camilladsp/releases/download/v3.0.0/camilladsp-linux-armv6.tar.gz
 #wget https://github.com/balbuze/volumio-plugins/raw/alsa_modular/plugins/audio_interface/FusionDsp/bin/camilladsp-linux-armv6l.tar.gz
-tar -xvf camilladsp-linux-armv6.tar.gz -C /tmp
+tar -xf camilladsp-linux-armv6.tar.gz -C /tmp
 chown volumio camilladsp
 chgrp volumio camilladsp
 chmod +x camilladsp
@@ -146,7 +146,7 @@ echo "Downloading camillagui ... Please wait!"
 cd $LIB
 
 wget https://github.com/balbuze/volumio-plugins-xtra/raw/refs/heads/main/cgui-venv-3.0.2.tar.gz
-tar -xzvf cgui-venv-3.0.2.tar.gz
+tar -xzf cgui-venv-3.0.2.tar.gz
 #chmod -R 777 cgui
 chown -R volumio cgui
 chgrp -R volumio cgui
