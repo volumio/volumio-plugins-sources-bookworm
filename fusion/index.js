@@ -4174,7 +4174,7 @@ FusionDsp.prototype.installtools = function (data) {
 
       // Download and install tools
       execSync('/usr/bin/wget -P /tmp https://github.com/balbuze/volumio-plugins/raw/alsa_modular/plugins/audio_interface/FusionDsp/tools/tools.tar.xz');
-      execSync(`tar -xvf /tmp/tools.tar.xz -C /data/${toolspath}`);
+      execSync(`tar -xf /tmp/tools.tar.xz -C /data/${toolspath}`);
       execSync('/bin/rm /tmp/tools.tar.xz*');
 
       // Update configuration

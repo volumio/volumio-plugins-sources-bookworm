@@ -92,6 +92,8 @@ echo "Downloading camillagui ... Please wait!"
 cd $LIB
 
 wget https://github.com/balbuze/volumio-plugins-xtra/raw/refs/heads/main/cgui-venv-3.0.2.tar.gz
+echo "Extracting camillagui ..."
+
 tar -xzf cgui-venv-3.0.2.tar.gz
 #chmod -R 777 cgui
 chown -R volumio cgui
@@ -120,6 +122,8 @@ echo "Downloading camillagui ... Please wait!"
 cd $LIB
 
 wget https://github.com/balbuze/volumio-plugins-xtra/raw/refs/heads/main/cgui-venvx86-3.0.2.tar.gz
+echo "Extracting camillagui ..."
+
 tar -xzf cgui-venvx86-3.0.2.tar.gz
 #chmod -R 777 cgui
 chown -R volumio cgui
@@ -146,6 +150,8 @@ echo "Downloading camillagui ... Please wait!"
 cd $LIB
 
 wget https://github.com/balbuze/volumio-plugins-xtra/raw/refs/heads/main/cgui-venv-3.0.2.tar.gz
+echo "Extracting camillagui ..."
+
 tar -xzf cgui-venv-3.0.2.tar.gz
 #chmod -R 777 cgui
 chown -R volumio cgui
