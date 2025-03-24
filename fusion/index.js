@@ -380,7 +380,7 @@ function configurePeqSection(self, uiconf, ncontent) {
 
   const eqval = self.config.get('mergedeq') || '';
   const subtypex = eqval.toString().split('|');
-  const tnbreq = 10; // Assuming this is a constant from the original code
+ // const tnbreq = 10; // Assuming this is a constant from the original code
 
   for (let n = 1; n <= ncontent; n++) {
     const typeinui = subtypex[((n - 1) * 4) + 1] || 'None';
@@ -3685,11 +3685,119 @@ FusionDsp.prototype.importlocal = function (data) {
   self.config.set('eqfrom', data['importlocal'].value);
   self.config.set('localscope', data['localscope'].value);
   self.config.set('addreplace', data['addreplace']);
+  self.config.set('importeq', self.commandRouter.getI18nString('CHOOSE_HEADPHONE'));
+
   self.convertimportedeq();
   return defer.promise;
 };
 
 //----------------here we convert imported file
+/*
+FusionDsp.prototype.convertimportedeq = function () {
+  const self = this;
+  let defer = libQ.defer();
+  let filepath;
+  let EQfile;
+  let test = '';
+
+  const EQfilef = self.config.get('eqfrom');
+  const addreplace = self.config.get('addreplace');
+  const logPrefix = 'EQ Conversion:';
+
+  // Determine the file path based on the source
+  filepath = EQfilef === 'autoeq' ? '/tmp/EQfile.txt' : `/data/INTERNAL/FusionDsp/peq/${EQfilef}`;
+
+  try {
+    EQfile = fs.readFileSync(filepath, 'utf8');
+
+    // Replace specific patterns if the source is 'autoeq'
+    if (EQfilef === 'autoeq') {
+      EQfile = EQfile.replace(/LSC/g, 'LSQ').replace(/HSC/g, 'HSQ');
+    }
+
+    let nbreq = addreplace ? 1 : self.config.get('nbreq') + 1;
+    const result = EQfile.split('\n');
+
+    for (let o = 0; o < result.length; o++) {
+      if (nbreq < tnbreq) {
+        const line = result[o];
+        if (line.includes('Filter') && !line.includes('None') && !line.includes('Gain   0.00 dB')) {
+          const filterTypes = [
+            { name: 'PK', regex: / ON PK /g, type: 'Peaking', params: [3, 4] },
+            { name: 'LP', regex: / ON LP /g, type: 'Lowpass', params: ['0.7071'] },
+            { name: 'HP', regex: / ON HP /g, type: 'Highpass', params: ['0.7071'] },
+            { name: 'LS', regex: / ON LS /g, type: 'Lowshelf', params: [3, '0.9'] },
+            { name: 'HS', regex: / ON HS /g, type: 'Highshelf', params: [3, '0.9'] },
+            { name: 'NO', regex: / ON NO /g, type: 'Notch', params: ['1'] },
+            { name: 'LS 6dB', regex: / ON LS 6dB /g, type: 'Lowshelf', params: [3, '0.5'] },
+            { name: 'HS 6dB', regex: / ON HS 6dB /g, type: 'Highshelf', params: [3, '0.5'] },
+            { name: 'LS 12dB', regex: / ON LS 12dB /g, type: 'Lowshelf', params: [3, '1'] },
+            { name: 'HS 12dB', regex: / ON HS 12dB /g, type: 'Highshelf', params: [3, '1'] },
+            { name: 'LP1', regex: / ON LP1 /g, type: 'LowpassFO' },
+            { name: 'HP1', regex: / ON HP1 /g, type: 'HighpassFO' },
+            { name: 'LPQ', regex: / ON LPQ /g, type: 'Lowpass', params: [3] },
+            { name: 'HPQ', regex: / ON HPQ /g, type: 'Highpass', params: [3] },
+            { name: 'LSQ', regex: / ON LSQ /g, type: 'Lowshelf2', params: [3, 4] },
+            { name: 'LSC', regex: / ON LSC /g, type: 'Lowshelf2', params: [3, 4] },
+            { name: 'HSQ', regex: / ON HSQ /g, type: 'Highshelf2', params: [3, 4] },
+            { name: 'HSC', regex: / ON HSC /g, type: 'Highshelf2', params: [3, 4] }
+          ];
+
+          let eqs;
+          let typeconv;
+
+          for (const { name, regex, type, params } of filterTypes) {
+            if (line.includes(name)) {
+              const lresult = line.replace(regex, type).replace(/\s\s+/g, ' ').replace(/ Hz Gain | dB Q | Hz Q | Hz |:| Q | dB |Fc /g, ',').replace(/ dB/g, ',');
+              const param = lresult.split(',');
+              let correctedfreq = Math.min(parseFloat(param[2]), 22049);
+              eqs = [correctedfreq, ...params.map(p => param[p])].join(',');
+              typeconv = type;
+              break;
+            }
+          }
+
+          if (eqs && typeconv) {
+            const typec = `type${nbreq}`;
+            const scopec = `scope${nbreq}`;
+            const eqc = `eq${nbreq}`;
+            nbreq++;
+
+            const localscope = EQfilef === 'autoeq' ? 'L+R' : self.config.get('localscope');
+            test += `Eq${o}|${typeconv}|${localscope}|${eqs}|`;
+
+            self.config.set('nbreq', nbreq - 1);
+            self.config.set('effect', true);
+            self.config.set('usethispreset', 'no preset used');
+
+            setTimeout(() => {
+              self.refreshUI();
+              self.createCamilladspfile();
+              self.commandRouter.pushToastMessage('info', self.commandRouter.getI18nString('EQ_LOADED_USED'));
+            }, 300);
+          }
+        }
+      } else {
+        self.logger.info(`${logPrefix} Max eq reached`);
+        self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('MAX_EQ_REACHED'));
+      }
+    }
+
+    self.config.set('mergedeq', test);
+    self.config.set('savednbreq', nbreq - 1);
+    self.config.set('savedmergedeq', test);
+    self.config.set('autoatt', true);
+
+  } catch (err) {
+    self.logger.error(`${logPrefix} failed to read EQ file ${err}`);
+  }
+
+  return defer.promise;
+};
+
+
+*/
+
 FusionDsp.prototype.convertimportedeq = function () {
   const self = this;
   let defer = libQ.defer();
