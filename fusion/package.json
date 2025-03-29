@@ -1,6 +1,6 @@
 {
   "name": "fusiondsp",
-  "version": "2.0.69",
+  "version": "2.0.71",
   "description": "A complete Dsp centre for Volumio3",
   "main": "index.js",
   "repository": "https://github.com/balbuze/volumio-plugins/tree/alsa_modular/plugins/audio_interface/FusionDsp",
@@ -16,7 +16,7 @@
     "os": [
       "bookworm"
     ],
-    "changelog": "remmove armv6",
+    "changelog": "clipping detection monitor",
     "details": "Multimode Dsp, with graphic equalizer, parametric equalizer, FIR filters, Loudness, AutoEq profile for headphone and more",
     "architectures": [
       "armhf",
@@ -29,7 +29,8 @@
     "fs-extra": "^8.1.0",
     "kew": "^0.7.0",
     "msgpack-lite": "^0.1.26",
-    "socket.io-client": "*",
+    "socket.io": "^2.3.0",
+    "socket.io-client": "^2.3.0",
     "v-conf": "^1.4.3",
     "ws": "*"
   },

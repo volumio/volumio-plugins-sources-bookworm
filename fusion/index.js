@@ -63,6 +63,8 @@ FusionDsp.prototype.onVolumioStart = function () {
 FusionDsp.prototype.onStart = function () {
   const self = this;
   let defer = libQ.defer();
+  self.socket = io.connect('http://localhost:3000');
+
   self.commandRouter.loadI18nStrings();
   self.commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'updateALSAConfigFile');
   setTimeout(function () {
@@ -72,11 +74,9 @@ FusionDsp.prototype.onStart = function () {
     self.hwinfo();
     self.purecamillagui();
     self.getIP();
-    self.monitorClippedSamples();
-    self.socket = io.connect('http://localhost:3000');
+    self.volumioState();
     self.reportFusionEnabled();
     self.checksamplerate();
-    //self.createCamillaWebsocket();
   }, 2000);
 
   // if mixer set to none, do not show loudness settings
@@ -105,23 +105,37 @@ FusionDsp.prototype.onStart = function () {
 FusionDsp.prototype.onStop = function () {
   const self = this;
   let defer = libQ.defer();
-  self.socket.off()
-  self.logger.info(logPrefix + ' Stopping FusionDsp service');
-  self.camillaProcess.stop();
-  self.camillaProcess = null;
-  if (this.stopReloadConnection) this.stopReloadConnection();
-  if (this.stopClippedSamplesMonitor) this.stopClippedSamplesMonitor();
 
+  // Stop WebSocket monitoring and clear intervals
+  if (this.stopClippedSamplesMonitor) {
+    this.logger.info(logPrefix + 'Stopping clipped samples monitor');
+    this.stopClippedSamplesMonitor();
+  }
+
+  // Disconnect socket
+  if (self.socket) {
+    self.socket.off();
+  }
+
+  // Stop CamillaDsp process
+  self.logger.info(logPrefix + 'Stopping FusionDsp service');
+  if (self.camillaProcess) {
+    self.camillaProcess.stop();
+    self.camillaProcess = null;
+  }
+
+  // Stop the FusionDsp system service
   exec("/usr/bin/sudo /bin/systemctl stop fusiondsp.service", {
     uid: 1000,
     gid: 1000
   }, function (error, stdout, stderr) {
     if (error) {
-      self.logger.info(logPrefix + ' Error in killing FusionDsp')
+      self.logger.info(logPrefix + 'Error in stopping FusionDsp service: ' + error);
     } else {
       self.reportFusionDisabled();
     }
   });
+
   defer.resolve();
   return defer.promise;
 };
@@ -163,55 +177,6 @@ FusionDsp.prototype.loadalsastuff = function () {
     defer.reject(err);
   }
 };
-/*
-FusionDsp.prototype.createCamillaWebsocket = function () {
-  const self = this;
-  var defer = libQ.defer();
-
-  self.connection = null;
-  function MyWebSocket() {
-    self.connect = function () {
-    //  const url = 'ws://localhost:9876';
-      self.connection = new WebSocket(url);
-
-      self.connection.onopen = function () {
-        self.logger.info(logPrefix + 'WebSocket connection established');
-      };
-
-      self.connection.onmessage = function (event) {
-        self.logger.info(logPrefix + 'WebSocket message received:', event.data);
-      };
-
-      self.connection.onerror = function (error) {
-        self.logger.error(logPrefix + 'WebSocket error:', error);
-      };
-
-      self.connection.onclose = function () {
-        self.logger.info(logPrefix + 'WebSocket connection closed');
-      };
-    };
-  }
-  self.sendData = function (data) {
-    if (self.connection && self.connection.readyState === WebSocket.OPEN) {
-      self.connection.send(data);
-    } else {
-      self.logger.error(logPrefix + 'WebSocket is not connected');
-    }
-  };
-
-  self.disconnect = function () {
-    if (self.connection) {
-      self.connection.close();
-      self.connection = null;
-    }
-  };
-
-  const myWebSocket = new MyWebSocket();
-
-
-
-};
-*/
 //------------------Hw detection--------------------
 
 //here we detect hw info
@@ -243,6 +208,52 @@ FusionDsp.prototype.hwinfo = function () {
     self.logger.error(logPrefix + ' ----Hw detection failed :' + err);
     defer.reject(err);
   }
+};
+
+FusionDsp.prototype.stopClippedSamplesMonitor = function () {
+  // Set a flag to indicate stopping
+  this.isStopping = true;
+
+  // Clear the interval for periodic commands
+  if (this.monitorIntervalId) {
+    clearInterval(this.monitorIntervalId);
+    this.monitorIntervalId = null; // Ensure it's reset
+  }
+
+  // Close the WebSocket connection if it's open
+  if (this.monitorConnection && this.monitorConnection.readyState === WebSocket.OPEN) {
+    this.monitorConnection.close(); // Close the WebSocket connection
+    this.monitorConnection = null; // Reset the connection
+  }
+
+  // Log that the monitor has been stopped
+  this.logger.info(logPrefix + 'Clipped samples monitor stopped');
+};
+
+FusionDsp.prototype.volumioState = function () {
+  const self = this;
+  //self.logger.info(logPrefix + 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx volumioState xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+
+  if (!self.socket || !self.socket.connected) {
+    self.logger.error(logPrefix + 'Socket connection not established');
+    return;
+  }
+  // Emit a request to get the current state
+  self.socket.on('pushState', function (data) {
+    //self.logger.info(logPrefix + 'Volumio state: ', data);
+
+    // Check if the state is "play"
+    if (data.status === 'play') {
+      self.logger.info(logPrefix + 'Volumio is playing');
+      self.monitorClippedSamples(); // Start monitoring clipped samples
+    } else {
+      self.logger.info(logPrefix + 'Volumio is not playing');
+     if (self.stopClippedSamplesMonitor) {
+
+       self.stopClippedSamplesMonitor(); // Stop monitoring if not playing
+      }
+    }
+  });
 };
 
 // Configuration methods------------------------------------------------------------------------
@@ -380,7 +391,7 @@ function configurePeqSection(self, uiconf, ncontent) {
 
   const eqval = self.config.get('mergedeq') || '';
   const subtypex = eqval.toString().split('|');
- // const tnbreq = 10; // Assuming this is a constant from the original code
+  // const tnbreq = 10; // Assuming this is a constant from the original code
 
   for (let n = 1; n <= ncontent; n++) {
     const typeinui = subtypex[((n - 1) * 4) + 1] || 'None';
@@ -778,10 +789,10 @@ function configureDelaySettings(self, uiconf) {
     { id: 'delayscope', element: 'select', doc: self.commandRouter.getI18nString('DELAY_SCOPE_DOC'), label: self.commandRouter.getI18nString('DELAY_SCOPE'), value: { value: self.config.get('delayscope'), label: self.config.get('delayscope') }, options: [{ value: 'None', label: 'None' }, { value: 'L', label: 'L' }, { value: 'R', label: 'R' }, { value: 'L+R', label: 'L+R' }], visibleIf: { field: 'showeq', value: true } },
     { id: 'delay', element: 'input', type: 'number', label: self.commandRouter.getI18nString('DELAY_VALUE'), doc: self.commandRouter.getI18nString('DELAY_VALUE_DOC'), attributes: [{ placeholder: '0ms' }, { maxlength: 4 }, { min: 0 }, { max: 1000.1 }, { step: 0.1 }], value: self.config.get('delay'), visibleIf: { field: 'showeq', value: true } }
   ] : [
-      { id: 'manualdelay', element: 'button', label: self.commandRouter.getI18nString('DELAY_MANUAL'), doc: self.commandRouter.getI18nString('DELAY_MANUAL_DOC'), onClick: { type: 'plugin', endpoint: 'audio_interface/fusiondsp', method: 'manualdelay', data: [] }, visibleIf: { field: 'showeq', value: true } },
-      { id: 'ldistance', element: 'input', type: 'number', label: self.commandRouter.getI18nString('DELAY_LEFT_SPEAKER_DIST'), doc: self.commandRouter.getI18nString('DELAY_LEFT_SPEAKER_DIST_DOC'), attributes: [{ placeholder: '0 centimeter' }, { maxlength: 5 }, { min: 0 }, { step: 1 }], value: self.config.get('ldistance'), visibleIf: { field: 'showeq', value: true } },
-      { id: 'rdistance', element: 'input', type: 'number', label: self.commandRouter.getI18nString('DELAY_RIGHT_SPEAKER_DIST'), doc: self.commandRouter.getI18nString('DELAY_RIGHT_SPEAKER_DIST_DOC'), attributes: [{ placeholder: '0 centimeter' }, { maxlength: 5 }, { min: 0 }, { step: 1 }], value: self.config.get('rdistance'), visibleIf: { field: 'showeq', value: true } }
-    ];
+    { id: 'manualdelay', element: 'button', label: self.commandRouter.getI18nString('DELAY_MANUAL'), doc: self.commandRouter.getI18nString('DELAY_MANUAL_DOC'), onClick: { type: 'plugin', endpoint: 'audio_interface/fusiondsp', method: 'manualdelay', data: [] }, visibleIf: { field: 'showeq', value: true } },
+    { id: 'ldistance', element: 'input', type: 'number', label: self.commandRouter.getI18nString('DELAY_LEFT_SPEAKER_DIST'), doc: self.commandRouter.getI18nString('DELAY_LEFT_SPEAKER_DIST_DOC'), attributes: [{ placeholder: '0 centimeter' }, { maxlength: 5 }, { min: 0 }, { step: 1 }], value: self.config.get('ldistance'), visibleIf: { field: 'showeq', value: true } },
+    { id: 'rdistance', element: 'input', type: 'number', label: self.commandRouter.getI18nString('DELAY_RIGHT_SPEAKER_DIST'), doc: self.commandRouter.getI18nString('DELAY_RIGHT_SPEAKER_DIST_DOC'), attributes: [{ placeholder: '0 centimeter' }, { maxlength: 5 }, { min: 0 }, { step: 1 }], value: self.config.get('rdistance'), visibleIf: { field: 'showeq', value: true } }
+  ];
 
   uiconf.sections[1].content.push(...delayControls);
   uiconf.sections[1].saveButton.data.push(...(manualdelay ? ['delay', 'delayscope'] : ['ldistance', 'rdistance']));
@@ -840,20 +851,20 @@ function configurePresetSelection(self, uiconf, selectedsp) {
 
   self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.value', value);
   self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.label', plabel);
-/*
+  /*
+    try {
+      const items = fs.readdirSync(pFolder);
+      const itemsf = items.map(item => item.replace(/^\./, '').replace(/\.json$/, ''));
+      items.forEach((item, i) => {
+        self.configManager.pushUIConfigParam(uiconf, 'sections[2].content[0].options', { value: item, label: itemsf[i] });
+      });
+    } catch (e) {
+      self.logger.error(logPrefix + ' failed to read local file: ' + e);
+    }*/
   try {
     const items = fs.readdirSync(pFolder);
     const itemsf = items.map(item => item.replace(/^\./, '').replace(/\.json$/, ''));
-    items.forEach((item, i) => {
-      self.configManager.pushUIConfigParam(uiconf, 'sections[2].content[0].options', { value: item, label: itemsf[i] });
-    });
-  } catch (e) {
-    self.logger.error(logPrefix + ' failed to read local file: ' + e);
-  }*/
-  try {
-    const items = fs.readdirSync(pFolder);
-    const itemsf = items.map(item => item.replace(/^\./, '').replace(/\.json$/, ''));
-  
+
     if (items.length === 0) {
       // Default to 'No preset' if no items are found
       self.configManager.pushUIConfigParam(uiconf, 'sections[2].content[0].options', { value: 'No preset', label: 'No preset' });
@@ -865,7 +876,7 @@ function configurePresetSelection(self, uiconf, selectedsp) {
   } catch (e) {
     self.logger.error(`${logPrefix} failed to read local file: ${e}`);
   }
-  
+
 }
 
 function configureImportEq(self, uiconf) {
@@ -1133,7 +1144,7 @@ FusionDsp.prototype.removeeq = function () {
 
 FusionDsp.prototype.removealleq = function () {
   const self = this;
-  let selectedsp=self.config.get("selectedsp")
+  let selectedsp = self.config.get("selectedsp")
   self.config.set('effect', true)
   self.config.set('nbreq', 1)
   self.config.set('mergedeq', "Eq0|None|L+R|0,0,0|")
@@ -1369,15 +1380,25 @@ FusionDsp.prototype.sendCommandToCamilla = function () {
     self.logger.info(logPrefix + 'Reload connection stopped');
   };
 };
+
+FusionDsp.prototype.resetClippedSamples = function () {
+  if (this.monitorConnection && this.monitorConnection.readyState === WebSocket.OPEN) {
+    this.monitorConnection.send('"ResetClippedSamples"');
+    this.logger.info(logPrefix + 'Sent ResetClippedSamples command');
+  } else {
+    this.logger.warn(logPrefix + 'Monitor WebSocket not open, cannot send ResetClippedSamples');
+  }
+};
 FusionDsp.prototype.monitorClippedSamples = function () {
   const self = this;
-  //  const url = 'ws://localhost:9876';
   const commands = {
-    getClippedSamples: '"GetClippedSamples"',
-    resetClippedSamples: '"ResetClippedSamples"'
+    getClippedSamples: '"GetClippedSamples"'
   };
 
-  // Initialize persistent WebSocket connection
+  // Reset the stopping flag to allow monitoring
+  self.isStopping = false;
+
+  // Create a new WebSocket connection if not already open
   if (!this.monitorConnection || this.monitorConnection.readyState !== WebSocket.OPEN) {
     this.monitorConnection = new WebSocket(url);
     setupMonitorConnection(this.monitorConnection);
@@ -1385,55 +1406,59 @@ FusionDsp.prototype.monitorClippedSamples = function () {
 
   function setupMonitorConnection(connection) {
     connection.onopen = () => {
-      //  self.logger.info(logPrefix + 'Monitor WebSocket connection opened');
+      self.logger.info(logPrefix + 'Monitor WebSocket connection opened');
     };
 
     connection.onerror = (error) => {
-      //   self.logger.error(logPrefix + `Monitor WebSocket error: ${error}`);
+      self.logger.error(logPrefix + `Monitor WebSocket error: ${error}`);
     };
 
     connection.onmessage = (event) => {
+      if (self.isStopping) return; // Exit if stopping
+
       const replyString = Buffer.from(event.data).toString();
-      //   self.logger.info(logPrefix + 'Monitor response: ' + replyString);
 
       let parsed;
       try {
         parsed = JSON.parse(replyString);
       } catch (err) {
-        //  self.logger.error(logPrefix + 'Parse error: ' + err);
+        self.logger.error(logPrefix + 'Parse error: ' + err);
         return;
       }
 
       if (parsed.hasOwnProperty('GetClippedSamples')) {
         const clippedSamples = parsed.GetClippedSamples.value;
-        if (clippedSamples >= '100') { // String comparison as per your spec
+        if (clippedSamples >= '100') {
           self.logger.info(logPrefix + 'Clipped samples detected: ' + clippedSamples);
           self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('CLIPPING_WARNING'));
+          self.resetClippedSamples(); // Reset clipped samples
         }
       }
-      // Note: ResetClippedSamples response could be logged here if needed
     };
 
     connection.onclose = () => {
-      //   self.logger.info(logPrefix + 'Monitor WebSocket connection closed, attempting reconnect');
-      setTimeout(() => {
-        self.monitorClippedSamples(); // Reconnect and restart monitoring
-      }, 2000);
+      if (!self.isStopping) {
+        setTimeout(() => {
+          if (!self.isStopping) {
+            self.monitorClippedSamples(); // Reconnect and restart monitoring
+          }
+        }, 2000);
+      }
     };
   }
 
-  // Send periodic GetClippedSamples followed by ResetClippedSamples
+  // Periodically send commands to get clipped samples
   const sendPeriodicCommands = () => {
-    if (self.monitorConnection.readyState === WebSocket.OPEN) {
-      // Send GetClippedSamples
-      self.monitorConnection.send(commands.getClippedSamples);
-      // self.logger.info(logPrefix + 'Sent GetClippedSamples command');
+    if (self.isStopping) return; // Exit if stopping
 
-      // Send ResetClippedSamples immediately after
+    if (self.monitorConnection && self.monitorConnection.readyState === WebSocket.OPEN) {
+      self.monitorConnection.send(commands.getClippedSamples);
+
       setTimeout(() => {
-        self.monitorConnection.send(commands.resetClippedSamples);
-        // self.logger.info(logPrefix + 'Sent ResetClippedSamples command');
-      }, 100); // Small delay to ensure sequential processing
+        if (!self.isStopping) {
+          self.resetClippedSamples(); // Reset clipped samples
+        }
+      }, 100);
     } else {
       self.logger.warn(logPrefix + 'Monitor WebSocket not open, skipping commands');
     }
@@ -1441,21 +1466,9 @@ FusionDsp.prototype.monitorClippedSamples = function () {
 
   // Start periodic monitoring if not already running
   if (!this.monitorIntervalId) {
-    this.monitorIntervalId = setInterval(sendPeriodicCommands, 30000);
-    sendPeriodicCommands(); // Initial call to start immediately
+    this.monitorIntervalId = setInterval(sendPeriodicCommands, 20000);
+    sendPeriodicCommands(); 
   }
-
-  // Cleanup method
-  this.stopClippedSamplesMonitor = () => {
-    if (this.monitorIntervalId) {
-      clearInterval(this.monitorIntervalId);
-      this.monitorIntervalId = null;
-    }
-    if (this.monitorConnection && this.monitorConnection.readyState === WebSocket.OPEN) {
-      this.monitorConnection.close();
-    }
-    // self.logger.info(logPrefix + 'Clipped samples monitor stopped');
-  };
 };
 //------------Fir features----------------
 
@@ -2018,7 +2031,7 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
 
   let loudness = self.config.get('loudness')
   if ((loudness) && (effect)) {
-    self.logger.info(logPrefix + ' Loudness is ON ' + loudness)
+    self.logger.info(logPrefix + 'Loudness is ON ' + loudness)
     var composedeq = '';
     var pipelineL = '';
     var pipelineR = '';
@@ -2893,7 +2906,7 @@ FusionDsp.prototype.createCamilladspfile = function (callback) {
     hcurrentsamplerate = self.pushstateSamplerate;
 
   if (selectedsp != 'convfir')
-    self.logger.info(logPrefix + ' If filter freq >samplerate/2 then disable it');
+    self.logger.info(logPrefix + 'If filter freq >samplerate/2 then disable it');
 
   try {
 
@@ -3372,7 +3385,9 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
 
   setTimeout(function () {
     self.refreshUI();
-    self.createCamilladspfile()
+    self.createCamilladspfile();
+    self.resetClippedSamples();
+   // self.volumioState();
   }, 800);
   return defer.promise;
 };
@@ -3692,111 +3707,6 @@ FusionDsp.prototype.importlocal = function (data) {
 };
 
 //----------------here we convert imported file
-/*
-FusionDsp.prototype.convertimportedeq = function () {
-  const self = this;
-  let defer = libQ.defer();
-  let filepath;
-  let EQfile;
-  let test = '';
-
-  const EQfilef = self.config.get('eqfrom');
-  const addreplace = self.config.get('addreplace');
-  const logPrefix = 'EQ Conversion:';
-
-  // Determine the file path based on the source
-  filepath = EQfilef === 'autoeq' ? '/tmp/EQfile.txt' : `/data/INTERNAL/FusionDsp/peq/${EQfilef}`;
-
-  try {
-    EQfile = fs.readFileSync(filepath, 'utf8');
-
-    // Replace specific patterns if the source is 'autoeq'
-    if (EQfilef === 'autoeq') {
-      EQfile = EQfile.replace(/LSC/g, 'LSQ').replace(/HSC/g, 'HSQ');
-    }
-
-    let nbreq = addreplace ? 1 : self.config.get('nbreq') + 1;
-    const result = EQfile.split('\n');
-
-    for (let o = 0; o < result.length; o++) {
-      if (nbreq < tnbreq) {
-        const line = result[o];
-        if (line.includes('Filter') && !line.includes('None') && !line.includes('Gain   0.00 dB')) {
-          const filterTypes = [
-            { name: 'PK', regex: / ON PK /g, type: 'Peaking', params: [3, 4] },
-            { name: 'LP', regex: / ON LP /g, type: 'Lowpass', params: ['0.7071'] },
-            { name: 'HP', regex: / ON HP /g, type: 'Highpass', params: ['0.7071'] },
-            { name: 'LS', regex: / ON LS /g, type: 'Lowshelf', params: [3, '0.9'] },
-            { name: 'HS', regex: / ON HS /g, type: 'Highshelf', params: [3, '0.9'] },
-            { name: 'NO', regex: / ON NO /g, type: 'Notch', params: ['1'] },
-            { name: 'LS 6dB', regex: / ON LS 6dB /g, type: 'Lowshelf', params: [3, '0.5'] },
-            { name: 'HS 6dB', regex: / ON HS 6dB /g, type: 'Highshelf', params: [3, '0.5'] },
-            { name: 'LS 12dB', regex: / ON LS 12dB /g, type: 'Lowshelf', params: [3, '1'] },
-            { name: 'HS 12dB', regex: / ON HS 12dB /g, type: 'Highshelf', params: [3, '1'] },
-            { name: 'LP1', regex: / ON LP1 /g, type: 'LowpassFO' },
-            { name: 'HP1', regex: / ON HP1 /g, type: 'HighpassFO' },
-            { name: 'LPQ', regex: / ON LPQ /g, type: 'Lowpass', params: [3] },
-            { name: 'HPQ', regex: / ON HPQ /g, type: 'Highpass', params: [3] },
-            { name: 'LSQ', regex: / ON LSQ /g, type: 'Lowshelf2', params: [3, 4] },
-            { name: 'LSC', regex: / ON LSC /g, type: 'Lowshelf2', params: [3, 4] },
-            { name: 'HSQ', regex: / ON HSQ /g, type: 'Highshelf2', params: [3, 4] },
-            { name: 'HSC', regex: / ON HSC /g, type: 'Highshelf2', params: [3, 4] }
-          ];
-
-          let eqs;
-          let typeconv;
-
-          for (const { name, regex, type, params } of filterTypes) {
-            if (line.includes(name)) {
-              const lresult = line.replace(regex, type).replace(/\s\s+/g, ' ').replace(/ Hz Gain | dB Q | Hz Q | Hz |:| Q | dB |Fc /g, ',').replace(/ dB/g, ',');
-              const param = lresult.split(',');
-              let correctedfreq = Math.min(parseFloat(param[2]), 22049);
-              eqs = [correctedfreq, ...params.map(p => param[p])].join(',');
-              typeconv = type;
-              break;
-            }
-          }
-
-          if (eqs && typeconv) {
-            const typec = `type${nbreq}`;
-            const scopec = `scope${nbreq}`;
-            const eqc = `eq${nbreq}`;
-            nbreq++;
-
-            const localscope = EQfilef === 'autoeq' ? 'L+R' : self.config.get('localscope');
-            test += `Eq${o}|${typeconv}|${localscope}|${eqs}|`;
-
-            self.config.set('nbreq', nbreq - 1);
-            self.config.set('effect', true);
-            self.config.set('usethispreset', 'no preset used');
-
-            setTimeout(() => {
-              self.refreshUI();
-              self.createCamilladspfile();
-              self.commandRouter.pushToastMessage('info', self.commandRouter.getI18nString('EQ_LOADED_USED'));
-            }, 300);
-          }
-        }
-      } else {
-        self.logger.info(`${logPrefix} Max eq reached`);
-        self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('MAX_EQ_REACHED'));
-      }
-    }
-
-    self.config.set('mergedeq', test);
-    self.config.set('savednbreq', nbreq - 1);
-    self.config.set('savedmergedeq', test);
-    self.config.set('autoatt', true);
-
-  } catch (err) {
-    self.logger.error(`${logPrefix} failed to read EQ file ${err}`);
-  }
-
-  return defer.promise;
-};
-
-
-*/
 
 FusionDsp.prototype.convertimportedeq = function () {
   const self = this;
@@ -4292,7 +4202,7 @@ FusionDsp.prototype.installtools = function (data) {
       // Refresh UI and emit update after a delay
       self.refreshUI();
       setTimeout(function () {
-      //  self.socket.emit('updateDb');
+        //  self.socket.emit('updateDb');
         self.commandRouter.executeOnPlugin('music_service', 'mpd', 'updateMpdDB');
 
         self.logger.info(logPrefix + ' Updapting dB for tools ');
@@ -4353,28 +4263,28 @@ FusionDsp.prototype.playToolsFile = function (data) {
 
 FusionDsp.prototype.sendvolumelevel = function () {
   const self = this;
-  let data = self.commandRouter.volumioGetState();
+  //let data = self.commandRouter.volumioGetState();
 
-  // self.socket.on('pushState', function (data) {
-  let loudnessVolumeThreshold = self.config.get('loudnessthreshold')
-  let loudnessMaxGain = 23 //15
-  let loudnessLowThreshold = 5 //10
-  let loudnessRange = loudnessVolumeThreshold - loudnessLowThreshold
-  let ratio = loudnessMaxGain / loudnessRange
-  let loudnessGain
+  self.socket.on('pushState', function (data) {
+    let loudnessVolumeThreshold = self.config.get('loudnessthreshold')
+    let loudnessMaxGain = 23 //15
+    let loudnessLowThreshold = 5 //10
+    let loudnessRange = loudnessVolumeThreshold - loudnessLowThreshold
+    let ratio = loudnessMaxGain / loudnessRange
+    let loudnessGain
 
-  if (data.volume > loudnessLowThreshold && data.volume < loudnessVolumeThreshold) {
-    loudnessGain = ratio * (loudnessVolumeThreshold - data.volume)
-  } else if (data.volume <= loudnessLowThreshold) {
-    loudnessGain = loudnessMaxGain
-  } else if (data.volume >= loudnessVolumeThreshold) {
-    loudnessGain = 0
-  }
+    if (data.volume > loudnessLowThreshold && data.volume < loudnessVolumeThreshold) {
+      loudnessGain = ratio * (loudnessVolumeThreshold - data.volume)
+    } else if (data.volume <= loudnessLowThreshold) {
+      loudnessGain = loudnessMaxGain
+    } else if (data.volume >= loudnessVolumeThreshold) {
+      loudnessGain = 0
+    }
 
-  self.logger.info(logPrefix + ' volume level for loudness ' + data.volume + ' gain applied ' + Number.parseFloat(loudnessGain).toFixed(2))
-  self.config.set('loudnessGain', Number.parseFloat(loudnessGain).toFixed(2))
-  self.createCamilladspfile()
-  //})
+    self.logger.info(logPrefix + 'volume level for loudness ' + data.volume + ' gain applied ' + Number.parseFloat(loudnessGain).toFixed(2))
+    self.config.set('loudnessGain', Number.parseFloat(loudnessGain).toFixed(2))
+    self.createCamilladspfile()
+  })
 }
 
 FusionDsp.prototype.reportFusionEnabled = function () {
