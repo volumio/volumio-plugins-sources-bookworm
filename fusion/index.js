@@ -248,9 +248,9 @@ FusionDsp.prototype.volumioState = function () {
       self.monitorClippedSamples(); // Start monitoring clipped samples
     } else {
       self.logger.info(logPrefix + 'Volumio is not playing');
-     if (self.stopClippedSamplesMonitor) {
+      if (self.stopClippedSamplesMonitor) {
 
-       self.stopClippedSamplesMonitor(); // Stop monitoring if not playing
+        self.stopClippedSamplesMonitor(); // Stop monitoring if not playing
       }
     }
   });
@@ -1389,13 +1389,14 @@ FusionDsp.prototype.resetClippedSamples = function () {
     this.logger.warn(logPrefix + 'Monitor WebSocket not open, cannot send ResetClippedSamples');
   }
 };
+
 FusionDsp.prototype.monitorClippedSamples = function () {
   const self = this;
   const commands = {
     getClippedSamples: '"GetClippedSamples"'
   };
 
-  // Reset the stopping flag to allow monitoring
+  self.lastClippedSamples = 0;
   self.isStopping = false;
 
   // Create a new WebSocket connection if not already open
@@ -1428,10 +1429,12 @@ FusionDsp.prototype.monitorClippedSamples = function () {
 
       if (parsed.hasOwnProperty('GetClippedSamples')) {
         const clippedSamples = parsed.GetClippedSamples.value;
-        if (clippedSamples >= '100') {
+        self.lastClippedSamples = clippedSamples;  // Store clipped sample value
+
+        if (clippedSamples >= 100) {  // Clipping threshold
           self.logger.info(logPrefix + 'Clipped samples detected: ' + clippedSamples);
           self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('CLIPPING_WARNING'));
-          self.resetClippedSamples(); // Reset clipped samples
+          self.resetClippedSamples();  // Reset clipped samples
         }
       }
     };
@@ -1446,17 +1449,16 @@ FusionDsp.prototype.monitorClippedSamples = function () {
       }
     };
   }
-
   // Periodically send commands to get clipped samples
   const sendPeriodicCommands = () => {
-    if (self.isStopping) return; // Exit if stopping
+    if (self.isStopping) return;
 
     if (self.monitorConnection && self.monitorConnection.readyState === WebSocket.OPEN) {
       self.monitorConnection.send(commands.getClippedSamples);
 
       setTimeout(() => {
-        if (!self.isStopping) {
-          self.resetClippedSamples(); // Reset clipped samples
+        if (!self.isStopping && self.lastClippedSamples > 0) {
+          self.resetClippedSamples();  // Reset only if clippedSamples > 0
         }
       }, 100);
     } else {
@@ -1467,9 +1469,10 @@ FusionDsp.prototype.monitorClippedSamples = function () {
   // Start periodic monitoring if not already running
   if (!this.monitorIntervalId) {
     this.monitorIntervalId = setInterval(sendPeriodicCommands, 20000);
-    sendPeriodicCommands(); 
+    sendPeriodicCommands();
   }
 };
+
 //------------Fir features----------------
 
 //-----------here we define how to swap filters----------------------
@@ -3387,7 +3390,7 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
     self.refreshUI();
     self.createCamilladspfile();
     self.resetClippedSamples();
-   // self.volumioState();
+    // self.volumioState();
   }, 800);
   return defer.promise;
 };
