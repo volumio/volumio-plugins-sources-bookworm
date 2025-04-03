@@ -1,5 +1,5 @@
 /*--------------------
-// FusionDsp plugin for volumio 3. By balbuze March 2025
+// FusionDsp plugin for volumio 3. By balbuze April 2025
 contribution : Paolo Sabatino
 Multi Dsp features
 Based on CamillaDsp
@@ -105,7 +105,7 @@ FusionDsp.prototype.onStart = function () {
 FusionDsp.prototype.onStop = function () {
   const self = this;
   let defer = libQ.defer();
-
+  self.socket.emit('pause');
   // Stop WebSocket monitoring and clear intervals
   if (this.stopClippedSamplesMonitor) {
     this.logger.info(logPrefix + 'Stopping clipped samples monitor');
@@ -851,16 +851,7 @@ function configurePresetSelection(self, uiconf, selectedsp) {
 
   self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.value', value);
   self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.label', plabel);
-  /*
-    try {
-      const items = fs.readdirSync(pFolder);
-      const itemsf = items.map(item => item.replace(/^\./, '').replace(/\.json$/, ''));
-      items.forEach((item, i) => {
-        self.configManager.pushUIConfigParam(uiconf, 'sections[2].content[0].options', { value: item, label: itemsf[i] });
-      });
-    } catch (e) {
-      self.logger.error(logPrefix + ' failed to read local file: ' + e);
-    }*/
+ 
   try {
     const items = fs.readdirSync(pFolder);
     const itemsf = items.map(item => item.replace(/^\./, '').replace(/\.json$/, ''));
@@ -1358,7 +1349,7 @@ FusionDsp.prototype.sendCommandToCamilla = function () {
     };
 
     connection.onmessage = (event) => {
-      self.logger.info(logPrefix + 'Reload response: ' + Buffer.from(event.data).toString());
+      //self.logger.info(logPrefix + 'Reload response: ' + Buffer.from(event.data).toString());
     };
 
     connection.onclose = () => {
@@ -1407,7 +1398,7 @@ FusionDsp.prototype.monitorClippedSamples = function () {
 
   function setupMonitorConnection(connection) {
     connection.onopen = () => {
-      self.logger.info(logPrefix + 'Monitor WebSocket connection opened');
+      self.logger.info(logPrefix + 'Clipping Monitor started');
     };
 
     connection.onerror = (error) => {
@@ -3347,7 +3338,7 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
       self.socket.emit('volume', '+')
       setTimeout(function () {
 
-        self.sendvolumelevel()
+        //  self.sendvolumelevel()
       }, 900);
 
       self.socket.emit('volume', '-')
@@ -4262,7 +4253,6 @@ FusionDsp.prototype.playToolsFile = function (data) {
   self.commandRouter.replaceAndPlay({ uri: track });
   self.commandRouter.volumioClearQueue();
 };
-
 
 FusionDsp.prototype.sendvolumelevel = function () {
   const self = this;
