@@ -13,7 +13,7 @@
     "icon": "fa-music",
     "plugin_type": "audio_interface",
     "os": [
-      "buster"
+      "bookworm"
     ],
     "details": "Http and Icecast server output for mpd in Volumio",
     "changelog": "misc fixes",
