@@ -22,7 +22,7 @@ sudo chown -R volumio "$spath" "$customfolder"
 sudo chgrp -R volumio "$spath" "$customfolder"
 echo "installing apt packages"
 
-sudo apt-get -y install python3-pygame python3-pip python3-dev libjpeg-dev zlib1g-dev
+sudo apt-get -yf install python3-pygame python3-pip python3-dev libjpeg-dev zlib1g-dev libfftw3-dev
 ##echo "Installing peppyalsa plugin if needed"
 
 ARCH="$(arch)"
@@ -54,8 +54,6 @@ Type=simple
 WorkingDirectory=/data/plugins/user_interface/peppymeterbasic
 ExecStart=/data/plugins/user_interface/peppymeterbasic/startpeppymeterbasic.sh
 Restart=no
-StandardOutput=syslog
-StandardError=syslog
 SyslogIdentifier=volumio
 User=volumio
 Group=volumio
@@ -76,8 +74,6 @@ Type=simple
 WorkingDirectory=/data/plugins/user_interface/peppymeterbasic
 ExecStart=/data/plugins/user_interface/peppymeterbasic/startpeppymeterbasic.sh
 Restart=no
-StandardOutput=syslog
-StandardError=syslog
 SyslogIdentifier=volumio
 User=root
 Group=root
