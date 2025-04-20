@@ -75,7 +75,7 @@ echo "Detected cpu architecture as $cpu"
 if [ $cpu = "armv7l" ] || [ $cpu = "aarch64" ] 
 then
 cd /tmp
-wget https://github.com/HEnquist/camilladsp/releases/download/v3.0.0/camilladsp-linux-armv7.tar.gz
+wget https://github.com/HEnquist/camilladsp/releases/download/v3.0.1/camilladsp-linux-armv7.tar.gz
 tar -xf camilladsp-linux-armv7.tar.gz -C /tmp
 chown volumio camilladsp
 chgrp volumio camilladsp
@@ -99,7 +99,7 @@ rm cgui-venv-3.0.2.tar.gz
 elif [ $cpu = "x86_64" ]
 then
 cd /tmp
-wget https://github.com/HEnquist/camilladsp/releases/download/v3.0.0/camilladsp-linux-amd64.tar.gz
+wget https://github.com/HEnquist/camilladsp/releases/download/v3.0.1/camilladsp-linux-amd64.tar.gz
 tar -xf camilladsp-linux-amd64.tar.gz -C /tmp
 chown volumio camilladsp
 chgrp volumio camilladsp
