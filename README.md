@@ -8,7 +8,8 @@ To learn more how to write a plugin for Volumio, [see](https://developers.volumi
 ## Volumio Bookworm 
 Public Alpha is open. Please follow [Volumio Community thread](https://community.volumio.com/t/public-alpha-test-audio-without-compromise-volumio-on-bookworm-begins/72054/).
 
-Steps to create/modify a plugin
+---
+## Steps to create/modify a plugin
 ## 1. Fork the Repository
   - Click the Fork button (top-right corner) to create a copy of the repository under your own GitHub account.
 ## 2. Clone your forked repository
