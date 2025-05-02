@@ -6,13 +6,7 @@ Bookworm version of Volumio required some adjustement for plugins due to new nod
 To learn more how to write a plugin for Volumio, [see](https://developers.volumio.com/plugins/submission-checklist)
 
 ## Volumio Bookworm 
-
-We are working on OTA delivery system. Until this is completed, the link updated here:
-
-| HW | Version | Link |
-| --- | --- | --- |
-| Pi | 0.056 | [Download](https://dev-updates.volumio.org/pi/volumio/0.056/Volumio-0.056-2025-04-17-pi.zip) |
-| x64 | 0.056 | [Download](https://dev-updates.volumio.org/x86_amd64/volumio/0.056/Volumio-0.056-2025-04-17-x86_amd64.zip) |
+Public Alpha is open. Please follow [Volumio Community thread](https://community.volumio.com/t/public-alpha-test-audio-without-compromise-volumio-on-bookworm-begins/72054/).
 
 Steps to create/modify a plugin
 ## 1. Fork the Repository
