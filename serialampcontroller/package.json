@@ -4,7 +4,7 @@
 	"description": "Control connected Amplifiers with serial interface from Volumio. Currently supports Rotel - A12/A14/A11/RC-1570/RC-1592 >=V1.53/RC-1582 SW V5.xx, Anthem - IDMSTR IA, Meridian - DSP420, Cambridge - CXA61. Other brands can be supported via ampCommands.json.",
 	"main": "index.js",
 	"scripts": {
-		"test": ""
+		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"author": "7h0mas-R",
 	"license": "ISC",
