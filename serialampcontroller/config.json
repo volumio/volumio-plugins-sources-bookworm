@@ -5,11 +5,11 @@
     },
     "serialInterfaceDev": {
         "type": "string",
-        "value": "undefined"
+        "value": "..."
     },
     "ampType": {
         "type": "string",
-        "value": "Rotel - RA-1592 SW >=V1.52"
+        "value": "..."
     },
     "volumioInput": {
         "type": "string",
