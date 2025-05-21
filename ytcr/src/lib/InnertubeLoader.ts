@@ -166,8 +166,8 @@ export default class InnertubeLoader {
       return;
     }
 
-    const region = ytcr.getConfigValue('region', 'US');
-    const language = ytcr.getConfigValue('language', 'en');
+    const region = ytcr.getConfigValue('region');
+    const language = ytcr.getConfigValue('language');
 
     this.#innertube.session.context.client.gl = region;
     this.#innertube.session.context.client.hl = language;
