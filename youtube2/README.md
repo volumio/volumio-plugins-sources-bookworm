@@ -6,6 +6,20 @@ Credit goes to the [YouTube.js](https://github.com/LuanRT/YouTube.js) project. T
 
 ### Changelog
 
+2.3.3
+- Update YT dependencies
+- Fix "No valid URL to decipher" error when fetching some video streams
+
+2.3.2
+- Update YT dependencies
+
+2.3.1
+- Fix blank page for some categories (e.g. Music)
+
+2.3.0
+- Update YT dependencies
+- Fix missing playlist header due to YT changes
+
 2.2.2
 - Fix broken playback due to YT changes, again (credit: [#837](https://github.com/LuanRT/YouTube.js/pull/837))
 
