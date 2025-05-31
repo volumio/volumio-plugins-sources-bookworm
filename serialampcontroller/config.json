@@ -1,7 +1,7 @@
 {
     "logging": {
         "type": "boolean",
-        "value": true
+        "value": false
     },
     "serialInterfaceDev": {
         "type": "string",
@@ -17,15 +17,15 @@
     },
     "minVolume": {
         "type": "number",
-        "value": -96
+        "value": 0
     },
     "maxVolume": {
         "type": "number",
-        "value": -15
+        "value": 35
     },
     "startupVolume": {
         "type": "number",
-        "value": -55
+        "value": 10
     },
     "volumeSteps": {
         "type": "number",
@@ -33,11 +33,11 @@
     },
     "mapTo100": {
         "type": "boolean",
-        "value": true
+        "value": false
     },
     "pauseWhenMuted": {
         "type": "boolean",
-        "value": true
+        "value": false
     },
     "pauseWhenInputChanged": {
         "type": "boolean",
@@ -48,6 +48,22 @@
         "value": false
     },
     "startAtPowerup": {
+        "type": "boolean",
+        "value": false
+    },
+    "tcpip": {
+        "type": "boolean",
+        "value": false
+    },
+    "ipaddress": {
+        "type": "string",
+        "value": "127.0.0.1"
+    },
+    "powerupOnBoot": {
+        "type": "boolean",
+        "value": false
+    },
+    "powerupOnPlay": {
         "type": "boolean",
         "value": false
     }
