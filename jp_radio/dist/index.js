@@ -98,7 +98,15 @@ class ControllerJpRadio {
             defer.resolve();
         })
             .catch((err) => {
-            this.logger.error('JP_Radio::Failed to start appRadio', err);
+            if (err.code === 'EADDRINUSE') {
+                const message = `ポート ${servicePort} はすでに使用中です。JP Radio を開始できません。`;
+                this.logger.error(`JP_Radio::ポート使用中エラー: ${message}`);
+                this.commandRouter.pushToastMessage('error', 'JP Radio 起動エラー', message);
+            }
+            else {
+                this.logger.error('JP_Radio::Failed to start appRadio', err);
+                this.commandRouter.pushToastMessage('error', 'JP Radio 起動エラー', err.message || '不明なエラー');
+            }
             defer.reject(err);
         });
         return defer.promise;
@@ -129,7 +137,7 @@ class ControllerJpRadio {
                 uiconf.sections[1].content[1].value = radikoPass;
             defer.resolve(uiconf);
         })
-            .fail((error) => {
+            .catch((error) => {
             this.logger.error('getUIConfig failed:', error);
             defer.reject(error);
         });
