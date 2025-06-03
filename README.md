@@ -6,7 +6,7 @@ Bookworm version of Volumio required some adjustement for plugins due to new nod
 To learn more how to write a plugin for Volumio, [see](https://developers.volumio.com/plugins/submission-checklist)
 
 ## Volumio Bookworm 
-Public Alpha is open. Please follow [Volumio Community thread](https://community.volumio.com/t/public-alpha-test-audio-without-compromise-volumio-on-bookworm-begins/72054/).
+Public Beta is open. Please follow [Volumio Community thread](https://community.volumio.com/t/public-beta-test-audio-without-compromise-refining-the-future-of-volumio-on-bookworm/72576/).
 
 ---
 
@@ -55,7 +55,7 @@ In package.json make changes as shown in the example below:
         },
         "engines": {
                 "node": ">=20", <-------------------------------NODE VERSION >=20
-                "volumio": ">=0" <---------------------VOLUMIO VERSION >=0 DURING ALPHA TEST
+                "volumio": ">=4" <---------------------VOLUMIO VERSION >=4 DURING BETA TEST
         },
         "dependencies": { 
                 "fs-extra": "*",
