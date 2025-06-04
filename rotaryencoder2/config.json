@@ -41,7 +41,7 @@
     },
     "pinPushDebounce0": {
       "type": "number",
-      "value": 0
+        "value": 10
     },
     "pushState0": {
       "type": "boolean",
@@ -284,4 +284,3 @@
       "value": false
     }
 }
-  

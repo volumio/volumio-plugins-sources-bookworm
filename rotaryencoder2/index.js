@@ -75,6 +75,8 @@ function rotaryencoder2(context) {
 	this.configManager = this.context.configManager;
 }
 
+
+
 rotaryencoder2.prototype.onVolumioStart = function()
 {
 	var self = this;
@@ -146,6 +148,7 @@ rotaryencoder2.prototype.onStop = function() {
 	.then(_=> {
 		self.socket.off('pushState');
 		self.socket.disconnect();
+		defer.resolve();
 	})
 	.fail(err=>{
 		self.commandRouter.pushToastMessage('success',"Rotary Encoder II", self.getI18nString('ROTARYENCODER2.TOAST_STOP_FAIL'))
@@ -245,9 +248,6 @@ rotaryencoder2.prototype.updateEncoder = function(data){
 	if (self.JSONLogging) self.logger.info('[ROTARYENCODER2]' + JSON.stringify(data));
 
 	self.sanityCheckSettings(rotaryIndex, data)
-	//disable all rotaries before we make changes
-	//this is necessary, since there seems to be an issue in the Kernel, that breaks the
-	//eventHandlers if a dtoverlay with low index is removed and others with higher index exist
 	.then(_ => {
 		return self.uninstallAllOverlays(self.configuredDtos)
 	})
@@ -455,8 +455,12 @@ rotaryencoder2.prototype.installAllOverlays = function (configuredDtos) {
 			return self.installAllOverlays(configuredDtos.slice(0,configuredDtos.length - 1))
 			.then(_ => {
 				// return self.addOverlay(self.config.get('pinA'+currentDto),self.config.get('pinB'+currentDto),self.config.get('rotaryType'+currentDto))
+				if (currentDto.pinA > 0) {
 				return self.dtoverlayAdd(currentDto)
-				.then(_=> self.attachEventEmitter(currentDto))
+					.then(_=> self.attachEventEmitter(currentDto));
+				} else {
+					return libQ.resolve();
+				}
 			})
 			.fail(err => {
 				if (self.debugLogging) self.logger.error('[ROTARYENCODER2] installAllOverlays failed for rotary: ' + JSON.stringify(currentDto,['pinA','type']) + ' - ' + err);
@@ -505,7 +509,10 @@ rotaryencoder2.prototype.dtoverlayAdd = function (dto) {
 			} else if (dto.type=="gpio-key") {
 				var devPath  = '/dev/input/by-path/platform-button\@'+ Number(dto.pinA).toString(16) + '-event';
 			}
-			return self.waitForOverlay(5000, devPath)
+		//since by-path only gets generated with the first overlay, we first must wait for the folder to appear and then for the ovl
+		//recursive wait for the ovl does not work on buster
+		return self.waitForOverlay(5000, '/dev/input/by-path')
+		.then(_ => self.waitForOverlay(5000,devPath))
 		})
 		.then(_=>{defer.resolve()})
 		.fail(stderr => {
@@ -679,7 +686,6 @@ rotaryencoder2.prototype.emitDialCommand = function(val,rotaryIndex){
 					if (self.debugLogging) self.logger.info('[ROTARYENCODER2] emit command ' + (self.config.get('socketCmdCCW'+rotaryIndex)) +
 						' with data ' + self.config.get('socketDataCCW'+rotaryIndex));
 					self.socket.emit(self.config.get('socketCmdCW'+rotaryIndex), JSON.parse(self.config.get('socketDataCW'+rotaryIndex)));
-					// self.socket.emit("callMethod", JSON.parse('{"endpoint":"system_hardware/eadog_lcd","method":"up","data":""}'));
 					break;
 
 				default:
@@ -949,15 +955,17 @@ rotaryencoder2.prototype.uninstallAllOverlays = function (overlays) {
 			currentOverlay = overlays[0];
 			self.uninstallAllOverlays(overlays.slice(1,overlays.length))
 			.then(_ => {
-				return this.removeEventListeners(currentOverlay);
-			})
-			.then(_ => {
-				return this.dtoverlayRemove(currentOverlay);					
-			})
+				if (currentOverlay.pinA > 0) {
+					return this.removeEventListeners(currentOverlay)
+					.then(_ => this.dtoverlayRemove(currentOverlay))
 			.then(_ => {
 				if (self.debugLogging) self.logger.info('[ROTARYENCODER2] uninstallAllOverlays: removed' + JSON.stringify(currentOverlay,['pinA','type'] ));
-				return defer.resolve();
 			})
+				} else {
+					return libQ.resolve();
+				}
+			})
+			.then(_=> defer.resolve())
 			.fail(msg => {
 				if (self.debugLogging) self.logger.error('[ROTARYENCODER2] uninstallAllOverlays: failed for ' + JSON.stringify(currentOverlay,['pinA','type']) + ' with: '+msg);
 				self.commandRouter.pushToastMessage('error', self.getI18nString('ROTARYENCODER2.TOAST_WRONG_PARAMETER'), self.getI18nString('ROTARYENCODER2.TOAST_KILL_HANDLE_FAIL'));
