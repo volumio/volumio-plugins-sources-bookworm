@@ -32,7 +32,7 @@
               "max": 65535
             }
           ],
-          "value": 9000,
+          "value": 0,
           "description": "TRANSLATE.SERVICE_PORT_DESC"
         }
       ]

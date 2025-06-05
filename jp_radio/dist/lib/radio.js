@@ -16,7 +16,7 @@ const lodash_1 = require("lodash");
 const prog_1 = __importDefault(require("./prog"));
 const radiko_1 = __importDefault(require("./radiko"));
 class JpRadio {
-    constructor(port = 9000, logger, acct = null, commandRouter) {
+    constructor(port = 0, logger, acct = null, commandRouter) {
         _JpRadio_instances.add(this);
         this.server = null;
         this.prg = null;

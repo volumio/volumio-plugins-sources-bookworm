@@ -2,12 +2,9 @@
   "name": "jp_radio",
   "version": "4.0.0",
   "description": "Japanese radio relay server for Volumio4",
-  "main": "/dist/index.js",
+  "main": "./dist/index.js",
   "scripts": {
-    "clean": "rm -rf dist",
-    "build": "npm run clean && npx tsc && npm run copy-assets",
-    "copy-assets": "cp -r src/*.json dist/ && cp -r src/i18n dist/ && cp -r src/assets dist/",
-    "start": "node dist/index.js"
+    "build": "rm -rf dist && npx tsc && bash finalize.sh"
   },
   "keywords": [],
   "author": "mOqOm",

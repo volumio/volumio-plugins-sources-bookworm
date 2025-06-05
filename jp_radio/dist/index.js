@@ -89,7 +89,7 @@ class ControllerJpRadio {
         }
         const radikoUser = this.config.get('radikoUser');
         const radikoPass = this.config.get('radikoPass');
-        const servicePort = this.config.get('servicePort') || 9000;
+        const servicePort = this.config.get('servicePort');
         const account = radikoUser && radikoPass ? { mail: radikoUser, pass: radikoPass } : null;
         this.appRadio = new radio_1.default(servicePort, this.logger, account, this.commandRouter);
         this.appRadio.start()
@@ -124,18 +124,35 @@ class ControllerJpRadio {
     getUIConfig() {
         const defer = kew_1.default.defer();
         const langCode = this.commandRouter.sharedVars.get('language_code') || 'en';
+        this.logger.info(`------------`);
+        this.logger.info(`${__dirname}`);
+        this.logger.info(`------------`);
+        this.logger.info(`------------`);
+        this.logger.info(this.config.get('servicePort'));
+        this.logger.info(`------------`);
         this.commandRouter.i18nJson(`${__dirname}/i18n/strings_${langCode}.json`, `${__dirname}/i18n/strings_en.json`, `${__dirname}/UIConfig.json`)
             .then((uiconf) => {
-            const servicePort = this.config.get('servicePort');
-            const radikoUser = this.config.get('radikoUser');
-            const radikoPass = this.config.get('radikoPass');
-            if (uiconf.sections?.[0]?.content?.[0])
-                uiconf.sections[0].content[0].value = servicePort;
-            if (uiconf.sections?.[1]?.content?.[0])
-                uiconf.sections[1].content[0].value = radikoUser;
-            if (uiconf.sections?.[1]?.content?.[1])
-                uiconf.sections[1].content[1].value = radikoPass;
-            defer.resolve(uiconf);
+            try {
+                const servicePort = this.config.get('servicePort');
+                const radikoUser = this.config.get('radikoUser');
+                const radikoPass = this.config.get('radikoPass');
+                const portField = uiconf.sections?.[0]?.content?.[0];
+                const userField = uiconf.sections?.[1]?.content?.[0];
+                const passField = uiconf.sections?.[1]?.content?.[1];
+                if (portField)
+                    portField.value = servicePort;
+                if (userField)
+                    userField.value = radikoUser;
+                if (passField)
+                    passField.value = radikoPass;
+                this.logger.info('[JP Radio] Final UIConfig to return:');
+                this.logger.info(JSON.stringify(uiconf, null, 2));
+                defer.resolve(uiconf);
+            }
+            catch (e) {
+                this.logger.error('Error setting UIConfig values:', e);
+                defer.reject(e);
+            }
         })
             .catch((error) => {
             this.logger.error('getUIConfig failed:', error);
@@ -152,7 +169,7 @@ class ControllerJpRadio {
             uri: 'radiko',
             plugin_type: 'music_service',
             plugin_name: this.serviceName,
-            albumart: '/albumart?sourceicon=music_service/jp_radio/assets/images/app_radiko.svg'
+            albumart: '/albumart?sourceicon=music_service/jp_radio/dist/assets/images/app_radiko.svg'
         });
     }
     async handleBrowseUri(curUri) {

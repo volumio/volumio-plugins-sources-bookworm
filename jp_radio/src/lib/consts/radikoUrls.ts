@@ -9,4 +9,4 @@ export const CHANNEL_FULL_URL = 'http://radiko.jp/v3/station/region/full.xml';
 export const PLAY_URL = 'https://f-radiko.smartstream.ne.jp/%s/_definst_/simul-stream.stream/playlist.m3u8';
 export const MAX_RETRY_COUNT = 2;
 export const PROG_DAILY_URL = 'https://radiko.jp/v3/program/station/date/%s/%s.xml';
-export const PROG_URL = 'http://radiko.jp/v3/program/date/%s/%s.xml'; 
+export const PROG_URL = 'http://radiko.jp/v3/program/date/%s/%s.xml';

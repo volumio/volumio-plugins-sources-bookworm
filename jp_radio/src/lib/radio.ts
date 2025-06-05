@@ -17,7 +17,7 @@ export default class JpRadio {
   private prg: RdkProg | null = null;
   private rdk: Radiko | null = null;
 
-  constructor(port = 9000, logger: Console, acct: any = null, commandRouter: any) {
+  constructor(port = 0, logger: Console, acct: any = null, commandRouter: any) {
     this.app = express();
     this.port = port;
     this.logger = logger;

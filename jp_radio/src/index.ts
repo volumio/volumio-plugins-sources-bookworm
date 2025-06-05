@@ -101,7 +101,7 @@ class ControllerJpRadio {
 
     const radikoUser = this.config.get('radikoUser');
     const radikoPass = this.config.get('radikoPass');
-    const servicePort = this.config.get('servicePort') || 9000;
+    const servicePort = this.config.get('servicePort');
     const account = radikoUser && radikoPass ? { mail: radikoUser, pass: radikoPass } : null;
 
     this.appRadio = new JpRadio(servicePort, this.logger, account, this.commandRouter);
@@ -146,15 +146,24 @@ class ControllerJpRadio {
       `${__dirname}/UIConfig.json`
     )
     .then((uiconf: any) => {
-      const servicePort = this.config.get('servicePort');
-      const radikoUser = this.config.get('radikoUser');
-      const radikoPass = this.config.get('radikoPass');
+      try {
+        const servicePort = this.config.get('servicePort');
+        const radikoUser = this.config.get('radikoUser');
+        const radikoPass = this.config.get('radikoPass');
 
-      if (uiconf.sections?.[0]?.content?.[0]) uiconf.sections[0].content[0].value = servicePort;
-      if (uiconf.sections?.[1]?.content?.[0]) uiconf.sections[1].content[0].value = radikoUser;
-      if (uiconf.sections?.[1]?.content?.[1]) uiconf.sections[1].content[1].value = radikoPass;
+        const portField = uiconf.sections?.[0]?.content?.[0];
+        const userField = uiconf.sections?.[1]?.content?.[0];
+        const passField = uiconf.sections?.[1]?.content?.[1];
 
-      defer.resolve(uiconf);
+        if (portField) portField.value = servicePort;
+        if (userField) userField.value = radikoUser;
+        if (passField) passField.value = radikoPass;
+
+        defer.resolve(uiconf);
+      } catch (e) {
+        this.logger.error('Error setting UIConfig values:', e);
+        defer.reject(e);
+      }
     })
     .catch((error: any) => {
       this.logger.error('getUIConfig failed:', error);
@@ -164,7 +173,6 @@ class ControllerJpRadio {
     return defer.promise;
   }
 
-  
   getConfigurationFiles(): string[] {
     return ['config.json'];
   }
@@ -175,7 +183,7 @@ class ControllerJpRadio {
       uri: 'radiko',
       plugin_type: 'music_service',
       plugin_name: this.serviceName,
-      albumart: '/albumart?sourceicon=music_service/jp_radio/assets/images/app_radiko.svg'
+      albumart: '/albumart?sourceicon=music_service/jp_radio/dist/assets/images/app_radiko.svg'
     });
   }
 

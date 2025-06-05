@@ -1,9 +1,11 @@
-# JP RADIO Volumio3 plugin
-Japanese radio relay server for Volumio3
+# JP RADIO Volumio4 plugin
+Japanese radio relay server for Volumio4
 
 > **Alert**: This plugin is only accessible from Japan. Access is restricted from outside Japan.
 
 ## Change log
+### version 4.0.0(2025/06/01)
++ 2025/06/01 Fixed to support Volumio4.
 ### version 0.1.3(2025/05/30)
 + 2025/05/30 Modified to display by region
 ### version 0.1.2(2025/05/29)
