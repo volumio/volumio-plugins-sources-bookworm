@@ -67,14 +67,43 @@ if grep -q Raspberry /proc/cpuinfo; then # on Raspberry Pi hardware
     Driver \"modesetting\"
     Option \"PrimaryGPU\" \"true\"
 EndSection" > /etc/X11/xorg.conf.d/99-vc4.conf || { echo "Creating Xorg configuration file 99-vc4.conf failed"; exit 1; }
-
-  echo "Installing Chromium"
-  apt-get -y install chromium-browser || { echo "Installation of Chromium failed"; exit 1; }
-else # on other hardware
-  echo "Installing Chromium"
-  apt-get -y install chromium || { echo "Installation of Chromium failed"; exit 1; }
-  ln -fs /usr/bin/chromium /usr/bin/chromium-browser || { echo "Linking /usr/bin/chromium to /usr/bin/chromium-browser failed"; exit 1; }
 fi
+
+echo "Installing Chromium from GitHub"
+ARCH=$(dpkg --print-architecture)
+TARGET_CHROMIUM_VERSION="135.0.7049.95-1~deb12u1"
+INSTALLED_VERSION=$(dpkg-query -W -f='${Version}' chromium 2>/dev/null || echo "none")
+
+if [ "$INSTALLED_VERSION" = "$TARGET_CHROMIUM_VERSION" ]; then
+  echo "Chromium is already at target version ($TARGET_CHROMIUM_VERSION), skipping install"
+else
+  echo "Chromium version mismatch or not installed (found: $INSTALLED_VERSION), installing target version"
+
+  # Remove any incompatible or broken Chromium install
+  dpkg --purge chromium chromium-common chromium-l10n || true
+
+  GITHUB_BASE_URL="https://github.com/volumio/volumio3-os-static-assets/raw/master/browsers/chromium"
+  declare -A DEB_FILES
+  DEB_FILES["chromium"]="chromium_${TARGET_CHROMIUM_VERSION}_${ARCH}.deb"
+  DEB_FILES["chromium-common"]="chromium-common_${TARGET_CHROMIUM_VERSION}_${ARCH}.deb"
+  DEB_FILES["chromium-l10n"]="chromium-l10n_${TARGET_CHROMIUM_VERSION}_all.deb"
+
+  TMP_DEB_DIR="/tmp/volumio-chromium"
+  mkdir -p "$TMP_DEB_DIR"
+
+  for pkg in chromium-common chromium chromium-l10n; do
+    DEB_NAME="${DEB_FILES[$pkg]}"
+    URL="$GITHUB_BASE_URL/$DEB_NAME"
+    DEST="$TMP_DEB_DIR/$DEB_NAME"
+    echo "Downloading $pkg from $URL"
+    curl -L -o "$DEST" "$URL" || { echo "Failed to download $DEB_NAME"; exit 1; }
+    dpkg -i "$DEST" || apt-get install -f -y
+  done
+
+  rm -rf "$TMP_DEB_DIR"
+fi
+
+ln -fs /usr/bin/chromium /usr/bin/chromium-browser || { echo "Linking /usr/bin/chromium to /usr/bin/chromium-browser failed"; exit 1; }
 
 echo "Installing fonts"
 apt-get -y install fonts-arphic-ukai fonts-arphic-gbsn00lp fonts-unfonts-core fonts-ipafont fonts-vlgothic fonts-thai-tlwg-ttf || { echo "Installation of fonts failed"; exit 1; }
