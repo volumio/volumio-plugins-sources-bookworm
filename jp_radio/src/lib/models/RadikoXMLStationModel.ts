@@ -15,6 +15,7 @@ export interface RadikoXMLStation {
       '@to': string;
       title: string;
       pfm?: string;
+      img: string;
     }[];
   };
 }

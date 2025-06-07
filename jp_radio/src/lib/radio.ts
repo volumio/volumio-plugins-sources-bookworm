@@ -131,7 +131,7 @@ export default class JpRadio {
           service: 'webradio',
           type: 'webradio',
           title,
-          albumart: stationInfo.BannerURL || '',
+          albumart: progData?.img || '',
           uri: `http://localhost:${this.port}/radiko/${stationId}`,
           name: '',
           samplerate: '',
