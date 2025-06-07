@@ -146,26 +146,17 @@ class ControllerJpRadio {
       `${__dirname}/UIConfig.json`
     )
     .then((uiconf: any) => {
-      try {
-        const servicePort = this.config.get('servicePort');
-        const radikoUser = this.config.get('radikoUser');
-        const radikoPass = this.config.get('radikoPass');
+      const servicePort = this.config.get('servicePort');
+      const radikoUser = this.config.get('radikoUser');
+      const radikoPass = this.config.get('radikoPass');
 
-        const portField = uiconf.sections?.[0]?.content?.[0];
-        const userField = uiconf.sections?.[1]?.content?.[0];
-        const passField = uiconf.sections?.[1]?.content?.[1];
+      if (uiconf.sections?.[0]?.content?.[0]) uiconf.sections[0].content[0].value = servicePort;
+      if (uiconf.sections?.[1]?.content?.[0]) uiconf.sections[1].content[0].value = radikoUser;
+      if (uiconf.sections?.[1]?.content?.[1]) uiconf.sections[1].content[1].value = radikoPass;
 
-        if (portField) portField.value = servicePort;
-        if (userField) userField.value = radikoUser;
-        if (passField) passField.value = radikoPass;
-
-        defer.resolve(uiconf);
-      } catch (e) {
-        this.logger.error('Error setting UIConfig values:', e);
-        defer.reject(e);
-      }
+      defer.resolve(uiconf);
     })
-    .catch((error: any) => {
+    .fail((error: any) => {
       this.logger.error('getUIConfig failed:', error);
       defer.reject(error);
     });
