@@ -178,17 +178,29 @@ class ControllerJpRadio {
     });
   }
 
-  async handleBrowseUri(curUri: string): Promise<BrowseResult | {}> {
+  handleBrowseUri(curUri: string): Promise<any> {
+    const defer = libQ.defer();
     const [baseUri] = curUri.split('?');
 
     if (baseUri === 'radiko') {
       if (!this.appRadio) {
-        return {};
+        this.logger.error('[JP_Radio] handleBrowseUri !this.appRadio');
+        defer.resolve({});
+      } else {
+        libQ.resolve()
+          .then(() => this.appRadio!.radioStations())
+          .then((result: any) => defer.resolve(result))
+          .fail((err: any) => { // ← fail を安全に使用
+            this.logger.error('[JP_Radio] handleBrowseUri error: ' + err);
+            defer.reject(err);
+          });
       }
-      return await this.appRadio.radioStations();
+    } else {
+      this.logger.error('[JP_Radio] handleBrowseUri else');
+      defer.resolve({});
     }
 
-    return {};
+    return defer.promise;
   }
 
   clearAddPlayTrack(track: any): Promise<any> {
