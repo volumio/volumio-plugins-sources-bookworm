@@ -190,7 +190,7 @@ class ControllerJpRadio {
         libQ.resolve()
           .then(() => this.appRadio!.radioStations())
           .then((result: any) => defer.resolve(result))
-          .fail((err: any) => { // ← fail を安全に使用
+          .fail((err: any) => {
             this.logger.error('[JP_Radio] handleBrowseUri error: ' + err);
             defer.reject(err);
           });

@@ -124,18 +124,25 @@ export default class JpRadio {
     const stationPromises = entries.map(async ([stationId, stationInfo]) => {
       try {
         const progData = await this.prg?.getCurProgram(stationId);
-        const progTitle = progData ? ` - ${progData.pfm || ''} - ${progData.title || ''}` : '';
-        const title = `${capitalize(stationInfo.AreaName)} / ${stationInfo.Name}${progTitle}`;
 
         const item: BrowseItem = {
           service: 'webradio',
           type: 'webradio',
-          title,
+          // 番組タイトル
+          title: progData ? `${progData.title || ''}` : '',
+          // 地域名 / 局名
+          album: `${capitalize(stationInfo.AreaName)} / ${stationInfo.Name}`,
+          // パーソナリティ名
+          artist: progData?.pfm || ' ',
+          // 番組画像URL
           albumart: progData?.img || '',
+          // 再生URI
           uri: `http://localhost:${this.port}/radiko/${stationId}`,
-          name: '',
+          // サンプルレート（未使用）
           samplerate: '',
+          // ビット深度（未使用）
           bitdepth: 0,
+          // チャンネル数（未使用）
           channels: 0
         };
 
