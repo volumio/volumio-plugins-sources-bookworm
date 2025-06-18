@@ -125,7 +125,6 @@ FerrumStreamingControlTechnology.prototype.onStop = function () {
             defer.reject(err);
         });
 
-
     return defer.promise;
 };
 
