@@ -1,13 +1,12 @@
 #!/bin/bash
 
-PLUGIN_DIR="$(cd "$(dirname "$0")"; pwd -P)"
-
 exit_cleanup() {
-  if [ "$?" -ne 0 ]; then
+  ERR="$?"
+  if [ "$ERR" -ne 0 ]; then
     echo "Plugin failed to install!"
     echo "Cleaning up..."
     if [ -d "$PLUGIN_DIR" ]; then
-      . ."$PLUGIN_DIR"/uninstall.sh | grep -v "pluginuninstallend"
+      [ "$ERR" -eq 1 ] && . ."$PLUGIN_DIR"/uninstall.sh | grep -v "pluginuninstallend"
       echo "Removing plugin directory $PLUGIN_DIR"
       rm -rf "$PLUGIN_DIR"
     else
@@ -20,18 +19,21 @@ exit_cleanup() {
 }
 trap "exit_cleanup" EXIT
 
-echo "Completing \"UIConfig.json\""
-sed -i "s/\${plugin_type}/$(grep "\"plugin_type\":" "$PLUGIN_DIR"/package.json | cut -d "\"" -f 4)/" "$PLUGIN_DIR"/UIConfig.json || { echo "Completing \"UIConfig.json\" failed"; exit 1; }
+PLUGIN_DIR="$(cd "$(dirname "$0")" && pwd -P)" || { echo "Determination of plugin folder's name failed"; exit 3; }
+PLUGIN_TYPE=$(grep "\"plugin_type\":" "$PLUGIN_DIR"/package.json | cut -d "\"" -f 4) || { echo "Determination of plugin type failed"; exit 3; }
+PLUGIN_NAME=$(grep "\"name\":" "$PLUGIN_DIR"/package.json | cut -d "\"" -f 4) || { echo "Determination of plugin name failed"; exit 3; }
+
+sed -i "s/\${plugin_type\/plugin_name}/$PLUGIN_TYPE\/$PLUGIN_NAME/" "$PLUGIN_DIR"/UIConfig.json || { echo "Completing \"UIConfig.json\" failed"; exit 3; }
 
 echo "Installing MiniDLNA"
-apt-get update
+apt-get update || { echo "Running apt-get update failed"; exit 3; }
 apt-get -y install minidlna || { echo "Installation of minidlna failed"; exit 1; }
-systemctl disable minidlna.service
 systemctl stop minidlna.service
+systemctl disable minidlna.service
 rm /etc/minidlna.conf
-rm /data/minidlna.conf
+rm /data/configuration/"$PLUGIN_TYPE/$PLUGIN_NAME"/minidlna.conf
 
-MINIDLNAD=$(whereis -b minidlnad | cut -d ' ' -f 2)
+MINIDLNAD=$(whereis -b minidlnad | cut -d ' ' -f 2) || { echo "Locating minidlnad failed"; exit 1; }
 echo "Creating systemd unit /etc/systemd/system/minidlna.service"
 echo "[Unit]
 Description=MiniDLNA lightweight DLNA/UPnP-AV server
@@ -42,13 +44,14 @@ After=local-fs.target remote-fs.target nss-lookup.target network.target
 User=volumio
 Group=volumio
 
-Environment=CONFIGFILE=/data/minidlna.conf
-Environment=DAEMON_OPTS=
+Environment=CONFIGFILE=/data/configuration/$PLUGIN_TYPE/$PLUGIN_NAME/minidlna.conf
+Environment=DAEMON_OPTS=-S
 EnvironmentFile=-/etc/default/minidlna
+EnvironmentFile=-$PLUGIN_DIR/r_opt
 
 RuntimeDirectory=minidlna
 PIDFile=/run/minidlna/minidlna.pid
-ExecStart=$MINIDLNAD -f \$CONFIGFILE -P /run/minidlna/minidlna.pid \$DAEMON_OPTS
+ExecStart=$MINIDLNAD -f \$CONFIGFILE -P /run/minidlna/minidlna.pid \$DAEMON_OPTS \$R_OPT
 
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/minidlna.service || { echo "Creating systemd unit /etc/systemd/system/minidlna.service failed"; exit 1; }
