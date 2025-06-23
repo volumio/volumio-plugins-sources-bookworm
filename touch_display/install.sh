@@ -14,11 +14,6 @@ exit_cleanup() {
     fi
   fi
 
-  if [ -d "$TMP_DIR" ]; then
-    echo "Removing temporary directory $TMP_DIR"
-    rm -rf "$TMP_DIR"
-  fi
-
   #required to end the plugin install
   echo "plugininstallend"
 }
@@ -32,8 +27,6 @@ PLUGIN_NAME=$(grep "\"name\":" "$PLUGIN_DIR"/package.json | cut -d "\"" -f 4) ||
 (grep -Pozq '"id": "section_hdmi_settings",\s*"element": "section",\s*"hidden": false' /volumio/app/plugins/system_controller/system/UIConfig.json || grep -qi 'tinkerboard\|motivo' /etc/os-release) && { echo "The plugin is not suitable for this device"; exit 3; }
 
 sed -i "s/\${plugin_type\/plugin_name}/$PLUGIN_TYPE\/$PLUGIN_NAME/" "$PLUGIN_DIR"/UIConfig.json || { echo "Completing \"UIConfig.json\" failed"; exit 3; }
-
-TMP_DIR="$(mktemp -dt "$PLUGIN_NAME"-XXXXXXXXXX)" || { echo "Creating temporary directory failed"; exit 3; }
 
 export DEBIAN_FRONTEND=noninteractive
 
@@ -67,14 +60,67 @@ if grep -q Raspberry /proc/cpuinfo; then # on Raspberry Pi hardware
     Driver \"modesetting\"
     Option \"PrimaryGPU\" \"true\"
 EndSection" > /etc/X11/xorg.conf.d/99-vc4.conf || { echo "Creating Xorg configuration file 99-vc4.conf failed"; exit 1; }
-
-  echo "Installing Chromium"
-  apt-get -y install chromium-browser || { echo "Installation of Chromium failed"; exit 1; }
-else # on other hardware
-  echo "Installing Chromium"
-  apt-get -y install chromium || { echo "Installation of Chromium failed"; exit 1; }
-  ln -fs /usr/bin/chromium /usr/bin/chromium-browser || { echo "Linking /usr/bin/chromium to /usr/bin/chromium-browser failed"; exit 1; }
 fi
+
+echo "Creating Chromium Policy to Enable Manifest V2"
+mkdir -p /etc/chromium/policies/managed
+rm -f /etc/chromium/policies/managed/policies.json
+cat <<-EOF >/etc/chromium/policies/managed/policies.json
+{
+  "ExtensionManifestV2Availability": 2
+}
+EOF
+
+echo "Installing Chromium from GitHub"
+ARCH=$(dpkg --print-architecture)
+TARGET_CHROMIUM_VERSION="135.0.7049.95-1~deb12u1"
+INSTALLED_VERSION=$(dpkg-query -W -f='${Version}' chromium 2>/dev/null || echo "none")
+
+if [ "$INSTALLED_VERSION" = "$TARGET_CHROMIUM_VERSION" ]; then
+  echo "Chromium is already at target version ($TARGET_CHROMIUM_VERSION), skipping install"
+else
+  echo "Chromium version mismatch or not installed (found: $INSTALLED_VERSION), installing target version"
+
+  # Remove any incompatible or broken Chromium install
+  dpkg --purge rpi-chromium-mods chromium-browser || true
+  dpkg --purge chromium chromium-common chromium-l10n || true
+
+  echo "Removing leftover or conflicting Chromium-related packages if present"
+  # These packages are sometimes left behind and can cause conflicts
+  dpkg --purge chromium-codecs-ffmpeg-extra libwidevinecdm0 zenoty || true
+
+  GITHUB_BASE_URL="https://github.com/volumio/volumio3-os-static-assets/raw/master/browsers/chromium"
+  TMP_DEB_DIR="/tmp/volumio-chromium"
+  mkdir -p "$TMP_DEB_DIR"
+
+  for pkg in chromium-common chromium chromium-l10n; do
+    case "$pkg" in
+      chromium)
+        DEB_NAME="chromium_${TARGET_CHROMIUM_VERSION}_${ARCH}.deb"
+        ;;
+      chromium-common)
+        DEB_NAME="chromium-common_${TARGET_CHROMIUM_VERSION}_${ARCH}.deb"
+        ;;
+      chromium-l10n)
+        DEB_NAME="chromium-l10n_${TARGET_CHROMIUM_VERSION}_all.deb"
+        ;;
+      *)
+        echo "Unknown package $pkg"
+        exit 1
+        ;;
+    esac
+
+    URL="$GITHUB_BASE_URL/$DEB_NAME"
+    DEST="$TMP_DEB_DIR/$DEB_NAME"
+    echo "Downloading $pkg from $URL"
+    curl -L -o "$DEST" "$URL" || { echo "Failed to download $DEB_NAME"; exit 1; }
+    dpkg -i "$DEST" || apt-get install -f -y
+  done
+
+  rm -rf "$TMP_DEB_DIR"
+fi
+
+ln -fs /usr/bin/chromium /usr/bin/chromium-browser || { echo "Linking /usr/bin/chromium to /usr/bin/chromium-browser failed"; exit 1; }
 
 echo "Installing fonts"
 apt-get -y install fonts-arphic-ukai fonts-arphic-gbsn00lp fonts-unfonts-core fonts-ipafont fonts-vlgothic fonts-thai-tlwg-ttf || { echo "Installation of fonts failed"; exit 1; }
@@ -128,12 +174,11 @@ WantedBy=multi-user.target
 " > /lib/systemd/system/volumio-kiosk.service || { echo "Creating Systemd Unit for Kiosk failed"; exit 1; }
 systemctl daemon-reload
 
-echo "Disabling login prompt"
-systemctl disable getty@tty1.service
-
 echo "Installing Virtual Keyboard"
-mkdir -p /data/volumiokioskextensions/VirtualKeyboard || { echo "Creating /data/volumiokioskextensions/VirtualKeyboard failed"; exit 1; }
-git clone https://github.com/volumio/chrome-virtual-keyboard.git /data/volumiokioskextensions/VirtualKeyboard || { echo "Installing Virtual Keyboard extension failed"; exit 1; }
+VK_DIR="/data/volumiokioskextensions/VirtualKeyboard"
+rm -rf "$VK_DIR"
+mkdir -p "$VK_DIR" || { echo "Creating $VK_DIR failed"; exit 1; }
+git clone https://github.com/volumio/chrome-virtual-keyboard.git "$VK_DIR" || { echo "Installing Virtual Keyboard extension failed"; exit 1; }
 chown -R volumio:volumio /data/volumiokioskextensions || { echo "Setting permissions to Kiosk data folder failed"; exit 1; }
 
 echo "Allowing volumio to start an xsession"
