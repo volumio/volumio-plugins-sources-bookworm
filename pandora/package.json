@@ -1,6 +1,6 @@
 {
 	"name": "pandora",
-	"version": "2.13.1",
+	"version": "3.13.1",
 	"description": "Pandora Music Services Plugin",
 	"main": "index.js",
 	"scripts": {
@@ -15,18 +15,17 @@
 		"plugin_type": "music_service",
 		"architectures": [
 			"amd64",
-			"armhf",
-			"i386"
+			"armhf"
 		],
 		"os": [
-			"buster"
+			"bookworm"
 		],
 		"details": "Lorem ipsum",
 		"changelog": "https://github.com/truckershitch/volumio-plugins-sources/pandora/Readme.md"
 	},
 	"engines": {
 		"node": ">=8.11.1",
-		"volumio": ">=2.411 <5.0"
+		"volumio": ">=4"
 	},
 	"dependencies": {
 		"anesidora": "git://github.com/truckershitch/anesidora.git#master",
