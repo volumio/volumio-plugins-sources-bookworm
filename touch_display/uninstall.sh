@@ -8,9 +8,21 @@ apt-get -y purge --auto-remove fonts-ipafont
 apt-get -y purge --auto-remove fonts-vlgothic
 apt-get -y purge --auto-remove fonts-thai-tlwg-ttf
 
-apt-get -y purge --auto-remove chromium
-apt-get -y purge --auto-remove chromium-common
+# apt-get -y purge --auto-remove chromium
+# apt-get -y purge --auto-remove chromium-common
+dpkg --purge rpi-chromium-mods
+dpkg --purge chromium-browser
+dpkg --purge chromium
+dpkg --purge chromium-common
+dpkg --purge chromium-l10n
+dpkg --purge chromium-codecs-ffmpeg-extra
+# Prevent deletion of possibly empty /opt directory by dpkg --purge libwidevinecdm0
+touch /opt/do_not_delete
+dpkg --purge libwidevinecdm0
+rm /opt/do_not_delete
+dpkg --purge zenoty
 rm /usr/bin/chromium-browser
+
 apt-get -y purge --auto-remove openbox
 apt-get -y purge --auto-remove xinit
 apt-get -y purge --auto-remove x11-utils
