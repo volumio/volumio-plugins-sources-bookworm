@@ -6,7 +6,7 @@ const { exec } = require('child_process');
 const path = require('path');
 const os = require('os');
 const net = require('net');
-const io = require('socket.io-client');
+const io = require('../../../../volumio/node_modules/socket.io-client');
 const unixDomSocket = new net.Socket();
 const volumioSocket = io.connect('http://localhost:3000');
 const als = '/etc/als'; // The plugin expects the current value of an optional ambient light sensor (ALS) as a single number in /etc/als.
@@ -58,7 +58,7 @@ TouchDisplay.prototype.onVolumioReboot = function () {
   return libQ.resolve();
 };
 
-TouchDisplay.prototype.onStart = function (quiet) {
+TouchDisplay.prototype.onStart = function () {
   const self = this;
   const defer = libQ.defer();
 
@@ -69,7 +69,7 @@ TouchDisplay.prototype.onStart = function (quiet) {
       device = infos.hardware;
       if (device === 'pi') {
         self.detectPi5()
-          .fin(self.initGPUmem.bind(self, quiet));
+          .fin(self.initGPUmem.bind(self));
         self.readModules()
           .then(data => {
             self.modvc4Conf(data);
@@ -77,7 +77,7 @@ TouchDisplay.prototype.onStart = function (quiet) {
             rpiScreen = (/^rpi_ft5406\b/m.test(data) || /^raspberrypi_ts\b/m.test(data) || /^edt_ft5x06\b/m.test(data));
             self.logger.info(self.pluginName + ': ' + (rpiScreen ? '' : 'No ') + 'Raspberry Pi Foundation touch screen detected.');
           })
-          .fin(self.initScreenOrientation.bind(self, quiet));
+          .fin(self.initScreenOrientation.bind(self));
       }
       self.detectBacklight()
         .then(self.initScreenBrightness.bind(self))
@@ -426,12 +426,12 @@ TouchDisplay.prototype.saveBrightnessConf = function (confData) {
       // minAls and maxAls can only be the same value if the ALS range has not been determined before
       if (self.config.get('maxAls') <= self.config.get('minAls')) {
         if (confData.brightnessCurve) {
-          self.getAlsValue({ confData: confData, action: 'minmaxmid' });
+          self.getAlsValue({ confData, action: 'minmaxmid' });
         } else {
-          self.getAlsValue({ confData: confData, action: 'minmax' });
+          self.getAlsValue({ confData, action: 'minmax' });
         }
       } else if (confData.brightnessCurve && (!self.config.has('midAls') || self.config.get('midAls') <= self.config.get('minAls') || self.config.get('midAls') >= self.config.get('maxAls'))) {
-        self.getAlsValue({ confData: confData, action: 'mid' });
+        self.getAlsValue({ confData, action: 'mid' });
       } else {
         if (self.config.get('brightnessCurve') !== confData.brightnessCurve) {
           self.config.set('brightnessCurve', confData.brightnessCurve);
@@ -808,9 +808,6 @@ TouchDisplay.prototype.saveVirtualKeyboardConf = function (confData) {
     self.commandRouter.pushToastMessage('info', self.commandRouter.getI18nString('TOUCH_DISPLAY.PLUGIN_NAME'), self.commandRouter.getI18nString('TOUCH_DISPLAY.NO_CHANGES'));
     defer.resolve();
   }
-  if (uiNeedsUpdate) {
-    self.updateUIConfig();
-  }
   return defer.promise;
 };
 
@@ -1093,7 +1090,7 @@ TouchDisplay.prototype.assignCurrentAls = function (data) {
     } else {
       clearTimeout(autoBrTimer);
       autoBrTimeoutCleared = true;
-      if (data.action.substr(0, 3) === 'min') {
+      if (data.action.slice(0, 3) === 'min') {
         self.config.set('minAls', parseFloat(currentAls));
         data.action = data.action.slice(3);
         self.getAlsValue({ confData: data.confData, action: data.action });
@@ -1323,7 +1320,7 @@ TouchDisplay.prototype.detectPi5 = function () {
       defer.reject(err);
     } else {
       data = data.match(/^Revision\s*:\s.*$/m)[0].split(': ')[1];
-      pi5 = parseInt(data, 16).toString(2).charAt(1) === '1' && data.substr(-3, 2) === '17';
+      pi5 = parseInt(data, 16).toString(2).charAt(1) === '1' && ['17', '18', '19', '1a'].includes(data.slice(-3, -1));
       defer.resolve();
     }
   });
@@ -1452,7 +1449,7 @@ TouchDisplay.prototype.initScreenBrightness = function () {
   return defer.promise;
 };
 
-TouchDisplay.prototype.initScreenOrientation = function (quiet) {
+TouchDisplay.prototype.initScreenOrientation = function () {
   const self = this;
   const defer = libQ.defer();
 
@@ -1461,7 +1458,7 @@ TouchDisplay.prototype.initScreenOrientation = function (quiet) {
       fs.stat('/tmp/touch_display-stop_flag', (err, stats) => {
         if (err !== null || !stats.isFile()) {
           self.config.set('interimAngle', '0');
-          if (self.config.get('angle') !== '0' && !quiet) {
+          if (self.config.get('angle') !== '0') {
             self.commandRouter.pushToastMessage('stickyerror', self.commandRouter.getI18nString('TOUCH_DISPLAY.PLUGIN_NAME'), self.commandRouter.getI18nString('TOUCH_DISPLAY.WARN_ORIENTATION'));
           }
           defer.resolve();
@@ -1470,7 +1467,7 @@ TouchDisplay.prototype.initScreenOrientation = function (quiet) {
             .fin(() => {
               if (self.config.get('interimAngle') === self.config.get('angle')) {
                 self.config.delete('interimAngle');
-              } else if (!quiet) {
+              } else {
                 self.commandRouter.pushToastMessage('stickyerror', self.commandRouter.getI18nString('TOUCH_DISPLAY.PLUGIN_NAME'), self.commandRouter.getI18nString('TOUCH_DISPLAY.WARN_ORIENTATION'));
               }
               defer.resolve();
@@ -1488,16 +1485,14 @@ TouchDisplay.prototype.initScreenOrientation = function (quiet) {
   return defer.promise;
 };
 
-TouchDisplay.prototype.initGPUmem = function (quiet) {
+TouchDisplay.prototype.initGPUmem = function () {
   const self = this;
 
   if (!pi5 && self.config.get('controlGpuMem') && self.config.has('interimGpuMem')) {
     self.modBootConfig(configTxtGpuMemBanner + 'gpu_mem=.*', configTxtGpuMemBanner + 'gpu_mem=' + self.config.get('gpuMem'))
       .then(self.modBootConfig.bind(self, '^gpu_mem', '#GPU_MEM'))
       .fail(() => self.logger.info(self.pluginName + ': Writing the touch display plugin\'s gpu_mem setting failed. Previous gpu_mem settings in /boot/config.txt have not been commented.'));
-    if (!quiet) {
-      self.commandRouter.pushToastMessage('stickyerror', self.commandRouter.getI18nString('TOUCH_DISPLAY.PLUGIN_NAME'), self.commandRouter.getI18nString('TOUCH_DISPLAY.WARN_GPUMEM'));
-    }
+    self.commandRouter.pushToastMessage('stickyerror', self.commandRouter.getI18nString('TOUCH_DISPLAY.PLUGIN_NAME'), self.commandRouter.getI18nString('TOUCH_DISPLAY.WARN_GPUMEM'));
   }
   return libQ.resolve();
 };

@@ -8,12 +8,9 @@ apt-get -y purge --auto-remove fonts-ipafont
 apt-get -y purge --auto-remove fonts-vlgothic
 apt-get -y purge --auto-remove fonts-thai-tlwg-ttf
 
-if grep -q Raspberry /proc/cpuinfo; then # on Raspberry Pi hardware
-  apt-get -y purge --auto-remove chromium-browser
-else # on other hardware
-  apt-get -y purge --auto-remove chromium
-  rm /usr/bin/chromium-browser
-fi
+apt-get -y purge --auto-remove chromium
+apt-get -y purge --auto-remove chromium-common
+rm /usr/bin/chromium-browser
 apt-get -y purge --auto-remove openbox
 apt-get -y purge --auto-remove xinit
 apt-get -y purge --auto-remove x11-utils
@@ -39,9 +36,6 @@ if [ -f /etc/X11/xorg.conf.d/99-vc4.conf ]; then
   echo "Deleting /etc/X11/xorg.conf.d/99-vc4.conf"
   rm /etc/X11/xorg.conf.d/99-vc4.conf
 fi
-
-echo "Enabling login prompt"
-systemctl enable getty@tty1.service
 
 echo "Done"
 echo "pluginuninstallend"
