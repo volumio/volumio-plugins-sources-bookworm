@@ -86,8 +86,11 @@ else
   dpkg --purge chromium chromium-common chromium-l10n || true
 
   echo "Removing leftover or conflicting Chromium-related packages if present"
+  # Prevent deletion of possibly empty /opt directory by dpkg --purge ... libwidevinecdm0
+  touch /opt/do_not_delete
   # These packages are sometimes left behind and can cause conflicts
   dpkg --purge chromium-codecs-ffmpeg-extra libwidevinecdm0 zenoty || true
+  rm /opt/do_not_delete
 
   GITHUB_BASE_URL="https://github.com/volumio/volumio3-os-static-assets/raw/master/browsers/chromium"
   TMP_DEB_DIR="/tmp/volumio-chromium"
