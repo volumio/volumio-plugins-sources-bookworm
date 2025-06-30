@@ -1,0 +1,38 @@
+{
+  "name": "gpio-buttons",
+  "version": "1.8.4",
+  "description": "GPIO button-listener plugin for Volumio3",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "tomatpasser, Darmur",
+  "license": "ISC",
+  "volumio_info": {
+    "prettyName": "GPIO Buttons",
+    "icon": "fa-microchip",
+    "plugin_type": "system_hardware",
+    "boot_priority": 10,
+    "os": [
+      "bookworm"
+    ],
+    "details": "Booworm version - GPIO button-listener plugin for Volumio3",
+    "changelog": "",
+    "architectures": [
+      "armhf"
+    ]
+  },
+  "dependencies": {
+    "@iiot2k/gpiox": "^2.1.4",
+    "fs-extra": "^0.28.0",
+    "kew": "^0.7.0",
+    "socket.io": "^2.3.0",
+    "socket.io-client": "^2.3.0",
+    "v-conf": "^1.4.0"
+  },
+  "engines": {
+    "volumio": ">=4",
+    "node": ">=20"
+  },
+  "repository": "https://github.com/volumio/volumio-plugins-sources"
+}

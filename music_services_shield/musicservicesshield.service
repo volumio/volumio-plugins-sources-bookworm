@@ -1,0 +1,18 @@
+[Unit]
+Description=Shield Volumio Music Services in the User CPU Set
+Documentation=https://community.volumio.org/t/plugin-music-services-shield/48519
+After=mpd.service
+PartOf=mpd.service
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/bin/bash /data/plugins/system_hardware/music_services_shield/moveallprocesses.sh
+RemainAfterExit=true
+StandardOutput=journal
+StandardError=jouurnal
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=mpd.service

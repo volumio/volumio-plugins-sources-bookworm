@@ -1,0 +1,1 @@
+{"root":["../src/index.ts","../src/lib/CommandDispatcher.ts","../src/lib/Config.ts","../src/lib/PlayerFinder.ts","../src/lib/PlayerStatusMonitor.ts","../src/lib/Proxy.ts","../src/lib/RPC.ts","../src/lib/SqueezeliteMCContext.ts","../src/lib/System.ts","../src/lib/Util.ts","../src/lib/types/Player.ts","../src/lib/types/Server.ts"],"version":"5.6.3"}

@@ -1,6 +1,6 @@
 {
 	"name": "spop",
-	"version": "4.1.1",
+	"version": "4.1.4",
 	"description": "Spotify plugin for Volumio3",
 	"main": "index.js",
 	"scripts": {
@@ -23,8 +23,7 @@
 		"changelog": "",
 		"architectures": [
 			"amd64",
-			"armhf",
-			"i386"
+			"armhf"
 		]
 	},
 	"dependencies": {
@@ -41,5 +40,5 @@
 		"volumio": ">=0",
 		"node": ">=14.15.4"
 	},
-	"repository": "https://github.com/volumio/volumio-plugins-sources-bookworm"
+	"repository": "https://github.com/volumio/volumio-plugins-sources"
 }
