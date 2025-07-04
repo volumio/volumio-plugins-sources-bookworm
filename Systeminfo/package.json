@@ -1,6 +1,6 @@
 {
 	"name": "Systeminfo",
-	"version": "3.0.8",
+	"version": "3.0.9",
 	"description": "Information about your system",
 	"main": "index.js",
 	"scripts": {
@@ -25,7 +25,7 @@
 	},
 	"engines": {
 		"node": ">=20",
-		"volumio": ">=0"
+		"volumio": ">=4"
 	},
 	"dependencies": {
 		"fs-extra": "*",

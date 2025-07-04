@@ -291,38 +291,54 @@ Systeminfo.prototype.board = function () {
 };
 
 
-Systeminfo.prototype.firmwareversion = function () {
+Systeminfo.prototype.detectModel = function () {
    var self = this;
+  try {
+    const model = fs.readFileSync('/proc/device-tree/model', 'utf8').toLowerCase();
+    if (model.includes('zero 2')) return 'zero2';
+    if (model.includes('pi 3')) return 'pi3';
+    if (model.includes('pi 4')) return 'pi4';
+    if (model.includes('pi 5')) return 'pi5';
+  } catch (err) {
+  }
+  return 'unknown';
+};
 
-   // Execute vcgencmd version and capture the output
-   exec('sudo vcgencmd bootloader_version', { uid: 1000, gid: 1000 }, (error, stdout, stderr) => {
-      if (error) {
-         self.logger.info('Firmware detection failed: ' + error);
-         self.commandRouter.pushToastMessage('error', 'Firmware detection failed');
-         return;
-      }
 
-      if (stderr) {
-         self.logger.info('stderr: ' + stderr);
-         return;
-      }
-      const lines = stdout.trim().split('\n');
-      if (lines.length < 2) {
-         self.logger.error('Unexpected firmware output');
-         return;
-      }
+Systeminfo.prototype.firmwareversion = function () {
+ const self = this;
+  const model = self.detectModel();
+  let cmd;
 
-      // Concatenate the first and second lines
-      const firmwareData = {
-         firmware: `${lines[0]} ${lines[1]}`
-      };
+  // Sur Pi 4 et 5, on utilise bootloader EEPROM
+  if (model === 'pi4' || model === 'pi5') {
+    cmd = 'vcgencmd bootloader_version';
+  } else {
+    // Sur Zero 2, Pi 3 et autres modèles, on lit la version du firmware start.elf
+    cmd = 'vcgencmd version';
+  }
 
-      self.logger.info('Firmware detected: ' + firmwareData.firmware);
+  exec(cmd, { uid: 1000, gid: 1000 }, (error, stdout, stderr) => {
+    if (error) {
+      self.logger.info('Firmware detection failed: ' + error);
+      self.commandRouter.pushToastMessage('error', 'Firmware detection failed');
+      return;
+    }
+    if (stderr) {
+      self.logger.info('vcgencmd stderr: ' + stderr);
+    }
 
-      // Set the firmware value in the config
-      self.config.set('firmware', firmwareData.firmware);
+    const outputLines = stdout.trim().split('\n');
+    if (outputLines.length === 0 || !outputLines[0]) {
+      self.logger.error(`Unexpected firmware output (model: ${model})`);
+      return;
+    }
 
-   });
+    // On récupère au maximum les 2 premières lignes
+    const firmwareInfo = outputLines.slice(0, 2).join(' ');
+    self.logger.info('Firmware detected: ' + firmwareInfo);
+    self.config.set('firmware', firmwareInfo);
+  });
 };
 
 //here we detect the temperature for the cpu
