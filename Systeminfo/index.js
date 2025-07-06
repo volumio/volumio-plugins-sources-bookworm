@@ -207,79 +207,13 @@ Systeminfo.prototype.mpdversion = function () {
       // console.log(`MPD Version !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!: ${mpdVersion}`);
    });
 
-}
-/*
-//here we detect the firmware version for the rpi
-Systeminfo.prototype.firmwareversion = function () {
-   var self = this;
-   var firmware;
-   try {
-      exec("/bin/echo volumio | /usr/bin/sudo -S /data/plugins/user_interface/Systeminfo/firmware.sh >/data/configuration/user_interface/Systeminfo/firmware.json", { uid: 1000, gid: 1000 }, function (error, stdout, stderr) {
-         if (error) {
-            self.logger.info('failed ' + error);
-            self.commandRouter.pushToastMessage('error', 'firmware detection failed');
-            firmware = 'not applicable';
-         } else {
-/*
-            fs.readFile('/data/configuration/user_interface/Systeminfo/firmware.json', 'utf8', function (err, firmware) {
-               if (err) {
-                  self.logger.info('Error reading config', err);
-               } else {
-                  try {
-                     const hwinfoJSON = JSON.parse(firmware);
-                     firmware = hwinfoJSON.firmware.value;
-                     console.log('AAAAAAAAAAAAAAAAAAAAAAAAAA-> ' + firmware + ' <-AAAAAAAAAAAAA');
-                     self.config.set('firmware', firmware);
-
-                  } catch (e) {
-                     self.logger.info('Error reading Systeminfo/firmware.json, detection failed', e);
-
-                  }
-               }
-            });
-         }
-         
-        const { exec } = require('child_process');
-
-// Execute the Bash script that generates the JSON output
-exec('sudo vcgencmd version | sed -e \'1s/^/{\\"firmware\\": \\"/\' -e \'2s/$/ /\' -e \'3s/$/\\"}/\'', (error, stdout, stderr) => {
-    if (error) {
-        console.error(`Error executing command: ${error.message}`);
-        return;
-    }
-    if (stderr) {
-        console.error(`Error: ${stderr}`);
-        return;
-    }
-  
-    // Output the JSON string
-    const jsonStr = stdout.trim();
-  
-    try {
-        // Parse the JSON string
-        const data = JSON.parse(jsonStr);
-        console.log(data);
-        self.config.set('firmware', data);
-
-    } catch (err) {
-        console.error('Failed to parse JSON:', err.message);
-    }
-});
-
-      })
-   } catch (e) {
-      self.logger.info('Error reading firmware.json, detection failed', e);
-   }
-
-
 };
-*/
 
 
 //here we detect the board type
 Systeminfo.prototype.board = function () {
    var self = this;
-   exec("/bin/cat /proc/device-tree/model" , function (error, stdout, stderr) {
+   exec("/bin/cat /proc/device-tree/model", function (error, stdout, stderr) {
       if (error) {
          self.logger.error('failed ' + error);
          self.commandRouter.pushToastMessage('error', 'board detection failed');
@@ -293,52 +227,52 @@ Systeminfo.prototype.board = function () {
 
 Systeminfo.prototype.detectModel = function () {
    var self = this;
-  try {
-    const model = fs.readFileSync('/proc/device-tree/model', 'utf8').toLowerCase();
-    if (model.includes('zero 2')) return 'zero2';
-    if (model.includes('pi 3')) return 'pi3';
-    if (model.includes('pi 4')) return 'pi4';
-    if (model.includes('pi 5')) return 'pi5';
-  } catch (err) {
-  }
-  return 'unknown';
+   try {
+      const model = fs.readFileSync('/proc/device-tree/model', 'utf8').toLowerCase();
+      if (model.includes('zero 2')) return 'zero2';
+      if (model.includes('pi 3')) return 'pi3';
+      if (model.includes('pi 4')) return 'pi4';
+      if (model.includes('pi 5')) return 'pi5';
+   } catch (err) {
+   }
+   return 'unknown';
 };
 
 
 Systeminfo.prototype.firmwareversion = function () {
- const self = this;
-  const model = self.detectModel();
-  let cmd;
+   const self = this;
+   const model = self.detectModel();
+   let cmd;
 
-  // Sur Pi 4 et 5, on utilise bootloader EEPROM
-  if (model === 'pi4' || model === 'pi5') {
-    cmd = 'vcgencmd bootloader_version';
-  } else {
-    // Sur Zero 2, Pi 3 et autres modèles, on lit la version du firmware start.elf
-    cmd = 'vcgencmd version';
-  }
+   // Sur Pi 4 et 5, on utilise bootloader EEPROM
+   if (model === 'pi4' || model === 'pi5') {
+      cmd = 'vcgencmd bootloader_version';
+   } else {
+      // Sur Zero 2, Pi 3 et autres modèles, on lit la version du firmware start.elf
+      cmd = 'vcgencmd version';
+   }
 
-  exec(cmd, { uid: 1000, gid: 1000 }, (error, stdout, stderr) => {
-    if (error) {
-      self.logger.info('Firmware detection failed: ' + error);
-      self.commandRouter.pushToastMessage('error', 'Firmware detection failed');
-      return;
-    }
-    if (stderr) {
-      self.logger.info('vcgencmd stderr: ' + stderr);
-    }
+   exec(cmd, { uid: 1000, gid: 1000 }, (error, stdout, stderr) => {
+      if (error) {
+         self.logger.info('Firmware detection failed: ' + error);
+         self.commandRouter.pushToastMessage('error', 'Firmware detection failed');
+         return;
+      }
+      if (stderr) {
+         self.logger.info('vcgencmd stderr: ' + stderr);
+      }
 
-    const outputLines = stdout.trim().split('\n');
-    if (outputLines.length === 0 || !outputLines[0]) {
-      self.logger.error(`Unexpected firmware output (model: ${model})`);
-      return;
-    }
+      const outputLines = stdout.trim().split('\n');
+      if (outputLines.length === 0 || !outputLines[0]) {
+         self.logger.error(`Unexpected firmware output (model: ${model})`);
+         return;
+      }
 
-    // On récupère au maximum les 2 premières lignes
-    const firmwareInfo = outputLines.slice(0, 2).join(' ');
-    self.logger.info('Firmware detected: ' + firmwareInfo);
-    self.config.set('firmware', firmwareInfo);
-  });
+      // On récupère au maximum les 2 premières lignes
+      const firmwareInfo = outputLines.slice(0, 2).join(' ');
+      self.logger.info('Firmware detected: ' + firmwareInfo);
+      self.config.set('firmware', firmwareInfo);
+   });
 };
 
 //here we detect the temperature for the cpu
@@ -382,6 +316,48 @@ Systeminfo.prototype.storages = function () {
    })
 };
 
+
+Systeminfo.prototype.getEthernetSpeed = function () {
+   var self = this;
+   var defer = libQ.defer();
+
+   exec("/usr/bin/sudo /sbin/ethtool eth0 | grep -i speed | tr -d 'Speed:' | xargs", { encoding: 'utf8' }, function (error, data) {
+      if (error) {
+         self.logger.error('Could not parse Etherned Speed: ' + error);
+         defer.resolve('');
+      } else {
+         if (data.replace('\n', '') == '1000Mb/s') {
+            data = '1Gb/s';
+            self.config.set("speed", data);
+
+         }
+         defer.resolve(data);
+      }
+   });
+   return defer.promise;
+};
+
+
+Systeminfo.prototype.getWirelessSpeed = function () {
+   var self = this;
+   var defer = libQ.defer();
+
+   exec("/usr/bin/sudo /sbin/iwconfig wlan0 | grep 'Bit Rate' | awk '{print $2,$3}' | tr -d 'Rate:' | xargs", { encoding: 'utf8' }, function (error, data) {
+      if (error) {
+         self.logger.error('Could not parse Wireless Speed: ' + error);
+         defer.resolve('');
+      } else {
+         let result = data.replace(/=/g, '')
+         defer.resolve(result);
+         console.log("speed :" + result)
+         self.config.set("speed", result);
+
+      }
+   });
+   return defer.promise;
+};
+
+
 Systeminfo.prototype.getsysteminfo = function () {
    var self = this;
 
@@ -406,6 +382,9 @@ Systeminfo.prototype.getsysteminfo = function () {
    self.board();
 
    // Network
+   // si.networkInterfaces('default').then(data => console.log(data));
+   // si.wifiNetworks().then(data => console.log(data));
+   // si.networkInterfaces().then(data => console.log(data));
    si.networkInterfaces('default')
       .then(data => {
          //  console.log(data, data.iface);
@@ -414,7 +393,11 @@ Systeminfo.prototype.getsysteminfo = function () {
          self.config.set("iface", data.iface); // Assuming data is an array and you want the first element
          self.config.set("ip4", data.ip4);
          self.config.set("type", data.type);
-         self.config.set("speed", data.speed);
+         if (data.iface === "wlan0") {
+            self.getWirelessSpeed();
+         } else {
+            self.getEthernetSpeed();
+         }
          self.config.set("mac", data.mac);
 
       })
@@ -483,7 +466,7 @@ Systeminfo.prototype.getsysteminfo = function () {
                const messages3 = `<br><li>Memory info</br></li><ul><li>Memory: ${memtotal}</li><li>Free: ${memfree}</li><li>Used: ${memused}</li></ul>`;
 
                // Network info
-               const messages8 = `<br><li>Network info</br></li><ul><li>Interface: ${ni}</li><li>IP Address: ${ip}</li><li>MAC Address: ${mac}</li><li>Type: ${type}</li><li>Speed: ${speed}Mb/s</li></ul>`;
+               const messages8 = `<br><li>Network info</br></li><ul><li>Interface: ${ni}</li><li>IP Address: ${ip}</li><li>MAC Address: ${mac}</li><li>Type: ${type}</li><li>Speed: ${speed}</li></ul>`;
 
                // Audio info
                const messages6 = `<br><li>Audio info</br></li><ul><li>Hw audio configured: ${cout}</li><li>Mixer type: ${cmixt}</li><li>Number of channels: ${nchannels}</li><li>Supported sample rate: ${samplerate}</li></ul>`;
@@ -495,7 +478,7 @@ Systeminfo.prototype.getsysteminfo = function () {
                const messages9 = `<br><li>Software info</br></li><ul><li>Mpd version: ${mpdVersion}</li></ul>`;
 
                // Combine all messages
-               const combinedMessages = messages4 + messages8 + messages6 + messages1 + messages2 + messages3 +messages9+ messages7;
+               const combinedMessages = messages4 + messages8 + messages6 + messages1 + messages2 + messages3 + messages9 + messages7;
 
                // Display in modal
                const modalData = {

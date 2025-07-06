@@ -1,6 +1,6 @@
 {
 	"name": "Systeminfo",
-	"version": "3.0.9",
+	"version": "3.0.10",
 	"description": "Information about your system",
 	"main": "index.js",
 	"scripts": {
@@ -21,7 +21,7 @@
 			"bookworm"
 		],
 		"details": "Gives information about your system",
-		"changelog": "fix firmware detection"
+		"changelog": "fix wireless speed"
 	},
 	"engines": {
 		"node": ">=20",
