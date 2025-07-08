@@ -93,3 +93,7 @@ volumio plugin submit
 Your plugin is now in beta state, available in the store when "plugin test mode" is enabled.
 
 It will be released as stable once checked by volumio team.
+
+## 7. Update your plugin
+
+If you want to update your plugin (to fix an issue, add a feature or EVEN minor typo correction...) you MUST change the version number in package.json, re-submit the plugin and send a new PULL REQUEST. Without new version number, the new plugin will be NOT available in the store!
