@@ -77,6 +77,11 @@
         "title": "Radio Paradise Serenity (AAC 64k)",
         "uri": "webrp/12",
         "url": "http://stream.radioparadise.com/serenity"
+      },
+      {
+        "title": "Radio Paradise Beyond-flac (FLAC)",
+        "uri": "webrp/13",
+        "url": "http://stream.radioparadise.com/beyond-flac"
       }
     ]
   }

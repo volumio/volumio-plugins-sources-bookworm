@@ -1,6 +1,6 @@
 {
 	"name": "radio_paradise",
-	"version": "2.0.13",
+	"version": "2.0.14",
 	"description": "Radio Paradise Plugin for Volumio (incl. FLAC versions)",
 	"main": "index.js",
 	"scripts": {
@@ -21,11 +21,11 @@
 			"bookworm"
 		],
 		"details": "Radio paradise",
-		"changelog": "add radio Serenity"
+		"changelog": "add radio Beyond flac"
 	},
 	"engines": {
 		"node": ">=20",
-		"volumio": ">=0"
+		"volumio": ">=4"
 	},
 	"dependencies": {
 		"fs-extra": "^0.28.0",
