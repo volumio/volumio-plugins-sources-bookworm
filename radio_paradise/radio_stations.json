@@ -3,9 +3,7 @@
     "navigation": {
       "lists": [
         {
-          "availableListViews": [
-            "list"
-          ],
+          "availableListViews": ["list"],
           "items": []
         }
       ]
@@ -16,22 +14,37 @@
       {
         "title": "Radio Paradise Main Mix (FLAC)",
         "uri": "webrp/0",
-        "url": "https://stream.radioparadise.com/flac"
+        "url": "https://stream.radioparadise.com/flacm",
+        "chan": 0
       },
       {
         "title": "Radio Paradise Mellow Mix (FLAC)",
         "uri": "webrp/1",
-        "url": "https://stream.radioparadise.com/mellow-flac"
+        "url": "https://stream.radioparadise.com/mellow-flacm",
+        "chan": 1
       },
       {
         "title": "Radio Paradise Rock Mix (FLAC)",
         "uri": "webrp/2",
-        "url": "https://stream.radioparadise.com/rock-flac"
+        "url": "https://stream.radioparadise.com/rock-flacm",
+        "chan": 2
       },
       {
-        "title": "Radio Paradise World/Etc Mix (FLAC)",
+        "title": "Radio Paradise Global Mix (FLAC)",
         "uri": "webrp/3",
-        "url": "https://stream.radioparadise.com/world-etc-flac"
+        "url": "http://stream.radioparadise.com/global-flacm",
+        "chan": 3
+      },
+      {
+        "title": "Radio Paradise Beyond...(FLAC)",
+        "uri": "webrp/13",
+        "url": "http://stream.radioparadise.com/beyond-flacm",
+        "chan": 5
+      },
+      {
+        "title": "Radio Paradise Serenity (AAC 64k)",
+        "uri": "webrp/12",
+        "url": "http://stream.radioparadise.com/serenity"
       },
       {
         "title": "Radio Paradise (AAC 320k)",
@@ -61,27 +74,8 @@
       {
         "title": "Radio Paradise Radio 2050 (FLAC)",
         "uri": "webrp/9",
-        "url": "http://stream.radioparadise.com/radio2050-flac"
-      },
-      {
-        "title": "Radio Paradise Rock Mix (AAC 320k)",
-        "uri": "webrp/10",
-        "url": "http://stream.radioparadise.com/rock-320"
-      },
-      {
-        "title": "Radio Paradise Rock Mix (MP3 192k)",
-        "uri": "webrp/11",
-        "url": "http://stream.radioparadise.com/rock-192"
-      },
-      {
-        "title": "Radio Paradise Serenity (AAC 64k)",
-        "uri": "webrp/12",
-        "url": "http://stream.radioparadise.com/serenity"
-      },
-      {
-        "title": "Radio Paradise Beyond-flac (FLAC)",
-        "uri": "webrp/13",
-        "url": "http://stream.radioparadise.com/beyond-flac"
+        "url": "http://stream.radioparadise.com/radio2050-flacm",
+        "chan": 9
       }
     ]
   }
