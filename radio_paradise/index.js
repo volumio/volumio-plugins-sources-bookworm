@@ -496,7 +496,7 @@ ControllerRadioParadise.prototype.pushSongState = function (metadata) {
         service: self.serviceName,
         type: 'webradio',
         trackType: audioFormat,
-        radioType: 'rparadise',
+        radioType: '',
         albumart: metadata.cover,
         uri: flacUri,
         name: metadata.title,
@@ -522,7 +522,7 @@ ControllerRadioParadise.prototype.pushSongState = function (metadata) {
     queueItem.artist = metadata.artist;
     queueItem.album = metadata.album;
     queueItem.albumart = metadata.cover;
-    queueItem.trackType = 'Rparadise ' + channelMix;
+    queueItem.trackType = '' + channelMix;
     queueItem.duration = metadata.time;
     queueItem.samplerate = '44.1 KHz';
     queueItem.bitdepth = '16 bit';
