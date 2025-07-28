@@ -9,11 +9,10 @@ echo "Installing Bluetooth Remote Plugin Dependencies"
 
 # Create configuration folder
 sudo mkdir -p "$CPATH"
-sudo chown -R volumio "$CPATH"
-sudo chgrp -R volumio "$CPATH"
-
 # Copy the config file
 cp "$PPATH/$CNAME" "$CPATH"
+sudo chown -R volumio "$CPATH"
+sudo chgrp -R volumio "$CPATH"
 
 # Create or overwrite the Triggerhappy systemd service
 sudo bash -c "cat > /lib/systemd/system/triggerhappy.service <<EOC
@@ -24,7 +23,7 @@ After=local-fs.target
 [Service]
 Type=notify
 ExecStart=
-ExecStart=/usr/sbin/thd --triggers $CPATH/$CNAME --socket /run/thd.socket --user volumio --deviceglob "/dev/input/event*"
+ExecStart=/usr/sbin/thd --triggers $CPATH/$CNAME --socket /run/thd.socket --user nobody --deviceglob "/dev/input/event*"
 
 [Install]
 WantedBy=multi-user.target
