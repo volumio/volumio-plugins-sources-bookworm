@@ -1,6 +1,6 @@
 {
   "name": "Bluetoothremote",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Bluetooth Remote",
   "main": "index.js",
   "scripts": {
