@@ -1,0 +1,12 @@
+{
+    "BT_device": {
+        "address": "xx",
+        "name": "Select a device or Scan"
+    },
+     "Connected_BT_device": {
+         "value": {
+            "name": "Bass Baggie",
+            "address": "BC:87:FA:B4:B6:7D"
+        }
+    }
+}

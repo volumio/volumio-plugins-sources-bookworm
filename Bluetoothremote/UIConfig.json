@@ -1,0 +1,94 @@
+{
+	"page": {
+		"label": "PLUGIN_CONFIGURATION"
+	},
+	"sections": [
+		{
+			"id": "section_account",
+			"element": "section",
+			"label": "BT device Remote",
+			"icon": "fa-gamepad",
+			"onSave": {
+				"type": "controller",
+				"endpoint": "system_hardware/Bluetoothremote",
+				"method": "saveBT"
+			},
+			"saveButton": {
+				"label": "APPLY",
+				"data": [
+					"BT_device"
+				]
+			},
+			"content": [
+				{
+					"id": "BT_device",
+					"element": "select",
+					"doc": "Select device",
+					"label": "Select a device to connect",
+					"value": {
+						"value": "",
+						"label": ""
+					},
+					"options": []
+				},
+				{
+				"id": "scanBT",
+				"element": "button",
+				"label": "Scan BT",
+				"description": "Scan to discover new devices",
+				"onClick": {
+					"type": "plugin",
+					"endpoint": "system_hardware/Bluetoothremote",
+					"method": "scanBT",
+					"data": []
+				}
+				},
+				{
+ 					 "id": "BT_connected_device",
+					  "element": "input",
+					  "label": "Connected device",
+					  "value": {
+						    "value": "",
+						    "label": ""
+						  }
+				},
+				{
+				"id": "removeBT",
+				"element": "button",
+				"label": "remove connected BT remote",
+				"description": "",
+				"onClick": {
+					"type": "plugin",
+					"endpoint": "system_hardware/Bluetoothremote",
+					"method": "removeBT",
+					"data": []
+					
+				}
+			}
+				
+			]
+		},
+	{
+		"id": "Advanced",
+		"element": "section",
+		"label": "Tools",
+		"icon": "fa-wrench",
+		"content":[
+			
+			{
+				"id": "restarttrigger",
+				"element": "button",
+				"label": "Restart Triggerhappy",
+				"doc": "If you modified /INTERNAL/Bluetooth_Remote/triggerhappy.conf, press the button to use your new config",
+				"onClick": {
+					"type": "plugin",
+					"endpoint": "system_hardware/Bluetoothremote",
+					"method": "restartTriggerhappy",
+					"data": []
+					
+				}
+			}
+		]
+	}
+]
+}
