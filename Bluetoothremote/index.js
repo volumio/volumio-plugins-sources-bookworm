@@ -619,25 +619,39 @@ Bluetooth_Remote.prototype.restartTriggerhappy = function () {
     return new Promise((resolve, reject) => {
         self.logger.info("Bluetoothremote--- Restarting triggerhappy service...");
 
-        exec('sudo systemctl restart triggerhappy.service', (error, stdout, stderr) => {
-            if (error) {
-                self.logger.error(`Bluetoothremote--- Failed to restart triggerhappy: ${error.message}`);
-                return reject(error);
+        exec('sudo systemctl restart triggerhappy.service', (restartError, restartStdout, restartStderr) => {
+            if (restartError) {
+                self.logger.error(`Bluetoothremote--- Failed to restart triggerhappy: ${restartError.message}`);
+                self.commandRouter.pushToastMessage('error', 'Triggerhappy', '❌ Failed to restart service. See logs for details.');
+                return resolve("Failed to restart triggerhappy.service");
             }
 
+            // Give system some time to apply changes and flush logs
             setTimeout(() => {
-                exec('journalctl -u triggerhappy.service --since "10 seconds ago" | grep "Unable to parse trigger line"', (logErr, logOut, logStderr) => {
-                    if (logOut.trim() !== '') {
-                        self.logger.error(`Bluetoothremote--- triggerhappy restart completed with errors:\n${logOut}`);
-                        self.commandRouter.pushToastMessage('error', 'Triggerhappy', '⚠️ Triggerhappy config contains invalid lines. Please check.');
-                        return resolve('Config issue detected');
+                // Check if the service is active
+                exec('systemctl is-active triggerhappy.service', (statusErr, statusOut) => {
+                    const isActive = statusOut.trim() === 'active';
+
+                    if (!isActive) {
+                        self.logger.error("Bluetoothremote--- Triggerhappy service is not active after restart.");
+                        self.commandRouter.pushToastMessage('error', 'Triggerhappy', '❌ Triggerhappy service failed to start.');
+                        return resolve("Triggerhappy service failed to start");
                     }
 
-                    self.logger.info("Bluetoothremote--- triggerhappy service restarted successfully.");
-                    self.commandRouter.pushToastMessage('success', 'Triggerhappy', '✅ The service restarted successfully, your new configuration is now used!');
-                    resolve(stdout.trim());
+                    // Now check logs for config errors
+                    exec('journalctl -u triggerhappy.service --since "10 seconds ago" | grep "Unable to parse trigger line"', (logErr, logOut) => {
+                        if (logOut && logOut.trim() !== '') {
+                            self.logger.error(`Bluetoothremote--- triggerhappy config issues detected:\n${logOut}`);
+                            self.commandRouter.pushToastMessage('error', 'Triggerhappy', '⚠️ Triggerhappy config contains invalid lines. Please check.');
+                            return resolve("Triggerhappy config contains invalid lines.");
+                        }
+
+                        self.logger.info("Bluetoothremote--- triggerhappy service restarted successfully.");
+                        self.commandRouter.pushToastMessage('success', 'Triggerhappy', '✅ The service restarted successfully, your new configuration is now used!');
+                        resolve('Triggerhappy restarted cleanly');
+                    });
                 });
-            }, 500); // 0.5s delay to allow log to flush
+            }, 1000); // Wait a full second to ensure logs and status are updated
         });
     });
 };
