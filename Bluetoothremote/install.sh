@@ -27,19 +27,11 @@ fi
 # Create systemd override directory if missing
 sudo mkdir -p "$SDIR"
 
-# Create or overwrite systemd override file for triggerhappy
-sudo bash -c "cat > '$SDIR/override.conf' <<EOC
-[Unit]
-Description=triggerhappy global hotkey daemon
-After=local-fs.target
-
+sudo tee "$SDIR/override.conf" > /dev/null <<EOC
 [Service]
 Type=notify
 ExecStart=/usr/sbin/thd --triggers /data/INTERNAL/Bluetooth_Remote/triggerhappy.conf --socket /run/thd.socket --user nobody --deviceglob "/dev/input/event*"
-
-[Install]
-WantedBy=multi-user.target
-EOC"
+EOC
 
 # Reload systemd and apply new configuration
 sudo systemctl daemon-reexec
