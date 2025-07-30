@@ -31,8 +31,7 @@ sudo mkdir -p "$SDIR"
 sudo bash -c "cat > '$SDIR/override.conf' <<EOC
 [Service]
 Type=notify
-ExecStart=
-ExecStart=/usr/sbin/thd --triggers $CPATH/$CNAME --socket /run/thd.socket --user volumio --deviceglob /dev/input/event*
+ExecStart=/usr/sbin/thd --triggers $CPATH/$CNAME --socket /run/thd.socket --user nobody --deviceglob "/dev/input/event*"
 EOC"
 
 # Reload systemd and apply new configuration
