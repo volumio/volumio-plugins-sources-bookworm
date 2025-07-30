@@ -1,47 +1,45 @@
 #!/bin/bash
 
+# Variable assignment
 PPATH="/data/plugins/system_hardware/Bluetoothremote"
 CPATH="/data/INTERNAL/Bluetooth_Remote"
 CNAME="triggerhappy.conf"
+SDIR="/etc/systemd/system/triggerhappy.service.d"
 
 echo "Installing Bluetooth Remote Plugin Dependencies"
 
-# Create configuration folder if it doesn't exist
-sudo mkdir -p "$CPATH"
+# Install evtest if not already present
+sudo apt update
+sudo apt install -y evtest
 
-# Copy the config file only if it doesn't already exist
-if [ ! -f "$CPATH/$CNAME" ]; then
-    echo "Copying default triggerhappy configuration..."
-    cp "$PPATH/$CNAME" "$CPATH"
-else
-    echo "Configuration file already exists, skipping copy."
+# Create configuration folder only if it doesn't exist
+if [ ! -d "$CPATH" ]; then
+  sudo mkdir -p "$CPATH"
+  sudo chown -R volumio "$CPATH"
+  sudo chgrp -R volumio "$CPATH"
 fi
 
-# Set ownership
-sudo chown -R volumio "$CPATH"
-sudo chgrp -R volumio "$CPATH"
+# Copy the triggerhappy config file if it doesn't already exist
+if [ ! -f "$CPATH/$CNAME" ]; then
+  cp "$PPATH/$CNAME" "$CPATH"
+fi
 
-# Create or overwrite the Triggerhappy systemd service
-sudo bash -c "cat > /lib/systemd/system/triggerhappy.service <<EOC
-[Unit]
-Description=triggerhappy global hotkey daemon
-After=local-fs.target
+# Create systemd override directory if missing
+sudo mkdir -p "$SDIR"
 
+# Create or overwrite systemd override file for triggerhappy
+sudo bash -c "cat > '$SDIR/override.conf' <<EOC
 [Service]
 Type=notify
 ExecStart=
-ExecStart=/usr/sbin/thd --triggers $CPATH/$CNAME --socket /run/thd.socket --user nobody --deviceglob \"/dev/input/event*\"
+ExecStart=/usr/sbin/thd --triggers $CPATH/$CNAME --socket /run/thd.socket --user volumio --deviceglob /dev/input/event*
+EOC"
 
-[Install]
-WantedBy=multi-user.target
-EOC
-"
-
-# Reload systemd and restart the service
+# Reload systemd and apply new configuration
 sudo systemctl daemon-reexec
 sudo systemctl daemon-reload
 sudo systemctl restart triggerhappy
-sudo systemctl enable triggerhappy
 
 # Required to end the plugin install successfully
 echo "plugininstallend"
+

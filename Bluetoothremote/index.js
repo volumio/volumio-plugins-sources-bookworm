@@ -9,8 +9,6 @@ var exec = require('child_process').exec;
 const path = require('path');
 const { spawn } = require('child_process');
 var execSync = require('child_process').execSync;
-const io = require('socket.io-client');
-const dbus = require('dbus-native');
 const WebSocket = require('ws');
 const logPrefix = "Bluetoothremote--- "
 
@@ -345,7 +343,7 @@ Bluetooth_Remote.prototype.scanBT = function () {
     function stopScan() {
         if (self.btctl && self.btctl.stdin.writable) {
             self.logger.info(logPrefix + 'Stopping Bluetooth scan after timeout...');
-                        self.commandRouter.pushToastMessage('info', 'Bluetooth Remote', 'Scan terminated!, Re scan if needed!');
+            self.commandRouter.pushToastMessage('info', 'Bluetooth Remote', 'Scan terminated!, Re scan if needed!');
 
             self.btctl.stdin.write('scan off\n');
             self.btctl.stdin.end();
@@ -435,7 +433,7 @@ Bluetooth_Remote.prototype.removeBT = function () {
                     name: 'Select a device to connect to',
                     address: 'xx'
                 });
-                //  self.refreshUI();
+                self.refreshUI();
                 defer.resolve();
             }
         });
@@ -500,7 +498,7 @@ Bluetooth_Remote.prototype.pairBtDevice = function () {
         self.logger.info(logPrefix + `bluetoothctl exited with code ${code}`);
         if (output.includes('Connection successful') || output.includes('Device is already connected')) {
             self.commandRouter.pushToastMessage('success', '✅Bluetooth Remote', `${target.name} paired and connected`);
-            // self.refreshUI();
+            self.refreshUI();
             defer.resolve();
         } else {
             self.commandRouter.pushToastMessage('error', 'Bluetooth Remote', `Failed to pair ${target.name}`);
@@ -544,57 +542,6 @@ Bluetooth_Remote.prototype.refreshUI = function () {
     }, 510);
 };
 
-/*
-Bluetooth_Remote.prototype.refreshUI = function () {
-    const self = this;
-
-    setTimeout(function () {
-        var respconfig = self.commandRouter.getUIConfigOnPlugin('system_hardware', 'Bluetoothremote', {});
-        respconfig.then(function (config) {
-            self.commandRouter.broadcastMessage('pushUiConfig', config);
-        });
-        self.commandRouter.closeModals();
-    }, 510);
-};
-*/
-Bluetooth_Remote.prototype.saveBTx = function (data) {
-    const self = this;
-    const defer = libQ.defer();
-
-    self.config.set('BT_device', {
-        name: data['BT_device'].label,
-        address: data['BT_device'].value
-    });
-
-    if (data['BT_device'].value === "xx") {
-        self.logger.info(logPrefix + 'No device selected!');
-        defer.reject('No device selected');
-        return defer.promise;
-    }
-
-    self.removeBT(); // Start unpair/removal process
-
-    // Wait 5 seconds before attempting pairing
-    setTimeout(() => {
-        let modalData = {
-            title: "Connecting to Bluetooth device...",
-            message: "Please wait a few seconds...",
-            size: 'lg'
-        };
-        self.commandRouter.broadcastMessage("openModal", modalData);
-
-        setTimeout(() => self.commandRouter.closeModals(), 5000);
-
-        self.saveBTP();
-
-
-    }, 5000); // 5 seconds delay to allow unpairing to finish
-
-    return defer.promise;
-};
-
-
-
 Bluetooth_Remote.prototype.saveBT = function (data) {
     const self = this;
     const defer = libQ.defer();
@@ -620,7 +567,7 @@ Bluetooth_Remote.prototype.saveBT = function (data) {
     setTimeout(function () {
 
         self.commandRouter.closeModals();
-    }, 7000);
+    }, 10000);
     // Pair the Bluetooth device
     self.pairBtDevice()
         .then(() => {
@@ -694,9 +641,6 @@ Bluetooth_Remote.prototype.restartTriggerhappy = function () {
         });
     });
 };
-
-
-
 
 Bluetooth_Remote.prototype.setUIConfig = function (data) {
     var self = this;

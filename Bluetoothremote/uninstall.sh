@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Uninstall dependendencies
-# apt-get remove -y
-#sudo rm /etc/systemd/system/Bluetoothout.service
+sudo rm -Rf /etc/systemd/system/triggerhappy.service.d
+
 echo "Done"
 echo "pluginuninstallend"
