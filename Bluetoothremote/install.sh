@@ -30,6 +30,7 @@ sudo mkdir -p "$SDIR"
 sudo tee "$SDIR/override.conf" > /dev/null <<EOC
 [Service]
 Type=notify
+ExecStart= 
 ExecStart=/usr/sbin/thd --triggers /data/INTERNAL/Bluetooth_Remote/triggerhappy.conf --socket /run/thd.socket --user nobody --deviceglob "/dev/input/event*"
 EOC
 
