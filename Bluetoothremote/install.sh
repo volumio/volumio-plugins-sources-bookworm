@@ -15,14 +15,16 @@ sudo apt install -y evtest
 # Create configuration folder only if it doesn't exist
 if [ ! -d "$CPATH" ]; then
   sudo mkdir -p "$CPATH"
-  sudo chown -R volumio "$CPATH"
-  sudo chgrp -R volumio "$CPATH"
 fi
 
 # Copy the triggerhappy config file if it doesn't already exist
 if [ ! -f "$CPATH/$CNAME" ]; then
   cp "$PPATH/$CNAME" "$CPATH"
 fi
+
+sudo chown -R volumio "$CPATH"
+sudo chgrp -R volumio "$CPATH"
+sudo chmod -R 777 "$CPATH"
 
 # Create systemd override directory if missing
 sudo mkdir -p "$SDIR"

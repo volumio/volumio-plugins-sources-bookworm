@@ -42,29 +42,7 @@
 					"method": "scanBT",
 					"data": []
 				}
-				},
-				{
- 					 "id": "BT_connected_device",
-					  "element": "input",
-					  "label": "Connected device",
-					  "value": {
-						    "value": "",
-						    "label": ""
-						  }
-				},
-				{
-				"id": "removeBT",
-				"element": "button",
-				"label": "remove connected BT remote",
-				"description": "",
-				"onClick": {
-					"type": "plugin",
-					"endpoint": "system_hardware/Bluetoothremote",
-					"method": "removeBT",
-					"data": []
-					
 				}
-			}
 				
 			]
 		},
