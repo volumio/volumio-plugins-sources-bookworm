@@ -130,7 +130,7 @@ Bluetooth_Remote.prototype.getUIConfig = function () {
             try {
                 exec('bluetoothctl devices Connected', (err, stdout, stderr) => {
                     if (err || !stdout) {
-                        self.logger.warn(logPrefix + 'Failed to get connected devices: ' + (stderr || err.message));
+                        self.logger.warn(logPrefix + 'Failed to get connected devices: ' );
                         uiconf.sections[0].content.push({
                             id: 'noDevice',
                             element: 'input',
