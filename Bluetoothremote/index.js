@@ -40,12 +40,13 @@ Bluetooth_Remote.prototype.onStart = function () {
 
     setTimeout(() => {
         //        self.scanBT()
-        self.pairBtDevice();
+        self.reconnectTrustedDevices();
+       // self.pairBtDevice();
         self.clearDeviceList();
 
         //  self.connect()
         // self.getBTcommands();
-    }, 8000);
+    }, 25000);
 
     defer.resolve();
 
@@ -130,7 +131,7 @@ Bluetooth_Remote.prototype.getUIConfig = function () {
             try {
                 exec('bluetoothctl devices Connected', (err, stdout, stderr) => {
                     if (err || !stdout) {
-                        self.logger.warn(logPrefix + 'Failed to get connected devices: ' );
+                        self.logger.warn(logPrefix + 'Failed to get connected devices: ');
                         uiconf.sections[0].content.push({
                             id: 'noDevice',
                             element: 'input',
@@ -212,6 +213,47 @@ Bluetooth_Remote.prototype.getUIConfig = function () {
 
     return defer.promise;
 };
+
+Bluetooth_Remote.prototype.reconnectTrustedDevices = function () {
+    const self = this;
+
+    self.logger.info(logPrefix + 'Checking for trusted devices to reconnect...');
+
+    exec('bluetoothctl devices', (err, stdout, stderr) => {
+        if (err || !stdout) {
+            self.logger.error(logPrefix + 'Failed to list Bluetooth devices: ' + (stderr || err.message));
+            return;
+        }
+
+        const lines = stdout.trim().split('\n');
+
+        lines.forEach((line) => {
+            const match = line.match(/^Device\s+([0-9A-F:]+)\s+(.+)$/i);
+            if (!match) return;
+
+            const addr = match[1];
+            const name = match[2];
+
+            // Check if this device is trusted
+            exec(`bluetoothctl info ${addr}`, (infoErr, infoOut) => {
+                if (infoErr) return;
+
+                if (infoOut.includes('Paired: yes') && infoOut.includes('Trusted: yes')) {
+                    self.logger.info(logPrefix + `Reconnecting trusted device: ${name} (${addr})`);
+
+                    exec(`bluetoothctl connect ${addr}`, (connectErr, connectOut, connectStderr) => {
+                        if (connectErr || connectStderr) {
+                            self.logger.error(logPrefix + `Failed to reconnect ${name}: ${connectStderr || connectErr.message}`);
+                        } else {
+                            self.logger.info(logPrefix + `✅ Reconnected ${name} (${addr})`);
+                        }
+                    });
+                }
+            });
+        });
+    });
+};
+
 
 Bluetooth_Remote.prototype.stopScan = function () {
     const self = this;

@@ -1,6 +1,6 @@
 {
   "name": "Bluetoothremote",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Bluetooth Remote",
   "main": "index.js",
   "scripts": {
@@ -22,8 +22,7 @@
       "bookworm"
     ],
     "details": "Easy connexion for Bluetooth Remote devices",
-    "changelog": "improved version",
-    "manually_installed": true
+    "changelog": "improved version"
   },
   "dependencies": {
     "dbus-native": "^0.4.0",
