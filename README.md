@@ -44,7 +44,7 @@ In package.json make changes as shown in the example below:
                 "plugin_type": "user_interface",
                 "icon": "fa-info-circle",
                 "architectures": [
-                        "amd64",
+                        "amd64", <--------------------------------only "amd64" or ""armhf"
                         "armhf"
                 ],
                 "os": [
