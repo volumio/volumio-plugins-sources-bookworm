@@ -44,7 +44,7 @@ In package.json make changes as shown in the example below:
                 "plugin_type": "user_interface",
                 "icon": "fa-info-circle",
                 "architectures": [
-                        "amd64",
+                        "amd64", <--------------------------------only "amd64" or ""armhf"
                         "armhf"
                 ],
                 "os": [
@@ -55,7 +55,7 @@ In package.json make changes as shown in the example below:
         },
         "engines": {
                 "node": ">=20", <-------------------------------NODE VERSION >=20
-                "volumio": ">=4" <---------------------VOLUMIO VERSION >=4 DURING BETA TEST
+                "volumio": ">=4" <---------------------VOLUMIO VERSION >=4
         },
         "dependencies": { 
                 "fs-extra": "*",
