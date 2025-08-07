@@ -4,7 +4,6 @@ const libQ = require('kew');
 const fs = require('fs-extra');
 const { exec } = require('child_process');
 const path = require('path');
-const id = 'minidlna: ';
 const configItems = ['show_more', 'media_dir_a', 'media_dir_p', 'media_dir_v', 'merge_media_dirs',
   'db_dir', 'log_dir', 'root_container', 'network_interface', 'port', 'presentation_url',
   'friendly_name', 'serial', 'model_name', 'model_number', 'inotify', 'album_art_names', 'strict_dlna',
@@ -12,7 +11,7 @@ const configItems = ['show_more', 'media_dir_a', 'media_dir_p', 'media_dir_v', '
   'max_connections', 'loglevel_general', 'loglevel_artwork', 'loglevel_database', 'loglevel_inotify',
   'loglevel_scanner', 'loglevel_metadata', 'loglevel_http', 'loglevel_ssdp', 'loglevel_tivo', 'wide_links',
   'enable_subtitles'];
-let minidlnaVersion;
+let minidlnaVersion, systemdLogging;
 
 module.exports = minidlna;
 
@@ -23,6 +22,9 @@ function minidlna (context) {
   self.commandRouter = self.context.coreCommand;
   self.logger = self.commandRouter.logger;
   self.configManager = self.context.configManager;
+  self.pluginName = self.commandRouter.pluginManager.getPackageJson(__dirname).name;
+  self.pluginType = self.commandRouter.pluginManager.getPackageJson(__dirname).volumio_info.plugin_type;
+  self.minidlnaConf = path.join('data', 'configuration', self.pluginType, self.pluginName, 'minidlna.conf');
 }
 
 minidlna.prototype.onVolumioStart = function () {
@@ -48,7 +50,7 @@ minidlna.prototype.onStart = function () {
       }
     }
   } catch (e) {
-    self.logger.error(id + 'Failed to read default configuration from ' + path.join(__dirname, 'config.json: ') + e);
+    self.logger.error(self.pluginName + ': Failed to read default configuration from ' + path.join(__dirname, 'config.json: ') + e);
   }
   try {
     if (!fs.statSync(minidlnad).isFile()) {
@@ -57,25 +59,27 @@ minidlna.prototype.onStart = function () {
   } catch (e) {
     minidlnad = '/usr/bin/minidlnad';
   }
-  exec(minidlnad + ' -V', { uid: 1000, gid: 1000 }, function (error, stdout, stderr) {
+  exec(minidlnad + ' -V', { uid: 1000, gid: 1000 }, (error, stdout, stderr) => {
     if (error !== null) {
-      self.logger.error(id + 'Failed to query miniDLNA version: ' + error);
+      self.logger.error(self.pluginName + ': Failed to query miniDLNA version: ' + error);
       minidlnaVersion = '0';
     } else {
       minidlnaVersion = stdout.slice(8);
-      self.logger.info(id + 'Found miniDLNA version ' + minidlnaVersion);
+      self.logger.info(self.pluginName + ': Found miniDLNA version ' + minidlnaVersion);
     }
     self.initialConf()
-      .then(function () {
-        self.logger.info(id + 'Starting minidlna.service');
+      .then(() => {
+        self.logger.info(self.pluginName + ': Starting minidlna.service');
         self.systemctl('start minidlna.service')
-          .then(function () {
+          .then(() => {
+            self.systemctl('status minidlna')
+              .then(r => {
+                systemdLogging = / -S | -S$/m.test(r);
+              });
             defer.resolve();
           });
       })
-      .fail(function (e) {
-        defer.reject(e);
-      });
+      .fail(e => defer.reject(e));
   });
   return defer.promise;
 };
@@ -84,11 +88,9 @@ minidlna.prototype.onStop = function () {
   const self = this;
   const defer = libQ.defer();
 
-  self.logger.info(id + 'Stopping minidlna.service');
+  self.logger.info(self.pluginName + ': Stopping minidlna.service');
   self.systemctl('stop minidlna.service')
-    .fin(function () {
-      defer.resolve();
-    });
+    .fin(() => defer.resolve());
   return defer.promise;
 };
 
@@ -111,8 +113,8 @@ minidlna.prototype.getUIConfig = function () {
   self.commandRouter.i18nJson(path.join(__dirname, 'i18n', 'strings_' + langCode + '.json'),
     path.join(__dirname, 'i18n', 'strings_en.json'),
     path.join(__dirname, 'UIConfig.json'))
-    .then(function (uiconf) {
-      configItems.forEach(function (configItem, i) {
+    .then(uiconf => {
+      configItems.forEach((configItem, i) => {
         const value = self.config.get(configItem);
         switch (configItem) {
           case 'root_container':
@@ -133,26 +135,23 @@ minidlna.prototype.getUIConfig = function () {
             uiconf.sections[0].content[i].value = value;
         }
         switch (configItem) {
+          case 'log_dir':
+            uiconf.sections[0].content[i].hidden = systemdLogging;
+            break;
           case 'merge_media_dirs':
           case 'tivo_discovery':
           case 'wide_links':
-            if (minidlnaVersion.localeCompare('1.2.1', 'en-u-kn-true') < 0) {
-              uiconf.sections[0].content[i].hidden = true;
-            }
+            uiconf.sections[0].content[i].hidden = (minidlnaVersion.localeCompare('1.2.1', 'en-u-kn-true') < 0);
             break;
           case 'enable_subtitles':
-            if (minidlnaVersion.localeCompare('1.3.0', 'en-u-kn-true') < 0) {
-              uiconf.sections[0].content[i].hidden = true;
-            }
+            uiconf.sections[0].content[i].hidden = (minidlnaVersion.localeCompare('1.3.0', 'en-u-kn-true') < 0);
         }
       });
-      if (minidlnaVersion.localeCompare('1.2.0', 'en-u-kn-true') < 0) {
-        uiconf.sections[1].content[1].hidden = true;
-      }
+      uiconf.sections[1].content[1].hidden = (minidlnaVersion.localeCompare('1.2.0', 'en-u-kn-true') < 0);
       defer.resolve(uiconf);
     })
-    .fail(function (e) {
-      self.logger.error(id + 'Could not fetch UI configuration: ' + e);
+    .fail(e => {
+      self.logger.error(self.pluginName + ': Could not fetch UI configuration: ' + e);
       defer.reject(new Error());
     });
   return defer.promise;
@@ -161,10 +160,8 @@ minidlna.prototype.getUIConfig = function () {
 minidlna.prototype.updateUIConfig = function () {
   const self = this;
 
-  self.commandRouter.getUIConfigOnPlugin(self.commandRouter.pluginManager.getPackageJson(__dirname).volumio_info.plugin_type, 'minidlna', {})
-    .then(function (uiconf) {
-      self.commandRouter.broadcastMessage('pushUiConfig', uiconf);
-    });
+  self.commandRouter.getUIConfigOnPlugin(self.pluginType, self.pluginName, {})
+    .then(uiconf => self.commandRouter.broadcastMessage('pushUiConfig', uiconf));
   self.commandRouter.broadcastMessage('pushUiConfig');
 };
 
@@ -177,14 +174,14 @@ minidlna.prototype.getI18nFile = function (langCode) {
   const langFile = 'strings_' + langCode + '.json';
 
   try {
-    const i18nFiles = fs.readdirSync(path.join(__dirname, 'i18n'));
     // check for i18n file fitting the system language
-    if (i18nFiles.some(function (i18nFile) { return i18nFile === langFile; })) {
+    if (fs.readdirSync(path.join(__dirname, 'i18n'), { withFileTypes: true })
+      .some(item => item.isFile() && item.name === langFile)) {
       return path.join(__dirname, 'i18n', langFile);
     }
     throw new Error('i18n file complementing the system language not found.');
   } catch (e) {
-    self.logger.error(id + 'Fetching language file: ' + e);
+    self.logger.error(self.pluginName + ': Fetching language file: ' + e);
     // return default i18n file
     return path.join(__dirname, 'i18n', 'strings_en.json');
   }
@@ -195,7 +192,7 @@ minidlna.prototype.saveConf = function (data) {
   const defer = libQ.defer();
   const changes = [];
 
-  configItems.forEach(function (configItem) {
+  configItems.forEach(configItem => {
     switch (configItem) {
       case 'media_dir_a':
         changes.push(self.handlePath(configItem, data[configItem], 'AUDIO_FOLDER'));
@@ -249,10 +246,10 @@ minidlna.prototype.saveConf = function (data) {
     defer.resolve();
   } else if (changes.includes(true)) {
     self.createMinidlnaConf()
-      .then(function () {
-        self.logger.info(id + 'Restarting minidlna.service');
+      .then(() => {
+        self.logger.info(self.pluginName + ': Restarting minidlna.service');
         self.systemctl('restart minidlna.service')
-          .then(function () {
+          .then(() => {
             if (!changes.includes('err')) {
               self.commandRouter.pushToastMessage('success', self.commandRouter.getI18nString('MINIDLNA.PLUGIN_NAME'), self.commandRouter.getI18nString('MINIDLNA.CONF_UPDATED'));
             }
@@ -260,9 +257,7 @@ minidlna.prototype.saveConf = function (data) {
             defer.resolve();
           });
       })
-      .fail(function () {
-        defer.reject();
-      });
+      .fail(() => defer.reject());
   }
   return defer.promise;
 };
@@ -294,7 +289,7 @@ minidlna.prototype.handlePath = function (item, value, UIkeyname) {
   const separator = item.startsWith('media_dir_') ? ' // ' : undefined;
   let changes;
 
-  value.split(separator).forEach(function (p) {
+  value.split(separator).forEach(p => {
     try {
       if (!path.isAbsolute(p.trim()) || !fs.statSync(p.trim()).isDirectory()) {
         throw new Error();
@@ -302,10 +297,10 @@ minidlna.prototype.handlePath = function (item, value, UIkeyname) {
     } catch (e) {
       self.updateUIConfig();
       if (e.toString().includes('ENOENT')) {
-        self.logger.error(id + item + ' "' + p.trim() + '" does not exist');
+        self.logger.error(self.pluginName + ': ' + item + ' "' + p.trim() + '" does not exist');
         self.commandRouter.pushToastMessage('stickyerror', self.commandRouter.getI18nString('MINIDLNA.PLUGIN_NAME'), self.commandRouter.getI18nString('MINIDLNA.' + UIkeyname) + ' "' + p.trim() + '" ' + self.commandRouter.getI18nString('MINIDLNA.DIR_MISSING'));
       } else {
-        self.logger.error(id + item + ' "' + p.trim() + '" is not an absolute path specification');
+        self.logger.error(self.pluginName + ': ' + item + ' "' + p.trim() + '" is not an absolute path specification');
         self.commandRouter.pushToastMessage('stickyerror', self.commandRouter.getI18nString('MINIDLNA.PLUGIN_NAME'), self.commandRouter.getI18nString('MINIDLNA.' + UIkeyname) + ' "' + p.trim() + '" ' + self.commandRouter.getI18nString('MINIDLNA.ERR_ABSOLUTE_PATH'));
       }
       changes = 'err';
@@ -323,18 +318,16 @@ minidlna.prototype.initialConf = function () {
   const defer = libQ.defer();
 
   try {
-    if (!fs.statSync('/data/minidlna.conf').isFile()) {
+    if (!fs.statSync(self.minidlnaConf).isFile()) {
       throw new Error();
     }
     defer.resolve();
   } catch (e) {
     self.createMinidlnaConf()
-      .then(function () {
-        defer.resolve();
-      })
-      .fail(function () {
-        self.commandRouter.pushToastMessage('stickyerror', self.commandRouter.getI18nString('MINIDLNA.PLUGIN_NAME'), self.commandRouter.getI18nString('MINIDLNA.ERR_CREATE') + '/data/minidlna.conf');
-        defer.reject('Creating /data/minidlna.conf failed');
+      .then(() => defer.resolve())
+      .fail(() => {
+        self.commandRouter.pushToastMessage('stickyerror', self.commandRouter.getI18nString('MINIDLNA.PLUGIN_NAME'), self.commandRouter.getI18nString('MINIDLNA.ERR_CREATE') + self.minidlnaConf);
+        defer.reject('Creating ' + self.minidlnaConf + ' failed');
       });
   }
   return defer.promise;
@@ -345,13 +338,13 @@ minidlna.prototype.createMinidlnaConf = function () {
   const self = this;
   const defer = libQ.defer();
 
-  fs.readFile(path.join(__dirname, 'minidlna.conf.tmpl'), 'utf8', function (err, data) {
+  fs.readFile(path.join(__dirname, 'minidlna.conf.tmpl'), 'utf8', (err, data) => {
     if (err) {
-      self.logger.error(id + 'Failed to read ' + path.join(__dirname, 'minidlna.conf.tmpl: ') + err);
+      self.logger.error(self.pluginName + ': Failed to read ' + path.join(__dirname, 'minidlna.conf.tmpl: ') + err);
       self.commandRouter.pushToastMessage('stickyerror', self.commandRouter.getI18nString('MINIDLNA.PLUGIN_NAME'), self.commandRouter.getI18nString('MINIDLNA.ERR_READ') + path.join(__dirname, 'minidlna.conf.tmpl: ') + err);
       defer.reject();
     } else {
-      configItems.forEach(function (configItem) {
+      configItems.forEach(configItem => {
         let value;
         switch (self.config.get(configItem)) {
           case false:
@@ -367,11 +360,11 @@ minidlna.prototype.createMinidlnaConf = function () {
           case 'media_dir_a':
           case 'media_dir_p':
           case 'media_dir_v':
-            value.split('//').forEach(function (p, i) {
+            value.split('//').forEach((p, i) => {
               if (i === 0) {
                 value = p.trim();
               } else {
-                value = value + '\nmedia_dir=' + configItem.substr(-1, 1).toUpperCase() + ',' + p.trim();
+                value = value + '\nmedia_dir=' + configItem.slice(-1).toUpperCase() + ',' + p.trim();
               }
             });
             data = data.replace('${' + configItem + '}', value);
@@ -395,13 +388,13 @@ minidlna.prototype.createMinidlnaConf = function () {
             data = data.replace('${' + configItem + '}', value);
         }
       });
-      fs.writeFile('/data/minidlna.conf', data, 'utf8', function (err) {
+      fs.writeFile(self.minidlnaConf, data, 'utf8', err => {
         if (err) {
-          self.logger.error(id + 'Failed to write /data/minidlna.conf: ' + err);
+          self.logger.error(self.pluginName + ': Failed to write ' + self.minidlnaConf + ': ' + err);
           self.commandRouter.pushToastMessage('stickyerror', self.commandRouter.getI18nString('MINIDLNA.PLUGIN_NAME'), self.commandRouter.getI18nString('MINIDLNA.ERR_WRITE') + '/data/minidlna.conf: ' + err);
           defer.reject();
         } else {
-          self.logger.info(id + '/data/minidlna.conf written');
+          self.logger.info(self.pluginName + ': ' + self.minidlnaConf + ' written');
           defer.resolve();
         }
       });
@@ -414,35 +407,30 @@ minidlna.prototype.forceRescan = function (option) {
   const self = this;
   const defer = libQ.defer();
 
-  exec("/bin/echo volumio | /usr/bin/sudo -S /bin/sed -i -e 's/^Environment=DAEMON_OPTS=$/Environment=DAEMON_OPTS=-" + option + "/' /etc/systemd/system/minidlna.service", { uid: 1000, gid: 1000 }, function (error, stdout, stderr) {
-    if (error !== null) {
-      self.logger.error(id + 'Failed to write daemon option "-' + option + '" to /etc/systemd/system/minidlna.service: ' + error);
-      self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('MINIDLNA.PLUGIN_NAME'), self.commandRouter.getI18nString('MINIDLNA.RESCAN_FAILED') + error);
-      defer.reject(error);
+  fs.writeFile(path.join('data', 'configuration', self.pluginType, self.pluginName, 'r_opt'), 'R_OPT=-' + option, 'utf8', err => {
+    if (err !== null) {
+      self.logger.error(self.pluginName + ': Failed to write rescan option "-' + option + '" to ' + path.join('data', 'configuration', self.pluginType, self.pluginName, 'r_opt') + ': ' + err);
+      self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('MINIDLNA.PLUGIN_NAME'), self.commandRouter.getI18nString('MINIDLNA.ERR_WRITE') + path.join('data', 'configuration', self.pluginType, self.pluginName, 'r_opt') + ': ' + err);
+      defer.reject(err);
     } else {
-      self.systemctl('daemon-reload')
-        .then(function () {
-          self.systemctl('restart minidlna.service')
-            .then(function () {
-              self.logger.info(id + 'Rescanning the media directories.');
-              self.commandRouter.pushToastMessage('info', self.commandRouter.getI18nString('MINIDLNA.PLUGIN_NAME'), self.commandRouter.getI18nString('MINIDLNA.RESCANNING'));
-              defer.resolve();
-            })
-            .fail(function (e) {
-              self.logger.error(id + 'Failed to rescan the media directories: ' + e);
-              self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('MINIDLNA.PLUGIN_NAME'), self.commandRouter.getI18nString('MINIDLNA.RESCAN_FAILED') + e);
-              defer.reject();
-            })
-            .fin(function () {
-              exec("/bin/echo volumio | /usr/bin/sudo -S /bin/sed -i -e 's/^Environment=DAEMON_OPTS=-" + option + "$/Environment=DAEMON_OPTS=/' /etc/systemd/system/minidlna.service", { uid: 1000, gid: 1000 }, function (error, stdout, stderr) {
-                if (error !== null) {
-                  self.logger.error(id + 'Failed to remove daemon option "-' + option + '" from /etc/systemd/system/minidlna.service: ' + error);
-                  self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('MINIDLNA.PLUGIN_NAME'), self.commandRouter.getI18nString('MINIDLNA.ERR_WRITE') + 'etc/systemd/system/minidlna.service: ' + error);
-                } else {
-                  self.systemctl('daemon-reload');
-                }
-              });
-            });
+      self.systemctl('restart minidlna.service')
+        .then(() => {
+          self.logger.info(self.pluginName + ': Rescanning the media directories (' + option === 'R' ? 're-creating' : 'updating' + 'the DB).');
+          self.commandRouter.pushToastMessage('info', self.commandRouter.getI18nString('MINIDLNA.PLUGIN_NAME'), self.commandRouter.getI18nString('MINIDLNA.RESCANNING'));
+          defer.resolve();
+        })
+        .fail(e => {
+          self.logger.error(self.pluginName + ': Failed to rescan the media directories (' + option === 'R' ? 're-creating' : 'updating' + 'the DB): ' + e);
+          self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('MINIDLNA.PLUGIN_NAME'), self.commandRouter.getI18nString('MINIDLNA.RESCAN_FAILED') + e);
+          defer.reject();
+        })
+        .fin(() => {
+          fs.unlink(path.join('data', 'configuration', self.pluginType, self.pluginName, 'r_opt'), err => {
+            if (err !== null) {
+              self.logger.error(self.pluginName + ': Failed to remove ' + path.join('data', 'configuration', self.pluginType, self.pluginName, 'r_opt') + ': ' + err);
+              self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('MINIDLNA.PLUGIN_NAME'), self.commandRouter.getI18nString('MINIDLNA.ERR_REMOVE') + path.join('data', 'configuration', self.pluginType, self.pluginName, 'r_opt') + ': ' + err);
+            }
+          });
         });
     }
   });
@@ -453,14 +441,14 @@ minidlna.prototype.systemctl = function (systemctlCmd) {
   const self = this;
   const defer = libQ.defer();
 
-  exec('/usr/bin/sudo /bin/systemctl ' + systemctlCmd, { uid: 1000, gid: 1000 }, function (error, stdout, stderr) {
+  exec('/usr/bin/sudo /bin/systemctl ' + systemctlCmd, { uid: 1000, gid: 1000 }, (error, stdout, stderr) => {
     if (error !== null) {
-      self.logger.error(id + 'Failed to ' + systemctlCmd + ': ' + error);
+      self.logger.error(self.pluginName + ': Failed to ' + systemctlCmd + ': ' + error);
       self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('MINIDLNA.PLUGIN_NAME'), self.commandRouter.getI18nString('MINIDLNA.GENERIC_FAILED') + systemctlCmd + ' ' + ': ' + error);
       defer.reject(error);
     } else {
-      self.logger.info(id + 'systemctl ' + systemctlCmd + ' succeeded.');
-      defer.resolve();
+      self.logger.info(self.pluginName + ': systemctl ' + systemctlCmd + ' succeeded.');
+      defer.resolve(stdout);
     }
   });
   return defer.promise;
