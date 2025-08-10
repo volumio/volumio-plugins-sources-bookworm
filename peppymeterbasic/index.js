@@ -68,7 +68,6 @@ peppymeterbasic.prototype.onStop = function () {
 peppymeterbasic.prototype.onStart = function () {
     var self = this;
     var defer = libQ.defer();
-    self.socket = io.connect('http://localhost:3000');
 
     // self.modprobedummy()
     self.commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'updateALSAConfigFile')
