@@ -1,6 +1,6 @@
 {
   "name": "peppymeterbasic",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Basic Peppy-meter for Volumio",
   "main": "index.js",
   "scripts": {
@@ -15,7 +15,7 @@
     "os": [
       "bookworm"
     ],
-    "changelog": "fix missing lib",
+    "changelog": "UI fix, add delay",
     "details": "Easy install Basic-Peppy-meter",
     "architectures": [
       "armhf",
@@ -27,11 +27,10 @@
     "child_process": "*",
     "fs-extra": "*",
     "kew": "*",
-    "socket.io-client": "2.4.0",
     "v-conf": "*"
   },
   "engines": {
     "node": ">=20",
-    "volumio": ">=0"
+    "volumio": ">=4"
   }
 }

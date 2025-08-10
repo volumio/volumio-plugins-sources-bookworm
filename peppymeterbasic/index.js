@@ -1,14 +1,11 @@
 'use strict';
-/*By balbuze May 2024
+/*By balbuze August 2025
 */
 var fs = require('fs-extra');
 var libFsExtra = require('fs-extra');
 var exec = require('child_process').exec;
 var execSync = require('child_process').execSync;
 var libQ = require('kew');
-//const { setFlagsFromString } = require('v8');
-//var config = new (require('v-conf'))();
-const io = require('socket.io-client');
 const path = require('path');
 const { basename } = require('path');
 const meterspath = "INTERNAL/PeppyMeterBasic/Templates/";
@@ -179,175 +176,123 @@ peppymeterbasic.prototype.checkIfPlay = function () {
     })
 };
 
-
-
 peppymeterbasic.prototype.getUIConfig = function () {
     const self = this;
     const defer = libQ.defer();
-    var lang_code = this.commandRouter.sharedVars.get('language_code');
-    self.commandRouter.i18nJson(__dirname + '/i18n/strings_' + lang_code + '.json',
-        __dirname + '/i18n/strings_en.json',
-        __dirname + '/UIConfig.json')
-        .then(function (uiconf) {
-            let meterfolder;
-            var showsize = self.config.get("showsize")
-            var autosize = self.config.get("auutosize")
+    const lang_code = this.commandRouter.sharedVars.get('language_code');
 
-            var valuescreen = self.config.get('screensize');
+    self.commandRouter.i18nJson(
+        __dirname + '/i18n/strings_' + lang_code + '.json',
+        __dirname + '/i18n/strings_en.json',
+        __dirname + '/UIConfig.json'
+    )
+        .then(function (uiconf) {
+            const valuescreen = self.config.get('screensize');
             self.configManager.setUIConfigParam(uiconf, 'sections[0].content[0].value.value', valuescreen);
             self.configManager.setUIConfigParam(uiconf, 'sections[0].content[0].value.label', valuescreen);
 
-
+            // Read folders synchronously
             const directoryPath = '/data/INTERNAL/PeppyMeterBasic/Templates/';
-
-            // Use a Promise for asynchronous operations
-            function readDirectory() {
-                return new Promise((resolve, reject) => {
-                    fs.readdir(directoryPath, (err, files) => {
-                        if (err) {
-                            reject(err);
-                            return;
-                        }
-
-                        const folders = files.filter(file => fs.statSync(`${directoryPath}/${file}`).isDirectory());
-                        resolve(folders);
-                    });
+            let folders = [];
+            try {
+                const files = fs.readdirSync(directoryPath);
+                folders = files.filter(file => {
+                    try {
+                        return fs.statSync(`${directoryPath}/${file}`).isDirectory();
+                    } catch {
+                        return false;
+                    }
                 });
+            } catch (err) {
+                self.logger.error('Error reading directory: ' + err);
             }
 
-            // Call the function
-            readDirectory()
-                .then(folders => {
-                    //   console.log('Folders in the directory:', folders);
+            // Add default resolutions + folders
+            const folderList = ['320x240', '480x320', '800x480', '1280x400', ...folders];
+            folderList.forEach(f => {
+                self.configManager.pushUIConfigParam(uiconf, 'sections[0].content[0].options', {
+                    value: f,
+                    label: f
+                });
+            });
 
-                    let allfolder = '320x240,480x320,800x480,1280x400,' + folders;
-                    //   self.logger.info('list is ' + allfilter)
-                    var litems = allfolder.split(',');
-
-                    for (let a in litems) {
-                        //    console.log('Text between brackets:', litems[a]);
-
-                        self.configManager.pushUIConfigParam(uiconf, 'sections[0].content[0].options', {
-                            value: litems[a],
-                            label: litems[a]
-                        });
-
-                    }
-
-                })
-
-
-                .catch(err => console.error('Error reading directory:', err));
-
+            // Hide unused section elements
             uiconf.sections[1].content[1].hidden = true;
             uiconf.sections[1].content[2].hidden = true;
             uiconf.sections[1].content[3].hidden = true;
 
-            var screenwidth = self.config.get('screenwidth')
-            uiconf.sections[1].content[1].value = screenwidth;
-            uiconf.sections[1].content[1].attributes = [
-                {
-                    placeholder: screenwidth,
-                    min: 0,
-                    max: 3500
-                }
-            ];
+            // Screen width & height
+            uiconf.sections[1].content[1].value = self.config.get('screenwidth');
+            uiconf.sections[1].content[1].attributes = [{ placeholder: self.config.get('screenwidth'), min: 0, max: 3500 }];
+            uiconf.sections[1].content[2].value = self.config.get('screenheight');
+            uiconf.sections[1].content[2].attributes = [{ placeholder: self.config.get('screenheight'), min: 0, max: 3500 }];
 
+            // Meter folder location
+            const meterfolder = ['320x240', '480x320', '800x480', '1280x400'].includes(valuescreen)
+                ? '/data/plugins/user_interface/peppymeterbasic/BasicPeppyMeter/'
+                : '/data/INTERNAL/PeppyMeterBasic/Templates/';
 
-            var screenheight = self.config.get('screenheight')
-            uiconf.sections[1].content[2].value = screenheight;
-            uiconf.sections[1].content[2].attributes = [
-                {
-                    placeholder: screenheight,
-                    min: 0,
-                    max: 3500
-                }
-            ];
+            // Read meters.txt synchronously
+            try {
+                const idata = fs.readFileSync(`${meterfolder}${valuescreen}/meters.txt`, 'utf8');
+                const matches = [...idata.matchAll(/\[(.*?)\]/g)].map(m => m[1]);
+                const meterList = ['random', ...matches];
+                meterList.forEach(m => {
+                    self.configManager.pushUIConfigParam(uiconf, 'sections[1].content[0].options', {
+                        value: m,
+                        label: m
+                    });
+                });
+            } catch (err) {
+                self.logger.error('Error reading meters.txt: ' + err);
+                self.configManager.pushUIConfigParam(uiconf, 'sections[1].content[0].options', {
+                    value: 'no config!',
+                    label: 'no config!'
+                });
+            }
 
-
-            var valuemeter;
-            valuemeter = self.config.get('meter');
+            // Set meter value
+            const valuemeter = self.config.get('meter');
             self.configManager.setUIConfigParam(uiconf, 'sections[1].content[0].value.value', valuemeter);
             self.configManager.setUIConfigParam(uiconf, 'sections[1].content[0].value.label', valuemeter);
 
+            // Debug log section hidden
+            uiconf.sections[2].content[0].value = self.config.get('debuglog');
+            uiconf.sections[2].hidden = true;
+
+            // Section 4 - zipfile value
+            const zipvalue = self.config.get('zipfile');
+            self.configManager.setUIConfigParam(uiconf, 'sections[3].content[0].value.value', zipvalue);
+            self.configManager.setUIConfigParam(uiconf, 'sections[3].content[0].value.label', zipvalue);
+
+            // Read meters list file
             try {
-                if ((valuescreen == '320x240') || (valuescreen == '480x320') || (valuescreen == '800x480') || (valuescreen == '1280x400')) {
-                    meterfolder = '/data/plugins/user_interface/peppymeterbasic/BasicPeppyMeter/'
-                } else {
-                    meterfolder = '/data/INTERNAL/PeppyMeterBasic/Templates/'
-                }
-
-                fs.readFile(meterfolder + valuescreen + '/meters.txt', function (err, idata) {
-                    if (err) {
-                        console.error('Error reading the file:', err);
-                        self.configManager.pushUIConfigParam(uiconf, 'sections[1].content[0].options', {
-                            value: 'no config!',
-                            label: 'no config!'
-                        });
-                        //   return defer.reject(err); // Reject the promise in case of an error
-                    }
-
-                    const regex = /\[(.*?)\]/g;
-                    let match;
-                    const matches = [];
-                    while ((match = regex.exec(idata)) !== null) {
-                        matches.push(match[1]);
-                    }
-                    let allfilter = 'random,' + matches;
-                    self.logger.info(logPrefix + 'list is ' + allfilter)
-                    var litems = allfilter.split(',');
-
-                    for (let a in litems) {
-                        // console.log('Text between brackets:', litems[a]);
-
-                        self.configManager.pushUIConfigParam(uiconf, 'sections[1].content[0].options', {
-                            value: litems[a],
-                            label: litems[a]
-                        });
-                    }
-                    uiconf.sections[2].content[0].value = self.config.get('debuglog');
-                    uiconf.sections[2].hidden = true;
-
-
-
-                    //-----------section 4---------
-                    var value = self.config.get('zipfile');
-                    self.configManager.setUIConfigParam(uiconf, 'sections[3].content[0].value.value', value);
-                    self.configManager.setUIConfigParam(uiconf, 'sections[3].content[0].value.label', value);
-
-
-                    try {
-                        let listf = fs.readFileSync('/data/plugins/user_interface/peppymeterbasic/meterslist.txt', "utf8");
-                        var result = (listf.split('\n'));
-                        let i;
-                        for (i = 0; i < result.length; i++) {
-                            var preparedresult = result[i].split(".")[0];
-                            self.logger.info(logPrefix + preparedresult)
-
-                            self.configManager.pushUIConfigParam(uiconf, 'sections[3].content[0].options', {
-                                value: preparedresult,
-                                label: i + 1 + ' ' + preparedresult
-                            });
-                        }
-
-
-                    } catch (err) {
-                        self.logger.error(logPrefix + ' failed to read downloadedlist.txt' + err);
-                    }
-
-                    // Resolve the promise after the file reading and processing are complete
-                    defer.resolve(uiconf);
+                const listf = fs.readFileSync('/data/plugins/user_interface/peppymeterbasic/meterslist.txt', "utf8");
+                const result = listf.split('\n');
+                result.forEach((line, i) => {
+                    const preparedresult = line.split(".")[0];
+                    self.configManager.pushUIConfigParam(uiconf, 'sections[3].content[0].options', {
+                        value: preparedresult,
+                        label: `${i + 1} ${preparedresult}`
+                    });
                 });
-            } catch (e) {
-                self.logger.error(logPrefix+'Cannot read file: ' + e);
-                defer.reject(e); // Reject the promise in case of an error
+            } catch (err) {
+                self.logger.error('Failed to read meterslist.txt: ' + err);
             }
+
+            var dvalue = self.config.get('delaymeter');
+            uiconf.sections[4].content[0].value = dvalue
+
+
+            defer.resolve(uiconf);
         })
         .fail(function () {
             defer.reject(new Error());
         });
+
     return defer.promise;
 };
+
 
 
 peppymeterbasic.prototype.getAdditionalConf = function (type, controller, data) {
@@ -444,7 +389,7 @@ peppymeterbasic.prototype.savepeppy = function (data) {
         if (truex && truey && trues) {
             // console.log('The variable is a finite number.' + myNumberx + " " + myNumbery + " " + myMeterSize);
         } else if (((!truex && !truey && !trues)) || (size == undefined)) {
-          //  console.log('The variable is not a finite number.');
+            //  console.log('The variable is not a finite number.');
             self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('METER_FOLDER_NAME'));
             myNumberx = '480'
             myNumbery = '240'
@@ -540,6 +485,48 @@ peppymeterbasic.prototype.savepeppy2 = function (data) {
 
 };
 
+
+peppymeterbasic.prototype.delaymeter = function (data) {
+    const self = this;
+
+    const defer = libQ.defer();
+    var delaymeter = data['delaymeter'];
+    self.config.set('delaymeter', delaymeter);
+    try {
+
+        fs.readFile(__dirname + "/startpeppymeterbasic.sh.tmpl", 'utf8', function (err, data) {
+            if (err) {
+                defer.reject(new Error(err));
+                return console.log(err);
+            }
+
+            const conf1 = data.replace("${delaymeter}", delaymeter)
+
+            fs.writeFile("/data/plugins/user_interface/peppymeterbasic/startpeppymeterbasic.sh", conf1, 'utf8', function (err) {
+                if (err)
+                    defer.reject(new Error(err));
+                else defer.resolve();
+            });
+
+        });
+        //   self.refreshUI()
+
+    } catch (err) {
+
+    }
+    self.savepeppyconfig();
+    self.restartpeppyservice()
+        .then(function (e) {
+            self.commandRouter.pushToastMessage('success', "peppymeter Configuration updated");
+            defer.resolve({});
+        })
+        .fail(function (e) {
+            defer.reject(new Error('error'));
+            self.commandRouter.pushToastMessage('error', "failed to start. Check your config !");
+        })
+    return defer.promise;
+
+};
 
 //here we save the asound.conf file config
 peppymeterbasic.prototype.buildasound = function () {
@@ -653,7 +640,7 @@ peppymeterbasic.prototype.savepeppyconfig = function () {
 
                     defer.reject(new Error(err));
                 else defer.resolve();
-                self.logger.error(logPrefix+"Error writing config " + err);
+                self.logger.error(logPrefix + "Error writing config " + err);
 
             });
 
@@ -683,9 +670,9 @@ peppymeterbasic.prototype.dlmeter = function (data) {
             self.commandRouter.broadcastMessage("openModal", modalData);
 
             let cp3 = execSync('/usr/bin/wget -P /tmp https://github.com/balbuze/Meter-peppymeter/raw/main/Zipped-folders/' + zipfile + '.zip');
-          //  let cp9 = execSync('sudo chmod -R 766 /data/' + meterspath)
-           // let cp5 = execSync('miniunzip -o /tmp/' + zipfile + '.zip -d /data/' + meterspath);
-            let cp5 = execSync('miniunzip -o /tmp/' + zipfile + '.zip -d /data/' + meterspath+' && sudo chmod -R 777 /data/' + meterspath);
+            //  let cp9 = execSync('sudo chmod -R 766 /data/' + meterspath)
+            // let cp5 = execSync('miniunzip -o /tmp/' + zipfile + '.zip -d /data/' + meterspath);
+            let cp5 = execSync('miniunzip -o /tmp/' + zipfile + '.zip -d /data/' + meterspath + ' && sudo chmod -R 777 /data/' + meterspath);
 
             self.logger.info(logPrefix + 'message miniunzip -o /tmp/' + zipfile + '.zip -d /data/' + meterspath);
 
@@ -696,8 +683,8 @@ peppymeterbasic.prototype.dlmeter = function (data) {
             self.logger.error(logPrefix + ' An error occurs while downloading or installing Meters');
             self.commandRouter.pushToastMessage('error', 'An error occurs while downloading or installing Meter');
         }
-      //  self.config.set('zipfile', zipfile);
-      let cp6 = execSync('/bin/rm /tmp/' + zipfile + '.zip*');
+        //  self.config.set('zipfile', zipfile);
+        let cp6 = execSync('/bin/rm /tmp/' + zipfile + '.zip*');
         resolve();
     });
 };

@@ -192,6 +192,37 @@
 					}
 				  }
 			]
+		},
+		{
+			"id": "section_delay",
+			"element": "section",
+			"label": "Delay before Meter starts",
+			"icon": "fa-clock-o",
+			"onSave": {
+				"type": "controller",
+				"endpoint": "user_interface/peppymeterbasic",
+				"method": "delaymeter"
+			},
+			"saveButton": {
+				"label": "TRANSLATE.APPLY",
+				"data": [
+					"delaymeter"
+				]
+			},
+			"content": [
+				{
+					"id": "delaymeter",
+					"element": "input",
+					"type":"text",
+					"doc": "Set a delay in seconds",
+					"label": "Delay in seconds",
+					"value": {
+						"value": "0",
+						"label":"0"
+					},
+					"options": []
+				}
+			]
 		}
 	]
 }
