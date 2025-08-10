@@ -8,6 +8,7 @@ var execSync = require('child_process').execSync;
 var libQ = require('kew');
 const path = require('path');
 const { basename } = require('path');
+const io = require('socket.io-client');
 const meterspath = "INTERNAL/PeppyMeterBasic/Templates/";
 const logPrefix = "PeppyMeterBasic ---"
 
@@ -68,7 +69,7 @@ peppymeterbasic.prototype.onStop = function () {
 peppymeterbasic.prototype.onStart = function () {
     var self = this;
     var defer = libQ.defer();
-
+    self.socket = io.connect('http://localhost:3000');
     // self.modprobedummy()
     self.commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'updateALSAConfigFile')
 

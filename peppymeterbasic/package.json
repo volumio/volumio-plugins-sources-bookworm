@@ -1,6 +1,6 @@
 {
   "name": "peppymeterbasic",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "description": "Basic Peppy-meter for Volumio",
   "main": "index.js",
   "scripts": {
