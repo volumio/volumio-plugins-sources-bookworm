@@ -27,6 +27,7 @@
     "child_process": "*",
     "fs-extra": "*",
     "kew": "*",
+    "socket.io-client": "2.3.0",
     "v-conf": "*"
   },
   "engines": {
