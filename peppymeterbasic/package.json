@@ -1,6 +1,6 @@
 {
   "name": "peppymeterbasic",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Basic Peppy-meter for Volumio",
   "main": "index.js",
   "scripts": {
@@ -15,7 +15,7 @@
     "os": [
       "bookworm"
     ],
-    "changelog": "UI fix, add delay",
+    "changelog": "DSD, youtube fix",
     "details": "Easy install Basic-Peppy-meter",
     "architectures": [
       "armhf",

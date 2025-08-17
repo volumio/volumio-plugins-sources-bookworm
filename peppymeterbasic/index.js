@@ -85,6 +85,7 @@ peppymeterbasic.prototype.onStart = function () {
             return Defer.promise;
         });
     defer.resolve();
+    self.modprobeDummyDevice();
     setTimeout(function () {
         self.checkIfPlay()
 
@@ -162,6 +163,28 @@ peppymeterbasic.prototype.onUninstall = function () {
     const self = this;
     //Perform your installation tasks here
 };
+
+
+peppymeterbasic.prototype.modprobeDummyDevice = function () {
+    var self = this;
+    var defer = libQ.defer();
+
+    exec("/usr/bin/sudo /sbin/modprobe snd_dummy index=7 pcm_substreams=1 fake_buffer=1", {
+        uid: 1000,
+        gid: 1000
+    }, function (error, stdout, stderr) {
+        if (error) {
+            self.logger.error('failed to load snd_dummy: ' + error);
+            defer.reject(error);  // Reject the promise if there’s an error
+        } else {
+            self.commandRouter.pushConsoleMessage('snd_dummy loaded');
+            defer.resolve(); 
+        }
+    });
+
+    return defer.promise;  // Return the promise immediately
+};
+
 
 peppymeterbasic.prototype.checkIfPlay = function () {
     const self = this;
