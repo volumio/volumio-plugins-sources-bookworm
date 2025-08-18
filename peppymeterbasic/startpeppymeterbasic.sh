@@ -1,5 +1,5 @@
 #!/bin/sh
 export DISPLAY=:0
-sleep 5
+sleep 0
 cd /data/plugins/user_interface/peppymeterbasic/BasicPeppyMeter && python3 peppymeter.py
 

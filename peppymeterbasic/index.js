@@ -169,7 +169,7 @@ peppymeterbasic.prototype.modprobeDummyDevice = function () {
     var self = this;
     var defer = libQ.defer();
 
-    exec("/usr/bin/sudo /sbin/modprobe snd_dummy index=7 pcm_substreams=1 fake_buffer=1", {
+    exec("/usr/bin/sudo /sbin/modprobe snd_aloop index=7 pcm_substreams=2", {
         uid: 1000,
         gid: 1000
     }, function (error, stdout, stderr) {
