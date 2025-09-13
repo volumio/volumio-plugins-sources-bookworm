@@ -135,8 +135,8 @@ class EntityConverter {
         if (data.imageUrl) {
             result.thumbnail = data.imageUrl;
         }
-        if (data.streamUrl?.['mp3-128']) {
-            result.streamUrl = data.streamUrl['mp3-128'];
+        if (data.streamUrl) {
+            result.streamUrl = data.streamUrl;
         }
         if (data.duration) {
             result.duration = data.duration;
