@@ -71,7 +71,8 @@ export default class GenericViewHandler<V extends GenericViewBase = GenericView>
       throw Error(ytmusic.getI18n('YTMUSIC_ERR_OP_NOT_SUPPORTED'));
     }
 
-    const endpointPredicate = (endpoint: Endpoint): endpoint is WatchEndpoint => !!(EndpointHelper.isType(endpoint, EndpointType.Watch) && endpoint.payload?.playlistId);
+    const endpointPredicate = (endpoint: Endpoint): endpoint is WatchEndpoint =>
+      !!(EndpointHelper.isType(endpoint, EndpointType.Watch) && (endpoint.payload?.playlistId || endpoint.payload?.params));
     const model = this.getModel(ModelType.Endpoint);
     let targetWatchEndpoint: WatchEndpoint | null = null;
 

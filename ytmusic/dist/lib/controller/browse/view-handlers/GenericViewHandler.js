@@ -56,7 +56,7 @@ class GenericViewHandler extends FeedViewHandler_1.default {
             YTMusicContext_1.default.toast('error', YTMusicContext_1.default.getI18n('YTMUSIC_ERR_OP_NOT_SUPPORTED'));
             throw Error(YTMusicContext_1.default.getI18n('YTMUSIC_ERR_OP_NOT_SUPPORTED'));
         }
-        const endpointPredicate = (endpoint) => !!(EndpointHelper_1.default.isType(endpoint, Endpoint_1.EndpointType.Watch) && endpoint.payload?.playlistId);
+        const endpointPredicate = (endpoint) => !!(EndpointHelper_1.default.isType(endpoint, Endpoint_1.EndpointType.Watch) && (endpoint.payload?.playlistId || endpoint.payload?.params));
         const model = this.getModel(model_1.ModelType.Endpoint);
         let targetWatchEndpoint = null;
         if (EndpointHelper_1.default.isType(endpoint, Endpoint_1.EndpointType.Browse)) {

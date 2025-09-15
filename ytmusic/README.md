@@ -6,6 +6,9 @@ Credit goes to the [YouTube.js](https://github.com/LuanRT/YouTube.js) project. T
 
 ## Changelog
 
+2.3.3
+- Update YT dependencies and adapt to YT changes
+
 2.3.2
 - Update YT dependencies
 

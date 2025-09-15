@@ -329,7 +329,7 @@ class InnertubeResultParser {
         }
         // Endpoint link from DidYouMean
         if (data.is(volumio_youtubei_js_1.YTNodes.DidYouMean)) {
-            const endpoint = this.parseEndpoint(data.endpoint, Endpoint_1.EndpointType.Browse);
+            const endpoint = this.parseEndpoint(data.endpoint, Endpoint_1.EndpointType.Browse, Endpoint_1.EndpointType.Search);
             if (endpoint) {
                 const result = {
                     type: 'endpointLink',
@@ -343,7 +343,7 @@ class InnertubeResultParser {
         }
         // Endpoint link from ShowingResultsFor
         if (data.is(volumio_youtubei_js_1.YTNodes.ShowingResultsFor)) {
-            const endpoint = this.parseEndpoint(data.original_query_endpoint, Endpoint_1.EndpointType.Browse);
+            const endpoint = this.parseEndpoint(data.original_query_endpoint, Endpoint_1.EndpointType.Browse, Endpoint_1.EndpointType.Search);
             if (endpoint) {
                 const result = {
                     type: 'endpointLink',
@@ -1143,8 +1143,8 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
     }
     // MusicCardShelf ('Top Results' in search)
     // Need to set correct title and extract the main item of the shelf.
-    if (ytNode?.is(volumio_youtubei_js_1.YTNodes.MusicCardShelf) && ytNode.header?.is(volumio_youtubei_js_1.YTNodes.MusicCardShelfHeaderBasic)) {
-        const title = this.unwrap(ytNode.header.title);
+    if (ytNode?.is(volumio_youtubei_js_1.YTNodes.MusicCardShelf)) {
+        const title = ytNode.header ? this.unwrap(ytNode.header.title) : null;
         if (title) {
             section.title = title;
         }
@@ -1536,7 +1536,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
 }, _InnertubeResultParser_extractMainItemFromMusicCardShelf = function _InnertubeResultParser_extractMainItemFromMusicCardShelf(data) {
     if (data.title) {
         const title = this.unwrap(data.title);
-        const endpoint = this.parseEndpoint(data.title.endpoint, Endpoint_1.EndpointType.Browse, Endpoint_1.EndpointType.Watch);
+        const endpoint = this.parseEndpoint(data.title.endpoint || data.on_tap, Endpoint_1.EndpointType.Browse, Endpoint_1.EndpointType.Watch);
         const isBrowseEndpoint = endpoint?.type === Endpoint_1.EndpointType.Browse;
         const isWatchEndpoint = endpoint?.type === Endpoint_1.EndpointType.Watch;
         if (!title || (!isBrowseEndpoint && !isWatchEndpoint)) {
