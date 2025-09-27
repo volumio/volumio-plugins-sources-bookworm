@@ -8,11 +8,10 @@ export default class TagModel extends BaseModel {
   async getTags() {
     const tags = await bandcamp.getCache().getOrSet(
       this.getCacheKeyForFetch('tags'),
-      () => bcfetch.limiter.tag.list());
+      () => bcfetch.limiter.discovery.getRecommendedTagsAndLocations());
 
     return {
-      tags: tags.tags.map((tag) => EntityConverter.convertTag(tag)),
-      locations: tags.locations.map((tag) => EntityConverter.convertTag(tag))
+      tags: tags.tags.map((tag) => EntityConverter.convertTag(tag))
     };
   }
 

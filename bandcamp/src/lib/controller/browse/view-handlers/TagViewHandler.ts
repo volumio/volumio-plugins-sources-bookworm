@@ -36,7 +36,6 @@ export default class TagViewHandler extends BaseViewHandler<TagView> {
     const tags = await this.getModel(ModelType.Tag).getTags();
     const lists = [
       this.#getTagsList(tags, 'tags', bandcamp.getI18n('BANDCAMP_TAGS'), 'fa fa-tag'),
-      this.#getTagsList(tags, 'locations', bandcamp.getI18n('BANDCAMP_LOCATIONS'), 'fa fa-map-marker')
     ];
 
     return {
