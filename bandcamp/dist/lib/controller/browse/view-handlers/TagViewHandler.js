@@ -130,7 +130,6 @@ _TagViewHandler_instances = new WeakSet(), _TagViewHandler_browseTags = async fu
     const tags = await this.getModel(model_1.ModelType.Tag).getTags();
     const lists = [
         __classPrivateFieldGet(this, _TagViewHandler_instances, "m", _TagViewHandler_getTagsList).call(this, tags, 'tags', BandcampContext_1.default.getI18n('BANDCAMP_TAGS'), 'fa fa-tag'),
-        __classPrivateFieldGet(this, _TagViewHandler_instances, "m", _TagViewHandler_getTagsList).call(this, tags, 'locations', BandcampContext_1.default.getI18n('BANDCAMP_LOCATIONS'), 'fa fa-map-marker')
     ];
     return {
         navigation: {
