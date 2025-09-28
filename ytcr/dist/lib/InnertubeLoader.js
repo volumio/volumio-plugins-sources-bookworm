@@ -106,7 +106,8 @@ _InnertubeLoader_innertube = new WeakMap(), _InnertubeLoader_pendingPromise = ne
     __classPrivateFieldGet(this, _InnertubeLoader_logger, "f")?.info(`[ytcr] InnertubeLoader: creating Innertube instance${poToken?.value ? ' with po_token' : ''}...`);
     const innertube = await volumio_youtubei_js_1.default.create({
         visitor_data: poToken?.params.visitorData,
-        po_token: poToken?.value
+        po_token: poToken?.value,
+        player_id: '0004de42' // https://github.com/LuanRT/YouTube.js/issues/1043
     });
     switch (stage) {
         case Stage.Init:

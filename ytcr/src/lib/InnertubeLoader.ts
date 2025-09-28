@@ -94,7 +94,8 @@ export default class InnertubeLoader {
     this.#logger?.info(`[ytcr] InnertubeLoader: creating Innertube instance${poToken?.value ? ' with po_token' : ''}...`);
     const innertube = await Innertube.create({
       visitor_data: poToken?.params.visitorData,
-      po_token: poToken?.value
+      po_token: poToken?.value,
+      player_id: '0004de42' // https://github.com/LuanRT/YouTube.js/issues/1043
     });
     switch (stage) {
       case Stage.Init:
