@@ -9,10 +9,9 @@ const BaseModel_1 = __importDefault(require("./BaseModel"));
 const EntityConverter_1 = __importDefault(require("../util/EntityConverter"));
 class TagModel extends BaseModel_1.default {
     async getTags() {
-        const tags = await BandcampContext_1.default.getCache().getOrSet(this.getCacheKeyForFetch('tags'), () => bandcamp_fetch_1.default.limiter.tag.list());
+        const tags = await BandcampContext_1.default.getCache().getOrSet(this.getCacheKeyForFetch('tags'), () => bandcamp_fetch_1.default.limiter.discovery.getRecommendedTagsAndLocations());
         return {
-            tags: tags.tags.map((tag) => EntityConverter_1.default.convertTag(tag)),
-            locations: tags.locations.map((tag) => EntityConverter_1.default.convertTag(tag))
+            tags: tags.tags.map((tag) => EntityConverter_1.default.convertTag(tag))
         };
     }
     async getRelatedTags(tags) {
