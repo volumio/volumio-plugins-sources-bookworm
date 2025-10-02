@@ -1,4 +1,4 @@
-import Innertube from 'volumio-youtubei.js';
+import Innertube, { ClientType } from 'volumio-youtubei.js';
 import BG, { type BgConfig } from 'bgutils-js';
 import { JSDOM } from 'jsdom';
 import { type Logger } from 'yt-cast-receiver';
@@ -28,11 +28,11 @@ export default class InnertubeLoader {
   #pendingPromise: Promise<InnertubeLoaderGetInstanceResult> | null = null;
   #poTokenRefreshTimer: NodeJS.Timeout | null = null;
   #logger: Logger | null = null;
-  #onCreate?: (innertube: Innertube) => void;
+  #clientType: ClientType;
 
-  constructor(logger: Logger, onCreate?: (innertube: Innertube) => void) {
+  constructor(logger: Logger, clientType: ClientType = ClientType.WEB) {
     this.#logger = logger;
-    this.#onCreate = onCreate;
+    this.#clientType = clientType;
   }
 
   async getInstance(): Promise<InnertubeLoaderGetInstanceResult> {
@@ -60,16 +60,16 @@ export default class InnertubeLoader {
     const visitorData = lastToken?.params.visitorData || innertube.session.context.client.visitorData;
     let poTokenResult;
     if (visitorData) {
-      this.#logger?.info(`[ytcr] InnertubeLoader: obtaining po_token by visitorData...`);
+      this.#logger?.info(`[ytcr] InnertubeLoader (${this.#clientType}): obtaining po_token by visitorData...`);
       try {
         poTokenResult = await this.#generatePoToken(visitorData);
-        this.#logger?.info(`[ytcr] InnertubeLoader: obtained po_token (expires in ${poTokenResult.ttl} seconds)`);
+        this.#logger?.info(`[ytcr] InnertubeLoader  (${this.#clientType}): obtained po_token (expires in ${poTokenResult.ttl} seconds)`);
       }
       catch (error: unknown) {
-        this.#logger?.error('[ytcr] InnertubeLoader: failed to get poToken:', error);
+        this.#logger?.error(`[ytcr] InnertubeLoader (${this.#clientType}): failed to get poToken:`, error);
       }
       if (poTokenResult) {
-        this.#logger?.info(`[ytcr] InnertubeLoader: re-create Innertube instance with po_token`);
+        this.#logger?.info(`[ytcr] InnertubeLoader (${this.#clientType}): re-create Innertube instance with po_token`);
         this.#createInstance(Stage.PO, resolve, {
           params: {
             visitorData
@@ -79,20 +79,21 @@ export default class InnertubeLoader {
           refreshThreshold: poTokenResult.refreshThreshold
         })
           .catch((error: unknown) => {
-            this.#logger?.error('[ytcr] InnertubeLoader: error creating Innertube instance:', error);
+            this.#logger?.error(`[ytcr] InnertubeLoader (${this.#clientType}): error creating Innertube instance:`, error);
           });
         return;
       }
     }
-    this.#logger?.warn('[ytcr] InnertubeLoader: po_token was not used to create Innertube instance. Playback of YouTube content might fail.');
+    this.#logger?.warn(`[ytcr] InnertubeLoader (${this.#clientType}): po_token was not used to create Innertube instance. Playback of YouTube content might fail.`);
     this.#resolveGetInstanceResult(innertube, resolve);
   }
 
   async #createInstance(stage: Stage.PO, resolve: (value: InnertubeLoaderGetInstanceResult) => void, poToken: POToken): Promise<void>;
   async #createInstance(stage: Stage.Init, resolve: (value: InnertubeLoaderGetInstanceResult) => void, poToken?: undefined): Promise<void>;
   async #createInstance(stage: Stage.Init | Stage.PO, resolve: (value: InnertubeLoaderGetInstanceResult) => void, poToken?: POToken) {
-    this.#logger?.info(`[ytcr] InnertubeLoader: creating Innertube instance${poToken?.value ? ' with po_token' : ''}...`);
+    this.#logger?.info(`[ytcr] InnertubeLoader (${this.#clientType}): creating Innertube instance${poToken?.value ? ' with po_token' : ''}...`);
     const innertube = await Innertube.create({
+      client_type: this.#clientType,
       visitor_data: poToken?.params.visitorData,
       po_token: poToken?.value,
       player_id: '0004de42' // https://github.com/LuanRT/YouTube.js/issues/1043
@@ -135,12 +136,9 @@ export default class InnertubeLoader {
       const { ttl, refreshThreshold = 100 } = poToken;
       if (ttl) {
         const timeout = ttl - refreshThreshold;
-        this.#logger?.info(`[ytcr] InnertubeLoader: going to refresh po_token in ${timeout} seconds`);
+        this.#logger?.info(`[ytcr] InnertubeLoader (${this.#clientType}): going to refresh po_token in ${timeout} seconds`);
         this.#poTokenRefreshTimer = setTimeout(() => this.#refreshPOToken(poToken), timeout * 1000);
       }
-    }
-    if (this.#onCreate) {
-      this.#onCreate(innertube);
     }
     resolve({
       innertube,
@@ -154,10 +152,10 @@ export default class InnertubeLoader {
     }
     this.reset();
     this.#pendingPromise = new Promise((resolve) => {
-      this.#logger?.info('[ytcr] InnertubeLoader: refresh po_token');
+      this.#logger?.info(`[ytcr] InnertubeLoader (${this.#clientType}): refresh po_token`);
       this.#recreateWithPOToken(innertube, resolve, lastToken)
         .catch((error: unknown) => {
-          this.#logger?.error('[ytcr] InnertubeLoader: error creating Innertube instance (while refreshing po_token):', error);
+          this.#logger?.error(`[ytcr] InnertubeLoader (${this.#clientType}): error creating Innertube instance (while refreshing po_token):`, error);
         });
     });
   }

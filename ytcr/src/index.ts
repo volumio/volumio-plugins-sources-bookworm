@@ -225,12 +225,14 @@ class ControllerYTCR implements NowPlayingPluginSupport {
     receiver.on('senderConnect', (sender: Sender) => {
       this.#logger.info('[ytcr] ***** Sender connected *****');
       ytcr.toast('success', ytcr.getI18n('YTCR_CONNECTED', sender.name));
+      playerConfig.videoLoader.notifySendersChanged(receiver.getConnectedSenders());
       this.refreshUIConfig();
     });
 
     receiver.on('senderDisconnect', (sender: Sender) => {
       this.#logger.info('[ytcr] ***** Sender disconnected *****');
       ytcr.toast('warning', ytcr.getI18n('YTCR_DISCONNECTED', sender.name));
+      playerConfig.videoLoader.notifySendersChanged(receiver.getConnectedSenders());
       this.refreshUIConfig();
     });
 

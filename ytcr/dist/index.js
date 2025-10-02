@@ -241,11 +241,13 @@ class ControllerYTCR {
         receiver.on('senderConnect', (sender) => {
             __classPrivateFieldGet(this, _ControllerYTCR_logger, "f").info('[ytcr] ***** Sender connected *****');
             YTCRContext_js_1.default.toast('success', YTCRContext_js_1.default.getI18n('YTCR_CONNECTED', sender.name));
+            playerConfig.videoLoader.notifySendersChanged(receiver.getConnectedSenders());
             this.refreshUIConfig();
         });
         receiver.on('senderDisconnect', (sender) => {
             __classPrivateFieldGet(this, _ControllerYTCR_logger, "f").info('[ytcr] ***** Sender disconnected *****');
             YTCRContext_js_1.default.toast('warning', YTCRContext_js_1.default.getI18n('YTCR_DISCONNECTED', sender.name));
+            playerConfig.videoLoader.notifySendersChanged(receiver.getConnectedSenders());
             this.refreshUIConfig();
         });
         __classPrivateFieldGet(this, _ControllerYTCR_player, "f").on('action', (action) => {
