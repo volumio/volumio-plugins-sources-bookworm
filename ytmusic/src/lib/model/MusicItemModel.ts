@@ -31,7 +31,7 @@ const BEST_AUDIO_FORMAT: Types.FormatOptions = {
 
 export default class MusicItemModel extends BaseModel {
 
-  async getPlaybackInfo(endpoint: Endpoint): Promise<MusicItemPlaybackInfo | null> {
+  async getPlaybackInfo(endpoint: Endpoint, signal?: AbortSignal): Promise<MusicItemPlaybackInfo | null> {
     if (!EndpointHelper.isType(endpoint, EndpointType.Watch) || !endpoint.payload.videoId) {
       throw Error('Invalid endpoint');
     }
@@ -58,8 +58,39 @@ export default class MusicItemModel extends BaseModel {
     else {
       channelId = trackInfo.basic_info.channel_id;
     }
+
+    const title = musicItem?.title || trackInfo.basic_info.title;
+
+    if (streamData?.url) {
+      const startTime = new Date().getTime();
+      ytmusic.getLogger().info(`[ytmusic] (${title}) validating stream URL "${streamData.url}"...`);
+      let tries = 0;
+      let testStreamResult = await this.#head(streamData.url, signal);
+      while (!testStreamResult.ok && tries < 3) {
+        if (signal?.aborted) {
+          throw Error('Aborted');
+        }
+        ytmusic.getLogger().warn(`[ytmusic] (${title}) stream validation failed (${testStreamResult.status} - ${testStreamResult.statusText}); retrying after 2s...`);
+        await this.#sleep(2000);
+        tries++;
+        testStreamResult = await this.#head(streamData.url, signal);
+      }
+      const endTime = new Date().getTime();
+      const timeTaken = (endTime - startTime) / 1000;
+      if (tries === 3) {
+        ytmusic.getLogger().warn(`[ytmusic] (${title}) failed to validate stream URL "${streamData.url}" (retried ${tries} times in ${timeTaken}s).`);
+      }
+      else {
+        ytmusic.getLogger().info(`[ytmusic] (${title}) stream validated in ${timeTaken}s.`);
+      }
+    }
+
+    if (signal?.aborted) {
+      throw Error('Aborted');
+    }
+
     return {
-      title: musicItem?.title || trackInfo.basic_info.title,
+      title,
       artist: {
         channelId,
         name: musicItem?.artistText || trackInfo.basic_info.author
@@ -205,5 +236,18 @@ export default class MusicItemModel extends BaseModel {
     const response = await innertube.actions.execute('/browse', payload);
     const parsed = Parser.parseResponse(response.data);
     return InnertubeResultParser.parseLyrics(parsed);
+  }
+
+  #sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async #head(url: string, signal?: AbortSignal) {
+    const res = await fetch(url, { method: 'HEAD', signal });
+    return {
+      ok: res.ok,
+      status: res.status,
+      statusText: res.statusText
+    };
   }
 }
