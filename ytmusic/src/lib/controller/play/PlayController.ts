@@ -32,6 +32,7 @@ export default class PlayController {
     position: number;
   };
   #prefetchPlaybackStateFixer: PrefetchPlaybackStateFixer | null;
+  #prefetchAborter: AbortController | null;
 
   constructor() {
     this.#mpdPlugin = ytmusic.getMpdPlugin();
@@ -40,6 +41,7 @@ export default class PlayController {
     this.#prefetchPlaybackStateFixer.on('playPrefetch', (info: { track: QueueItem; position: number; }) => {
       this.#lastPlaybackInfo = info;
     });
+    this.#prefetchAborter = null;
   }
 
   reset() {
@@ -77,6 +79,7 @@ export default class PlayController {
   async clearAddPlayTrack(track: QueueItem) {
     ytmusic.getLogger().info(`[ytmusic-play] clearAddPlayTrack: ${track.uri}`);
 
+    this.#cancelPrefetch();
     this.#prefetchPlaybackStateFixer?.notifyPrefetchCleared();
 
     const {videoId, info: playbackInfo} = await PlayController.getPlaybackInfoFromUri(track.uri);
@@ -176,7 +179,7 @@ export default class PlayController {
     return ytmusic.getStateMachine().previous();
   }
 
-  static async getPlaybackInfoFromUri(uri: QueueItem['uri']): Promise<{videoId: string; info: MusicItemPlaybackInfo | null}> {
+  static async getPlaybackInfoFromUri(uri: QueueItem['uri'], signal?: AbortSignal): Promise<{videoId: string; info: MusicItemPlaybackInfo | null}> {
     const endpoint = ExplodeHelper.getExplodedTrackInfoFromUri(uri)?.endpoint;
     const videoId = endpoint?.payload?.videoId;
 
@@ -187,7 +190,7 @@ export default class PlayController {
     const model = Model.getInstance(ModelType.MusicItem);
     return {
       videoId,
-      info: await model.getPlaybackInfo(endpoint)
+      info: await model.getPlaybackInfo(endpoint, signal)
     };
   }
 
@@ -385,6 +388,8 @@ export default class PlayController {
   }
 
   async prefetch(track: QueueItem) {
+    // Cancel any ongoing prefetch
+    this.#cancelPrefetch();
     const prefetchEnabled = ytmusic.getConfigValue('prefetch');
     if (!prefetchEnabled) {
       /**
@@ -392,27 +397,41 @@ export default class PlayController {
        * successful (such as inspecting the result of the function call) -
        * it just sets its internal state variable `prefetchDone`
        * to `true`. This results in the next track being skipped in cases
-       * where prefetch is not performed or fails. So when we want to signal
-       * that prefetch is not done, we would have to directly falsify the
-       * statemachine's `prefetchDone` variable.
+       * where prefetch is not performed or fails. So we set statemachine's
+       * `prefetchDone` variable to `false` and only set it to `true` when
+       * prefetch is successful.
        */
       ytmusic.getLogger().info('[ytmusic-play] Prefetch disabled');
       ytmusic.getStateMachine().prefetchDone = false;
       return;
     }
     let streamUrl;
+    // Only set `prefetchDone` to `true` on success.
+    // Volumio gives us 5 seconds to prefetch before going to next song,
+    // setting this to `false` will make it play next track without prefetch
+    // - this can happen if prefetch fails or takes too long.
+    ytmusic.getStateMachine().prefetchDone = false;
+    this.#prefetchAborter = new AbortController();
+    const signal = this.#prefetchAborter.signal;
     try {
-      const { videoId, info: playbackInfo } = await PlayController.getPlaybackInfoFromUri(track.uri);
+      const { videoId, info: playbackInfo } = await PlayController.getPlaybackInfoFromUri(track.uri, signal);
       streamUrl = playbackInfo?.stream?.url;
       if (!streamUrl || !playbackInfo) {
         throw Error(`Stream not found for: '${videoId}'`);
       }
       this.#updateTrackWithPlaybackInfo(track, playbackInfo);
+      ytmusic.getStateMachine().prefetchDone = true;
     }
     catch (error: any) {
+      if (signal.aborted) {
+        ytmusic.getLogger().info(`[ytmusic-play] Prefetch aborted: ${track.name}`);
+        return;
+      }
       ytmusic.getLogger().error(`[ytmusic-play] Prefetch failed: ${error}`);
-      ytmusic.getStateMachine().prefetchDone = false;
       return;
+    }
+    finally {
+      this.#prefetchAborter = null;
     }
 
     const mpdPlugin = this.#mpdPlugin;
@@ -426,6 +445,13 @@ export default class PlayController {
     this.#prefetchPlaybackStateFixer?.notifyPrefetched(track);
 
     return res;
+  }
+
+  #cancelPrefetch() {
+    if (this.#prefetchAborter) {
+      this.#prefetchAborter.abort();
+      this.#prefetchAborter = null;
+    }
   }
 
   async getGotoUri(type: 'album' | 'artist', uri: QueueItem['uri']): Promise<string | null> {

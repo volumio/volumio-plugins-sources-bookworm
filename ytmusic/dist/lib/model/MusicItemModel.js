@@ -7,7 +7,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _MusicItemModel_instances, _MusicItemModel_getTrackInfo, _MusicItemModel_extractStreamData, _MusicItemModel_getInfoFromUpNextTab, _MusicItemModel_getLyricsId;
+var _MusicItemModel_instances, _MusicItemModel_getTrackInfo, _MusicItemModel_extractStreamData, _MusicItemModel_getInfoFromUpNextTab, _MusicItemModel_getLyricsId, _MusicItemModel_sleep, _MusicItemModel_head;
 Object.defineProperty(exports, "__esModule", { value: true });
 const YTMusicContext_1 = __importDefault(require("../YTMusicContext"));
 const volumio_youtubei_js_1 = require("volumio-youtubei.js");
@@ -37,7 +37,7 @@ class MusicItemModel extends BaseModel_1.BaseModel {
         super(...arguments);
         _MusicItemModel_instances.add(this);
     }
-    async getPlaybackInfo(endpoint) {
+    async getPlaybackInfo(endpoint, signal) {
         if (!EndpointHelper_1.default.isType(endpoint, Endpoint_1.EndpointType.Watch) || !endpoint.payload.videoId) {
             throw Error('Invalid endpoint');
         }
@@ -62,8 +62,35 @@ class MusicItemModel extends BaseModel_1.BaseModel {
         else {
             channelId = trackInfo.basic_info.channel_id;
         }
+        const title = musicItem?.title || trackInfo.basic_info.title;
+        if (streamData?.url) {
+            const startTime = new Date().getTime();
+            YTMusicContext_1.default.getLogger().info(`[ytmusic] (${title}) validating stream URL "${streamData.url}"...`);
+            let tries = 0;
+            let testStreamResult = await __classPrivateFieldGet(this, _MusicItemModel_instances, "m", _MusicItemModel_head).call(this, streamData.url, signal);
+            while (!testStreamResult.ok && tries < 3) {
+                if (signal?.aborted) {
+                    throw Error('Aborted');
+                }
+                YTMusicContext_1.default.getLogger().warn(`[ytmusic] (${title}) stream validation failed (${testStreamResult.status} - ${testStreamResult.statusText}); retrying after 2s...`);
+                await __classPrivateFieldGet(this, _MusicItemModel_instances, "m", _MusicItemModel_sleep).call(this, 2000);
+                tries++;
+                testStreamResult = await __classPrivateFieldGet(this, _MusicItemModel_instances, "m", _MusicItemModel_head).call(this, streamData.url, signal);
+            }
+            const endTime = new Date().getTime();
+            const timeTaken = (endTime - startTime) / 1000;
+            if (tries === 3) {
+                YTMusicContext_1.default.getLogger().warn(`[ytmusic] (${title}) failed to validate stream URL "${streamData.url}" (retried ${tries} times in ${timeTaken}s).`);
+            }
+            else {
+                YTMusicContext_1.default.getLogger().info(`[ytmusic] (${title}) stream validated in ${timeTaken}s.`);
+            }
+        }
+        if (signal?.aborted) {
+            throw Error('Aborted');
+        }
         return {
-            title: musicItem?.title || trackInfo.basic_info.title,
+            title,
             artist: {
                 channelId,
                 name: musicItem?.artistText || trackInfo.basic_info.author
@@ -195,6 +222,15 @@ async function _MusicItemModel_getTrackInfo(innertube, endpoint) {
         throw Error('No lyrics ID found in endpoint');
     }
     return lyricsId;
+}, _MusicItemModel_sleep = function _MusicItemModel_sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}, _MusicItemModel_head = async function _MusicItemModel_head(url, signal) {
+    const res = await fetch(url, { method: 'HEAD', signal });
+    return {
+        ok: res.ok,
+        status: res.status,
+        statusText: res.statusText
+    };
 };
 exports.default = MusicItemModel;
 //# sourceMappingURL=MusicItemModel.js.map
