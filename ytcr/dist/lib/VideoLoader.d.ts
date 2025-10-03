@@ -1,4 +1,4 @@
-import { type Logger, type Video } from 'yt-cast-receiver';
+import { type Sender, type Logger, type Video } from 'yt-cast-receiver';
 interface BasicInfo {
     id: string;
     src?: 'yt' | 'ytmusic';
@@ -22,6 +22,7 @@ export interface VideoInfo extends BasicInfo {
 export default class VideoLoader {
     #private;
     constructor(logger: Logger);
+    notifySendersChanged(senders: Sender[]): void;
     refreshI18nConfig(): void;
     getInfo(video: Video, abortSignal: AbortSignal): Promise<VideoInfo>;
 }
