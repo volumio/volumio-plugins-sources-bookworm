@@ -1,0 +1,19 @@
+# /etc/systemd/system/cdplayer_stream.service
+[Unit]
+Description=CD → HTTP streamer (Plugin)
+After=network.target mpd.service
+Wants=mpd.service
+
+[Service]
+User=volumio
+Group=volumio
+# give the service the cdrom group explicitly
+SupplementaryGroups=cdrom
+WorkingDirectory=/data/plugins/music_service/cdplayer
+Environment=NODE_ENV=production
+Environment=PATH=/usr/bin:/bin
+ExecStart=/usr/bin/node /data/plugins/music_service/cdplayer/backend/cd-http.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
