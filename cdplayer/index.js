@@ -3,10 +3,38 @@
 var libQ = require("kew");
 var fs = require("fs-extra");
 var config = new (require("v-conf"))();
-var exec = require("child_process").exec;
-var execSync = require("child_process").execSync;
+const { execFile, execSync, exec } = require("child_process");
 
 module.exports = cdplayer;
+
+function runCdparanoiaQ() {
+  return new Promise((resolve, reject) => {
+    const opts = {
+      env: { PATH: "/usr/bin:/bin", LANG: "C" },
+      timeout: 15000,
+    };
+    execFile(
+      "/usr/bin/cdparanoia",
+      ["-Q", "/dev/sr0"],
+      opts,
+      (err, stdout, stderr) => {
+        const out = stdout && stdout.trim() ? stdout : stderr || "";
+        if (!out.trim() && err) return reject(err);
+        resolve(out);
+      }
+    );
+  });
+}
+
+function parseCdparanoiaQ(out) {
+  const tracks = [];
+  out.split(/\r?\n/).forEach((line) => {
+    const m = line.match(/^\s*(\d+)\.\s+\d+/); // e.g. "  1.    23581 [05:14.31]"
+    if (m) tracks.push(parseInt(m[1], 10));
+  });
+  return tracks;
+}
+
 function cdplayer(context) {
   var self = this;
 
@@ -127,17 +155,65 @@ cdplayer.prototype.removeToBrowseSources = function () {
   this.commandRouter.volumioRemoveFromBrowseSources("CDPlayer");
 };
 
+cdplayer.prototype.listCD = function () {
+  const defer = libQ.defer();
+
+  runCdparanoiaQ()
+    .then((out) => {
+      this.commandRouter.logger.info("[CDP] cdparanoia -Q (first lines):");
+      this.commandRouter.logger.info(out.split("\n").slice(0, 8).join("\n"));
+
+      const trackNums = parseCdparanoiaQ(out);
+      this.commandRouter.logger.info(
+        "[CDP] parsed tracks: " + JSON.stringify(trackNums)
+      );
+
+      if (trackNums.length === 0) {
+        this.commandRouter.pushToastMessage(
+          "error",
+          "CD Player",
+          "No disc or no audio tracks detected"
+        );
+        return defer.resolve({ navigation: { lists: [] } });
+      }
+
+      const items = trackNums.map((n) => ({
+        service: "cdplayer",
+        type: "song",
+        title: `Track ${n}`,
+        icon: "fa fa-music",
+        uri: `cdplayer/${n}`,
+      }));
+
+      defer.resolve({
+        navigation: {
+          prev: { uri: "cdplayer" },
+          lists: [{ availableListViews: ["list"], items }],
+        },
+      });
+    })
+    .catch((err) => {
+      this.commandRouter.logger.error(
+        "[CDP] cdparanoia -Q error: " + (err.message || err)
+      );
+      this.commandRouter.pushToastMessage(
+        "error",
+        "CD Player",
+        "CD probe failed"
+      );
+      defer.resolve({ navigation: { lists: [] } });
+    });
+
+  return defer.promise;
+};
+
 cdplayer.prototype.handleBrowseUri = function (curUri) {
   var self = this;
 
-  self.commandRouter.pushToastMessage(
-    "success",
-    "OLE!",
-    "Aye caramba! You have clicked on " + curUri
-  );
-
-  //self.commandRouter.logger.info(curUri);
-  var response;
+  if (curUri === "cdplayer") {
+    this.commandRouter.pushToastMessage("success", "test with this", `-`);
+    return this.listCD();
+  }
 
   return response;
 };
