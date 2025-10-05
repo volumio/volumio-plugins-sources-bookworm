@@ -1,7 +1,6 @@
 // /data/plugins/music_service/cdplayer/backend/cd-http.js
 const http = require("http");
 const { spawn } = require("child_process");
-
 const GST = "/usr/bin/gst-launch-1.0";
 
 function gstTrackFlac(n) {
@@ -21,7 +20,7 @@ function gstTrackFlac(n) {
     "fdsink",
     "fd=1",
   ];
-  console.log(`[cd-http] spawn: ${GST} ${args.join(" ")}`);
+  console.log("[cd-http] spawn:", GST, args.join(" "));
   const p = spawn(GST, args, { stdio: ["ignore", "pipe", "pipe"] });
   p.stderr.on("data", (d) =>
     console.error("[cd-http:gstreamer]", d.toString())
@@ -33,6 +32,14 @@ function gstTrackFlac(n) {
 }
 
 const server = http.createServer((req, res) => {
+  if (req.method === "HEAD") {
+    // don’t spawn for HEAD
+    res.writeHead(200, {
+      "Content-Type": "audio/flac",
+      "Cache-Control": "no-store",
+    });
+    return res.end();
+  }
   const m = req.url.match(/^\/track\/(\d+)$/);
   if (!m) {
     res.writeHead(404);
@@ -41,33 +48,28 @@ const server = http.createServer((req, res) => {
   const n = parseInt(m[1], 10);
 
   const p = gstTrackFlac(n);
-  // write headers after the child starts; if it dies immediately, we won’t send 200
-  let headersSent = false;
+  let sent = false;
+
   const send200 = () => {
-    if (headersSent) return;
-    headersSent = true;
+    if (sent) return;
+    sent = true;
     res.writeHead(200, {
       "Content-Type": "audio/flac",
       "Cache-Control": "no-store",
       Connection: "close",
       "Transfer-Encoding": "chunked",
     });
+    console.log("[cd-http] first bytes → sending headers");
   };
 
-  // if we get any data, send headers and pipe
   p.stdout.once("data", (chunk) => {
     send200();
     res.write(chunk);
-    p.stdout.pipe(res, { end: true });
+    p.stdout.pipe(res);
   });
   p.stdout.on("error", () => res.end());
-  p.stderr.on("data", (d) =>
-    console.error("[cd-http:gstreamer]", d.toString())
-  );
-
-  // if the process exits before any data, return 500
-  p.on("exit", (code) => {
-    if (!headersSent) {
+  p.on("exit", () => {
+    if (!sent) {
       res.statusCode = 500;
       res.end("gst failed");
     }
