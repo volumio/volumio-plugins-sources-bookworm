@@ -287,9 +287,19 @@ cdplayer.prototype.pushState = function (state) {
 
 cdplayer.prototype.explodeUri = function (uri) {
   var self = this;
-  self.info("NOW WE'RE IN THE EXPLODEURI");
   var defer = libQ.defer();
-  defer.resolve(items);
+
+  const track = {
+    service: "cdplayer",
+    type: "song",
+    title: "Dummy Track",
+    uri: "http://127.0.0.1:8088/track/1", // pick a valid track URL
+    duration: 0,
+  };
+
+  self.log("NOW WE'RE IN THE EXPLODEURI");
+
+  defer.resolve([track]);
   return defer.promise;
 };
 
