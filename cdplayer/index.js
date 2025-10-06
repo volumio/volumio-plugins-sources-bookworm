@@ -44,8 +44,17 @@ function cdplayer(context) {
   this.configManager = this.context.configManager;
 }
 
-cdplayer.prototype.onVolumioStart = function () {
+cdplayer.prototype.log = function (msg) {
   var self = this;
+  self.logger.info(`[CDPlayer]: ${msg}`);
+};
+
+cdplayer.prototype.error = function (err) {
+  var self = this;
+  self.logger.error(`[CDPlayer]: ${err}`);
+};
+
+cdplayer.prototype.onVolumioStart = function () {
   var configFile = this.commandRouter.pluginManager.getConfigurationFile(
     this.context,
     "config.json"
@@ -59,18 +68,8 @@ cdplayer.prototype.onVolumioStart = function () {
 cdplayer.prototype.onStart = function () {
   var self = this;
   var defer = libQ.defer();
-
   self.addToBrowseSources();
-  self.commandRouter.pushToastMessage(
-    "success",
-    "OLE!",
-    "Aye caramba! You have clicked on "
-  );
-  self.logger.info("[MATTEO]::onStart");
-
-  // Once the Plugin has successfull started resolve the promise
   defer.resolve();
-
   return defer.promise;
 };
 
@@ -138,20 +137,19 @@ cdplayer.prototype.setConf = function (varName, varValue) {
 // If your plugin is not a music_sevice don't use this part and delete it
 
 cdplayer.prototype.addToBrowseSources = function () {
-  // Use this function to add your music service plugin to music sources
-  this.logger.info("Adding CDPlayer to Browse Sources");
+  this.log("Adding CDPlayer to Browse Sources");
   var data = {
     name: "CDPlayer",
     uri: "cdplayer",
     plugin_type: "music_service",
     plugin_name: "cdplayer",
+    albumart: "https://picsum.photos/512/512",
   };
   this.commandRouter.volumioAddToBrowseSources(data);
 };
 
 cdplayer.prototype.removeToBrowseSources = function () {
-  // Use this function to remove your music service plugin from music sources
-  this.logger.info("Removing CDPlayer from Browse Sources");
+  this.log("Removing CDPlayer from Browse Sources");
   this.commandRouter.volumioRemoveFromBrowseSources("CDPlayer");
 };
 
@@ -160,19 +158,16 @@ cdplayer.prototype.listCD = function () {
 
   runCdparanoiaQ()
     .then((out) => {
-      this.commandRouter.logger.info("[CDP] cdparanoia -Q (first lines):");
-      this.commandRouter.logger.info(out.split("\n").slice(0, 8).join("\n"));
+      this.log(`Asked cdparanoia -Q, got ${out.length} bytes of output`);
 
       const trackNums = parseCdparanoiaQ(out);
-      this.commandRouter.logger.info(
-        "[CDP] parsed tracks: " + JSON.stringify(trackNums)
-      );
 
       if (trackNums.length === 0) {
+        this.error(`No audio tracks returned`);
         this.commandRouter.pushToastMessage(
           "error",
           "CD Player",
-          "No disc or no audio tracks detected"
+          "Please insert an audio CD (0)"
         );
         return defer.resolve({ navigation: { lists: [] } });
       }
@@ -181,6 +176,9 @@ cdplayer.prototype.listCD = function () {
         service: "cdplayer",
         type: "song",
         title: `Track ${n}`,
+        artist: "ASD",
+        album: "asd",
+        albumart: "https://picsum.photos/200/300",
         icon: "fa fa-music",
         uri: `cdplayer/${n}`,
       }));
@@ -188,18 +186,23 @@ cdplayer.prototype.listCD = function () {
       defer.resolve({
         navigation: {
           prev: { uri: "cdplayer" },
-          lists: [{ availableListViews: ["list"], items }],
+          lists: [
+            {
+              title: "CD Tracks",
+              icon: "fa fa-music",
+              availableListViews: ["list"],
+              items,
+            },
+          ],
         },
       });
     })
     .catch((err) => {
-      this.commandRouter.logger.error(
-        "[CDP] cdparanoia -Q error: " + (err.message || err)
-      );
+      this.error(`cdparanoia -Q error: ${err.message || err}`);
       this.commandRouter.pushToastMessage(
         "error",
         "CD Player",
-        "CD probe failed"
+        "Please insert an audio CD (1)"
       );
       defer.resolve({ navigation: { lists: [] } });
     });
@@ -209,10 +212,10 @@ cdplayer.prototype.listCD = function () {
 
 cdplayer.prototype.handleBrowseUri = function (curUri) {
   var self = this;
-
+  var response;
+  self.log("handleBrowseUri: " + curUri);
   if (curUri === "cdplayer") {
-    this.commandRouter.pushToastMessage("success", "test with this", `-`);
-    return this.listCD();
+    response = self.listCD();
   }
 
   return response;
@@ -284,10 +287,9 @@ cdplayer.prototype.pushState = function (state) {
 
 cdplayer.prototype.explodeUri = function (uri) {
   var self = this;
+  self.info("NOW WE'RE IN THE EXPLODEURI");
   var defer = libQ.defer();
-
-  // Mandatory: retrieve all info for a given URI
-
+  defer.resolve(items);
   return defer.promise;
 };
 
