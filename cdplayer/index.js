@@ -160,7 +160,7 @@ cdplayer.prototype.listCD = function () {
     .then((out) => {
       this.log(`Asked cdparanoia -Q, got ${out.length} bytes of output`);
 
-      const trackNums = parseCdparanoiaQ(out);
+      this._lastTrackNums = trackNums;
 
       if (trackNums.length === 0) {
         this.error(`No audio tracks returned`);
@@ -285,21 +285,54 @@ cdplayer.prototype.pushState = function (state) {
   return self.commandRouter.servicePushState(state, self.servicename);
 };
 
+// Explode Uri gets called at the beggining when all tracks load for some reason. When I click play, cdplayer::clearAddPlayTrack is called instread.
+// It's probably time to start again from the playAll functionality in ChatGPT
 cdplayer.prototype.explodeUri = function (uri) {
-  var self = this;
-  var defer = libQ.defer();
+  const self = this;
+  self.logger.info("[CDPLAYER] explodeUri called with " + uri);
 
-  const track = {
-    service: "cdplayer",
-    type: "song",
-    title: "Dummy Track",
-    uri: "http://127.0.0.1:8088/track/1", // pick a valid track URL
-    duration: 0,
-  };
+  const defer = libQ.defer();
 
-  self.log("NOW WE'RE IN THE EXPLODEURI");
+  // Match single track: cdplayer/1, cdplayer/2, ...
+  const match = uri.match(/^cdplayer\/(\d+)$/);
+  if (match) {
+    const trackNum = parseInt(match[1], 10);
 
-  defer.resolve([track]);
+    const track = {
+      service: "mpd",
+      type: "song",
+      title: `Track ${trackNum}`,
+      uri: `http://127.0.0.1:8088/track/${trackNum}`,
+      duration: 0, // disables scrub bar (see earlier discussion)
+      album: "Audio CD", // optional — shows in Now Playing
+      artist: "Unknown", // optional
+      trackType: "flac", // helps MPD interpret stream
+    };
+
+    defer.resolve([track]);
+    return defer.promise;
+  }
+
+  // Match "Play All" synthetic item
+  if (uri === "cdplayer/playall") {
+    const tracks = (this._lastTrackNums || []).map((n) => ({
+      service: "cdplayer",
+      type: "song",
+      title: `Track ${n}`,
+      uri: `http://127.0.0.1:8088/track/${n}`,
+      duration: 0,
+      album: "Audio CD",
+      artist: "Unknown",
+      trackType: "flac",
+    }));
+
+    defer.resolve(tracks);
+    return defer.promise;
+  }
+
+  // Fallback
+  self.logger.warn("[CDPLAYER] explodeUri: unknown URI " + uri);
+  defer.resolve([]);
   return defer.promise;
 };
 
