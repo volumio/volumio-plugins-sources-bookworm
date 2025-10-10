@@ -1,0 +1,17 @@
+{
+  "PLUGIN_NAME": "Aggiornatore firmware EEPROM Raspberry Pi",
+  "CURRENT_VERSION": "Versione corrente del bootloader",
+  "CURRENT_DATE": "Data di installazione",
+  "CURRENT_HASH": "Hash della versione",
+  "FIRMWARE_CHANNEL": "Canale di rilascio del firmware",
+  "SELECT_CHANNEL": "Seleziona canale di rilascio",
+  "CHANNEL_DESCRIPTION": "Il canale predefinito contiene versioni stabili. Il canale latest contiene nuove funzionalità e correzioni di bug.",
+  "DEFAULT_VERSION": "Versione del canale predefinito",
+  "LATEST_VERSION": "Versione del canale latest",
+  "UPDATE_FIRMWARE": "Aggiornamento firmware",
+  "UPDATE_NOW": "Aggiorna ora",
+  "STATUS": "Stato",
+  "SAVE": "Salva canale",
+  "DOWNGRADE_INFO_TITLE": "Informazioni sul downgrade",
+  "DOWNGRADE_INFO_TEXT": "Se è necessario eseguire il downgrade del firmware del bootloader, consultare la documentazione ufficiale di Raspberry Pi all'indirizzo: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom"
+}

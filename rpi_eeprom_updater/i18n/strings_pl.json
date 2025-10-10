@@ -1,0 +1,17 @@
+{
+  "PLUGIN_NAME": "Aktualizator oprogramowania EEPROM Raspberry Pi",
+  "CURRENT_VERSION": "Aktualna wersja bootloadera",
+  "CURRENT_DATE": "Data instalacji",
+  "CURRENT_HASH": "Hash wersji",
+  "FIRMWARE_CHANNEL": "Kanał wydań oprogramowania",
+  "SELECT_CHANNEL": "Wybierz kanał wydań",
+  "CHANNEL_DESCRIPTION": "Kanał domyślny zawiera stabilne wersje. Kanał latest zawiera nowe funkcje i poprawki błędów.",
+  "DEFAULT_VERSION": "Wersja kanału domyślnego",
+  "LATEST_VERSION": "Wersja kanału latest",
+  "UPDATE_FIRMWARE": "Aktualizacja oprogramowania",
+  "UPDATE_NOW": "Aktualizuj teraz",
+  "STATUS": "Status",
+  "SAVE": "Zapisz kanał",
+  "DOWNGRADE_INFO_TITLE": "Informacje o cofnięciu wersji",
+  "DOWNGRADE_INFO_TEXT": "Jeśli musisz cofnąć wersję oprogramowania bootloadera, zapoznaj się z oficjalną dokumentacją Raspberry Pi pod adresem: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom"
+}

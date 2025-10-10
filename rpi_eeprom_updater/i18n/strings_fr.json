@@ -1,0 +1,17 @@
+{
+  "PLUGIN_NAME": "Mise à jour du micrologiciel EEPROM Raspberry Pi",
+  "CURRENT_VERSION": "Version actuelle du chargeur d'amorçage",
+  "CURRENT_DATE": "Date d'installation",
+  "CURRENT_HASH": "Hash de version",
+  "FIRMWARE_CHANNEL": "Canal de publication du micrologiciel",
+  "SELECT_CHANNEL": "Sélectionner le canal de publication",
+  "CHANNEL_DESCRIPTION": "Le canal par défaut contient des versions stables. Le canal latest contient de nouvelles fonctionnalités et corrections de bugs.",
+  "DEFAULT_VERSION": "Version du canal par défaut",
+  "LATEST_VERSION": "Version du canal latest",
+  "UPDATE_FIRMWARE": "Mise à jour du micrologiciel",
+  "UPDATE_NOW": "Mettre à jour maintenant",
+  "STATUS": "Statut",
+  "SAVE": "Enregistrer le canal",
+  "DOWNGRADE_INFO_TITLE": "Informations sur le retour à une version antérieure",
+  "DOWNGRADE_INFO_TEXT": "Si vous devez rétrograder le micrologiciel de votre chargeur d'amorçage, veuillez consulter la documentation officielle Raspberry Pi à l'adresse: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom"
+}
