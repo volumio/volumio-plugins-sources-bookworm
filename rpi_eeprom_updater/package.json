@@ -12,25 +12,27 @@
     "prettyName": "Raspberry Pi EEPROM Firmware Updater",
     "icon": "fa-microchip",
     "plugin_type": "system_controller",
+    "details": "Raspberry Pi EEPROM Firmware Updater for Volumio",
+    "changelog": "",
+    "categories": [
+      "system_hardware"
+    ],
+    "keywords": [
+      "raspberry pi",
+      "eeprom",
+      "bootloader",
+      "firmware",
+      "update"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "architectures": [
+      "armhf",
+      "arm64"
+    ],
     "has_settings_page": true
   },
-  "categories": [
-    "system_hardware"
-  ],
-  "keywords": [
-    "raspberry pi",
-    "eeprom",
-    "bootloader",
-    "firmware",
-    "update"
-  ],
-  "os": [
-    "bookworm"
-  ],
-  "architectures": [
-    "armhf",
-    "arm64"
-  ],
   "engines": {
     "volumio": ">=4",
     "node": ">=20"
