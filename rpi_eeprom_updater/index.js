@@ -445,7 +445,19 @@ RpiEepromUpdater.prototype.saveChannelSettings = function(data) {
                 'Channel Changed',
                 'Firmware channel set to: ' + newChannel
             );
-            defer.resolve();
+            
+            // Trigger UI refresh to show new available version
+            self.logger.info('[RpiEepromUpdater] Triggering UI refresh');
+            self.commandRouter.getUIConfigOnPlugin('system_controller', 'rpi_eeprom_updater', {})
+                .then(function(config) {
+                    self.commandRouter.broadcastMessage('pushUiConfig', config);
+                    defer.resolve();
+                })
+                .fail(function(error) {
+                    self.logger.error('[RpiEepromUpdater] Failed to refresh UI: ' + error);
+                    // Still resolve since channel was changed successfully
+                    defer.resolve();
+                });
         } else {
             self.commandRouter.pushToastMessage(
                 'error',
