@@ -1,0 +1,19 @@
+{
+  "PLUGIN_NAME": "Raspberry Pi EEPROM Firmware-updater",
+  "CURRENT_VERSION": "Huidige bootloader-versie",
+  "CURRENT_DATE": "Installatiedatum",
+  "CURRENT_HASH": "Versie-hash",
+  "FIRMWARE_CHANNEL": "Firmware-releasekanaal",
+  "SELECT_CHANNEL": "Selecteer releasekanaal",
+  "CHANNEL_DESCRIPTION": "Het standaardkanaal bevat stabiele versies. Het latest-kanaal bevat nieuwe functies en bugfixes.",
+  "AVAILABLE_VERSION": "Beschikbare versie in geselecteerd kanaal",
+  "UPGRADE_FIRMWARE": "Firmware-upgrade",
+  "DOWNGRADE_FIRMWARE": "Firmware-downgrade",
+  "UPDATE_NOW": "Nu updaten",
+  "DOWNGRADE_CONFIRM": "Ik begrijp de risico's van firmware downgraden",
+  "DOWNGRADE_NOW": "Firmware downgraden",
+  "STATUS": "Status",
+  "SAVE": "Kanaal opslaan",
+  "DOWNGRADE_INFO_TITLE": "Aanvullende informatie",
+  "DOWNGRADE_INFO_TEXT": "Voor handmatig firmware-beheer of geavanceerde downgrade-procedures, raadpleeg de officiële Raspberry Pi-documentatie op: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom"
+}

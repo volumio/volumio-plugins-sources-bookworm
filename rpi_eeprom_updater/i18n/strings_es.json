@@ -1,0 +1,19 @@
+{
+  "PLUGIN_NAME": "Actualizador de firmware EEPROM de Raspberry Pi",
+  "CURRENT_VERSION": "Versión actual del gestor de arranque",
+  "CURRENT_DATE": "Fecha de instalación",
+  "CURRENT_HASH": "Hash de versión",
+  "FIRMWARE_CHANNEL": "Canal de lanzamiento de firmware",
+  "SELECT_CHANNEL": "Seleccionar canal de lanzamiento",
+  "CHANNEL_DESCRIPTION": "El canal predeterminado contiene versiones estables. El canal latest contiene nuevas características y correcciones de errores.",
+  "AVAILABLE_VERSION": "Versión disponible en el canal seleccionado",
+  "UPGRADE_FIRMWARE": "Actualización de firmware",
+  "DOWNGRADE_FIRMWARE": "Degradación de firmware",
+  "UPDATE_NOW": "Actualizar ahora",
+  "DOWNGRADE_CONFIRM": "Comprendo los riesgos de degradar el firmware",
+  "DOWNGRADE_NOW": "Degradar firmware",
+  "STATUS": "Estado",
+  "SAVE": "Guardar canal",
+  "DOWNGRADE_INFO_TITLE": "Información adicional",
+  "DOWNGRADE_INFO_TEXT": "Para la gestión manual del firmware o procedimientos avanzados de degradación, consulte la documentación oficial de Raspberry Pi en: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom"
+}

@@ -1,0 +1,19 @@
+{
+  "PLUGIN_NAME": "Raspberry Pi EEPROM ファームウェアアップデーター",
+  "CURRENT_VERSION": "現在のブートローダーバージョン",
+  "CURRENT_DATE": "インストール日",
+  "CURRENT_HASH": "バージョンハッシュ",
+  "FIRMWARE_CHANNEL": "ファームウェアリリースチャンネル",
+  "SELECT_CHANNEL": "リリースチャンネルを選択",
+  "CHANNEL_DESCRIPTION": "デフォルトチャンネルには安定版が含まれています。latestチャンネルには新機能とバグ修正が含まれています。",
+  "AVAILABLE_VERSION": "選択したチャンネルで利用可能なバージョン",
+  "UPGRADE_FIRMWARE": "ファームウェアアップグレード",
+  "DOWNGRADE_FIRMWARE": "ファームウェアダウングレード",
+  "UPDATE_NOW": "今すぐ更新",
+  "DOWNGRADE_CONFIRM": "ファームウェアのダウングレードに伴うリスクを理解しています",
+  "DOWNGRADE_NOW": "ファームウェアをダウングレード",
+  "STATUS": "ステータス",
+  "SAVE": "チャンネルを保存",
+  "DOWNGRADE_INFO_TITLE": "追加情報",
+  "DOWNGRADE_INFO_TEXT": "手動でのファームウェア管理や高度なダウングレード手順については、Raspberry Pi公式ドキュメントを参照してください：https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom"
+}
