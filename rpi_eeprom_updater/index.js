@@ -262,7 +262,8 @@ RpiEepromUpdater.prototype.getFirmwareStatus = function() {
                 latest: latestVersion
             },
             updateType: 'none', // 'upgrade', 'downgrade', or 'none'
-            updateAvailable: false
+            updateAvailable: false,
+            downgradePath: null // Store path for downgrade
         };
         
         // Check if update/downgrade is available for current channel
@@ -275,6 +276,7 @@ RpiEepromUpdater.prototype.getFirmwareStatus = function() {
             } else if (channelVersion.timestamp < currentVersion.timestamp) {
                 status.updateType = 'downgrade';
                 status.updateAvailable = true;
+                status.downgradePath = channelVersion.path;
             }
             // If equal, updateType stays 'none'
         }
@@ -383,30 +385,82 @@ RpiEepromUpdater.prototype.performDowngrade = function(data) {
         
         self.logger.info('[RpiEepromUpdater] Starting EEPROM downgrade...');
         
-        self.commandRouter.pushToastMessage(
-            'info',
-            'EEPROM Downgrade',
-            'Starting firmware downgrade. Please do not power off the system.'
-        );
+        // Get the firmware path for the current channel
+        self.getFirmwareStatus()
+            .then(function(status) {
+                if (!status.downgradePath) {
+                    self.logger.error('[RpiEepromUpdater] No downgrade path available');
+                    self.commandRouter.pushToastMessage(
+                        'error',
+                        'Downgrade Failed',
+                        'Could not determine firmware file path'
+                    );
+                    defer.reject(new Error('No downgrade path'));
+                    return;
+                }
+                
+                // Get the actual firmware file path from the channel directory
+                const channelDir = status.downgradePath;
+                let firmwareFile = null;
+                
+                try {
+                    // List files in the channel directory
+                    const files = fs.readdirSync(channelDir);
+                    
+                    // Find the pieeprom .bin file (not recovery.bin)
+                    for (let i = 0; i < files.length; i++) {
+                        if (files[i].startsWith('pieeprom-') && files[i].endsWith('.bin')) {
+                            firmwareFile = path.join(channelDir, files[i]);
+                            break;
+                        }
+                    }
+                } catch (error) {
+                    self.logger.error('[RpiEepromUpdater] Failed to read channel directory: ' + error.message);
+                }
+                
+                if (!firmwareFile || !fs.existsSync(firmwareFile)) {
+                    self.logger.error('[RpiEepromUpdater] Firmware file not found in: ' + channelDir);
+                    self.commandRouter.pushToastMessage(
+                        'error',
+                        'Downgrade Failed',
+                        'Firmware file not found'
+                    );
+                    defer.reject(new Error('Firmware file not found'));
+                    return;
+                }
+                
+                self.logger.info('[RpiEepromUpdater] Using firmware file: ' + firmwareFile);
+                
+                self.commandRouter.pushToastMessage(
+                    'info',
+                    'EEPROM Downgrade',
+                    'Starting firmware downgrade. Please do not power off the system.'
+                );
+                
+                // Execute downgrade with -d (downgrade) and -f (firmware file) flags
+                execSync('sudo /usr/bin/rpi-eeprom-update -d -f "' + firmwareFile + '"', { stdio: 'pipe' });
+                
+                self.logger.info('[RpiEepromUpdater] Downgrade staged successfully');
+                
+                self.commandRouter.pushToastMessage(
+                    'success',
+                    'EEPROM Downgrade',
+                    'Firmware downgrade prepared. System will reboot in 5 seconds.'
+                );
+                
+                // Schedule reboot
+                setTimeout(() => {
+                    self.logger.info('[RpiEepromUpdater] Rebooting system for EEPROM downgrade');
+                    execSync('sudo /sbin/reboot');
+                }, 5000);
+                
+                defer.resolve();
+            })
+            .fail(function(error) {
+                self.logger.error('[RpiEepromUpdater] Failed to get firmware status: ' + error);
+                defer.reject(error);
+            });
         
-        // Execute downgrade with automatic flag using sudo (same as upgrade)
-        execSync('sudo /usr/bin/rpi-eeprom-update -a', { stdio: 'pipe' });
-        
-        self.logger.info('[RpiEepromUpdater] Downgrade staged successfully');
-        
-        self.commandRouter.pushToastMessage(
-            'success',
-            'EEPROM Downgrade',
-            'Firmware downgrade prepared. System will reboot in 5 seconds.'
-        );
-        
-        // Schedule reboot
-        setTimeout(() => {
-            self.logger.info('[RpiEepromUpdater] Rebooting system for EEPROM downgrade');
-            execSync('sudo /sbin/reboot');
-        }, 5000);
-        
-        defer.resolve();
     } catch (error) {
         self.logger.error('[RpiEepromUpdater] Downgrade failed: ' + error.message);
         
