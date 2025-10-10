@@ -6,14 +6,14 @@
   "FIRMWARE_CHANNEL": "固件发布渠道",
   "SELECT_CHANNEL": "选择发布渠道",
   "CHANNEL_DESCRIPTION": "默认渠道包含稳定版本。最新渠道包含新功能和错误修复。",
-  "DEFAULT_VERSION": "默认渠道版本",
-  "LATEST_VERSION": "最新渠道版本",
-  "UPDATE_FIRMWARE": "固件更新",
+  "AVAILABLE_VERSION": "所选渠道中的可用版本",
+  "UPGRADE_FIRMWARE": "固件升级",
+  "DOWNGRADE_FIRMWARE": "固件降级",
   "UPDATE_NOW": "立即更新",
   "DOWNGRADE_CONFIRM": "我了解降级固件的风险",
   "DOWNGRADE_NOW": "降级固件",
   "STATUS": "状态",
   "SAVE": "保存渠道",
-  "DOWNGRADE_INFO_TITLE": "降级信息",
-  "DOWNGRADE_INFO_TEXT": "如果您需要降级引导加载程序固件，请参阅 Raspberry Pi 官方文档：https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom"
+  "DOWNGRADE_INFO_TITLE": "附加信息",
+  "DOWNGRADE_INFO_TEXT": "如需手动固件管理或高级降级程序，请参阅 Raspberry Pi 官方文档：https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom"
 }

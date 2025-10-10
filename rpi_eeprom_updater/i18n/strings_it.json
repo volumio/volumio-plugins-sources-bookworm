@@ -6,14 +6,14 @@
   "FIRMWARE_CHANNEL": "Canale di rilascio del firmware",
   "SELECT_CHANNEL": "Seleziona canale di rilascio",
   "CHANNEL_DESCRIPTION": "Il canale predefinito contiene versioni stabili. Il canale latest contiene nuove funzionalità e correzioni di bug.",
-  "DEFAULT_VERSION": "Versione del canale predefinito",
-  "LATEST_VERSION": "Versione del canale latest",
-  "UPDATE_FIRMWARE": "Aggiornamento firmware",
+  "AVAILABLE_VERSION": "Versione disponibile nel canale selezionato",
+  "UPGRADE_FIRMWARE": "Aggiornamento firmware",
+  "DOWNGRADE_FIRMWARE": "Downgrade firmware",
   "UPDATE_NOW": "Aggiorna ora",
   "DOWNGRADE_CONFIRM": "Comprendo i rischi del downgrade del firmware",
   "DOWNGRADE_NOW": "Esegui downgrade firmware",
   "STATUS": "Stato",
   "SAVE": "Salva canale",
-  "DOWNGRADE_INFO_TITLE": "Informazioni sul downgrade",
-  "DOWNGRADE_INFO_TEXT": "Se è necessario eseguire il downgrade del firmware del bootloader, consultare la documentazione ufficiale di Raspberry Pi all'indirizzo: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom"
+  "DOWNGRADE_INFO_TITLE": "Informazioni aggiuntive",
+  "DOWNGRADE_INFO_TEXT": "Per la gestione manuale del firmware o procedure avanzate di downgrade, consultare la documentazione ufficiale di Raspberry Pi all'indirizzo: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom"
 }

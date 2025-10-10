@@ -65,28 +65,20 @@
           ]
         },
         {
-          "id": "default_version",
+          "id": "available_version",
           "element": "input",
           "type": "text",
-          "label": "TRANSLATE.DEFAULT_VERSION",
-          "value": "Loading...",
-          "readonly": true
-        },
-        {
-          "id": "latest_version",
-          "element": "input",
-          "type": "text",
-          "label": "TRANSLATE.LATEST_VERSION",
+          "label": "TRANSLATE.AVAILABLE_VERSION",
           "value": "Loading...",
           "readonly": true
         }
       ]
     },
     {
-      "id": "update_section",
+      "id": "upgrade_section",
       "element": "section",
-      "label": "TRANSLATE.UPDATE_FIRMWARE",
-      "icon": "fa-download",
+      "label": "TRANSLATE.UPGRADE_FIRMWARE",
+      "icon": "fa-arrow-up",
       "content": [
         {
           "id": "upgrade_button",
@@ -100,38 +92,57 @@
           "hidden": false
         },
         {
-          "id": "downgrade_confirm",
-          "element": "switch",
-          "label": "TRANSLATE.DOWNGRADE_CONFIRM",
-          "value": false,
-          "hidden": true
-        },
-        {
-          "id": "downgrade_button",
-          "element": "button",
-          "label": "TRANSLATE.DOWNGRADE_NOW",
-          "onClick": {
-            "type": "controller",
-            "endpoint": "system_controller/rpi_eeprom_updater",
-            "method": "performDowngrade",
-            "data": [
-              "downgrade_confirm"
-            ]
-          },
-          "hidden": true
-        },
-        {
-          "id": "update_status",
+          "id": "upgrade_status",
           "element": "input",
           "type": "text",
           "label": "TRANSLATE.STATUS",
           "value": "Checking...",
           "readonly": true
+        }
+      ]
+    },
+    {
+      "id": "downgrade_section",
+      "element": "section",
+      "label": "TRANSLATE.DOWNGRADE_FIRMWARE",
+      "icon": "fa-arrow-down",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/rpi_eeprom_updater",
+        "method": "performDowngrade"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.DOWNGRADE_NOW",
+        "data": [
+          "downgrade_confirm"
+        ]
+      },
+      "content": [
+        {
+          "id": "downgrade_confirm",
+          "element": "switch",
+          "label": "TRANSLATE.DOWNGRADE_CONFIRM",
+          "value": false
         },
+        {
+          "id": "downgrade_status",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.STATUS",
+          "value": "Warning: Downgrading may cause issues.",
+          "readonly": true
+        }
+      ]
+    },
+    {
+      "id": "info_section",
+      "element": "section",
+      "label": "TRANSLATE.DOWNGRADE_INFO_TITLE",
+      "icon": "fa-info-circle",
+      "content": [
         {
           "id": "downgrade_info",
           "element": "section",
-          "label": "TRANSLATE.DOWNGRADE_INFO_TITLE",
           "description": "TRANSLATE.DOWNGRADE_INFO_TEXT"
         }
       ]

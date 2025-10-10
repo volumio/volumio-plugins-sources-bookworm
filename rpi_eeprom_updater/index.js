@@ -304,45 +304,48 @@ RpiEepromUpdater.prototype.getUIConfig = function() {
         // Get firmware status
         self.getFirmwareStatus()
             .then(function(status) {
-                // Current version section
+                // Current version section (section 0)
                 uiconf.sections[0].content[0].value = status.current ? 
                     status.current.date : 'Unknown';
                 uiconf.sections[0].content[1].value = status.current ? 
                     status.current.version.substring(0, 12) + '...' : 'Unknown';
                 
-                // Channel selection
+                // Channel selection (section 1)
                 uiconf.sections[1].content[0].value.value = status.currentChannel;
                 uiconf.sections[1].content[0].value.label = status.currentChannel;
                 
-                // Available versions
-                if (status.channels.default) {
-                    uiconf.sections[1].content[1].value = status.channels.default.date || 'Not available';
-                }
-                if (status.channels.latest) {
-                    uiconf.sections[1].content[2].value = status.channels.latest.date || 'Not available';
+                // Available version for selected channel only
+                const channelVersion = status.channels[status.currentChannel];
+                if (channelVersion) {
+                    uiconf.sections[1].content[1].value = channelVersion.date || 'Not available';
+                } else {
+                    uiconf.sections[1].content[1].value = 'Not available';
                 }
                 
-                // Update section - handle upgrade, downgrade, or up-to-date
+                // Upgrade section (section 2)
                 if (status.updateType === 'upgrade') {
-                    // Show upgrade button, hide downgrade elements
-                    uiconf.sections[2].content[0].hidden = false; // upgrade button
-                    uiconf.sections[2].content[1].hidden = true;  // downgrade checkbox
-                    uiconf.sections[2].content[2].hidden = true;  // downgrade button
-                    uiconf.sections[2].content[3].value = 
+                    uiconf.sections[2].hidden = false;
+                    uiconf.sections[2].content[0].hidden = false;
+                    uiconf.sections[2].content[1].value = 
                         'An update is available on the ' + status.currentChannel + ' channel.';
-                } else if (status.updateType === 'downgrade') {
-                    // Show downgrade elements, hide upgrade button
-                    uiconf.sections[2].content[0].hidden = true;  // upgrade button
-                    uiconf.sections[2].content[1].hidden = false; // downgrade checkbox
-                    uiconf.sections[2].content[2].hidden = false; // downgrade button
-                    uiconf.sections[2].content[3].value = 
+                } else {
+                    uiconf.sections[2].hidden = true;
+                }
+                
+                // Downgrade section (section 3)
+                if (status.updateType === 'downgrade') {
+                    uiconf.sections[3].hidden = false;
+                    uiconf.sections[3].content[1].value = 
                         'The ' + status.currentChannel + ' channel has an older firmware version. Downgrading may cause issues.';
                 } else {
-                    // Up to date - hide all action buttons
-                    uiconf.sections[2].content[0].hidden = true;  // upgrade button
-                    uiconf.sections[2].content[1].hidden = true;  // downgrade checkbox
-                    uiconf.sections[2].content[2].hidden = true;  // downgrade button
-                    uiconf.sections[2].content[3].value = 
+                    uiconf.sections[3].hidden = true;
+                }
+                
+                // Up to date message (show in upgrade section if neither upgrade nor downgrade)
+                if (status.updateType === 'none') {
+                    uiconf.sections[2].hidden = false;
+                    uiconf.sections[2].content[0].hidden = true;
+                    uiconf.sections[2].content[1].value = 
                         'You are already on the latest firmware for the ' + status.currentChannel + ' channel.';
                 }
                 

@@ -6,14 +6,14 @@
   "FIRMWARE_CHANNEL": "Canal de publication du micrologiciel",
   "SELECT_CHANNEL": "Sélectionner le canal de publication",
   "CHANNEL_DESCRIPTION": "Le canal par défaut contient des versions stables. Le canal latest contient de nouvelles fonctionnalités et corrections de bugs.",
-  "DEFAULT_VERSION": "Version du canal par défaut",
-  "LATEST_VERSION": "Version du canal latest",
-  "UPDATE_FIRMWARE": "Mise à jour du micrologiciel",
+  "AVAILABLE_VERSION": "Version disponible dans le canal sélectionné",
+  "UPGRADE_FIRMWARE": "Mise à niveau du micrologiciel",
+  "DOWNGRADE_FIRMWARE": "Rétrogradation du micrologiciel",
   "UPDATE_NOW": "Mettre à jour maintenant",
   "DOWNGRADE_CONFIRM": "Je comprends les risques de rétrograder le micrologiciel",
   "DOWNGRADE_NOW": "Rétrograder le micrologiciel",
   "STATUS": "Statut",
   "SAVE": "Enregistrer le canal",
-  "DOWNGRADE_INFO_TITLE": "Informations sur le retour à une version antérieure",
-  "DOWNGRADE_INFO_TEXT": "Si vous devez rétrograder le micrologiciel de votre chargeur d'amorçage, veuillez consulter la documentation officielle Raspberry Pi à l'adresse: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom"
+  "DOWNGRADE_INFO_TITLE": "Informations supplémentaires",
+  "DOWNGRADE_INFO_TEXT": "Pour la gestion manuelle du micrologiciel ou les procédures de rétrogradation avancées, veuillez consulter la documentation officielle Raspberry Pi à l'adresse: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom"
 }

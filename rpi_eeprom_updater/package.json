@@ -28,8 +28,7 @@
       "bookworm"
     ],
     "architectures": [
-      "armhf",
-      "arm64"
+      "armhf"
     ],
     "has_settings_page": true
   },
