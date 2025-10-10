@@ -1,0 +1,10 @@
+{
+  "enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "firmware_channel": {
+    "type": "string",
+    "value": "default"
+  }
+}

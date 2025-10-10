@@ -1,0 +1,370 @@
+'use strict';
+
+const libQ = require('kew');
+const fs = require('fs-extra');
+const { execSync, exec } = require('child_process');
+const path = require('path');
+
+module.exports = RpiEepromUpdater;
+
+function RpiEepromUpdater(context) {
+    this.context = context;
+    this.commandRouter = this.context.coreCommand;
+    this.logger = this.context.logger;
+    this.configManager = this.context.configManager;
+}
+
+RpiEepromUpdater.prototype.onVolumioStart = function() {
+    const configFile = this.commandRouter.pluginManager.getConfigurationFile(
+        this.context,
+        'config.json'
+    );
+    this.config = new (require('v-conf'))();
+    this.config.loadFile(configFile);
+    return libQ.resolve();
+};
+
+RpiEepromUpdater.prototype.onStart = function() {
+    const defer = libQ.defer();
+    
+    // Check if hardware is supported
+    if (!this.isHardwareSupported()) {
+        this.logger.error('[RpiEepromUpdater] Unsupported hardware detected');
+        this.commandRouter.pushToastMessage(
+            'error',
+            'EEPROM Updater',
+            'This hardware does not support EEPROM updates'
+        );
+        defer.reject();
+        return defer.promise;
+    }
+    
+    this.logger.info('[RpiEepromUpdater] Plugin started successfully');
+    defer.resolve();
+    return defer.promise;
+};
+
+RpiEepromUpdater.prototype.onStop = function() {
+    const defer = libQ.defer();
+    this.logger.info('[RpiEepromUpdater] Plugin stopped');
+    defer.resolve();
+    return defer.promise;
+};
+
+RpiEepromUpdater.prototype.getConfigurationFiles = function() {
+    return ['config.json'];
+};
+
+// Check if hardware supports EEPROM updates
+RpiEepromUpdater.prototype.isHardwareSupported = function() {
+    try {
+        // Check if rpi-eeprom-update tool exists
+        if (!fs.existsSync('/usr/bin/rpi-eeprom-update')) {
+            this.logger.error('[RpiEepromUpdater] rpi-eeprom-update tool not found');
+            return false;
+        }
+        
+        // Try to get latest firmware path - if this works, hardware is supported
+        execSync('/usr/bin/rpi-eeprom-update -l', { stdio: 'pipe' });
+        return true;
+    } catch (error) {
+        this.logger.error('[RpiEepromUpdater] Hardware check failed: ' + error.message);
+        return false;
+    }
+};
+
+// Get current bootloader version information
+RpiEepromUpdater.prototype.getCurrentVersion = function() {
+    try {
+        const output = execSync('vcgencmd bootloader_version', { 
+            encoding: 'utf-8',
+            stdio: 'pipe'
+        });
+        
+        const lines = output.trim().split('\n');
+        const versionInfo = {};
+        
+        lines.forEach(line => {
+            if (line.includes('version')) {
+                versionInfo.version = line.split('version ')[1];
+            } else if (line.includes('timestamp')) {
+                const timestamp = line.split('timestamp ')[1];
+                versionInfo.timestamp = parseInt(timestamp, 10);
+                versionInfo.date = new Date(versionInfo.timestamp * 1000).toISOString();
+            } else if (line.includes('update-time')) {
+                const updateTime = line.split('update-time ')[1];
+                versionInfo.updateTime = parseInt(updateTime, 10);
+            }
+        });
+        
+        return versionInfo;
+    } catch (error) {
+        this.logger.error('[RpiEepromUpdater] Failed to get current version: ' + error.message);
+        return null;
+    }
+};
+
+// Get current firmware channel
+RpiEepromUpdater.prototype.getCurrentChannel = function() {
+    try {
+        const configContent = fs.readFileSync('/etc/default/rpi-eeprom-update', 'utf-8');
+        const match = configContent.match(/FIRMWARE_RELEASE_STATUS="(.+)"/);
+        return match ? match[1] : 'default';
+    } catch (error) {
+        this.logger.error('[RpiEepromUpdater] Failed to read firmware channel: ' + error.message);
+        return 'default';
+    }
+};
+
+// Get available version for a specific channel
+RpiEepromUpdater.prototype.getAvailableVersion = function(channel) {
+    try {
+        // Temporarily set channel to get its latest version
+        const tempConfig = 'FIRMWARE_RELEASE_STATUS="' + channel + '"';
+        fs.writeFileSync('/tmp/rpi-eeprom-channel-test', tempConfig);
+        
+        const output = execSync(
+            'BOOTFS=/boot/firmware bash -c "source /tmp/rpi-eeprom-channel-test && /usr/bin/rpi-eeprom-update -l"',
+            { encoding: 'utf-8', stdio: 'pipe' }
+        );
+        
+        fs.removeSync('/tmp/rpi-eeprom-channel-test');
+        
+        const firmwarePath = output.trim();
+        
+        if (!firmwarePath || !fs.existsSync(firmwarePath)) {
+            return null;
+        }
+        
+        // Extract version info from firmware file
+        const versionOutput = execSync('rpi-eeprom-config "' + firmwarePath + '"', {
+            encoding: 'utf-8',
+            stdio: 'pipe'
+        });
+        
+        // Get timestamp from filename pattern
+        const filenameMatch = firmwarePath.match(/pieeprom-(\d{4})-(\d{2})-(\d{2})\.bin/);
+        let timestamp = null;
+        
+        if (filenameMatch) {
+            const date = new Date(filenameMatch[1], filenameMatch[2] - 1, filenameMatch[3]);
+            timestamp = Math.floor(date.getTime() / 1000);
+        }
+        
+        return {
+            path: firmwarePath,
+            timestamp: timestamp,
+            date: timestamp ? new Date(timestamp * 1000).toISOString() : null
+        };
+    } catch (error) {
+        this.logger.error('[RpiEepromUpdater] Failed to get available version for ' + channel + ': ' + error.message);
+        return null;
+    }
+};
+
+// Switch firmware channel
+RpiEepromUpdater.prototype.setFirmwareChannel = function(channel) {
+    try {
+        const configPath = '/etc/default/rpi-eeprom-update';
+        const configContent = 'FIRMWARE_RELEASE_STATUS="' + channel + '"\n';
+        
+        fs.writeFileSync(configPath, configContent);
+        this.config.set('firmware_channel', channel);
+        
+        this.logger.info('[RpiEepromUpdater] Firmware channel set to: ' + channel);
+        return true;
+    } catch (error) {
+        this.logger.error('[RpiEepromUpdater] Failed to set firmware channel: ' + error.message);
+        return false;
+    }
+};
+
+// Perform EEPROM update
+RpiEepromUpdater.prototype.performUpdate = function() {
+    const defer = libQ.defer();
+    
+    try {
+        this.logger.info('[RpiEepromUpdater] Starting EEPROM update...');
+        
+        this.commandRouter.pushToastMessage(
+            'info',
+            'EEPROM Update',
+            'Starting firmware update. Please do not power off the system.'
+        );
+        
+        // Execute update with automatic flag
+        execSync('/usr/bin/rpi-eeprom-update -a', { stdio: 'pipe' });
+        
+        this.logger.info('[RpiEepromUpdater] Update staged successfully');
+        
+        this.commandRouter.pushToastMessage(
+            'success',
+            'EEPROM Update',
+            'Firmware update prepared. System will reboot in 5 seconds.'
+        );
+        
+        // Schedule reboot
+        setTimeout(() => {
+            this.logger.info('[RpiEepromUpdater] Rebooting system for EEPROM update');
+            execSync('/usr/bin/sudo /sbin/reboot');
+        }, 5000);
+        
+        defer.resolve();
+    } catch (error) {
+        this.logger.error('[RpiEepromUpdater] Update failed: ' + error.message);
+        
+        this.commandRouter.pushToastMessage(
+            'error',
+            'EEPROM Update Failed',
+            'Failed to perform update: ' + error.message
+        );
+        
+        defer.reject(error);
+    }
+    
+    return defer.promise;
+};
+
+// Get firmware status for UI
+RpiEepromUpdater.prototype.getFirmwareStatus = function() {
+    const defer = libQ.defer();
+    
+    try {
+        const currentVersion = this.getCurrentVersion();
+        const currentChannel = this.getCurrentChannel();
+        
+        const defaultVersion = this.getAvailableVersion('default');
+        const latestVersion = this.getAvailableVersion('latest');
+        
+        const status = {
+            current: currentVersion,
+            currentChannel: currentChannel,
+            channels: {
+                default: defaultVersion,
+                latest: latestVersion
+            },
+            updateAvailable: false,
+            updateChannel: null
+        };
+        
+        // Check if update is available for current channel
+        const channelVersion = status.channels[currentChannel];
+        
+        if (channelVersion && currentVersion && channelVersion.timestamp) {
+            if (channelVersion.timestamp > currentVersion.timestamp) {
+                status.updateAvailable = true;
+                status.updateChannel = currentChannel;
+            }
+        }
+        
+        defer.resolve(status);
+    } catch (error) {
+        this.logger.error('[RpiEepromUpdater] Failed to get firmware status: ' + error.message);
+        defer.reject(error);
+    }
+    
+    return defer.promise;
+};
+
+// UI Configuration
+RpiEepromUpdater.prototype.getUIConfig = function() {
+    const defer = libQ.defer();
+    const self = this;
+    
+    const lang_code = this.commandRouter.sharedVars.get('language_code');
+    
+    self.commandRouter.i18nJson(
+        path.join(__dirname, 'i18n', 'strings_' + lang_code + '.json'),
+        path.join(__dirname, 'i18n', 'strings_en.json'),
+        path.join(__dirname, 'UIConfig.json')
+    )
+    .then(function(uiconf) {
+        // Get firmware status
+        self.getFirmwareStatus()
+            .then(function(status) {
+                // Current version section
+                uiconf.sections[0].content[0].value = status.current ? 
+                    status.current.date : 'Unknown';
+                uiconf.sections[0].content[1].value = status.current ? 
+                    status.current.version.substring(0, 12) + '...' : 'Unknown';
+                
+                // Channel selection
+                uiconf.sections[1].content[0].value.value = status.currentChannel;
+                uiconf.sections[1].content[0].value.label = status.currentChannel;
+                
+                // Available versions
+                if (status.channels.default) {
+                    uiconf.sections[1].content[1].value = status.channels.default.date || 'Not available';
+                }
+                if (status.channels.latest) {
+                    uiconf.sections[1].content[2].value = status.channels.latest.date || 'Not available';
+                }
+                
+                // Update button visibility and message
+                if (status.updateAvailable) {
+                    uiconf.sections[2].content[0].hidden = false;
+                    uiconf.sections[2].content[1].value = 
+                        'An update is available on the ' + status.updateChannel + ' channel.';
+                } else {
+                    uiconf.sections[2].content[0].hidden = true;
+                    uiconf.sections[2].content[1].value = 
+                        'You are already on the latest firmware for the ' + status.currentChannel + ' channel.';
+                }
+                
+                defer.resolve(uiconf);
+            })
+            .fail(function(error) {
+                self.logger.error('[RpiEepromUpdater] Failed to get status for UI: ' + error);
+                defer.resolve(uiconf);
+            });
+    })
+    .fail(function(error) {
+        defer.reject(new Error('Failed to load UI configuration: ' + error));
+    });
+    
+    return defer.promise;
+};
+
+// Handle channel change
+RpiEepromUpdater.prototype.saveChannelSettings = function(data) {
+    const defer = libQ.defer();
+    
+    const newChannel = data.firmware_channel.value;
+    
+    if (this.setFirmwareChannel(newChannel)) {
+        this.commandRouter.pushToastMessage(
+            'success',
+            'Channel Changed',
+            'Firmware channel set to: ' + newChannel
+        );
+        
+        // Refresh UI to show new available versions
+        defer.resolve();
+    } else {
+        this.commandRouter.pushToastMessage(
+            'error',
+            'Channel Change Failed',
+            'Failed to change firmware channel'
+        );
+        defer.reject();
+    }
+    
+    return defer.promise;
+};
+
+// Handle update button click
+RpiEepromUpdater.prototype.updateFirmware = function() {
+    return this.performUpdate();
+};
+
+RpiEepromUpdater.prototype.setUIConfig = function(data) {
+    // Volumio compatibility
+};
+
+RpiEepromUpdater.prototype.getConf = function(varName) {
+    return this.config.get(varName);
+};
+
+RpiEepromUpdater.prototype.setConf = function(varName, varValue) {
+    this.config.set(varName, varValue);
+};

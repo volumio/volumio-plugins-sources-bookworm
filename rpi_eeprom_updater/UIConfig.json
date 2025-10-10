@@ -1,0 +1,128 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_NAME"
+  },
+  "sections": [
+    {
+      "id": "current_version",
+      "element": "section",
+      "label": "TRANSLATE.CURRENT_VERSION",
+      "icon": "fa-info-circle",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/rpi_eeprom_updater",
+        "method": "saveChannelSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": []
+      },
+      "content": [
+        {
+          "id": "current_date",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.CURRENT_DATE",
+          "value": "Loading...",
+          "readonly": true
+        },
+        {
+          "id": "current_hash",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.CURRENT_HASH",
+          "value": "Loading...",
+          "readonly": true
+        }
+      ]
+    },
+    {
+      "id": "firmware_channel",
+      "element": "section",
+      "label": "TRANSLATE.FIRMWARE_CHANNEL",
+      "icon": "fa-cogs",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/rpi_eeprom_updater",
+        "method": "saveChannelSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "firmware_channel"
+        ]
+      },
+      "content": [
+        {
+          "id": "firmware_channel",
+          "element": "select",
+          "label": "TRANSLATE.SELECT_CHANNEL",
+          "description": "TRANSLATE.CHANNEL_DESCRIPTION",
+          "value": {
+            "value": "default",
+            "label": "default"
+          },
+          "options": [
+            {
+              "value": "default",
+              "label": "default"
+            },
+            {
+              "value": "latest",
+              "label": "latest"
+            }
+          ]
+        },
+        {
+          "id": "default_version",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.DEFAULT_VERSION",
+          "value": "Loading...",
+          "readonly": true
+        },
+        {
+          "id": "latest_version",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.LATEST_VERSION",
+          "value": "Loading...",
+          "readonly": true
+        }
+      ]
+    },
+    {
+      "id": "update_section",
+      "element": "section",
+      "label": "TRANSLATE.UPDATE_FIRMWARE",
+      "icon": "fa-download",
+      "content": [
+        {
+          "id": "update_button",
+          "element": "button",
+          "label": "TRANSLATE.UPDATE_NOW",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/rpi_eeprom_updater",
+            "method": "updateFirmware"
+          },
+          "hidden": false
+        },
+        {
+          "id": "update_status",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.STATUS",
+          "value": "Checking...",
+          "readonly": true
+        },
+        {
+          "id": "downgrade_info",
+          "element": "section",
+          "label": "TRANSLATE.DOWNGRADE_INFO_TITLE",
+          "description": "TRANSLATE.DOWNGRADE_INFO_TEXT"
+        }
+      ]
+    }
+  ]
+}
