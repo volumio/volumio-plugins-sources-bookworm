@@ -67,4 +67,4 @@ MIT
 
 ## Repository
 
-https://github.com/volumio/volumio-plugins-sources-bookworm/tree/master/rpi_eeprom_updater
+https://github.com/volumio/volumio-plugins-sources-bookworm/rpi_eeprom_updater
