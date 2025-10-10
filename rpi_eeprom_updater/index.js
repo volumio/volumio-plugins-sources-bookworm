@@ -165,10 +165,14 @@ RpiEepromUpdater.prototype.getAvailableVersion = function(channel) {
 // Switch firmware channel
 RpiEepromUpdater.prototype.setFirmwareChannel = function(channel) {
     try {
-        const configPath = '/etc/default/rpi-eeprom-update';
-        const configContent = 'FIRMWARE_RELEASE_STATUS="' + channel + '"\n';
+        const configContent = 'FIRMWARE_RELEASE_STATUS="' + channel + '"';
         
-        fs.writeFileSync(configPath, configContent);
+        // Use sudo with tee to write to root-owned file
+        // Use printf instead of echo to preserve quotes properly
+        execSync('printf "%s\\n" \'' + configContent + '\' | sudo /usr/bin/tee /etc/default/rpi-eeprom-update > /dev/null', {
+            stdio: 'pipe'
+        });
+        
         this.config.set('firmware_channel', channel);
         
         this.logger.info('[RpiEepromUpdater] Firmware channel set to: ' + channel);
@@ -192,8 +196,8 @@ RpiEepromUpdater.prototype.performUpdate = function() {
             'Starting firmware update. Please do not power off the system.'
         );
         
-        // Execute update with automatic flag
-        execSync('/usr/bin/rpi-eeprom-update -a', { stdio: 'pipe' });
+        // Execute update with automatic flag using sudo
+        execSync('sudo /usr/bin/rpi-eeprom-update -a', { stdio: 'pipe' });
         
         this.logger.info('[RpiEepromUpdater] Update staged successfully');
         
@@ -328,25 +332,38 @@ RpiEepromUpdater.prototype.getUIConfig = function() {
 // Handle channel change
 RpiEepromUpdater.prototype.saveChannelSettings = function(data) {
     const defer = libQ.defer();
+    const self = this;
     
-    const newChannel = data.firmware_channel.value;
-    
-    if (this.setFirmwareChannel(newChannel)) {
-        this.commandRouter.pushToastMessage(
-            'success',
-            'Channel Changed',
-            'Firmware channel set to: ' + newChannel
-        );
+    try {
+        self.logger.info('[RpiEepromUpdater] Saving channel settings');
         
-        // Refresh UI to show new available versions
-        defer.resolve();
-    } else {
-        this.commandRouter.pushToastMessage(
-            'error',
-            'Channel Change Failed',
-            'Failed to change firmware channel'
-        );
-        defer.reject();
+        if (!data || !data.firmware_channel || !data.firmware_channel.value) {
+            self.logger.error('[RpiEepromUpdater] Invalid data structure received');
+            defer.reject(new Error('Invalid data'));
+            return defer.promise;
+        }
+        
+        const newChannel = data.firmware_channel.value;
+        self.logger.info('[RpiEepromUpdater] Switching to channel: ' + newChannel);
+        
+        if (self.setFirmwareChannel(newChannel)) {
+            self.commandRouter.pushToastMessage(
+                'success',
+                'Channel Changed',
+                'Firmware channel set to: ' + newChannel
+            );
+            defer.resolve();
+        } else {
+            self.commandRouter.pushToastMessage(
+                'error',
+                'Channel Change Failed',
+                'Failed to change firmware channel'
+            );
+            defer.reject(new Error('setFirmwareChannel failed'));
+        }
+    } catch (error) {
+        self.logger.error('[RpiEepromUpdater] saveChannelSettings exception: ' + error.message);
+        defer.reject(error);
     }
     
     return defer.promise;

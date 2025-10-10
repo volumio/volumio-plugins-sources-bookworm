@@ -36,9 +36,9 @@
     "node": ">=20"
   },
   "dependencies": {
-    "fs-extra": "^11.1.0",
-    "kew": "^0.7.0",
-    "v-conf": "^1.4.2"
+    "fs-extra": "*",
+    "kew": "*",
+    "v-conf": "*"
   },
   "repository": "https://github.com/volumio/volumio-plugins-sources-bookworm/tree/master/rpi_eeprom_updater",
   "homepage": "https://github.com/foonerd/"

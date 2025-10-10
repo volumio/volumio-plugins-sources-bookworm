@@ -8,15 +8,6 @@
       "element": "section",
       "label": "TRANSLATE.CURRENT_VERSION",
       "icon": "fa-info-circle",
-      "onSave": {
-        "type": "controller",
-        "endpoint": "system_hardware/rpi_eeprom_updater",
-        "method": "saveChannelSettings"
-      },
-      "saveButton": {
-        "label": "TRANSLATE.SAVE",
-        "data": []
-      },
       "content": [
         {
           "id": "current_date",
@@ -43,7 +34,7 @@
       "icon": "fa-cogs",
       "onSave": {
         "type": "controller",
-        "endpoint": "system_hardware/rpi_eeprom_updater",
+        "endpoint": "system_controller/rpi_eeprom_updater",
         "method": "saveChannelSettings"
       },
       "saveButton": {
@@ -103,7 +94,7 @@
           "label": "TRANSLATE.UPDATE_NOW",
           "onClick": {
             "type": "controller",
-            "endpoint": "system_hardware/rpi_eeprom_updater",
+            "endpoint": "system_controller/rpi_eeprom_updater",
             "method": "updateFirmware"
           },
           "hidden": false

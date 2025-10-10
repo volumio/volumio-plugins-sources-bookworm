@@ -12,5 +12,11 @@ if [ -f /boot/firmware/recovery.bin ]; then
     echo "Removed pending EEPROM update files"
 fi
 
+# Remove sudoers entry
+if [ -f /etc/sudoers.d/010_rpi-eeprom-updater ]; then
+    rm -f /etc/sudoers.d/010_rpi-eeprom-updater
+    echo "Removed sudoers entry"
+fi
+
 echo "Raspberry Pi EEPROM Updater Plugin uninstalled"
 echo "pluginuninstallend"
