@@ -120,23 +120,41 @@ RpiEepromUpdater.prototype.getCurrentChannel = function() {
 RpiEepromUpdater.prototype.getAvailableVersion = function(channel) {
     try {
         // Temporarily create config file for the channel
-        const tempConfig = 'FIRMWARE_RELEASE_STATUS="' + channel + '"';
+        const tempConfig = 'FIRMWARE_RELEASE_STATUS="' + channel + '"\n';
         const tempConfigPath = '/tmp/rpi-eeprom-channel-test-' + channel;
         fs.writeFileSync(tempConfigPath, tempConfig);
         
-        // Run rpi-eeprom-update to get the actual firmware info for this channel
-        const output = execSync(
-            'BOOTFS=/boot/firmware bash -c "source ' + tempConfigPath + ' && /usr/bin/rpi-eeprom-update"',
-            { encoding: 'utf-8', stdio: 'pipe' }
-        );
+        let output = '';
+        
+        try {
+            // Run rpi-eeprom-update to get the actual firmware info for this channel
+            output = execSync(
+                'BOOTFS=/boot/firmware bash -c "source ' + tempConfigPath + ' && /usr/bin/rpi-eeprom-update"',
+                { encoding: 'utf-8', stdio: 'pipe' }
+            );
+        } catch (error) {
+            // rpi-eeprom-update returns non-zero exit code when update is available
+            // But still provides valid output in stdout
+            if (error.stdout) {
+                output = error.stdout;
+                this.logger.info('[RpiEepromUpdater] Got output from ' + channel + ' channel (non-zero exit)');
+            } else {
+                throw error;
+            }
+        }
         
         fs.removeSync(tempConfigPath);
         
-        // Parse the output to get LATEST timestamp
+        if (!output) {
+            this.logger.error('[RpiEepromUpdater] No output received for channel: ' + channel);
+            return null;
+        }
+        
+        // Parse the output to get LATEST timestamp and RELEASE path
         const lines = output.trim().split('\n');
         let timestamp = null;
         let dateString = null;
-        let path = null;
+        let releasePath = null;
         
         lines.forEach(line => {
             if (line.includes('LATEST:')) {
@@ -151,21 +169,24 @@ RpiEepromUpdater.prototype.getAvailableVersion = function(channel) {
                     dateString = dateMatch[1].trim();
                 }
             } else if (line.includes('RELEASE:')) {
-                // Extract path from line like "   RELEASE: default (/usr/lib/firmware/raspberrypi/bootloader-2712/default)"
+                // Extract path from line like "   RELEASE: latest (/usr/lib/firmware/raspberrypi/bootloader-2712/latest)"
                 const pathMatch = line.match(/\((.+)\)/);
                 if (pathMatch) {
-                    path = pathMatch[1].trim();
+                    releasePath = pathMatch[1].trim();
                 }
             }
         });
         
         if (!timestamp) {
             this.logger.error('[RpiEepromUpdater] Could not parse timestamp for channel: ' + channel);
+            this.logger.error('[RpiEepromUpdater] Output was: ' + output.substring(0, 200));
             return null;
         }
         
+        this.logger.info('[RpiEepromUpdater] Channel ' + channel + ' version: ' + dateString + ' (' + timestamp + ')');
+        
         return {
-            path: path,
+            path: releasePath,
             timestamp: timestamp,
             date: new Date(timestamp * 1000).toISOString(),
             dateString: dateString
