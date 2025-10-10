@@ -10,6 +10,8 @@
   "LATEST_VERSION": "Latest Channel Version",
   "UPDATE_FIRMWARE": "Firmware Update",
   "UPDATE_NOW": "Update Firmware Now",
+  "DOWNGRADE_CONFIRM": "I understand the risks of downgrading firmware",
+  "DOWNGRADE_NOW": "Downgrade Firmware",
   "STATUS": "Status",
   "SAVE": "Save Channel",
   "DOWNGRADE_INFO_TITLE": "Downgrade Information",

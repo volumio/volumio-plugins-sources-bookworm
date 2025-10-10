@@ -10,6 +10,8 @@
   "LATEST_VERSION": "Wersja kanału latest",
   "UPDATE_FIRMWARE": "Aktualizacja oprogramowania",
   "UPDATE_NOW": "Aktualizuj teraz",
+  "DOWNGRADE_CONFIRM": "Rozumiem ryzyko związane z cofnięciem wersji oprogramowania",
+  "DOWNGRADE_NOW": "Cofnij wersję oprogramowania",
   "STATUS": "Status",
   "SAVE": "Zapisz kanał",
   "DOWNGRADE_INFO_TITLE": "Informacje o cofnięciu wersji",

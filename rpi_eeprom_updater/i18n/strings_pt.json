@@ -10,6 +10,8 @@
   "LATEST_VERSION": "Versão do canal latest",
   "UPDATE_FIRMWARE": "Atualização de firmware",
   "UPDATE_NOW": "Atualizar agora",
+  "DOWNGRADE_CONFIRM": "Compreendo os riscos de fazer downgrade do firmware",
+  "DOWNGRADE_NOW": "Fazer downgrade do firmware",
   "STATUS": "Status",
   "SAVE": "Salvar canal",
   "DOWNGRADE_INFO_TITLE": "Informações sobre downgrade",

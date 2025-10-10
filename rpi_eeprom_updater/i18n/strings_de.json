@@ -10,6 +10,8 @@
   "LATEST_VERSION": "Version des Latest-Kanals",
   "UPDATE_FIRMWARE": "Firmware-Update",
   "UPDATE_NOW": "Jetzt aktualisieren",
+  "DOWNGRADE_CONFIRM": "Ich verstehe die Risiken beim Downgrade der Firmware",
+  "DOWNGRADE_NOW": "Firmware downgraden",
   "STATUS": "Status",
   "SAVE": "Kanal speichern",
   "DOWNGRADE_INFO_TITLE": "Informationen zum Downgrade",

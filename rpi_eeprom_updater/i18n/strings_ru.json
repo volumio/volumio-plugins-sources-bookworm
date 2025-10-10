@@ -10,6 +10,8 @@
   "LATEST_VERSION": "Версия канала latest",
   "UPDATE_FIRMWARE": "Обновление прошивки",
   "UPDATE_NOW": "Обновить сейчас",
+  "DOWNGRADE_CONFIRM": "Я понимаю риски понижения версии прошивки",
+  "DOWNGRADE_NOW": "Понизить версию прошивки",
   "STATUS": "Статус",
   "SAVE": "Сохранить канал",
   "DOWNGRADE_INFO_TITLE": "Информация о понижении версии",

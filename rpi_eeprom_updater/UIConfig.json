@@ -89,7 +89,7 @@
       "icon": "fa-download",
       "content": [
         {
-          "id": "update_button",
+          "id": "upgrade_button",
           "element": "button",
           "label": "TRANSLATE.UPDATE_NOW",
           "onClick": {
@@ -98,6 +98,27 @@
             "method": "updateFirmware"
           },
           "hidden": false
+        },
+        {
+          "id": "downgrade_confirm",
+          "element": "switch",
+          "label": "TRANSLATE.DOWNGRADE_CONFIRM",
+          "value": false,
+          "hidden": true
+        },
+        {
+          "id": "downgrade_button",
+          "element": "button",
+          "label": "TRANSLATE.DOWNGRADE_NOW",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_controller/rpi_eeprom_updater",
+            "method": "performDowngrade",
+            "data": [
+              "downgrade_confirm"
+            ]
+          },
+          "hidden": true
         },
         {
           "id": "update_status",

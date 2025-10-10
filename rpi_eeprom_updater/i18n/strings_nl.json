@@ -10,6 +10,8 @@
   "LATEST_VERSION": "Versie van latest-kanaal",
   "UPDATE_FIRMWARE": "Firmware-update",
   "UPDATE_NOW": "Nu updaten",
+  "DOWNGRADE_CONFIRM": "Ik begrijp de risico's van firmware downgraden",
+  "DOWNGRADE_NOW": "Firmware downgraden",
   "STATUS": "Status",
   "SAVE": "Kanaal opslaan",
   "DOWNGRADE_INFO_TITLE": "Informatie over downgraden",

@@ -119,42 +119,56 @@ RpiEepromUpdater.prototype.getCurrentChannel = function() {
 // Get available version for a specific channel
 RpiEepromUpdater.prototype.getAvailableVersion = function(channel) {
     try {
-        // Temporarily set channel to get its latest version
+        // Temporarily create config file for the channel
         const tempConfig = 'FIRMWARE_RELEASE_STATUS="' + channel + '"';
-        fs.writeFileSync('/tmp/rpi-eeprom-channel-test', tempConfig);
+        const tempConfigPath = '/tmp/rpi-eeprom-channel-test-' + channel;
+        fs.writeFileSync(tempConfigPath, tempConfig);
         
+        // Run rpi-eeprom-update to get the actual firmware info for this channel
         const output = execSync(
-            'BOOTFS=/boot/firmware bash -c "source /tmp/rpi-eeprom-channel-test && /usr/bin/rpi-eeprom-update -l"',
+            'BOOTFS=/boot/firmware bash -c "source ' + tempConfigPath + ' && /usr/bin/rpi-eeprom-update"',
             { encoding: 'utf-8', stdio: 'pipe' }
         );
         
-        fs.removeSync('/tmp/rpi-eeprom-channel-test');
+        fs.removeSync(tempConfigPath);
         
-        const firmwarePath = output.trim();
+        // Parse the output to get LATEST timestamp
+        const lines = output.trim().split('\n');
+        let timestamp = null;
+        let dateString = null;
+        let path = null;
         
-        if (!firmwarePath || !fs.existsSync(firmwarePath)) {
+        lines.forEach(line => {
+            if (line.includes('LATEST:')) {
+                // Extract timestamp from line like "   LATEST: Thu May  8 14:13:17 UTC 2025 (1746713597)"
+                const timestampMatch = line.match(/\((\d+)\)/);
+                if (timestampMatch) {
+                    timestamp = parseInt(timestampMatch[1], 10);
+                }
+                // Extract date string
+                const dateMatch = line.match(/LATEST:\s+(.+)\s+\(\d+\)/);
+                if (dateMatch) {
+                    dateString = dateMatch[1].trim();
+                }
+            } else if (line.includes('RELEASE:')) {
+                // Extract path from line like "   RELEASE: default (/usr/lib/firmware/raspberrypi/bootloader-2712/default)"
+                const pathMatch = line.match(/\((.+)\)/);
+                if (pathMatch) {
+                    path = pathMatch[1].trim();
+                }
+            }
+        });
+        
+        if (!timestamp) {
+            this.logger.error('[RpiEepromUpdater] Could not parse timestamp for channel: ' + channel);
             return null;
         }
         
-        // Extract version info from firmware file
-        const versionOutput = execSync('rpi-eeprom-config "' + firmwarePath + '"', {
-            encoding: 'utf-8',
-            stdio: 'pipe'
-        });
-        
-        // Get timestamp from filename pattern
-        const filenameMatch = firmwarePath.match(/pieeprom-(\d{4})-(\d{2})-(\d{2})\.bin/);
-        let timestamp = null;
-        
-        if (filenameMatch) {
-            const date = new Date(filenameMatch[1], filenameMatch[2] - 1, filenameMatch[3]);
-            timestamp = Math.floor(date.getTime() / 1000);
-        }
-        
         return {
-            path: firmwarePath,
+            path: path,
             timestamp: timestamp,
-            date: timestamp ? new Date(timestamp * 1000).toISOString() : null
+            date: new Date(timestamp * 1000).toISOString(),
+            dateString: dateString
         };
     } catch (error) {
         this.logger.error('[RpiEepromUpdater] Failed to get available version for ' + channel + ': ' + error.message);
@@ -247,18 +261,22 @@ RpiEepromUpdater.prototype.getFirmwareStatus = function() {
                 default: defaultVersion,
                 latest: latestVersion
             },
-            updateAvailable: false,
-            updateChannel: null
+            updateType: 'none', // 'upgrade', 'downgrade', or 'none'
+            updateAvailable: false
         };
         
-        // Check if update is available for current channel
+        // Check if update/downgrade is available for current channel
         const channelVersion = status.channels[currentChannel];
         
         if (channelVersion && currentVersion && channelVersion.timestamp) {
             if (channelVersion.timestamp > currentVersion.timestamp) {
+                status.updateType = 'upgrade';
                 status.updateAvailable = true;
-                status.updateChannel = currentChannel;
+            } else if (channelVersion.timestamp < currentVersion.timestamp) {
+                status.updateType = 'downgrade';
+                status.updateAvailable = true;
             }
+            // If equal, updateType stays 'none'
         }
         
         defer.resolve(status);
@@ -304,14 +322,27 @@ RpiEepromUpdater.prototype.getUIConfig = function() {
                     uiconf.sections[1].content[2].value = status.channels.latest.date || 'Not available';
                 }
                 
-                // Update button visibility and message
-                if (status.updateAvailable) {
-                    uiconf.sections[2].content[0].hidden = false;
-                    uiconf.sections[2].content[1].value = 
-                        'An update is available on the ' + status.updateChannel + ' channel.';
+                // Update section - handle upgrade, downgrade, or up-to-date
+                if (status.updateType === 'upgrade') {
+                    // Show upgrade button, hide downgrade elements
+                    uiconf.sections[2].content[0].hidden = false; // upgrade button
+                    uiconf.sections[2].content[1].hidden = true;  // downgrade checkbox
+                    uiconf.sections[2].content[2].hidden = true;  // downgrade button
+                    uiconf.sections[2].content[3].value = 
+                        'An update is available on the ' + status.currentChannel + ' channel.';
+                } else if (status.updateType === 'downgrade') {
+                    // Show downgrade elements, hide upgrade button
+                    uiconf.sections[2].content[0].hidden = true;  // upgrade button
+                    uiconf.sections[2].content[1].hidden = false; // downgrade checkbox
+                    uiconf.sections[2].content[2].hidden = false; // downgrade button
+                    uiconf.sections[2].content[3].value = 
+                        'The ' + status.currentChannel + ' channel has an older firmware version. Downgrading may cause issues.';
                 } else {
-                    uiconf.sections[2].content[0].hidden = true;
-                    uiconf.sections[2].content[1].value = 
+                    // Up to date - hide all action buttons
+                    uiconf.sections[2].content[0].hidden = true;  // upgrade button
+                    uiconf.sections[2].content[1].hidden = true;  // downgrade checkbox
+                    uiconf.sections[2].content[2].hidden = true;  // downgrade button
+                    uiconf.sections[2].content[3].value = 
                         'You are already on the latest firmware for the ' + status.currentChannel + ' channel.';
                 }
                 
@@ -325,6 +356,65 @@ RpiEepromUpdater.prototype.getUIConfig = function() {
     .fail(function(error) {
         defer.reject(new Error('Failed to load UI configuration: ' + error));
     });
+    
+    return defer.promise;
+};
+
+// Handle downgrade confirmation
+RpiEepromUpdater.prototype.performDowngrade = function(data) {
+    const defer = libQ.defer();
+    const self = this;
+    
+    try {
+        // Check if user confirmed understanding of risks
+        if (!data || !data.downgrade_confirm || data.downgrade_confirm !== true) {
+            self.logger.warn('[RpiEepromUpdater] Downgrade attempted without confirmation');
+            self.commandRouter.pushToastMessage(
+                'warning',
+                'Confirmation Required',
+                'Please confirm you understand the risks of downgrading firmware'
+            );
+            defer.reject(new Error('Downgrade not confirmed'));
+            return defer.promise;
+        }
+        
+        self.logger.info('[RpiEepromUpdater] Starting EEPROM downgrade...');
+        
+        self.commandRouter.pushToastMessage(
+            'info',
+            'EEPROM Downgrade',
+            'Starting firmware downgrade. Please do not power off the system.'
+        );
+        
+        // Execute downgrade with automatic flag using sudo (same as upgrade)
+        execSync('sudo /usr/bin/rpi-eeprom-update -a', { stdio: 'pipe' });
+        
+        self.logger.info('[RpiEepromUpdater] Downgrade staged successfully');
+        
+        self.commandRouter.pushToastMessage(
+            'success',
+            'EEPROM Downgrade',
+            'Firmware downgrade prepared. System will reboot in 5 seconds.'
+        );
+        
+        // Schedule reboot
+        setTimeout(() => {
+            self.logger.info('[RpiEepromUpdater] Rebooting system for EEPROM downgrade');
+            execSync('sudo /sbin/reboot');
+        }, 5000);
+        
+        defer.resolve();
+    } catch (error) {
+        self.logger.error('[RpiEepromUpdater] Downgrade failed: ' + error.message);
+        
+        self.commandRouter.pushToastMessage(
+            'error',
+            'EEPROM Downgrade Failed',
+            'Failed to perform downgrade: ' + error.message
+        );
+        
+        defer.reject(error);
+    }
     
     return defer.promise;
 };

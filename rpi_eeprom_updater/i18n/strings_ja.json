@@ -10,6 +10,8 @@
   "LATEST_VERSION": "latestチャンネルバージョン",
   "UPDATE_FIRMWARE": "ファームウェアアップデート",
   "UPDATE_NOW": "今すぐ更新",
+  "DOWNGRADE_CONFIRM": "ファームウェアのダウングレードに伴うリスクを理解しています",
+  "DOWNGRADE_NOW": "ファームウェアをダウングレード",
   "STATUS": "ステータス",
   "SAVE": "チャンネルを保存",
   "DOWNGRADE_INFO_TITLE": "ダウングレード情報",

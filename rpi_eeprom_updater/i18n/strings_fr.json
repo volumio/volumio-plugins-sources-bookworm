@@ -10,6 +10,8 @@
   "LATEST_VERSION": "Version du canal latest",
   "UPDATE_FIRMWARE": "Mise à jour du micrologiciel",
   "UPDATE_NOW": "Mettre à jour maintenant",
+  "DOWNGRADE_CONFIRM": "Je comprends les risques de rétrograder le micrologiciel",
+  "DOWNGRADE_NOW": "Rétrograder le micrologiciel",
   "STATUS": "Statut",
   "SAVE": "Enregistrer le canal",
   "DOWNGRADE_INFO_TITLE": "Informations sur le retour à une version antérieure",
