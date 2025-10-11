@@ -3,7 +3,7 @@
 var libQ = require("kew");
 var fs = require("fs-extra");
 var config = new (require("v-conf"))();
-const { execFile } = require("child_process");
+const { listCD, getItem } = require("./lib/utils");
 
 module.exports = cdplayer;
 function cdplayer(context) {
@@ -126,73 +126,11 @@ cdplayer.prototype.removeToBrowseSources = function () {
   this.commandRouter.volumioRemoveFromBrowseSources("CDPlayer");
 };
 
-cdplayer.prototype.listCD = function () {
-  const defer = libQ.defer();
-
-  runCdparanoiaQ()
-    .then((out) => {
-      this.log(`Asked cdparanoia -Q, got ${out.length} bytes of output`);
-      const trackNums = parseCdparanoiaQ(out);
-      this.log(`Parsed tracks: ${JSON.stringify(trackNums)}`);
-
-      this._lastTrackNums = trackNums;
-
-      if (trackNums.length === 0) {
-        this.error(`No audio tracks returned`);
-        this.commandRouter.pushToastMessage(
-          "error",
-          "CD Player",
-          "Please insert an audio CD (0)"
-        );
-        return defer.resolve({ navigation: { lists: [] } });
-      }
-
-      this._trackDurations = parseDurationsFromQ(out);
-      this.log(JSON.stringify(this._trackDurations));
-
-      const items = trackNums.map((n) =>
-        getItem(
-          n,
-          this._trackDurations && this._trackDurations[n],
-          `cdplayer/${n}`,
-          "cdplayer"
-        )
-      );
-
-      defer.resolve({
-        navigation: {
-          prev: { uri: "cdplayer" },
-          lists: [
-            {
-              title: "CD Tracks",
-              icon: "fa fa-music",
-              availableListViews: ["list"],
-              items,
-            },
-          ],
-        },
-      });
-    })
-    .catch((err) => {
-      this.error(`cdparanoia -Q error: ${err.message || err}`);
-      this.commandRouter.pushToastMessage(
-        "error",
-        "CD Player",
-        "Please insert an audio CD (1)"
-      );
-      defer.resolve({ navigation: { lists: [] } });
-    });
-
-  return defer.promise;
-};
-
 cdplayer.prototype.handleBrowseUri = function (curUri) {
-  var self = this;
-  var response;
   if (curUri === "cdplayer") {
-    response = self.listCD();
+    return toKew(listCD(this));
   }
-  return response;
+  return libQ.resolve(null);
 };
 
 cdplayer.prototype.explodeUri = function (uri) {
@@ -203,7 +141,6 @@ cdplayer.prototype.explodeUri = function (uri) {
   const match = uri.match(/^cdplayer\/(\d+)$/);
   if (match) {
     const n = parseInt(match[1], 10);
-    self.log("track " + n + " duration: " + this._trackDurations[n]);
     const track = getItem(
       n,
       this._trackDurations && this._trackDurations[n],
@@ -219,57 +156,21 @@ cdplayer.prototype.explodeUri = function (uri) {
   return defer.promise;
 };
 
-function runCdparanoiaQ() {
-  return new Promise((resolve, reject) => {
-    const opts = {
-      env: { PATH: "/usr/bin:/bin", LANG: "C" },
-      timeout: 15000,
-    };
-    execFile(
-      "/usr/bin/cdparanoia",
-      ["-Q", "/dev/sr0"],
-      opts,
-      (err, stdout, stderr) => {
-        const out = stdout && stdout.trim() ? stdout : stderr || "";
-        if (!out.trim() && err) return reject(err);
-        resolve(out);
+function toKew(promise) {
+  const d = libQ.defer();
+  let settled = false;
+  Promise.resolve(promise)
+    .then((val) => {
+      if (!settled) {
+        settled = true;
+        d.resolve(val);
       }
-    );
-  });
-}
-
-function parseCdparanoiaQ(out) {
-  const tracks = [];
-  out.split(/\r?\n/).forEach((line) => {
-    const m = line.match(/^\s*(\d+)\.\s+\d+/); // e.g. "  1.    23581 [05:14.31]"
-    if (m) tracks.push(parseInt(m[1], 10));
-  });
-  return tracks;
-}
-
-function parseDurationsFromQ(out) {
-  // lines look like: "  1.     30253 [06:43.28]        0 [00:00.00] ..."
-  const re = /^\s*(\d+)\.\s+(\d+)\s+\[/gm; // (trackNo). (lengthInSectors) [
-  const durations = {};
-  let m;
-  while ((m = re.exec(out))) {
-    const track = parseInt(m[1], 10);
-    const sectors = parseInt(m[2], 10);
-    // audio CD = 75 frames(sectors)/sec → round to whole seconds for Volumio UI
-    durations[track] = Math.round(sectors / 75);
-  }
-  return durations;
-}
-
-function getItem(n, duration, uri, service) {
-  return {
-    album: "Audio CD",
-    artist: "Unknown",
-    trackType: "wav",
-    type: "song",
-    title: `Track ${n}`,
-    service,
-    uri,
-    duration,
-  };
+    })
+    .catch((err) => {
+      if (!settled) {
+        settled = true;
+        d.reject(err);
+      }
+    });
+  return d.promise;
 }

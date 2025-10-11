@@ -3,11 +3,27 @@
 const http = require("http");
 const { spawn } = require("child_process");
 
+const fs = require("fs");
+function detectCdDevice() {
+  const envDev = process.env.CD_DEVICE;
+  if (envDev && fs.existsSync(envDev)) return envDev;
+  const candidates = [
+    "/dev/sr0",
+    "/dev/sr1",
+    "/dev/cdrom",
+    "/dev/cdrw",
+    "/dev/dvd",
+  ];
+  return candidates.find((p) => fs.existsSync(p)) || "/dev/sr0";
+}
+
+// TODO: implement detectCdDevice
+const CD_DEVICE = process.env.CD_DEVICE || "/dev/sr0"; // or detectCdDevice();
+
 // --- Config / binaries ---
 const HOST = process.env.CD_HTTP_HOST || "127.0.0.1";
 const PORT = Number(process.env.CD_HTTP_PORT || 8088);
 const GST = process.env.GST_BIN || "/usr/bin/gst-launch-1.0";
-const CD_DEVICE = process.env.CD_DEVICE || "/dev/sr0";
 
 // ----------------------------------------------
 // Helpers: RIFF/WAV header + CD-DA math + sectors
