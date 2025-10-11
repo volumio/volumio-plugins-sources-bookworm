@@ -1,7 +1,7 @@
 "use strict";
 
 const http = require("http");
-const { spawn, execFileSync } = require("child_process");
+const { spawn } = require("child_process");
 
 // --- Config / binaries ---
 const HOST = process.env.CD_HTTP_HOST || "127.0.0.1";
