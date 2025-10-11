@@ -6,62 +6,6 @@ var config = new (require("v-conf"))();
 const { execFile } = require("child_process");
 
 module.exports = cdplayer;
-
-function runCdparanoiaQ() {
-  return new Promise((resolve, reject) => {
-    const opts = {
-      env: { PATH: "/usr/bin:/bin", LANG: "C" },
-      timeout: 15000,
-    };
-    execFile(
-      "/usr/bin/cdparanoia",
-      ["-Q", "/dev/sr0"],
-      opts,
-      (err, stdout, stderr) => {
-        const out = stdout && stdout.trim() ? stdout : stderr || "";
-        if (!out.trim() && err) return reject(err);
-        resolve(out);
-      }
-    );
-  });
-}
-
-function parseCdparanoiaQ(out) {
-  const tracks = [];
-  out.split(/\r?\n/).forEach((line) => {
-    const m = line.match(/^\s*(\d+)\.\s+\d+/); // e.g. "  1.    23581 [05:14.31]"
-    if (m) tracks.push(parseInt(m[1], 10));
-  });
-  return tracks;
-}
-
-function parseDurationsFromQ(out) {
-  // lines look like: "  1.     30253 [06:43.28]        0 [00:00.00] ..."
-  const re = /^\s*(\d+)\.\s+(\d+)\s+\[/gm; // (trackNo). (lengthInSectors) [
-  const durations = {};
-  let m;
-  while ((m = re.exec(out))) {
-    const track = parseInt(m[1], 10);
-    const sectors = parseInt(m[2], 10);
-    // audio CD = 75 frames(sectors)/sec → round to whole seconds for Volumio UI
-    durations[track] = Math.round(sectors / 75);
-  }
-  return durations;
-}
-
-function getItem(n, duration, uri, service) {
-  return {
-    album: "Audio CD",
-    artist: "Unknown",
-    trackType: "wav",
-    type: "song",
-    title: `Track ${n}`,
-    service,
-    uri,
-    duration,
-  };
-}
-
 function cdplayer(context) {
   var self = this;
 
@@ -245,86 +189,15 @@ cdplayer.prototype.listCD = function () {
 cdplayer.prototype.handleBrowseUri = function (curUri) {
   var self = this;
   var response;
-  self.log("handleBrowseUri: " + curUri);
   if (curUri === "cdplayer") {
     response = self.listCD();
   }
-
   return response;
 };
 
-// Define a method to clear, add, and play an array of tracks
-cdplayer.prototype.clearAddPlayTrack = function (track) {
-  var self = this;
-  self.commandRouter.pushConsoleMessage(
-    "[" + Date.now() + "] " + "cdplayer::clearAddPlayTrack"
-  );
-
-  self.commandRouter.logger.info(JSON.stringify(track));
-
-  return self.sendSpopCommand("uplay", [track.uri]);
-};
-
-cdplayer.prototype.seek = function (timepos) {
-  this.commandRouter.pushConsoleMessage(
-    "[" + Date.now() + "] " + "cdplayer::seek to " + timepos
-  );
-
-  return this.sendSpopCommand("seek " + timepos, []);
-};
-
-// Stop
-cdplayer.prototype.stop = function () {
-  var self = this;
-  self.commandRouter.pushConsoleMessage(
-    "[" + Date.now() + "] " + "cdplayer::stop"
-  );
-};
-
-// Spop pause
-cdplayer.prototype.pause = function () {
-  var self = this;
-  self.commandRouter.pushConsoleMessage(
-    "[" + Date.now() + "] " + "cdplayer::pause"
-  );
-};
-
-// Get state
-cdplayer.prototype.getState = function () {
-  var self = this;
-  self.commandRouter.pushConsoleMessage(
-    "[" + Date.now() + "] " + "cdplayer::getState"
-  );
-};
-
-//Parse state
-cdplayer.prototype.parseState = function (sState) {
-  var self = this;
-  self.commandRouter.pushConsoleMessage(
-    "[" + Date.now() + "] " + "cdplayer::parseState"
-  );
-
-  //Use this method to parse the state and eventually send it with the following function
-};
-
-// Announce updated State
-cdplayer.prototype.pushState = function (state) {
-  var self = this;
-  self.commandRouter.pushConsoleMessage(
-    "[" + Date.now() + "] " + "cdplayer::pushState"
-  );
-
-  return self.commandRouter.servicePushState(state, self.servicename);
-};
-
-// Explode Uri gets called at the beggining when all tracks load for some reason. When I click play, cdplayer::clearAddPlayTrack is called instread.
-// It's probably time to start again from the playAll functionality in ChatGPT
 cdplayer.prototype.explodeUri = function (uri) {
   const self = this;
-  self.log("explodeUri called with " + uri);
-
   const defer = libQ.defer();
-  self.log(JSON.stringify(this._trackDurations));
 
   // Match single track: cdplayer/1, cdplayer/2, ...
   const match = uri.match(/^cdplayer\/(\d+)$/);
@@ -342,85 +215,61 @@ cdplayer.prototype.explodeUri = function (uri) {
     return defer.promise;
   }
 
-  // Match "Play All" synthetic item
-  // if (uri === "cdplayer/playall") {
-  //   const tracks = (this._lastTrackNums || []).map((n) => ({
-  //     service: "mpd",
-  //     type: "song",
-  //     title: `Track ${n}`,
-  //     uri: `http://127.0.0.1:8088/wav/track/${n}?v=1`,
-  //     duration: this._trackDurations && this._trackDurations[n], // ← NEW
-  //     album: "Audio CD",
-  //     artist: "Unknown",
-  //     trackType: "wav",
-  //   }));
-
-  //   defer.resolve(tracks);
-  //   return defer.promise;
-  // }
-
-  // Fallback
-  self.log("explodeUri: unknown URI " + uri);
   defer.resolve([]);
   return defer.promise;
 };
 
-cdplayer.prototype.getAlbumArt = function (data, path) {
-  var artist, album;
+function runCdparanoiaQ() {
+  return new Promise((resolve, reject) => {
+    const opts = {
+      env: { PATH: "/usr/bin:/bin", LANG: "C" },
+      timeout: 15000,
+    };
+    execFile(
+      "/usr/bin/cdparanoia",
+      ["-Q", "/dev/sr0"],
+      opts,
+      (err, stdout, stderr) => {
+        const out = stdout && stdout.trim() ? stdout : stderr || "";
+        if (!out.trim() && err) return reject(err);
+        resolve(out);
+      }
+    );
+  });
+}
 
-  if (data != undefined && data.path != undefined) {
-    path = data.path;
+function parseCdparanoiaQ(out) {
+  const tracks = [];
+  out.split(/\r?\n/).forEach((line) => {
+    const m = line.match(/^\s*(\d+)\.\s+\d+/); // e.g. "  1.    23581 [05:14.31]"
+    if (m) tracks.push(parseInt(m[1], 10));
+  });
+  return tracks;
+}
+
+function parseDurationsFromQ(out) {
+  // lines look like: "  1.     30253 [06:43.28]        0 [00:00.00] ..."
+  const re = /^\s*(\d+)\.\s+(\d+)\s+\[/gm; // (trackNo). (lengthInSectors) [
+  const durations = {};
+  let m;
+  while ((m = re.exec(out))) {
+    const track = parseInt(m[1], 10);
+    const sectors = parseInt(m[2], 10);
+    // audio CD = 75 frames(sectors)/sec → round to whole seconds for Volumio UI
+    durations[track] = Math.round(sectors / 75);
   }
+  return durations;
+}
 
-  var web;
-
-  if (data != undefined && data.artist != undefined) {
-    artist = data.artist;
-    if (data.album != undefined) album = data.album;
-    else album = data.artist;
-
-    web =
-      "?web=" +
-      nodetools.urlEncode(artist) +
-      "/" +
-      nodetools.urlEncode(album) +
-      "/large";
-  }
-
-  var url = "/albumart";
-
-  if (web != undefined) url = url + web;
-
-  if (web != undefined && path != undefined) url = url + "&";
-  else if (path != undefined) url = url + "?";
-
-  if (path != undefined) url = url + "path=" + nodetools.urlEncode(path);
-
-  return url;
-};
-
-cdplayer.prototype.search = function (query) {
-  var self = this;
-  var defer = libQ.defer();
-
-  // Mandatory, search. You can divide the search in sections using following functions
-
-  return defer.promise;
-};
-
-cdplayer.prototype._searchArtists = function (results) {};
-
-cdplayer.prototype._searchAlbums = function (results) {};
-
-cdplayer.prototype._searchPlaylists = function (results) {};
-
-cdplayer.prototype._searchTracks = function (results) {};
-
-cdplayer.prototype.goto = function (data) {
-  var self = this;
-  var defer = libQ.defer();
-
-  // Handle go to artist and go to album function
-
-  return defer.promise;
-};
+function getItem(n, duration, uri, service) {
+  return {
+    album: "Audio CD",
+    artist: "Unknown",
+    trackType: "wav",
+    type: "song",
+    title: `Track ${n}`,
+    service,
+    uri,
+    duration,
+  };
+}
