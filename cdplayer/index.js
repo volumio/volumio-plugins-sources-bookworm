@@ -309,7 +309,7 @@ cdplayer.prototype.explodeUri = function (uri) {
       duration: 0, // disables scrub bar (see earlier discussion)
       album: "Audio CD", // optional — shows in Now Playing
       artist: "Unknown", // optional
-      trackType: "flac", // helps MPD interpret stream
+      trackType: "wav", // helps MPD interpret stream
     };
 
     defer.resolve([track]);
@@ -326,7 +326,7 @@ cdplayer.prototype.explodeUri = function (uri) {
       duration: 0,
       album: "Audio CD",
       artist: "Unknown",
-      trackType: "flac",
+      trackType: "wav",
     }));
 
     defer.resolve(tracks);

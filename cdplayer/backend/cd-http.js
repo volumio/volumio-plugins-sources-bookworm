@@ -3,7 +3,7 @@ const http = require("http");
 const { spawn } = require("child_process");
 const GST = "/usr/bin/gst-launch-1.0";
 
-function gstTrackFlac(n) {
+function gstTrackWav(n) {
   const args = [
     "-q",
     "cdparanoiasrc",
@@ -14,8 +14,10 @@ function gstTrackFlac(n) {
     "!",
     "audioresample",
     "!",
-    "flacenc",
-    "quality=5",
+    // Ensure raw PCM shape; not strictly required but nice to be explicit:
+    "audio/x-raw,format=S16LE,channels=2,rate=44100",
+    "!",
+    "wavenc",
     "!",
     "fdsink",
     "fd=1",
@@ -35,7 +37,7 @@ const server = http.createServer((req, res) => {
   if (req.method === "HEAD") {
     // don’t spawn for HEAD
     res.writeHead(200, {
-      "Content-Type": "audio/flac",
+      "Content-Type": "audio/wav",
       "Cache-Control": "no-store",
     });
     return res.end();
@@ -47,14 +49,14 @@ const server = http.createServer((req, res) => {
   }
   const n = parseInt(m[1], 10);
 
-  const p = gstTrackFlac(n);
+  const p = gstTrackWav(n);
   let sent = false;
 
   const send200 = () => {
     if (sent) return;
     sent = true;
     res.writeHead(200, {
-      "Content-Type": "audio/flac",
+      "Content-Type": "audio/wav",
       "Cache-Control": "no-store",
       Connection: "close",
       "Transfer-Encoding": "chunked",
