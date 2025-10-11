@@ -334,7 +334,7 @@ cdplayer.prototype.explodeUri = function (uri) {
     const track = getItem(
       n,
       this._trackDurations && this._trackDurations[n],
-      `http://127.0.0.1:8088/wav/track/${n}?v=1`,
+      `http://127.0.0.1:8088/wav/track/${n}`,
       "mpd"
     );
 
