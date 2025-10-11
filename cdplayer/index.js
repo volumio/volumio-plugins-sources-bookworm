@@ -42,6 +42,7 @@ function cdplayer(context) {
   this.commandRouter = this.context.coreCommand;
   this.logger = this.context.logger;
   this.configManager = this.context.configManager;
+  this._lastTrackNums = [];
 }
 
 cdplayer.prototype.log = function (msg) {
@@ -159,6 +160,8 @@ cdplayer.prototype.listCD = function () {
   runCdparanoiaQ()
     .then((out) => {
       this.log(`Asked cdparanoia -Q, got ${out.length} bytes of output`);
+      const trackNums = parseCdparanoiaQ(out);
+      this.log(`[CDPlayer]: Parsed tracks: ${JSON.stringify(trackNums)}`);
 
       this._lastTrackNums = trackNums;
 
