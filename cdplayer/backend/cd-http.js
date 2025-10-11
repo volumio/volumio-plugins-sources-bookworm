@@ -1,20 +1,26 @@
-// /data/plugins/music_service/cdplayer/backend/cd-http.js
+"use strict";
+
 const http = require("http");
 const { spawn } = require("child_process");
-const GST = "/usr/bin/gst-launch-1.0";
 
+// --- Config / binaries ---
+const HOST = process.env.CD_HTTP_HOST || "127.0.0.1";
+const PORT = Number(process.env.CD_HTTP_PORT || 8088);
+const GST = process.env.GST_BIN || "/usr/bin/gst-launch-1.0";
+const CD_DEVICE = process.env.CD_DEVICE || "/dev/sr0";
+
+// --- Non-seekable: WAV via GStreamer ---
 function gstTrackWav(n) {
   const args = [
     "-q",
     "cdparanoiasrc",
     `track=${n}`,
-    "device=/dev/sr0",
+    `device=${CD_DEVICE}`,
     "!",
     "audioconvert",
     "!",
     "audioresample",
     "!",
-    // Ensure raw PCM shape; not strictly required but nice to be explicit:
     "audio/x-raw,format=S16LE,channels=2,rate=44100",
     "!",
     "wavenc",
@@ -34,20 +40,32 @@ function gstTrackWav(n) {
 }
 
 const server = http.createServer((req, res) => {
+  // HEAD: advertise WAV type; don’t spawn a pipeline
   if (req.method === "HEAD") {
-    // don’t spawn for HEAD
-    res.writeHead(200, {
-      "Content-Type": "audio/wav",
-      "Cache-Control": "no-store",
-    });
-    return res.end();
+    const mh = req.url.match(/^\/wav\/track\/(\d+)(?:\?.*)?$/);
+    if (mh) {
+      res.writeHead(200, {
+        "Content-Type": "audio/x-wav",
+        "Cache-Control": "no-store",
+      });
+      return res.end();
+    }
+    res.writeHead(404);
+    return res.end("Use /wav/track/:n");
   }
-  const m = req.url.match(/^\/track\/(\d+)$/);
+
+  // Single supported route: /wav/track/:n
+  const m = req.url.match(/^\/wav\/track\/(\d+)(?:\?.*)?$/);
   if (!m) {
     res.writeHead(404);
-    return res.end("Use /track/:n");
+    return res.end("Use /wav/track/:n");
   }
+
   const n = parseInt(m[1], 10);
+  if (!Number.isInteger(n) || n <= 0) {
+    res.writeHead(400);
+    return res.end("invalid track number");
+  }
 
   const p = gstTrackWav(n);
   let sent = false;
@@ -56,7 +74,7 @@ const server = http.createServer((req, res) => {
     if (sent) return;
     sent = true;
     res.writeHead(200, {
-      "Content-Type": "audio/wav",
+      "Content-Type": "audio/x-wav",
       "Cache-Control": "no-store",
       Connection: "close",
       "Transfer-Encoding": "chunked",
@@ -64,18 +82,23 @@ const server = http.createServer((req, res) => {
     console.log("[cd-http] first bytes → sending headers");
   };
 
+  // Write the first chunk then pipe the rest
   p.stdout.once("data", (chunk) => {
     send200();
     res.write(chunk);
     p.stdout.pipe(res);
   });
+
   p.stdout.on("error", () => res.end());
+
   p.on("exit", () => {
     if (!sent) {
       res.statusCode = 500;
       res.end("gst failed");
     }
   });
+
+  // If client disconnects, stop the pipeline
   req.on("close", () => {
     try {
       p.kill("SIGTERM");
@@ -83,6 +106,9 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(8088, "127.0.0.1", () =>
-  console.log("CD HTTP @ http://127.0.0.1:8088/track/:n")
-);
+// Start server
+server.listen(PORT, HOST, () => {
+  console.log(
+    `CD HTTP @ http://${HOST}:${PORT}/wav/track/:n  (non-seekable WAV)`
+  );
+});

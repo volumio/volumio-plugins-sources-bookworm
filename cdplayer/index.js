@@ -305,7 +305,7 @@ cdplayer.prototype.explodeUri = function (uri) {
       service: "mpd",
       type: "song",
       title: `Track ${trackNum}`,
-      uri: `http://127.0.0.1:8088/track/${trackNum}`,
+      uri: `http://127.0.0.1:8088/wav/track/${trackNum}?v=1`,
       duration: 0, // disables scrub bar (see earlier discussion)
       album: "Audio CD", // optional — shows in Now Playing
       artist: "Unknown", // optional
@@ -322,8 +322,8 @@ cdplayer.prototype.explodeUri = function (uri) {
       service: "cdplayer",
       type: "song",
       title: `Track ${n}`,
-      uri: `http://127.0.0.1:8088/track/${n}`,
-      duration: 0,
+      uri: `http://127.0.0.1:8088/wav/track/${trackNum}?v=1`,
+      duration: 12,
       album: "Audio CD",
       artist: "Unknown",
       trackType: "wav",
