@@ -3,7 +3,7 @@
 var libQ = require("kew");
 var fs = require("fs-extra");
 var config = new (require("v-conf"))();
-const { execFile, execSync, exec } = require("child_process");
+const { execFile } = require("child_process");
 
 module.exports = cdplayer;
 
@@ -35,6 +35,33 @@ function parseCdparanoiaQ(out) {
   return tracks;
 }
 
+function parseDurationsFromQ(out) {
+  // lines look like: "  1.     30253 [06:43.28]        0 [00:00.00] ..."
+  const re = /^\s*(\d+)\.\s+(\d+)\s+\[/gm; // (trackNo). (lengthInSectors) [
+  const durations = {};
+  let m;
+  while ((m = re.exec(out))) {
+    const track = parseInt(m[1], 10);
+    const sectors = parseInt(m[2], 10);
+    // audio CD = 75 frames(sectors)/sec → round to whole seconds for Volumio UI
+    durations[track] = Math.round(sectors / 75);
+  }
+  return durations;
+}
+
+function getItem(n, duration, uri, service) {
+  return {
+    album: "Audio CD",
+    artist: "Unknown",
+    trackType: "wav",
+    type: "song",
+    title: `Track ${n}`,
+    service,
+    uri,
+    duration,
+  };
+}
+
 function cdplayer(context) {
   var self = this;
 
@@ -43,6 +70,7 @@ function cdplayer(context) {
   this.logger = this.context.logger;
   this.configManager = this.context.configManager;
   this._lastTrackNums = [];
+  this._trackDurations = null;
 }
 
 cdplayer.prototype.log = function (msg) {
@@ -161,7 +189,7 @@ cdplayer.prototype.listCD = function () {
     .then((out) => {
       this.log(`Asked cdparanoia -Q, got ${out.length} bytes of output`);
       const trackNums = parseCdparanoiaQ(out);
-      this.log(`[CDPlayer]: Parsed tracks: ${JSON.stringify(trackNums)}`);
+      this.log(`Parsed tracks: ${JSON.stringify(trackNums)}`);
 
       this._lastTrackNums = trackNums;
 
@@ -175,16 +203,17 @@ cdplayer.prototype.listCD = function () {
         return defer.resolve({ navigation: { lists: [] } });
       }
 
-      const items = trackNums.map((n) => ({
-        service: "cdplayer",
-        type: "song",
-        title: `Track ${n}`,
-        artist: "ASD",
-        album: "asd",
-        albumart: "https://picsum.photos/200/300",
-        icon: "fa fa-music",
-        uri: `cdplayer/${n}`,
-      }));
+      this._trackDurations = parseDurationsFromQ(out);
+      this.log(JSON.stringify(this._trackDurations));
+
+      const items = trackNums.map((n) =>
+        getItem(
+          n,
+          this._trackDurations && this._trackDurations[n],
+          `cdplayer/${n}`,
+          "cdplayer"
+        )
+      );
 
       defer.resolve({
         navigation: {
@@ -292,49 +321,46 @@ cdplayer.prototype.pushState = function (state) {
 // It's probably time to start again from the playAll functionality in ChatGPT
 cdplayer.prototype.explodeUri = function (uri) {
   const self = this;
-  self.logger.info("[CDPLAYER] explodeUri called with " + uri);
+  self.log("explodeUri called with " + uri);
 
   const defer = libQ.defer();
+  self.log(JSON.stringify(this._trackDurations));
 
   // Match single track: cdplayer/1, cdplayer/2, ...
   const match = uri.match(/^cdplayer\/(\d+)$/);
   if (match) {
-    const trackNum = parseInt(match[1], 10);
-
-    const track = {
-      service: "mpd",
-      type: "song",
-      title: `Track ${trackNum}`,
-      uri: `http://127.0.0.1:8088/wav/track/${trackNum}?v=1`,
-      duration: 0, // disables scrub bar (see earlier discussion)
-      album: "Audio CD", // optional — shows in Now Playing
-      artist: "Unknown", // optional
-      trackType: "wav", // helps MPD interpret stream
-    };
+    const n = parseInt(match[1], 10);
+    self.log("track " + n + " duration: " + this._trackDurations[n]);
+    const track = getItem(
+      n,
+      this._trackDurations && this._trackDurations[n],
+      `http://127.0.0.1:8088/wav/track/${n}?v=1`,
+      "mpd"
+    );
 
     defer.resolve([track]);
     return defer.promise;
   }
 
   // Match "Play All" synthetic item
-  if (uri === "cdplayer/playall") {
-    const tracks = (this._lastTrackNums || []).map((n) => ({
-      service: "cdplayer",
-      type: "song",
-      title: `Track ${n}`,
-      uri: `http://127.0.0.1:8088/wav/track/${trackNum}?v=1`,
-      duration: 12,
-      album: "Audio CD",
-      artist: "Unknown",
-      trackType: "wav",
-    }));
+  // if (uri === "cdplayer/playall") {
+  //   const tracks = (this._lastTrackNums || []).map((n) => ({
+  //     service: "mpd",
+  //     type: "song",
+  //     title: `Track ${n}`,
+  //     uri: `http://127.0.0.1:8088/wav/track/${n}?v=1`,
+  //     duration: this._trackDurations && this._trackDurations[n], // ← NEW
+  //     album: "Audio CD",
+  //     artist: "Unknown",
+  //     trackType: "wav",
+  //   }));
 
-    defer.resolve(tracks);
-    return defer.promise;
-  }
+  //   defer.resolve(tracks);
+  //   return defer.promise;
+  // }
 
   // Fallback
-  self.logger.warn("[CDPLAYER] explodeUri: unknown URI " + uri);
+  self.log("explodeUri: unknown URI " + uri);
   defer.resolve([]);
   return defer.promise;
 };
