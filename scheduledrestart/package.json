@@ -1,6 +1,6 @@
 {
 	"name": "scheduledrestart",
-	"version": "0.9.0",
+	"version": "1.0.0",
 	"description": "Schedule a restart of Volumio",
 	"main": "index.js",
 	"scripts": {
@@ -15,18 +15,17 @@
 		"plugin_type": "system_controller",
 		"architectures": [
 			"amd64",
-			"armhf",
-			"i386"
+			"armhf"
 		],
 		"os": [
 			"bookworm"
 		],
 		"details": "This plugin lets you schedule your Volumio reboot, by selecting the time and day(s)",
-		"changelog": "bookworm version"
+		"changelog": "bookworm release"
 	},
 	"engines": {
 		"node": ">=20",
-		"volumio": ">=0"
+		"volumio": ">=4"
 	},
 	"dependencies": {
 		"kew": "^0.7.0",
