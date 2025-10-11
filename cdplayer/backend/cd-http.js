@@ -115,6 +115,27 @@ function gstTrackPcm(n) {
   return p;
 }
 
+// --- Range parsing (single range only) ---
+function parseRange(h, total) {
+  if (!h || !/^bytes=/.test(h)) return null;
+  const m = /^bytes=(\d*)-(\d*)$/.exec(h.trim());
+  if (!m) return null;
+  let [, s, e] = m;
+  let start = s === "" ? null : parseInt(s, 10);
+  let end = e === "" ? null : parseInt(e, 10);
+  if (start === null && end === null) return null;
+  if (start === null) {
+    const n = Math.min(end + 1, total);
+    start = total - n;
+    end = total - 1;
+  } else if (end === null) {
+    end = total - 1;
+  }
+  if (start < 0 || end < start || start >= total) return null;
+  end = Math.min(end, total - 1);
+  return { start, end };
+}
+
 // ----------------------------------------------
 // HTTP server
 // ----------------------------------------------
@@ -141,43 +162,114 @@ const server = http.createServer((req, res) => {
   const dataBytes = bytesFromSectors(sectors);
   const totalBytes = 44 + dataBytes;
 
-  // Advertise a classic file response with a fixed size
-  res.statusCode = 200;
+  const range = parseRange(req.headers.range, totalBytes);
+  const H = 44; // WAV header size
+
+  // Common headers
   res.setHeader("Content-Type", "audio/wav");
-  res.setHeader("Content-Length", String(totalBytes));
-  res.setHeader("Accept-Ranges", "bytes"); // seeking support comes next step
+  res.setHeader("Accept-Ranges", "bytes");
   res.setHeader("Cache-Control", "no-store");
 
-  if (req.method === "HEAD") {
-    // headers only; do NOT write WAV header or start GStreamer
-    res.end();
+  if (range) {
+    const { start, end } = range;
+    const partLen = end - start + 1;
+    res.statusCode = 206;
+    res.setHeader("Content-Range", `bytes ${start}-${end}/${totalBytes}`);
+    res.setHeader("Content-Length", String(partLen));
+    if (req.method === "HEAD") return res.end();
+
+    // Send requested header slice if any
+    const hdr = wavHeader({ dataBytes });
+    if (start < H) {
+      const hdrEnd = Math.min(end, H - 1);
+      res.write(hdr.subarray(start, hdrEnd + 1));
+      if (end < H) return res.end(); // entirely within header
+    }
+
+    // Stream requested data slice from live pipeline
+    const dataStart = Math.max(start, H) - H; // offset into PCM
+    const dataEnd = end - H; // inclusive
+    const toSend = dataEnd - dataStart + 1;
+    if (toSend <= 0) return res.end();
+
+    const p = gstTrackPcm(n);
+    let skipped = 0,
+      sent = 0;
+
+    const onChunk = (chunk) => {
+      if (skipped < dataStart) {
+        const needSkip = dataStart - skipped;
+        if (chunk.length <= needSkip) {
+          skipped += chunk.length;
+          return;
+        }
+        chunk = chunk.subarray(needSkip);
+        skipped = dataStart;
+      }
+      const remain = toSend - sent;
+      const slice = chunk.length > remain ? chunk.subarray(0, remain) : chunk;
+      if (slice.length) {
+        res.write(slice);
+        sent += slice.length;
+      }
+      if (sent >= toSend) {
+        try {
+          p.stdout.off("data", onChunk);
+        } catch {}
+        try {
+          p.kill("SIGTERM");
+        } catch {}
+        return res.end();
+      }
+    };
+
+    p.stdout.on("data", onChunk);
+    p.on("error", () => {
+      try {
+        res.end();
+      } catch {}
+    });
+    p.on("close", () => {
+      if (!res.writableEnded)
+        try {
+          res.end();
+        } catch {}
+    });
+    req.on("close", () => {
+      try {
+        p.kill("SIGTERM");
+      } catch {}
+    });
     return;
   }
 
-  // 1) Write RIFF/WAV header (fixed size)
-  res.write(wavHeader({ dataBytes }));
+  // --- No Range: full response (as before)
+  res.statusCode = 200;
+  res.setHeader("Content-Length", String(totalBytes));
+  if (req.method === "HEAD") return res.end();
 
-  // 2) Pipe raw PCM payload from the CD
+  // 1) full header
+  res.write(wavHeader({ dataBytes }));
+  // 2) full payload
   const p = gstTrackPcm(n);
   p.stdout.pipe(res, { end: true });
-  p.on("error", () => tryEnd(res));
-  p.on("close", () => tryEnd(res));
-
-  // If client disconnects, stop the pipeline
+  p.on("error", () => {
+    try {
+      res.end();
+    } catch {}
+  });
+  p.on("close", () => {
+    if (!res.writableEnded)
+      try {
+        res.end();
+      } catch {}
+  });
   req.on("close", () => {
     try {
       p.kill("SIGTERM");
     } catch {}
   });
 });
-
-function tryEnd(res) {
-  if (!res.writableEnded) {
-    try {
-      res.end();
-    } catch {}
-  }
-}
 
 // Start server
 server.listen(PORT, HOST, () => {
