@@ -1,0 +1,514 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_NAME"
+  },
+  "sections": [
+    {
+      "id": "section_basic",
+      "element": "section",
+      "label": "TRANSLATE.BASIC_SETTINGS",
+      "icon": "fa-cogs",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/rpi_eeprom_config",
+        "method": "confirmBasicSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.CONFIRM_BASIC_SETTINGS",
+        "data": [
+          "boot_order",
+          "psu_max_current",
+          "power_off_on_halt",
+          "wake_on_gpio",
+          "pcie_probe",
+          "boot_uart",
+          "uart_baud"
+        ]
+      },
+      "content": [
+        {
+          "id": "boot_order",
+          "element": "select",
+          "label": "TRANSLATE.BOOT_ORDER",
+          "doc": "TRANSLATE.BOOT_ORDER_DOC",
+          "value": {
+            "value": "0xf41",
+            "label": "SD Card -> USB"
+          },
+          "options": [
+            {
+              "value": "0xf41",
+              "label": "SD Card -> USB"
+            }
+          ]
+        },
+        {
+          "id": "psu_max_current",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.PSU_MAX_CURRENT",
+          "doc": "TRANSLATE.PSU_MAX_CURRENT_DOC",
+          "value": 5000,
+          "attributes": [
+            {
+              "min": 3000,
+              "max": 5000,
+              "step": 100
+            }
+          ],
+          "visibleIf": {
+            "field": "detected_model",
+            "value": ["Raspberry Pi 5", "Raspberry Pi 500+", "Compute Module 5"]
+          }
+        },
+        {
+          "id": "power_off_on_halt",
+          "element": "switch",
+          "label": "TRANSLATE.POWER_OFF_ON_HALT",
+          "doc": "TRANSLATE.POWER_OFF_ON_HALT_DOC",
+          "value": false
+        },
+        {
+          "id": "wake_on_gpio",
+          "element": "switch",
+          "label": "TRANSLATE.WAKE_ON_GPIO",
+          "doc": "TRANSLATE.WAKE_ON_GPIO_DOC",
+          "value": true
+        },
+        {
+          "id": "pcie_probe",
+          "element": "switch",
+          "label": "TRANSLATE.PCIE_PROBE",
+          "doc": "TRANSLATE.PCIE_PROBE_DOC",
+          "value": true
+        },
+        {
+          "id": "boot_uart",
+          "element": "switch",
+          "label": "TRANSLATE.BOOT_UART",
+          "doc": "TRANSLATE.BOOT_UART_DOC",
+          "value": false
+        },
+        {
+          "id": "uart_baud",
+          "element": "select",
+          "label": "TRANSLATE.UART_BAUD",
+          "doc": "TRANSLATE.UART_BAUD_DOC",
+          "value": {
+            "value": 115200,
+            "label": "115200"
+          },
+          "options": [
+            {
+              "value": 9600,
+              "label": "9600"
+            },
+            {
+              "value": 19200,
+              "label": "19200"
+            },
+            {
+              "value": 38400,
+              "label": "38400"
+            },
+            {
+              "value": 57600,
+              "label": "57600"
+            },
+            {
+              "value": 115200,
+              "label": "115200"
+            },
+            {
+              "value": 230400,
+              "label": "230400"
+            },
+            {
+              "value": 460800,
+              "label": "460800"
+            },
+            {
+              "value": 921600,
+              "label": "921600"
+            }
+          ],
+          "visibleIf": {
+            "field": "boot_uart",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_advanced",
+      "element": "section",
+      "label": "TRANSLATE.ADVANCED_SETTINGS",
+      "icon": "fa-sliders",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/rpi_eeprom_config",
+        "method": "confirmAdvancedSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.CONFIRM_ADVANCED_SETTINGS",
+        "data": [
+          "show_advanced",
+          "usb_msd_discover_timeout",
+          "usb_msd_lun_timeout",
+          "usb_msd_pwr_off_time",
+          "usb_msd_startup_delay",
+          "usb_msd_boot_max_retries",
+          "sd_boot_max_retries",
+          "enable_self_update",
+          "freeze_version",
+          "vl805",
+          "partition"
+        ]
+      },
+      "content": [
+        {
+          "id": "show_advanced",
+          "element": "switch",
+          "label": "TRANSLATE.SHOW_ADVANCED_SETTINGS",
+          "doc": "TRANSLATE.SHOW_ADVANCED_SETTINGS_DOC",
+          "value": false
+        },
+        {
+          "id": "usb_msd_discover_timeout",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.USB_MSD_DISCOVER_TIMEOUT",
+          "doc": "TRANSLATE.USB_MSD_DISCOVER_TIMEOUT_DOC",
+          "value": 20000,
+          "attributes": [
+            {
+              "min": 5000,
+              "max": 60000,
+              "step": 1000
+            }
+          ],
+          "visibleIf": {
+            "field": "show_advanced",
+            "value": true
+          }
+        },
+        {
+          "id": "usb_msd_lun_timeout",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.USB_MSD_LUN_TIMEOUT",
+          "doc": "TRANSLATE.USB_MSD_LUN_TIMEOUT_DOC",
+          "value": 2000,
+          "attributes": [
+            {
+              "min": 100,
+              "max": 10000,
+              "step": 100
+            }
+          ],
+          "visibleIf": {
+            "field": "show_advanced",
+            "value": true
+          }
+        },
+        {
+          "id": "usb_msd_pwr_off_time",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.USB_MSD_PWR_OFF_TIME",
+          "doc": "TRANSLATE.USB_MSD_PWR_OFF_TIME_DOC",
+          "value": 1000,
+          "attributes": [
+            {
+              "min": 0,
+              "max": 5000,
+              "step": 100
+            }
+          ],
+          "visibleIf": {
+            "field": "show_advanced",
+            "value": true
+          }
+        },
+        {
+          "id": "usb_msd_startup_delay",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.USB_MSD_STARTUP_DELAY",
+          "doc": "TRANSLATE.USB_MSD_STARTUP_DELAY_DOC",
+          "value": 0,
+          "attributes": [
+            {
+              "min": 0,
+              "max": 30000,
+              "step": 1000
+            }
+          ],
+          "visibleIf": {
+            "field": "show_advanced",
+            "value": true
+          }
+        },
+        {
+          "id": "usb_msd_boot_max_retries",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.USB_MSD_BOOT_MAX_RETRIES",
+          "doc": "TRANSLATE.USB_MSD_BOOT_MAX_RETRIES_DOC",
+          "value": 1,
+          "attributes": [
+            {
+              "min": 0,
+              "max": 9,
+              "step": 1
+            }
+          ],
+          "visibleIf": {
+            "field": "show_advanced",
+            "value": true
+          }
+        },
+        {
+          "id": "sd_boot_max_retries",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.SD_BOOT_MAX_RETRIES",
+          "doc": "TRANSLATE.SD_BOOT_MAX_RETRIES_DOC",
+          "value": 3,
+          "attributes": [
+            {
+              "min": 0,
+              "max": 9,
+              "step": 1
+            }
+          ],
+          "visibleIf": {
+            "field": "show_advanced",
+            "value": true
+          }
+        },
+        {
+          "id": "enable_self_update",
+          "element": "switch",
+          "label": "TRANSLATE.ENABLE_SELF_UPDATE",
+          "doc": "TRANSLATE.ENABLE_SELF_UPDATE_DOC",
+          "value": true,
+          "visibleIf": {
+            "field": "show_advanced",
+            "value": true
+          }
+        },
+        {
+          "id": "freeze_version",
+          "element": "switch",
+          "label": "TRANSLATE.FREEZE_VERSION",
+          "doc": "TRANSLATE.FREEZE_VERSION_DOC",
+          "value": false,
+          "visibleIf": {
+            "field": "show_advanced",
+            "value": true
+          }
+        },
+        {
+          "id": "vl805",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.VL805",
+          "doc": "TRANSLATE.VL805_DOC",
+          "value": "",
+          "visibleIf": {
+            "field": "show_advanced",
+            "value": true
+          }
+        },
+        {
+          "id": "partition",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.PARTITION",
+          "doc": "TRANSLATE.PARTITION_DOC",
+          "value": 0,
+          "attributes": [
+            {
+              "min": 0,
+              "max": 255,
+              "step": 1
+            }
+          ],
+          "visibleIf": {
+            "field": "show_advanced",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_debug",
+      "element": "section",
+      "label": "TRANSLATE.DEBUG_SETTINGS",
+      "icon": "fa-bug",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/rpi_eeprom_config",
+        "method": "confirmDebugSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.CONFIRM_DEBUG_SETTINGS",
+        "data": [
+          "show_debug",
+          "disable_hdmi",
+          "hdmi_delay",
+          "netconsole",
+          "dhcp_timeout"
+        ]
+      },
+      "content": [
+        {
+          "id": "show_debug",
+          "element": "switch",
+          "label": "TRANSLATE.SHOW_DEBUG_SETTINGS",
+          "doc": "TRANSLATE.SHOW_DEBUG_SETTINGS_DOC",
+          "value": false
+        },
+        {
+          "id": "disable_hdmi",
+          "element": "switch",
+          "label": "TRANSLATE.DISABLE_HDMI",
+          "doc": "TRANSLATE.DISABLE_HDMI_DOC",
+          "value": false,
+          "visibleIf": {
+            "field": "show_debug",
+            "value": true
+          }
+        },
+        {
+          "id": "hdmi_delay",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.HDMI_DELAY",
+          "doc": "TRANSLATE.HDMI_DELAY_DOC",
+          "value": 5,
+          "attributes": [
+            {
+              "min": 0,
+              "max": 10,
+              "step": 1
+            }
+          ],
+          "visibleIf": {
+            "field": "show_debug",
+            "value": true
+          }
+        },
+        {
+          "id": "netconsole",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.NETCONSOLE",
+          "doc": "TRANSLATE.NETCONSOLE_DOC",
+          "value": "",
+          "attributes": [
+            {
+              "maxlength": 32,
+              "placeholder": "192.168.1.100,6666,192.168.1.1"
+            }
+          ],
+          "visibleIf": {
+            "field": "show_debug",
+            "value": true
+          }
+        },
+        {
+          "id": "dhcp_timeout",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.DHCP_TIMEOUT",
+          "doc": "TRANSLATE.DHCP_TIMEOUT_DOC",
+          "value": 45000,
+          "attributes": [
+            {
+              "min": 5000,
+              "max": 90000,
+              "step": 1000
+            }
+          ],
+          "visibleIf": {
+            "field": "show_debug",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_restore",
+      "element": "section",
+      "label": "TRANSLATE.BACKUP_RESTORE",
+      "icon": "fa-history",
+      "content": [
+        {
+          "id": "show_restore",
+          "element": "switch",
+          "label": "TRANSLATE.SHOW_RESTORE_OPTIONS",
+          "doc": "TRANSLATE.SHOW_RESTORE_OPTIONS_DOC",
+          "value": false
+        },
+        {
+          "id": "restore_backup_button",
+          "element": "button",
+          "label": "TRANSLATE.RESTORE_FROM_BACKUP",
+          "doc": "TRANSLATE.RESTORE_FROM_BACKUP_DOC",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_controller/rpi_eeprom_config",
+            "method": "restoreBackup"
+          },
+          "visibleIf": {
+            "field": "show_restore",
+            "value": true
+          }
+        },
+        {
+          "id": "restore_factory_button",
+          "element": "button",
+          "label": "TRANSLATE.RESTORE_FACTORY_DEFAULTS",
+          "doc": "TRANSLATE.RESTORE_FACTORY_DEFAULTS_DOC",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_controller/rpi_eeprom_config",
+            "method": "restoreFactory"
+          },
+          "visibleIf": {
+            "field": "show_restore",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_apply",
+      "element": "section",
+      "label": "TRANSLATE.APPLY_CONFIGURATION",
+      "icon": "fa-check-circle",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/rpi_eeprom_config",
+        "method": "applyConfiguration"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.APPLY_AND_REBOOT",
+        "data": [
+          "risk_acknowledged"
+        ]
+      },
+      "content": [
+        {
+          "id": "risk_acknowledged",
+          "element": "switch",
+          "label": "TRANSLATE.RISK_ACKNOWLEDGED",
+          "doc": "TRANSLATE.RISK_ACKNOWLEDGED_DOC",
+          "value": false
+        }
+      ]
+    }
+  ]
+}

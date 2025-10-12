@@ -1,0 +1,47 @@
+{
+  "name": "rpi_eeprom_config",
+  "version": "1.0.0",
+  "description": "Comprehensive EEPROM configuration manager for Raspberry Pi 4/400/5/500/500+ and CM4/CM5.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Volumio Team",
+  "license": "MIT",
+  "volumio_info": {
+    "prettyName": "Raspberry Pi EEPROM Config",
+    "icon": "fa-microchip",
+    "plugin_type": "system_controller",
+    "details": "Configure Raspberry Pi bootloader EEPROM parameters including boot order, power management, USB settings, and debug options without command-line access.",
+    "changelog": "Initial release.",
+    "categories": [
+      "system_hardware"
+    ],
+    "keywords": [
+      "raspberry pi",
+      "eeprom",
+      "bootloader",
+      "configuration",
+      "boot order",
+      "power management"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "architectures": [
+      "armhf"
+    ],
+    "has_settings_page": true
+  },
+  "engines": {
+    "volumio": ">=4",
+    "node": ">=20"
+  },
+  "dependencies": {
+    "fs-extra": "*",
+    "kew": "*",
+    "v-conf": "*"
+  },
+  "repository": "https://github.com/volumio/volumio-plugins-sources-bookworm/tree/master/rpi_eeprom_config",
+  "homepage": "https://github.com/volumio/"
+}
