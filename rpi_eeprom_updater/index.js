@@ -39,6 +39,9 @@ RpiEepromUpdater.prototype.onStart = function() {
         return defer.promise;
     }
     
+    // Check for CM4 update sentinel
+    this.checkCM4Sentinel();
+    
     this.logger.info('[RpiEepromUpdater] Plugin started successfully');
     defer.resolve();
     return defer.promise;
@@ -70,6 +73,103 @@ RpiEepromUpdater.prototype.isHardwareSupported = function() {
     } catch (error) {
         this.logger.error('[RpiEepromUpdater] Hardware check failed: ' + error.message);
         return false;
+    }
+};
+
+// Detect if running on Compute Module 4
+RpiEepromUpdater.prototype.isCM4 = function() {
+    try {
+        const model = fs.readFileSync('/proc/device-tree/model', 'utf-8');
+        return model.includes('Compute Module 4');
+    } catch (error) {
+        this.logger.error('[RpiEepromUpdater] Failed to read device model: ' + error.message);
+        return false;
+    }
+};
+
+// Check and handle CM4 update sentinel
+RpiEepromUpdater.prototype.checkCM4Sentinel = function() {
+    const sentinelPath = '/data/plugins/system_controller/rpi_eeprom_updater/cm4_update_state.json';
+    
+    if (!fs.existsSync(sentinelPath)) {
+        return; // No sentinel, normal startup
+    }
+    
+    try {
+        const sentinel = JSON.parse(fs.readFileSync(sentinelPath, 'utf-8'));
+        this.logger.info('[RpiEepromUpdater] CM4 sentinel found, state: ' + sentinel.state);
+        
+        if (sentinel.state === 'config_updated') {
+            // First reboot after config update - now flash EEPROM
+            this.logger.info('[RpiEepromUpdater] Running EEPROM update on CM4');
+            
+            if (sentinel.isDowngrade && sentinel.firmwareFile) {
+                // Downgrade with specific firmware file
+                execSync('sudo /usr/bin/rpi-eeprom-update -d -f "' + sentinel.firmwareFile + '"', { stdio: 'pipe' });
+            } else {
+                // Standard upgrade
+                execSync('sudo /usr/bin/rpi-eeprom-update -a', { stdio: 'pipe' });
+            }
+            
+            // Update sentinel state
+            sentinel.state = 'eeprom_staged';
+            fs.writeFileSync(sentinelPath, JSON.stringify(sentinel, null, 2));
+            
+            this.logger.info('[RpiEepromUpdater] EEPROM staged, rebooting for flash');
+            
+            // Reboot to apply EEPROM update
+            setTimeout(() => {
+                execSync('sudo /sbin/reboot');
+            }, 3000);
+            
+        } else if (sentinel.state === 'eeprom_staged') {
+            // Second reboot after EEPROM flash - restore configs
+            this.logger.info('[RpiEepromUpdater] Restoring CM4 configs after EEPROM update');
+            
+            // Restore config.txt
+            if (fs.existsSync(sentinel.backups.config_txt)) {
+                execSync('sudo /bin/cp "' + sentinel.backups.config_txt + '" /boot/config.txt');
+                fs.removeSync(sentinel.backups.config_txt);
+                this.logger.info('[RpiEepromUpdater] Restored config.txt');
+            }
+            
+            // Restore rpi-eeprom-update config
+            if (fs.existsSync(sentinel.backups.eeprom_config)) {
+                execSync('sudo /bin/cp "' + sentinel.backups.eeprom_config + '" /etc/default/rpi-eeprom-update');
+                fs.removeSync(sentinel.backups.eeprom_config);
+                this.logger.info('[RpiEepromUpdater] Restored rpi-eeprom-update config');
+            }
+            
+            // Update sentinel state for final reboot
+            sentinel.state = 'configs_restored';
+            fs.writeFileSync(sentinelPath, JSON.stringify(sentinel, null, 2));
+            
+            this.logger.info('[RpiEepromUpdater] Configs restored, rebooting to load original config');
+            
+            // Third reboot to load restored config.txt
+            setTimeout(() => {
+                execSync('sudo /sbin/reboot');
+            }, 3000);
+            
+        } else if (sentinel.state === 'configs_restored') {
+            // Third reboot complete - cleanup and notify user
+            this.logger.info('[RpiEepromUpdater] CM4 update process completed');
+            
+            const actionType = sentinel.isDowngrade ? 'downgrade' : 'update';
+            
+            // Delete sentinel
+            fs.removeSync(sentinelPath);
+            
+            this.commandRouter.pushToastMessage(
+                'success',
+                'EEPROM Update Complete',
+                'CM4 EEPROM ' + actionType + ' completed successfully'
+            );
+        }
+    } catch (error) {
+        this.logger.error('[RpiEepromUpdater] CM4 sentinel handling failed: ' + error.message);
+        // Clean up sentinel on error
+        fs.removeSync(sentinelPath);
     }
 };
 
@@ -221,22 +321,40 @@ RpiEepromUpdater.prototype.setFirmwareChannel = function(channel) {
 // Perform EEPROM update
 RpiEepromUpdater.prototype.performUpdate = function() {
     const defer = libQ.defer();
+    const self = this;
     
     try {
-        this.logger.info('[RpiEepromUpdater] Starting EEPROM update...');
+        // Check if CM4
+        if (self.isCM4()) {
+            const currentChannel = self.getCurrentChannel();
+            return self.performCM4Update(currentChannel);
+        }
         
-        this.commandRouter.pushToastMessage(
+        // Standard update for non-CM4 hardware
+        self.logger.info('[RpiEepromUpdater] Starting EEPROM update...');
+        
+        self.commandRouter.pushToastMessage(
             'info',
             'EEPROM Update',
             'Starting firmware update. Please do not power off the system.'
         );
         
         // Execute update with automatic flag using sudo
-        execSync('sudo /usr/bin/rpi-eeprom-update -a', { stdio: 'pipe' });
+        try {
+            execSync('sudo /usr/bin/rpi-eeprom-update -a', { stdio: 'pipe' });
+        } catch (error) {
+            // rpi-eeprom-update may return non-zero exit code even on success
+            // Check if it's actually an error or just a warning
+            if (error.stderr && error.stderr.toString().includes('failed')) {
+                throw error;
+            }
+            // Otherwise continue - update was staged successfully
+            self.logger.info('[RpiEepromUpdater] Update command returned non-zero but appears successful');
+        }
         
-        this.logger.info('[RpiEepromUpdater] Update staged successfully');
+        self.logger.info('[RpiEepromUpdater] Update staged successfully');
         
-        this.commandRouter.pushToastMessage(
+        self.commandRouter.pushToastMessage(
             'success',
             'EEPROM Update',
             'Firmware update prepared. System will reboot in 5 seconds.'
@@ -244,18 +362,114 @@ RpiEepromUpdater.prototype.performUpdate = function() {
         
         // Schedule reboot
         setTimeout(() => {
-            this.logger.info('[RpiEepromUpdater] Rebooting system for EEPROM update');
-            execSync('/usr/bin/sudo /sbin/reboot');
+            self.logger.info('[RpiEepromUpdater] Rebooting system for EEPROM update');
+            execSync('sudo /sbin/reboot');
         }, 5000);
         
         defer.resolve();
     } catch (error) {
-        this.logger.error('[RpiEepromUpdater] Update failed: ' + error.message);
+        self.logger.error('[RpiEepromUpdater] Update failed: ' + error.message);
         
-        this.commandRouter.pushToastMessage(
+        self.commandRouter.pushToastMessage(
             'error',
             'EEPROM Update Failed',
             'Failed to perform update: ' + error.message
+        );
+        
+        defer.reject(error);
+    }
+    
+    return defer.promise;
+};
+
+// Perform CM4-specific update with config backup/restore cycle
+RpiEepromUpdater.prototype.performCM4Update = function(channel) {
+    const defer = libQ.defer();
+    const self = this;
+    
+    try {
+        self.logger.info('[RpiEepromUpdater] Starting CM4 EEPROM update process');
+        
+        const sentinelPath = '/data/plugins/system_controller/rpi_eeprom_updater/cm4_update_state.json';
+        const configTxtBackup = '/boot/config.txt.rpi-eeprom-backup';
+        const eepromConfigBackup = '/etc/default/rpi-eeprom-update.backup';
+        
+        // Backup config.txt
+        execSync('sudo /bin/cp /boot/config.txt "' + configTxtBackup + '"');
+        self.logger.info('[RpiEepromUpdater] Backed up config.txt');
+        
+        // Backup rpi-eeprom-update config
+        execSync('sudo /bin/cp /etc/default/rpi-eeprom-update "' + eepromConfigBackup + '"');
+        self.logger.info('[RpiEepromUpdater] Backed up rpi-eeprom-update config');
+        
+        // Read current configs
+        let configTxt = fs.readFileSync('/boot/config.txt', 'utf-8');
+        let eepromConfig = fs.readFileSync('/etc/default/rpi-eeprom-update', 'utf-8');
+        
+        // Add CM4-specific settings to config.txt if not present
+        const cm4Section = '\n[cm4]\ndtparam=spi=on\ndtoverlay=audremap\ndtoverlay=spi-gpio40-45\n';
+        if (!configTxt.includes('[cm4]')) {
+            configTxt += cm4Section;
+            fs.writeFileSync('/tmp/config.txt.tmp', configTxt);
+            execSync('sudo /bin/cp /tmp/config.txt.tmp /boot/config.txt');
+            fs.removeSync('/tmp/config.txt.tmp');
+            self.logger.info('[RpiEepromUpdater] Added CM4 settings to config.txt');
+        }
+        
+        // Add CM4-specific settings to rpi-eeprom-update config
+        if (!eepromConfig.includes('RPI_EEPROM_USE_FLASHROM')) {
+            eepromConfig += '\nRPI_EEPROM_USE_FLASHROM=1\n';
+        }
+        if (!eepromConfig.includes('CM4_ENABLE_RPI_EEPROM_UPDATE')) {
+            eepromConfig += 'CM4_ENABLE_RPI_EEPROM_UPDATE=1\n';
+        }
+        
+        // Update channel setting
+        if (eepromConfig.match(/FIRMWARE_RELEASE_STATUS=.*/)) {
+            eepromConfig = eepromConfig.replace(/FIRMWARE_RELEASE_STATUS=.*/, 'FIRMWARE_RELEASE_STATUS="' + channel + '"');
+        } else {
+            eepromConfig += 'FIRMWARE_RELEASE_STATUS="' + channel + '"\n';
+        }
+        
+        fs.writeFileSync('/tmp/rpi-eeprom-update.tmp', eepromConfig);
+        execSync('sudo /bin/cp /tmp/rpi-eeprom-update.tmp /etc/default/rpi-eeprom-update');
+        fs.removeSync('/tmp/rpi-eeprom-update.tmp');
+        self.logger.info('[RpiEepromUpdater] Updated rpi-eeprom-update config');
+        
+        // Create sentinel
+        const sentinel = {
+            state: 'config_updated',
+            timestamp: Date.now(),
+            channel: channel,
+            backups: {
+                config_txt: configTxtBackup,
+                eeprom_config: eepromConfigBackup
+            }
+        };
+        
+        fs.writeFileSync(sentinelPath, JSON.stringify(sentinel, null, 2));
+        self.logger.info('[RpiEepromUpdater] Created CM4 sentinel');
+        
+        self.commandRouter.pushToastMessage(
+            'info',
+            'CM4 EEPROM Update',
+            'CM4 requires special handling. System will reboot three times. Please wait...'
+        );
+        
+        // First reboot to load new config.txt settings
+        setTimeout(() => {
+            self.logger.info('[RpiEepromUpdater] Rebooting to load CM4 config');
+            execSync('sudo /sbin/reboot');
+        }, 5000);
+        
+        defer.resolve();
+    } catch (error) {
+        self.logger.error('[RpiEepromUpdater] CM4 update failed: ' + error.message);
+        
+        self.commandRouter.pushToastMessage(
+            'error',
+            'CM4 Update Failed',
+            'Failed to prepare CM4 update: ' + error.message
         );
         
         defer.reject(error);
@@ -452,6 +666,13 @@ RpiEepromUpdater.prototype.performDowngrade = function(data) {
                 
                 self.logger.info('[RpiEepromUpdater] Using firmware file: ' + firmwareFile);
                 
+                // Check if CM4
+                if (self.isCM4()) {
+                    const currentChannel = self.getCurrentChannel();
+                    return self.performCM4Downgrade(currentChannel, firmwareFile);
+                }
+                
+                // Standard downgrade for non-CM4 hardware
                 self.commandRouter.pushToastMessage(
                     'info',
                     'EEPROM Downgrade',
@@ -459,7 +680,17 @@ RpiEepromUpdater.prototype.performDowngrade = function(data) {
                 );
                 
                 // Execute downgrade with -d (downgrade) and -f (firmware file) flags
-                execSync('sudo /usr/bin/rpi-eeprom-update -d -f "' + firmwareFile + '"', { stdio: 'pipe' });
+                try {
+                    execSync('sudo /usr/bin/rpi-eeprom-update -d -f "' + firmwareFile + '"', { stdio: 'pipe' });
+                } catch (error) {
+                    // rpi-eeprom-update may return non-zero exit code even on success
+                    // Check if it's actually an error or just a warning
+                    if (error.stderr && error.stderr.toString().includes('failed')) {
+                        throw error;
+                    }
+                    // Otherwise continue - downgrade was staged successfully
+                    self.logger.info('[RpiEepromUpdater] Downgrade command returned non-zero but appears successful');
+                }
                 
                 self.logger.info('[RpiEepromUpdater] Downgrade staged successfully');
                 
@@ -489,6 +720,104 @@ RpiEepromUpdater.prototype.performDowngrade = function(data) {
             'error',
             'EEPROM Downgrade Failed',
             'Failed to perform downgrade: ' + error.message
+        );
+        
+        defer.reject(error);
+    }
+    
+    return defer.promise;
+};
+
+// Perform CM4-specific downgrade
+RpiEepromUpdater.prototype.performCM4Downgrade = function(channel, firmwareFile) {
+    const defer = libQ.defer();
+    const self = this;
+    
+    try {
+        self.logger.info('[RpiEepromUpdater] Starting CM4 EEPROM downgrade process');
+        
+        const sentinelPath = '/data/plugins/system_controller/rpi_eeprom_updater/cm4_update_state.json';
+        const configTxtBackup = '/boot/config.txt.rpi-eeprom-backup';
+        const eepromConfigBackup = '/etc/default/rpi-eeprom-update.backup';
+        
+        // Backup config.txt
+        execSync('sudo /bin/cp /boot/config.txt "' + configTxtBackup + '"');
+        self.logger.info('[RpiEepromUpdater] Backed up config.txt');
+        
+        // Backup rpi-eeprom-update config
+        execSync('sudo /bin/cp /etc/default/rpi-eeprom-update "' + eepromConfigBackup + '"');
+        self.logger.info('[RpiEepromUpdater] Backed up rpi-eeprom-update config');
+        
+        // Read current configs
+        let configTxt = fs.readFileSync('/boot/config.txt', 'utf-8');
+        let eepromConfig = fs.readFileSync('/etc/default/rpi-eeprom-update', 'utf-8');
+        
+        // Add CM4-specific settings to config.txt if not present
+        const cm4Section = '\n[cm4]\ndtparam=spi=on\ndtoverlay=audremap\ndtoverlay=spi-gpio40-45\n';
+        if (!configTxt.includes('[cm4]')) {
+            configTxt += cm4Section;
+            fs.writeFileSync('/tmp/config.txt.tmp', configTxt);
+            execSync('sudo /bin/cp /tmp/config.txt.tmp /boot/config.txt');
+            fs.removeSync('/tmp/config.txt.tmp');
+            self.logger.info('[RpiEepromUpdater] Added CM4 settings to config.txt');
+        }
+        
+        // Add CM4-specific settings to rpi-eeprom-update config
+        if (!eepromConfig.includes('RPI_EEPROM_USE_FLASHROM')) {
+            eepromConfig += '\nRPI_EEPROM_USE_FLASHROM=1\n';
+        }
+        if (!eepromConfig.includes('CM4_ENABLE_RPI_EEPROM_UPDATE')) {
+            eepromConfig += 'CM4_ENABLE_RPI_EEPROM_UPDATE=1\n';
+        }
+        
+        // Update channel setting
+        if (eepromConfig.match(/FIRMWARE_RELEASE_STATUS=.*/)) {
+            eepromConfig = eepromConfig.replace(/FIRMWARE_RELEASE_STATUS=.*/, 'FIRMWARE_RELEASE_STATUS="' + channel + '"');
+        } else {
+            eepromConfig += 'FIRMWARE_RELEASE_STATUS="' + channel + '"\n';
+        }
+        
+        fs.writeFileSync('/tmp/rpi-eeprom-update.tmp', eepromConfig);
+        execSync('sudo /bin/cp /tmp/rpi-eeprom-update.tmp /etc/default/rpi-eeprom-update');
+        fs.removeSync('/tmp/rpi-eeprom-update.tmp');
+        self.logger.info('[RpiEepromUpdater] Updated rpi-eeprom-update config');
+        
+        // Create sentinel with firmware file for downgrade
+        const sentinel = {
+            state: 'config_updated',
+            timestamp: Date.now(),
+            channel: channel,
+            isDowngrade: true,
+            firmwareFile: firmwareFile,
+            backups: {
+                config_txt: configTxtBackup,
+                eeprom_config: eepromConfigBackup
+            }
+        };
+        
+        fs.writeFileSync(sentinelPath, JSON.stringify(sentinel, null, 2));
+        self.logger.info('[RpiEepromUpdater] Created CM4 downgrade sentinel');
+        
+        self.commandRouter.pushToastMessage(
+            'info',
+            'CM4 EEPROM Downgrade',
+            'CM4 requires special handling. System will reboot three times. Please wait...'
+        );
+        
+        // First reboot to load new config.txt settings
+        setTimeout(() => {
+            self.logger.info('[RpiEepromUpdater] Rebooting to load CM4 config');
+            execSync('sudo /sbin/reboot');
+        }, 5000);
+        
+        defer.resolve();
+    } catch (error) {
+        self.logger.error('[RpiEepromUpdater] CM4 downgrade failed: ' + error.message);
+        
+        self.commandRouter.pushToastMessage(
+            'error',
+            'CM4 Downgrade Failed',
+            'Failed to prepare CM4 downgrade: ' + error.message
         );
         
         defer.reject(error);

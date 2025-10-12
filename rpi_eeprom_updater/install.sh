@@ -2,13 +2,22 @@
 
 echo "Installing Raspberry Pi EEPROM Updater Plugin"
 
-# Check if rpi-eeprom package is installed
+# Ensure rpi-eeprom package is installed and up to date
+echo "Checking rpi-eeprom package..."
+apt-get update
+
 if ! dpkg -l | grep -q "rpi-eeprom"; then
     echo "rpi-eeprom package not found. Installing..."
-    apt-get update
     apt-get install -y rpi-eeprom
     if [ $? -ne 0 ]; then
         echo "Failed to install rpi-eeprom package"
+        exit 1
+    fi
+else
+    echo "rpi-eeprom package found. Ensuring it is up to date..."
+    apt-get install -y --only-upgrade rpi-eeprom
+    if [ $? -ne 0 ]; then
+        echo "Failed to upgrade rpi-eeprom package"
         exit 1
     fi
 fi
@@ -27,9 +36,11 @@ if [ $? -ne 0 ]; then
 fi
 
 # Create sudoers entry for volumio user
+# Note: reboot, tee, mv, rm, chmod are already permitted in base Volumio sudoers
+# Only adding rpi-eeprom-update and cp which are required by this plugin
 echo "Creating sudoers entry for EEPROM operations..."
 cat > /etc/sudoers.d/010_rpi-eeprom-updater << EOF
-volumio ALL=(ALL) NOPASSWD: /usr/bin/tee /etc/default/rpi-eeprom-update, /usr/bin/rpi-eeprom-update
+volumio ALL=(ALL) NOPASSWD: /usr/bin/rpi-eeprom-update, /bin/cp
 EOF
 
 # Set proper permissions on sudoers file
