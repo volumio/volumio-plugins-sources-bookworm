@@ -15,5 +15,7 @@
   "STATUS": "ステータス",
   "SAVE": "チャンネルを保存",
   "DOWNGRADE_INFO_TITLE": "追加情報",
-  "DOWNGRADE_INFO_TEXT": "手動でのファームウェア管理や高度なダウングレード手順については、Raspberry Pi公式ドキュメントを参照してください：https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom"
+  "DOWNGRADE_INFO_TEXT": "手動でのファームウェア管理や高度なダウングレード手順については、Raspberry Pi公式ドキュメントを参照してください：https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom",
+  "UNSUPPORTED_HARDWARE": "サポートされていないハードウェア",
+  "UNSUPPORTED_HARDWARE_MESSAGE": "この Raspberry Pi モデルは、このプラグインを介した EEPROM ブートローダーの更新をサポートしていません。EEPROM ファームウェアの更新は、Raspberry Pi 4、400、5、500、500+、および Compute Module 4 と 5 でのみ利用可能です。お使いのデバイスは異なる起動方法を使用しているか、更新可能な EEPROM ではなく SD カード/eMMC にファームウェアが保存されています。操作は必要ありません。"
 }

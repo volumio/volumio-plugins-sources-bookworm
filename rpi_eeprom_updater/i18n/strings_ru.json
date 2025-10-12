@@ -15,5 +15,7 @@
   "STATUS": "Статус",
   "SAVE": "Сохранить канал",
   "DOWNGRADE_INFO_TITLE": "Дополнительная информация",
-  "DOWNGRADE_INFO_TEXT": "Для ручного управления прошивкой или расширенных процедур понижения версии обратитесь к официальной документации Raspberry Pi по адресу: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom"
+  "DOWNGRADE_INFO_TEXT": "Для ручного управления прошивкой или расширенных процедур понижения версии обратитесь к официальной документации Raspberry Pi по адресу: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom",
+  "UNSUPPORTED_HARDWARE": "Неподдерживаемое оборудование",
+  "UNSUPPORTED_HARDWARE_MESSAGE": "Эта модель Raspberry Pi не поддерживает обновления загрузчика EEPROM через этот плагин. Обновления прошивки EEPROM доступны только для Raspberry Pi 4, 400, 5, 500, 500+ и Compute Module 4 и 5. Ваше устройство использует другой метод загрузки или имеет прошивку, хранящуюся на SD-карте/eMMC, а не в обновляемом EEPROM. Никаких действий не требуется."
 }

@@ -15,5 +15,7 @@
   "STATUS": "Statut",
   "SAVE": "Enregistrer le canal",
   "DOWNGRADE_INFO_TITLE": "Informations supplémentaires",
-  "DOWNGRADE_INFO_TEXT": "Pour la gestion manuelle du micrologiciel ou les procédures de rétrogradation avancées, veuillez consulter la documentation officielle Raspberry Pi à l'adresse: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom"
+  "DOWNGRADE_INFO_TEXT": "Pour la gestion manuelle du micrologiciel ou les procédures de rétrogradation avancées, veuillez consulter la documentation officielle Raspberry Pi à l'adresse: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom",
+  "UNSUPPORTED_HARDWARE": "Matériel non pris en charge",
+  "UNSUPPORTED_HARDWARE_MESSAGE": "Ce modèle de Raspberry Pi ne prend pas en charge les mises à jour du micrologiciel EEPROM via ce plugin. Les mises à jour du micrologiciel EEPROM sont uniquement disponibles pour les Raspberry Pi 4, 400, 5, 500, 500+ et les Compute Modules 4 et 5. Votre appareil utilise soit une méthode de démarrage différente, soit un micrologiciel stocké sur carte SD/eMMC plutôt que dans une EEPROM modifiable. Aucune action n'est requise."
 }

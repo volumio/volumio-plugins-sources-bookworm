@@ -28,15 +28,10 @@ RpiEepromUpdater.prototype.onStart = function() {
     const defer = libQ.defer();
     
     // Check if hardware is supported
-    if (!this.isHardwareSupported()) {
-        this.logger.error('[RpiEepromUpdater] Unsupported hardware detected');
-        this.commandRouter.pushToastMessage(
-            'error',
-            'EEPROM Updater',
-            'This hardware does not support EEPROM updates'
-        );
-        defer.reject();
-        return defer.promise;
+    this.hardwareSupported = this.isHardwareSupported();
+    
+    if (!this.hardwareSupported) {
+        this.logger.warn('[RpiEepromUpdater] Unsupported hardware detected - plugin will start but show warning');
     }
     
     // Check for CM4 update sentinel
@@ -538,7 +533,29 @@ RpiEepromUpdater.prototype.getUIConfig = function() {
         path.join(__dirname, 'UIConfig.json')
     )
     .then(function(uiconf) {
-        // Get firmware status
+        // Check if hardware is unsupported
+        if (!self.hardwareSupported) {
+            // Show only the unsupported hardware warning section
+            uiconf.sections = [
+                {
+                    id: 'unsupported_hardware',
+                    element: 'section',
+                    label: 'TRANSLATE.UNSUPPORTED_HARDWARE',
+                    icon: 'fa-exclamation-triangle',
+                    content: [
+                        {
+                            id: 'unsupported_message',
+                            element: 'section',
+                            description: 'TRANSLATE.UNSUPPORTED_HARDWARE_MESSAGE'
+                        }
+                    ]
+                }
+            ];
+            defer.resolve(uiconf);
+            return;
+        }
+        
+        // Get firmware status for supported hardware
         self.getFirmwareStatus()
             .then(function(status) {
                 // Current version section (section 0)
