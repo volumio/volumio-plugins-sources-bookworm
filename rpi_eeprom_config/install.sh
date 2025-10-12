@@ -71,7 +71,7 @@ fi
 # Adding rpi-eeprom-config which is required by this plugin
 echo "Creating sudoers entry for EEPROM operations..."
 cat > /etc/sudoers.d/010_rpi-eeprom-config << EOF
-volumio ALL=(ALL) NOPASSWD: /usr/bin/rpi-eeprom-config
+volumio ALL=(ALL) NOPASSWD: /usr/bin/rpi-eeprom-config*
 EOF
 
 # Set proper permissions on sudoers file

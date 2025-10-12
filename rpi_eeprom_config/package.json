@@ -1,6 +1,6 @@
 {
   "name": "rpi_eeprom_config",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Comprehensive EEPROM configuration manager for Raspberry Pi 4/400/5/500/500+ and CM4/CM5.",
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,7 @@
     "icon": "fa-microchip",
     "plugin_type": "system_controller",
     "details": "Configure Raspberry Pi bootloader EEPROM parameters including boot order, power management, USB settings, and debug options without command-line access.",
-    "changelog": "Initial release.",
+    "changelog": "Execution permisisons.",
     "categories": [
       "system_hardware"
     ],
