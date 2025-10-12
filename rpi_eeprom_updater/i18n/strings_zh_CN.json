@@ -15,5 +15,7 @@
   "STATUS": "状态",
   "SAVE": "保存渠道",
   "DOWNGRADE_INFO_TITLE": "附加信息",
-  "DOWNGRADE_INFO_TEXT": "如需手动固件管理或高级降级程序，请参阅 Raspberry Pi 官方文档：https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom"
+  "DOWNGRADE_INFO_TEXT": "如需手动固件管理或高级降级程序，请参阅 Raspberry Pi 官方文档：https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom",
+  "UNSUPPORTED_HARDWARE": "不支持的硬件",
+  "UNSUPPORTED_HARDWARE_MESSAGE": "此 Raspberry Pi 型号不支持通过此插件进行 EEPROM 引导加载程序更新。EEPROM 固件更新仅适用于 Raspberry Pi 4、400、5、500、500+ 和 Compute Module 4 和 5。您的设备使用不同的引导方法，或将固件存储在 SD 卡/eMMC 上，而不是可更新的 EEPROM 中。无需采取任何操作。"
 }

@@ -15,5 +15,7 @@
   "STATUS": "Estado",
   "SAVE": "Guardar canal",
   "DOWNGRADE_INFO_TITLE": "Información adicional",
-  "DOWNGRADE_INFO_TEXT": "Para la gestión manual del firmware o procedimientos avanzados de degradación, consulte la documentación oficial de Raspberry Pi en: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom"
+  "DOWNGRADE_INFO_TEXT": "Para la gestión manual del firmware o procedimientos avanzados de degradación, consulte la documentación oficial de Raspberry Pi en: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom",
+  "UNSUPPORTED_HARDWARE": "Hardware no compatible",
+  "UNSUPPORTED_HARDWARE_MESSAGE": "Este modelo de Raspberry Pi no admite actualizaciones del gestor de arranque EEPROM a través de este plugin. Las actualizaciones de firmware EEPROM solo están disponibles para Raspberry Pi 4, 400, 5, 500, 500+ y Compute Modules 4 y 5. Su dispositivo utiliza un método de arranque diferente o tiene el firmware almacenado en tarjeta SD/eMMC en lugar de en una EEPROM actualizable. No se requiere ninguna acción."
 }
