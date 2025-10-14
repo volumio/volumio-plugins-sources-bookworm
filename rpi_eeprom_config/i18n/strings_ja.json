@@ -6,6 +6,8 @@
   "BOOT_ORDER_DOC": "Raspberry Piが異なるデバイスから起動を試みる順序を決定します。システムは起動可能なシステムが見つかるまで、順番に各デバイスを試します。",
   "PSU_MAX_CURRENT": "電源最大電流 (mA)",
   "PSU_MAX_CURRENT_DOC": "電源が供給できる最大電流（Raspberry Pi 5+のみ）。より高い値はUSB周辺機器により多くの電力を提供できます。範囲: 3000-5000mA。デフォルト: 5000mA。",
+  "PSU_MAX_CURRENT_ENABLE": "電源最大電流オーバーライドを有効化",
+  "PSU_MAX_CURRENT_ENABLE_DOC": "電源のデフォルト電流制限を上書きする場合に有効にします。有効にすると、3000-5000mAの範囲でカスタム値を設定できます。Raspberry Pi 5以降のモデルにのみ適用されます。デフォルト: 無効(ハードウェアデフォルトの5000mAを使用)。",
   "POWER_OFF_ON_HALT": "停止時に電源オフ",
   "POWER_OFF_ON_HALT_DOC": "有効にすると、Raspberry Piは停止時に低電力モードに入る代わりに電源を完全に切断します。スタンバイ時の消費電力を削減するのに役立ちます。",
   "WAKE_ON_GPIO": "GPIOによる起動",

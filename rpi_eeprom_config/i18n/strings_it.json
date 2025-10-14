@@ -6,6 +6,8 @@
   "BOOT_ORDER_DOC": "Determina l'ordine in cui il Raspberry Pi tenta di avviarsi da dispositivi diversi. Il sistema provera ogni dispositivo in ordine fino a trovare un sistema avviabile.",
   "PSU_MAX_CURRENT": "Corrente massima alimentatore (mA)",
   "PSU_MAX_CURRENT_DOC": "Corrente massima che l'alimentatore puo fornire (solo Raspberry Pi 5+). Valori piu alti consentono piu potenza per le periferiche USB. Intervallo: 3000-5000mA. Predefinito: 5000mA.",
+  "PSU_MAX_CURRENT_ENABLE": "Abilita sovrascrittura corrente massima alimentatore",
+  "PSU_MAX_CURRENT_ENABLE_DOC": "Abilita per sovrascrivere il limite di corrente predefinito dell'alimentatore. Quando abilitato, puoi impostare un valore personalizzato tra 3000-5000mA. Applicabile solo a Raspberry Pi 5 e modelli piu recenti. Predefinito: disabilitato (utilizza il valore hardware predefinito di 5000mA).",
   "POWER_OFF_ON_HALT": "Spegnimento all'arresto",
   "POWER_OFF_ON_HALT_DOC": "Quando abilitato, il Raspberry Pi interrompera completamente l'alimentazione all'arresto invece di entrare in modalita a basso consumo. Utile per ridurre il consumo energetico in standby.",
   "WAKE_ON_GPIO": "Riattivazione tramite GPIO",
