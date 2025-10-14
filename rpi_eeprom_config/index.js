@@ -744,7 +744,11 @@ RpiEepromConfig.prototype.populateUIConfig = function(uiconf, currentConfig) {
     // Hardware-based field filtering (Pi 5+ only fields)
     const supportedModels = ['Raspberry Pi 5', 'Raspberry Pi 500+', 'Compute Module 5'];
     const isPi5Plus = supportedModels.includes(self.detectedModel);
-    
+
+    // Check if hardware supports NVMe
+    const hasNvmeSupport = self.modelCapabilities && self.modelCapabilities.boot_modes.includes('nvme');
+
+    // Filter Pi 5+ specific fields (PSU max current)
     if (!isPi5Plus) {
       uiconf.sections[0].content = basicSection.filter(function(item) {
         return item.id !== 'psu_max_current_enable' && item.id !== 'psu_max_current';
@@ -755,6 +759,16 @@ RpiEepromConfig.prototype.populateUIConfig = function(uiconf, currentConfig) {
       self.logger.info('[RpiEepromConfig] Removed Pi 5+ fields for ' + self.detectedModel);
     }
 
+    // Filter NVMe-specific fields (PCIE_PROBE)
+    if (!hasNvmeSupport) {
+      uiconf.sections[0].content = uiconf.sections[0].content.filter(function(item) {
+        return item.id !== 'pcie_probe';
+      });
+      uiconf.sections[0].saveButton.data = uiconf.sections[0].saveButton.data.filter(function(id) {
+        return id !== 'pcie_probe';
+      });
+      self.logger.info('[RpiEepromConfig] Removed NVMe fields for ' + self.detectedModel);
+    }
     // Boot Order - dynamically populate based on hardware capabilities
     const bootOrder = currentConfig.BOOT_ORDER || (self.modelCapabilities ? self.modelCapabilities.default_boot_order : '0xf41');
     const bootOrderIndex = basicSection.findIndex(function(item) {
