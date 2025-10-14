@@ -6,6 +6,8 @@
   "BOOT_ORDER_DOC": "Determines the order in which the Raspberry Pi attempts to boot from different devices. The system will try each device in order until a bootable system is found.",
   "PSU_MAX_CURRENT": "Power Supply Max Current (mA)",
   "PSU_MAX_CURRENT_DOC": "Maximum current the power supply can provide (Raspberry Pi 5+ only). Higher values allow more power for USB peripherals. Range: 3000-5000mA. Default: 5000mA.",
+  "PSU_MAX_CURRENT_ENABLE": "Enable PSU Max Current Override",
+  "PSU_MAX_CURRENT_ENABLE_DOC": "Enable to override the default power supply current limit. When enabled, you can set a custom value between 3000-5000mA. Only applicable to Raspberry Pi 5 and newer models. Default: disabled (uses hardware default of 5000mA).",
   "POWER_OFF_ON_HALT": "Power Off on Halt",
   "POWER_OFF_ON_HALT_DOC": "When enabled, the Raspberry Pi will cut power completely when halted instead of entering low-power mode. Useful for reducing standby power consumption.",
   "WAKE_ON_GPIO": "Wake on GPIO",

@@ -6,6 +6,8 @@
   "BOOT_ORDER_DOC": "确定 Raspberry Pi 尝试从不同设备启动的顺序。系统将按顺序尝试每个设备,直到找到可启动的系统。",
   "PSU_MAX_CURRENT": "电源最大电流 (mA)",
   "PSU_MAX_CURRENT_DOC": "电源可以提供的最大电流(仅限 Raspberry Pi 5+)。更高的值允许为 USB 外设提供更多功率。范围: 3000-5000mA。默认: 5000mA。",
+  "PSU_MAX_CURRENT_ENABLE": "启用电源最大电流覆盖",
+  "PSU_MAX_CURRENT_ENABLE_DOC": "启用以覆盖电源的默认电流限制。启用后,您可以设置 3000-5000mA 范围内的自定义值。仅适用于 Raspberry Pi 5 及更新型号。默认: 禁用(使用硬件默认值 5000mA)。",
   "POWER_OFF_ON_HALT": "停止时关闭电源",
   "POWER_OFF_ON_HALT_DOC": "启用后,Raspberry Pi 将在停止时完全切断电源,而不是进入低功耗模式。有助于减少待机功耗。",
   "WAKE_ON_GPIO": "通过 GPIO 唤醒",

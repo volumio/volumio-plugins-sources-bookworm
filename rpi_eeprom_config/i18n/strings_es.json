@@ -6,6 +6,8 @@
   "BOOT_ORDER_DOC": "Determina el orden en el que la Raspberry Pi intenta arrancar desde diferentes dispositivos. El sistema probara cada dispositivo en orden hasta encontrar un sistema arrancable.",
   "PSU_MAX_CURRENT": "Corriente maxima de la fuente (mA)",
   "PSU_MAX_CURRENT_DOC": "Corriente maxima que puede proporcionar la fuente de alimentacion (solo Raspberry Pi 5+). Valores mas altos permiten mas potencia para perifericos USB. Rango: 3000-5000mA. Predeterminado: 5000mA.",
+  "PSU_MAX_CURRENT_ENABLE": "Habilitar anulacion de corriente maxima de la fuente",
+  "PSU_MAX_CURRENT_ENABLE_DOC": "Habilitar para anular el limite de corriente predeterminado de la fuente de alimentacion. Cuando esta habilitado, puede establecer un valor personalizado entre 3000-5000mA. Solo aplicable a Raspberry Pi 5 y modelos mas nuevos. Predeterminado: deshabilitado (usa el predeterminado de hardware de 5000mA).",
   "POWER_OFF_ON_HALT": "Apagar al detener",
   "POWER_OFF_ON_HALT_DOC": "Cuando esta habilitado, la Raspberry Pi cortara completamente la energia al detenerse en lugar de entrar en modo de bajo consumo. Util para reducir el consumo de energia en espera.",
   "WAKE_ON_GPIO": "Despertar por GPIO",

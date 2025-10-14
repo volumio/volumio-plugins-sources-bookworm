@@ -6,6 +6,8 @@
   "BOOT_ORDER_DOC": "Okresla kolejnosc, w jakiej Raspberry Pi probuje uruchamiac sie z roznych urzadzen. System bedzie probowal kazdego urzadzenia po kolei, az znajdzie system umozliwiajacy rozruch.",
   "PSU_MAX_CURRENT": "Maksymalny prad zasilacza (mA)",
   "PSU_MAX_CURRENT_DOC": "Maksymalny prad, jaki moze dostarczyc zasilacz (tylko Raspberry Pi 5+). Wyzsze wartosci pozwalaja na wieksza moc dla urzadzen peryferyjnych USB. Zakres: 3000-5000mA. Domyslnie: 5000mA.",
+  "PSU_MAX_CURRENT_ENABLE": "Wlacz nadpisanie maksymalnego pradu zasilacza",
+  "PSU_MAX_CURRENT_ENABLE_DOC": "Wlacz, aby nadpisac domyslny limit pradu zasilacza. Po wlaczeniu mozesz ustawic niestandardowa wartosc miedzy 3000-5000mA. Dotyczy tylko modeli Raspberry Pi 5 i nowszych. Domyslnie: wylaczone (uzywa domyslnej wartosci sprzetowej 5000mA).",
   "POWER_OFF_ON_HALT": "Wylaczenie przy zatrzymaniu",
   "POWER_OFF_ON_HALT_DOC": "Po wlaczeniu Raspberry Pi calkowicie odtnie zasilanie podczas zatrzymania, zamiast przechodzic w tryb niskiego poboru mocy. Przydatne do zmniejszenia zuzycia energii w trybie czuwania.",
   "WAKE_ON_GPIO": "Wybudzanie przez GPIO",

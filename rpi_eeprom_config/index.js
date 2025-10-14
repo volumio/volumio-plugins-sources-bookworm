@@ -1484,8 +1484,8 @@ RpiEepromConfig.prototype.buildEepromConfig = function(data) {
     config.push('SD_BOOT_MAX_RETRIES=' + data.SD_BOOT_MAX_RETRIES);
   }
 
-  // enable_self_update (default: 1)
-  if (data.ENABLE_SELF_UPDATE !== undefined && data.ENABLE_SELF_UPDATE !== '1') {
+  // enable_self_update (default: 0)
+  if (data.ENABLE_SELF_UPDATE !== undefined && data.ENABLE_SELF_UPDATE !== '0') {
     config.push('ENABLE_SELF_UPDATE=' + data.ENABLE_SELF_UPDATE);
   }
 

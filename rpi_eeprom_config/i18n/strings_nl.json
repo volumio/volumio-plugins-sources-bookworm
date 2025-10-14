@@ -6,6 +6,8 @@
   "BOOT_ORDER_DOC": "Bepaalt de volgorde waarin de Raspberry Pi probeert op te starten vanaf verschillende apparaten. Het systeem zal elk apparaat op volgorde proberen totdat een opstartbaar systeem wordt gevonden.",
   "PSU_MAX_CURRENT": "Voeding Max. Stroom (mA)",
   "PSU_MAX_CURRENT_DOC": "Maximale stroom die de voeding kan leveren (alleen Raspberry Pi 5+). Hogere waarden bieden meer vermogen voor USB-randapparatuur. Bereik: 3000-5000mA. Standaard: 5000mA.",
+  "PSU_MAX_CURRENT_ENABLE": "Voeding Max. Stroom overschrijven inschakelen",
+  "PSU_MAX_CURRENT_ENABLE_DOC": "Inschakelen om de standaard stroomlimiet van de voeding te overschrijven. Wanneer ingeschakeld, kunt u een aangepaste waarde tussen 3000-5000mA instellen. Alleen van toepassing op Raspberry Pi 5 en nieuwere modellen. Standaard: uitgeschakeld (gebruikt hardware standaard van 5000mA).",
   "POWER_OFF_ON_HALT": "Uitschakelen bij halt",
   "POWER_OFF_ON_HALT_DOC": "Wanneer ingeschakeld, zal de Raspberry Pi de stroom volledig uitschakelen bij het stoppen in plaats van naar een laag verbruik modus te gaan. Nuttig voor het verminderen van het standby stroomverbruik.",
   "WAKE_ON_GPIO": "Ontwaken via GPIO",

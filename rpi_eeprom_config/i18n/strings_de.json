@@ -6,6 +6,8 @@
   "BOOT_ORDER_DOC": "Legt die Reihenfolge fest, in der der Raspberry Pi versucht, von verschiedenen Geraten zu booten. Das System versucht jedes Gerat nacheinander, bis ein bootfahiges System gefunden wird.",
   "PSU_MAX_CURRENT": "Netzteil Max. Strom (mA)",
   "PSU_MAX_CURRENT_DOC": "Maximaler Strom, den das Netzteil liefern kann (nur Raspberry Pi 5+). Hohere Werte ermoglichen mehr Leistung fur USB-Peripheriegerate. Bereich: 3000-5000mA. Standard: 5000mA.",
+  "PSU_MAX_CURRENT_ENABLE": "Netzteil Max. Strom uberschreiben aktivieren",
+  "PSU_MAX_CURRENT_ENABLE_DOC": "Aktivieren, um die Standard-Stromgrenze des Netzteils zu uberschreiben. Wenn aktiviert, konnen Sie einen benutzerdefinierten Wert zwischen 3000-5000mA festlegen. Gilt nur fur Raspberry Pi 5 und neuere Modelle. Standard: deaktiviert (verwendet Hardware-Standard von 5000mA).",
   "POWER_OFF_ON_HALT": "Ausschalten bei Halt",
   "POWER_OFF_ON_HALT_DOC": "Wenn aktiviert, schaltet der Raspberry Pi die Stromversorgung beim Herunterfahren vollstandig ab, anstatt in den Energiesparmodus zu wechseln. Nutzlich zur Reduzierung des Standby-Stromverbrauchs.",
   "WAKE_ON_GPIO": "Aufwecken uber GPIO",
