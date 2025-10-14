@@ -338,7 +338,7 @@ RpiEepromConfig.prototype.parameterValidation = {
   
   UART_BAUD: {
     validate: function(value) {
-      const validBauds = ['115200', '921600', '1500000'];
+      const validBauds = ['9600', '19200', '38400', '57600', '115200', '230400', '460800', '921600'];
       return validBauds.indexOf(value) !== -1;
     },
     sanitize: function() {
