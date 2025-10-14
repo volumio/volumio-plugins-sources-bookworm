@@ -22,14 +22,34 @@ else
     fi
 fi
 
-# Verify rpi-eeprom-update tool exists
-if [ ! -f /usr/bin/rpi-eeprom-update ]; then
+# Verify rpi-eeprom-update tool exists (can be in /usr/bin or /usr/sbin)
+if [ -f /usr/bin/rpi-eeprom-update ]; then
+    echo "rpi-eeprom-update tool found at /usr/bin/rpi-eeprom-update"
+elif [ -f /usr/sbin/rpi-eeprom-update ]; then
+    echo "rpi-eeprom-update tool found at /usr/sbin/rpi-eeprom-update"
+else
     echo "ERROR: rpi-eeprom-update tool not found after installation"
     exit 1
 fi
 
-# Test if hardware is supported
-/usr/bin/rpi-eeprom-update -l > /dev/null 2>&1
+# Verify vcgencmd tool exists (can be in /usr/bin or /usr/sbin)
+if [ -f /usr/bin/vcgencmd ]; then
+    echo "vcgencmd tool found at /usr/bin/vcgencmd"
+elif [ -f /usr/sbin/vcgencmd ]; then
+    echo "vcgencmd tool found at /usr/sbin/vcgencmd"
+else
+    echo "ERROR: vcgencmd tool not found"
+    echo "This tool is required and should be part of libraspberrypi-bin package"
+    exit 1
+fi
+
+# Test if hardware is supported by attempting to list available updates
+if [ -f /usr/bin/rpi-eeprom-update ]; then
+    /usr/bin/rpi-eeprom-update -l > /dev/null 2>&1
+elif [ -f /usr/sbin/rpi-eeprom-update ]; then
+    /usr/sbin/rpi-eeprom-update -l > /dev/null 2>&1
+fi
+
 if [ $? -ne 0 ]; then
     echo "WARNING: This hardware may not support EEPROM updates"
     echo "Plugin will install but may not function correctly"
@@ -37,20 +57,23 @@ fi
 
 # Create sudoers entry for volumio user
 # Note: reboot, tee, mv, rm, chmod are already permitted in base Volumio sudoers
-# Only adding rpi-eeprom-update and cp which are required by this plugin
+# Adding rpi-eeprom-update and cp with wildcards to allow all arguments
 echo "Creating sudoers entry for EEPROM operations..."
-cat > /etc/sudoers.d/010_rpi-eeprom-updater << EOF
-volumio ALL=(ALL) NOPASSWD: /usr/bin/rpi-eeprom-update, /bin/cp
+cat > /etc/sudoers.d/volumio-user-rpi_updater << EOF
+volumio ALL=(ALL) NOPASSWD: /usr/bin/rpi-eeprom-update
+volumio ALL=(ALL) NOPASSWD: /usr/sbin/rpi-eeprom-update
+volumio ALL=(ALL) NOPASSWD: /bin/cp
+volumio ALL=(ALL) NOPASSWD: /usr/bin/cp
 EOF
 
 # Set proper permissions on sudoers file
-chmod 0440 /etc/sudoers.d/010_rpi-eeprom-updater
+chmod 0440 /etc/sudoers.d/volumio-user-rpi_updater
 
 # Validate sudoers syntax
-visudo -c -f /etc/sudoers.d/010_rpi-eeprom-updater
+visudo -c -f /etc/sudoers.d/volumio-user-rpi_updater
 if [ $? -ne 0 ]; then
     echo "ERROR: Invalid sudoers syntax"
-    rm -f /etc/sudoers.d/010_rpi-eeprom-updater
+    rm -f /etc/sudoers.d/volumio-user-rpi_updater
     exit 1
 fi
 
