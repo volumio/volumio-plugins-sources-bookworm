@@ -17,12 +17,13 @@
         "label": "TRANSLATE.CONFIRM_BASIC_SETTINGS",
         "data": [
           "boot_order",
-          "psu_max_current",
           "power_off_on_halt",
           "wake_on_gpio",
           "pcie_probe",
           "boot_uart",
-          "uart_baud"
+          "uart_baud",
+          "psu_max_current_enable",
+          "psu_max_current"
         ]
       },
       "content": [
@@ -41,25 +42,6 @@
               "label": "SD Card -> USB"
             }
           ]
-        },
-        {
-          "id": "psu_max_current",
-          "element": "input",
-          "type": "number",
-          "label": "TRANSLATE.PSU_MAX_CURRENT",
-          "doc": "TRANSLATE.PSU_MAX_CURRENT_DOC",
-          "value": 5000,
-          "attributes": [
-            {
-              "min": 3000,
-              "max": 5000,
-              "step": 100
-            }
-          ],
-          "visibleIf": {
-            "field": "detected_model",
-            "value": ["Raspberry Pi 5", "Raspberry Pi 500+", "Compute Module 5"]
-          }
         },
         {
           "id": "power_off_on_halt",
@@ -130,14 +112,36 @@
             {
               "value": 921600,
               "label": "921600"
-            },
-            {
-              "value": 115200,
-              "label": "115200"
             }
           ],
           "visibleIf": {
             "field": "boot_uart",
+            "value": true
+          }
+        },
+        {
+          "id": "psu_max_current_enable",
+          "element": "switch",
+          "label": "TRANSLATE.PSU_MAX_CURRENT_ENABLE",
+          "doc": "TRANSLATE.PSU_MAX_CURRENT_ENABLE_DOC",
+          "value": false
+        },
+        {
+          "id": "psu_max_current",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.PSU_MAX_CURRENT",
+          "doc": "TRANSLATE.PSU_MAX_CURRENT_DOC",
+          "value": 5000,
+          "attributes": [
+            {
+              "min": 3000,
+              "max": 5000,
+              "step": 100
+            }
+          ],
+          "visibleIf": {
+            "field": "psu_max_current_enable",
             "value": true
           }
         }

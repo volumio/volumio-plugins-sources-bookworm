@@ -246,6 +246,391 @@ RpiEepromConfig.prototype.getAvailableBootOrders = function() {
   return availableBootOrders;
 };
 
+RpiEepromConfig.prototype.parameterValidation = {
+  // Basic Settings - Required, will use defaults if missing/invalid
+  BOOT_ORDER: {
+    validate: function(value, model) {
+      if (!model || !model.boot_modes) return false;
+      const availableOrders = this.getAvailableBootOrders(model);
+      return availableOrders.some(function(o) { return o.value === value; });
+    },
+    sanitize: function(value, model) {
+      return model.default_boot_order;
+    },
+    required: true,
+    section: 'basic'
+  },
+  
+  PSU_MAX_CURRENT: {
+    validate: function(value) {
+      const num = parseInt(value, 10);
+      return !isNaN(num) && num >= 3000 && num <= 5000;
+    },
+    sanitize: function() {
+      return '5000';
+    },
+    clamp: function(value) {
+      const num = parseInt(value, 10);
+      return String(Math.min(5000, Math.max(3000, isNaN(num) ? 5000 : num)));
+    },
+    required: false,
+    section: 'basic',
+    models: ['pi5', 'pi500', 'pi500plus']
+  },
+  
+  POWER_OFF_ON_HALT: {
+    validate: function(value) {
+      return value === '0' || value === '1';
+    },
+    sanitize: function() {
+      return '0';
+    },
+    required: false,
+    section: 'basic'
+  },
+  
+  WAKE_ON_GPIO: {
+    validate: function(value) {
+      return value === '0' || value === '1';
+    },
+    sanitize: function() {
+      return '1';
+    },
+    required: false,
+    section: 'basic'
+  },
+  
+  PCIE_PROBE: {
+    validate: function(value) {
+      return value === '0' || value === '1';
+    },
+    sanitize: function() {
+      return '1';
+    },
+    required: false,
+    section: 'basic'
+  },
+  
+  BOOT_UART: {
+    validate: function(value) {
+      return value === '0' || value === '1';
+    },
+    sanitize: function() {
+      return '0';
+    },
+    required: false,
+    section: 'basic'
+  },
+  
+  UART_BAUD: {
+    validate: function(value) {
+      const validBauds = ['115200', '921600', '1500000'];
+      return validBauds.indexOf(value) !== -1;
+    },
+    sanitize: function() {
+      return '115200';
+    },
+    required: false,
+    section: 'basic',
+    models: ['pi5', 'pi500', 'pi500plus']
+  },
+  
+  // Advanced Settings - Optional, sanitize but don't populate if missing
+  USB_MSD_DISCOVER_TIMEOUT: {
+    validate: function(value) {
+      const num = parseInt(value, 10);
+      return !isNaN(num) && num >= 5000 && num <= 60000;
+    },
+    sanitize: function() {
+      return '20000';
+    },
+    clamp: function(value) {
+      const num = parseInt(value, 10);
+      return String(Math.min(60000, Math.max(5000, isNaN(num) ? 20000 : num)));
+    },
+    required: false,
+    section: 'advanced'
+  },
+  
+  USB_MSD_LUN_TIMEOUT: {
+    validate: function(value) {
+      const num = parseInt(value, 10);
+      return !isNaN(num) && num >= 100 && num <= 10000;
+    },
+    sanitize: function() {
+      return '2000';
+    },
+    clamp: function(value) {
+      const num = parseInt(value, 10);
+      return String(Math.min(10000, Math.max(100, isNaN(num) ? 2000 : num)));
+    },
+    required: false,
+    section: 'advanced'
+  },
+  
+  USB_MSD_PWR_OFF_TIME: {
+    validate: function(value) {
+      const num = parseInt(value, 10);
+      return !isNaN(num) && num >= 0 && num <= 5000;
+    },
+    sanitize: function() {
+      return '1000';
+    },
+    clamp: function(value) {
+      const num = parseInt(value, 10);
+      return String(Math.min(5000, Math.max(0, isNaN(num) ? 1000 : num)));
+    },
+    required: false,
+    section: 'advanced'
+  },
+  
+  USB_MSD_STARTUP_DELAY: {
+    validate: function(value) {
+      const num = parseInt(value, 10);
+      return !isNaN(num) && num >= 0 && num <= 30000;
+    },
+    sanitize: function() {
+      return '0';
+    },
+    clamp: function(value) {
+      const num = parseInt(value, 10);
+      return String(Math.min(30000, Math.max(0, isNaN(num) ? 0 : num)));
+    },
+    required: false,
+    section: 'advanced'
+  },
+  
+  USB_MSD_BOOT_MAX_RETRIES: {
+    validate: function(value) {
+      const num = parseInt(value, 10);
+      return !isNaN(num) && num >= 0 && num <= 9;
+    },
+    sanitize: function() {
+      return '1';
+    },
+    clamp: function(value) {
+      const num = parseInt(value, 10);
+      return String(Math.min(9, Math.max(0, isNaN(num) ? 1 : num)));
+    },
+    required: false,
+    section: 'advanced'
+  },
+  
+  SD_BOOT_MAX_RETRIES: {
+    validate: function(value) {
+      const num = parseInt(value, 10);
+      return !isNaN(num) && num >= 0 && num <= 9;
+    },
+    sanitize: function() {
+      return '3';
+    },
+    clamp: function(value) {
+      const num = parseInt(value, 10);
+      return String(Math.min(9, Math.max(0, isNaN(num) ? 3 : num)));
+    },
+    required: false,
+    section: 'advanced'
+  },
+  
+  ENABLE_SELF_UPDATE: {
+    validate: function(value) {
+      return value === '0' || value === '1';
+    },
+    sanitize: function() {
+      return '0';
+    },
+    required: false,
+    section: 'advanced'
+  },
+  
+  FREEZE_VERSION: {
+    validate: function(value) {
+      return value === '0' || value === '1';
+    },
+    sanitize: function() {
+      return '0';
+    },
+    required: false,
+    section: 'advanced'
+  },
+  
+  VL805: {
+    validate: function(value) {
+      // Empty is valid (auto-detect)
+      if (!value || value === '') return true;
+      // Must be 8-character hex
+      return /^[0-9a-fA-F]{8}$/.test(value);
+    },
+    sanitize: function() {
+      return '';
+    },
+    required: false,
+    section: 'advanced',
+    models: ['cm4']
+  },
+  
+  PARTITION: {
+    validate: function(value) {
+      const num = parseInt(value, 10);
+      return !isNaN(num) && num >= 0 && num <= 255;
+    },
+    sanitize: function() {
+      return '0';
+    },
+    clamp: function(value) {
+      const num = parseInt(value, 10);
+      return String(Math.min(255, Math.max(0, isNaN(num) ? 0 : num)));
+    },
+    required: false,
+    section: 'advanced'
+  },
+  
+  // Debug Settings - Optional, sanitize but don't populate if missing
+  DISABLE_HDMI: {
+    validate: function(value) {
+      return value === '0' || value === '1';
+    },
+    sanitize: function() {
+      return '0';
+    },
+    required: false,
+    section: 'debug'
+  },
+  
+  HDMI_DELAY: {
+    validate: function(value) {
+      const num = parseInt(value, 10);
+      return !isNaN(num) && num >= 0 && num <= 10;
+    },
+    sanitize: function() {
+      return '5';
+    },
+    clamp: function(value) {
+      const num = parseInt(value, 10);
+      return String(Math.min(10, Math.max(0, isNaN(num) ? 5 : num)));
+    },
+    required: false,
+    section: 'debug'
+  },
+  
+  NETCONSOLE: {
+    validate: function(value) {
+      // Empty is valid (disabled)
+      if (!value || value === '') return true;
+      // Basic format check: should contain commas for ip,port,gateway
+      // Full validation is complex, so just check length and basic structure
+      return value.length <= 32 && value.split(',').length >= 2;
+    },
+    sanitize: function() {
+      return '';
+    },
+    required: false,
+    section: 'debug'
+  },
+  
+  DHCP_TIMEOUT: {
+    validate: function(value) {
+      const num = parseInt(value, 10);
+      return !isNaN(num) && num >= 5000 && num <= 90000;
+    },
+    sanitize: function() {
+      return '45000';
+    },
+    clamp: function(value) {
+      const num = parseInt(value, 10);
+      return String(Math.min(90000, Math.max(5000, isNaN(num) ? 45000 : num)));
+    },
+    required: false,
+    section: 'debug'
+  }
+};
+
+RpiEepromConfig.prototype.validateAndSanitizeConfig = function(rawConfig) {
+  const self = this;
+  const sanitized = {};
+  const warnings = [];
+  
+  self.logger.info('[RpiEepromConfig] Validating and sanitizing configuration');
+  
+  // Get model-specific info for validation
+  const model = self.modelCapabilities;
+  const modelId = model ? model.id : null;
+  
+  // Process each parameter in raw config
+  for (const key in rawConfig) {
+    if (!rawConfig.hasOwnProperty(key)) continue;
+    
+    const value = rawConfig[key];
+    const validation = self.parameterValidation[key];
+    
+    // Unknown parameter - pass through unchanged
+    if (!validation) {
+      sanitized[key] = value;
+      self.logger.info('[RpiEepromConfig] Unknown parameter ' + key + '=' + value + ' (pass through)');
+      continue;
+    }
+    
+    // Check if parameter is applicable to this model
+    if (validation.models && modelId && validation.models.indexOf(modelId) === -1) {
+      self.logger.info('[RpiEepromConfig] Parameter ' + key + ' not applicable to ' + modelId + ' (skipped)');
+      continue;
+    }
+    
+    // Validate the value
+    const isValid = validation.validate.call(self, value, model);
+    
+    if (isValid) {
+      // Value is valid, keep it
+      sanitized[key] = value;
+      self.logger.info('[RpiEepromConfig] Parameter ' + key + '=' + value + ' (valid)');
+    } else {
+      // Value is invalid
+      if (validation.clamp) {
+        // Try to clamp to valid range
+        const clamped = validation.clamp.call(self, value);
+        sanitized[key] = clamped;
+        warnings.push('Parameter ' + key + ' value "' + value + '" out of range, clamped to ' + clamped);
+        self.logger.warn('[RpiEepromConfig] Parameter ' + key + '=' + value + ' invalid, clamped to ' + clamped);
+      } else {
+        // Use default sanitized value
+        const defaultValue = validation.sanitize.call(self, value, model);
+        sanitized[key] = defaultValue;
+        warnings.push('Parameter ' + key + ' value "' + value + '" invalid, reset to default ' + defaultValue);
+        self.logger.warn('[RpiEepromConfig] Parameter ' + key + '=' + value + ' invalid, sanitized to ' + defaultValue);
+      }
+    }
+  }
+  
+  // Add required parameters that are missing (Basic settings only)
+  for (const key in self.parameterValidation) {
+    if (!self.parameterValidation.hasOwnProperty(key)) continue;
+    
+    const validation = self.parameterValidation[key];
+    
+    // Skip if not required (advanced/debug settings)
+    if (!validation.required) continue;
+    
+    // Skip if parameter already exists
+    if (sanitized.hasOwnProperty(key)) continue;
+    
+    // Check if parameter is applicable to this model
+    if (validation.models && modelId && validation.models.indexOf(modelId) === -1) {
+      continue;
+    }
+    
+    // Add missing required parameter with default value
+    const defaultValue = validation.sanitize.call(self, undefined, model);
+    sanitized[key] = defaultValue;
+    warnings.push('Required parameter ' + key + ' was missing, added with default value ' + defaultValue);
+    self.logger.warn('[RpiEepromConfig] Required parameter ' + key + ' missing, added default ' + defaultValue);
+  }
+  
+  return {
+    config: sanitized,
+    warnings: warnings
+  };
+};
+
 // UI Configuration
 RpiEepromConfig.prototype.getUIConfig = function() {
   const self = this;
@@ -283,37 +668,45 @@ RpiEepromConfig.prototype.getCurrentEepromConfig = function() {
   const self = this;
   const defer = libQ.defer();
 
-  exec('vcgencmd bootloader_config', { uid: 1000, gid: 1000 }, function(error, stdout, stderr) {
+  self.logger.info('[RpiEepromConfig] Reading current EEPROM configuration');
+
+  exec('vcgencmd bootloader_config', function(error, stdout, stderr) {
     if (error) {
-      self.logger.error('[RpiEepromConfig] Error reading EEPROM config: ' + error);
+      self.logger.error('[RpiEepromConfig] Failed to read EEPROM config: ' + error);
       defer.reject(error);
       return;
     }
 
-    const config = self.parseEepromConfig(stdout);
-    defer.resolve(config);
+    const config = {};
+    const lines = stdout.split('\n');
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line && line.indexOf('=') > 0) {
+        const parts = line.split('=');
+        const key = parts[0].trim();
+        const value = parts.slice(1).join('=').trim();
+        config[key] = value;
+      }
+    }
+
+    self.logger.info('[RpiEepromConfig] Raw EEPROM config read: ' + JSON.stringify(config));
+    
+    // Validate and sanitize the configuration
+    const validated = self.validateAndSanitizeConfig(config);
+    
+    // Show warnings to user if any
+    if (validated.warnings.length > 0) {
+      self.logger.warn('[RpiEepromConfig] Configuration issues detected: ' + validated.warnings.length);
+      validated.warnings.forEach(function(warning) {
+        self.commandRouter.pushToastMessage('warning', 'EEPROM Configuration Issue', warning);
+      });
+    }
+    
+    defer.resolve(validated.config);
   });
 
   return defer.promise;
-};
-
-RpiEepromConfig.prototype.parseEepromConfig = function(configText) {
-  const self = this;
-  const config = {};
-  
-  const lines = configText.split('\n');
-  
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
-      const parts = trimmed.split('=');
-      const key = parts[0].trim();
-      const value = parts.slice(1).join('=').trim();
-      config[key] = value;
-    }
-  }
-
-  return config;
 };
 
 RpiEepromConfig.prototype.populateUIConfig = function(uiconf, currentConfig) {
@@ -333,6 +726,20 @@ RpiEepromConfig.prototype.populateUIConfig = function(uiconf, currentConfig) {
     }
 
     const basicSection = uiconf.sections[0].content;
+
+    // Hardware-based field filtering (Pi 5+ only fields)
+    const supportedModels = ['Raspberry Pi 5', 'Raspberry Pi 500+', 'Compute Module 5'];
+    const isPi5Plus = supportedModels.includes(self.detectedModel);
+    
+    if (!isPi5Plus) {
+      uiconf.sections[0].content = basicSection.filter(function(item) {
+        return item.id !== 'psu_max_current_enable' && item.id !== 'psu_max_current';
+      });
+      uiconf.sections[0].saveButton.data = uiconf.sections[0].saveButton.data.filter(function(id) {
+        return id !== 'psu_max_current_enable' && id !== 'psu_max_current';
+      });
+      self.logger.info('[RpiEepromConfig] Removed Pi 5+ fields for ' + self.detectedModel);
+    }
 
     // Boot Order - dynamically populate based on hardware capabilities
     const bootOrder = currentConfig.BOOT_ORDER || (self.modelCapabilities ? self.modelCapabilities.default_boot_order : '0xf41');
@@ -386,14 +793,6 @@ RpiEepromConfig.prototype.populateUIConfig = function(uiconf, currentConfig) {
       }
     }
 
-    // PSU Max Current (Pi 5+ only)
-    const psuCurrentIndex = basicSection.findIndex(function(item) {
-      return item.id === 'psu_max_current';
-    });
-    if (psuCurrentIndex !== -1) {
-      basicSection[psuCurrentIndex].value = parseInt(currentConfig.PSU_MAX_CURRENT || '5000', 10);
-    }
-
     // Power Off on Halt
     const powerOffIndex = basicSection.findIndex(function(item) {
       return item.id === 'power_off_on_halt';
@@ -437,6 +836,24 @@ RpiEepromConfig.prototype.populateUIConfig = function(uiconf, currentConfig) {
       });
       if (baudOption) {
         basicSection[baudIndex].value = baudOption;
+      }
+    }
+
+    // PSU Max Current Enable/Value (Pi 5+ only)
+    const psuEnableIndex = basicSection.findIndex(function(item) {
+      return item.id === 'psu_max_current_enable';
+    });
+    const psuCurrentIndex = basicSection.findIndex(function(item) {
+      return item.id === 'psu_max_current';
+    });
+    
+    if (psuEnableIndex !== -1 && psuCurrentIndex !== -1) {
+      if (currentConfig.PSU_MAX_CURRENT) {
+        basicSection[psuEnableIndex].value = true;
+        basicSection[psuCurrentIndex].value = parseInt(currentConfig.PSU_MAX_CURRENT, 10);
+      } else {
+        basicSection[psuEnableIndex].value = false;
+        basicSection[psuCurrentIndex].value = 5000;
       }
     }
 
@@ -594,12 +1011,13 @@ RpiEepromConfig.prototype.confirmBasicSettings = function(data) {
     // Normalize select field objects to primitive values
     const normalizedData = {
       boot_order: (typeof data.boot_order === 'object' && data.boot_order.value) ? data.boot_order.value : data.boot_order,
-      psu_max_current: data.psu_max_current,
       power_off_on_halt: data.power_off_on_halt,
       wake_on_gpio: data.wake_on_gpio,
       pcie_probe: data.pcie_probe,
       boot_uart: data.boot_uart,
-      uart_baud: (typeof data.uart_baud === 'object' && data.uart_baud.value) ? data.uart_baud.value : data.uart_baud
+      uart_baud: (typeof data.uart_baud === 'object' && data.uart_baud.value) ? data.uart_baud.value : data.uart_baud,
+      psu_max_current_enable: data.psu_max_current_enable,
+      psu_max_current: data.psu_max_current
     };
 
     // Store as JSON string to avoid v-conf object type issues
@@ -734,6 +1152,10 @@ RpiEepromConfig.prototype.applyConfiguration = function(data) {
   const mergedConfig = self.mergeWithDefaults(tempBasic, tempAdvanced, tempDebug);
 
   self.logger.info('[RpiEepromConfig] Merged configuration: ' + JSON.stringify(mergedConfig));
+  
+  // Store current config for safety validation
+  self.currentEepromConfig = mergedConfig;
+  
   self.logger.info('[RpiEepromConfig] Applying EEPROM configuration');
 
   // Create backup before applying changes
@@ -773,44 +1195,164 @@ RpiEepromConfig.prototype.applyConfiguration = function(data) {
 
 RpiEepromConfig.prototype.mergeWithDefaults = function(tempBasic, tempAdvanced, tempDebug) {
   const self = this;
+  const result = {};
 
-  // Factory defaults based on hardware capabilities
-  const factoryBootOrder = self.modelCapabilities.factory_boot_order || '0xf41';
-  const hasNvme = self.modelCapabilities.boot_modes.includes('nvme');
+  self.logger.info('[RpiEepromConfig] Merging configurations');
+  self.logger.info('[RpiEepromConfig] tempBasic: ' + JSON.stringify(tempBasic));
+  self.logger.info('[RpiEepromConfig] tempAdvanced: ' + JSON.stringify(tempAdvanced));
+  self.logger.info('[RpiEepromConfig] tempDebug: ' + JSON.stringify(tempDebug));
 
-  const defaults = {
-    // Basic settings defaults
-    boot_order: { value: factoryBootOrder, label: 'Factory Default' },
-    psu_max_current: 5000,
-    power_off_on_halt: false,
-    wake_on_gpio: true,
-    pcie_probe: hasNvme ? true : false,
-    boot_uart: false,
-    uart_baud: { value: 115200, label: '115200' },
+  // Start with current EEPROM config (already validated and sanitized)
+  const currentConfig = self.currentEepromConfig || {};
+  for (const key in currentConfig) {
+    if (currentConfig.hasOwnProperty(key)) {
+      result[key] = currentConfig[key];
+    }
+  }
+
+  // Override with tempBasic values - convert lowercase to UPPERCASE EEPROM keys
+  if (tempBasic.boot_order) {
+    result.BOOT_ORDER = tempBasic.boot_order;
+  }
+  if (tempBasic.psu_max_current !== undefined) {
+    result.PSU_MAX_CURRENT = String(tempBasic.psu_max_current);
+  }
+  if (tempBasic.power_off_on_halt !== undefined) {
+    result.POWER_OFF_ON_HALT = tempBasic.power_off_on_halt ? '1' : '0';
+  }
+  if (tempBasic.wake_on_gpio !== undefined) {
+    result.WAKE_ON_GPIO = tempBasic.wake_on_gpio ? '1' : '0';
+  }
+  // PCIE_PROBE: Only add if explicitly enabled, remove if explicitly disabled
+  if (tempBasic.pcie_probe === true) {
+    result.PCIE_PROBE = '1';
+  } else if (tempBasic.pcie_probe === false) {
+    delete result.PCIE_PROBE;
+  }
+  if (tempBasic.boot_uart !== undefined) {
+    result.BOOT_UART = tempBasic.boot_uart ? '1' : '0';
+  }
+  if (tempBasic.uart_baud) {
+    result.UART_BAUD = String(tempBasic.uart_baud);
+  }
+
+  // Override with tempAdvanced values (only if present)
+  if (tempAdvanced.usb_msd_discover_timeout !== undefined) {
+    result.USB_MSD_DISCOVER_TIMEOUT = String(tempAdvanced.usb_msd_discover_timeout);
+  }
+  if (tempAdvanced.usb_msd_lun_timeout !== undefined) {
+    result.USB_MSD_LUN_TIMEOUT = String(tempAdvanced.usb_msd_lun_timeout);
+  }
+  if (tempAdvanced.usb_msd_pwr_off_time !== undefined) {
+    result.USB_MSD_PWR_OFF_TIME = String(tempAdvanced.usb_msd_pwr_off_time);
+  }
+  if (tempAdvanced.usb_msd_startup_delay !== undefined) {
+    result.USB_MSD_STARTUP_DELAY = String(tempAdvanced.usb_msd_startup_delay);
+  }
+  if (tempAdvanced.usb_msd_boot_max_retries !== undefined) {
+    result.USB_MSD_BOOT_MAX_RETRIES = String(tempAdvanced.usb_msd_boot_max_retries);
+  }
+  if (tempAdvanced.sd_boot_max_retries !== undefined) {
+    result.SD_BOOT_MAX_RETRIES = String(tempAdvanced.sd_boot_max_retries);
+  }
+  if (tempAdvanced.enable_self_update !== undefined) {
+    result.ENABLE_SELF_UPDATE = tempAdvanced.enable_self_update ? '1' : '0';
+  }
+  if (tempAdvanced.freeze_version !== undefined) {
+    result.FREEZE_VERSION = tempAdvanced.freeze_version ? '1' : '0';
+  }
+  if (tempAdvanced.vl805 !== undefined) {
+    result.VL805 = tempAdvanced.vl805;
+  }
+  if (tempAdvanced.partition !== undefined) {
+    result.PARTITION = String(tempAdvanced.partition);
+  }
+
+  // Override with tempDebug values (only if present)
+  if (tempDebug.disable_hdmi !== undefined) {
+    result.DISABLE_HDMI = tempDebug.disable_hdmi ? '1' : '0';
+  }
+  if (tempDebug.hdmi_delay !== undefined) {
+    result.HDMI_DELAY = String(tempDebug.hdmi_delay);
+  }
+  if (tempDebug.netconsole !== undefined) {
+    result.NETCONSOLE = tempDebug.netconsole;
+  }
+  if (tempDebug.dhcp_timeout !== undefined) {
+    result.DHCP_TIMEOUT = String(tempDebug.dhcp_timeout);
+  }
+
+  self.logger.info('[RpiEepromConfig] Merged configuration: ' + JSON.stringify(result));
+
+  return result;
+};
+
+RpiEepromConfig.prototype.validateConfigSafety = function(config) {
+  const self = this;
+  const errors = [];
+  const warnings = [];
+
+  self.logger.info('[RpiEepromConfig] Validating configuration safety for: ' + self.detectedModel);
+
+  // CRITICAL: NVMe-capable hardware MUST have proper boot configuration
+  const hasNvmeSupport = self.modelCapabilities && self.modelCapabilities.boot_modes.includes('nvme');
+  
+  if (hasNvmeSupport) {
+    // Check BOOT_ORDER includes NVMe (hex 6)
+    const bootOrder = config.BOOT_ORDER || '';
+    if (bootOrder && !bootOrder.includes('6')) {
+      warnings.push('NVMe-capable hardware but boot order does not include NVMe mode');
+      self.logger.warn('[RpiEepromConfig] Boot order ' + bootOrder + ' missing NVMe on NVMe-capable hardware');
+    }
+
+    // CRITICAL: PCIE_PROBE must be enabled for NVMe boot
+    if (!config.PCIE_PROBE || config.PCIE_PROBE !== '1') {
+      // Auto-fix critical safety issue
+      config.PCIE_PROBE = '1';
+      warnings.push('CRITICAL: Automatically enabled PCIE_PROBE for NVMe-capable hardware');
+      self.logger.warn('[RpiEepromConfig] Auto-enabled PCIE_PROBE=1 for NVMe hardware safety');
+    }
+  }
+
+  // Validate BOOT_ORDER is valid for this hardware
+  if (config.BOOT_ORDER) {
+    const availableOrders = self.getAvailableBootOrders();
+    const validOrder = availableOrders.some(function(order) {
+      return order.value === config.BOOT_ORDER;
+    });
     
-    // Advanced settings defaults
-    usb_msd_discover_timeout: 20000,
-    usb_msd_lun_timeout: 2000,
-    usb_msd_pwr_off_time: 1000,
-    usb_msd_startup_delay: 0,
-    usb_msd_boot_max_retries: 1,
-    sd_boot_max_retries: 3,
-    enable_self_update: true,
-    freeze_version: false,
-    vl805: '',
-    partition: 0,
-    
-    // Debug settings defaults
-    disable_hdmi: false,
-    hdmi_delay: 5,
-    netconsole: '',
-    dhcp_timeout: 45000
+    if (!validOrder) {
+      errors.push('BOOT_ORDER ' + config.BOOT_ORDER + ' is not valid for ' + self.detectedModel);
+      self.logger.error('[RpiEepromConfig] Invalid boot order for hardware');
+    }
+  } else {
+    // No boot order specified - use hardware default
+    const defaultBootOrder = self.modelCapabilities.default_boot_order;
+    config.BOOT_ORDER = defaultBootOrder;
+    warnings.push('No boot order specified, using hardware default: ' + defaultBootOrder);
+    self.logger.warn('[RpiEepromConfig] Using default boot order: ' + defaultBootOrder);
+  }
+
+  // Ensure critical boot parameters exist
+  if (config.BOOT_UART === undefined) {
+    config.BOOT_UART = '0';
+    self.logger.info('[RpiEepromConfig] Setting BOOT_UART default: 0');
+  }
+  if (config.WAKE_ON_GPIO === undefined) {
+    config.WAKE_ON_GPIO = '1';
+    self.logger.info('[RpiEepromConfig] Setting WAKE_ON_GPIO default: 1');
+  }
+  if (config.POWER_OFF_ON_HALT === undefined) {
+    config.POWER_OFF_ON_HALT = '0';
+    self.logger.info('[RpiEepromConfig] Setting POWER_OFF_ON_HALT default: 0');
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors: errors,
+    warnings: warnings,
+    config: config
   };
-
-  // Merge: tempBasic overrides defaults, tempAdvanced overrides, tempDebug overrides
-  const merged = Object.assign({}, defaults, tempBasic, tempAdvanced, tempDebug);
-
-  return merged;
 };
 
 RpiEepromConfig.prototype.createBackup = function() {
@@ -846,116 +1388,146 @@ RpiEepromConfig.prototype.buildEepromConfig = function(data) {
   const defer = libQ.defer();
 
   self.logger.info('[RpiEepromConfig] Building new EEPROM configuration');
+  self.logger.info('[RpiEepromConfig] Input data keys: ' + Object.keys(data).join(', '));
+
+  // SAFETY CHECK before building
+  const safetyCheck = self.validateConfigSafety(data);
+  
+  // Show warnings to user
+  if (safetyCheck.warnings.length > 0) {
+    safetyCheck.warnings.forEach(function(warning) {
+      self.logger.warn('[RpiEepromConfig] Safety warning: ' + warning);
+      self.commandRouter.pushToastMessage('warning', 'Configuration Safety', warning);
+    });
+  }
+
+  // Abort if critical errors
+  if (!safetyCheck.valid) {
+    safetyCheck.errors.forEach(function(error) {
+      self.logger.error('[RpiEepromConfig] Safety error: ' + error);
+      self.commandRouter.pushToastMessage('error', 'Configuration Error', error);
+    });
+    defer.reject(new Error('Configuration failed safety validation'));
+    return defer.promise;
+  }
+
+  // Use safety-validated config
+  data = safetyCheck.config;
 
   const config = [];
   config.push('[all]');
 
-  // ALWAYS SAVE these parameters (even if default)
+  // CRITICAL: Use UPPERCASE keys to match merged config
   
-  // boot_order - handle both object and string
-  if (data.boot_order) {
-    const bootOrderValue = (typeof data.boot_order === 'object' && data.boot_order.value) ? data.boot_order.value : data.boot_order;
-    config.push('BOOT_ORDER=' + bootOrderValue);
+  // boot_order - REQUIRED
+  if (data.BOOT_ORDER) {
+    config.push('BOOT_ORDER=' + data.BOOT_ORDER);
   } else {
-    config.push('BOOT_ORDER=0xf41');
+    // Should never happen due to safety check, but failsafe
+    const defaultBootOrder = self.modelCapabilities.default_boot_order;
+    config.push('BOOT_ORDER=' + defaultBootOrder);
+    self.logger.warn('[RpiEepromConfig] Using failsafe boot order: ' + defaultBootOrder);
   }
   
-  config.push('BOOT_UART=' + (data.boot_uart ? '1' : '0'));
-  config.push('WAKE_ON_GPIO=' + (data.wake_on_gpio ? '1' : '0'));
-  config.push('POWER_OFF_ON_HALT=' + (data.power_off_on_halt ? '1' : '0'));
+  // Basic settings - REQUIRED
+  config.push('BOOT_UART=' + (data.BOOT_UART === '1' ? '1' : '0'));
+  config.push('WAKE_ON_GPIO=' + (data.WAKE_ON_GPIO === '1' ? '1' : '0'));
+  config.push('POWER_OFF_ON_HALT=' + (data.POWER_OFF_ON_HALT === '1' ? '1' : '0'));
 
   // CONDITIONALLY SAVE - Only if not default
   
   // psu_max_current (default: 5000)
-  if (data.psu_max_current && data.psu_max_current !== 5000) {
-    config.push('PSU_MAX_CURRENT=' + data.psu_max_current);
+  if (data.PSU_MAX_CURRENT && data.PSU_MAX_CURRENT) {
+    config.push('PSU_MAX_CURRENT=' + data.PSU_MAX_CURRENT);
   }
 
-  // pcie_probe (default: 1)
-  if (data.pcie_probe !== undefined && data.pcie_probe !== true) {
-    config.push('PCIE_PROBE=' + (data.pcie_probe ? '1' : '0'));
+  // pcie_probe - CRITICAL for NVMe
+  if (data.PCIE_PROBE === '1') {
+    config.push('PCIE_PROBE=1');
+  } else if (data.PCIE_PROBE === '0') {
+    config.push('PCIE_PROBE=0');
   }
+  // If undefined, omit (natural default)
 
   // uart_baud (default: 115200)
-  if (data.uart_baud) {
-    const baudValue = (typeof data.uart_baud === 'object' && data.uart_baud.value) ? data.uart_baud.value : data.uart_baud;
-    if (baudValue !== 115200) {
-      config.push('UART_BAUD=' + baudValue);
-    }
+  if (data.UART_BAUD && data.UART_BAUD !== '115200') {
+    config.push('UART_BAUD=' + data.UART_BAUD);
   }
 
   // usb_msd_discover_timeout (default: 20000)
-  if (data.usb_msd_discover_timeout && data.usb_msd_discover_timeout !== 20000) {
-    config.push('USB_MSD_DISCOVER_TIMEOUT=' + data.usb_msd_discover_timeout);
+  if (data.USB_MSD_DISCOVER_TIMEOUT && data.USB_MSD_DISCOVER_TIMEOUT !== '20000') {
+    config.push('USB_MSD_DISCOVER_TIMEOUT=' + data.USB_MSD_DISCOVER_TIMEOUT);
   }
 
   // usb_msd_lun_timeout (default: 2000)
-  if (data.usb_msd_lun_timeout && data.usb_msd_lun_timeout !== 2000) {
-    config.push('USB_MSD_LUN_TIMEOUT=' + data.usb_msd_lun_timeout);
+  if (data.USB_MSD_LUN_TIMEOUT && data.USB_MSD_LUN_TIMEOUT !== '2000') {
+    config.push('USB_MSD_LUN_TIMEOUT=' + data.USB_MSD_LUN_TIMEOUT);
   }
 
   // usb_msd_pwr_off_time (default: 1000)
-  if (data.usb_msd_pwr_off_time !== undefined && data.usb_msd_pwr_off_time !== 1000) {
-    config.push('USB_MSD_PWR_OFF_TIME=' + data.usb_msd_pwr_off_time);
+  if (data.USB_MSD_PWR_OFF_TIME !== undefined && data.USB_MSD_PWR_OFF_TIME !== '1000') {
+    config.push('USB_MSD_PWR_OFF_TIME=' + data.USB_MSD_PWR_OFF_TIME);
   }
 
   // usb_msd_startup_delay (default: 0)
-  if (data.usb_msd_startup_delay && data.usb_msd_startup_delay !== 0) {
-    config.push('USB_MSD_STARTUP_DELAY=' + data.usb_msd_startup_delay);
+  if (data.USB_MSD_STARTUP_DELAY && data.USB_MSD_STARTUP_DELAY !== '0') {
+    config.push('USB_MSD_STARTUP_DELAY=' + data.USB_MSD_STARTUP_DELAY);
   }
 
   // usb_msd_boot_max_retries (default: 1)
-  if (data.usb_msd_boot_max_retries !== undefined && data.usb_msd_boot_max_retries !== 1) {
-    config.push('USB_MSD_BOOT_MAX_RETRIES=' + data.usb_msd_boot_max_retries);
+  if (data.USB_MSD_BOOT_MAX_RETRIES !== undefined && data.USB_MSD_BOOT_MAX_RETRIES !== '1') {
+    config.push('USB_MSD_BOOT_MAX_RETRIES=' + data.USB_MSD_BOOT_MAX_RETRIES);
   }
 
   // sd_boot_max_retries (default: 3)
-  if (data.sd_boot_max_retries !== undefined && data.sd_boot_max_retries !== 3) {
-    config.push('SD_BOOT_MAX_RETRIES=' + data.sd_boot_max_retries);
+  if (data.SD_BOOT_MAX_RETRIES !== undefined && data.SD_BOOT_MAX_RETRIES !== '3') {
+    config.push('SD_BOOT_MAX_RETRIES=' + data.SD_BOOT_MAX_RETRIES);
   }
 
   // enable_self_update (default: 1)
-  if (data.enable_self_update !== undefined && data.enable_self_update !== true) {
-    config.push('ENABLE_SELF_UPDATE=' + (data.enable_self_update ? '1' : '0'));
+  if (data.ENABLE_SELF_UPDATE !== undefined && data.ENABLE_SELF_UPDATE !== '1') {
+    config.push('ENABLE_SELF_UPDATE=' + data.ENABLE_SELF_UPDATE);
   }
 
   // freeze_version (default: 0)
-  if (data.freeze_version) {
+  if (data.FREEZE_VERSION === '1') {
     config.push('FREEZE_VERSION=1');
   }
 
   // vl805 (default: empty)
-  if (data.vl805 && data.vl805 !== '') {
-    config.push('VL805=' + data.vl805);
+  if (data.VL805 && data.VL805 !== '') {
+    config.push('VL805=' + data.VL805);
   }
 
   // partition (default: 0)
-  if (data.partition !== undefined && data.partition !== 0) {
-    config.push('PARTITION=' + data.partition);
+  if (data.PARTITION !== undefined && data.PARTITION !== '0') {
+    config.push('PARTITION=' + data.PARTITION);
   }
 
   // disable_hdmi (default: 0)
-  if (data.disable_hdmi) {
+  if (data.DISABLE_HDMI === '1') {
     config.push('DISABLE_HDMI=1');
   }
 
   // hdmi_delay (default: 5)
-  if (data.hdmi_delay !== undefined && data.hdmi_delay !== 5) {
-    config.push('HDMI_DELAY=' + data.hdmi_delay);
+  if (data.HDMI_DELAY !== undefined && data.HDMI_DELAY !== '5') {
+    config.push('HDMI_DELAY=' + data.HDMI_DELAY);
   }
 
   // netconsole (default: empty)
-  if (data.netconsole && data.netconsole !== '') {
-    config.push('NETCONSOLE=' + data.netconsole);
+  if (data.NETCONSOLE && data.NETCONSOLE !== '') {
+    config.push('NETCONSOLE=' + data.NETCONSOLE);
   }
 
   // dhcp_timeout (default: 45000)
-  if (data.dhcp_timeout && data.dhcp_timeout !== 45000) {
-    config.push('DHCP_TIMEOUT=' + data.dhcp_timeout);
+  if (data.DHCP_TIMEOUT && data.DHCP_TIMEOUT !== '45000') {
+    config.push('DHCP_TIMEOUT=' + data.DHCP_TIMEOUT);
   }
 
-  self.logger.info('[RpiEepromConfig] Built config: ' + config.join('\n'));
-  defer.resolve(config.join('\n') + '\n');
+  const finalConfig = config.join('\n') + '\n';
+  
+  self.logger.info('[RpiEepromConfig] Built config: ' + finalConfig);
+  defer.resolve(finalConfig);
   return defer.promise;
 };
 
