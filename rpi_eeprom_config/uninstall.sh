@@ -3,9 +3,9 @@
 echo "Uninstalling Raspberry Pi EEPROM Configuration Manager Plugin"
 
 # Remove sudoers entry
-if [ -f /etc/sudoers.d/010_rpi-eeprom-config ]; then
+if [ -f /etc/sudoers.d/volumio-user-rpi_config ]; then
     echo "Removing sudoers entry..."
-    rm -f /etc/sudoers.d/010_rpi-eeprom-config
+    rm -f /etc/sudoers.d/volumio-user-rpi_config
     if [ $? -eq 0 ]; then
         echo "Sudoers entry removed successfully"
     else

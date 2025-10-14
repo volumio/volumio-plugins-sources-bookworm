@@ -70,6 +70,20 @@ RpiEepromConfig.prototype.onStart = function() {
     return defer.promise;
   }
 
+  // Detect and store absolute path to rpi-eeprom-config
+  if (fs.existsSync('/usr/bin/rpi-eeprom-config')) {
+    self.eepromConfigPath = '/usr/bin/rpi-eeprom-config';
+    self.logger.info('[RpiEepromConfig] Using rpi-eeprom-config at: ' + self.eepromConfigPath);
+  } else if (fs.existsSync('/usr/sbin/rpi-eeprom-config')) {
+    self.eepromConfigPath = '/usr/sbin/rpi-eeprom-config';
+    self.logger.info('[RpiEepromConfig] Using rpi-eeprom-config at: ' + self.eepromConfigPath);
+  } else {
+    self.logger.error('[RpiEepromConfig] rpi-eeprom-config not found in /usr/bin or /usr/sbin');
+    self.commandRouter.pushToastMessage('error', 'Tool Not Found', 'rpi-eeprom-config tool not found');
+    defer.reject(new Error('rpi-eeprom-config not found'));
+    return defer.promise;
+  }
+
   // Ensure backup directory exists
   self.ensureBackupDirectory();
 
@@ -1214,7 +1228,7 @@ RpiEepromConfig.prototype.mergeWithDefaults = function(tempBasic, tempAdvanced, 
   if (tempBasic.boot_order) {
     result.BOOT_ORDER = tempBasic.boot_order;
   }
-  if (tempBasic.psu_max_current !== undefined) {
+  if (tempBasic.psu_max_current_enable && tempBasic.psu_max_current !== undefined) {
     result.PSU_MAX_CURRENT = String(tempBasic.psu_max_current);
   }
   if (tempBasic.power_off_on_halt !== undefined) {
@@ -1435,9 +1449,8 @@ RpiEepromConfig.prototype.buildEepromConfig = function(data) {
   config.push('POWER_OFF_ON_HALT=' + (data.POWER_OFF_ON_HALT === '1' ? '1' : '0'));
 
   // CONDITIONALLY SAVE - Only if not default
-  
-  // psu_max_current (default: 5000)
-  if (data.PSU_MAX_CURRENT && data.PSU_MAX_CURRENT) {
+  // psu_max_current (only if present in merged config, max default: 5000)
+  if (data.PSU_MAX_CURRENT) {
     config.push('PSU_MAX_CURRENT=' + data.PSU_MAX_CURRENT);
   }
 
@@ -1543,8 +1556,11 @@ RpiEepromConfig.prototype.applyEepromConfig = function(configText) {
     self.logger.info('[RpiEepromConfig] Temp file written: ' + tempFile);
     self.logger.info('[RpiEepromConfig] Temp file contents: ' + fs.readFileSync(tempFile, 'utf8'));
 
-    // Apply configuration using rpi-eeprom-config
-    exec('sudo rpi-eeprom-config --apply ' + tempFile, { uid: 1000, gid: 1000 }, function(error, stdout, stderr) {
+    // Apply configuration using rpi-eeprom-config with absolute path
+    const applyCommand = 'sudo ' + self.eepromConfigPath + ' --apply ' + tempFile;
+    self.logger.info('[RpiEepromConfig] Executing: ' + applyCommand);
+    
+    exec(applyCommand, { uid: 1000, gid: 1000 }, function(error, stdout, stderr) {
       // Clean up temp file
       try {
         fs.unlinkSync(tempFile);

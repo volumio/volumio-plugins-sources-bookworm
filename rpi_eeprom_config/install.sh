@@ -80,21 +80,19 @@ fi
 # Note: reboot, tee, mv, rm, chmod are already permitted in base Volumio sudoers
 # Adding rpi-eeprom-config with wildcard to allow all arguments
 echo "Creating sudoers entry for EEPROM operations..."
-cat > /etc/sudoers.d/010_rpi-eeprom-config << EOF
+cat > /etc/sudoers.d/volumio-user-rpi_config << EOF
 volumio ALL=(ALL) NOPASSWD: /usr/bin/rpi-eeprom-config
-volumio ALL=(ALL) NOPASSWD: /usr/bin/rpi-eeprom-config *
 volumio ALL=(ALL) NOPASSWD: /usr/sbin/rpi-eeprom-config
-volumio ALL=(ALL) NOPASSWD: /usr/sbin/rpi-eeprom-config *
 EOF
 
 # Set proper permissions on sudoers file
-chmod 0440 /etc/sudoers.d/010_rpi-eeprom-config
+chmod 0440 /etc/sudoers.d/volumio-user-rpi_config
 
 # Validate sudoers syntax
-visudo -c -f /etc/sudoers.d/010_rpi-eeprom-config
+visudo -c -f /etc/sudoers.d/volumio-user-rpi_config
 if [ $? -ne 0 ]; then
   echo "ERROR: Invalid sudoers syntax"
-  rm -f /etc/sudoers.d/010_rpi-eeprom-config
+  rm -f /etc/sudoers.d/volumio-user-rpi_config
   exit 1
 fi
 
