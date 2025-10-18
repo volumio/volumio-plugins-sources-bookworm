@@ -58,61 +58,21 @@ function parseDurationsFromQ(out) {
   return durations;
 }
 
-async function listCD(ctx) {
-  try {
-    const out = await runCdparanoiaQ();
+async function listCD() {
+  const out = await runCdparanoiaQ(); // may throw — let caller handle
+  const trackNums = parseCdparanoiaQ(out); // []
+  const durations = parseDurationsFromQ(out); // { [n]: seconds }
 
-    ctx.log(`Asked cdparanoia -Q, got ${out.length} bytes of output`);
+  const items = trackNums.map((n) =>
+    getItem(n, durations[n], `cdplayer/${n}`, "cdplayer")
+  );
 
-    const trackNums = parseCdparanoiaQ(out);
-    ctx.log(`Parsed tracks: ${JSON.stringify(trackNums)}`);
-
-    ctx._lastTrackNums = trackNums;
-
-    if (trackNums.length === 0) {
-      ctx.error(`No audio tracks returned`);
-      ctx.commandRouter.pushToastMessage(
-        "error",
-        "CD Player",
-        "Please insert an audio CD (0)"
-      );
-      return { navigation: { lists: [] } };
-    }
-
-    ctx._trackDurations = parseDurationsFromQ(out);
-
-    const items = trackNums.map((n) =>
-      getItem(
-        n,
-        ctx._trackDurations && ctx._trackDurations[n],
-        `cdplayer/${n}`,
-        "cdplayer"
-      )
-    );
-
-    return {
-      navigation: {
-        prev: { uri: "cdplayer" },
-        lists: [
-          {
-            title: "CD Tracks",
-            icon: "fa fa-music",
-            availableListViews: ["list"],
-            items,
-          },
-        ],
-      },
-    };
-  } catch (err) {
-    ctx.error(`cdparanoia -Q error: ${err.message || err}`);
-    ctx.commandRouter.pushToastMessage(
-      "error",
-      "CD Player",
-      "Please insert an audio CD (1)"
-    );
-
-    return { navigation: { lists: [] } };
-  }
+  return {
+    outLen: out.length,
+    trackNums, // []
+    durations, // {}
+    items, // []
+  };
 }
 
 /**

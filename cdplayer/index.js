@@ -4,6 +4,7 @@ var libQ = require("kew");
 var fs = require("fs-extra");
 var config = new (require("v-conf"))();
 const { listCD, getItem } = require("./lib/utils");
+const { fetchCdMetadata } = require("./lib/metadata");
 
 module.exports = cdplayer;
 function cdplayer(context) {
@@ -127,10 +128,56 @@ cdplayer.prototype.removeToBrowseSources = function () {
 };
 
 cdplayer.prototype.handleBrowseUri = function (curUri) {
-  if (curUri === "cdplayer") {
-    return toKew(listCD(this));
-  }
-  return libQ.resolve(null);
+  if (curUri !== "cdplayer") return libQ.resolve(null);
+
+  const self = this;
+  const p = (async () => {
+    try {
+      const { outLen, trackNums, durations, items } = await listCD();
+
+      self.log(`Asked cdparanoia -Q, got ${outLen} bytes of output`);
+      self.log(`Parsed tracks: ${JSON.stringify(trackNums)}`);
+
+      self._lastTrackNums = trackNums;
+      self._trackDurations = durations;
+
+      if (trackNums.length === 0) {
+        self.error("No audio tracks returned");
+        self.commandRouter.pushToastMessage(
+          "error",
+          "CD Player",
+          "Please insert an audio CD"
+        );
+        return { navigation: { lists: [] } };
+      }
+
+      return {
+        navigation: {
+          prev: { uri: "cdplayer" },
+          lists: [
+            {
+              title: "CD Tracks",
+              icon: "fa fa-music",
+              availableListViews: ["list"],
+              items,
+            },
+          ],
+        },
+      };
+    } catch (err) {
+      self.error(
+        `cdparanoia -Q error: ${err && err.message ? err.message : err}`
+      );
+      self.commandRouter.pushToastMessage(
+        "error",
+        "CD Player",
+        "Please insert an audio CD"
+      );
+      return { navigation: { lists: [] } };
+    }
+  })();
+
+  return toKew(p);
 };
 
 cdplayer.prototype.explodeUri = function (uri) {

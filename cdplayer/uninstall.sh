@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# TODO: cleanup this and verify all the steps
 echo "🧹 Uninstalling cdplayer plugin..."
 
 # --- Stop and remove systemd service ---
