@@ -1,9 +1,8 @@
 "use strict";
-
 const http = require("http");
+const fs = require("fs");
 const { spawn } = require("child_process");
 
-const fs = require("fs");
 function detectCdDevice() {
   const envDev = process.env.CD_DEVICE;
   if (envDev && fs.existsSync(envDev)) return envDev;
@@ -17,8 +16,7 @@ function detectCdDevice() {
   return candidates.find((p) => fs.existsSync(p)) || "/dev/sr0";
 }
 
-// TODO: implement detectCdDevice
-const CD_DEVICE = process.env.CD_DEVICE || "/dev/sr0"; // or detectCdDevice();
+const CD_DEVICE = detectCdDevice();
 
 // --- Config / binaries ---
 const HOST = process.env.CD_HTTP_HOST || "127.0.0.1";
