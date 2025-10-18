@@ -14,8 +14,9 @@ function cdplayer(context) {
   this.commandRouter = this.context.coreCommand;
   this.logger = this.context.logger;
   this.configManager = this.context.configManager;
-  this._lastTrackNums = [];
+  this._lastTrackNums = null;
   this._trackDurations = null;
+  this._cdmeta = null;
 }
 
 cdplayer.prototype.log = function (msg) {
@@ -128,7 +129,13 @@ cdplayer.prototype.removeToBrowseSources = function () {
 };
 
 cdplayer.prototype.handleBrowseUri = function (curUri) {
-  if (curUri !== "cdplayer") return libQ.resolve(null);
+  if (curUri !== "cdplayer") {
+    this._lastTrackNums = null;
+    this._trackDurations = null;
+    this._cdmeta = null;
+    // this._cdmetaPromise = null;??
+    return libQ.resolve(null);
+  }
 
   const self = this;
   const p = (async () => {

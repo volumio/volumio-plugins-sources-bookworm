@@ -1,12 +1,13 @@
 const https = require("https");
 const { execFile } = require("child_process");
+const { detectCdDevice } = require("./utils");
 
 // Compute MusicBrainz DiscID via cd-discid (libdiscid). Install: sudo apt-get install cd-discid
-function getDiscId(device = "/dev/sr0") {
+function getDiscId() {
   return new Promise((resolve) => {
     execFile(
       "/usr/bin/cd-discid",
-      [device],
+      [detectCdDevice()],
       { env: { LANG: "C" } },
       (err, stdout) => {
         if (err || !stdout) return resolve(null);
@@ -47,8 +48,8 @@ function httpsJson(url, headers = {}) {
 }
 
 // Fetch {album, artist, artUrl} from MusicBrainz + CoverArtArchive
-async function fetchCdMetadata(device = "/dev/sr0") {
-  const discid = await getDiscId(device);
+async function fetchCdMetadata() {
+  const discid = await getDiscId();
   if (!discid) return null;
 
   // 1) Find releases that contain this disc

@@ -1,6 +1,20 @@
 "use strict";
 
 const { execFile } = require("child_process");
+const fs = require("fs");
+
+function detectCdDevice() {
+  const envDev = process.env.CD_DEVICE;
+  if (envDev && fs.existsSync(envDev)) return envDev;
+  const candidates = [
+    "/dev/sr0",
+    "/dev/sr1",
+    "/dev/cdrom",
+    "/dev/cdrw",
+    "/dev/dvd",
+  ];
+  return candidates.find((p) => fs.existsSync(p)) || "/dev/sr0";
+}
 
 /**
  * Run `cdparanoia -Q` and return the raw output (stdout or stderr) as a string.
@@ -13,7 +27,7 @@ function runCdparanoiaQ() {
     };
     execFile(
       "/usr/bin/cdparanoia",
-      ["-Q", "/dev/sr0"],
+      ["-Q", detectCdDevice()],
       opts,
       (err, stdout, stderr) => {
         const out = stdout && stdout.trim() ? stdout : stderr || "";
@@ -108,4 +122,5 @@ function getItem(n, duration, uri, service) {
 module.exports = {
   listCD,
   getItem,
+  detectCdDevice,
 };

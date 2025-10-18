@@ -2,19 +2,7 @@
 const http = require("http");
 const fs = require("fs");
 const { spawn } = require("child_process");
-
-function detectCdDevice() {
-  const envDev = process.env.CD_DEVICE;
-  if (envDev && fs.existsSync(envDev)) return envDev;
-  const candidates = [
-    "/dev/sr0",
-    "/dev/sr1",
-    "/dev/cdrom",
-    "/dev/cdrw",
-    "/dev/dvd",
-  ];
-  return candidates.find((p) => fs.existsSync(p)) || "/dev/sr0";
-}
+const { detectCdDevice } = require("../lib/utils");
 
 const CD_DEVICE = detectCdDevice();
 
