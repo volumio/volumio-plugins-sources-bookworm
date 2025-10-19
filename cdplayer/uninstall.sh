@@ -1,31 +1,24 @@
 #!/bin/bash
-# TODO: cleanup this and verify all the steps
-echo "🧹 Uninstalling cdplayer plugin..."
+set -e
 
-# --- Stop and remove systemd service ---
-SERVICE_FILE="/etc/systemd/system/cdplayer_stream.service"
+SERVICE_NAME="cdplayer_stream.service"
+SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}"
 
-echo "🧹 Removing CD HTTP streamer systemd service..."
-if sudo systemctl is-active --quiet cdplayer_stream.service; then
-    sudo systemctl stop cdplayer_stream.service
-fi
-if sudo systemctl is-enabled --quiet cdplayer_stream.service; then
-    sudo systemctl disable cdplayer_stream.service
-fi
-
+echo "Stopping and removing service..."
+sudo systemctl disable --now "$SERVICE_NAME" 2>/dev/null || true
 sudo rm -f "$SERVICE_FILE"
 sudo systemctl daemon-reload
 
-echo "✅ Systemd service removed."
+# sudo apt-get remove -y --purge \
+#   gstreamer1.0-tools \
+#   gstreamer1.0-plugins-base \
+#   gstreamer1.0-plugins-good \
+#   gstreamer1.0-plugins-ugly \
+#   cdparanoia \
+#   build-essential \
+#   wget \
+#   tar \
+#   cmake 
+# sudo apt-get autoremove -y
 
-# --- Optional: Remove Python packages ---
-python3 -m pip uninstall -y Flask python-mpd2
-
-# --- Optional: Remove OS packages ---
-sudo apt-get purge -y gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
-  gstreamer1.0-plugins-ugly gstreamer1.0-libav cdparanoia cd-discid libcdio-utils python3 python3-pip
-sudo apt-get autoremove -y
-
-#required to end the plugin uninstall
-echo "Done
 echo "pluginuninstallend"

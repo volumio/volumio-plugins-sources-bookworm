@@ -96,15 +96,17 @@ async function listCD() {
  * @param {number} duration - Track duration in seconds.
  * @param {string} uri - The resource URI for the track (e.g., playback URL or browse URI).
  * @param {string} service - The service identifier (e.g., "cdplayer" or "mpd").
- * @returns {Object} A track item object for Volumio’s browse or playback UI.
- * @returns {string} return.album - The album name (fixed as "Audio CD").
- * @returns {string} return.artist - The track artist (fixed as "Unknown").
- * @returns {string} return.trackType - The file/stream type (e.g., "wav").
- * @returns {string} return.type - The Volumio item type (always "song").
- * @returns {string} return.title - The display title (e.g., "Track 1").
- * @returns {string} return.service - The source service name.
- * @returns {string} return.uri - The track URI.
- * @returns {number} return.duration - The duration in seconds (if available).
+ * @returns {{
+ *   album: string,
+ *   artist: string,
+ *   trackType: string,
+ *   type: "song",
+ *   title: string,
+ *   service: string,
+ *   uri: string,
+ *   duration?: number,
+ *   albumart?: string
+ * }} Track item for Volumio’s browse or playback UI.
  */
 function getItem(n, duration, uri, service) {
   return {
