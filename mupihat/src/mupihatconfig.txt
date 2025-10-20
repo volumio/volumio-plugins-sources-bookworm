@@ -1,0 +1,9 @@
+#--------MuPiHAT--------" "$CONFIG_TXT" "Marker for MuPiHAT settings"
+dtparam=i2c_arm=on                                             # Enable I2C ARM
+dtparam=i2c1=on                                                # Enable I2C1
+dtparam=i2c_arm_baudrate=50000                                 # Set I2C bus baudrate to 50kHz
+dtoverlay=max98357a,sdmode-pin=16                              # Set audio overlay MAX98357A
+dtoverlay=i2s-mmap                                             # Set I2S memory map overlay
+dtparam=gpio=on                                                # Enable GPIO
+dtoverlay=gpio-poweroff,gpiopin=4,active_low=1                 # Enable GPIO power-off overlay
+dtoverlay=gpio-shutdown,gpio_pin=17,active_low=1,gpio_pull=up  # Enable GPIO shutdown overlay
