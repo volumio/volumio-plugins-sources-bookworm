@@ -21,8 +21,9 @@
 			"bookworm"
 		],
 		"details": "Gives information about your system",
-		"changelog": "more cpu and sw info",
-		"engines": {
+		"changelog": "more cpu and sw info"
+	},
+	"engines": {
 		"node": ">=20",
 		"volumio": ">=4"
 	},
