@@ -43,3 +43,12 @@ The mouse pointer is hidden by default, but can be shown by activating this opti
 
 ## Virtual keyboard
 A virtual keyboard can be displayed, which is particularly useful for controlling the Volumio UI via a touchscreen. The virtual keyboard is inactive by default.
+
+## HDMI audio keep-alive
+This feature allows audio output to remain active on a selected HDMI port while the Touch Display UI runs on a DSI or other primary display. This solves the issue where HDMI audio stops working when the kiosk interface uses a different display output.
+
+When enabled, the plugin detects available HDMI ports on the system and presents them in a dropdown selector. The selected HDMI port is kept active as a virtual display extension, allowing audio routing to continue while the visual interface remains on the primary display.
+
+Touch input is automatically calibrated to work only on the primary display, preventing coordinate misalignment that would otherwise occur when the virtual framebuffer is extended to include the audio HDMI port.
+
+The HDMI audio configuration persists through plugin disable/enable cycles and system reboots. If the feature is disabled or set to "None", the HDMI audio routing is removed and the system returns to standard display configuration.
