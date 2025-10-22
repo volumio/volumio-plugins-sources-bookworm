@@ -38,6 +38,7 @@ echo "Installing graphical environment"
 apt-get -y install x11-utils || { echo "Installation of x11-utils failed"; exit 1; }
 apt-get -y install xinit || { echo "Installation of xinit failed"; exit 1; }
 apt-get -y install xorg || { echo "Installation of xorg failed"; exit 1; }
+apt-get -y install xinput || { echo "Installation of xinput failed"; exit 1; }
 apt-get -y install openbox || { echo "Installation of openbox failed"; exit 1; }
 
 echo "Creating /etc/X11/xorg.conf.d dir"

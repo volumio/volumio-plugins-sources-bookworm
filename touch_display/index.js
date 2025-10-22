@@ -257,7 +257,26 @@ TouchDisplay.prototype.getUIConfig = function () {
       ];
       uiconf.sections[6].hidden = false;
       uiconf.sections[6].content[0].value = self.config.get('virtualKeyboard');
-      defer.resolve(uiconf);
+      self.logger.info(self.pluginName + ': About to detect HDMI ports...'); // Log HDMI detection attempt
+      self.detectHDMIPorts()
+        .then(hdmiPorts => {
+          if (hdmiPorts.length > 0) {
+            uiconf.sections[7].hidden = false;
+            uiconf.sections[7].content[0].value = self.config.get('hdmiAudioEnabled') || false;
+            
+            const portOptions = [{ value: 'none', label: self.commandRouter.getI18nString('TOUCH_DISPLAY.NONE') }];
+            hdmiPorts.forEach(port => {
+              portOptions.push({ value: port.xrandrName, label: port.displayName });
+            });
+            
+            uiconf.sections[7].content[1].options = portOptions;
+            const savedPort = self.config.get('hdmiAudioPort') || 'none';
+            const selectedOption = portOptions.find(opt => opt.value === savedPort) || portOptions[0];
+            uiconf.sections[7].content[1].value = selectedOption;
+          }
+          defer.resolve(uiconf);
+        })
+        .fail(() => defer.resolve(uiconf));
     })
     .fail(e => {
       self.logger.error(self.pluginName + ': Could not fetch UI configuration: ' + e);
@@ -1485,6 +1504,42 @@ TouchDisplay.prototype.initScreenOrientation = function () {
   return defer.promise;
 };
 
+TouchDisplay.prototype.initHDMIAudio = function () {
+  const self = this;
+  const defer = libQ.defer();
+
+  if (self.config.get('hdmiAudioEnabled')) {
+    const hdmiPort = self.config.get('hdmiAudioPort');
+    if (hdmiPort && hdmiPort !== 'none') {
+      const scriptPath = '/opt/volumiokiosk.sh';
+      const marker = '# HDMI_AUDIO_KEEPALIVE';
+      
+      fs.readFile(scriptPath, 'utf8', (err, data) => {
+        if (err) {
+          self.logger.error(self.pluginName + ': Error reading volumiokiosk.sh: ' + err);
+          defer.resolve();
+        } else {
+          if (!data.includes(marker)) {
+            self.logger.info(self.pluginName + ': HDMI audio configuration missing from volumiokiosk.sh, restoring for ' + hdmiPort);
+            self.modifyKioskScript(hdmiPort)
+              .then(() => self.restart())
+              .then(() => defer.resolve())
+              .fail(() => defer.resolve());
+          } else {
+            self.logger.info(self.pluginName + ': HDMI audio configuration already present in volumiokiosk.sh');
+            defer.resolve();
+          }
+        }
+      });
+    } else {
+      defer.resolve();
+    }
+  } else {
+    defer.resolve();
+  }
+  return defer.promise;
+};
+
 TouchDisplay.prototype.initGPUmem = function () {
   const self = this;
 
@@ -1521,6 +1576,7 @@ TouchDisplay.prototype.watchUDS = function () {
             self.setScreenTimeout(self.config.get('timeout'), false);
           }
         });
+      self.initHDMIAudio();
       attempts = 0;
       unixDomSocket.removeAllListeners();
       unixDomSocket.destroy();
@@ -1599,6 +1655,291 @@ TouchDisplay.prototype.getVideoOuts = function () {
       });
     }
   });
+  return defer.promise;
+};
+
+// HDMI Audio Keep-Alive Methods ----------------------------------------------------------------
+
+TouchDisplay.prototype.detectHDMIPorts = function () {
+  const self = this;
+  const defer = libQ.defer();
+  const hdmiPorts = [];
+
+  // Get actual xrandr output names from videoOuts config
+  if (self.config.has('videoOuts')) {
+    const videoOuts = self.config.get('videoOuts').split(' ');
+    let hdmiIndex = 0;
+    
+    videoOuts.forEach(output => {
+      if (/HDMI/i.test(output)) {
+        hdmiPorts.push({
+          xrandrName: output,
+          displayName: 'HDMI ' + hdmiIndex
+        });
+        hdmiIndex++;
+      }
+    });
+    
+    if (hdmiPorts.length === 0) {
+      self.logger.info(self.pluginName + ': No HDMI ports detected in videoOuts.');
+      defer.resolve([]);
+    } else {
+      self.logger.info(self.pluginName + ': Detected HDMI ports: ' + hdmiPorts.map(p => p.displayName + ' (' + p.xrandrName + ')').join(', '));
+      defer.resolve(hdmiPorts);
+    }
+  } else {
+    self.logger.info(self.pluginName + ': videoOuts config not available yet.');
+    defer.resolve([]);
+  }
+  
+  return defer.promise;
+};
+
+TouchDisplay.prototype.detectTouchDevice = function () {
+  const self = this;
+  const defer = libQ.defer();
+
+  fs.stat('/tmp/.X11-unix/X' + displayNumber, (err, stats) => {
+    if (err !== null || !stats.isSocket()) {
+      self.logger.error(self.pluginName + ': Cannot detect touch device, X server not ready: ' + err);
+      defer.reject(err);
+    } else {
+      exec('export DISPLAY=:0 && /usr/bin/xinput list --id-only', { encoding: 'utf8', uid: 1000, gid: 1000 }, (error, stdout, stderr) => {
+        if (error !== null) {
+          self.logger.error(self.pluginName + ': Error listing input devices: ' + error);
+          defer.reject(error);
+        } else {
+          const ids = stdout.trim().split('\n').filter(id => id.length > 0);
+          
+          if (ids.length === 0) {
+            self.logger.info(self.pluginName + ': No input devices found.');
+            defer.resolve(null);
+            return;
+          }
+          
+          const touchDevices = [];
+          let processed = 0;
+          
+          ids.forEach(id => {
+            exec('export DISPLAY=:0 && /usr/bin/xinput list ' + id, { encoding: 'utf8', uid: 1000, gid: 1000 }, (err, output, stderr) => {
+              processed++;
+              
+              if (!err && output) {
+                const nameLine = output.split('\n')[0];
+                const name = nameLine.replace(/.*↳\s+/, '').replace(/\s+id=.*/, '').trim();
+                
+                if (!/XTEST|vc4-hdmi|Virtual core/i.test(name) && /slave\s+pointer/i.test(output)) {
+                  touchDevices.push(id);
+                  self.logger.info(self.pluginName + ': Touch device detected: ' + name + ' (id=' + id + ')');
+                }
+              }
+              
+              if (processed === ids.length) {
+                if (touchDevices.length > 0) {
+                  defer.resolve(touchDevices);
+                } else {
+                  self.logger.info(self.pluginName + ': No touch devices detected.');
+                  defer.resolve(null);
+                }
+              }
+            });
+          });
+        }
+      });
+    }
+  });
+  return defer.promise;
+};
+
+TouchDisplay.prototype.getXrandrConfig = function () {
+  const self = this;
+  const defer = libQ.defer();
+
+  fs.stat('/tmp/.X11-unix/X' + displayNumber, (err, stats) => {
+    if (err !== null || !stats.isSocket()) {
+      self.logger.error(self.pluginName + ': Error querying xrandr config: ' + err);
+      defer.reject(err);
+    } else {
+      exec('/usr/bin/xrandr -display :' + displayNumber, { encoding: 'utf8', uid: 1000, gid: 1000 }, (error, stdout, stderr) => {
+        if (error !== null) {
+          self.logger.error(self.pluginName + ': Error executing xrandr: ' + error);
+          defer.reject(error);
+        } else {
+          const lines = stdout.split(os.EOL);
+          const displays = [];
+          let currentDisplay = null;
+
+          lines.forEach(line => {
+            const connectedMatch = line.match(/^([^\s]+)\s+connected\s+(?:primary\s+)?(\d+)x(\d+)\+(\d+)\+(\d+)/);
+            if (connectedMatch) {
+              currentDisplay = {
+                name: connectedMatch[1],
+                width: parseInt(connectedMatch[2], 10),
+                height: parseInt(connectedMatch[3], 10),
+                x: parseInt(connectedMatch[4], 10),
+                y: parseInt(connectedMatch[5], 10)
+              };
+              displays.push(currentDisplay);
+            }
+          });
+
+          if (displays.length === 0) {
+            self.logger.error(self.pluginName + ': No active displays found in xrandr output.');
+            defer.reject(new Error('No active displays'));
+          } else {
+            self.logger.info(self.pluginName + ': Found ' + displays.length + ' active display(s).');
+            defer.resolve(displays);
+          }
+        }
+      });
+    }
+  });
+  return defer.promise;
+};
+
+TouchDisplay.prototype.backupKioskScript = function () {
+  const self = this;
+  const defer = libQ.defer();
+  const scriptPath = '/opt/volumiokiosk.sh';
+  const backupPath = '/opt/volumiokiosk.sh.backup';
+
+  fs.stat(backupPath, (err, stats) => {
+    if (err !== null) {
+      exec('/bin/echo volumio | /usr/bin/sudo -S /bin/cp ' + scriptPath + ' ' + backupPath, { uid: 1000, gid: 1000 }, (error, stdout, stderr) => {
+        if (error !== null) {
+          self.logger.error(self.pluginName + ': Error backing up volumiokiosk.sh: ' + error);
+          defer.reject(error);
+        } else {
+          self.logger.info(self.pluginName + ': volumiokiosk.sh backed up successfully.');
+          defer.resolve();
+        }
+      });
+    } else {
+      self.logger.info(self.pluginName + ': Backup of volumiokiosk.sh already exists.');
+      defer.resolve();
+    }
+  });
+  return defer.promise;
+};
+
+TouchDisplay.prototype.modifyKioskScript = function (hdmiPort) {
+  const self = this;
+  const defer = libQ.defer();
+  const scriptPath = '/opt/volumiokiosk.sh';
+  const marker = '# HDMI_AUDIO_KEEPALIVE';
+
+  if (!hdmiPort || hdmiPort === 'none') {
+    exec('/bin/echo volumio | /usr/bin/sudo -S /bin/sed -i "/' + marker + '/d" ' + scriptPath, { uid: 1000, gid: 1000 }, (error, stdout, stderr) => {
+      if (error !== null) {
+        self.logger.error(self.pluginName + ': Error removing HDMI audio commands from volumiokiosk.sh: ' + error);
+        defer.reject(error);
+      } else {
+        self.logger.info(self.pluginName + ': HDMI audio keep-alive commands removed from volumiokiosk.sh.');
+        defer.resolve();
+      }
+    });
+  } else {
+    self.getXrandrConfig()
+      .then(displays => {
+        let primaryDisplay = displays[0];
+        const audioHdmiXpos = primaryDisplay.x + primaryDisplay.width;
+        const audioHdmiYpos = 0;
+        
+        return self.detectTouchDevice()
+          .then(touchDevices => {
+            return { primaryDisplay, audioHdmiXpos, audioHdmiYpos, touchDevices };
+          })
+          .fail(() => {
+            return { primaryDisplay, audioHdmiXpos, audioHdmiYpos, touchDevices: null };
+          });
+      })
+      .then(config => {
+        const exportDisplay = 'export DISPLAY=:0 ' + marker;
+        const waitForX = 'timeout 5 bash -c \'until xrandr >/dev/null 2>&1; do sleep 0.5; done\' ' + marker;
+        const primaryCmd = 'xrandr --output ' + config.primaryDisplay.name + ' --mode ' + config.primaryDisplay.width + 'x' + config.primaryDisplay.height + ' --primary --pos 0x0 ' + marker;
+        const xrandrCmd1 = 'xrandr --output ' + hdmiPort + ' --mode 1920x1080 --pos ' + config.audioHdmiXpos + 'x' + config.audioHdmiYpos + ' ' + marker;
+        const sleepCmd = 'sleep 1 ' + marker;
+        
+        let touchCommands = '';
+        if (config.touchDevices && config.touchDevices.length > 0) {
+          config.touchDevices.forEach(deviceId => {
+            touchCommands += '\\nxinput map-to-output ' + deviceId + ' ' + config.primaryDisplay.name + ' ' + marker;
+          });
+          self.logger.info(self.pluginName + ': ' + config.touchDevices.length + ' touch device(s) will be mapped to ' + config.primaryDisplay.name);
+        } else {
+          self.logger.info(self.pluginName + ': No touch devices found, skipping touch calibration.');
+        }
+        
+        exec('/bin/echo volumio | /usr/bin/sudo -S /bin/sed -i "/' + marker + '/d" ' + scriptPath, { uid: 1000, gid: 1000 }, (error, stdout, stderr) => {
+          if (error !== null) {
+            self.logger.error(self.pluginName + ': Error cleaning old HDMI audio commands: ' + error);
+            defer.reject(error);
+          } else {
+            const insertCmd = '/bin/echo volumio | /usr/bin/sudo -S /bin/sed -i "/\\/usr\\/bin\\/chromium-browser/i ' + 
+                              exportDisplay + '\\n' + 
+                              waitForX + '\\n' + 
+                              primaryCmd + '\\n' + 
+                              xrandrCmd1 + '\\n' + 
+                              sleepCmd + 
+                              touchCommands + '" ' + scriptPath;
+            
+            exec(insertCmd, { uid: 1000, gid: 1000 }, (error, stdout, stderr) => {
+              if (error !== null) {
+                self.logger.error(self.pluginName + ': Error inserting HDMI audio commands into volumiokiosk.sh: ' + error);
+                self.logger.error(self.pluginName + ': Command was: ' + insertCmd);
+                defer.reject(error);
+              } else {
+                self.logger.info(self.pluginName + ': HDMI audio keep-alive commands inserted into volumiokiosk.sh for ' + hdmiPort);
+                defer.resolve();
+              }
+            });
+          }
+        });
+      })
+      .fail(err => defer.reject(err));
+  }
+  return defer.promise;
+};
+
+TouchDisplay.prototype.saveHDMIAudioConf = function (confData) {
+  const self = this;
+  const defer = libQ.defer();
+
+  if (self.config.get('hdmiAudioEnabled') !== confData.hdmiAudioEnabled || self.config.get('hdmiAudioPort') !== confData.hdmiAudioPort.value) {
+    fs.stat('/tmp/.X11-unix/X' + displayNumber, (err, stats) => {
+      if (err !== null || !stats.isSocket()) {
+        self.updateUIConfig();
+        self.logger.error(self.pluginName + ': HDMI audio config cannot be applied: ' + err);
+        self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('TOUCH_DISPLAY.PLUGIN_NAME'), self.commandRouter.getI18nString('TOUCH_DISPLAY.ERR_SET_HDMI_AUDIO') + err);
+        defer.reject(err);
+      } else {
+        self.backupKioskScript()
+          .then(() => {
+            if (confData.hdmiAudioEnabled && confData.hdmiAudioPort.value !== 'none') {
+              return self.modifyKioskScript(confData.hdmiAudioPort.value);
+            } else {
+              return self.modifyKioskScript('none');
+            }
+          })
+          .then(() => {
+            self.config.set('hdmiAudioEnabled', confData.hdmiAudioEnabled);
+            self.config.set('hdmiAudioPort', confData.hdmiAudioPort.value);
+            return self.restart();
+          })
+          .then(() => {
+            self.commandRouter.pushToastMessage('success', self.commandRouter.getI18nString('TOUCH_DISPLAY.PLUGIN_NAME'), self.commandRouter.getI18nString('COMMON.SETTINGS_SAVED_SUCCESSFULLY'));
+            defer.resolve();
+          })
+          .fail(error => {
+            self.updateUIConfig();
+            defer.reject(error);
+          });
+      }
+    });
+  } else {
+    self.commandRouter.pushToastMessage('info', self.commandRouter.getI18nString('TOUCH_DISPLAY.PLUGIN_NAME'), self.commandRouter.getI18nString('TOUCH_DISPLAY.NO_CHANGES'));
+    defer.resolve();
+  }
   return defer.promise;
 };
 

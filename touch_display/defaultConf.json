@@ -17,5 +17,7 @@
   "gpuMem": 32,
   "showPointer": false,
   "scale": 100,
-  "virtualKeyboard": false
+  "virtualKeyboard": false,
+  "hdmiAudioEnabled": false,
+  "hdmiAudioPort": "none"
 }

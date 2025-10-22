@@ -524,6 +524,54 @@
           "value": false
         }
       ]
+    },
+    {
+      "id": "section_hdmi_audio",
+      "element": "section",
+      "label": "TRANSLATE.TOUCH_DISPLAY.HDMI_AUDIO_LABEL",
+      "icon": "fa-volume-up",
+      "hidden": true,
+      "onSave": {
+        "type": "controller",
+        "endpoint": "user_interface/touch_display",
+        "method": "saveHDMIAudioConf"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.TOUCH_DISPLAY.SAVE",
+        "data": [
+          "hdmiAudioEnabled",
+          "hdmiAudioPort"
+        ]
+      },
+      "content": [
+        {
+          "id": "hdmiAudioEnabled",
+          "element": "switch",
+          "label": "TRANSLATE.TOUCH_DISPLAY.HDMI_AUDIO_ENABLED",
+          "doc": "TRANSLATE.TOUCH_DISPLAY.HDMI_AUDIO_ENABLED_DOC",
+          "value": false
+        },
+        {
+          "id": "hdmiAudioPort",
+          "element": "select",
+          "label": "TRANSLATE.TOUCH_DISPLAY.HDMI_AUDIO_PORT",
+          "doc": "TRANSLATE.TOUCH_DISPLAY.HDMI_AUDIO_PORT_DOC",
+          "value": {
+            "value": "none",
+            "label": "TRANSLATE.TOUCH_DISPLAY.NONE"
+          },
+          "options": [
+            {
+              "value": "none",
+              "label": "TRANSLATE.TOUCH_DISPLAY.NONE"
+            }
+          ],
+          "visibleIf": {
+            "field": "hdmiAudioEnabled",
+            "value": true
+          }
+        }
+      ]
     }
   ]
 }
