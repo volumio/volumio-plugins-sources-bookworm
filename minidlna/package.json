@@ -1,6 +1,6 @@
 {
 	"name": "minidlna",
-	"version": "4.1.12",
+	"version": "3.1.13",
 	"description": "The plugin installs and configures a miniDLNA server.",
 	"main": "index.js",
 	"scripts": {
@@ -15,7 +15,8 @@
 		"plugin_type": "music_service",
 		"architectures": [
 			"amd64",
-			"armhf"
+			"armhf",
+			"i386"
 		],
 		"os": [
 			"bookworm"
@@ -25,7 +26,7 @@
 	},
 	"engines": {
 		"node": ">=20",
-		"volumio": ">=0"
+		"volumio": ">=4"
 	},
 	"dependencies": {
 		"fs-extra": "^8.1.0",
