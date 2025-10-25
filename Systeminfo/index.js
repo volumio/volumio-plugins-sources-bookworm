@@ -1,4 +1,4 @@
-//Systeminfo - balbuze 2024
+//Systeminfo - balbuze October 2025
 'use strict';
 
 var libQ = require('kew');
@@ -6,11 +6,87 @@ var fs = require('fs-extra');
 var config = new (require('v-conf'))();
 var exec = require('child_process').exec;
 const si = require('systeminformation');
+const { getBuiltinModule } = require('process');
 
 // Define the Systeminfo class
 module.exports = Systeminfo;
 
-async function getBluetoothVersion(logger) {
+
+function Systeminfo(context) {
+    var self = this;
+    self.context = context;
+    self.commandRouter = self.context.coreCommand;
+    self.logger = self.commandRouter.logger;
+};
+
+Systeminfo.prototype.onVolumioStart = function () {
+    var self = this;
+    var configFile = this.commandRouter.pluginManager.getConfigurationFile(this.context, 'config.json');
+    this.config = new (require('v-conf'))();
+    this.config.loadFile(configFile);
+    return libQ.resolve();
+};
+
+Systeminfo.prototype.getConfigurationFiles = function () {
+    return ['config.json'];
+};
+
+Systeminfo.prototype.onStop = function () {
+    var defer = libQ.defer();
+    defer.resolve();
+    return defer.promise;
+};
+
+Systeminfo.prototype.onStart = function () {
+    var defer = libQ.defer();
+    defer.resolve();
+    return defer.promise;
+};
+
+Systeminfo.prototype.onRestart = function () {
+    // No specific actions needed on restart for this plugin
+};
+
+Systeminfo.prototype.onInstall = function () {
+    // Perform installation tasks here
+};
+
+Systeminfo.prototype.onUninstall = function () {
+    // Perform uninstallation tasks here
+};
+
+Systeminfo.prototype.getUIConfig = function () {
+    var defer = libQ.defer();
+    var lang_code = this.commandRouter.sharedVars.get('language_code');
+
+    this.commandRouter.i18nJson(__dirname + '/i1n/strings_' + lang_code + '.json',
+        __dirname + '/i18n/strings_en.json',
+        __dirname + '/UIConfig.json')
+        .then(function (uiconf) {
+            defer.resolve(uiconf);
+        })
+        .fail(function () {
+            defer.reject(new Error());
+        });
+
+    return defer.promise;
+};
+
+Systeminfo.prototype.setUIConfig = function (data) {
+    // No specific actions needed for setting UI config
+};
+
+Systeminfo.prototype.getConf = function (varName) {
+    // No specific actions needed for getting config
+};
+
+Systeminfo.prototype.setConf = function (varName, varValue) {
+    // No specific actions needed for setting config
+};
+
+Systeminfo.prototype.getBluetoothVersion = async function () {
+    const self = this;
+    const logger = self.logger;
     try {
         // Try multiple methods to detect Bluetooth version
         const methods = [
@@ -55,9 +131,11 @@ async function getBluetoothVersion(logger) {
         logger.warn('Bluetooth version detection failed:', error.message);
         return 'Not available';
     }
-}
+};
 
-async function getAirPlayVersion(logger) {
+Systeminfo.prototype.getAirPlayVersion = async function () {
+    const self = this;
+    const logger = self.logger;
     try {
         // Try to get shairport-sync version
         const { stdout } = await new Promise((resolve, reject) => {
@@ -82,31 +160,33 @@ async function getAirPlayVersion(logger) {
         logger.warn('AirPlay version detection failed:', error.message);
         return 'Not available';
     }
-}
+};
 
-async function getBoardInfo(logger) {
+Systeminfo.prototype.getBoardInfo = async function () {
+    const self = this;
+    const logger = self.logger;
     try {
-            // Try /proc/board_info first (for Tinker Board and similar)
-            try {
-                const { stdout: boardInfoRaw } = await new Promise((resolve, reject) => {
-                    exec('cat /proc/board_info 2>/dev/null', (error, stdout) => {
-                        if (error) reject(error);
-                        else resolve({ stdout });
-                    });
+        // Try /proc/board_info first (for Tinker Board and similar)
+        try {
+            const { stdout: boardInfoRaw } = await new Promise((resolve, reject) => {
+                exec('cat /proc/board_info 2>/dev/null', (error, stdout) => {
+                    if (error) reject(error);
+                    else resolve({ stdout });
                 });
-                if (boardInfoRaw) {
-                    const boardInfo = boardInfoRaw.trim();
-                    if (boardInfo.toLowerCase().includes('tinker board')) {
-                        return {
-                            manufacturer: 'ASUS',
-                            model: boardInfo
-                        };
-                    }
-                    // Add more board checks here if needed
+            });
+            if (boardInfoRaw) {
+                const boardInfo = boardInfoRaw.trim();
+                if (boardInfo.toLowerCase().includes('tinker board')) {
+                    return {
+                        manufacturer: 'ASUS',
+                        model: boardInfo
+                    };
                 }
-            } catch (e) {
-                logger.debug('/proc/board_info read failed:', e.message);
+                // Add more board checks here if needed
             }
+        } catch (e) {
+            logger.debug('/proc/board_info read failed:', e.message);
+        }
         // Try device tree model first
         try {
             const { stdout: dtModel } = await new Promise((resolve, reject) => {
@@ -115,7 +195,7 @@ async function getBoardInfo(logger) {
                     else resolve({ stdout });
                 });
             });
-            
+
             if (dtModel) {
                 const model = dtModel.trim();
                 // Check for various boards
@@ -134,6 +214,17 @@ async function getBoardInfo(logger) {
                         manufacturer: 'Khadas',
                         model: model
                     };
+                } else if (model.includes('Hardkernel ODROID-N2')) {
+                    return {
+                        manufacturer: 'Hardkernel',
+                        model: model
+                    };
+                } else if (model.includes('Hardkernel ODROID-M1S')) {
+                    return {
+                        manufacturer: 'Hardkernel',
+                        model: model
+                    };
+
                 }
             }
         } catch (e) {
@@ -216,112 +307,87 @@ async function getBoardInfo(logger) {
             model: 'Detection Failed'
         };
     }
-}
-
-function Systeminfo(context) {
-    var self = this;
-    self.context = context;
-    self.commandRouter = self.context.coreCommand;
-    self.logger = self.commandRouter.logger;
 };
 
-Systeminfo.prototype.onVolumioStart = function () {
-    var self = this;
-    var configFile = this.commandRouter.pluginManager.getConfigurationFile(this.context, 'config.json');
-    this.config = new (require('v-conf'))();
-    this.config.loadFile(configFile);
-    return libQ.resolve();
-};
+Systeminfo.prototype.getFirmwareInfo = async function () {
+    const self = this;
 
-Systeminfo.prototype.getConfigurationFiles = function () {
-    return ['config.json'];
-};
-
-Systeminfo.prototype.onStop = function () {
-    var defer = libQ.defer();
-    defer.resolve();
-    return defer.promise;
-};
-
-Systeminfo.prototype.onStart = function () {
-    var defer = libQ.defer();
-    defer.resolve();
-    return defer.promise;
-};
-
-Systeminfo.prototype.onRestart = function () {
-    // No specific actions needed on restart for this plugin
-};
-
-Systeminfo.prototype.onInstall = function () {
-    // Perform installation tasks here
-};
-
-Systeminfo.prototype.onUninstall = function () {
-    // Perform uninstallation tasks here
-};
-
-Systeminfo.prototype.getUIConfig = function () {
-    var defer = libQ.defer();
-    var lang_code = this.commandRouter.sharedVars.get('language_code');
-
-    this.commandRouter.i18nJson(__dirname + '/i1n/strings_' + lang_code + '.json',
-        __dirname + '/i18n/strings_en.json',
-        __dirname + '/UIConfig.json')
-        .then(function (uiconf) {
-            defer.resolve(uiconf);
-        })
-        .fail(function () {
-            defer.reject(new Error());
-        });
-
-    return defer.promise;
-};
-
-Systeminfo.prototype.setUIConfig = function (data) {
-    // No specific actions needed for setting UI config
-};
-
-Systeminfo.prototype.getConf = function (varName) {
-    // No specific actions needed for getting config
-};
-
-Systeminfo.prototype.setConf = function (varName, varValue) {
-    // No specific actions needed for setting config
-};
-
-// --- Helper functions for data retrieval ---
-async function getFirmwareInfo(logger) {
     try {
-        const model = (await si.baseboard()).model.toLowerCase();
+        // Get board model
+        const { stdout: modelOutput } = await new Promise((resolve, reject) => {
+            exec('cat /proc/device-tree/model', (error, stdout) => {
+                if (error) {
+                    reject(new Error('Board model detection failed: ' + error.message));
+                }
+                resolve({ stdout });
+            });
+        });
+        const model = modelOutput.trim().toLowerCase();
+
+        // Select appropriate command based on model
         let cmd = '';
-        if (model.includes('raspberry pi 4') || model.includes('raspberry pi 5')) {
-            cmd = 'vcgencmd bootloader_version';
+        if (model.includes('raspberry pi 4') || model.includes('raspberry pi 5') || model.includes('compute module')) {
+            cmd = 'echo volumio | sudo -S vcgencmd bootloader_version';
+        } else if (model.includes('odroid')) {
+
+            cmd = `echo volumio | sudo -S /bin/bash -c 'for dev in /dev/mmcblk*; do dd if="$dev" bs=1M count=1 2>/dev/null | strings | grep -m1 -E "^U-Boot( SPL)? [0-9]+\\.[0-9]+" && break; done'`;
+        } else if (model.includes('khadas')) {
+            cmd = `/bin/echo volumio | /usr/bin/sudo -S strings -n 8 /dev/mmcblk0 2>/dev/null | grep -m1 -i 'U-Boot' || true`;
         } else {
-            cmd = 'vcgencmd version';
+            cmd = 'echo volumio | sudo -S vcgencmd version';
         }
-        
-        const { stdout } = await new Promise((resolve, reject) => {
+
+        // Execute command
+        const { stdout: cmdOutput, stderr } = await new Promise((resolve, reject) => {
             exec(cmd, { uid: 1000, gid: 1000 }, (error, stdout, stderr) => {
                 if (error) {
                     reject(new Error('Firmware detection failed: ' + error.message));
-                } else if (stderr) {
-                    logger.info('vcgencmd stderr: ' + stderr);
-                    resolve({ stdout });
                 } else {
-                    resolve({ stdout });
+                    if (stderr) {
+                        self.logger.info('Firmware detection stderr: ' + stderr);
+                    }
+                    resolve({ stdout, stderr });
                 }
             });
         });
-        const outputLines = stdout.trim().split('\n');
-        return outputLines.slice(0, 2).join(' ').trim();
+
+        const outputLines = cmdOutput.trim().split('\n');
+     //   console.log('------------outputLines: ', outputLines);
+
+        // For bootloader_version, combine date and hash into one line
+        try {
+            if (cmd.includes('bootloader_version') && outputLines.length >= 2) {
+                const date = outputLines[0]?.trim() || '';
+                const versionMatch = outputLines[1]?.match(/version\s+([^\s]+)/);
+                const version = versionMatch ? versionMatch[1] : '';
+                if (date && version) return `${date} (${version})`;
+            } else if (cmd.includes('U-Boot') && outputLines.length >= 1) {
+                const versionLine = outputLines.find(line =>
+                    line.startsWith('U-Boot') &&
+                    !line.includes('=') &&
+                    /^U-Boot( SPL)? [0-9]+\.[0-9]+/.test(line)
+                );
+                if (versionLine) {
+                    const match = versionLine.match(/^U-Boot(?: SPL)? ([^\s]+)/);
+                    if (match) return `U-Boot ${match[1]}`;
+                }
+            }
+
+            // Fallback: return all lines joined
+            return outputLines.join(' ').trim().replace(/^%+\s*/, '') || 'Not applicable or failed';
+        } catch (error) {
+            self.logger.info('Firmware detection is not applicable or failed: ' + error.message);
+            return 'Not applicable or failed';
+        }
+
     } catch (error) {
-        logger.info('Firmware detection is not applicable or failed: ' + error.message);
+        self.logger.info('Firmware detection outer try failed: ' + error.message);
         return 'Not applicable or failed';
     }
-}
+};
 
-async function getHwAudioInfo(outputDevice, logger) {
+Systeminfo.prototype.getHwAudioInfo = async function (outputDevice) {
+    const self = this;
     try {
         const cmd = `/data/plugins/user_interface/Systeminfo/hw_params hw:${outputDevice}`;
         const { stdout } = await new Promise((resolve, reject) => {
@@ -339,15 +405,16 @@ async function getHwAudioInfo(outputDevice, logger) {
             samplerates: hwInfo.samplerates.value
         };
     } catch (error) {
-        logger.error('Audio hardware detection failed, check if "hw_params" exists and is executable:', error.message);
+        self.logger.error('Audio hardware detection failed, check if "hw_params" exists and is executable:', error.message);
         return {
             channels: 'N/A',
             samplerates: 'N/A'
         };
     }
-}
+};
 
-async function getStorageInfo() {
+Systeminfo.prototype.getStorageInfo = async function () {
+    const self = this;
     try {
         const { stdout } = await new Promise((resolve, reject) => {
             // Use df with -BM to get output in megabytes
@@ -360,11 +427,11 @@ async function getStorageInfo() {
         });
 
         const [filesystem, size, used, avail, pcent_with_percent_sign, mount] = stdout.trim().replace(/\s+/g, ' ').split(' ');
-        
+
         const sizeCleaned = size ? size.replace('M', '') : 'N/A';
         const usedCleaned = used ? used.replace('M', '') : 'N/A';
         const availCleaned = avail ? avail.replace('M', '') : 'N/A';
-        
+
         let pcent = 'N/A';
         if (sizeCleaned !== 'N/A' && availCleaned !== 'N/A') {
             const total = parseInt(sizeCleaned, 10);
@@ -388,9 +455,11 @@ async function getStorageInfo() {
             pcent: 'N/A'
         };
     }
-}
+};
 
-async function getRaspberryPiInfo(logger) {
+Systeminfo.prototype.getRaspberryPiInfo = async function () {
+    const self = this;
+    const logger = self.logger;
     try {
         const { stdout } = await new Promise((resolve, reject) => {
             exec('cat /proc/device-tree/model', (error, stdout) => {
@@ -418,9 +487,10 @@ async function getRaspberryPiInfo(logger) {
             model: 'N/A',
         };
     }
-}
+};
 
-async function getCpuModelName() {
+Systeminfo.prototype.getCpuModelName = async function () {
+    const self = this;
     try {
         // First try /proc/cpuinfo for ARM/embedded boards
         const { stdout: cpuinfoLine } = await new Promise((resolve) => {
@@ -455,17 +525,18 @@ async function getCpuModelName() {
     } catch (error) {
         return 'N/A';
     }
-}
+};
 
-function formatUptime(uptime) {
+Systeminfo.prototype.formatUptime = function (uptime) {
     const days = Math.floor(uptime / (3600 * 24));
     const hours = Math.floor((uptime % (3600 * 24)) / 3600);
     const minutes = Math.floor((uptime % 3600) / 60);
     const seconds = Math.floor(uptime % 60);
     return `${days} days, ${hours} Hrs, ${minutes} Minutes, ${seconds} Seconds`;
-}
+};
 
-async function getBogoMIPS() {
+Systeminfo.prototype.getBogoMIPS = async function () {
+    const self = this;
     try {
         const { stdout } = await new Promise((resolve, reject) => {
             exec("grep -m1 'BogoMIPS' /proc/cpuinfo", (error, stdout) => {
@@ -480,11 +551,13 @@ async function getBogoMIPS() {
     } catch (error) {
         return 'N/A';
     }
-}
+};
 
 // Simplified UPnP renderer detection: prefer dpkg-query for package versions,
 // then check whether the binary or service exists. Returns concise string.
-async function getUpnpRendererVersion(logger) {
+Systeminfo.prototype.getUpnpRendererVersion = async function () {
+    const self = this;
+    const logger = self.logger;
     try {
         // 1) Prefer dpkg package version for upmpdcli
         const upmpdPkg = await new Promise((resolve) => {
@@ -510,30 +583,39 @@ async function getUpnpRendererVersion(logger) {
         });
         if (upmpdService === 'active') return 'upmpdcli (service)';
 
-        // 4) Fall back to checking package versions for gmediarender and rygel
-        const gmedPkg = await new Promise((resolve) => {
-            exec("dpkg-query -W -f='${Version}' gmediarender 2>/dev/null || true", (err, stdout) => {
-                resolve(err ? '' : stdout.trim());
-            });
-        });
-        if (gmedPkg) return `gmediarender ${gmedPkg}`;
-
-        const rygelPkg = await new Promise((resolve) => {
-            exec("dpkg-query -W -f='${Version}' rygel 2>/dev/null || true", (err, stdout) => {
-                resolve(err ? '' : stdout.trim());
-            });
-        });
-        if (rygelPkg) return `rygel ${rygelPkg}`;
 
         return 'Not detected';
     } catch (err) {
         logger && logger.warn && logger.warn('UPnP detection failed:', err.message);
         return 'Not available';
     }
-}
+};
+
+// Detect U-Boot version (for boards like Khadas VIM3L) by scanning common block devices !!! function not used anymore
+Systeminfo.prototype.getUbootVersion = async function () {
+    const self = this;
+    try {
+        const cmd = `/bin/echo volumio | /usr/bin/sudo -S strings -n 8 /dev/mmcblk0 2>/dev/null | grep -m1 -i 'U-Boot' || true`;
+
+        return await new Promise((resolve) => {
+            exec(cmd, (error, stdout, stderr) => {
+                if (stderr && stderr.toString().trim()) {
+                    self.logger.info('U-Boot scan stderr: ' + stderr.toString().trim());
+                }
+                let out = (stdout || '').toString().trim();
+                out = out.replace(/^%+\s*/, '').trim();
+
+                resolve(out || 'Not detected');
+            });
+        });
+    } catch (error) {
+        self.logger.error('U-Boot detection failed:', error.message);
+        return 'Not available';
+    }
+};
 
 // --- Main function to get system info and display modal ---
-Systeminfo.prototype.getsysteminfo = async function () {
+Systeminfo.prototype.getsysteminfo = async function (data) {
     const self = this;
     const defer = libQ.defer();
 
@@ -567,22 +649,41 @@ Systeminfo.prototype.getsysteminfo = async function () {
                 });
             }),
             self.commandRouter.executeOnPlugin('system_controller', 'system', 'getSystemVersion', ''),
-            getFirmwareInfo(self.logger),
-            getStorageInfo(),
+            self.getFirmwareInfo(),
+            self.getStorageInfo(),
             new Promise((resolve) => {
                 exec('mpd -V', (error, stdout) => {
                     resolve(error ? 'N/A' : stdout.trim().split('\n')[0]);
                 });
             }),
-            getBogoMIPS(),
-            getBoardInfo(self.logger),
-            getUpnpRendererVersion(self.logger),
-            getCpuModelName()
+            self.getBogoMIPS(),
+            self.getBoardInfo(),
+            self.getUpnpRendererVersion(),
+            self.getCpuModelName()
         ]);
+/*
+        // Conditionally fetch U-Boot only for non-Raspberry-family boards
+        let ubootValue = 'Not detected';
+        try {
+            const isRaspberry = ((boardInfo && ((boardInfo.manufacturer || '').toString().toLowerCase().includes('raspberry')))
+                || ((boardInfo && (boardInfo.model || '').toString().toLowerCase().includes('raspberry'))));
 
+            if (isRaspberry) {
+                self.logger.info('Board detected as Raspberry-family; skipping U-Boot detection');
+                ubootValue = 'Not applicable';
+            } else {
+                ubootValue = await self.getUbootVersion();
+                self.logger.info('U-Boot value' + ubootValue);
+
+            }
+        } catch (e) {
+            self.logger.warn('U-Boot conditional detection failed:', e.message);
+            ubootValue = 'Not available';
+        }
+*/
         const outputDevice = audioConfig.outputdevice?.value;
-        const hwAudioInfo = outputDevice ? await getHwAudioInfo(outputDevice, self.logger) : { channels: 'N/A', samplerates: 'N/A' };
-        
+        const hwAudioInfo = outputDevice ? await self.getHwAudioInfo(outputDevice) : { channels: 'N/A', samplerates: 'N/A' };
+
         // Board info already obtained from getBoardInfo()
         let networkInfo = { iface: 'N/A', ip4: 'N/A', mac: 'N/A', type: 'N/A' };
         try {
@@ -601,7 +702,7 @@ Systeminfo.prototype.getsysteminfo = async function () {
 
         // Assign the fetched firmware information to the boardInfo object
         boardInfo.firmware = firmwareInfo;
-        
+
         // Final data object
         const finalData = {
             os: {
@@ -609,12 +710,12 @@ Systeminfo.prototype.getsysteminfo = async function () {
                 hostname: allData.os.hostname,
                 kernel: allData.os.kernel,
                 governor: allData.cpu.governor,
-                uptime: formatUptime(allData.time.uptime)
+                uptime: self.formatUptime(allData.time.uptime)
             },
             software: {
                 mpdVersion: mpdVersion,
-                bluetooth: await getBluetoothVersion(self.logger) || 'Not detected',
-                airplay: await getAirPlayVersion(self.logger) || 'Not detected',
+                bluetooth: await self.getBluetoothVersion() || 'Not detected',
+                airplay: await self.getAirPlayVersion() || 'Not detected',
                 upnp: upnp || 'Not detected'
             },
             network: {
@@ -631,6 +732,10 @@ Systeminfo.prototype.getsysteminfo = async function () {
                 sampleRate: hwAudioInfo.samplerates
             },
             board: boardInfo,
+            // U-Boot information (if available)
+            boardUboot: {
+                uboot: typeof ubootValue !== 'undefined' ? ubootValue : 'Not detected'
+            },
             cpu: {
                 brand: allData.cpu.brand,
                 modelName: cpuModelName,
@@ -687,7 +792,7 @@ Systeminfo.prototype.getsysteminfo = async function () {
         }
 
         // Board info
-        const validBoardInfo = Object.entries(finalData.board).some(([key, value]) => 
+        const validBoardInfo = (Object.entries(finalData.board).some(([key, value]) =>
             value &&
             value !== 'N/A' &&
             value !== 'Unknown' &&
@@ -696,7 +801,8 @@ Systeminfo.prototype.getsysteminfo = async function () {
             value !== 'Detection Failed' &&
             value !== '' &&
             value !== 'Default string' &&
-            value !== 'Not applicable or failed');
+            value !== 'Not applicable')) ||
+            (finalData.boardUboot && finalData.boardUboot.uboot && !['Not detected', 'Not available', ''].includes(finalData.boardUboot.uboot));
 
         if (validBoardInfo) {
             combinedMessages += `<li>Board info</br></li><ul>`;
@@ -723,6 +829,10 @@ Systeminfo.prototype.getsysteminfo = async function () {
                 !['N/A', 'Unknown', 'Generic', '', 'Default string', 'Not applicable or failed'].includes(finalData.board.firmware)
             ) {
                 combinedMessages += `<li>Firmware Version: ${finalData.board.firmware}</li>`;
+            }
+            // U-Boot (if available and not a placeholder)
+            if (finalData.boardUboot && finalData.boardUboot.uboot && !['Not detected', 'Not available', '', 'Not applicable'].includes(finalData.boardUboot.uboot)) {
+                combinedMessages += `<li>U-Boot: ${finalData.boardUboot.uboot}</li>`;
             }
             combinedMessages += `</ul>`;
         }
@@ -756,7 +866,7 @@ Systeminfo.prototype.getsysteminfo = async function () {
         if (finalData.software.mpdVersion !== 'N/A' || finalData.software.bluetooth !== 'N/A' || finalData.software.airplay !== 'N/A') {
             combinedMessages += `<li>Software info</br></li><ul>`;
             if (finalData.software.mpdVersion !== 'N/A') combinedMessages += `<li>MPD version: ${finalData.software.mpdVersion}</li>`;
-            if (finalData.software.bluetooth !== 'N/A') combinedMessages += `<li>Bluetooth version: ${finalData.software.bluetooth}</li>`;
+            if (finalData.software.bluetooth !== 'N/A') combinedMessages += `<li>Bluetooth capabilities version: ${finalData.software.bluetooth}</li>`;
             if (finalData.software.airplay !== 'N/A') combinedMessages += `<li>AirPlay version: ${finalData.software.airplay}</li>`;
             if (finalData.software.upnp && finalData.software.upnp !== 'Not detected' && finalData.software.upnp !== 'Not available') combinedMessages += `<li>UPnP renderer: ${finalData.software.upnp}</li>`;
             combinedMessages += `</ul>`;
