@@ -1665,32 +1665,53 @@ TouchDisplay.prototype.detectHDMIPorts = function () {
   const defer = libQ.defer();
   const hdmiPorts = [];
 
-  // Get actual xrandr output names from videoOuts config
-  if (self.config.has('videoOuts')) {
-    const videoOuts = self.config.get('videoOuts').split(' ');
-    let hdmiIndex = 0;
-    
-    videoOuts.forEach(output => {
-      if (/HDMI/i.test(output)) {
-        hdmiPorts.push({
-          xrandrName: output,
-          displayName: 'HDMI ' + hdmiIndex
-        });
-        hdmiIndex++;
-      }
-    });
-    
-    if (hdmiPorts.length === 0) {
-      self.logger.info(self.pluginName + ': No HDMI ports detected in videoOuts.');
-      defer.resolve([]);
+  fs.readdir('/sys/class/drm/', (err, items) => {
+    if (err !== null) {
+      self.logger.error(self.pluginName + ': Error reading /sys/class/drm/: ' + err);
+      defer.reject(err);
     } else {
-      self.logger.info(self.pluginName + ': Detected HDMI ports: ' + hdmiPorts.map(p => p.displayName + ' (' + p.xrandrName + ')').join(', '));
-      defer.resolve(hdmiPorts);
+      items.forEach(item => {
+        if (/^card[0-9]+-HDMI/i.test(item)) {
+          let portNum = 0;
+          let xrandrName = item.replace(/^card[0-9]+-/, '');
+          
+          // Try multiple patterns for extracting port number
+          // Pattern 1: HDMI-A-1, HDMI-B-2, etc. (Type + Number)
+          let match = item.match(/HDMI-[A-Z]+-([0-9]+)$/i);
+          if (match) {
+            portNum = parseInt(match[1], 10) - 1;
+          } else {
+            // Pattern 2: HDMI-1, HDMI-2, etc. (Direct number)
+            match = item.match(/HDMI-([0-9]+)$/i);
+            if (match) {
+              portNum = parseInt(match[1], 10) - 1;
+            } else {
+              // Pattern 3: HDMI with no number suffix - use sequential index
+              // Will be assigned based on order found
+              portNum = hdmiPorts.length;
+            }
+          }
+          
+          hdmiPorts.push({
+            xrandrName: xrandrName,
+            displayName: 'HDMI ' + portNum,
+            sysName: item
+          });
+        }
+      });
+      
+      // Sort by xrandrName to ensure consistent ordering
+      hdmiPorts.sort((a, b) => a.xrandrName.localeCompare(b.xrandrName));
+      
+      if (hdmiPorts.length === 0) {
+        self.logger.info(self.pluginName + ': No HDMI ports detected in /sys/class/drm/.');
+        defer.resolve([]);
+      } else {
+        self.logger.info(self.pluginName + ': Detected HDMI ports: ' + hdmiPorts.map(p => p.displayName + ' (' + p.xrandrName + ')').join(', '));
+        defer.resolve(hdmiPorts);
+      }
     }
-  } else {
-    self.logger.info(self.pluginName + ': videoOuts config not available yet.');
-    defer.resolve([]);
-  }
+  });
   
   return defer.promise;
 };
