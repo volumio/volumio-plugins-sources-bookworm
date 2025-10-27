@@ -1,6 +1,6 @@
 {
   "name": "rpi_eeprom_updater",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "EEPROM bootloader firmware updater for Raspberry Pi 4/400/5/500/500+ and CM4/CM5.",
   "main": "index.js",
   "scripts": {
