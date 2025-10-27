@@ -17,5 +17,8 @@
   "DOWNGRADE_INFO_TITLE": "Dodatkowe informacje",
   "DOWNGRADE_INFO_TEXT": "W celu ręcznego zarządzania oprogramowaniem lub zaawansowanych procedur cofania wersji, zapoznaj się z oficjalną dokumentacją Raspberry Pi pod adresem: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom",
   "UNSUPPORTED_HARDWARE": "Nieobsługiwany sprzęt",
-  "UNSUPPORTED_HARDWARE_MESSAGE": "Ten model Raspberry Pi nie obsługuje aktualizacji bootloadera EEPROM przez tę wtyczkę. Aktualizacje oprogramowania EEPROM są dostępne tylko dla Raspberry Pi 4, 400, 5, 500, 500+ oraz Compute Module 4 i 5. Twoje urządzenie używa innej metody uruchamiania lub ma oprogramowanie przechowywane na karcie SD/eMMC zamiast w aktualizowalnym EEPROM. Nie jest wymagana żadna akcja."
+  "UNSUPPORTED_HARDWARE_MESSAGE": "Ten model Raspberry Pi nie obsługuje aktualizacji bootloadera EEPROM przez tę wtyczkę. Aktualizacje oprogramowania EEPROM są dostępne tylko dla Raspberry Pi 4, 400, 5, 500, 500+ oraz Compute Module 4 i 5. Twoje urządzenie używa innej metody uruchamiania lub ma oprogramowanie przechowywane na karcie SD/eMMC zamiast w aktualizowalnym EEPROM. Nie jest wymagana żadna akcja.",
+  "PACKAGE_MANAGEMENT": "Zarządzanie bazą danych pakietów",
+  "PACKAGE_MANAGEMENT_DESC": "Pakiet rpi-eeprom zawiera bazę danych wersji oprogramowania. Jeśli zainstalowałeś tę wtyczkę jakiś czas temu, po aktualizacji pakietu mogą być dostępne nowsze wersje oprogramowania. Kliknij poniższy przycisk, aby sprawdzić aktualizacje pakietu.",
+  "CHECK_PACKAGE_UPDATES": "Sprawdź aktualizacje pakietu"
 }
