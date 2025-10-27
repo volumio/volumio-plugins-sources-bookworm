@@ -292,6 +292,158 @@ RpiEepromUpdater.prototype.getAvailableVersion = function(channel) {
     }
 };
 
+// Upgrade rpi-eeprom package to latest version
+RpiEepromUpdater.prototype.upgradeEepromPackage = function() {
+    const defer = libQ.defer();
+    const self = this;
+    
+    try {
+        self.logger.info('[RpiEepromUpdater] Checking for rpi-eeprom package updates');
+        
+        // Stop rpi-eeprom-update service to prevent automatic firmware updates
+        try {
+            const serviceStatus = execSync('systemctl is-active rpi-eeprom-update.service', { 
+                encoding: 'utf-8',
+                stdio: 'pipe' 
+            }).trim();
+            
+            if (serviceStatus === 'active') {
+                self.logger.info('[RpiEepromUpdater] Stopping rpi-eeprom-update service');
+                execSync('sudo /bin/systemctl stop rpi-eeprom-update.service', { stdio: 'pipe' });
+            }
+        } catch (error) {
+            self.logger.info('[RpiEepromUpdater] Service not active or not found, continuing...');
+        }
+        
+        // Update apt cache
+        execSync('sudo /usr/bin/apt-get update', { 
+            stdio: 'pipe',
+            timeout: 30000 
+        });
+        
+        // Check if upgrade is available
+        const checkOutput = execSync(
+            'apt-cache policy rpi-eeprom | grep -A1 "Installed:" | grep "Candidate:"',
+            { encoding: 'utf-8', stdio: 'pipe' }
+        ).trim();
+        
+        const installedVersion = execSync(
+            'dpkg -l | grep rpi-eeprom | awk \'{print $3}\'',
+            { encoding: 'utf-8', stdio: 'pipe' }
+        ).trim();
+        
+        const candidateMatch = checkOutput.match(/Candidate:\s+(\S+)/);
+        const candidateVersion = candidateMatch ? candidateMatch[1] : null;
+        
+        if (candidateVersion && candidateVersion !== installedVersion) {
+            self.logger.info('[RpiEepromUpdater] Package upgrade available: ' + installedVersion + ' -> ' + candidateVersion);
+            
+            // Perform upgrade
+            execSync('sudo /usr/bin/apt-get install -y --only-upgrade rpi-eeprom', {
+                stdio: 'pipe',
+                timeout: 60000
+            });
+            
+            self.logger.info('[RpiEepromUpdater] Package upgraded successfully');
+            
+            // Restart service
+            try {
+                self.logger.info('[RpiEepromUpdater] Starting rpi-eeprom-update service');
+                execSync('sudo /bin/systemctl start rpi-eeprom-update.service', { stdio: 'pipe' });
+            } catch (error) {
+                self.logger.warn('[RpiEepromUpdater] Could not start service: ' + error.message);
+            }
+            
+            self.commandRouter.pushToastMessage(
+                'success',
+                'Package Updated',
+                'rpi-eeprom package upgraded to ' + candidateVersion
+            );
+            
+            defer.resolve({ upgraded: true, version: candidateVersion });
+        } else {
+            self.logger.info('[RpiEepromUpdater] Package is already up to date: ' + installedVersion);
+            
+            // Restart service even if no upgrade
+            try {
+                self.logger.info('[RpiEepromUpdater] Starting rpi-eeprom-update service');
+                execSync('sudo /bin/systemctl start rpi-eeprom-update.service', { stdio: 'pipe' });
+            } catch (error) {
+                self.logger.warn('[RpiEepromUpdater] Could not start service: ' + error.message);
+            }
+            
+            defer.resolve({ upgraded: false, version: installedVersion });
+        }
+        
+    } catch (error) {
+        self.logger.error('[RpiEepromUpdater] Package upgrade failed: ' + error.message);
+        
+        // Try to restart service even on error
+        try {
+            execSync('sudo /bin/systemctl start rpi-eeprom-update.service', { stdio: 'pipe' });
+        } catch (e) {
+            self.logger.warn('[RpiEepromUpdater] Could not restart service after error');
+        }
+        
+        // Non-fatal - continue with existing package
+        self.commandRouter.pushToastMessage(
+            'warning',
+            'Package Update Failed',
+            'Could not update package database. Using existing firmware list.'
+        );
+        
+        defer.resolve({ upgraded: false, error: error.message });
+    }
+    
+    return defer.promise;
+};
+
+// Manual refresh package database (button handler)
+RpiEepromUpdater.prototype.refreshPackageDatabase = function() {
+    const defer = libQ.defer();
+    const self = this;
+    
+    self.logger.info('[RpiEepromUpdater] Manual package database refresh triggered');
+    
+    self.commandRouter.pushToastMessage(
+        'info',
+        'Refreshing Package Database',
+        'Checking for rpi-eeprom package updates...'
+    );
+    
+    self.upgradeEepromPackage()
+        .then(function(result) {
+            if (result.upgraded) {
+                self.logger.info('[RpiEepromUpdater] Manual refresh: package was upgraded');
+            } else {
+                self.logger.info('[RpiEepromUpdater] Manual refresh: package already current');
+                self.commandRouter.pushToastMessage(
+                    'info',
+                    'Package Up To Date',
+                    'rpi-eeprom package is already current'
+                );
+            }
+            
+            // Trigger UI refresh to show new firmware versions
+            self.logger.info('[RpiEepromUpdater] Refreshing UI after package update');
+            self.commandRouter.getUIConfigOnPlugin('system_controller', 'rpi_eeprom_updater', {})
+                .then(function(config) {
+                    self.commandRouter.broadcastMessage('pushUiConfig', config);
+                    defer.resolve();
+                })
+                .fail(function(error) {
+                    self.logger.error('[RpiEepromUpdater] Failed to refresh UI: ' + error);
+                    defer.resolve();
+                });
+        })
+        .fail(function(error) {
+            self.logger.error('[RpiEepromUpdater] Manual refresh failed: ' + error);
+            defer.reject(error);
+        });
+    
+    return defer.promise;
+};
+
 // Switch firmware channel
 RpiEepromUpdater.prototype.setFirmwareChannel = function(channel) {
     try {
@@ -576,30 +728,30 @@ RpiEepromUpdater.prototype.getUIConfig = function() {
                     uiconf.sections[1].content[1].value = 'Not available';
                 }
                 
-                // Upgrade section (section 2)
+                // Upgrade section (section 3)
                 if (status.updateType === 'upgrade') {
-                    uiconf.sections[2].hidden = false;
-                    uiconf.sections[2].content[0].hidden = false;
-                    uiconf.sections[2].content[1].value = 
-                        'An update is available on the ' + status.currentChannel + ' channel.';
-                } else {
-                    uiconf.sections[2].hidden = true;
-                }
-                
-                // Downgrade section (section 3)
-                if (status.updateType === 'downgrade') {
                     uiconf.sections[3].hidden = false;
+                    uiconf.sections[3].content[0].hidden = false;
                     uiconf.sections[3].content[1].value = 
-                        'The ' + status.currentChannel + ' channel has an older firmware version. Downgrading may cause issues.';
+                        'An update is available on the ' + status.currentChannel + ' channel.';
                 } else {
                     uiconf.sections[3].hidden = true;
                 }
                 
+                // Downgrade section (section 4)
+                if (status.updateType === 'downgrade') {
+                    uiconf.sections[4].hidden = false;
+                    uiconf.sections[4].content[1].value = 
+                        'The ' + status.currentChannel + ' channel has an older firmware version. Downgrading may cause issues.';
+                } else {
+                    uiconf.sections[4].hidden = true;
+                }
+                
                 // Up to date message (show in upgrade section if neither upgrade nor downgrade)
                 if (status.updateType === 'none') {
-                    uiconf.sections[2].hidden = false;
-                    uiconf.sections[2].content[0].hidden = true;
-                    uiconf.sections[2].content[1].value = 
+                    uiconf.sections[3].hidden = false;
+                    uiconf.sections[3].content[0].hidden = true;
+                    uiconf.sections[3].content[1].value = 
                         'You are already on the latest firmware for the ' + status.currentChannel + ' channel.';
                 }
                 

@@ -75,6 +75,29 @@
       ]
     },
     {
+      "id": "package_management",
+      "element": "section",
+      "label": "TRANSLATE.PACKAGE_MANAGEMENT",
+      "icon": "fa-database",
+      "content": [
+        {
+          "id": "package_info",
+          "element": "section",
+          "description": "TRANSLATE.PACKAGE_MANAGEMENT_DESC"
+        },
+        {
+          "id": "refresh_package_button",
+          "element": "button",
+          "label": "TRANSLATE.CHECK_PACKAGE_UPDATES",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_controller/rpi_eeprom_updater",
+            "method": "refreshPackageDatabase"
+          }
+        }
+      ]
+    },
+    {
       "id": "upgrade_section",
       "element": "section",
       "label": "TRANSLATE.UPGRADE_FIRMWARE",

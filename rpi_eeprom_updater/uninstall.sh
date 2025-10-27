@@ -30,6 +30,15 @@ fi
 
 # Note: We do NOT remove the rpi-eeprom package as it may be used by other plugins
 # or the system itself. Users can manually remove it if desired.
+# Unmask rpi-eeprom-update service to restore normal behavior
+if systemctl list-unit-files | grep -q "rpi-eeprom-update.service"; then
+    echo "Unmasking rpi-eeprom-update service..."
+    systemctl unmask rpi-eeprom-update.service
+    echo "Service unmasked - system can manage updates normally"
+fi
+
+# Note: We do NOT remove the rpi-eeprom package as it may be used by other plugins
+# or the system itself. Users can manually remove it if desired.
 
 echo "Raspberry Pi EEPROM Updater Plugin uninstalled successfully"
 echo "Note: rpi-eeprom package has been left installed for system use"

@@ -2,6 +2,15 @@
 
 echo "Installing Raspberry Pi EEPROM Updater Plugin"
 
+# Stop rpi-eeprom-update service to prevent automatic firmware updates during package operations
+echo "Stopping rpi-eeprom-update service..."
+if systemctl is-active --quiet rpi-eeprom-update.service; then
+    systemctl stop rpi-eeprom-update.service
+    echo "Service stopped"
+else
+    echo "Service not active, continuing..."
+fi
+
 # Ensure rpi-eeprom package is installed and up to date
 echo "Checking rpi-eeprom package..."
 apt-get update
@@ -75,6 +84,15 @@ if [ $? -ne 0 ]; then
     echo "ERROR: Invalid sudoers syntax"
     rm -f /etc/sudoers.d/volumio-user-rpi_updater
     exit 1
+fi
+
+# Mask rpi-eeprom-update service to prevent automatic firmware updates
+echo "Masking rpi-eeprom-update service..."
+if systemctl list-unit-files | grep -q "rpi-eeprom-update.service"; then
+    systemctl mask rpi-eeprom-update.service
+    echo "Service masked - automatic updates disabled"
+else
+    echo "Service not found in system, skipping..."
 fi
 
 echo "Raspberry Pi EEPROM Updater Plugin installed successfully"
