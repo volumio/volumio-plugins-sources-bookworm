@@ -3,6 +3,8 @@ echo "Installing systeminfo"
 
 configpath=/data/configuration/user_interface/Systeminfo
 
+sudo apt update
+sudo apt install -y sysbench
 ## Removing previous config
 if [ ! -f "${configpath}/config.json" ];
 then

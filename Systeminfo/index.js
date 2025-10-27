@@ -352,7 +352,7 @@ Systeminfo.prototype.getFirmwareInfo = async function () {
         });
 
         const outputLines = cmdOutput.trim().split('\n');
-     //   console.log('------------outputLines: ', outputLines);
+        //   console.log('------------outputLines: ', outputLines);
 
         // For bootloader_version, combine date and hash into one line
         try {
@@ -661,26 +661,26 @@ Systeminfo.prototype.getsysteminfo = async function (data) {
             self.getUpnpRendererVersion(),
             self.getCpuModelName()
         ]);
-/*
-        // Conditionally fetch U-Boot only for non-Raspberry-family boards
-        let ubootValue = 'Not detected';
-        try {
-            const isRaspberry = ((boardInfo && ((boardInfo.manufacturer || '').toString().toLowerCase().includes('raspberry')))
-                || ((boardInfo && (boardInfo.model || '').toString().toLowerCase().includes('raspberry'))));
-
-            if (isRaspberry) {
-                self.logger.info('Board detected as Raspberry-family; skipping U-Boot detection');
-                ubootValue = 'Not applicable';
-            } else {
-                ubootValue = await self.getUbootVersion();
-                self.logger.info('U-Boot value' + ubootValue);
-
-            }
-        } catch (e) {
-            self.logger.warn('U-Boot conditional detection failed:', e.message);
-            ubootValue = 'Not available';
-        }
-*/
+        /*
+                // Conditionally fetch U-Boot only for non-Raspberry-family boards
+                let ubootValue = 'Not detected';
+                try {
+                    const isRaspberry = ((boardInfo && ((boardInfo.manufacturer || '').toString().toLowerCase().includes('raspberry')))
+                        || ((boardInfo && (boardInfo.model || '').toString().toLowerCase().includes('raspberry'))));
+        
+                    if (isRaspberry) {
+                        self.logger.info('Board detected as Raspberry-family; skipping U-Boot detection');
+                        ubootValue = 'Not applicable';
+                    } else {
+                        ubootValue = await self.getUbootVersion();
+                        self.logger.info('U-Boot value' + ubootValue);
+        
+                    }
+                } catch (e) {
+                    self.logger.warn('U-Boot conditional detection failed:', e.message);
+                    ubootValue = 'Not available';
+                }
+        */
         const outputDevice = audioConfig.outputdevice?.value;
         const hwAudioInfo = outputDevice ? await self.getHwAudioInfo(outputDevice) : { channels: 'N/A', samplerates: 'N/A' };
 
@@ -903,4 +903,148 @@ Systeminfo.prototype.getsysteminfo = async function (data) {
     }
 
     return defer.promise;
+};
+
+Systeminfo.prototype.runBench = function () {
+    const self = this;
+    const modalData = {
+        title: 'Run Bench Tests',
+        message: "This will Run Sysbench CPU and Memory benchmarks using 'sysbench'. The tests takes 30 sceonds to complete. Do not play music while running Benchtest! Once started, please wait until the tests are finished. Click 'Run BenchMarks' to start the benchmarks.",
+        size: 'lg',
+        buttons: [{
+            name: 'Run Benchmarks',
+            class: 'btn btn-cancel',
+            emit: 'callMethod',
+            payload: { 'endpoint': 'user_interface/Systeminfo', 'method': 'runSysbench' }
+
+        },
+        {
+            name: "Quit",
+            class: 'btn btn-info',
+            emit: 'closeModals',
+            payload: ""
+        }
+        ]
+    };
+
+    self.commandRouter.broadcastMessage('openModal', modalData);
+}
+
+
+Systeminfo.prototype.runSysbench = async function (options = {}) {
+    const self = this;
+    const threadsAll = options.threads || '$(nproc)';
+    const time = options.time || 10;
+    const memBlock = options.block || '1M';
+    const memTotal = options.total || '1G';
+
+    async function execPromise(cmd) {
+        return new Promise((resolve, reject) => {
+            exec(cmd, { maxBuffer: 20 * 1024 * 1024 }, (err, stdout, stderr) => {
+                if (err) return reject(err);
+                resolve(stdout.toString());
+            });
+        });
+    }
+
+    try {
+        self.logger.info('Starting sysbench: CPU multi, CPU single, Memory');
+
+        // --- CPU all threads ---
+        const cpuAllCmd = `sysbench cpu --threads=${threadsAll} --time=${time} run`;
+        const cpuAllOut = await execPromise(cpuAllCmd);
+
+        // --- CPU 1 thread ---
+        const cpu1Cmd = `sysbench cpu --threads=1 --time=${time} run`;
+        const cpu1Out = await execPromise(cpu1Cmd);
+
+        // --- Memory ---
+        const memCmd = `sysbench memory --threads=1 --memory-block-size=1K --memory-total-size=100G run`;
+        const memOut = await execPromise(memCmd);
+
+        // --- Parse helpers ---
+        function parseCpu(out) {
+            return {
+                total: (out.match(/total time:\s*([\d.]+)s/i) || [])[1] || 'N/A',
+                eps: (out.match(/events per second:\s*([\d.]+)/i) || [])[1] || 'N/A',
+                min: (out.match(/min:\s*([\d.]+)/i) || [])[1] || 'N/A',
+                avg: (out.match(/avg:\s*([\d.]+)/i) || [])[1] || 'N/A',
+                max: (out.match(/max:\s*([\d.]+)/i) || [])[1] || 'N/A'
+            };
+        }
+
+        function parseMem(out) {
+            const ops = (out.match(/Total operations:\s*([\d]+)/i) || [])[1] || 'N/A';
+            const opsPerSec = (out.match(/Total operations:\s*\d+\s*\(([\d.]+)\s+per second\)/i) || [])[1] || 'N/A';
+            const transferred = (out.match(/([\d.]+)\s*MiB transferred/i) || [])[1] || 'N/A';
+            const throughput = (out.match(/\(([\d.]+)\s*MiB\/sec\)/i) || [])[1]
+                || (out.match(/MiB\/s\s*:\s*([\d.]+)/i) || [])[1]
+                || 'N/A';
+            const totalTime = (out.match(/total time:\s*([\d.]+)s/i) || [])[1] || 'N/A';
+
+            return {
+                ops,
+                opsPerSec,
+                transferred: transferred !== 'N/A' ? transferred + ' MiB' : 'N/A',
+                throughput: throughput !== 'N/A' ? throughput + ' MiB/sec' : 'N/A',
+                totalTime
+            };
+        }
+
+        const cpuAll = parseCpu(cpuAllOut);
+        const cpu1 = parseCpu(cpu1Out);
+        const mem = parseMem(memOut);
+
+        // --- Format HTML (your preferred style) ---
+        let combinedMessages = '';
+
+        // CPU all threads
+        combinedMessages += `<li>CPU Benchmark (All Threads)</br></li><ul>`;
+     //   combinedMessages += `<li>Total time: ${cpuAll.total} s</li>`;
+        combinedMessages += `<li>Events per second: ${cpuAll.eps}</li>`;
+        combinedMessages += `<li>Min latency: ${cpuAll.min} ms</li>`;
+        combinedMessages += `<li>Avg latency: ${cpuAll.avg} ms</li>`;
+        combinedMessages += `<li>Max latency: ${cpuAll.max} ms</li>`;
+        combinedMessages += `</ul>`;
+
+        // CPU 1 thread
+        combinedMessages += `<li>CPU Benchmark (1 Thread)</br></li><ul>`;
+       // combinedMessages += `<li>Total time: ${cpu1.total} s</li>`;
+        combinedMessages += `<li>Events per second: ${cpu1.eps}</li>`;
+        combinedMessages += `<li>Min latency: ${cpu1.min} ms</li>`;
+        combinedMessages += `<li>Avg latency: ${cpu1.avg} ms</li>`;
+        combinedMessages += `<li>Max latency: ${cpu1.max} ms</li>`;
+        combinedMessages += `</ul>`;
+
+        // Memory test
+        combinedMessages += `<li>Memory Benchmark</br></li><ul>`;
+      //  combinedMessages += `<li>Total time: ${mem.totalTime} s</li>`;
+        combinedMessages += `<li>Throughput: ${mem.throughput}</li>`;
+        combinedMessages += `<li>Transferred: ${mem.transferred}</li>`;
+        combinedMessages += `<li>Total operations: ${mem.ops}</li>`;
+        combinedMessages += `<li>Operations per second: ${mem.opsPerSec}</li>`;
+        combinedMessages += `</ul>`;
+
+        // --- Modal output ---
+        const modalData = {
+            title: 'Benchmark Results',
+            message: combinedMessages,
+            size: 'lg',
+            buttons: [{
+                name: 'Close',
+                class: 'btn btn-warning',
+                emit: 'closeModals',
+                payload: ''
+            }]
+        };
+
+        self.commandRouter.broadcastMessage('openModal', modalData);
+
+        return { cpu_all: cpuAll, cpu_single: cpu1, memory: mem };
+
+    } catch (err) {
+        self.logger.error('Sysbench failed: ' + err.message);
+        self.commandRouter.pushToastMessage('error', 'Benchmark Error', 'Sysbench failed: ' + err.message);
+        throw err;
+    }
 };

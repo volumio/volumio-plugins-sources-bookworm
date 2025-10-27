@@ -1,6 +1,6 @@
 {
 	"name": "Systeminfo",
-	"version": "3.0.13",
+	"version": "3.0.14",
 	"description": "Information about your system",
 	"main": "index.js",
 	"scripts": {
@@ -21,7 +21,7 @@
 			"bookworm"
 		],
 		"details": "Gives information about your system",
-		"changelog": "more cpu and sw info"
+		"changelog": "sysbench"
 	},
 	"engines": {
 		"node": ">=20",
