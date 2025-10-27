@@ -131,3 +131,29 @@ chown -R volumio:volumio /data/volumiokioskextensions || { echo "Setting permiss
 
 echo "Allowing volumio to start an xsession"
 sed -i "s/allowed_users=console/allowed_users=anybody\nneeds_root_rights=yes/" /etc/X11/Xwrapper.config || { echo "Allowing volumio to start an xsession failed"; exit 1; }
+
+# Configure GPU/DRI access for volumio user to prevent permission denied errors
+# when X server attempts to initialize display drivers (rp1-dsi, vc4, etc.)
+echo "Configuring GPU/DRI permissions for volumio user"
+usermod -aG video,render volumio || { echo "Adding volumio to video/render groups failed"; exit 1; }
+
+# Create persistent udev rules to ensure /dev/dri/* devices have correct permissions
+# Addresses "failed to open /dev/dri/renderD128: Permission denied" errors
+echo "Creating udev rules for persistent DRI device permissions"
+echo 'SUBSYSTEM=="drm", KERNEL=="card*", GROUP="video", MODE="0660"' | tee /etc/udev/rules.d/99-touch_display-dri.rules > /dev/null
+echo 'KERNEL=="renderD*", GROUP="render", MODE="0660"' | tee -a /etc/udev/rules.d/99-touch_display-dri.rules > /dev/null
+if [ $? -ne 0 ]; then
+  echo "Creating udev rules failed"
+  exit 1
+fi
+
+# Apply udev rules immediately without requiring reboot
+echo "Reloading udev rules"
+udevadm control --reload || { echo "Reloading udev rules failed"; exit 1; }
+udevadm trigger || { echo "Triggering udev rules failed"; exit 1; }
+
+# Create writable cache directory for Mesa shader compilation
+# Prevents "Failed to create /home/volumio/.cache/mesa_shader_cache" errors
+echo "Creating Mesa shader cache directory"
+mkdir -p /home/volumio/.cache/mesa_shader_cache_db || { echo "Creating Mesa cache directory failed"; exit 1; }
+chown -R volumio:volumio /home/volumio/.cache || { echo "Setting cache directory permissions failed"; exit 1; }

@@ -49,5 +49,24 @@ if [ -f /etc/X11/xorg.conf.d/99-vc4.conf ]; then
   rm /etc/X11/xorg.conf.d/99-vc4.conf
 fi
 
+# Remove udev rules created by this plugin to prevent orphaned configuration
+echo "Removing DRI permission udev rules"
+if [ -f /etc/udev/rules.d/99-touch_display-dri.rules ]; then
+  rm /etc/udev/rules.d/99-touch_display-dri.rules
+  udevadm control --reload 2>/dev/null
+  udevadm trigger 2>/dev/null
+fi
+
+# Remove group memberships added by this plugin to prevent conflicts with future versions
+echo "Removing volumio user from video and render groups"
+gpasswd -d volumio video 2>/dev/null
+gpasswd -d volumio render 2>/dev/null
+
+# Remove Mesa shader cache to prevent stale data from affecting reinstallation
+echo "Removing Mesa shader cache directory"
+if [ -d /home/volumio/.cache/mesa_shader_cache_db ]; then
+  rm -rf /home/volumio/.cache/mesa_shader_cache_db
+fi
+
 echo "Done"
 echo "pluginuninstallend"
