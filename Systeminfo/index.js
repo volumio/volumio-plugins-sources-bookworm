@@ -930,121 +930,147 @@ Systeminfo.prototype.runBench = function () {
     self.commandRouter.broadcastMessage('openModal', modalData);
 }
 
-
 Systeminfo.prototype.runSysbench = async function (options = {}) {
-    const self = this;
-    const threadsAll = options.threads || '$(nproc)';
-    const time = options.time || 10;
-    const memBlock = options.block || '1M';
-    const memTotal = options.total || '1G';
+  const self = this;
+  const threadsAll = options.threads || '$(nproc)';
+  const time = options.time || 10;
+  const memBlock = options.block || '1M';
+  const memTotal = options.total || '1G';
 
-    async function execPromise(cmd) {
-        return new Promise((resolve, reject) => {
-            exec(cmd, { maxBuffer: 20 * 1024 * 1024 }, (err, stdout, stderr) => {
-                if (err) return reject(err);
-                resolve(stdout.toString());
-            });
-        });
-    }
+  // --- async exec helper ---
+  async function execPromise(cmd) {
+    return new Promise((resolve, reject) => {
+      exec(cmd, { maxBuffer: 20 * 1024 * 1024 }, (err, stdout, stderr) => {
+        if (err) return reject(err);
+        resolve(stdout.toString());
+      });
+    });
+  }
 
-    try {
-        self.logger.info('Starting sysbench: CPU multi, CPU single, Memory');
+  // --- build and show progress modal ---
+  function updateProgress(stepStates) {
+    let html = '<li>Benchmark progress</br></li><ul>';
+    html += `<li>Bench 1 (CPU multi): ${stepStates[0]}</li>`;
+    html += `<li>Bench 2 (CPU 1 thread): ${stepStates[1]}</li>`;
+    html += `<li>Bench 3 (Memory): ${stepStates[2]}</li>`;
+    html += '</ul>';
 
-        // --- CPU all threads ---
-        const cpuAllCmd = `sysbench cpu --threads=${threadsAll} --time=${time} run`;
-        const cpuAllOut = await execPromise(cpuAllCmd);
+    const modalData = {
+      title: 'Benchmark Progress',
+      message: html,
+      size: 'lg',
+    /*  buttons: [{
+        name: 'Close',
+        class: 'btn btn-warning',
+        emit: 'closeModals',
+        payload: ''
+      }]*/
+    };
+    self.commandRouter.broadcastMessage('openModal', modalData);
+  }
 
-        // --- CPU 1 thread ---
-        const cpu1Cmd = `sysbench cpu --threads=1 --time=${time} run`;
-        const cpu1Out = await execPromise(cpu1Cmd);
+  // --- parsers ---
+  function parseCpu(out) {
+    return {
+      total: (out.match(/total time:\s*([\d.]+)s/i) || [])[1] || 'N/A',
+      eps: (out.match(/events per second:\s*([\d.]+)/i) || [])[1] || 'N/A',
+      min: (out.match(/min:\s*([\d.]+)/i) || [])[1] || 'N/A',
+      avg: (out.match(/avg:\s*([\d.]+)/i) || [])[1] || 'N/A',
+      max: (out.match(/max:\s*([\d.]+)/i) || [])[1] || 'N/A'
+    };
+  }
 
-        // --- Memory ---
-        const memCmd = `sysbench memory --threads=1 --memory-block-size=1K --memory-total-size=100G run`;
-        const memOut = await execPromise(memCmd);
+  function parseMem(out) {
+    const ops = (out.match(/Total operations:\s*([\d]+)/i) || [])[1] || 'N/A';
+    const opsPerSec = (out.match(/Total operations:\s*\d+\s*\(([\d.]+)\s+per second\)/i) || [])[1] || 'N/A';
+    const transferred = (out.match(/([\d.]+)\s*MiB transferred/i) || [])[1] || 'N/A';
+    const throughput = (out.match(/\(([\d.]+)\s*MiB\/sec\)/i) || [])[1]
+      || (out.match(/MiB\/s\s*:\s*([\d.]+)/i) || [])[1]
+      || 'N/A';
+    const totalTime = (out.match(/total time:\s*([\d.]+)s/i) || [])[1] || 'N/A';
+    return {
+      ops,
+      opsPerSec,
+      transferred: transferred !== 'N/A' ? transferred + ' MiB' : 'N/A',
+      throughput: throughput !== 'N/A' ? throughput + ' MiB/sec' : 'N/A',
+      totalTime
+    };
+  }
 
-        // --- Parse helpers ---
-        function parseCpu(out) {
-            return {
-                total: (out.match(/total time:\s*([\d.]+)s/i) || [])[1] || 'N/A',
-                eps: (out.match(/events per second:\s*([\d.]+)/i) || [])[1] || 'N/A',
-                min: (out.match(/min:\s*([\d.]+)/i) || [])[1] || 'N/A',
-                avg: (out.match(/avg:\s*([\d.]+)/i) || [])[1] || 'N/A',
-                max: (out.match(/max:\s*([\d.]+)/i) || [])[1] || 'N/A'
-            };
-        }
+  try {
+    self.logger.info('Starting full sysbench sequence...');
 
-        function parseMem(out) {
-            const ops = (out.match(/Total operations:\s*([\d]+)/i) || [])[1] || 'N/A';
-            const opsPerSec = (out.match(/Total operations:\s*\d+\s*\(([\d.]+)\s+per second\)/i) || [])[1] || 'N/A';
-            const transferred = (out.match(/([\d.]+)\s*MiB transferred/i) || [])[1] || 'N/A';
-            const throughput = (out.match(/\(([\d.]+)\s*MiB\/sec\)/i) || [])[1]
-                || (out.match(/MiB\/s\s*:\s*([\d.]+)/i) || [])[1]
-                || 'N/A';
-            const totalTime = (out.match(/total time:\s*([\d.]+)s/i) || [])[1] || 'N/A';
+    // initial states with emojis
+    let steps = ['🚀', '⏳', '⏳'];
+    updateProgress(steps);
 
-            return {
-                ops,
-                opsPerSec,
-                transferred: transferred !== 'N/A' ? transferred + ' MiB' : 'N/A',
-                throughput: throughput !== 'N/A' ? throughput + ' MiB/sec' : 'N/A',
-                totalTime
-            };
-        }
+    // live update every 10s
+    let tick = 0;
+    const interval = setInterval(() => {
+      tick += 10;
+      self.logger.info(`Progress update (${tick}s): ${steps.join(', ')}`);
+      updateProgress(steps);
+    }, 10_000);
 
-        const cpuAll = parseCpu(cpuAllOut);
-        const cpu1 = parseCpu(cpu1Out);
-        const mem = parseMem(memOut);
+    // --- Bench 1: CPU all threads ---
+    const cpuAllOut = await execPromise(`sysbench cpu --threads=${threadsAll} --time=${time} run`);
+    steps = ['✅', '🚀', '⏳'];
+    updateProgress(steps);
 
-        // --- Format HTML (your preferred style) ---
-        let combinedMessages = '';
+    // --- Bench 2: CPU 1 thread ---
+    const cpu1Out = await execPromise(`sysbench cpu --threads=1 --time=${time} run`);
+    steps = ['✅', '✅', '🚀'];
+    updateProgress(steps);
 
-        // CPU all threads
-        combinedMessages += `<li>CPU Benchmark (All Threads)</br></li><ul>`;
-     //   combinedMessages += `<li>Total time: ${cpuAll.total} s</li>`;
-        combinedMessages += `<li>Events per second: ${cpuAll.eps}</li>`;
-        combinedMessages += `<li>Min latency: ${cpuAll.min} ms</li>`;
-        combinedMessages += `<li>Avg latency: ${cpuAll.avg} ms</li>`;
-        combinedMessages += `<li>Max latency: ${cpuAll.max} ms</li>`;
-        combinedMessages += `</ul>`;
+    // --- Bench 3: Memory ---
+    const memOut = await execPromise(`sysbench memory --threads=1 --memory-block-size=${memBlock} --memory-total-size=${memTotal} run`);
+    clearInterval(interval);
 
-        // CPU 1 thread
-        combinedMessages += `<li>CPU Benchmark (1 Thread)</br></li><ul>`;
-       // combinedMessages += `<li>Total time: ${cpu1.total} s</li>`;
-        combinedMessages += `<li>Events per second: ${cpu1.eps}</li>`;
-        combinedMessages += `<li>Min latency: ${cpu1.min} ms</li>`;
-        combinedMessages += `<li>Avg latency: ${cpu1.avg} ms</li>`;
-        combinedMessages += `<li>Max latency: ${cpu1.max} ms</li>`;
-        combinedMessages += `</ul>`;
+    // --- Parse all outputs ---
+    const cpuAll = parseCpu(cpuAllOut);
+    const cpu1 = parseCpu(cpu1Out);
+    const mem = parseMem(memOut);
 
-        // Memory test
-        combinedMessages += `<li>Memory Benchmark</br></li><ul>`;
-      //  combinedMessages += `<li>Total time: ${mem.totalTime} s</li>`;
-        combinedMessages += `<li>Throughput: ${mem.throughput}</li>`;
-        combinedMessages += `<li>Transferred: ${mem.transferred}</li>`;
-        combinedMessages += `<li>Total operations: ${mem.ops}</li>`;
-        combinedMessages += `<li>Operations per second: ${mem.opsPerSec}</li>`;
-        combinedMessages += `</ul>`;
+    // --- Final formatted HTML (same style as your system info) ---
+    let combined = '';
+    combined += `<li>CPU Benchmark (All Threads)</br></li><ul>`;
+    combined += `<li>Events per second: ${cpuAll.eps}</li>`;
+    combined += `<li>Min latency: ${cpuAll.min} ms</li>`;
+    combined += `<li>Avg latency: ${cpuAll.avg} ms</li>`;
+    combined += `<li>Max latency: ${cpuAll.max} ms</li></ul>`;
 
-        // --- Modal output ---
-        const modalData = {
-            title: 'Benchmark Results',
-            message: combinedMessages,
-            size: 'lg',
-            buttons: [{
-                name: 'Close',
-                class: 'btn btn-warning',
-                emit: 'closeModals',
-                payload: ''
-            }]
-        };
+    combined += `<li>CPU Benchmark (1 Thread)</br></li><ul>`;
+    combined += `<li>Events per second: ${cpu1.eps}</li>`;
+    combined += `<li>Min latency: ${cpu1.min} ms</li>`;
+    combined += `<li>Avg latency: ${cpu1.avg} ms</li>`;
+    combined += `<li>Max latency: ${cpu1.max} ms</li></ul>`;
 
-        self.commandRouter.broadcastMessage('openModal', modalData);
+    combined += `<li>Memory Benchmark</br></li><ul>`;
+    combined += `<li>Throughput: ${mem.throughput}</li>`;
+    combined += `<li>Transferred: ${mem.transferred}</li>`;
+    combined += `<li>Total operations: ${mem.ops}</li>`;
+    combined += `<li>Operations per second: ${mem.opsPerSec}</li></ul>`;
 
-        return { cpu_all: cpuAll, cpu_single: cpu1, memory: mem };
+    // --- Final results modal ---
+    const modalData = {
+      title: 'Benchmark Results',
+      message: combined,
+      size: 'lg',
+      buttons: [{
+        name: 'Close',
+        class: 'btn btn-warning',
+        emit: 'closeModals',
+        payload: ''
+      }]
+    };
+    self.commandRouter.broadcastMessage('openModal', modalData);
 
-    } catch (err) {
-        self.logger.error('Sysbench failed: ' + err.message);
-        self.commandRouter.pushToastMessage('error', 'Benchmark Error', 'Sysbench failed: ' + err.message);
-        throw err;
-    }
+    return { cpu_all: cpuAll, cpu_single: cpu1, memory: mem };
+
+  } catch (err) {
+    self.logger.error('Sysbench failed: ' + err.message);
+    self.commandRouter.pushToastMessage('error', 'Benchmark Error', 'Sysbench failed: ' + err.message);
+    throw err;
+  }
 };
+
