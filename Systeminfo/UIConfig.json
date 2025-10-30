@@ -13,7 +13,7 @@
         {
                 "id": "getsysteminfo",
                 "element": "button",
-                "label": "Probe the system",
+                "label": "🔍Probe the system",
                 "doc": "Get detailed information about your system hardware and software.",
                 "onClick": {
                   "type": "plugin",
@@ -24,7 +24,7 @@
            {
                 "id": "runBench",
                 "element": "button",
-                "label": "Run benchmarks",
+                "label": "🔥Run benchmarks",
                 "doc": "This will run CPU and Memory benchmarks using sysbench. Please do not play music while running the benchmarks.",
                 "onClick": {
                   "type": "plugin",

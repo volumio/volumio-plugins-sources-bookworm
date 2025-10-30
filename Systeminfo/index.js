@@ -7,6 +7,7 @@ var config = new (require('v-conf'))();
 var exec = require('child_process').exec;
 const si = require('systeminformation');
 const { getBuiltinModule } = require('process');
+const os = require('os');
 
 // Define the Systeminfo class
 module.exports = Systeminfo;
@@ -913,7 +914,7 @@ Systeminfo.prototype.runBench = function () {
         size: 'lg',
         buttons: [{
             name: 'Run Benchmarks',
-            class: 'btn btn-cancel',
+            class: 'btn btn-info',
             emit: 'callMethod',
             payload: { 'endpoint': 'user_interface/Systeminfo', 'method': 'runSysbench' }
 
@@ -931,146 +932,152 @@ Systeminfo.prototype.runBench = function () {
 }
 
 Systeminfo.prototype.runSysbench = async function (options = {}) {
-  const self = this;
-  const threadsAll = options.threads || '$(nproc)';
-  const time = options.time || 10;
-  const memBlock = options.block || '1M';
-  const memTotal = options.total || '1G';
+    const self = this;
+    const threadsAll = options.threads || '$(nproc)';
+    const time = options.time || 10;
+    const memBlock = options.block || '1M';
+    const memTotal = options.total || '1G';
+    const hostname = os.hostname() || 'unknown-host'; // Get system hostname
+    // --- async exec helper ---
+    async function execPromise(cmd) {
+        return new Promise((resolve, reject) => {
+            exec(cmd, { maxBuffer: 20 * 1024 * 1024 }, (err, stdout, stderr) => {
+                if (err) return reject(err);
+                resolve(stdout.toString());
+            });
+        });
+    }
 
-  // --- async exec helper ---
-  async function execPromise(cmd) {
-    return new Promise((resolve, reject) => {
-      exec(cmd, { maxBuffer: 20 * 1024 * 1024 }, (err, stdout, stderr) => {
-        if (err) return reject(err);
-        resolve(stdout.toString());
-      });
-    });
-  }
-
-  // --- build and show progress modal ---
-  function updateProgress(stepStates) {
-    let html = '<li>Benchmark progress</br></li><ul>';
-    html += `<li>Bench 1 (CPU multi): ${stepStates[0]}</li>`;
-    html += `<li>Bench 2 (CPU 1 thread): ${stepStates[1]}</li>`;
-    html += `<li>Bench 3 (Memory): ${stepStates[2]}</li>`;
-    html += '</ul>';
-
-    const modalData = {
-      title: 'Benchmark Progress',
-      message: html,
-      size: 'lg',
-    /*  buttons: [{
-        name: 'Close',
-        class: 'btn btn-warning',
-        emit: 'closeModals',
-        payload: ''
-      }]*/
+    const getTimestamp = () => {
+        const now = new Date();
+        return now.toISOString().replace('T', ' ').split('.')[0]; // e.g. 2025-10-26 17:42:10
     };
-    self.commandRouter.broadcastMessage('openModal', modalData);
-  }
 
-  // --- parsers ---
-  function parseCpu(out) {
-    return {
-      total: (out.match(/total time:\s*([\d.]+)s/i) || [])[1] || 'N/A',
-      eps: (out.match(/events per second:\s*([\d.]+)/i) || [])[1] || 'N/A',
-      min: (out.match(/min:\s*([\d.]+)/i) || [])[1] || 'N/A',
-      avg: (out.match(/avg:\s*([\d.]+)/i) || [])[1] || 'N/A',
-      max: (out.match(/max:\s*([\d.]+)/i) || [])[1] || 'N/A'
-    };
-  }
 
-  function parseMem(out) {
-    const ops = (out.match(/Total operations:\s*([\d]+)/i) || [])[1] || 'N/A';
-    const opsPerSec = (out.match(/Total operations:\s*\d+\s*\(([\d.]+)\s+per second\)/i) || [])[1] || 'N/A';
-    const transferred = (out.match(/([\d.]+)\s*MiB transferred/i) || [])[1] || 'N/A';
-    const throughput = (out.match(/\(([\d.]+)\s*MiB\/sec\)/i) || [])[1]
-      || (out.match(/MiB\/s\s*:\s*([\d.]+)/i) || [])[1]
-      || 'N/A';
-    const totalTime = (out.match(/total time:\s*([\d.]+)s/i) || [])[1] || 'N/A';
-    return {
-      ops,
-      opsPerSec,
-      transferred: transferred !== 'N/A' ? transferred + ' MiB' : 'N/A',
-      throughput: throughput !== 'N/A' ? throughput + ' MiB/sec' : 'N/A',
-      totalTime
-    };
-  }
+    // --- build and show progress modal ---
+    function updateProgress(stepStates) {
+        let html = '<li>Benchmark progress</br></li><ul>';
+        html += `<li>Bench 1 (CPU multi): ${stepStates[0]}</li>`;
+        html += `<li>Bench 2 (CPU 1 thread): ${stepStates[1]}</li>`;
+        html += `<li>Bench 3 (Memory): ${stepStates[2]}</li>`;
+        html += '</ul>';
 
-  try {
-    self.logger.info('Starting full sysbench sequence...');
+        const modalData = {
+            title: '🔥Benchmark Progress🔥',
+            message: html,
+            size: 'lg',
+            /*  buttons: [{
+                name: 'Close',
+                class: 'btn btn-warning',
+                emit: 'closeModals',
+                payload: ''
+              }]*/
+        };
+        self.commandRouter.broadcastMessage('openModal', modalData);
+    }
 
-    // initial states with emojis
-    let steps = ['🚀', '⏳', '⏳'];
-    updateProgress(steps);
+    // --- parsers ---
+    function parseCpu(out) {
+        return {
+            total: (out.match(/total time:\s*([\d.]+)s/i) || [])[1] || 'N/A',
+            eps: (out.match(/events per second:\s*([\d.]+)/i) || [])[1] || 'N/A',
+            min: (out.match(/min:\s*([\d.]+)/i) || [])[1] || 'N/A',
+            avg: (out.match(/avg:\s*([\d.]+)/i) || [])[1] || 'N/A',
+            max: (out.match(/max:\s*([\d.]+)/i) || [])[1] || 'N/A'
+        };
+    }
 
-    // live update every 10s
-    let tick = 0;
-    const interval = setInterval(() => {
-      tick += 10;
-      self.logger.info(`Progress update (${tick}s): ${steps.join(', ')}`);
-      updateProgress(steps);
-    }, 10_000);
+    function parseMem(out) {
+        const ops = (out.match(/Total operations:\s*([\d]+)/i) || [])[1] || 'N/A';
+        const opsPerSec = (out.match(/Total operations:\s*\d+\s*\(([\d.]+)\s+per second\)/i) || [])[1] || 'N/A';
+        const transferred = (out.match(/([\d.]+)\s*MiB transferred/i) || [])[1] || 'N/A';
+        const throughput = (out.match(/\(([\d.]+)\s*MiB\/sec\)/i) || [])[1]
+            || (out.match(/MiB\/s\s*:\s*([\d.]+)/i) || [])[1]
+            || 'N/A';
+        const totalTime = (out.match(/total time:\s*([\d.]+)s/i) || [])[1] || 'N/A';
+        return {
+            ops,
+            opsPerSec,
+            transferred: transferred !== 'N/A' ? transferred + ' MiB' : 'N/A',
+            throughput: throughput !== 'N/A' ? throughput + ' MiB/sec' : 'N/A',
+            totalTime
+        };
+    }
 
-    // --- Bench 1: CPU all threads ---
-    const cpuAllOut = await execPromise(`sysbench cpu --threads=${threadsAll} --time=${time} run`);
-    steps = ['✅', '🚀', '⏳'];
-    updateProgress(steps);
+    try {
+        self.logger.info('Starting full sysbench sequence...');
 
-    // --- Bench 2: CPU 1 thread ---
-    const cpu1Out = await execPromise(`sysbench cpu --threads=1 --time=${time} run`);
-    steps = ['✅', '✅', '🚀'];
-    updateProgress(steps);
+        // initial states with emojis
+        let steps = ['🚀', '⏳', '⏳'];
+        updateProgress(steps);
 
-    // --- Bench 3: Memory ---
-    const memOut = await execPromise(`sysbench memory --threads=1 --memory-block-size=${memBlock} --memory-total-size=${memTotal} run`);
-    clearInterval(interval);
+        // live update every 10s
+        let tick = 0;
+        const interval = setInterval(() => {
+            tick += 10;
+            self.logger.info(`Progress update (${tick}s): ${steps.join(', ')}`);
+            updateProgress(steps);
+        }, 10_000);
 
-    // --- Parse all outputs ---
-    const cpuAll = parseCpu(cpuAllOut);
-    const cpu1 = parseCpu(cpu1Out);
-    const mem = parseMem(memOut);
+        // --- Bench 1: CPU all threads ---
+        const cpuAllOut = await execPromise(`sysbench cpu --threads=${threadsAll} --time=${time} run`);
+        steps = ['✅', '🚀', '⏳'];
+        updateProgress(steps);
 
-    // --- Final formatted HTML (same style as your system info) ---
-    let combined = '';
-    combined += `<li>CPU Benchmark (All Threads)</br></li><ul>`;
-    combined += `<li>Events per second: ${cpuAll.eps}</li>`;
-    combined += `<li>Min latency: ${cpuAll.min} ms</li>`;
-    combined += `<li>Avg latency: ${cpuAll.avg} ms</li>`;
-    combined += `<li>Max latency: ${cpuAll.max} ms</li></ul>`;
+        // --- Bench 2: CPU 1 thread ---
+        const cpu1Out = await execPromise(`sysbench cpu --threads=1 --time=${time} run`);
+        steps = ['✅', '✅', '🚀'];
+        updateProgress(steps);
 
-    combined += `<li>CPU Benchmark (1 Thread)</br></li><ul>`;
-    combined += `<li>Events per second: ${cpu1.eps}</li>`;
-    combined += `<li>Min latency: ${cpu1.min} ms</li>`;
-    combined += `<li>Avg latency: ${cpu1.avg} ms</li>`;
-    combined += `<li>Max latency: ${cpu1.max} ms</li></ul>`;
+        // --- Bench 3: Memory ---
+        const memOut = await execPromise(`sysbench memory --threads=1 --memory-block-size=${memBlock} --memory-total-size=${memTotal} run`);
+        clearInterval(interval);
 
-    combined += `<li>Memory Benchmark</br></li><ul>`;
-    combined += `<li>Throughput: ${mem.throughput}</li>`;
-    combined += `<li>Transferred: ${mem.transferred}</li>`;
-    combined += `<li>Total operations: ${mem.ops}</li>`;
-    combined += `<li>Operations per second: ${mem.opsPerSec}</li></ul>`;
+        // --- Parse all outputs ---
+        const cpuAll = parseCpu(cpuAllOut);
+        const cpu1 = parseCpu(cpu1Out);
+        const mem = parseMem(memOut);
 
-    // --- Final results modal ---
-    const modalData = {
-      title: 'Benchmark Results',
-      message: combined,
-      size: 'lg',
-      buttons: [{
-        name: 'Close',
-        class: 'btn btn-warning',
-        emit: 'closeModals',
-        payload: ''
-      }]
-    };
-    self.commandRouter.broadcastMessage('openModal', modalData);
+        // --- Final formatted HTML (same style as your system info) ---
+        let combined = '';
+        combined += `<li>CPU Benchmark (All Threads)</br></li><ul>`;
+        combined += `<li>Events per second: ${cpuAll.eps}</li>`;
+        combined += `<li>Min latency: ${cpuAll.min} ms</li>`;
+        combined += `<li>Avg latency: ${cpuAll.avg} ms</li>`;
+        combined += `<li>Max latency: ${cpuAll.max} ms</li></ul>`;
 
-    return { cpu_all: cpuAll, cpu_single: cpu1, memory: mem };
+        combined += `<li>CPU Benchmark (1 Thread)</br></li><ul>`;
+        combined += `<li>Events per second: ${cpu1.eps}</li>`;
+        combined += `<li>Min latency: ${cpu1.min} ms</li>`;
+        combined += `<li>Avg latency: ${cpu1.avg} ms</li>`;
+        combined += `<li>Max latency: ${cpu1.max} ms</li></ul>`;
 
-  } catch (err) {
-    self.logger.error('Sysbench failed: ' + err.message);
-    self.commandRouter.pushToastMessage('error', 'Benchmark Error', 'Sysbench failed: ' + err.message);
-    throw err;
-  }
+        combined += `<li>Memory Benchmark</br></li><ul>`;
+        combined += `<li>Throughput: ${mem.throughput}</li>`;
+        combined += `<li>Transferred: ${mem.transferred}</li>`;
+        combined += `<li>Total operations: ${mem.ops}</li>`;
+        combined += `<li>Operations per second: ${mem.opsPerSec}</li></ul>`;
+
+        // --- Final results modal ---
+        const modalData = {
+            title: `🔥Benchmark Results – ${hostname} – ${getTimestamp()} UTC`,
+            message: combined,
+            size: 'lg',
+            buttons: [{
+                name: 'Close',
+                class: 'btn btn-warning',
+                emit: 'closeModals',
+                payload: ''
+            }]
+        };
+        self.commandRouter.broadcastMessage('openModal', modalData);
+
+        return { cpu_all: cpuAll, cpu_single: cpu1, memory: mem };
+
+    } catch (err) {
+        self.logger.error('Sysbench failed: ' + err.message);
+        self.commandRouter.pushToastMessage('error', 'Benchmark Error', 'Sysbench failed: ' + err.message);
+        throw err;
+    }
 };
 
