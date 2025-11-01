@@ -10,7 +10,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var _a, _InnertubeResultParser_parseWatchContinuationEndpointResult, _InnertubeResultParser_parseWatchEndpointResult, _InnertubeResultParser_parseBrowseEndpointResult, _InnertubeResultParser_parseHeader, _InnertubeResultParser_parseContentToSection, _InnertubeResultParser_parseArtists, _InnertubeResultParser_findNodesByType, _InnertubeResultParser_convertChipCloudToOption, _InnertubeResultParser_convertDropdownToOption, _InnertubeResultParser_convertSortFilterButtonToOption, _InnertubeResultParser_extractMainItemFromMusicCardShelf, _InnertubeResultParser_isYTNode;
 Object.defineProperty(exports, "__esModule", { value: true });
 const YTMusicContext_1 = __importDefault(require("../YTMusicContext"));
-const volumio_youtubei_js_1 = require("volumio-youtubei.js");
+const innertube_1 = require("volumio-yt-support/dist/innertube");
 const Endpoint_1 = require("../types/Endpoint");
 const EndpointHelper_1 = __importDefault(require("../util/EndpointHelper"));
 // Tab title refers to i18n key
@@ -40,26 +40,26 @@ class InnertubeResultParser {
         if (!data) {
             return null;
         }
-        if (data.is(volumio_youtubei_js_1.YTNodes.PlaylistPanelVideoWrapper)) {
+        if (data.is(innertube_1.YTNodes.PlaylistPanelVideoWrapper)) {
             const target = data.primary || data.counterpart?.first();
             return target ? this.parseContentItem(target) : null;
         }
         // MusicItem (song / video)
         let musicItemType = null;
-        if ((data.is(volumio_youtubei_js_1.YTNodes.MusicResponsiveListItem) ||
-            data.is(volumio_youtubei_js_1.YTNodes.MusicTwoRowItem)) &&
+        if ((data.is(innertube_1.YTNodes.MusicResponsiveListItem) ||
+            data.is(innertube_1.YTNodes.MusicTwoRowItem)) &&
             (data.item_type === 'song' || data.item_type === 'video' || data.item_type === 'non_music_track')) {
             musicItemType = data.item_type === 'video' ? 'video' : 'song';
         }
-        else if (data.is(volumio_youtubei_js_1.YTNodes.PlaylistPanelVideo)) {
+        else if (data.is(innertube_1.YTNodes.PlaylistPanelVideo)) {
             musicItemType = 'video';
         }
-        else if (data.is(volumio_youtubei_js_1.YTNodes.MusicMultiRowListItem)) {
+        else if (data.is(innertube_1.YTNodes.MusicMultiRowListItem)) {
             musicItemType = 'song';
         }
         if (musicItemType) {
             let videoId, title = null, subtitle = null, endpoint = null, radioEndpoint = null, thumbnail = null, trackNumber = null, duration = null, album = null;
-            if (data.is(volumio_youtubei_js_1.YTNodes.MusicResponsiveListItem)) {
+            if (data.is(innertube_1.YTNodes.MusicResponsiveListItem)) {
                 videoId = data.id;
                 title = this.unwrap(data.title);
                 subtitle = this.unwrap(data.subtitle);
@@ -81,7 +81,7 @@ class InnertubeResultParser {
                     }
                 }
             }
-            if (data.is(volumio_youtubei_js_1.YTNodes.MusicTwoRowItem)) {
+            if (data.is(innertube_1.YTNodes.MusicTwoRowItem)) {
                 videoId = data.id;
                 title = this.unwrap(data.title);
                 subtitle = this.unwrap(data.subtitle);
@@ -89,7 +89,7 @@ class InnertubeResultParser {
                 radioEndpoint = this.findRadioEndpoint(data);
                 thumbnail = this.parseThumbnail(data.thumbnail);
             }
-            if (data.is(volumio_youtubei_js_1.YTNodes.PlaylistPanelVideo)) {
+            if (data.is(innertube_1.YTNodes.PlaylistPanelVideo)) {
                 videoId = data.video_id;
                 title = this.unwrap(data.title);
                 endpoint = this.parseEndpoint(data.endpoint, Endpoint_1.EndpointType.Watch);
@@ -111,7 +111,7 @@ class InnertubeResultParser {
                     }
                 }
             }
-            if (data.is(volumio_youtubei_js_1.YTNodes.MusicMultiRowListItem)) {
+            if (data.is(innertube_1.YTNodes.MusicMultiRowListItem)) {
                 endpoint = this.parseEndpoint(data.on_tap, Endpoint_1.EndpointType.Watch);
                 title = this.unwrap(data.title);
                 subtitle = this.unwrap(data.subtitle);
@@ -153,17 +153,17 @@ class InnertubeResultParser {
             return null;
         }
         // Artist
-        const isArtist = (data.is(volumio_youtubei_js_1.YTNodes.MusicResponsiveListItem) ||
-            data.is(volumio_youtubei_js_1.YTNodes.MusicTwoRowItem)) &&
+        const isArtist = (data.is(innertube_1.YTNodes.MusicResponsiveListItem) ||
+            data.is(innertube_1.YTNodes.MusicTwoRowItem)) &&
             data.item_type === 'artist';
         const isPrivateArtist = isArtist && data.id?.startsWith('FEmusic_library_privately_owned_artist');
         if (isArtist && !isPrivateArtist) {
             let name = null, thumbnail = null;
-            if (data.is(volumio_youtubei_js_1.YTNodes.MusicResponsiveListItem)) {
+            if (data.is(innertube_1.YTNodes.MusicResponsiveListItem)) {
                 name = this.unwrap(data.name);
                 thumbnail = this.parseThumbnail(data.thumbnails);
             }
-            if (data.is(volumio_youtubei_js_1.YTNodes.MusicTwoRowItem)) {
+            if (data.is(innertube_1.YTNodes.MusicTwoRowItem)) {
                 name = this.unwrap(data.title);
                 thumbnail = this.parseThumbnail(data.thumbnail);
             }
@@ -188,8 +188,8 @@ class InnertubeResultParser {
         }
         // Album / Playlist
         let musicFolderType = null, browseEndpoint = null;
-        if ((data.is(volumio_youtubei_js_1.YTNodes.MusicResponsiveListItem) ||
-            data.is(volumio_youtubei_js_1.YTNodes.MusicTwoRowItem)) &&
+        if ((data.is(innertube_1.YTNodes.MusicResponsiveListItem) ||
+            data.is(innertube_1.YTNodes.MusicTwoRowItem)) &&
             (data.item_type === 'album' || data.item_type === 'playlist' || data.item_type === 'podcast_show')) {
             musicFolderType = data.item_type;
         }
@@ -264,10 +264,10 @@ class InnertubeResultParser {
                     result.totalDuration = totalDuration;
                 }
                 let thumbnail = null;
-                if (data.is(volumio_youtubei_js_1.YTNodes.MusicResponsiveListItem)) {
+                if (data.is(innertube_1.YTNodes.MusicResponsiveListItem)) {
                     thumbnail = this.parseThumbnail(data.thumbnails);
                 }
-                if (data.is(volumio_youtubei_js_1.YTNodes.MusicTwoRowItem)) {
+                if (data.is(innertube_1.YTNodes.MusicTwoRowItem)) {
                     thumbnail = this.parseThumbnail(data.thumbnail);
                 }
                 if (thumbnail) {
@@ -278,7 +278,7 @@ class InnertubeResultParser {
             return null;
         }
         // Endpoint link from MusicNavigationButton
-        if (data.is(volumio_youtubei_js_1.YTNodes.MusicNavigationButton)) {
+        if (data.is(innertube_1.YTNodes.MusicNavigationButton)) {
             const endpoint = this.parseEndpoint(data.endpoint, Endpoint_1.EndpointType.Browse);
             if (endpoint) {
                 const result = {
@@ -294,14 +294,14 @@ class InnertubeResultParser {
             return null;
         }
         // Endpoint link from MusicResponsiveListItem / MusicTwoRowItem
-        if ((data.is(volumio_youtubei_js_1.YTNodes.MusicResponsiveListItem) ||
-            data.is(volumio_youtubei_js_1.YTNodes.MusicTwoRowItem)) &&
+        if ((data.is(innertube_1.YTNodes.MusicResponsiveListItem) ||
+            data.is(innertube_1.YTNodes.MusicTwoRowItem)) &&
             (data.item_type === 'endpoint' || data.item_type === 'library_artist' ||
                 isPrivateArtist)) {
             const endpoint = this.parseEndpoint(data.endpoint);
             if (endpoint) {
                 let title = null, thumbnail = null;
-                if (data.is(volumio_youtubei_js_1.YTNodes.MusicResponsiveListItem)) {
+                if (data.is(innertube_1.YTNodes.MusicResponsiveListItem)) {
                     title = this.unwrap(data.title || data.name);
                     thumbnail = this.parseThumbnail(data.thumbnails);
                 }
@@ -328,7 +328,7 @@ class InnertubeResultParser {
             return null;
         }
         // Endpoint link from DidYouMean
-        if (data.is(volumio_youtubei_js_1.YTNodes.DidYouMean)) {
+        if (data.is(innertube_1.YTNodes.DidYouMean)) {
             const endpoint = this.parseEndpoint(data.endpoint, Endpoint_1.EndpointType.Browse, Endpoint_1.EndpointType.Search);
             if (endpoint) {
                 const result = {
@@ -342,7 +342,7 @@ class InnertubeResultParser {
             return null;
         }
         // Endpoint link from ShowingResultsFor
-        if (data.is(volumio_youtubei_js_1.YTNodes.ShowingResultsFor)) {
+        if (data.is(innertube_1.YTNodes.ShowingResultsFor)) {
             const endpoint = this.parseEndpoint(data.original_query_endpoint, Endpoint_1.EndpointType.Browse, Endpoint_1.EndpointType.Search);
             if (endpoint) {
                 const result = {
@@ -356,7 +356,7 @@ class InnertubeResultParser {
             return null;
         }
         // Automix
-        if (data.is(volumio_youtubei_js_1.YTNodes.AutomixPreviewVideo)) {
+        if (data.is(innertube_1.YTNodes.AutomixPreviewVideo)) {
             const endpoint = this.parseEndpoint(data.playlist_video?.endpoint, Endpoint_1.EndpointType.Watch);
             if (endpoint) {
                 const result = {
@@ -370,13 +370,13 @@ class InnertubeResultParser {
         return null;
     }
     static findRadioEndpoint(data) {
-        if ((data.is(volumio_youtubei_js_1.YTNodes.MusicResponsiveListItem) ||
-            data.is(volumio_youtubei_js_1.YTNodes.MusicTwoRowItem) ||
-            data.is(volumio_youtubei_js_1.YTNodes.PlaylistPanelVideo)) && data.menu) {
+        if ((data.is(innertube_1.YTNodes.MusicResponsiveListItem) ||
+            data.is(innertube_1.YTNodes.MusicTwoRowItem) ||
+            data.is(innertube_1.YTNodes.PlaylistPanelVideo)) && data.menu) {
             const menu = this.unwrap(data.menu);
-            if (menu && menu.is(volumio_youtubei_js_1.YTNodes.Menu)) {
+            if (menu && menu.is(innertube_1.YTNodes.Menu)) {
                 for (const item of menu.items) {
-                    if (item.is(volumio_youtubei_js_1.YTNodes.MenuNavigationItem) && item.icon_type === 'MIX') {
+                    if (item.is(innertube_1.YTNodes.MenuNavigationItem) && item.icon_type === 'MIX') {
                         const endpoint = this.parseEndpoint(item.endpoint, Endpoint_1.EndpointType.Watch);
                         if (endpoint) {
                             return endpoint;
@@ -401,7 +401,7 @@ class InnertubeResultParser {
             }
             return data;
         }
-        else if (typeof data === 'string' || data instanceof volumio_youtubei_js_1.Misc.Text) {
+        else if (typeof data === 'string' || data instanceof innertube_1.Misc.Text) {
             const s = (typeof data === 'string') ? data : data.toString();
             return (s === 'N/A' || s === '') ? null : s;
         }
@@ -555,7 +555,7 @@ class InnertubeResultParser {
             throw Error('Invalid synced lyrics data');
         }
         // Try parse plain lyrics
-        const shelf = response.contents_memo?.getType(volumio_youtubei_js_1.YTNodes.MusicDescriptionShelf).first();
+        const shelf = response.contents_memo?.getType(innertube_1.YTNodes.MusicDescriptionShelf).first();
         if (shelf) {
             const lyricsText = shelf.description.text;
             if (lyricsText) {
@@ -570,7 +570,7 @@ class InnertubeResultParser {
     }
 }
 _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpointResult = function _InnertubeResultParser_parseWatchContinuationEndpointResult(data) {
-    const continuationContents = data.continuation_contents?.firstOfType(volumio_youtubei_js_1.PlaylistPanelContinuation);
+    const continuationContents = data.continuation_contents?.firstOfType(innertube_1.PlaylistPanelContinuation);
     if (continuationContents) {
         if (continuationContents.contents) {
             const parsedItems = continuationContents.contents.reduce((result, item) => {
@@ -623,7 +623,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
         return null;
     }
     const result = { type: 'watch', isContinuation: false };
-    const playlistPanel = data.contents_memo?.getType(volumio_youtubei_js_1.YTNodes.PlaylistPanel)?.first();
+    const playlistPanel = data.contents_memo?.getType(innertube_1.YTNodes.PlaylistPanel)?.first();
     if (playlistPanel) {
         let automix = null;
         // Playlist items
@@ -674,16 +674,16 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
     }
     return null;
 }, _InnertubeResultParser_parseBrowseEndpointResult = function _InnertubeResultParser_parseBrowseEndpointResult(data, originatingEndpoint) {
-    const continuationContents = data.continuation_contents?.filterType(volumio_youtubei_js_1.MusicShelfContinuation, volumio_youtubei_js_1.MusicPlaylistShelfContinuation, volumio_youtubei_js_1.GridContinuation, volumio_youtubei_js_1.SectionListContinuation) ||
-        (data.on_response_received_actions?.[0]?.is(volumio_youtubei_js_1.YTNodes.AppendContinuationItemsAction) ? [data.on_response_received_actions[0]] : null);
+    const continuationContents = data.continuation_contents?.filterType(innertube_1.MusicShelfContinuation, innertube_1.MusicPlaylistShelfContinuation, innertube_1.GridContinuation, innertube_1.SectionListContinuation) ||
+        (data.on_response_received_actions?.[0]?.is(innertube_1.YTNodes.AppendContinuationItemsAction) ? [data.on_response_received_actions[0]] : null);
     if (continuationContents && continuationContents.length > 0) {
         const ccSections = continuationContents.reduce((result, cc) => {
-            const continuation = !cc.is(volumio_youtubei_js_1.SectionListContinuation, volumio_youtubei_js_1.YTNodes.AppendContinuationItemsAction) ? cc.continuation : undefined;
+            const continuation = !cc.is(innertube_1.SectionListContinuation, innertube_1.YTNodes.AppendContinuationItemsAction) ? cc.continuation : undefined;
             const parseData = {
                 contents: cc.contents,
                 continuation
             };
-            if (cc.is(volumio_youtubei_js_1.SectionListContinuation) && cc.header) {
+            if (cc.is(innertube_1.SectionListContinuation) && cc.header) {
                 parseData.header = cc.header;
             }
             const section = __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_parseContentToSection).call(this, parseData, originatingEndpoint.type);
@@ -733,7 +733,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
         if (tabs && Array.isArray(tabs)) {
             if (!result.header) {
                 // Album / Playlist has MusicResponsiveHeader wrapped in 'content'
-                const hiddenHeader = __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_findNodesByType).call(this, tabs, volumio_youtubei_js_1.YTNodes.MusicResponsiveHeader)?.[0];
+                const hiddenHeader = __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_findNodesByType).call(this, tabs, innertube_1.YTNodes.MusicResponsiveHeader)?.[0];
                 if (hiddenHeader) {
                     const header = __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_parseHeader).call(this, hiddenHeader, originatingEndpoint);
                     if (header) {
@@ -795,13 +795,13 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
     }
     // MusicEditablePlaylistDetailHeader
     // Occurs in playlists; wraps around actual header (MusicDetailHeader)
-    if (data.is(volumio_youtubei_js_1.YTNodes.MusicEditablePlaylistDetailHeader)) {
+    if (data.is(innertube_1.YTNodes.MusicEditablePlaylistDetailHeader)) {
         return __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_parseHeader).call(this, data.header, originatingEndpoint);
     }
     let type = null, title = null, description = null, thumbnail = null, endpoint = null, channel = null, shufflePlay = null;
     const subtitles = [];
     // Artist
-    if (data.is(volumio_youtubei_js_1.YTNodes.MusicImmersiveHeader)) {
+    if (data.is(innertube_1.YTNodes.MusicImmersiveHeader)) {
         type = 'channel';
         title = this.unwrap(data.title);
         description = this.unwrap(data.description);
@@ -816,7 +816,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
     }
     // Album / Playlist
     // -- Legacy: might remove in future - should now be MusicResponsiveHeader
-    else if (data.is(volumio_youtubei_js_1.YTNodes.MusicDetailHeader)) {
+    else if (data.is(innertube_1.YTNodes.MusicDetailHeader)) {
         title = this.unwrap(data.title);
         if (data.description) {
             description = this.unwrap(data.description);
@@ -840,8 +840,8 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
         }
         thumbnail = this.parseThumbnail(data.thumbnails);
         const mdhMenu = this.unwrap(data.menu);
-        if (mdhMenu?.is(volumio_youtubei_js_1.YTNodes.Menu)) {
-            const mdhTopLevelButtons = mdhMenu.top_level_buttons.filter((button) => button.is(volumio_youtubei_js_1.YTNodes.Button));
+        if (mdhMenu?.is(innertube_1.YTNodes.Menu)) {
+            const mdhTopLevelButtons = mdhMenu.top_level_buttons.filter((button) => button.is(innertube_1.YTNodes.Button));
             for (const button of mdhTopLevelButtons) {
                 // We determine the header type here:
                 // - Album has Play button in top level buttons
@@ -880,7 +880,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
     }
     // Album / Playlist / Podcast
     // -- Current (replaces MusicDetailHeader)
-    else if (data.is(volumio_youtubei_js_1.YTNodes.MusicResponsiveHeader)) {
+    else if (data.is(innertube_1.YTNodes.MusicResponsiveHeader)) {
         title = this.unwrap(data.title);
         if (data.description) {
             description = this.unwrap(data.description.description);
@@ -917,15 +917,15 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
         type = EndpointHelper_1.default.isAlbumEndpoint(originatingEndpoint) ? 'album' :
             EndpointHelper_1.default.isPodcastEndpoint(originatingEndpoint) ? 'podcast' : 'playlist';
         // Play endpoint
-        const playButton = data.buttons.find((button) => button.is(volumio_youtubei_js_1.YTNodes.MusicPlayButton));
+        const playButton = data.buttons.find((button) => button.is(innertube_1.YTNodes.MusicPlayButton));
         if (playButton) {
             endpoint = this.parseEndpoint(playButton.endpoint, Endpoint_1.EndpointType.Watch);
         }
         // Shuffle endpoint
-        const mdhMenu = data.buttons.find((button) => button.is(volumio_youtubei_js_1.YTNodes.Menu));
-        if (mdhMenu?.is(volumio_youtubei_js_1.YTNodes.Menu)) {
+        const mdhMenu = data.buttons.find((button) => button.is(innertube_1.YTNodes.Menu));
+        if (mdhMenu?.is(innertube_1.YTNodes.Menu)) {
             for (const menuItem of mdhMenu.items) {
-                if (menuItem.is(volumio_youtubei_js_1.YTNodes.MenuNavigationItem) && menuItem.icon_type === 'MUSIC_SHUFFLE') {
+                if (menuItem.is(innertube_1.YTNodes.MenuNavigationItem) && menuItem.icon_type === 'MUSIC_SHUFFLE') {
                     const mdhShufflePlayEndpoint = this.parseEndpoint(menuItem.endpoint, Endpoint_1.EndpointType.Watch);
                     const mdhShufflePlayText = this.unwrap(menuItem.text);
                     if (mdhShufflePlayEndpoint && mdhShufflePlayText) {
@@ -941,7 +941,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
         }
     }
     // Generic - MusicHeader (e.g. Explore -> Charts)
-    else if (data.is(volumio_youtubei_js_1.YTNodes.MusicHeader)) {
+    else if (data.is(innertube_1.YTNodes.MusicHeader)) {
         type = 'generic';
         title = this.unwrap(data.title);
     }
@@ -983,20 +983,20 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
         return null;
     }
     const nestedSectionTypes = [
-        volumio_youtubei_js_1.YTNodes.SectionList.type,
-        volumio_youtubei_js_1.YTNodes.ItemSection.type,
-        volumio_youtubei_js_1.YTNodes.Grid.type,
-        volumio_youtubei_js_1.YTNodes.MusicShelf.type,
-        volumio_youtubei_js_1.YTNodes.MusicCardShelf.type,
-        volumio_youtubei_js_1.YTNodes.MusicCarouselShelf.type,
-        volumio_youtubei_js_1.YTNodes.MusicPlaylistShelf.type
+        innertube_1.YTNodes.SectionList.type,
+        innertube_1.YTNodes.ItemSection.type,
+        innertube_1.YTNodes.Grid.type,
+        innertube_1.YTNodes.MusicShelf.type,
+        innertube_1.YTNodes.MusicCardShelf.type,
+        innertube_1.YTNodes.MusicCarouselShelf.type,
+        innertube_1.YTNodes.MusicPlaylistShelf.type
     ];
     const section = {
         type: 'section',
         items: []
     };
     const ytNode = __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_isYTNode).call(this, data) ? data : null;
-    if (ytNode?.is(volumio_youtubei_js_1.YTNodes.MusicPlaylistShelf)) {
+    if (ytNode?.is(innertube_1.YTNodes.MusicPlaylistShelf)) {
         section.playlistId = ytNode.playlist_id;
     }
     const __parseContentItem = (contentItem) => {
@@ -1019,7 +1019,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
     // Filters
     const sectionFilters = [];
     // -- filters from ChipCloud
-    const dataHeaderChipClouds = __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_findNodesByType).call(this, dataHeader, volumio_youtubei_js_1.YTNodes.ChipCloud);
+    const dataHeaderChipClouds = __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_findNodesByType).call(this, dataHeader, innertube_1.YTNodes.ChipCloud);
     if (dataHeaderChipClouds.length > 0) {
         const dataContentChipCloudFilters = dataHeaderChipClouds.reduce((result, chipCloud) => {
             const filter = __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_convertChipCloudToOption).call(this, chipCloud);
@@ -1032,7 +1032,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
     }
     // -- filters from dropdowns
     // (`data.subheaders` present in MusicShelf)
-    const dropdowns = __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_findNodesByType).call(this, data.subheaders ? [dataHeader, data.subheaders] : dataHeader, volumio_youtubei_js_1.YTNodes.Dropdown);
+    const dropdowns = __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_findNodesByType).call(this, data.subheaders ? [dataHeader, data.subheaders] : dataHeader, innertube_1.YTNodes.Dropdown);
     if (dropdowns.length > 0) {
         const dropdownFilters = dropdowns.reduce((result, dropdown) => {
             const filter = __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_convertDropdownToOption).call(this, dropdown);
@@ -1044,7 +1044,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
         sectionFilters.push(...dropdownFilters);
     }
     // -- filters from MusicSortFilterButton
-    const sortFilterButtons = __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_findNodesByType).call(this, data.subheaders ? [dataHeader, data.subheaders] : dataHeader, volumio_youtubei_js_1.YTNodes.MusicSortFilterButton);
+    const sortFilterButtons = __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_findNodesByType).call(this, data.subheaders ? [dataHeader, data.subheaders] : dataHeader, innertube_1.YTNodes.MusicSortFilterButton);
     if (sortFilterButtons.length > 0) {
         const sortFilters = sortFilterButtons.reduce((result, button) => {
             const filter = __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_convertSortFilterButtonToOption).call(this, button);
@@ -1071,7 +1071,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
     // Buttons
     const sectionButtons = [];
     // -- buttons from MusicCarouselShelfBasicHeader
-    if (__classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_isYTNode).call(this, dataHeader) && dataHeader.is(volumio_youtubei_js_1.YTNodes.MusicCarouselShelfBasicHeader)) {
+    if (__classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_isYTNode).call(this, dataHeader) && dataHeader.is(innertube_1.YTNodes.MusicCarouselShelfBasicHeader)) {
         if (dataHeader.more_content) {
             const text = dataHeader.more_content.text;
             const endpoint = this.parseEndpoint(dataHeader.more_content.endpoint);
@@ -1098,7 +1098,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
         }
     }
     // -- buttons from MusicShelf ('more content' link at bottom, like 'Show All' in search results)
-    if (ytNode?.is(volumio_youtubei_js_1.YTNodes.MusicShelf)) {
+    if (ytNode?.is(innertube_1.YTNodes.MusicShelf)) {
         if (ytNode.endpoint && ytNode.bottom_text) {
             const text = this.unwrap(ytNode.bottom_text);
             const endpoint = this.parseEndpoint(ytNode.endpoint);
@@ -1128,12 +1128,12 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
             for (const contentItem of dataContents) {
                 __parseContentItem(contentItem);
             }
-            if (!ytNode?.is(volumio_youtubei_js_1.YTNodes.Grid) && dataContents.some((item) => __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_isYTNode).call(this, item) && (item.is(volumio_youtubei_js_1.YTNodes.MusicResponsiveListItem) ||
-                item.is(volumio_youtubei_js_1.YTNodes.PlaylistPanelVideo) ||
-                item.is(volumio_youtubei_js_1.YTNodes.PlaylistPanelVideoWrapper)))) {
+            if (!ytNode?.is(innertube_1.YTNodes.Grid) && dataContents.some((item) => __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_isYTNode).call(this, item) && (item.is(innertube_1.YTNodes.MusicResponsiveListItem) ||
+                item.is(innertube_1.YTNodes.PlaylistPanelVideo) ||
+                item.is(innertube_1.YTNodes.PlaylistPanelVideoWrapper)))) {
                 section.itemLayout = 'list';
             }
-            else if (dataContents.some((item) => item.is(volumio_youtubei_js_1.YTNodes.MusicTwoRowItem))) {
+            else if (dataContents.some((item) => item.is(innertube_1.YTNodes.MusicTwoRowItem))) {
                 section.itemLayout = 'grid';
             }
         }
@@ -1143,7 +1143,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
     }
     // MusicCardShelf ('Top Results' in search)
     // Need to set correct title and extract the main item of the shelf.
-    if (ytNode?.is(volumio_youtubei_js_1.YTNodes.MusicCardShelf)) {
+    if (ytNode?.is(innertube_1.YTNodes.MusicCardShelf)) {
         const title = ytNode.header ? this.unwrap(ytNode.header.title) : null;
         if (title) {
             section.title = title;
@@ -1177,7 +1177,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
     // Continuation
     if (!data.continuation && dataContents && Array.isArray(dataContents)) {
         // Sometimes (e.g. in playlist), continuation data is encapsulated in contents
-        const continuationItem = dataContents.find((item) => __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_isYTNode).call(this, item) && item.is(volumio_youtubei_js_1.YTNodes.ContinuationItem));
+        const continuationItem = dataContents.find((item) => __classPrivateFieldGet(this, _a, "m", _InnertubeResultParser_isYTNode).call(this, item) && item.is(innertube_1.YTNodes.ContinuationItem));
         if (continuationItem && continuationItem.endpoint?.payload?.token) {
             data.continuation = continuationItem.endpoint.payload.token;
         }
@@ -1241,7 +1241,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
     const _findRunIndexByArtistEndpointCheck = (runs) => {
         // Find position of text run with artist endpoint
         let runIndex = runs ? runs.findIndex((run) => {
-            if (run instanceof volumio_youtubei_js_1.Misc.TextRun) {
+            if (run instanceof innertube_1.Misc.TextRun) {
                 const runEndpoint = this.parseEndpoint(run.endpoint, Endpoint_1.EndpointType.Browse);
                 return EndpointHelper_1.default.isChannelEndpoint(runEndpoint);
             }
@@ -1262,7 +1262,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
         if (runs) {
             for (let i = startIndex; i < runs.length; i += 2) {
                 const run = runs[i];
-                const runEndpoint = run instanceof volumio_youtubei_js_1.Misc.TextRun ? this.parseEndpoint(run.endpoint, Endpoint_1.EndpointType.Browse) : null;
+                const runEndpoint = run instanceof innertube_1.Misc.TextRun ? this.parseEndpoint(run.endpoint, Endpoint_1.EndpointType.Browse) : null;
                 const result = {
                     type: 'channel',
                     name: run.text
@@ -1298,7 +1298,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
         }
         return arr;
     };
-    if (data.is(volumio_youtubei_js_1.YTNodes.MusicDetailHeader)) {
+    if (data.is(innertube_1.YTNodes.MusicDetailHeader)) {
         // Innertube does not parse multiple artists in MusicDetailHeader and also requires
         // Artists to have endpoints. We need to do our own parsing here.
         // However, I am not sure if the parsing logic here is foolproof or will break other
@@ -1310,12 +1310,12 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
         // Until we arrive at the next '•'.
         return _extractFromTextRuns(data.subtitle?.runs, 2);
     }
-    if (((data.is(volumio_youtubei_js_1.YTNodes.MusicResponsiveListItem) || data.is(volumio_youtubei_js_1.YTNodes.MusicTwoRowItem)) &&
-        (data.item_type === 'song' || data.item_type === 'video')) || data.is(volumio_youtubei_js_1.YTNodes.MusicCardShelf)) {
+    if (((data.is(innertube_1.YTNodes.MusicResponsiveListItem) || data.is(innertube_1.YTNodes.MusicTwoRowItem)) &&
+        (data.item_type === 'song' || data.item_type === 'video')) || data.is(innertube_1.YTNodes.MusicCardShelf)) {
         // Note that there is no checking of item type for MusicCardShelf. We rely on
         // #extractMainItemFromMusicCardShelf() to call this correctly.
-        if (data.is(volumio_youtubei_js_1.YTNodes.MusicResponsiveListItem) ||
-            data.is(volumio_youtubei_js_1.YTNodes.MusicCardShelf)) {
+        if (data.is(innertube_1.YTNodes.MusicResponsiveListItem) ||
+            data.is(innertube_1.YTNodes.MusicCardShelf)) {
             // If language is set to non-English, then videos will most likely be misidentified as songs, since Innertube
             // Determines type by checking the second flex column elements for '* views'. This is fine from the plugins'
             // Perspective, as songs and videos are handled the same way.
@@ -1366,7 +1366,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
         }
         return _extractFromTextRuns(data.subtitle?.runs);
     }
-    if (data.is(volumio_youtubei_js_1.YTNodes.PlaylistPanelVideo)) {
+    if (data.is(innertube_1.YTNodes.PlaylistPanelVideo)) {
         // Similar drill to MusicResponsiveListItem
         const runIndex = _findRunIndexByArtistEndpointCheck(data.long_by_line_text.runs);
         if (runIndex >= 0) {
@@ -1511,9 +1511,9 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
         return null;
     }
     const title = this.unwrap(menu.title);
-    const menuItems = menu.options.filter((item) => item.is(volumio_youtubei_js_1.YTNodes.MusicMultiSelectMenuItem));
+    const menuItems = menu.options.filter((item) => item.is(innertube_1.YTNodes.MusicMultiSelectMenuItem));
     const optionValues = menuItems.reduce((result, item) => {
-        if (item.is(volumio_youtubei_js_1.YTNodes.MusicMultiSelectMenuItem)) {
+        if (item.is(innertube_1.YTNodes.MusicMultiSelectMenuItem)) {
             const endpoint = this.parseEndpoint(item.endpoint, Endpoint_1.EndpointType.Browse, Endpoint_1.EndpointType.BrowseContinuation);
             // For MusicSortFilterButton, endpoint can be `null`.
             result.push({
@@ -1554,7 +1554,7 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
             let artistText = '';
             if (data.subtitle?.runs) {
                 artists = data.subtitle.runs.reduce((result, run, index) => {
-                    if (run instanceof volumio_youtubei_js_1.Misc.TextRun) {
+                    if (run instanceof innertube_1.Misc.TextRun) {
                         const endpoint = this.parseEndpoint(run.endpoint, Endpoint_1.EndpointType.Browse);
                         if (endpoint?.pageType === 'MUSIC_PAGE_TYPE_ARTIST') {
                             result.push({

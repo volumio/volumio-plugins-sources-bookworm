@@ -10,11 +10,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var _MusicItemModel_instances, _MusicItemModel_getTrackInfo, _MusicItemModel_extractStreamData, _MusicItemModel_getInfoFromUpNextTab, _MusicItemModel_getLyricsId, _MusicItemModel_sleep, _MusicItemModel_head;
 Object.defineProperty(exports, "__esModule", { value: true });
 const YTMusicContext_1 = __importDefault(require("../YTMusicContext"));
-const volumio_youtubei_js_1 = require("volumio-youtubei.js");
+const innertube_1 = require("volumio-yt-support/dist/innertube");
 const BaseModel_1 = require("./BaseModel");
 const InnertubeResultParser_1 = __importDefault(require("./InnertubeResultParser"));
 const Endpoint_1 = require("../types/Endpoint");
 const EndpointHelper_1 = __importDefault(require("../util/EndpointHelper"));
+const InnertubeLoader_1 = __importDefault(require("./InnertubeLoader"));
 // https://gist.github.com/sidneys/7095afe4da4ae58694d128b1034e01e2
 // https://gist.github.com/MartinEesmaa/2f4b261cb90a47e9c41ba115a011a4aa
 const ITAG_TO_BITRATE = {
@@ -42,8 +43,8 @@ class MusicItemModel extends BaseModel_1.BaseModel {
             throw Error('Invalid endpoint');
         }
         const { innertube } = await this.getInnertube();
-        const trackInfo = await __classPrivateFieldGet(this, _MusicItemModel_instances, "m", _MusicItemModel_getTrackInfo).call(this, innertube, endpoint);
-        const streamData = __classPrivateFieldGet(this, _MusicItemModel_instances, "m", _MusicItemModel_extractStreamData).call(this, innertube, trackInfo);
+        const { trackInfo, contentPoToken } = await __classPrivateFieldGet(this, _MusicItemModel_instances, "m", _MusicItemModel_getTrackInfo).call(this, innertube, endpoint);
+        const streamData = await __classPrivateFieldGet(this, _MusicItemModel_instances, "m", _MusicItemModel_extractStreamData).call(this, innertube, trackInfo, contentPoToken);
         // `trackInfo` does not contain album info - need to obtain from item in Up Next tab.
         const infoFromUpNextTab = __classPrivateFieldGet(this, _MusicItemModel_instances, "m", _MusicItemModel_getInfoFromUpNextTab).call(this, trackInfo, endpoint);
         let musicItem = null;
@@ -116,38 +117,49 @@ class MusicItemModel extends BaseModel_1.BaseModel {
             client: 'YTMUSIC_ANDROID'
         };
         const response = await innertube.actions.execute('/browse', payload);
-        const parsed = volumio_youtubei_js_1.Parser.parseResponse(response.data);
+        const parsed = innertube_1.Parser.parseResponse(response.data);
         return InnertubeResultParser_1.default.parseLyrics(parsed);
     }
 }
 _MusicItemModel_instances = new WeakSet(), _MusicItemModel_getTrackInfo = 
 // Based on Innertube.Music.#fetchInfoFromEndpoint()
 async function _MusicItemModel_getTrackInfo(innertube, endpoint) {
-    const watchEndpoint = new volumio_youtubei_js_1.YTNodes.NavigationEndpoint({ watchEndpoint: {
-            videoId: endpoint.payload.videoId,
+    const videoId = endpoint.payload.videoId;
+    const watchEndpoint = new innertube_1.YTNodes.NavigationEndpoint({ watchEndpoint: {
+            videoId,
             playlistId: endpoint.payload.playlistId,
             params: endpoint.payload.params,
-            sts: innertube.session.player?.sts
+            racyCheckOk: true,
+            contentCheckOk: true
         } });
-    const nextEndpoint = new volumio_youtubei_js_1.YTNodes.NavigationEndpoint({ watchNextEndpoint: { videoId: endpoint.payload.videoId } });
+    const nextEndpoint = new innertube_1.YTNodes.NavigationEndpoint({ watchNextEndpoint: { videoId: endpoint.payload.videoId } });
+    const contentPoToken = (await InnertubeLoader_1.default.generatePoToken(videoId)).poToken;
+    YTMusicContext_1.default.getLogger().info(`[ytmusic] Obtained PO token for video #${videoId}: ${contentPoToken}`);
     const player_response = watchEndpoint.call(innertube.actions, {
         client: 'YTMUSIC',
         playbackContext: {
             contentPlaybackContext: {
-                ...{
-                    signatureTimestamp: innertube.session.player?.sts
-                }
+                vis: 0,
+                splay: false,
+                lactMilliseconds: '-1',
+                signatureTimestamp: innertube.session.player?.signature_timestamp
             }
+        },
+        serviceIntegrityDimensions: {
+            poToken: contentPoToken
         }
     });
     const next_response = nextEndpoint.call(innertube.actions, {
         client: 'YTMUSIC',
         enablePersistentPlaylistPanel: true
     });
-    const cpn = volumio_youtubei_js_1.Utils.generateRandomString(16);
+    const cpn = innertube_1.Utils.generateRandomString(16);
     const response = await Promise.all([player_response, next_response]);
-    return new volumio_youtubei_js_1.YTMusic.TrackInfo(response, innertube.actions, cpn);
-}, _MusicItemModel_extractStreamData = function _MusicItemModel_extractStreamData(innertube, info) {
+    return {
+        trackInfo: new innertube_1.YTMusic.TrackInfo(response, innertube.actions, cpn),
+        contentPoToken
+    };
+}, _MusicItemModel_extractStreamData = async function _MusicItemModel_extractStreamData(innertube, info, contentPoToken) {
     const preferredFormat = {
         ...BEST_AUDIO_FORMAT
     };
@@ -177,9 +189,16 @@ async function _MusicItemModel_getTrackInfo(innertube, endpoint) {
         }
     }
     if (format) {
+        let decipheredURL = await format.decipher(innertube.session.player);
         const audioBitrate = ITAG_TO_BITRATE[format.itag];
+        // Innertube sets `pot` searchParam of URL to session-bound PO token.
+        // Seems YT now requires `pot` to be the *content-bound* token, otherwise we'll get 403.
+        // See: https://github.com/TeamNewPipe/NewPipeExtractor/issues/1392
+        const urlObj = new URL(decipheredURL);
+        urlObj.searchParams.set('pot', contentPoToken);
+        decipheredURL = urlObj.toString();
         return {
-            url: format.decipher(innertube.session.player),
+            url: decipheredURL,
             mimeType: format.mime_type,
             bitrate: audioBitrate ? `${audioBitrate} kbps` : null,
             sampleRate: format.audio_sample_rate ? `${format.audio_sample_rate} kHz` : undefined,
@@ -188,19 +207,19 @@ async function _MusicItemModel_getTrackInfo(innertube, endpoint) {
     }
     return null;
 }, _MusicItemModel_getInfoFromUpNextTab = function _MusicItemModel_getInfoFromUpNextTab(info, endpoint) {
-    const playlistPanel = info.page[1]?.contents_memo?.getType(volumio_youtubei_js_1.YTNodes.PlaylistPanel).first();
+    const playlistPanel = info.page[1]?.contents_memo?.getType(innertube_1.YTNodes.PlaylistPanel).first();
     if (!playlistPanel) {
         return null;
     }
     const videoId = endpoint.payload.videoId;
     const match = playlistPanel.contents.find((data) => {
-        if (data.is(volumio_youtubei_js_1.YTNodes.PlaylistPanelVideoWrapper)) {
+        if (data.is(innertube_1.YTNodes.PlaylistPanelVideoWrapper)) {
             if (data.primary?.video_id === videoId) {
                 return true;
             }
             return data.counterpart?.find((item) => item.video_id === videoId);
         }
-        else if (data.is(volumio_youtubei_js_1.YTNodes.PlaylistPanelVideo)) {
+        else if (data.is(innertube_1.YTNodes.PlaylistPanelVideo)) {
             return data.video_id === videoId;
         }
     });
@@ -211,8 +230,8 @@ async function _MusicItemModel_getTrackInfo(innertube, endpoint) {
         videoId,
         client: 'YTMUSIC_ANDROID'
     });
-    const parsed = volumio_youtubei_js_1.Parser.parseResponse(response.data);
-    const tabs = parsed.contents_memo?.getType(volumio_youtubei_js_1.YTNodes.Tab);
+    const parsed = innertube_1.Parser.parseResponse(response.data);
+    const tabs = parsed.contents_memo?.getType(innertube_1.YTNodes.Tab);
     const tab = tabs?.matchCondition((tab) => tab.endpoint.payload.browseEndpointContextSupportedConfigs?.browseEndpointContextMusicConfig?.pageType === 'MUSIC_PAGE_TYPE_TRACK_LYRICS');
     if (!tab) {
         throw Error('Could not find lyrics tab.');

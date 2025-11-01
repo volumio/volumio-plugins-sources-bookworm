@@ -1,12 +1,14 @@
-import { type IParsedResponse, Parser, SectionListContinuation, YTNodes } from 'volumio-youtubei.js';
+import { type IParsedResponse, Parser, SectionListContinuation, YTNodes } from 'volumio-yt-support/dist/innertube';
 import InnertubeLoader from './InnertubeLoader';
 
 const MAX_APPEND_SECTIONS_COUNT = 10;
 
 export abstract class BaseModel {
 
-  protected getInnertube() {
-    return InnertubeLoader.getInstance();
+  protected async getInnertube() {
+    return {
+      innertube: await (await InnertubeLoader.getInstance()).getInnertube()
+    };
   }
 
   protected async expandSectionList(response: IParsedResponse, url: '/browse' | '/search') {

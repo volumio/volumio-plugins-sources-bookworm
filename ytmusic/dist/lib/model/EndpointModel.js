@@ -9,7 +9,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _EndpointModel_instances, _EndpointModel_doGetContents;
 Object.defineProperty(exports, "__esModule", { value: true });
-const volumio_youtubei_js_1 = require("volumio-youtubei.js");
+const innertube_1 = require("volumio-yt-support/dist/innertube");
 const BaseModel_1 = require("./BaseModel");
 const Endpoint_1 = require("../types/Endpoint");
 const InnertubeResultParser_1 = __importDefault(require("./InnertubeResultParser"));
@@ -39,7 +39,7 @@ _EndpointModel_instances = new WeakSet(), _EndpointModel_doGetContents = async f
         client: 'YTMUSIC'
     };
     const response = await innertube.actions.execute(url, payload);
-    const parsed = volumio_youtubei_js_1.Parser.parseResponse(response.data); // First parse by Innertube
+    const parsed = innertube_1.Parser.parseResponse(response.data); // First parse by Innertube
     if (url === '/search' || url === '/browse') {
         await this.expandSectionList(parsed, url);
     }

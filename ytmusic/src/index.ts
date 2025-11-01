@@ -17,7 +17,8 @@ import ViewHelper from './lib/controller/browse/view-handlers/ViewHelper';
 import InnertubeLoader from './lib/model/InnertubeLoader';
 import YTMusicNowPlayingMetadataProvider from './lib/util/YTMusicNowPlayingMetadataProvider';
 import { type NowPlayingPluginSupport } from 'now-playing-common';
-import { Parser } from 'volumio-youtubei.js';
+import { Parser } from 'volumio-yt-support/dist/innertube';
+import { existsSync, readFileSync } from 'fs';
 
 interface GotoParams extends QueueItem {
   type: 'album' | 'artist';
@@ -42,30 +43,41 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
   getUIConfig() {
     const defer = libQ.defer();
 
+    const hasAcceptedDisclaimer = ytmusic.getConfigValue('hasAcceptedDisclaimer');
     const langCode = this.#commandRouter.sharedVars.get('language_code');
     const loadConfigPromises = [
       kewToJSPromise(this.#commandRouter.i18nJson(`${__dirname}/i18n/strings_${langCode}.json`,
         `${__dirname}/i18n/strings_en.json`,
         `${__dirname}/UIConfig.json`)),
-      this.#getConfigI18nOptions(),
-      this.#getConfigAccountInfo()
+      hasAcceptedDisclaimer ? this.#getConfigI18nOptions() : Promise.resolve(null),
+      hasAcceptedDisclaimer ? this.#getConfigAccountInfo() : Promise.resolve(null)
     ] as const;
 
     Promise.all(loadConfigPromises)
       .then(([ uiconf, i18nOptions, account ]) => {
-        const i18nUIConf = uiconf.sections[0];
-        const accountUIConf = uiconf.sections[1];
-        const browseUIConf = uiconf.sections[2];
-        const playbackUIConf = uiconf.sections[3];
+        const disclaimerUIConf = uiconf.sections[0];
+        const i18nUIConf = uiconf.sections[1];
+        const accountUIConf = uiconf.sections[2];
+        const browseUIConf = uiconf.sections[3];
+        const playbackUIConf = uiconf.sections[4];
+
+        // Disclaimer
+        disclaimerUIConf.content[1].value = hasAcceptedDisclaimer;
+
+        if (!hasAcceptedDisclaimer) {
+          // hasAcceptedDisclaimer is false
+          uiconf.sections = [ disclaimerUIConf ];
+          return defer.resolve(uiconf);
+        }
 
         // I18n
         // -- region
-        i18nUIConf.content[0].label = i18nOptions.options.region.label;
-        i18nUIConf.content[0].options = i18nOptions.options.region.optionValues;
-        i18nUIConf.content[0].value = i18nOptions.selected.region;
-        i18nUIConf.content[1].label = i18nOptions.options.language.label;
-        i18nUIConf.content[1].options = i18nOptions.options.language.optionValues;
-        i18nUIConf.content[1].value = i18nOptions.selected.language;
+        i18nUIConf.content[0].label = i18nOptions!.options.region.label;
+        i18nUIConf.content[0].options = i18nOptions!.options.region.optionValues;
+        i18nUIConf.content[0].value = i18nOptions!.selected.region;
+        i18nUIConf.content[1].label = i18nOptions!.options.language.label;
+        i18nUIConf.content[1].options = i18nOptions!.options.language.optionValues;
+        i18nUIConf.content[1].value = i18nOptions!.selected.language;
 
         // Account
         const cookie = ytmusic.getConfigValue('cookie');
@@ -160,10 +172,10 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
 
     this.#nowPlayingMetadataProvider = null;
 
-    InnertubeLoader.reset();
-    ytmusic.reset();
-
-    return libQ.resolve();
+    return jsPromiseToKew(
+      InnertubeLoader.reset()
+        .then(() => ytmusic.reset())
+      );
   }
 
   getConfigurationFiles() {
@@ -202,10 +214,10 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
     }
   }
 
-  #getConfigAccountInfo() {
+  async #getConfigAccountInfo() {
     const model = Model.getInstance(ModelType.Account);
     try {
-      return model.getInfo();
+      return await model.getInfo();
     }
     catch (error: unknown) {
       ytmusic.getLogger().warn(ytmusic.getErrorMessage('[ytmusic] Failed to get account config:', error));
@@ -213,7 +225,57 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
     }
   }
 
-  configSaveI18n(data: any) {
+  showDisclaimer() {
+    const langCode = this.#commandRouter.sharedVars.get('language_code');
+    let disclaimerFile = `${__dirname}/i18n/disclaimer_${langCode}.html`;
+    if (!existsSync(disclaimerFile)) {
+      disclaimerFile = `${__dirname}/i18n/disclaimer_en.html`;
+    }
+    try {
+      const contents = readFileSync(disclaimerFile, { encoding: 'utf8' });
+      const modalData = {
+        title: ytmusic.getI18n('YTMUSIC_DISCLAIMER_HEADING'),
+        message: contents,
+        size: 'lg',
+        buttons: [
+          {
+            name: ytmusic.getI18n('YTMUSIC_CLOSE'),
+            class: 'btn btn-warning'
+          },
+          {
+            name: ytmusic.getI18n('YTMUSIC_ACCEPT'),
+            class: 'btn btn-info',
+            emit: 'callMethod',
+            payload: {
+              type: 'controller',
+              endpoint: 'music_service/ytmusic',
+              method:'acceptDisclaimer',
+              data: ''
+            } 
+          }
+        ]
+      };
+      ytmusic.volumioCoreCommand.broadcastMessage("openModal", modalData);
+    }
+    catch (error) {
+      ytmusic.getLogger().error(`[ytmusic] ${ytmusic.getErrorMessage(`Error reading "${disclaimerFile}"`, error, false)}`)
+      ytmusic.toast('error', 'Error loading disclaimer contents');
+    }
+  }
+
+  acceptDisclaimer() {
+    this.configSaveDisclaimer({
+      hasAcceptedDisclaimer: true
+    });
+  }
+
+  configSaveDisclaimer(data: any) {
+    ytmusic.setConfigValue('hasAcceptedDisclaimer', data.hasAcceptedDisclaimer);
+    ytmusic.toast('success', ytmusic.getI18n('YTMUSIC_SETTINGS_SAVED'));
+    ytmusic.refreshUIConfig();
+  }
+
+  async configSaveI18n(data: any) {
     const oldRegion = ytmusic.hasConfigKey('region') ? ytmusic.getConfigValue('region') : null;
     const oldLanguage = ytmusic.hasConfigKey('language') ? ytmusic.getConfigValue('language') : null;
     const region = data.region.value;
@@ -223,7 +285,7 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
       ytmusic.setConfigValue('region', region);
       ytmusic.setConfigValue('language', language);
 
-      InnertubeLoader.applyI18nConfig();
+      await InnertubeLoader.applyI18nConfig();
       Model.getInstance(ModelType.Config).clearCache();
       ytmusic.refreshUIConfig();
     }
@@ -231,7 +293,7 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
     ytmusic.toast('success', ytmusic.getI18n('YTMUSIC_SETTINGS_SAVED'));
   }
 
-  configSaveAccount(data: any) {
+  async configSaveAccount(data: any) {
     const oldCookie = ytmusic.hasConfigKey('cookie') ? ytmusic.getConfigValue('cookie') : null;
     const cookie = data.cookie?.trim();
     const oldActiveChannelHandle = ytmusic.getConfigValue('activeChannelHandle');
@@ -248,7 +310,7 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
     }
     ytmusic.toast('success', ytmusic.getI18n('YTMUSIC_SETTINGS_SAVED'));
     if (resetInnertube) {
-      InnertubeLoader.reset();
+      await InnertubeLoader.reset();
       ytmusic.refreshUIConfig();
     }
   }
@@ -284,12 +346,21 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
     if (!this.#browseController) {
       return libQ.reject('YouTube Music plugin is not started');
     }
+    if (!ytmusic.getConfigValue('hasAcceptedDisclaimer')) {
+      return libQ.reject({
+        errorMessage: ytmusic.getI18n('YTMUSIC_ERR_ACCEPT_DISCLAIMER_BROWSE')
+      });
+    }
     return jsPromiseToKew(this.#browseController.browseUri(uri));
   }
 
   explodeUri(uri: string) {
     if (!this.#browseController) {
-      return libQ.reject('YouTube Music Discover plugin is not started');
+      return libQ.reject('YouTube Music plugin is not started');
+    }
+    if (!ytmusic.getConfigValue('hasAcceptedDisclaimer')) {
+      ytmusic.toast('error', ytmusic.getI18n('YTMUSIC_ERR_ACCEPT_DISCLAIMER_PLAY'));
+      return libQ.reject(ytmusic.getI18n('YTMUSIC_ERR_ACCEPT_DISCLAIMER_PLAY'));
     }
     return jsPromiseToKew(this.#browseController.explodeUri(uri));
   }
