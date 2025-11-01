@@ -1,4 +1,6 @@
+import type I18nSchema from '../i18n/strings_en.json';
 import { type PluginConfigKey, type PluginConfigValue } from './PluginConfig';
+export type I18nKey = keyof typeof I18nSchema;
 interface DeviceInfo {
     name: string;
     uuid: string;
@@ -21,6 +23,7 @@ declare class YTCRContext {
     get(key: string, defaultValue?: any): any;
     init(pluginContext: any, pluginConfig: any): void;
     toast(type: string, message: string, title?: string): void;
+    refreshUIConfig(): void;
     getDeviceInfo(): DeviceInfo;
     getConfigValue<T extends PluginConfigKey>(key: T): PluginConfigValue<T>;
     deleteConfigValue(key: PluginConfigKey): void;
@@ -30,7 +33,8 @@ declare class YTCRContext {
     getPluginInfo(name: string, category?: string): Promise<PluginInfo | null>;
     getStateMachine(): any;
     reset(): void;
-    getI18n(key: string, ...formatValues: any[]): string;
+    getI18n(key: I18nKey, ...formatValues: any[]): string;
+    get volumioCoreCommand(): any;
 }
 declare const _default: YTCRContext;
 export default _default;
