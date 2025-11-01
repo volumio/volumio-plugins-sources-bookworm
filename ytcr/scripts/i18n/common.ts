@@ -1,4 +1,4 @@
-import Innertube from 'volumio-youtubei.js';
+import Innertube from 'volumio-yt-support/dist/innertube';
 
 export interface I18nOptionValue {
   label: string;
