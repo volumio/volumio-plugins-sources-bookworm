@@ -41,6 +41,7 @@ cdplayer.prototype.onVolumioStart = function () {
 };
 
 cdplayer.prototype.onStart = function () {
+  // TODO: the background service should be enabled on plugin enablement, not in install.sh
   var self = this;
   var defer = libQ.defer();
   self.addToBrowseSources();
@@ -133,18 +134,31 @@ cdplayer.prototype.handleBrowseUri = function (curUri) {
     this._lastTrackNums = null;
     this._trackDurations = null;
     this._cdmeta = null;
-    // this._cdmetaPromise = null;??
     return libQ.resolve(null);
   }
 
   const self = this;
   const p = (async () => {
     try {
-      const { outLen, trackNums, durations, items } = await listCD();
+      const [meta, { outLen, trackNums, durations, items }] = await Promise.all(
+        [fetchCdMetadata().catch(() => null), listCD()]
+      );
 
+      /*
+       * TODO: put some order into this mess.
+       * Right now we have all the info, we just need to organize it properly.
+       * First thing: check trackNums length; if 0, no audio CD inserted and bail early.
+       * Call fetchCdMetadata() to get metadata from MusicBrainz.
+       * If metadata is available, decorate items with it (album, artist, track titles, artUrl).
+       * Otherwise, leave default "Audio CD", "Unknown", "Track N".
+       * Basically: proceed step by step here and we'll be fine.
+       */
+
+      self.log(JSON.stringify(meta, null, 2));
       self.log(`Asked cdparanoia -Q, got ${outLen} bytes of output`);
       self.log(`Parsed tracks: ${JSON.stringify(trackNums)}`);
 
+      self._cdmeta = meta;
       self._lastTrackNums = trackNums;
       self._trackDurations = durations;
 
@@ -158,15 +172,23 @@ cdplayer.prototype.handleBrowseUri = function (curUri) {
         return { navigation: { lists: [] } };
       }
 
+      // TODO: change and build items in this function directly
+      const decorated = items.map((it) => ({
+        ...it,
+        album: meta?.album,
+        artist: meta?.artist,
+        albumart: meta?.artUrl,
+      }));
+
       return {
         navigation: {
           prev: { uri: "cdplayer" },
           lists: [
             {
-              title: "CD Tracks",
+              title: meta?.album || "CD Tracks",
               icon: "fa fa-music",
               availableListViews: ["list"],
-              items,
+              items: decorated,
             },
           ],
         },
@@ -201,6 +223,13 @@ cdplayer.prototype.explodeUri = function (uri) {
       `http://127.0.0.1:8088/wav/track/${n}`,
       "mpd"
     );
+
+    // TODO: CHANGE THIS INTO GET ITEM DIRECTLY
+    if (this._cdmeta) {
+      track.album = this._cdmeta.album || track.album;
+      track.artist = this._cdmeta.artist || track.artist;
+      track.albumart = this._cdmeta.artUrl || track.albumart;
+    }
 
     defer.resolve([track]);
     return defer.promise;
