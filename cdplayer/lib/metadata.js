@@ -7,11 +7,25 @@ console.log("[metadata.js] typeof fetch:", typeof fetch);
 const execFileAsync = promisify(execFile);
 
 /**
+ * @typedef {Object} TrackMetadata
+ * @property {number|null} no
+ * @property {string}       title
+ * @property {number|null}  durationSec
+ *
+ * @typedef {Object} CdMetadata
+ * @property {string}   album
+ * @property {string}   artist
+ * @property {string}   releaseId
+ * @property {TrackMetadata[]} tracks
+ */
+
+/**
  * Retrieves the MusicBrainz Disc ID of the currently inserted audio CD.
  *
+ * @async
  * @function getDiscId
- * @returns {Promise<string|null>} A promise that resolves to the MusicBrainz Disc ID
- *                                 if found, or `null` if no disc is present or parsing fails.
+ * @returns {Promise<string|null>} Resolves with the MusicBrainz Disc ID string, or `null` if not found.
+ * @throws {Error} If the `discid` command fails to execute or times out.
  *
  */
 async function getDiscId() {
@@ -22,8 +36,6 @@ async function getDiscId() {
       timeout: 10000,
       windowsHide: true,
     });
-
-    console.log("[getDiscId] discid output:", stdout);
 
     if (!stdout) {
       return null;
@@ -39,26 +51,22 @@ async function getDiscId() {
     // Track 1       :      150    20520 (   4:33.60)
     // Track 2       :    20670    15218 (   3:22.91)
     const m = /DiscID\s*:\s*([A-Za-z0-9._-]{20,})/i.exec(out);
-    console.log("[getDiscId] parsed DiscID:", m);
     return m ? m[1] : null;
   } catch (err) {
-    console.log("[getDiscId] stderr:", err);
-    return null;
+    throw err;
   }
 }
 
 /**
  * Fetch MusicBrainz metadata for a given disc ID.
  *
- * @param {string} discId - The MusicBrainz Disc ID (e.g. "eWrWSTdIuUCI95ca00chZOSFHug-").
- * @returns {Promise<Object|null>} A promise resolving to the JSON response, or null on error.
- *
- * Example URL:
- * https://musicbrainz.org/ws/2/discid/{discId}?inc=recordings+artists&fmt=json
+ * @async
+ * @function fetchMusicBrainzMetadata
+ * @param {string} discId - The MusicBrainz Disc ID (e.g., `"eWrWSTdIuUCI95ca00chZOSFHug-"`).
+ * @returns {Promise<Object>} Resolves with the parsed JSON response from MusicBrainz.
+ * @throws {Error} If the fetch fails, the API returns a non-OK HTTP status, or the response cannot be parsed.
  */
 async function fetchMusicBrainzMetadata(discId) {
-  if (!discId) return null;
-
   const url = `https://musicbrainz.org/ws/2/discid/${encodeURIComponent(
     discId
   )}?inc=recordings+artists&fmt=json`;
@@ -71,13 +79,13 @@ async function fetchMusicBrainzMetadata(discId) {
   try {
     const response = await fetch(url, { headers });
     if (!response.ok) {
-      console.error(`MusicBrainz fetch failed with status ${response.status}`);
-      return null;
+      throw new Error(
+        `MusicBrainz fetch failed with status ${response.status}`
+      );
     }
     return await response.json();
   } catch (err) {
-    console.error("Failed to fetch MusicBrainz metadata:", err);
-    return null;
+    throw err;
   }
 }
 
@@ -155,16 +163,7 @@ function msToSeconds(ms) {
  *
  * @function parseDiscidResponse
  * @param {Object} mbJson - The MusicBrainz /discid JSON response.
- * @returns {{
- *   album: string,
- *   artist: string,
- *   releaseId: string,
- *   tracks: Array<{
- *     no: number|null,
- *     title: string,
- *     durationSec: number|null
- *   }>
- * }|null} The parsed metadata, or null if no valid release is found.
+ * @returns {CdMetadata|null} The parsed metadata, or null if no valid release is found.
  *
  * @example
  * const parsed = parseDiscidResponse(mbJson);
@@ -178,7 +177,7 @@ function msToSeconds(ms) {
  * //   ]
  * // }
  */
-function parseDiscidResponse(mbJson) {
+function parseMusicBrainzResponse(mbJson) {
   const release = pickRelease(mbJson);
   if (!release) return null;
 
@@ -217,15 +216,36 @@ function parseDiscidResponse(mbJson) {
   return { album, artist, releaseId, tracks };
 }
 
+/**
+ * Fetches and parses CD metadata using MusicBrainz for the currently inserted disc.
+ *
+ * @async
+ * @function fetchCdMetadata
+ * @returns {Promise<CdMetadata|null>}
+ *
+ */
 async function fetchCdMetadata() {
-  const discid = await getDiscId();
-  if (!discid) return null;
+  try {
+    const discid = await getDiscId();
+    if (!discid) {
+      return null;
+    }
 
-  const metadata = await fetchMusicBrainzMetadata(discid);
-  if (!metadata) return null;
+    const metadata = await fetchMusicBrainzMetadata(discid);
 
-  const parsed = parseDiscidResponse(metadata);
-  return parsed;
+    if (!metadata) {
+      return null;
+    }
+
+    const parsed = parseMusicBrainzResponse(metadata);
+    if (!parsed) {
+      return null;
+    }
+    return parsed;
+  } catch (err) {
+    // we don't throw here because fetching metadata can fail silently and the plugin still should work
+    return null;
+  }
 }
 
 module.exports = {

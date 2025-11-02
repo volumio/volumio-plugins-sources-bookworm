@@ -3,7 +3,7 @@
 var libQ = require("kew");
 var fs = require("fs-extra");
 var config = new (require("v-conf"))();
-const { listCD, getItem } = require("./lib/utils");
+const { listCD } = require("./lib/utils");
 const { fetchCdMetadata } = require("./lib/metadata");
 
 module.exports = cdplayer;
@@ -14,9 +14,8 @@ function cdplayer(context) {
   this.commandRouter = this.context.coreCommand;
   this.logger = this.context.logger;
   this.configManager = this.context.configManager;
-  this._lastTrackNums = null;
-  this._trackDurations = null;
-  this._cdmeta = null;
+  /** @type {CdTrack[]|null} */
+  this._items = null;
 }
 
 cdplayer.prototype.log = function (msg) {
@@ -112,57 +111,37 @@ cdplayer.prototype.setConf = function (varName, varValue) {
 // Playback Controls ---------------------------------------------------------------------------------------
 // If your plugin is not a music_sevice don't use this part and delete it
 
-cdplayer.prototype.addToBrowseSources = function () {
+cdplayer.prototype.addToBrowseSources = function (
+  albumart = "/albumart?sourceicon=music_service/cdplayer/cdplayer.png"
+) {
   this.log("Adding CDPlayer to Browse Sources");
   var data = {
     name: "CDPlayer",
     uri: "cdplayer",
     plugin_type: "music_service",
     plugin_name: "cdplayer",
-    albumart: "https://picsum.photos/512/512",
+    albumart,
   };
   this.commandRouter.volumioAddToBrowseSources(data);
 };
 
 cdplayer.prototype.removeToBrowseSources = function () {
   this.log("Removing CDPlayer from Browse Sources");
-  this.commandRouter.volumioRemoveFromBrowseSources("CDPlayer");
+  this.commandRouter.volumioRemoveToBrowseSources("CDPlayer");
 };
 
 cdplayer.prototype.handleBrowseUri = function (curUri) {
   if (curUri !== "cdplayer") {
-    this._lastTrackNums = null;
-    this._trackDurations = null;
-    this._cdmeta = null;
+    this._items = null;
     return libQ.resolve(null);
   }
 
   const self = this;
   const p = (async () => {
     try {
-      const [meta, { outLen, trackNums, durations, items }] = await Promise.all(
-        [fetchCdMetadata().catch(() => null), listCD()]
-      );
+      const items = await listCD();
 
-      /*
-       * TODO: put some order into this mess.
-       * Right now we have all the info, we just need to organize it properly.
-       * First thing: check trackNums length; if 0, no audio CD inserted and bail early.
-       * Call fetchCdMetadata() to get metadata from MusicBrainz.
-       * If metadata is available, decorate items with it (album, artist, track titles, artUrl).
-       * Otherwise, leave default "Audio CD", "Unknown", "Track N".
-       * Basically: proceed step by step here and we'll be fine.
-       */
-
-      self.log(JSON.stringify(meta, null, 2));
-      self.log(`Asked cdparanoia -Q, got ${outLen} bytes of output`);
-      self.log(`Parsed tracks: ${JSON.stringify(trackNums)}`);
-
-      self._cdmeta = meta;
-      self._lastTrackNums = trackNums;
-      self._trackDurations = durations;
-
-      if (trackNums.length === 0) {
+      if (items.length === 0) {
         self.error("No audio tracks returned");
         self.commandRouter.pushToastMessage(
           "error",
@@ -172,13 +151,25 @@ cdplayer.prototype.handleBrowseUri = function (curUri) {
         return { navigation: { lists: [] } };
       }
 
-      // TODO: change and build items in this function directly
-      const decorated = items.map((it) => ({
-        ...it,
-        album: meta?.album,
-        artist: meta?.artist,
-        albumart: meta?.artUrl,
-      }));
+      const meta = await fetchCdMetadata();
+
+      let decoratedItems = items;
+      if (meta) {
+        // eg. https://coverartarchive.org/release/2174675c-2159-4405-a3af-3a4860106b58/front
+        const albumart = `https://coverartarchive.org/release/${meta.releaseId}/front-500`;
+        decoratedItems = items.map((item, index) => ({
+          ...item,
+          album: meta.album,
+          artist: meta.artist,
+          title: meta.tracks[index]?.title || item.title,
+          albumart,
+        }));
+
+        self.removeToBrowseSources();
+        self.addToBrowseSources(albumart);
+      }
+
+      self._items = decoratedItems;
 
       return {
         navigation: {
@@ -188,19 +179,18 @@ cdplayer.prototype.handleBrowseUri = function (curUri) {
               title: meta?.album || "CD Tracks",
               icon: "fa fa-music",
               availableListViews: ["list"],
-              items: decorated,
+              items: decoratedItems,
             },
           ],
         },
       };
     } catch (err) {
-      self.error(
-        `cdparanoia -Q error: ${err && err.message ? err.message : err}`
-      );
+      self.error(`Error while listing CD tracks`);
+      console.log(err);
       self.commandRouter.pushToastMessage(
         "error",
         "CD Player",
-        "Please insert an audio CD"
+        "Error while listing CD tracks"
       );
       return { navigation: { lists: [] } };
     }
@@ -217,19 +207,11 @@ cdplayer.prototype.explodeUri = function (uri) {
   const match = uri.match(/^cdplayer\/(\d+)$/);
   if (match) {
     const n = parseInt(match[1], 10);
-    const track = getItem(
-      n,
-      this._trackDurations && this._trackDurations[n],
-      `http://127.0.0.1:8088/wav/track/${n}`,
-      "mpd"
-    );
-
-    // TODO: CHANGE THIS INTO GET ITEM DIRECTLY
-    if (this._cdmeta) {
-      track.album = this._cdmeta.album || track.album;
-      track.artist = this._cdmeta.artist || track.artist;
-      track.albumart = this._cdmeta.artUrl || track.albumart;
-    }
+    const track = {
+      ...self._items[n - 1],
+      service: "mpd",
+      uri: `http://127.0.0.1:8088/wav/track/${n}`,
+    };
 
     defer.resolve([track]);
     return defer.promise;
