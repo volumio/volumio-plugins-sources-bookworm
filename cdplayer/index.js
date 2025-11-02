@@ -131,12 +131,28 @@ cdplayer.prototype.removeToBrowseSources = function () {
 };
 
 cdplayer.prototype.handleBrowseUri = function (curUri) {
+  const self = this;
+
   if (curUri !== "cdplayer") {
-    this._items = null;
     return libQ.resolve(null);
   }
 
-  const self = this;
+  if (self._items) {
+    return libQ.resolve({
+      navigation: {
+        prev: { uri: "cdplayer" },
+        lists: [
+          {
+            title: self._items[0]?.album || "CD Tracks",
+            icon: "fa fa-music",
+            availableListViews: ["list"],
+            items: self._items,
+          },
+        ],
+      },
+    });
+  }
+
   const p = (async () => {
     try {
       const items = await listCD();
