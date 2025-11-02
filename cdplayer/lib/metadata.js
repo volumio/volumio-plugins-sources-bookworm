@@ -3,7 +3,6 @@ const { execFile } = require("child_process");
 const { promisify } = require("util");
 const _nodeFetch = require("node-fetch");
 global.fetch = _nodeFetch.default || _nodeFetch;
-console.log("[metadata.js] typeof fetch:", typeof fetch);
 const execFileAsync = promisify(execFile);
 
 /**

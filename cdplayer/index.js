@@ -1,12 +1,17 @@
 "use strict";
 
 var libQ = require("kew");
-var fs = require("fs-extra");
-var config = new (require("v-conf"))();
-const { listCD } = require("./lib/utils");
+const { listCD, detectCdDevice } = require("./lib/utils");
 const { fetchCdMetadata } = require("./lib/metadata");
+const { createTrayWatcher } = require("./lib/tray-watcher");
+const { promisify } = require("util");
+const { exec } = require("child_process");
+const execAsync = promisify(exec);
 
 module.exports = cdplayer;
+
+const SERVICE_FILE = "cdplayer_stream.service";
+
 function cdplayer(context) {
   var self = this;
 
@@ -40,11 +45,31 @@ cdplayer.prototype.onVolumioStart = function () {
 };
 
 cdplayer.prototype.onStart = function () {
-  // TODO: the background service should be enabled on plugin enablement, not in install.sh
   var self = this;
   var defer = libQ.defer();
   self.addToBrowseSources();
-  defer.resolve();
+
+  execAsync(`sudo /bin/systemctl enable --now ${SERVICE_FILE}`)
+    .then(() => self.log("Daemon service started"))
+    .catch((err) => self.error("Failed to start Daemon: " + err.message))
+    .finally(() => defer.resolve());
+
+  // Get back to this later
+  // this._trayWatcher = createTrayWatcher({
+  //   logger: this.logger,
+  //   device: detectCdDevice(),
+  //   onEvent: (info) => {
+  //     // Optional: verbose per-event logging for debugging
+  //     this.logger.info(`event: ${JSON.stringify(info)}`);
+  //   },
+  //   onEject: () => {
+  //     this.logger.info("Eject detected — clearing cache & stopping playback");
+  //     // this._onCdEjected && this._onCdEjected(); // your existing cleanup
+  //   },
+  // });
+
+  // this._trayWatcher.start();
+
   return defer.promise;
 };
 
@@ -52,17 +77,26 @@ cdplayer.prototype.onStop = function () {
   var self = this;
   var defer = libQ.defer();
 
+  self._items = null;
   self.removeToBrowseSources();
 
-  // Once the Plugin has successfull stopped resolve the promise
-  defer.resolve();
+  execAsync(`sudo /bin/systemctl disable --now ${SERVICE_FILE}`)
+    .then(() => self.log("Daemon service stopped"))
+    .catch((err) => self.error("Failed to stop Daemon: " + err.message))
+    .finally(() => defer.resolve());
 
-  return libQ.resolve();
+  // this._trayWatcher.stop();
+  return defer.promise;
 };
 
 cdplayer.prototype.onRestart = function () {
   var self = this;
-  // Optional, use if you need it
+  var defer = libQ.defer();
+  execAsync(`sudo /bin/systemctl restart ${SERVICE_FILE}`)
+    .then(() => self.log("Daemon service restarted"))
+    .catch((err) => self.error("Failed to restart Daemon: " + err.message))
+    .finally(() => defer.resolve());
+  return defer.promise;
 };
 
 // Configuration Methods -----------------------------------------------------------------------------
@@ -138,6 +172,9 @@ cdplayer.prototype.handleBrowseUri = function (curUri) {
   }
 
   if (self._items) {
+    // TODO: we need to clear the cache in case the tray is opened.
+    // We have tried with manually install the udev npm package, but it does not work.
+    // We should instead use the native udev already installed on Volumio.
     return libQ.resolve({
       navigation: {
         prev: { uri: "cdplayer" },
@@ -202,7 +239,6 @@ cdplayer.prototype.handleBrowseUri = function (curUri) {
       };
     } catch (err) {
       self.error(`Error while listing CD tracks`);
-      console.log(err);
       self.commandRouter.pushToastMessage(
         "error",
         "CD Player",

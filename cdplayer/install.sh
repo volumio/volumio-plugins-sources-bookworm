@@ -53,8 +53,6 @@ sudo usermod -aG cdrom volumio || true
 echo "Daemon service setup"
 sudo cp "$PLUGIN_DIR/system/$SERVICE_FILE" "$SYSTEMD_DIR/$SERVICE_FILE"
 sudo systemctl daemon-reload
-sudo systemctl enable "$SERVICE_FILE"
-sudo systemctl restart "$SERVICE_FILE"
 
 echo "plugininstallend"
 
