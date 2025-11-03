@@ -73,7 +73,8 @@
 					"timeOut",
 					"ID3",
 					"metas",
-					"path"
+					"path",
+					"experimentalFeatures"
 				]
 			},
 			"content": [{
@@ -220,6 +221,13 @@
 					"label": "TRANSLATE.PATH",
 					"element": "switch",
 					"value": true
+				},
+				{
+					"id": "experimentalFeatures",
+					"doc": "TRANSLATE.EXPERIMENTAL_FEATURES_DOC",
+					"label": "TRANSLATE.EXPERIMENTAL_FEATURES",
+					"element": "switch",
+					"value": false
 				}
 			]
 		}

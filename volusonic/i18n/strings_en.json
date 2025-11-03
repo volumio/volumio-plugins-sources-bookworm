@@ -30,6 +30,8 @@
   "CON_SERVER_UNREACHABLE":"Server is unreachable",
   "RANDOMS_ALBUMS":"Random Albums",
   "NEWEST_ALBUMS":"Newest Albums",
+  "RECENTLY_PLAYED_ALBUMS":"Recently Played",
+  "MOST_PLAYED_ALBUMS":"Most Played",
   "GENRES":"Genres",
   "ARTISTS":"Artists",
   "PLAYLISTS":"Playlists",
@@ -50,5 +52,7 @@
   "PATH_DOC":"Memorize the Volusonic path for the next navigation",
   "PATH":"Persistent path",
   "SALT":"Salt + md5 encoded password",
-  "SALT_DOC":"Recommended. Some API implementations (ie:owncloud/nextcloud) does not support it"
+  "SALT_DOC":"Recommended. Some API implementations (ie:owncloud/nextcloud) does not support it",
+  "EXPERIMENTAL_FEATURES":"Enable Experimental Features",
+  "EXPERIMENTAL_FEATURES_DOC":"Enable Recently Played and Most Played album lists. WARNING: These features may not work with all Subsonic API servers (known issues with some Navidrome, Airsonic, and Ampache versions)"
 }
