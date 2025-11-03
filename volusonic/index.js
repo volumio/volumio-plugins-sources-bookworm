@@ -124,7 +124,7 @@ ControllerVolusonic.prototype.getUIConfig = function() {
       uiconf.sections[1].content[4].value = self.config.get('ID3');
       uiconf.sections[1].content[5].value = self.config.get('metas');
       uiconf.sections[1].content[6].value = self.config.get('path');
-      uiconf.sections[1].content[7].value = self.config.get('experimentalFeatures');
+      uiconf.sections[1].content[7].value = self.config.get('experimentalFeatures') || false;
       /*
       	tracks in searchx
       	show similar artists not present in subso
