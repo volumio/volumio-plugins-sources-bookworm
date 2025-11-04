@@ -1,0 +1,35 @@
+{
+  "name": "raspdac_mini_lcd",
+  "version": "1.0.0",
+  "description": "Hardware configuration & display drivers for Audiophonics RaspDacMini LCD",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Olivier Schwach, Just a Nerd",
+  "license": "GPL-3.0",
+  "repository": "https://github.com/foonerd/raspdac_mini_lcd",
+  "volumio_info": {
+    "prettyName": "RaspDacMini LCD",
+    "icon": "fa-television",
+    "plugin_type": "system_hardware",
+    "architectures": [
+      "armhf",
+      "arm64"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "details": "Display driver for Audiophonics RaspDacMini 2.4 inch LCD (ILI9341). Provides real-time playback information, album art, volume control, and metadata display with configurable screen timeout.",
+    "changelog": "Initial release for Volumio 4.x - Node 20 compatible compositor with direct framebuffer rendering, native RGB565 conversion, and socket.io integration"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "fs-extra": "*",
+    "kew": "*",
+    "v-conf": "*"
+  }
+}
