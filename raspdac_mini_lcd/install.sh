@@ -58,43 +58,75 @@ fi
 
 echo "System dependencies installed successfully"
 
-echo "Installing compositor npm packages..."
-cd "$COMPOSITOR_DIR"
-if [ $? -ne 0 ]; then
-    echo "Error: Failed to change to compositor directory"
-    cleanup_on_error
+# Detect architecture and Node version for prebuilt check
+ARCH=$(uname -m)
+NODE_MAJOR=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
+PREBUILT_FILE="$PLUGIN_DIR/assets/compositor-${ARCH}-node${NODE_MAJOR}.tar.gz"
+
+# Check if prebuilt compositor exists
+if [ -f "$PREBUILT_FILE" ]; then
+    echo "Found prebuilt compositor for ${ARCH} Node ${NODE_MAJOR}"
+    echo "Using prebuilt version (fast installation, no compilation needed)..."
+    
+    # Extract prebuilt to compositor directory
+    cd "$COMPOSITOR_DIR"
+    tar -xzf "$PREBUILT_FILE"
+    if [ $? -eq 0 ]; then
+        echo "Prebuilt compositor installed successfully"
+        USING_PREBUILT=1
+    else
+        echo "Warning: Failed to extract prebuilt, will compile from source"
+    fi
 fi
 
-# Install compositor dependencies (this will also compile native module via preinstall)
-npm install --omit=dev
-if [ $? -ne 0 ]; then
-    echo "Error: Failed to install compositor packages or compile native module"
-    cd "$PLUGIN_DIR"
-    cleanup_on_error
-fi
-
-echo "Compositor packages installed successfully"
-
-# Verify native module was compiled
-if [ ! -f "$COMPOSITOR_DIR/native/rgb565/build/Release/rgb565.node" ]; then
-    echo "Warning: Native module not found at expected location"
-    echo "Attempting manual compilation..."
-    cd "$NATIVE_DIR"
+# If no prebuilt or extraction failed, compile from source
+if [ -z "$USING_PREBUILT" ]; then
+    echo "No prebuilt available for ${ARCH} Node ${NODE_MAJOR}"
+    echo "Installing build dependencies for compilation..."
+    apt-get install -y build-essential
     if [ $? -ne 0 ]; then
-        echo "Error: Failed to change to native module directory"
+        echo "Error: Failed to install build dependencies"
+        cleanup_on_error
+    fi
+    
+    echo "Compiling compositor from source (this may take 15+ minutes on slower systems)..."
+    cd "$COMPOSITOR_DIR"
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to change to compositor directory"
+        cleanup_on_error
+    fi
+    
+    # Install compositor dependencies (this will also compile native module via preinstall)
+    npm install --omit=dev
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install compositor packages or compile native module"
         cd "$PLUGIN_DIR"
         cleanup_on_error
     fi
     
-    npm run install_rdmlcd
-    if [ $? -ne 0 ]; then
-        echo "Error: Native module compilation failed"
-        cd "$PLUGIN_DIR"
-        cleanup_on_error
+    echo "Compositor packages installed successfully"
+    
+    # Verify native module was compiled
+    if [ ! -f "$COMPOSITOR_DIR/utils/rgb565.node" ]; then
+        echo "Warning: Native module not found at expected location"
+        echo "Attempting manual compilation..."
+        cd "$NATIVE_DIR"
+        if [ $? -ne 0 ]; then
+            echo "Error: Failed to change to native module directory"
+            cd "$PLUGIN_DIR"
+            cleanup_on_error
+        fi
+        
+        npm run install_rdmlcd
+        if [ $? -ne 0 ]; then
+            echo "Error: Native module compilation failed"
+            cd "$PLUGIN_DIR"
+            cleanup_on_error
+        fi
     fi
+    
+    echo "Native module compiled successfully"
 fi
-
-echo "Native module compiled successfully"
 
 cd "$PLUGIN_DIR"
 
@@ -102,36 +134,124 @@ echo "Installing device tree overlay..."
 
 # Check if dtoverlay file exists in assets
 if [ ! -f "$PLUGIN_DIR/assets/raspdac-mini-lcd.dtbo" ]; then
-    echo "Error: Device tree overlay not found in assets/"
-    echo "Please add raspdac-mini-lcd.dtbo to the assets/ folder"
-    cleanup_on_error
-fi
-
-# Copy dtoverlay to /boot/overlays/
-cp "$PLUGIN_DIR/assets/raspdac-mini-lcd.dtbo" /boot/overlays/
-if [ $? -ne 0 ]; then
-    echo "Error: Failed to copy device tree overlay"
-    cleanup_on_error
-fi
-
-echo "Device tree overlay installed successfully"
-
-echo "Configuring boot parameters..."
-
-# Add dtoverlay to /boot/userconfig.txt if not already present
-if ! grep -q "dtoverlay=raspdac-mini-lcd" /boot/userconfig.txt 2>/dev/null; then
-    echo "" >> /boot/userconfig.txt
-    echo "# RaspDacMini LCD Display" >> /boot/userconfig.txt
-    echo "dtoverlay=raspdac-mini-lcd" >> /boot/userconfig.txt
-    echo "Boot configuration updated"
+    echo "=========================================="
+    echo "WARNING: Device tree overlay not found"
+    echo "=========================================="
+    echo ""
+    echo "The file raspdac-mini-lcd.dtbo is missing from assets/"
+    echo "Display will NOT work until you:"
+    echo "  1. Download from: https://github.com/foonerd/zjy240s0800tg02-ili9341-dtoverlay"
+    echo "  2. Place raspdac-mini-lcd.dtbo in the assets/ folder"
+    echo "  3. Reinstall or manually copy to /boot/overlays/"
+    echo ""
+    echo "Continuing installation without display overlay..."
+    echo "=========================================="
 else
-    echo "Boot configuration already contains dtoverlay"
+    # Copy dtoverlay to /boot/overlays/
+    cp "$PLUGIN_DIR/assets/raspdac-mini-lcd.dtbo" /boot/overlays/
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to copy device tree overlay"
+        cleanup_on_error
+    fi
+    
+    echo "Device tree overlay installed successfully"
+    
+    # Add dtoverlay to /boot/userconfig.txt if not already present
+    if ! grep -q "dtoverlay=raspdac-mini-lcd" /boot/userconfig.txt 2>/dev/null; then
+        echo "" >> /boot/userconfig.txt
+        echo "# RaspDacMini LCD Display" >> /boot/userconfig.txt
+        echo "dtoverlay=raspdac-mini-lcd" >> /boot/userconfig.txt
+        echo "Boot configuration updated"
+    else
+        echo "Boot configuration already contains dtoverlay"
+    fi
 fi
 
-# Optional: Add GPIO IR overlay if remote control desired (commented by default)
-# if ! grep -q "dtoverlay=gpio-ir" /boot/userconfig.txt 2>/dev/null; then
-#     echo "dtoverlay=gpio-ir,gpio_pin=4" >> /boot/userconfig.txt
-# fi
+# Install and configure LIRC for remote control
+echo "Installing LIRC for remote control..."
+
+# Install LIRC package
+apt-get install -y lirc
+if [ $? -ne 0 ]; then
+    echo "Warning: Failed to install lirc, remote control will not work"
+else
+    echo "LIRC installed successfully"
+    
+    # Disable AND mask system LIRC services to prevent conflicts
+    systemctl disable lircd.service irexec.service lircd.socket 2>/dev/null
+    systemctl stop lircd.service irexec.service lircd.socket 2>/dev/null
+    systemctl mask lircd.service lircd.socket 2>/dev/null
+    echo "System LIRC services disabled and masked"
+    
+    # Create LIRC directory in plugin
+    mkdir -p "$PLUGIN_DIR/lirc"
+    
+    # Copy LIRC configuration files to plugin directory
+    cp "$PLUGIN_DIR/assets/lircd.conf" "$PLUGIN_DIR/lirc/lircd.conf"
+    cp "$PLUGIN_DIR/assets/lircrc" "$PLUGIN_DIR/lirc/lircrc"
+    cp "$PLUGIN_DIR/assets/lirc_options.conf" "$PLUGIN_DIR/lirc/lirc_options.conf"
+    
+    # Detect architecture for plugin path
+    LIRC_ARCH=$(dpkg --print-architecture)
+    if [ "$LIRC_ARCH" = "arm64" ]; then
+        LIRC_PLUGIN_DIR="/usr/lib/aarch64-linux-gnu/lirc/plugins"
+    else
+        LIRC_PLUGIN_DIR="/usr/lib/arm-linux-gnueabihf/lirc/plugins"
+    fi
+    
+    # Update lirc_options.conf with correct plugin path
+    sed -i "s|plugindir = .*|plugindir = $LIRC_PLUGIN_DIR|" "$PLUGIN_DIR/lirc/lirc_options.conf"
+    
+    # Add GPIO IR overlay to boot config
+    if ! grep -q "dtoverlay=gpio-ir" /boot/userconfig.txt 2>/dev/null; then
+        echo "# IR Remote Control (GPIO 4)" >> /boot/userconfig.txt
+        echo "dtoverlay=gpio-ir,gpio_pin=4" >> /boot/userconfig.txt
+        echo "IR overlay configured"
+    fi
+    
+    # Create custom LIRC service (rdm_remote.service)
+    cat > /etc/systemd/system/rdm_remote.service << EOF
+[Unit]
+Description=RaspDacMini LIRC Remote Service
+After=network.target lircd-setup.service
+
+[Service]
+ExecStart=/usr/sbin/lircd -O $PLUGIN_DIR/lirc/lirc_options.conf -o /var/run/lirc/lircd -H default -d /dev/lirc0 -n $PLUGIN_DIR/lirc/lircd.conf
+Type=simple
+User=root
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    # Create custom irexec service (rdm_irexec.service)
+    cat > /etc/systemd/system/rdm_irexec.service << EOF
+[Unit]
+Description=RaspDacMini LIRC Button Handler
+After=network.target lircd-setup.service rdm_remote.service
+
+[Service]
+ExecStart=/usr/bin/irexec $PLUGIN_DIR/lirc/lircrc
+Type=simple
+User=root
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    # Install source browser script
+    cp "$PLUGIN_DIR/assets/volumio-browse-source" /usr/local/bin/volumio-browse-source
+    chmod +x /usr/local/bin/volumio-browse-source
+    echo "Source browser script installed"
+    
+    # Enable custom LIRC services
+    systemctl daemon-reload
+    systemctl enable rdm_remote.service rdm_irexec.service
+    
+    echo "LIRC configured with custom services"
+fi
 
 echo "Creating systemd service file..."
 
@@ -226,6 +346,13 @@ fi
 
 # Remove lock file
 rm -f "$INSTALLING"
+
+# Fix ownership of all plugin files (install runs as root)
+echo "Setting correct file ownership..."
+chown -R volumio:volumio "$PLUGIN_DIR"
+if [ $? -ne 0 ]; then
+    echo "Warning: Failed to set ownership, but plugin should still work"
+fi
 
 echo ""
 echo "=========================================="

@@ -1,6 +1,6 @@
 {
   "name": "raspdac_mini_lcd",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Hardware configuration & display drivers for Audiophonics RaspDacMini LCD",
   "main": "index.js",
   "scripts": {

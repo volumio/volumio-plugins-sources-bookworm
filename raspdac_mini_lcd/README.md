@@ -6,6 +6,8 @@ Display driver plugin for Audiophonics RaspDacMini with 2.4" LCD (320x240) on Vo
 
 * Audiophonics RaspDacMini
 * Display: ZJY240S0800TG02 (ILI9341 controller)
+* IR Receiver: GPIO 4 (optional, for remote control)
+* Remote: Audiophonics ApEvo 38kHz (14 buttons)
 * Raspberry Pi 3/4/5 (ARM architecture: armhf or arm64)
 * GPIO Configuration: DC=27, RESET=24, LED=18
 
@@ -17,6 +19,8 @@ Display driver plugin for Audiophonics RaspDacMini with 2.4" LCD (320x240) on Vo
 * Scrolling text with easing animation
 * Volume and playback state indicators
 * Configurable screen timeout
+* IR remote control support (Audiophonics ApEvo remote)
+* Prebuilt compositor packages for fast installation
 * Node.js 20 compatible
 * Real-time socket.io integration with Volumio
 
@@ -29,14 +33,37 @@ Display driver plugin for Audiophonics RaspDacMini with 2.4" LCD (320x240) on Vo
 
 ## Installation
 
-### Via Volumio Plugin System
+### Via Volumio Plugin Store (Future)
 
-1. Download the plugin ZIP file
-2. Navigate to Volumio UI: Plugins -> Plugin Manager -> Upload Plugin
-3. Upload the ZIP file
-4. Wait for installation to complete (may take several minutes)
-5. **IMPORTANT: Reboot your system** for device tree overlay to load
-6. After reboot, enable the plugin via: Plugins -> Installed Plugins -> RaspDacMini LCD
+Once submitted and approved:
+1. Navigate to Plugins -> Search
+2. Search for "RaspDacMini LCD"
+3. Click Install
+4. **IMPORTANT: Reboot your system** for device tree overlay to load
+5. After reboot, enable the plugin via: Plugins -> Installed Plugins -> RaspDacMini LCD
+
+### Manual Installation (Development/Testing)
+
+1. SSH into your Volumio system
+2. Clone the repository:
+   ```bash
+   git clone https://github.com/foonerd/RaspDacMini --depth=1
+   cd RaspDacMini
+   ```
+3. Install the plugin:
+   ```bash
+   volumio plugin install
+   ```
+4. Wait for installation to complete
+   - **With prebuilt**: ~10 seconds (no compilation)
+   - **Without prebuilt**: ~15-30 minutes (compiles from source)
+5. **IMPORTANT: Reboot your system** for device tree overlay to load:
+   ```bash
+   sudo reboot
+   ```
+6. After reboot, enable the plugin via Volumio UI: Plugins -> Installed Plugins -> RaspDacMini LCD
+
+**Note:** The installation script automatically detects if a prebuilt compositor exists for your architecture and Node version. If found, it uses the prebuilt (fast). If not found, it compiles from source (slow but works). See [PREBUILT.md](PREBUILT.md) for creating prebuilt archives.
 
 ### Installation Process
 
@@ -76,6 +103,60 @@ Access plugin settings via Volumio UI: Plugins -> Installed Plugins -> RaspDacMi
 
 * **Restart LCD Service**: Restart the display service to apply changes
 
+## Remote Control
+
+The plugin includes support for the Audiophonics ApEvo IR remote control with custom LIRC implementation to avoid system service conflicts.
+
+### Button Mappings
+
+| Button | Function |
+|--------|----------|
+| Play | Play/Pause toggle |
+| Previous (left) | Previous track |
+| Next (right) | Next track |
+| Left arrow (playleft) | Seek backward 10s (hold) |
+| Right arrow (playright) | Seek forward 10s (hold) |
+| Up | Browse sources - scroll up |
+| Down | Browse sources - scroll down |
+| Option (Select) | Browse sources - activate selected |
+| Volume + | Volume up |
+| Volume - | Volume down |
+| Mute | Mute toggle |
+| OK | Stop playback |
+| Power | System shutdown |
+
+### LIRC Implementation
+
+The plugin uses custom systemd services to prevent conflicts with system LIRC:
+
+- **rdm_remote.service** - Custom lircd daemon using plugin configs
+- **rdm_irexec.service** - Button handler executing Volumio commands
+- **System services masked** - lircd.service and lircd.socket disabled
+
+All LIRC configurations are stored in the plugin directory, not /etc/lirc/.
+
+### Testing Remote
+
+After installation and reboot:
+
+```bash
+# Check custom LIRC service status
+systemctl status rdm_remote.service
+systemctl status rdm_irexec.service
+
+# Check if LIRC is receiving signals
+irw
+
+# Press buttons on remote - you should see output like:
+# 0198b847 00 play ApEvo
+# 019858a7 00 playright ApEvo
+```
+
+If no output, check:
+- IR receiver wiring (GPIO 4)
+- dtoverlay=gpio-ir,gpio_pin=4 in /boot/userconfig.txt
+- lircd-setup.service completed successfully
+
 ## Architecture
 
 ### Layer Overview
@@ -91,39 +172,48 @@ Access plugin settings via Volumio UI: Plugins -> Installed Plugins -> RaspDacMi
 
 ```
 raspdac_mini_lcd/
-├── package.json              # Plugin metadata and dependencies
-├── config.json               # Default configuration values
-├── UIConfig.json             # Settings UI definition
-├── index.js                  # Plugin controller (lifecycle management)
-├── install.sh                # POSIX sh installation script
-├── uninstall.sh              # Cleanup script
-├── requiredConf.json         # Hardware requirements
-├── LICENSE                   # GPL-3.0 license
-├── README.md                 # This file
-├── i18n/                     # Translation files
-│   └── strings_en.json       # English translations
-├── assets/                   # Binary assets
-│   └── raspdac-mini-lcd.dtbo # Device tree overlay (user must add)
-├── compositor/               # Display rendering engine
-│   ├── index.js              # Main compositor (798 lines)
-│   ├── package.json          # Compositor dependencies
-│   ├── rdmlcd.sh             # Service startup wrapper
-│   ├── service/              # systemd service files
-│   │   ├── rdmlcd.service    # systemd service definition
+├── package.json                      # Plugin metadata and dependencies
+├── config.json                       # Default configuration values
+├── UIConfig.json                     # Settings UI definition
+├── index.js                          # Plugin controller (lifecycle management)
+├── install.sh                        # POSIX sh installation script
+├── uninstall.sh                      # Cleanup script
+├── requiredConf.json                 # Hardware requirements
+├── LICENSE                           # GPL-3.0 license
+├── README.md                         # This file
+├── PREBUILT.md                       # Guide for creating prebuilt archives
+├── i18n/                             # Translation files
+│   └── strings_en.json               # English translations
+├── assets/                           # Binary assets and configuration files
+│   ├── raspdac-mini-lcd.dtbo         # Device tree overlay (user must add)
+│   ├── lircd.conf                    # LIRC remote control configuration
+│   ├── lircrc                        # Remote button to command mappings
+│   ├── lirc_options.conf             # LIRC daemon configuration
+│   ├── README.txt                    # Assets folder documentation
+│   └── compositor-*.tar.gz           # Optional prebuilts (armv7l/aarch64)
+├── lirc/                             # LIRC runtime (created during install)
+│   ├── lircd.conf                    # Remote button codes (from assets)
+│   ├── lircrc                        # Button command mappings (from assets)
+│   └── lirc_options.conf             # Daemon config (from assets)
+├── compositor/                       # Display rendering engine
+│   ├── index.js                      # Main compositor (798 lines)
+│   ├── package.json                  # Compositor dependencies
+│   ├── rdmlcd.sh                     # Service startup wrapper
+│   ├── service/                      # systemd service files
+│   │   ├── rdmlcd.service            # systemd service definition
 │   │   └── SERVICE_DOCUMENTATION.txt # Service configuration guide
-│   └── utils/                # Compositor utility modules
-│       ├── volumiolistener.js  # Volumio socket.io integration
-│       ├── moodelistener.js    # moOde listener (not used)
-│       ├── scroll_animation.js # Easing functions for scrolling
-│       ├── panicmeter.js       # Write collision detection
+│   └── utils/                        # Compositor utility modules
+│       ├── volumiolistener.js        # Volumio socket.io integration
+│       ├── scroll_animation.js       # Easing functions for scrolling
+│       ├── panicmeter.js             # Write collision detection
 │       ├── upnp_albumart_fallback.js # Album art fallback logic
-│       └── rgb565.node         # Native module (built during install)
-└── native/                   # Native C++ modules source
-    └── rgb565/               # Color conversion module
-        ├── rgb565.cpp        # RGBA to BGR565 conversion
-        ├── binding.gyp       # node-gyp build configuration
-        ├── build_rdmlcd.sh   # Build and install script
-        └── package.json      # Native module metadata
+│       └── rgb565.node               # Native module (built during install)
+└── native/                           # Native C++ modules source
+    └── rgb565/                       # Color conversion module
+        ├── rgb565.cpp                # RGBA to BGR565 conversion
+        ├── binding.gyp               # node-gyp build configuration
+        ├── build_rdmlcd.sh           # Build and install script
+        └── package.json              # Native module metadata
 ```
 
 ## Development Status
@@ -222,6 +312,26 @@ Environment Override:
 * Updated automatically when sleep_after changed in UI
 * Allows runtime configuration without editing service file
 
+### Prebuilt Compositor Archives
+
+To speed up installation on slower systems (especially 1GB RAM Pi boards), the plugin supports prebuilt compositor archives:
+
+**Installation time:**
+* With prebuilt: ~10 seconds
+* Without prebuilt: 15-30 minutes (compilation)
+
+**How it works:**
+1. Install script checks for `assets/compositor-{ARCH}-node{MAJOR}.tar.gz`
+2. If found: Extracts prebuilt, skips build-essential installation
+3. If not found: Installs build tools and compiles from source
+
+**Supported architectures:**
+* `armv7l` - Raspberry Pi 2/3/4 (32-bit OS)
+* `aarch64` - Raspberry Pi 3/4/5 (64-bit OS)
+
+**Creating prebuilts:**
+See [PREBUILT.md](PREBUILT.md) for detailed instructions on creating prebuilt archives for your architecture.
+
 ## Troubleshooting
 
 ### Display not working after installation
@@ -315,10 +425,39 @@ Contributions are welcome! Please submit issues or pull requests to the reposito
 ## Support
 
 For issues and support:
-* GitHub Issues: https://github.com/foonerd/raspdac_mini_lcd/issues
+* GitHub Issues: https://github.com/foonerd/RaspDacMini/issues
 * Volumio Forum: https://community.volumio.com/
 
 ## Changelog
+
+### Version 1.0.1 (2025-10-28)
+
+**LIRC Remote Control & Installation Improvements**
+
+* Added full LIRC support for Audiophonics ApEvo remote control
+  - Custom rdm_remote.service and rdm_irexec.service to prevent conflicts
+  - System lircd.service and lircd.socket masked during installation
+  - All LIRC configs stored in plugin directory (not /etc/lirc/)
+  - Architecture-specific plugin paths (armhf/arm64)
+* Improved button mappings
+  - Left/Right arrows: Previous/Next track
+  - Play Left/Right: Seek backward/forward (hold)
+  - Volume controls with repeat support
+  - Background execution for all commands
+* Installation robustness
+  - Device tree overlay made optional (warns instead of aborting)
+  - Clear warning message with download link if dtbo missing
+  - Prebuilt compositor detection for faster installation
+  - Better error handling and cleanup
+* Uninstall improvements
+  - Removes GPIO IR overlay from /boot/userconfig.txt
+  - Unmasks system LIRC services
+  - Complete cleanup of custom services
+* Documentation updates
+  - Complete LIRC implementation details
+  - Service architecture documentation
+  - Updated directory structure with lirc/ runtime folder
+  - Expanded testing procedures
 
 ### Version 1.0.0 (2025-10-27)
 

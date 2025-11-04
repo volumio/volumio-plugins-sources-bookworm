@@ -426,8 +426,13 @@ function monitor_ip(){
 		let ips = os.networkInterfaces(), ip = "No network.";
 		for(a in ips){
 			if( ips[a][0]["address"] !== "127.0.0.1" && /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(ips[a][0]["address"]) ){
-				ip = ips[a][0]["address"];
-				break;
+				// Validate complete IP - must have 4 octets and not end with dot
+				let testIP = ips[a][0]["address"];
+				let octets = testIP.split('.');
+				if(octets.length === 4 && octets[3] !== '' && testIP[testIP.length-1] !== '.'){
+					ip = testIP;
+					break;
+				}
 			}
 		}
 		current_ipv4 = ip;
@@ -723,6 +728,18 @@ const streamFile = fs.createWriteStream(targetBuffer);
   streamFile.on('error', (e)=>{console.warn(e);
   process.exit()
 })
+
+// Show startup message
+ctx.fillStyle = "black";
+ctx.fillRect(0, 0, 320, 240);
+ctx.fillStyle = "white";
+ctx.font = "24px sans-serif";
+ctx.textAlign = "center";
+ctx.fillText("Starting...", 160, 120);
+const buff = canvas.toBuffer("raw");
+const converted = colorConvert.rgb888ToRgb565(buff);
+streamFile.write(converted);
+console.log("[Startup] Displayed startup message");
 
 
 // Read sleep timeout configuration

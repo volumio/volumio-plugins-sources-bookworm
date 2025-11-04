@@ -18,21 +18,18 @@ Napi::Value Rgb888ToRgb565(const Napi::CallbackInfo& info) {
     size_t outputLength = length / 2;
     Napi::Buffer<uint8_t> output = Napi::Buffer<uint8_t>::New(env, outputLength);
 
-    // Convert RGBA to BGR565
+    // Convert RGB888 to RGB565
     uint8_t* inputData = input.Data();
-    uint8_t* outputData = output.Data();
-    
-for (size_t i = 0, j = 0; i < length && j + 1 < outputLength; i += 4, j += 2) {
+    uint16_t* outputData = reinterpret_cast<uint16_t*>(output.Data());
+for (size_t i = 0, j = 0; i < length; i += 4, j++) {
     uint8_t r = inputData[i];
     uint8_t g = inputData[i + 1];
     uint8_t b = inputData[i + 2];
 
-    // BGR565: BBBBBGGG GGGRRRRR (big-endian byte order for ILI9341)
-    uint16_t bgr565 = ((b >> 3) << 11) | ((g >> 2) << 5) | (r >> 3);
-    
-    // Write as big-endian bytes
-    outputData[j] = (bgr565 >> 8) & 0xFF;     // High byte first
-    outputData[j + 1] = bgr565 & 0xFF;        // Low byte second
+    uint16_t bgr565 = (b >> 3) | ((g >> 2) << 5) | ((r >> 3) << 11);
+    if (j < outputLength / 2) {
+        outputData[j] = bgr565;
+    }
 }
     return output;
   

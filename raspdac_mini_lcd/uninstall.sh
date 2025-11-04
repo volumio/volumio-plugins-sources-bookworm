@@ -48,6 +48,52 @@ fi
 # Reload systemd
 systemctl daemon-reload
 
+echo "Removing LIRC configuration..."
+
+# Stop and disable custom LIRC services
+if systemctl is-active --quiet rdm_remote.service; then
+    systemctl stop rdm_remote.service
+    echo "LIRC remote service stopped"
+fi
+
+if systemctl is-active --quiet rdm_irexec.service; then
+    systemctl stop rdm_irexec.service
+    echo "LIRC irexec service stopped"
+fi
+
+systemctl disable rdm_remote.service rdm_irexec.service 2>/dev/null
+
+# Unmask system LIRC services
+systemctl unmask lircd.service lircd.socket 2>/dev/null
+
+# Remove custom service files
+if [ -f /etc/systemd/system/rdm_remote.service ]; then
+    rm -f /etc/systemd/system/rdm_remote.service
+    echo "LIRC remote service removed"
+fi
+
+if [ -f /etc/systemd/system/rdm_irexec.service ]; then
+    rm -f /etc/systemd/system/rdm_irexec.service
+    echo "LIRC irexec service removed"
+fi
+
+# Remove plugin LIRC directory
+if [ -d "$PLUGIN_DIR/lirc" ]; then
+    rm -rf "$PLUGIN_DIR/lirc"
+    echo "LIRC config directory removed"
+fi
+
+# Remove source browser script
+if [ -f /usr/local/bin/volumio-browse-source ]; then
+    rm -f /usr/local/bin/volumio-browse-source
+    echo "Source browser script removed"
+fi
+
+# Remove temporary state files
+rm -f /tmp/volumio_source_index /tmp/volumio_sources_list 2>/dev/null
+
+systemctl daemon-reload
+
 echo "Removing boot configuration..."
 
 # Remove dtoverlay line from /boot/userconfig.txt
@@ -59,8 +105,9 @@ if [ -f /boot/userconfig.txt ]; then
     sed -i '/# RaspDacMini LCD Display/d' /boot/userconfig.txt
     sed -i '/dtoverlay=raspdac-mini-lcd/d' /boot/userconfig.txt
     
-    # Remove GPIO IR line if it was added (optional, commented by default)
-    # sed -i '/dtoverlay=gpio-ir,gpio_pin=4/d' /boot/userconfig.txt
+    # Remove GPIO IR lines
+    sed -i '/# IR Remote Control/d' /boot/userconfig.txt
+    sed -i '/dtoverlay=gpio-ir,gpio_pin=4/d' /boot/userconfig.txt
     
     echo "Boot configuration cleaned"
 else

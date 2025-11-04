@@ -1,0 +1,58 @@
+#!/bin/bash
+# Volumio Source Browser for Remote Control
+# Cycles through available music sources
+
+STATE_FILE="/tmp/volumio_source_index"
+SOURCES_CACHE="/tmp/volumio_sources_list"
+CACHE_TTL=300  # 5 minutes
+
+# Get available sources from Volumio API
+get_sources() {
+    curl -s "http://localhost:3000/api/v1/browse" | \
+    grep -o '"uri":"[^"]*"' | \
+    cut -d'"' -f4 | \
+    grep -v "^$"
+}
+
+# Initialize or refresh sources cache
+if [ ! -f "$SOURCES_CACHE" ] || [ $(find "$SOURCES_CACHE" -mmin +5 2>/dev/null | wc -l) -gt 0 ]; then
+    get_sources > "$SOURCES_CACHE"
+fi
+
+# Read sources into array
+mapfile -t SOURCES < "$SOURCES_CACHE"
+TOTAL=${#SOURCES[@]}
+
+if [ $TOTAL -eq 0 ]; then
+    echo "No sources available"
+    exit 1
+fi
+
+# Read current index
+CURRENT_INDEX=$(cat "$STATE_FILE" 2>/dev/null || echo "0")
+
+# Handle commands
+case "$1" in
+    next)
+        CURRENT_INDEX=$((($CURRENT_INDEX + 1) % $TOTAL))
+        echo $CURRENT_INDEX > "$STATE_FILE"
+        SOURCE_NAME=$(echo "${SOURCES[$CURRENT_INDEX]}" | sed 's/.*\///')
+        echo "Next: $SOURCE_NAME"
+        ;;
+    prev)
+        CURRENT_INDEX=$((($CURRENT_INDEX - 1 + $TOTAL) % $TOTAL))
+        echo $CURRENT_INDEX > "$STATE_FILE"
+        SOURCE_NAME=$(echo "${SOURCES[$CURRENT_INDEX]}" | sed 's/.*\///')
+        echo "Previous: $SOURCE_NAME"
+        ;;
+    select)
+        SOURCE_URI="${SOURCES[$CURRENT_INDEX]}"
+        curl -s "http://localhost:3000/api/v1/browse/${SOURCE_URI}" > /dev/null
+        SOURCE_NAME=$(echo "$SOURCE_URI" | sed 's/.*\///')
+        echo "Selected: $SOURCE_NAME"
+        ;;
+    *)
+        echo "Usage: $0 {next|prev|select}"
+        exit 1
+        ;;
+esac
