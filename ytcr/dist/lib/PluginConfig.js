@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PLUGIN_CONFIG_SCHEMA = void 0;
 const yt_cast_receiver_1 = require("yt-cast-receiver");
 exports.PLUGIN_CONFIG_SCHEMA = {
+    hasAcceptedDisclaimer: { defaultValue: false, json: false },
     port: { defaultValue: 8098, json: false },
     bindToIf: { defaultValue: '', json: false },
     region: { defaultValue: 'US', json: false },
