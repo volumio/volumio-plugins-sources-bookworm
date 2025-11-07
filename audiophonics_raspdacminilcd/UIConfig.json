@@ -1,0 +1,70 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_CONFIGURATION"
+  },
+  "sections": [
+    {
+      "id": "section_lcd_settings",
+      "element": "section",
+      "label": "TRANSLATE.LCD_DISPLAY",
+      "icon": "fa-television",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/raspdac_mini_lcd",
+        "method": "updateLCDConfig"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "lcd_active",
+          "sleep_after"
+        ]
+      },
+      "content": [
+        {
+          "id": "lcd_active",
+          "element": "switch",
+          "label": "TRANSLATE.ENABLE_LCD",
+          "doc": "TRANSLATE.ENABLE_LCD_DOC",
+          "value": true
+        },
+        {
+          "id": "sleep_after",
+          "element": "input",
+          "label": "TRANSLATE.SLEEP_AFTER",
+          "doc": "TRANSLATE.SLEEP_AFTER_DOC",
+          "type": "number",
+          "value": 900,
+          "attributes": [
+            {
+              "min": 0,
+              "max": 3600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section_lcd_actions",
+      "element": "section",
+      "label": "TRANSLATE.LCD_ACTIONS",
+      "icon": "fa-cog",
+      "content": [
+        {
+          "id": "restart_lcd",
+          "element": "button",
+          "label": "TRANSLATE.RESTART_LCD",
+          "doc": "TRANSLATE.RESTART_LCD_DOC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_hardware/raspdac_mini_lcd",
+              "method": "restartLCD"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
