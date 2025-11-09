@@ -1,8 +1,12 @@
 "use strict";
 
 var libQ = require("kew");
-const { listCD, detectCdDevice } = require("./lib/utils");
-const { fetchCdMetadata } = require("./lib/metadata");
+const { listCD, pRetry, detectCdDevice } = require("./lib/utils");
+const {
+  fetchCdMetadata,
+  decorateItems,
+  getAlbumartUrl,
+} = require("./lib/metadata");
 const { createTrayWatcher } = require("./lib/tray-watcher");
 const { promisify } = require("util");
 const { exec } = require("child_process");
@@ -209,17 +213,13 @@ cdplayer.prototype.handleBrowseUri = function (curUri) {
       let decoratedItems = items;
       if (meta) {
         // eg. https://coverartarchive.org/release/2174675c-2159-4405-a3af-3a4860106b58/front
-        const albumart = `https://coverartarchive.org/release/${meta.releaseId}/front-500`;
-        decoratedItems = items.map((item, index) => ({
-          ...item,
-          album: meta.album,
-          artist: meta.artist,
-          title: meta.tracks[index]?.title || item.title,
-          albumart,
-        }));
-
+        const albumart = getAlbumartUrl(meta.releaseId);
+        decoratedItems = decorateItems(items, meta, albumart);
         self.removeToBrowseSources();
         self.addToBrowseSources(albumart);
+      } else {
+        self.log("No CD metadata found, retrying in background");
+        void retryFetchMetadata(items, self);
       }
 
       self._items = decoratedItems;
@@ -272,6 +272,71 @@ cdplayer.prototype.explodeUri = function (uri) {
   defer.resolve([]);
   return defer.promise;
 };
+
+cdplayer.prototype.search = function (query) {
+  const self = this;
+  const defer = libQ.defer();
+
+  if (!self._items) {
+    defer.resolve(null);
+    return defer.promise;
+  }
+
+  try {
+    self.log(JSON.stringify(self._items, null, 2));
+    self.log(`Search query: ${JSON.stringify(query)}`);
+    // TODO: this result works, but we should filter based on the query
+    // A single static search result
+    const resultItem = {
+      service: "cdplayer",
+      type: "song",
+      title: "Play from CD",
+      artist: "CD Player",
+      album: "Audio CD",
+      uri: "cdplayer",
+      albumart: "/albumart?sourceicon=music_service/cdplayer/cdplayer.png",
+    };
+
+    // Volumio expects a list (array of sections), even if there's only one
+    const list = [
+      {
+        type: "title",
+        title: "CD Player",
+        availableListViews: ["list"],
+        items: [resultItem],
+      },
+    ];
+
+    self.log(`Search results: ${JSON.stringify(list)}`);
+    defer.resolve(list);
+  } catch (err) {
+    self.logger.error(`[CDPlayer] Search error: ${err.message}`);
+    defer.reject(err);
+  }
+
+  return defer.promise;
+};
+
+function retryFetchMetadata(items, self) {
+  void pRetry(
+    async () => {
+      const meta = await fetchCdMetadata();
+      if (!meta) {
+        throw new Error();
+      }
+      const albumart = getAlbumartUrl(meta.releaseId);
+      const decoratedItems = decorateItems(items, meta, albumart);
+      self.removeToBrowseSources();
+      self.addToBrowseSources(albumart);
+      self._items = decoratedItems;
+    },
+    {
+      delay: 700,
+      maxAttempts: 3,
+      logger: self,
+    }
+  );
+}
 
 function toKew(promise) {
   const d = libQ.defer();

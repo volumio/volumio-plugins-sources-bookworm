@@ -275,7 +275,5 @@ const server = http.createServer((req, res) => {
 
 // Start server
 server.listen(PORT, HOST, () => {
-  console.log(
-    `CD HTTP @ http://${HOST}:${PORT}/wav/track/:n  (fixed-size WAV; no Range yet)`
-  );
+  console.log(`CD HTTP @ http://${HOST}:${PORT}/wav/track/:n`);
 });

@@ -246,7 +246,36 @@ async function fetchCdMetadata() {
     return null;
   }
 }
+/**
+ * Decorates a list of CD track items with metadata such as album, artist, and album art.
+ *
+ * @param {CdTrack[]} items - The original list of CD track items.
+ * @param {CdMetadata} meta - The metadata to apply to each track.
+ * @param {string} albumart - The URL of the album art image.
+ * @returns {CdTrack[]} The decorated list of CD track items.
+ */
+function decorateItems(items, meta, albumart) {
+  return items.map((item, index) => ({
+    ...item,
+    album: meta.album,
+    artist: meta.artist,
+    title: meta.tracks[index]?.title || item.title,
+    albumart,
+  }));
+}
+
+/**
+ * Constructs the URL for the album art image from MusicBrainz Cover Art Archive.
+ *
+ * @param {string} releaseId - The MusicBrainz release ID.
+ * @returns {string} The URL of the album art image.
+ */
+function getAlbumartUrl(releaseId) {
+  return `https://coverartarchive.org/release/${releaseId}/front-500`;
+}
 
 module.exports = {
   fetchCdMetadata,
+  decorateItems,
+  getAlbumartUrl,
 };
