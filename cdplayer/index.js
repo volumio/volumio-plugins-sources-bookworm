@@ -282,28 +282,22 @@ cdplayer.prototype.search = function (query) {
     return defer.promise;
   }
 
-  try {
-    self.log(JSON.stringify(self._items, null, 2));
-    self.log(`Search query: ${JSON.stringify(query)}`);
-    // TODO: this result works, but we should filter based on the query
-    // A single static search result
-    const resultItem = {
-      service: "cdplayer",
-      type: "song",
-      title: "Play from CD",
-      artist: "CD Player",
-      album: "Audio CD",
-      uri: "cdplayer",
-      albumart: "/albumart?sourceicon=music_service/cdplayer/cdplayer.png",
-    };
+  if (!query || !query.value) {
+    defer.resolve(null);
+    return defer.promise;
+  }
 
+  try {
+    // TODO: WORKS fine bu needs to clear when serach is empty.
+    self.log(JSON.stringify(query, null, 2));
+    const resultItems = getResultItems(self._items, query.value);
     // Volumio expects a list (array of sections), even if there's only one
     const list = [
       {
         type: "title",
-        title: "CD Player",
+        title: "Search results",
         availableListViews: ["list"],
-        items: [resultItem],
+        items: resultItems,
       },
     ];
 
@@ -316,6 +310,27 @@ cdplayer.prototype.search = function (query) {
 
   return defer.promise;
 };
+
+/**
+ * Filters CD tracks based on a query string.
+ * Matches are case-insensitive and partial (substring-based).
+ *
+ * @param {CdTrack[]} items - Array of track objects.
+ * @param {string} query - The search query.
+ * @returns {CdTrack[]} Filtered array of matching tracks.
+ */
+function getResultItems(items, query) {
+  if (!items || !Array.isArray(items) || !query) return [];
+
+  const q = query.trim().toLowerCase();
+
+  return items.filter((item) => {
+    const titleMatch = item.title?.toLowerCase().includes(q);
+    const artistMatch = item.artist?.toLowerCase().includes(q);
+    const albumMatch = item.album?.toLowerCase().includes(q);
+    return titleMatch || artistMatch || albumMatch;
+  });
+}
 
 function retryFetchMetadata(items, self) {
   void pRetry(
