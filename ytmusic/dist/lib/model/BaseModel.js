@@ -4,16 +4,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseModel = void 0;
-const volumio_youtubei_js_1 = require("volumio-youtubei.js");
+const innertube_1 = require("volumio-yt-support/dist/innertube");
 const InnertubeLoader_1 = __importDefault(require("./InnertubeLoader"));
 const MAX_APPEND_SECTIONS_COUNT = 10;
 class BaseModel {
-    getInnertube() {
-        return InnertubeLoader_1.default.getInstance();
+    async getInnertube() {
+        return {
+            innertube: await (await InnertubeLoader_1.default.getInstance()).getInnertube()
+        };
     }
     async expandSectionList(response, url) {
         const { innertube } = await this.getInnertube();
-        const sectionLists = response.contents_memo?.getType(volumio_youtubei_js_1.YTNodes.SectionList) || [];
+        const sectionLists = response.contents_memo?.getType(innertube_1.YTNodes.SectionList) || [];
         for (const sectionList of sectionLists) {
             let sectionListContinuation = sectionList.continuation;
             if (sectionList.continuation_type !== 'next') {
@@ -22,8 +24,8 @@ class BaseModel {
             let appendCount = 0;
             while (sectionListContinuation && appendCount < MAX_APPEND_SECTIONS_COUNT) {
                 const response = await innertube.actions.execute(url, { token: sectionListContinuation, client: 'YTMUSIC' });
-                const page = volumio_youtubei_js_1.Parser.parseResponse(response.data);
-                const cc = page.continuation_contents?.firstOfType(volumio_youtubei_js_1.SectionListContinuation);
+                const page = innertube_1.Parser.parseResponse(response.data);
+                const cc = page.continuation_contents?.firstOfType(innertube_1.SectionListContinuation);
                 if (cc && cc.contents) {
                     sectionList.contents.push(...cc.contents);
                     sectionListContinuation = cc.continuation;
