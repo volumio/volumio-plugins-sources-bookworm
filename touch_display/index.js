@@ -63,6 +63,7 @@ TouchDisplay.prototype.onStart = function () {
   const defer = libQ.defer();
 
   self.commandRouter.loadI18nStrings();
+  self.installIframeKeyboardBridge(); // Install keyboard bridge extension
   self.checkConfigJson();
   self.commandRouter.executeOnPlugin('system_controller', 'system', 'getSystemVersion', '')
     .then(infos => {
@@ -132,6 +133,29 @@ TouchDisplay.prototype.onStop = function () {
       defer.resolve();
     });
   return defer.promise;
+};
+
+TouchDisplay.prototype.installIframeKeyboardBridge = function () {
+  const self = this;
+  const extensionDir = '/data/volumiokioskextensions/IframeKeyboardBridge';
+  const sourceDir = path.join(__dirname, 'iframe_keyboard_bridge');
+  
+  // Create extension directory if it doesn't exist
+  exec('/bin/echo volumio | /usr/bin/sudo -S /bin/mkdir -p ' + extensionDir, { uid: 1000, gid: 1000 }, (error) => {
+    if (error) {
+      self.logger.error(self.pluginName + ': Failed to create IframeKeyboardBridge directory: ' + error);
+      return;
+    }
+    
+    // Copy extension files
+    exec('/bin/echo volumio | /usr/bin/sudo -S /bin/cp -r ' + sourceDir + '/* ' + extensionDir + '/', { uid: 1000, gid: 1000 }, (error) => {
+      if (error) {
+        self.logger.error(self.pluginName + ': Failed to install IframeKeyboardBridge extension: ' + error);
+      } else {
+        self.logger.info(self.pluginName + ': IframeKeyboardBridge extension installed successfully');
+      }
+    });
+  });
 };
 
 // Configuration Methods -----------------------------------------------------------------------------
@@ -795,7 +819,7 @@ TouchDisplay.prototype.saveScaleConf = function (confData) {
 TouchDisplay.prototype.saveVirtualKeyboardConf = function (confData) {
   const self = this;
   const defer = libQ.defer();
-  const extensionPath = confData.virtualKeyboard ? "'\\/data\\/volumiokioskextensions\\/VirtualKeyboard\\/'" : '';
+  const extensionPath = confData.virtualKeyboard ? "'\\/data\\/volumiokioskextensions\\/VirtualKeyboard\\/,\\/data\\/volumiokioskextensions\\/IframeKeyboardBridge\\/'" : '';
 
   if (self.config.get('virtualKeyboard') !== confData.virtualKeyboard) {
     fs.stat('/tmp/.X11-unix/X' + displayNumber, (err, stats) => {
