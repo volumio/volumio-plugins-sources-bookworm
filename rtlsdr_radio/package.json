@@ -1,0 +1,40 @@
+{
+  "name": "rtlsdr_radio",
+  "version": "1.0.0",
+  "description": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Just a Nerd",
+  "license": "GPL-3.0",
+  "repository": "https://github.com/foonerd/volumio-plugins-sources-bookworm",
+  "volumio_info": {
+    "prettyName": "FM/DAB Radio",
+    "icon": "fa-signal",
+    "plugin_type": "music_service",
+    "architectures": [
+      "armhf",
+      "amd64"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "is_my_music_plugin": true,
+    "has_configuration": true,
+    "has_alsa_contribution": true,
+    "details": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
+    "changelog": "v1.0.0 - Production release. Eliminated restart requirement after installation. Streamlined install process removes obsolete reboot warnings."
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "fs-extra": "*",
+    "kew": "*",
+    "v-conf": "*",
+    "express": "^4.18.2",
+    "body-parser": "^1.20.2"
+  }
+}

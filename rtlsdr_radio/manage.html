@@ -1,0 +1,2093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Station Management - RTL-SDR Radio</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #1c1c1c;
+      color: #e0e0e0;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .header {
+      background: #282828;
+      border-bottom: 1px solid #404040;
+      padding: 15px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header-content {
+      flex: 1;
+    }
+    
+    .header h1 {
+      font-size: 20px;
+      font-weight: 500;
+      color: #fff;
+      margin-bottom: 5px;
+    }
+    
+    .header .subtitle {
+      font-size: 13px;
+      color: #999;
+    }
+    
+    .header-close-btn {
+      background: #d32f2f;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-left: 20px;
+      white-space: nowrap;
+    }
+    
+    .header-close-btn:hover {
+      background: #b71c1c;
+    }
+    
+    .header-close-btn:active {
+      background: #8b0000;
+    }
+    
+    .header-close-btn.hidden {
+      display: none;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      padding-bottom: 20px;
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #404040;
+    }
+    
+    .tab {
+      padding: 12px 24px;
+      background: transparent;
+      border: none;
+      color: #999;
+      cursor: pointer;
+      font-size: 15px;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .tab:hover {
+      color: #fff;
+    }
+    
+    .tab.active {
+      color: #54b948;
+      border-bottom-color: #54b948;
+    }
+    
+    .tab .fa {
+      font-size: 14px;
+    }
+    
+    .tab-badge {
+      background: #e74c3c;
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      min-width: 18px;
+      text-align: center;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .tab-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .search-bar {
+      flex: 1;
+      min-width: 250px;
+      position: relative;
+    }
+    
+    .search-bar input {
+      width: 100%;
+      padding: 12px 40px 12px 15px;
+      background: #282828;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      color: #e0e0e0;
+      font-size: 14px;
+    }
+    
+    .search-bar input:focus {
+      outline: none;
+      border-color: #54b948;
+    }
+    
+    .search-icon {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #666;
+    }
+    
+    .save-status-inline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #999;
+      font-size: 13px;
+      padding: 0 10px;
+    }
+    
+    .save-status-inline.changed {
+      color: #e67e22;
+    }
+    
+    .save-status-inline .fa {
+      font-size: 14px;
+    }
+    
+    .station-list {
+      background: #282828;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .station-item {
+      padding: 15px;
+      border-bottom: 1px solid #404040;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      transition: background 0.2s;
+    }
+    
+    .station-item:last-child {
+      border-bottom: none;
+    }
+    
+    .station-item:hover {
+      background: #333;
+    }
+    
+    .station-item.deleted {
+      opacity: 0.6;
+    }
+    
+    .station-icon {
+      width: 40px;
+      text-align: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      color: #666;
+    }
+    
+    .station-icon.favorite {
+      color: #f39c12;
+    }
+    
+    .station-icon.hidden-icon {
+      color: #e74c3c;
+    }
+    
+    .station-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .station-name {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 4px;
+      color: #fff;
+    }
+    
+    .station-details {
+      font-size: 12px;
+      color: #999;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .station-type-badge {
+      display: inline-block;
+      background: #404040;
+      color: #999;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+    
+    .station-name-input {
+      width: 100%;
+      padding: 8px 10px;
+      background: #1c1c1c;
+      border: 1px solid #404040;
+      border-radius: 3px;
+      color: #e0e0e0;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    
+    .station-name-input:focus {
+      outline: none;
+      border-color: #54b948;
+    }
+    
+    .frequency-input {
+      width: 80px;
+      padding: 4px 8px;
+      background: #1c1c1c;
+      border: 1px solid #404040;
+      border-radius: 3px;
+      color: #e0e0e0;
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+    }
+    
+    .frequency-input:focus {
+      outline: none;
+      border-color: #54b948;
+    }
+    
+    .frequency-input.error {
+      border-color: #e74c3c;
+    }
+    
+    .frequency-display {
+      font-family: 'Courier New', monospace;
+      color: #999;
+    }
+    
+    .station-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    
+    .btn.btn-save-row {
+      display: none;
+      background: #27ae60;
+      color: #fff;
+      animation: fadeIn 0.2s;
+    }
+    
+    .btn.btn-save-row:hover {
+      background: #229954;
+    }
+    
+    .station-item.dirty .btn.btn-save-row {
+      display: inline-flex;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: inherit;
+    }
+    
+    .btn .fa {
+      font-size: 13px;
+    }
+    
+    .btn-icon {
+      padding: 8px 12px;
+      background: transparent;
+      border: 1px solid #404040;
+      color: #999;
+    }
+    
+    .btn-icon:hover {
+      background: #333;
+      border-color: #54b948;
+      color: #54b948;
+    }
+    
+    .btn-icon.active {
+      background: #54b948;
+      border-color: #54b948;
+      color: #fff;
+    }
+    
+    .btn-icon.active.favorite {
+      background: #f39c12;
+      border-color: #f39c12;
+    }
+    
+    .btn-icon.active.hidden {
+      background: #e74c3c;
+      border-color: #e74c3c;
+    }
+    
+    .btn-danger {
+      background: #e74c3c;
+      color: #fff;
+      border: 1px solid #e74c3c;
+    }
+    
+    .btn-danger:hover {
+      background: #c0392b;
+      border-color: #c0392b;
+    }
+    
+    .btn-warning {
+      background: transparent;
+      color: #f39c12;
+      border: 1px solid #f39c12;
+    }
+    
+    .btn-warning:hover {
+      background: #f39c12;
+      color: #fff;
+    }
+    
+    .btn-primary {
+      background: #54b948;
+      color: #fff;
+      border: 1px solid #54b948;
+      font-weight: 500;
+    }
+    
+    .btn-primary:hover {
+      background: #449a39;
+      border-color: #449a39;
+    }
+    
+    .btn-primary:disabled {
+      background: #333;
+      border-color: #404040;
+      color: #666;
+      cursor: not-allowed;
+    }
+    
+    .btn-secondary {
+      background: #666;
+      color: #fff;
+      border: 1px solid #666;
+    }
+    
+    .btn-secondary:hover {
+      background: #555;
+      border-color: #555;
+    }
+    
+    .save-bar {
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #282828;
+      border-top: 1px solid #404040;
+      padding: 15px 20px;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      margin-top: 20px;
+    }
+    
+    .save-bar .info {
+      color: #999;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .save-bar .info .fa {
+      font-size: 14px;
+    }
+    
+    .save-bar .info.changed {
+      color: #f39c12;
+      font-weight: 500;
+    }
+    
+    .save-bar .actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+    
+    .empty-state .fa {
+      font-size: 48px;
+      margin-bottom: 15px;
+      opacity: 0.5;
+    }
+    
+    .empty-state-text {
+      font-size: 16px;
+    }
+    
+    .stats {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .stat-card {
+      background: #282828;
+      padding: 15px 20px;
+      border-radius: 4px;
+      flex: 1;
+      min-width: 150px;
+      border: 1px solid #404040;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .stat-label .fa {
+      font-size: 11px;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: 500;
+      color: #54b948;
+    }
+    
+    .toast {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      background: #54b948;
+      color: #fff;
+      padding: 15px 20px;
+      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 200;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: all 0.3s;
+      max-width: 300px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .toast .fa {
+      font-size: 16px;
+    }
+    
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .toast.error {
+      background: #e74c3c;
+    }
+    
+    .toast.warning {
+      background: #f39c12;
+    }
+    
+    .recycle-notice {
+      background: #404040;
+      border-left: 3px solid #f39c12;
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #e0e0e0;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    
+    .recycle-notice .fa {
+      color: #f39c12;
+      margin-top: 2px;
+    }
+    
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+    }
+    
+    .modal-overlay.show {
+      display: flex;
+    }
+    
+    .modal {
+      background: #282828;
+      border-radius: 4px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow: auto;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid #404040;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .modal-header.warning {
+      background: #f39c12;
+      color: #fff;
+      border-bottom-color: #e08e0b;
+    }
+    
+    .modal-header .fa {
+      font-size: 24px;
+    }
+    
+    .modal-header h2 {
+      font-size: 18px;
+      font-weight: 500;
+      margin: 0;
+    }
+    
+    .modal-body {
+      padding: 20px;
+    }
+    
+    .modal-body p {
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+    
+    .freq-comparison {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0;
+      padding: 15px;
+      background: #1c1c1c;
+      border-radius: 4px;
+    }
+    
+    .freq-old, .freq-new {
+      text-align: center;
+    }
+    
+    .freq-old label, .freq-new label {
+      display: block;
+      font-size: 11px;
+      color: #999;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+    
+    .freq-old span, .freq-new span {
+      display: block;
+      font-size: 20px;
+      font-weight: 500;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .freq-old span {
+      color: #e74c3c;
+    }
+    
+    .freq-new span {
+      color: #54b948;
+    }
+    
+    .freq-arrow {
+      color: #666;
+      font-size: 20px;
+    }
+    
+    .warning-text {
+      background: #404040;
+      padding: 12px;
+      border-radius: 4px;
+      border-left: 3px solid #f39c12;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    
+    .modal-header.info {
+      background: #3498db;
+      color: #fff;
+      border-bottom-color: #2980b9;
+    }
+    
+    .modal-header.danger {
+      background: #e74c3c;
+      color: #fff;
+      border-bottom-color: #c0392b;
+    }
+    
+    .modal-header.success {
+      background: #54b948;
+      color: #fff;
+      border-bottom-color: #459a3c;
+    }
+    
+    .spinner-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 0;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #404040;
+      border-top-color: #54b948;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .elapsed-time {
+      text-align: center;
+      font-size: 14px;
+      color: #999;
+      margin-top: 15px;
+    }
+    
+    .elapsed-time .time-value {
+      color: #54b948;
+      font-weight: 500;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .scanning-info {
+      text-align: center;
+      font-size: 13px;
+      color: #999;
+      margin-top: 10px;
+    }
+    
+    .modal-footer {
+      padding: 15px 20px;
+      border-top: 1px solid #404040;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 15px;
+        padding-bottom: 20px;
+      }
+      
+      .station-item {
+        flex-wrap: wrap;
+      }
+      
+      .station-info {
+        flex: 1 1 100%;
+        margin-bottom: 10px;
+      }
+      
+      .station-actions {
+        flex: 1 1 100%;
+        justify-content: flex-start;
+      }
+      
+      .btn {
+        flex: 1;
+        min-width: 70px;
+        justify-content: center;
+      }
+      
+      .save-bar {
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px 15px;
+      }
+      
+      .save-bar .actions {
+        width: 100%;
+      }
+      
+      .save-bar .actions button {
+        flex: 1;
+      }
+      
+      .stats {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .stat-card {
+        min-width: auto;
+      }
+      
+      .toast {
+        right: 15px;
+        left: 15px;
+        max-width: none;
+      }
+      
+      .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      .tab {
+        flex-shrink: 0;
+      }
+      
+      .modal {
+        width: 95%;
+      }
+      
+      .freq-comparison {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .freq-arrow {
+        transform: rotate(90deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-content">
+      <h1 id="page-title">Station Management</h1>
+      <div class="subtitle" id="page-subtitle">RTL-SDR Radio Plugin</div>
+    </div>
+    <button id="close-window-btn" class="header-close-btn hidden" onclick="window.close()">
+      <i class="fa fa-times"></i> <span id="close-btn-text">Close</span>
+    </button>
+  </div>
+  
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" data-tab="fm">
+        <i class="fa fa-signal"></i>
+        <span id="tab-fm">FM Radio</span>
+      </button>
+      <button class="tab" data-tab="dab">
+        <i class="fa fa-wifi"></i>
+        <span id="tab-dab">DAB Radio</span>
+      </button>
+      <button class="tab" data-tab="recycle">
+        <i class="fa fa-trash"></i>
+        <span id="tab-recycle">Recycle Bin</span>
+        <span class="tab-badge" id="recycle-count">0</span>
+      </button>
+    </div>
+    
+    <div id="fm-tab" class="tab-content active">
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-label"><i class="fa fa-list"></i> <span id="stat-total-label-fm">Total Stations</span></div>
+          <div class="stat-value" id="fm-total">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label"><i class="fa fa-star"></i> <span id="stat-favorites-label-fm">Favorites</span></div>
+          <div class="stat-value" id="fm-favorites">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label"><i class="fa fa-eye-slash"></i> <span id="stat-hidden-label-fm">Hidden</span></div>
+          <div class="stat-value" id="fm-hidden">0</div>
+        </div>
+      </div>
+      
+      <div class="tab-header">
+        <div class="search-bar">
+          <input type="text" id="fm-search" placeholder="Search FM stations...">
+          <i class="fa fa-search search-icon"></i>
+        </div>
+        <button class="btn btn-primary" id="rescan-fm-btn">
+          <i class="fa fa-refresh"></i>
+          <span id="btn-rescan-fm">Rescan FM</span>
+        </button>
+        <button class="btn btn-danger" id="clear-fm-btn">
+          <i class="fa fa-trash"></i>
+          <span id="btn-clear-fm">Clear All FM</span>
+        </button>
+        <div class="save-status-inline" id="save-status-inline">
+          <i class="fa fa-check-circle"></i>
+          <span id="status-text-inline">No changes</span>
+        </div>
+        <button class="btn btn-primary" id="save-btn-inline" disabled>
+          <i class="fa fa-floppy-o"></i>
+          <span id="btn-save-text-inline">Save</span>
+        </button>
+      </div>
+      
+      <div id="fm-list" class="station-list"></div>
+    </div>
+    
+    <div id="dab-tab" class="tab-content">
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-label"><i class="fa fa-list"></i> <span id="stat-total-label-dab">Total Stations</span></div>
+          <div class="stat-value" id="dab-total">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label"><i class="fa fa-star"></i> <span id="stat-favorites-label-dab">Favorites</span></div>
+          <div class="stat-value" id="dab-favorites">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label"><i class="fa fa-eye-slash"></i> <span id="stat-hidden-label-dab">Hidden</span></div>
+          <div class="stat-value" id="dab-hidden">0</div>
+        </div>
+      </div>
+      
+      <div class="tab-header">
+        <div class="search-bar">
+          <input type="text" id="dab-search" placeholder="Search DAB stations...">
+          <i class="fa fa-search search-icon"></i>
+        </div>
+        <button class="btn btn-primary" id="rescan-dab-btn">
+          <i class="fa fa-refresh"></i>
+          <span id="btn-rescan-dab">Rescan DAB</span>
+        </button>
+        <button class="btn btn-danger" id="clear-dab-btn">
+          <i class="fa fa-trash"></i>
+          <span id="btn-clear-dab">Clear All DAB</span>
+        </button>
+      </div>
+      
+      <div id="dab-list" class="station-list"></div>
+    </div>
+    
+    <div id="recycle-tab" class="tab-content">
+      <div class="recycle-notice">
+        <i class="fa fa-info-circle"></i>
+        <div id="recycle-notice-text">Deleted stations are kept here until purged. You can restore them or permanently delete them.</div>
+      </div>
+      
+      <div class="tab-header">
+        <div class="search-bar">
+          <input type="text" id="recycle-search" placeholder="Search deleted stations...">
+          <i class="fa fa-search search-icon"></i>
+        </div>
+        <button class="btn btn-danger" id="empty-recycle-btn">
+          <i class="fa fa-times-circle"></i>
+          <span id="btn-empty-recycle">Empty Recycle Bin</span>
+        </button>
+      </div>
+      
+      <div id="recycle-list" class="station-list"></div>
+    </div>
+  </div>
+  
+  <div class="save-bar">
+    <div class="info" id="save-status">
+      <i class="fa fa-check-circle"></i>
+      <span id="status-text">No changes</span>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" id="save-btn" disabled>
+        <i class="fa fa-floppy-o"></i>
+        <span id="btn-save-text">Save Changes</span>
+      </button>
+    </div>
+  </div>
+  
+  <div class="toast" id="toast">
+    <i class="fa fa-check-circle"></i>
+    <span id="toast-message"></span>
+  </div>
+  
+  <div class="modal-overlay" id="freq-modal">
+    <div class="modal">
+      <div class="modal-header warning">
+        <i class="fa fa-exclamation-triangle"></i>
+        <h2 id="freq-modal-title">Warning: Change Frequency?</h2>
+      </div>
+      <div class="modal-body">
+        <p id="freq-modal-msg">You are about to change the frequency for "Station Name"</p>
+        <div class="freq-comparison">
+          <div class="freq-old">
+            <label id="freq-old-label">From:</label>
+            <span id="freq-old-value">98.7 MHz</span>
+          </div>
+          <div class="freq-arrow">
+            <i class="fa fa-arrow-right"></i>
+          </div>
+          <div class="freq-new">
+            <label id="freq-new-label">To:</label>
+            <span id="freq-new-value">98.8 MHz</span>
+          </div>
+        </div>
+        <p class="warning-text" id="freq-modal-details">This will affect playback. Make sure the new frequency is correct.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="freq-cancel">
+          <span id="btn-cancel-text">Cancel</span>
+        </button>
+        <button class="btn btn-danger" id="freq-confirm">
+          <i class="fa fa-check"></i>
+          <span id="freq-confirm-text">Change Frequency</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal">
+      <div class="modal-header" id="confirm-modal-header">
+        <i class="fa fa-question-circle" id="confirm-modal-icon"></i>
+        <h2 id="confirm-modal-title">Confirm Action</h2>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-modal-message">Are you sure?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="confirm-cancel">
+          <span id="confirm-cancel-text">Cancel</span>
+        </button>
+        <button class="btn btn-primary" id="confirm-ok">
+          <span id="confirm-ok-text">Confirm</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Scanning Progress Modal -->
+  <div class="modal-overlay" id="scanning-modal">
+    <div class="modal">
+      <div class="modal-header info" id="scanning-modal-header">
+        <i class="fa fa-radio" id="scanning-modal-icon"></i>
+        <h2 id="scanning-modal-title">Scanning</h2>
+      </div>
+      <div class="modal-body">
+        <p id="scanning-modal-message">Scanning in progress...</p>
+        <div class="spinner-container">
+          <div class="spinner"></div>
+        </div>
+        <div class="elapsed-time">
+          <span id="elapsed-label">Elapsed time:</span>
+          <span class="time-value" id="elapsed-value">0</span>
+          <span id="elapsed-unit">seconds</span>
+        </div>
+        <div class="scanning-info" id="scanning-info">
+          This typically takes a few seconds
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    let fmStations = [];
+    let dabStations = [];
+    let hasChanges = false;
+    let i18n = {};
+    let pendingFreqChange = null;
+    let scanningInterval = null;
+    let scanStartTime = null;
+    
+    // i18n functions
+    function t(key, ...args) {
+      let str = i18n[key] || key;
+      args.forEach((arg, index) => {
+        str = str.replace('{' + index + '}', arg);
+      });
+      return str;
+    }
+    
+    // Generic confirmation modal
+    function showConfirmModal(title, message, type = 'warning') {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('confirm-modal');
+        const header = document.getElementById('confirm-modal-header');
+        const icon = document.getElementById('confirm-modal-icon');
+        
+        // Set header style based on type
+        header.className = 'modal-header';
+        if (type === 'danger') {
+          header.classList.add('danger');
+          icon.className = 'fa fa-exclamation-triangle';
+        } else if (type === 'warning') {
+          header.classList.add('warning');
+          icon.className = 'fa fa-exclamation-circle';
+        } else if (type === 'info') {
+          header.classList.add('info');
+          icon.className = 'fa fa-question-circle';
+        }
+        
+        // Set content
+        document.getElementById('confirm-modal-title').textContent = title;
+        document.getElementById('confirm-modal-message').textContent = message;
+        document.getElementById('confirm-cancel-text').textContent = t('BTN_CANCEL');
+        document.getElementById('confirm-ok-text').textContent = t('BTN_CONFIRM');
+        
+        // Show modal
+        modal.classList.add('show');
+        
+        // Set up event handlers
+        const handleOk = () => {
+          modal.classList.remove('show');
+          cleanup();
+          resolve(true);
+        };
+        
+        const handleCancel = () => {
+          modal.classList.remove('show');
+          cleanup();
+          resolve(false);
+        };
+        
+        const cleanup = () => {
+          document.getElementById('confirm-ok').removeEventListener('click', handleOk);
+          document.getElementById('confirm-cancel').removeEventListener('click', handleCancel);
+        };
+        
+        document.getElementById('confirm-ok').addEventListener('click', handleOk);
+        document.getElementById('confirm-cancel').addEventListener('click', handleCancel);
+      });
+    }
+    
+    // Format elapsed time as "Xm Ys" or "Xs"
+    function formatElapsedTime(seconds) {
+      if (seconds < 60) {
+        return seconds + 's';
+      }
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return minutes + 'm ' + remainingSeconds + 's';
+    }
+    
+    // Show scanning progress modal
+    function showScanningModal(type) {
+      const modal = document.getElementById('scanning-modal');
+      const title = type === 'fm' ? t('MODAL_SCANNING_FM_TITLE') : t('MODAL_SCANNING_DAB_TITLE');
+      const message = t('MODAL_SCANNING_PROGRESS');
+      const info = type === 'fm' ? t('MODAL_SCANNING_WAIT_FM') : t('MODAL_SCANNING_WAIT_DAB');
+      
+      document.getElementById('scanning-modal-title').textContent = title;
+      document.getElementById('scanning-modal-message').textContent = message;
+      document.getElementById('scanning-info').textContent = info;
+      document.getElementById('elapsed-value').textContent = '0s';
+      document.getElementById('elapsed-label').textContent = t('MODAL_ELAPSED_LABEL');
+      document.getElementById('elapsed-unit').textContent = '';
+      
+      modal.classList.add('show');
+      
+      // Start elapsed time counter
+      scanStartTime = Date.now();
+      scanningInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - scanStartTime) / 1000);
+        document.getElementById('elapsed-value').textContent = formatElapsedTime(elapsed);
+      }, 1000);
+    }
+    
+    // Hide scanning modal
+    function hideScanningModal() {
+      const modal = document.getElementById('scanning-modal');
+      modal.classList.remove('show');
+      
+      if (scanningInterval) {
+        clearInterval(scanningInterval);
+        scanningInterval = null;
+      }
+      scanStartTime = null;
+    }
+    
+    // Poll scanning status
+    async function pollScanStatus(type) {
+      const expectedState = type === 'fm' ? 'scanning_fm' : 'scanning_dab';
+      
+      const checkStatus = async () => {
+        try {
+          const response = await fetch('/api/status');
+          if (!response.ok) {
+            throw new Error('Status check failed');
+          }
+          
+          const data = await response.json();
+          
+          if (data.deviceState !== expectedState) {
+            // Scan complete
+            hideScanningModal();
+            showToast(t('TOAST_SCAN_COMPLETE_RELOAD'), 'success');
+            setTimeout(() => loadStations(), 1000);
+            return;
+          }
+          
+          // Still scanning, check again
+          setTimeout(checkStatus, 2000);
+          
+        } catch (error) {
+          // Network error, keep trying
+          setTimeout(checkStatus, 2000);
+        }
+      };
+      
+      // Start polling after short delay
+      setTimeout(checkStatus, 2000);
+    }
+    
+    async function loadTranslations() {
+      try {
+        // Fetch current Volumio language setting from server
+        const langResponse = await fetch('/api/language');
+        const langData = await langResponse.json();
+        const lang = langData.language || 'en';
+        
+        // Fetch translations for that language
+        const response = await fetch('/api/i18n/' + lang);
+        i18n = await response.json();
+        updateUIText();
+      } catch (error) {
+        console.error('Failed to load translations:', error);
+        // Fallback to English on error
+        try {
+          const response = await fetch('/api/i18n/en');
+          i18n = await response.json();
+          updateUIText();
+        } catch (fallbackError) {
+          console.error('Failed to load fallback translations:', fallbackError);
+        }
+      }
+    }
+    
+    function updateUIText() {
+      document.getElementById('page-title').textContent = t('WEB_MANAGER_TITLE');
+      document.getElementById('page-subtitle').textContent = t('WEB_MANAGER_SUBTITLE');
+      document.getElementById('tab-fm').textContent = t('TAB_FM_RADIO');
+      document.getElementById('tab-dab').textContent = t('TAB_DAB_RADIO');
+      document.getElementById('tab-recycle').textContent = t('TAB_RECYCLE_BIN');
+      document.getElementById('stat-total-label-fm').textContent = t('STAT_TOTAL');
+      document.getElementById('stat-favorites-label-fm').textContent = t('STAT_FAVORITES');
+      document.getElementById('stat-hidden-label-fm').textContent = t('STAT_HIDDEN');
+      document.getElementById('stat-total-label-dab').textContent = t('STAT_TOTAL');
+      document.getElementById('stat-favorites-label-dab').textContent = t('STAT_FAVORITES');
+      document.getElementById('stat-hidden-label-dab').textContent = t('STAT_HIDDEN');
+      document.getElementById('btn-clear-fm').textContent = t('BTN_CLEAR_ALL_FM');
+      document.getElementById('btn-rescan-fm').textContent = t('BTN_RESCAN_FM');
+      document.getElementById('btn-clear-dab').textContent = t('BTN_CLEAR_ALL_DAB');
+      document.getElementById('btn-rescan-dab').textContent = t('BTN_RESCAN_DAB');
+      document.getElementById('btn-empty-recycle').textContent = t('BTN_EMPTY_RECYCLE');
+      document.getElementById('btn-save-text').textContent = t('BTN_SAVE');
+      document.getElementById('btn-save-text-inline').textContent = t('BTN_SAVE');
+      document.getElementById('btn-cancel-text').textContent = t('BTN_CANCEL');
+      document.getElementById('recycle-notice-text').textContent = t('RECYCLE_NOTICE');
+      document.getElementById('fm-search').placeholder = t('SEARCH_FM');
+      document.getElementById('dab-search').placeholder = t('SEARCH_DAB');
+      document.getElementById('recycle-search').placeholder = t('SEARCH_RECYCLE');
+      document.getElementById('close-btn-text').textContent = t('CLOSE_WINDOW');
+      
+      // Show close button only when opened in new tab (not in iframe)
+      const closeBtn = document.getElementById('close-window-btn');
+      if (window.parent === window) {
+        // Opened in new tab/window, show close button
+        closeBtn.classList.remove('hidden');
+      } else {
+        // Opened in iframe, hide close button
+        closeBtn.classList.add('hidden');
+      }
+    }
+    
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        tab.classList.add('active');
+        const tabId = tab.dataset.tab + '-tab';
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
+    
+    // Load stations
+    async function loadStations() {
+      try {
+        const response = await fetch('/api/stations');
+        const data = await response.json();
+        
+        fmStations = data.fm || [];
+        dabStations = data.dab || [];
+        
+        // Clean up any dirty flags that might have been saved to backend
+        fmStations.forEach(s => delete s.dirty);
+        dabStations.forEach(s => delete s.dirty);
+        
+        renderStations('fm', fmStations);
+        renderStations('dab', dabStations);
+        renderRecycleBin();
+        updateStats();
+        updateRecycleCount();
+        
+        hasChanges = false;
+        updateSaveStatus(t('STATUS_NO_CHANGES'), false);
+        document.getElementById('save-btn').disabled = true;
+        
+      } catch (error) {
+        showToast(t('TOAST_LOAD_FAILED', error.message), 'error');
+      }
+    }
+    
+    // Render station list
+    function renderStations(type, stations) {
+      const listEl = document.getElementById(type + '-list');
+      const searchEl = document.getElementById(type + '-search');
+      const searchTerm = searchEl.value.toLowerCase();
+      
+      let filtered = stations.filter(s => !s.deleted);
+      if (searchTerm) {
+        filtered = filtered.filter(s => {
+          const name = s.customName || s.name || '';
+          const freq = type === 'fm' ? s.frequency : s.channelName || '';
+          return name.toLowerCase().includes(searchTerm) || 
+                 freq.toString().toLowerCase().includes(searchTerm);
+        });
+      }
+      
+      if (filtered.length === 0) {
+        const emptyKey = type === 'fm' ? 'EMPTY_FM' : 'EMPTY_DAB';
+        listEl.innerHTML = '<div class="empty-state"><i class="fa fa-radio"></i><div class="empty-state-text">' + t(emptyKey) + '</div></div>';
+        return;
+      }
+      
+      listEl.innerHTML = filtered.map((station) => {
+        const realIdx = stations.indexOf(station);
+        const displayName = station.customName || station.name || t('STATION_NAME_UNKNOWN');
+        
+        let icon = '';
+        if (station.favorite) {
+          icon = '<i class="fa fa-star station-icon favorite"></i>';
+        } else if (station.hidden) {
+          icon = '<i class="fa fa-eye-slash station-icon hidden-icon"></i>';
+        } else {
+          icon = '<i class="fa fa-circle-o station-icon"></i>';
+        }
+        
+        const favoriteClass = station.favorite ? 'active favorite' : '';
+        const hiddenClass = station.hidden ? 'active hidden' : '';
+        
+        let frequencyHtml = '';
+        if (type === 'fm') {
+          frequencyHtml = '<input type="number" class="frequency-input" value="' + station.frequency + '" min="87.5" max="108.0" step="0.1" data-type="fm" data-index="' + realIdx + '" data-original="' + station.frequency + '" title="' + t('LABEL_FREQUENCY') + '">';
+        } else {
+          frequencyHtml = '<span class="frequency-display">' + (station.channelName || '') + '</span>';
+        }
+        
+        return `
+          <div class="station-item${station.dirty ? ' dirty' : ''}" data-type="${type}" data-index="${realIdx}">
+            ${icon}
+            <div class="station-info">
+              <div class="station-name">
+                <input type="text" class="station-name-input" value="${escapeHtml(displayName)}" data-type="${type}" data-index="${realIdx}" placeholder="${t('PLACEHOLDER_STATION_NAME')}">
+              </div>
+              <div class="station-details">
+                ${frequencyHtml}
+              </div>
+            </div>
+            <div class="station-actions">
+              <button class="btn btn-icon ${favoriteClass}" title="${t('BTN_FAVORITE')}" data-type="${type}" data-index="${realIdx}" data-action="favorite">
+                <i class="fa ${station.favorite ? 'fa-star' : 'fa-star-o'}"></i>
+              </button>
+              <button class="btn btn-icon ${hiddenClass}" title="${t('BTN_HIDDEN')}" data-type="${type}" data-index="${realIdx}" data-action="hidden">
+                <i class="fa ${station.hidden ? 'fa-eye-slash' : 'fa-eye'}"></i>
+              </button>
+              <button class="btn btn-danger" title="${t('BTN_DELETE')}" data-type="${type}" data-index="${realIdx}" data-action="delete">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-save-row" title="${t('BTN_SAVE')}" data-type="${type}" data-index="${realIdx}" data-action="save-row">
+                <i class="fa fa-floppy-o"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      attachEventListeners(type);
+    }
+    
+    // Render recycle bin
+    function renderRecycleBin() {
+      const listEl = document.getElementById('recycle-list');
+      const searchEl = document.getElementById('recycle-search');
+      const searchTerm = searchEl.value.toLowerCase();
+      
+      const deletedFm = fmStations.filter(s => s.deleted).map(s => ({...s, type: 'fm'}));
+      const deletedDab = dabStations.filter(s => s.deleted).map(s => ({...s, type: 'dab'}));
+      let allDeleted = [...deletedFm, ...deletedDab];
+      
+      if (searchTerm) {
+        allDeleted = allDeleted.filter(s => {
+          const name = s.customName || s.name || '';
+          return name.toLowerCase().includes(searchTerm);
+        });
+      }
+      
+      if (allDeleted.length === 0) {
+        listEl.innerHTML = '<div class="empty-state"><i class="fa fa-check-circle"></i><div class="empty-state-text">' + t('EMPTY_RECYCLE') + '</div></div>';
+        return;
+      }
+      
+      listEl.innerHTML = allDeleted.map(station => {
+        const stations = station.type === 'fm' ? fmStations : dabStations;
+        const realIdx = stations.indexOf(stations.find(s => 
+          (station.type === 'fm' ? s.frequency === station.frequency : s.exactName === station.exactName)
+        ));
+        
+        const displayName = station.customName || station.name || t('STATION_NAME_UNKNOWN');
+        const frequency = station.type === 'fm' ? station.frequency + ' MHz' : (station.channelName || '');
+        const typeLabel = station.type.toUpperCase();
+        
+        return `
+          <div class="station-item deleted" data-type="${station.type}" data-index="${realIdx}">
+            <i class="fa fa-trash station-icon"></i>
+            <div class="station-info">
+              <div class="station-name">
+                <span class="station-type-badge">${typeLabel}</span>
+                ${escapeHtml(displayName)}
+              </div>
+              <div class="station-details">${frequency}</div>
+            </div>
+            <div class="station-actions">
+              <button class="btn btn-warning" title="${t('BTN_RESTORE')}" data-type="${station.type}" data-index="${realIdx}" data-action="restore">
+                <i class="fa fa-undo"></i>
+                <span>${t('BTN_RESTORE')}</span>
+              </button>
+              <button class="btn btn-danger" title="${t('BTN_PURGE')}" data-type="${station.type}" data-index="${realIdx}" data-action="purge-one">
+                <i class="fa fa-times-circle"></i>
+                <span>${t('BTN_PURGE')}</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      attachRecycleEventListeners();
+    }
+    
+    // Attach event listeners
+    function attachEventListeners(type) {
+      document.querySelectorAll(`input.station-name-input[data-type="${type}"]`).forEach(input => {
+        input.addEventListener('input', (e) => {
+          const idx = parseInt(e.target.dataset.index);
+          const stations = type === 'fm' ? fmStations : dabStations;
+          stations[idx].customName = e.target.value;
+          markRowDirty(type, idx);
+        });
+      });
+      
+      document.querySelectorAll(`input.frequency-input[data-type="${type}"]`).forEach(input => {
+        input.addEventListener('blur', (e) => {
+          const idx = parseInt(e.target.dataset.index);
+          const newFreq = parseFloat(e.target.value);
+          const oldFreq = parseFloat(e.target.dataset.original);
+          
+          if (newFreq === oldFreq) return;
+          
+          if (newFreq < 87.5 || newFreq > 108.0 || isNaN(newFreq)) {
+            showToast(t('WARN_FREQ_INVALID'), 'error');
+            e.target.value = oldFreq;
+            e.target.classList.add('error');
+            setTimeout(() => e.target.classList.remove('error'), 2000);
+            return;
+          }
+          
+          const stations = fmStations;
+          const station = stations[idx];
+          
+          pendingFreqChange = {
+            type: type,
+            index: idx,
+            oldFreq: oldFreq,
+            newFreq: newFreq,
+            stationName: station.customName || station.name,
+            inputEl: e.target
+          };
+          
+          showFrequencyWarning();
+        });
+      });
+      
+      document.querySelectorAll(`button[data-type="${type}"]`).forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const idx = parseInt(e.currentTarget.dataset.index);
+          const action = e.currentTarget.dataset.action;
+          const stations = type === 'fm' ? fmStations : dabStations;
+          
+          if (action === 'save-row') {
+            // Save this specific row
+            await saveRow(type, idx);
+            return;
+          }
+          
+          if (action === 'favorite') {
+            stations[idx].favorite = !stations[idx].favorite;
+          } else if (action === 'hidden') {
+            stations[idx].hidden = !stations[idx].hidden;
+          } else if (action === 'delete') {
+            if (confirm(t('CONFIRM_DELETE_ONE'))) {
+              stations[idx].deleted = true;
+            } else {
+              return;
+            }
+          }
+          
+          markRowDirty(type, idx);
+          renderStations(type, stations);
+          renderRecycleBin();
+          updateStats();
+          updateRecycleCount();
+        });
+      });
+    }
+    
+    // Attach recycle bin event listeners
+    function attachRecycleEventListeners() {
+      document.querySelectorAll('#recycle-list button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = parseInt(e.currentTarget.dataset.index);
+          const action = e.currentTarget.dataset.action;
+          const type = e.currentTarget.dataset.type;
+          const stations = type === 'fm' ? fmStations : dabStations;
+          
+          if (action === 'restore') {
+            stations[idx].deleted = false;
+            markChanged();
+            renderStations(type, stations);
+            renderRecycleBin();
+            updateStats();
+            updateRecycleCount();
+            showToast(t('TOAST_RESTORED'));
+          } else if (action === 'purge-one') {
+            if (confirm(t('CONFIRM_PURGE_ONE'))) {
+              if (type === 'fm') {
+                fmStations.splice(idx, 1);
+              } else {
+                dabStations.splice(idx, 1);
+              }
+              markChanged();
+              renderRecycleBin();
+              updateRecycleCount();
+              showToast(t('TOAST_PURGED'), 'warning');
+            }
+          }
+        });
+      });
+    }
+    
+    // Frequency change warning modal
+    function showFrequencyWarning() {
+      if (!pendingFreqChange) return;
+      
+      const modal = document.getElementById('freq-modal');
+      document.getElementById('freq-modal-title').textContent = t('WARN_FREQ_CHANGE_TITLE');
+      document.getElementById('freq-modal-msg').textContent = t('WARN_FREQ_CHANGE_MSG', pendingFreqChange.stationName);
+      document.getElementById('freq-old-label').textContent = t('WARN_FREQ_CHANGE_FROM');
+      document.getElementById('freq-new-label').textContent = t('WARN_FREQ_CHANGE_TO');
+      document.getElementById('freq-old-value').textContent = pendingFreqChange.oldFreq + ' MHz';
+      document.getElementById('freq-new-value').textContent = pendingFreqChange.newFreq + ' MHz';
+      document.getElementById('freq-modal-details').textContent = t('WARN_FREQ_CHANGE_DETAILS', pendingFreqChange.newFreq);
+      document.getElementById('freq-confirm-text').textContent = t('WARN_FREQ_CHANGE_BTN');
+      
+      modal.classList.add('show');
+    }
+    
+    document.getElementById('freq-cancel').addEventListener('click', () => {
+      if (pendingFreqChange) {
+        pendingFreqChange.inputEl.value = pendingFreqChange.oldFreq;
+        pendingFreqChange = null;
+      }
+      document.getElementById('freq-modal').classList.remove('show');
+    });
+    
+    document.getElementById('freq-confirm').addEventListener('click', () => {
+      if (pendingFreqChange) {
+        const stations = pendingFreqChange.type === 'fm' ? fmStations : dabStations;
+        stations[pendingFreqChange.index].frequency = pendingFreqChange.newFreq;
+        pendingFreqChange.inputEl.dataset.original = pendingFreqChange.newFreq;
+        
+        const duplicate = stations.find((s, i) => 
+          i !== pendingFreqChange.index && s.frequency === pendingFreqChange.newFreq && !s.deleted
+        );
+        if (duplicate) {
+          showToast(t('WARN_FREQ_DUPLICATE', pendingFreqChange.newFreq), 'warning');
+        }
+        
+        markChanged();
+        showToast(t('TOAST_FREQUENCY_CHANGED', pendingFreqChange.newFreq));
+        pendingFreqChange = null;
+      }
+      document.getElementById('freq-modal').classList.remove('show');
+    });
+    
+    // Update statistics
+    function updateStats() {
+      const fmFiltered = fmStations.filter(s => !s.deleted);
+      const dabFiltered = dabStations.filter(s => !s.deleted);
+      
+      document.getElementById('fm-total').textContent = fmFiltered.length;
+      document.getElementById('fm-favorites').textContent = fmFiltered.filter(s => s.favorite).length;
+      document.getElementById('fm-hidden').textContent = fmFiltered.filter(s => s.hidden).length;
+      
+      document.getElementById('dab-total').textContent = dabFiltered.length;
+      document.getElementById('dab-favorites').textContent = dabFiltered.filter(s => s.favorite).length;
+      document.getElementById('dab-hidden').textContent = dabFiltered.filter(s => s.hidden).length;
+    }
+    
+    // Update recycle count
+    function updateRecycleCount() {
+      const deletedCount = fmStations.filter(s => s.deleted).length + dabStations.filter(s => s.deleted).length;
+      document.getElementById('recycle-count').textContent = deletedCount;
+      document.getElementById('recycle-count').style.display = deletedCount > 0 ? 'inline-block' : 'none';
+    }
+    
+    // Mark as changed
+    function markChanged() {
+      hasChanges = true;
+      updateSaveStatus(t('STATUS_UNSAVED'), true);
+      document.getElementById('save-btn').disabled = false;
+    }
+    
+    // Mark a specific row as dirty
+    function markRowDirty(type, idx) {
+      const stations = type === 'fm' ? fmStations : dabStations;
+      stations[idx].dirty = true;
+      
+      // Mark the station-item element as dirty
+      const stationItem = document.querySelector(`.station-item[data-type="${type}"][data-index="${idx}"]`);
+      if (stationItem) {
+        stationItem.classList.add('dirty');
+      }
+      
+      // Update global save status
+      markChanged();
+      updateDirtyCount();
+    }
+    
+    // Update dirty count in save button text
+    function updateDirtyCount() {
+      const dirtyFm = fmStations.filter(s => s.dirty && !s.deleted).length;
+      const dirtyDab = dabStations.filter(s => s.dirty && !s.deleted).length;
+      const totalDirty = dirtyFm + dirtyDab;
+      
+      if (totalDirty > 0) {
+        document.getElementById('btn-save-text').textContent = t('BTN_SAVE') + ' (' + totalDirty + ')';
+        document.getElementById('btn-save-text-inline').textContent = t('BTN_SAVE') + ' (' + totalDirty + ')';
+      } else {
+        document.getElementById('btn-save-text').textContent = t('BTN_SAVE');
+        document.getElementById('btn-save-text-inline').textContent = t('BTN_SAVE');
+      }
+    }
+    
+    // Save a specific row
+    async function saveRow(type, idx) {
+      const stations = type === 'fm' ? fmStations : dabStations;
+      const station = stations[idx];
+      
+      if (!station.dirty) return;
+      
+      showToast(t('STATUS_SAVING') + '...', 'info');
+      
+      try {
+        // Save stations to backend
+        await saveChanges();
+        
+        // Mark row as clean
+        station.dirty = false;
+        
+        // Remove dirty class from UI
+        const stationItem = document.querySelector(`.station-item[data-type="${type}"][data-index="${idx}"]`);
+        if (stationItem) {
+          stationItem.classList.remove('dirty');
+        }
+        
+        // Check if any other rows are dirty
+        const dirtyFm = fmStations.filter(s => s.dirty && !s.deleted).length;
+        const dirtyDab = dabStations.filter(s => s.dirty && !s.deleted).length;
+        
+        if (dirtyFm === 0 && dirtyDab === 0) {
+          hasChanges = false;
+          updateSaveStatus(t('STATUS_SAVED'), false);
+        } else {
+          updateDirtyCount();
+        }
+        
+        showToast(t('TOAST_SAVED'), 'success', 1500);
+      } catch (error) {
+        showToast(t('TOAST_SAVE_FAILED', error.message), 'error');
+      }
+    }
+    
+    // Update save status
+    function updateSaveStatus(message, changed) {
+      // Update bottom save bar
+      const statusEl = document.getElementById('save-status');
+      const iconEl = statusEl.querySelector('.fa');
+      const textEl = document.getElementById('status-text');
+      
+      textEl.textContent = message;
+      
+      if (changed) {
+        statusEl.classList.add('changed');
+        iconEl.className = 'fa fa-exclamation-triangle';
+      } else {
+        statusEl.classList.remove('changed');
+        iconEl.className = 'fa fa-check-circle';
+      }
+      
+      // Update inline save status
+      const statusInlineEl = document.getElementById('save-status-inline');
+      const iconInlineEl = statusInlineEl.querySelector('.fa');
+      const textInlineEl = document.getElementById('status-text-inline');
+      
+      textInlineEl.textContent = message;
+      
+      if (changed) {
+        statusInlineEl.classList.add('changed');
+        iconInlineEl.className = 'fa fa-exclamation-triangle';
+      } else {
+        statusInlineEl.classList.remove('changed');
+        iconInlineEl.className = 'fa fa-check-circle';
+      }
+      
+      // Update both save buttons
+      document.getElementById('save-btn').disabled = !changed;
+      document.getElementById('save-btn-inline').disabled = !changed;
+    }
+    
+    // Save changes
+    async function saveChanges() {
+      try {
+        document.getElementById('save-btn').disabled = true;
+        document.getElementById('save-btn-inline').disabled = true;
+        updateSaveStatus(t('STATUS_SAVING'), false);
+        
+        // Clear all dirty flags before saving
+        const cleanFm = fmStations.map(s => {
+          const clean = {...s};
+          delete clean.dirty;
+          return clean;
+        });
+        const cleanDab = dabStations.map(s => {
+          const clean = {...s};
+          delete clean.dirty;
+          return clean;
+        });
+        
+        const response = await fetch('/api/stations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fm: cleanFm, dab: cleanDab })
+        });
+        
+        if (!response.ok) throw new Error('Save failed');
+        
+        // Clean in-memory versions too
+        fmStations.forEach(s => delete s.dirty);
+        dabStations.forEach(s => delete s.dirty);
+        
+        // Remove dirty class from all rows
+        document.querySelectorAll('.station-item.dirty').forEach(el => {
+          el.classList.remove('dirty');
+        });
+        
+        hasChanges = false;
+        updateSaveStatus(t('STATUS_SAVED'), false);
+        updateDirtyCount();
+        showToast(t('TOAST_SAVED'));
+        setTimeout(() => loadStations(), 1000);
+        
+      } catch (error) {
+        showToast(t('TOAST_SAVE_FAILED', error.message), 'error');
+        document.getElementById('save-btn').disabled = false;
+        document.getElementById('save-btn-inline').disabled = false;
+        updateSaveStatus(t('STATUS_UNSAVED'), true);
+      }
+    }
+    
+    // Clear all FM stations
+    document.getElementById('clear-fm-btn').addEventListener('click', async () => {
+      const count = fmStations.filter(s => !s.deleted).length;
+      if (count === 0) {
+        showToast(t('EMPTY_FM'), 'warning');
+        return;
+      }
+      
+      const confirmed = await showConfirmModal(
+        t('CONFIRM_CLEAR_FM_TITLE'),
+        t('CONFIRM_CLEAR_FM_MSG', count),
+        'danger'
+      );
+      if (!confirmed) return;
+      
+      try {
+        const response = await fetch('/api/stations/clear-fm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) throw new Error('Clear failed');
+        
+        const data = await response.json();
+        showToast(t('TOAST_CLEARED_FM', data.count));
+        setTimeout(() => loadStations(), 1000);
+        
+      } catch (error) {
+        showToast(t('TOAST_CLEAR_FAILED', error.message), 'error');
+      }
+    });
+    
+    // Clear all DAB stations
+    document.getElementById('clear-dab-btn').addEventListener('click', async () => {
+      const count = dabStations.filter(s => !s.deleted).length;
+      if (count === 0) {
+        showToast(t('EMPTY_DAB'), 'warning');
+        return;
+      }
+      
+      const confirmed = await showConfirmModal(
+        t('CONFIRM_CLEAR_DAB_TITLE'),
+        t('CONFIRM_CLEAR_DAB_MSG', count),
+        'danger'
+      );
+      if (!confirmed) return;
+      
+      try {
+        const response = await fetch('/api/stations/clear-dab', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) throw new Error('Clear failed');
+        
+        const data = await response.json();
+        showToast(t('TOAST_CLEARED_DAB', data.count));
+        setTimeout(() => loadStations(), 1000);
+        
+      } catch (error) {
+        showToast(t('TOAST_CLEAR_FAILED', error.message), 'error');
+      }
+    });
+    
+    // Rescan FM stations
+    document.getElementById('rescan-fm-btn').addEventListener('click', async () => {
+      const confirmed = await showConfirmModal(
+        t('CONFIRM_RESCAN_FM_TITLE'),
+        t('CONFIRM_RESCAN_FM'),
+        'info'
+      );
+      if (!confirmed) return;
+      
+      try {
+        showScanningModal('fm');
+        
+        const response = await fetch('/api/stations/scan-fm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) throw new Error('Rescan failed');
+        
+        showToast(t('TOAST_FM_SCANNING'));
+        pollScanStatus('fm');
+        
+      } catch (error) {
+        hideScanningModal();
+        showToast(t('TOAST_RESCAN_FAILED', error.message), 'error');
+      }
+    });
+    
+    // Rescan DAB stations
+    document.getElementById('rescan-dab-btn').addEventListener('click', async () => {
+      const confirmed = await showConfirmModal(
+        t('CONFIRM_RESCAN_DAB_TITLE'),
+        t('CONFIRM_RESCAN_DAB'),
+        'info'
+      );
+      if (!confirmed) return;
+      
+      try {
+        showScanningModal('dab');
+        
+        const response = await fetch('/api/stations/scan-dab', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) throw new Error('Rescan failed');
+        
+        showToast(t('TOAST_DAB_SCANNING'));
+        pollScanStatus('dab');
+        
+      } catch (error) {
+        hideScanningModal();
+        showToast(t('TOAST_RESCAN_FAILED', error.message), 'error');
+      }
+    });
+    
+    // Empty recycle bin
+    document.getElementById('empty-recycle-btn').addEventListener('click', async () => {
+      const deletedCount = fmStations.filter(s => s.deleted).length + dabStations.filter(s => s.deleted).length;
+      
+      if (deletedCount === 0) {
+        showToast(t('EMPTY_RECYCLE'), 'warning');
+        return;
+      }
+      
+      const confirmed = await showConfirmModal(
+        t('CONFIRM_EMPTY_RECYCLE_TITLE'),
+        t('CONFIRM_EMPTY_RECYCLE_MSG', deletedCount),
+        'danger'
+      );
+      if (!confirmed) return;
+      
+      try {
+        const response = await fetch('/api/stations/purge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) throw new Error('Purge failed');
+        
+        showToast(t('TOAST_RECYCLE_EMPTIED', deletedCount), 'warning');
+        setTimeout(() => loadStations(), 1000);
+        
+      } catch (error) {
+        showToast(t('TOAST_WEB_RECYCLE_EMPTY_FAILED', error.message), 'error');
+      }
+    });
+    
+    // Show toast
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const iconEl = toast.querySelector('.fa');
+      const messageEl = document.getElementById('toast-message');
+      
+      messageEl.textContent = message;
+      
+      if (type === 'error') {
+        toast.className = 'toast show error';
+        iconEl.className = 'fa fa-exclamation-triangle';
+      } else if (type === 'warning') {
+        toast.className = 'toast show warning';
+        iconEl.className = 'fa fa-exclamation-circle';
+      } else {
+        toast.className = 'toast show';
+        iconEl.className = 'fa fa-check-circle';
+      }
+      
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+    
+    // Escape HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    // Search functionality
+    document.getElementById('fm-search').addEventListener('input', () => renderStations('fm', fmStations));
+    document.getElementById('dab-search').addEventListener('input', () => renderStations('dab', dabStations));
+    document.getElementById('recycle-search').addEventListener('input', () => renderRecycleBin());
+    
+    // Save button
+    document.getElementById('save-btn').addEventListener('click', saveChanges);
+    document.getElementById('save-btn-inline').addEventListener('click', saveChanges);
+    
+    // Warn on unsaved changes
+    window.addEventListener('beforeunload', (e) => {
+      if (hasChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+    
+    // Initialize
+    loadTranslations().then(() => loadStations());
+    // Touchscreen keyboard support for iframe context
+    // When running in iframe, notify parent window about input focus for onscreen keyboard
+    if (window.parent !== window) {
+      // Running in iframe - setup focus/blur event delegation
+      let hideKeyboardTimeout = null;
+      let currentFocusedInput = null;
+      let keyboardRelayMode = false; // Track if keyboard is in relay mode
+      
+      // Add CSS to maintain focus appearance
+      const style = document.createElement('style');
+      style.textContent = '.volumio-keyboard-focused { outline: 2px solid #4CAF50 !important; outline-offset: -2px !important; }';
+      document.head.appendChild(style);
+      
+      document.addEventListener('focusin', (e) => {
+        if (e.target.matches('input, textarea')) {
+          // Track currently focused input
+          currentFocusedInput = e.target;
+          keyboardRelayMode = true; // Entering keyboard relay mode
+          
+          // Add visual focus class
+          e.target.classList.add('volumio-keyboard-focused');
+          
+          // Cancel any pending hide operation
+          if (hideKeyboardTimeout) {
+            clearTimeout(hideKeyboardTimeout);
+            hideKeyboardTimeout = null;
+          }
+          
+          // Notify parent window that an input was focused
+          window.parent.postMessage({
+            type: 'volumio-input-focus',
+            action: 'show-keyboard'
+          }, '*');
+        }
+      }, true);
+      
+      document.addEventListener('focusout', (e) => {
+        if (e.target.matches('input, textarea')) {
+          // Don't schedule hide if we're in keyboard relay mode
+          // The keyboard should stay visible even though input lost real focus
+          if (!keyboardRelayMode) {
+            // Normal hide logic for when keyboard not in relay mode
+            hideKeyboardTimeout = setTimeout(() => {
+              currentFocusedInput = null;
+              e.target.classList.remove('volumio-keyboard-focused');
+              
+              window.parent.postMessage({
+                type: 'volumio-input-focus',
+                action: 'hide-keyboard'
+              }, '*');
+              hideKeyboardTimeout = null;
+            }, 300);
+          }
+          // If in relay mode, do nothing - keyboard stays visible
+        }
+      }, true);
+      
+      // Listen for explicit close requests (user clicks outside, etc)
+      document.addEventListener('click', (e) => {
+        if (keyboardRelayMode && !e.target.matches('input, textarea')) {
+          // User clicked outside input while keyboard active - close it
+          keyboardRelayMode = false;
+          
+          if (currentFocusedInput) {
+            currentFocusedInput.classList.remove('volumio-keyboard-focused');
+            currentFocusedInput = null;
+          }
+          
+          window.parent.postMessage({
+            type: 'volumio-input-focus',
+            action: 'hide-keyboard'
+          }, '*');
+        }
+      }, true);
+      
+      // Listen for keystroke events from parent (keyboard input relay)
+      window.addEventListener('message', (e) => {
+        if (e.data && e.data.type === 'volumio-keystroke' && e.data.action === 'input') {
+          // Apply keystroke to currently tracked input
+          if (currentFocusedInput) {
+            const input = currentFocusedInput;
+            const cursorPos = input.selectionStart || 0;
+            const currentValue = input.value || '';
+            const newChar = e.data.value;
+            
+            // Insert character at cursor position
+            const newValue = currentValue.substring(0, cursorPos) + newChar + currentValue.substring(cursorPos);
+            input.value = newValue;
+            
+            // Move cursor forward
+            const newCursorPos = cursorPos + newChar.length;
+            input.setSelectionRange(newCursorPos, newCursorPos);
+            
+            // Trigger input event for any listeners
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            
+            // Maintain visual focus
+            if (!input.classList.contains('volumio-keyboard-focused')) {
+              input.classList.add('volumio-keyboard-focused');
+            }
+          }
+        }
+      }, false);
+    }
+  </script>
+</body>
+</html>

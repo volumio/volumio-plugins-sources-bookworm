@@ -1,0 +1,224 @@
+# FM/DAB Radio Plugin for Volumio
+
+Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.
+
+## Hardware Requirements
+
+- RTL-SDR USB dongle (RTL2832U chipset)
+- Compatible with R820T, R820T2, E4000 tuners
+- Antenna suitable for FM (88-108 MHz) and/or DAB Band III (174-240 MHz)
+
+## Supported Platforms
+
+- Raspberry Pi (armhf, arm64)
+- x86/x64 systems (amd64)
+- Volumio 4.x (Bookworm)
+
+## Features
+
+### Radio Reception
+- FM radio reception (87.5-108 MHz)
+- DAB and DAB+ digital radio
+- Automatic station scanning with configurable sensitivity
+- Integrated with Volumio's playback system
+- Volume control through Volumio
+
+### Station Management
+- Web-based station management interface
+- Mark stations as favorites
+- Hide unwanted stations
+- Custom station naming
+- Search and filter stations
+- Recycle bin for deleted stations (recoverable)
+- Per-row save buttons for quick edits
+- Bulk operations (clear all, rescan)
+
+### Multilingual Support
+The plugin fully supports internationalization with automatic language detection:
+- Plugin settings interface displays in your selected Volumio language
+- Web management interface automatically follows Volumio's language setting
+- No manual configuration required
+
+**Supported Languages:**
+- English
+- German (Deutsch)
+- Spanish (Espanol)
+- French (Francais)
+- Italian (Italiano)
+- Japanese (日本語)
+- Dutch (Nederlands)
+- Polish (Polski)
+- Portuguese (Portugues)
+- Russian (Русский)
+- Chinese Simplified (简体中文)
+
+To change language: Settings > Appearance > Language. Both plugin settings and web manager will update automatically.
+
+### Diagnostics Tools
+The plugin includes diagnostic tools to test your USB dongle before scanning:
+
+- **Purpose**: Verify your dongle can receive specific frequencies
+- **When to use**: Station won't play, weak signal, testing new dongle
+- **How**: Enter a known strong station, save settings, click test
+- **Expected result**: You should hear audio
+
+**Understanding Gain Settings**:
+- Gain controls the RTL-SDR RF amplifier, affecting signal-to-noise ratio and overload threshold
+- **NESDR Smart dongles**: Start with gain 20 (better amplifiers, prevent overload)
+- **Generic RTL-SDR**: Start with gain 80 (needs higher amplification)
+- Adjust if: distorted (lower gain) or no signal (higher gain)
+- Note: This is RF amplification, not volume control
+
+**Technical Service Names**:
+DAB stations use technical identifiers that may differ from display names:
+- Example: Enter "BBC Radio1" (no space) for the station branded as "BBC Radio 1" (with space)
+- These are broadcast identifiers from the DAB ensemble
+- Must match exactly as transmitted
+
+**Default Test Values (UK/London)**:
+- FM: 94.9 MHz (BBC Radio London)
+- DAB Ensemble: 12B
+- DAB Service: BBC Radio1
+- Test Gain: 20 (NESDR Smart)
+
+### Web Interface Access
+The station management interface is accessible through the plugin settings:
+- Navigate to: Settings > Plugins > Installed Plugins > FM/DAB Radio
+- Click "Open in New Tab" or "Open in Current Window"
+- Direct access: `http://<volumio-ip>:3456`
+
+## Installation
+
+1. Install plugin through Volumio plugin store
+2. Connect RTL-SDR USB dongle
+3. Enable plugin in Volumio settings
+4. Scan for available stations
+5. Browse and play stations from "FM/DAB Radio" source
+
+## Usage
+
+### Plugin Settings Organization (v1.0.0+)
+The plugin settings are organized for quick access:
+1. **Radio Station Management** - First section, open by default with immediate access to station manager
+2. **Radio Station Management Configuration** - Advanced settings (hostname override)
+3. **FM Radio** - FM configuration (expand to see settings)
+4. **DAB/DAB+ Radio** - DAB configuration (expand to see settings)
+5. **Diagnostics** - Testing tools for your USB dongle
+
+### Playing Stations
+1. Navigate to "Music Library" in Volumio
+2. Select "FM/DAB Radio" source
+3. Browse available stations
+4. Click to play
+
+### Managing Stations
+1. Open plugin settings: Settings > Plugins > Installed Plugins > FM/DAB Radio
+2. Click "Open in New Tab" or "Open in Current Window" in the Station Management section
+3. Use the web interface to:
+   - Mark favorites (star icon)
+   - Hide stations (eye icon)
+   - Delete stations (trash icon)
+   - Rename stations (edit name field)
+   - Search for stations
+   - Rescan for new stations
+
+### Testing Your Dongle
+1. Open plugin settings
+2. Expand "Diagnostics" section (if collapsed)
+3. Enable "Show Diagnostics"
+3. Enter test values (defaults provided for UK/London)
+4. Click "Save Test Settings"
+5. Click test button (FM or DAB)
+6. Adjust gain if needed based on audio quality
+
+### Save Options
+Three ways to save changes:
+- Click green save button on individual changed rows
+- Click "Save (n)" button at top (saves all changes)
+- Use save bar at bottom (saves all changes)
+
+## Development
+
+Prototype repository: https://github.com/foonerd/volumio-plugins-sources-bookworm
+Target repository: https://github.com/volumio/volumio-plugins-sources-bookworm
+
+## Architecture
+
+- Uses ALSA loopback for lightweight audio routing
+- Minimal CPU overhead (suitable for Pi Zero W2)
+- Direct PCM passthrough (no encoding/decoding)
+- Integrated with Volumio's music_service framework
+- Web management interface on port 3456
+- Station data stored in JSON format
+- DAB decoding via dab-cmdline (https://github.com/JvanKatwijk/dab-cmdline/tree/master/example-3)
+
+## Troubleshooting
+
+### Plugin won't enable
+- Check RTL-SDR dongle is connected
+- Verify dongle is detected: `lsusb | grep RTL`
+
+### No stations found
+- Check antenna is connected
+- Try adjusting scan sensitivity in settings
+- Ensure good signal reception (location dependent)
+- Use diagnostics tools to test reception first
+
+### Test buttons require save
+- Test buttons read saved configuration values, not current inputs
+- Always click "Save" before testing
+- This ensures consistent test conditions
+
+### Web interface not accessible
+- Verify port 3456 is not blocked by firewall
+- Check plugin is enabled
+- Try accessing via hostname: `http://volumio.local:3456`
+
+## License
+
+GPL-3.0
+
+## Author
+
+Just a Nerd
+
+## Version History
+
+### v1.0.0 (Current)
+- Production release - beta testing complete
+- Eliminated restart requirement after installation
+- Streamlined install process removes obsolete reboot warnings
+- DVB-T kernel module management fully automated during install
+- Ready for public release
+
+### v0.9.8
+- UI reorganization: Station manager now appears first in plugin settings
+- Station manager section open by default for immediate access
+- FM/DAB configuration sections collapsed by default for cleaner presentation
+- Clearer toggle labels: "Show" instead of "Enable"
+- Simplified installation (no Volumio core file modification)
+- Two access methods for station manager (via plugin settings)
+
+#### Language support
+- Full multilingual support: 11 languages fully translated
+- Plugin settings UI now uses Volumio's standard translation system
+- Web manager automatically detects Volumio's language setting via API
+- Both plugin settings and web interface respect user's language choice
+- No manual configuration required for language selection
+
+### v0.9.7
+- Clarified test button requirements with clear warning messages
+- Improved default values (UK/London optimized)
+- Enhanced documentation for technical service names vs display names
+- Added comprehensive RF gain explanation
+- Better diagnostics guidance for troubleshooting
+
+### v0.9.6
+- Fixed message element rendering in UI
+- Changed from 'message' to 'section' elements with 'description' field
+
+### v0.9.2
+- Defense-in-depth save strategy
+- Per-row save buttons
+- Improved user feedback
+- CSS specificity fixes

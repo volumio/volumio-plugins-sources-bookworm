@@ -1,0 +1,30 @@
+{
+  "enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "fm_enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "dab_enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "fm_gain": {
+    "type": "number",
+    "value": 50
+  },
+  "dab_gain": {
+    "type": "number",
+    "value": 80
+  },
+  "scan_sensitivity": {
+    "type": "number",
+    "value": 8
+  },
+  "sample_rate": {
+    "type": "number",
+    "value": 48000
+  }
+}
