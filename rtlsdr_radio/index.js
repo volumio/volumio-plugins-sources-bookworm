@@ -21,6 +21,8 @@ function ControllerRtlsdrRadio(context) {
   
   self.decoderProcess = null;
   self.scanProcess = null;
+  self.soxProcess = null;
+  self.aplayProcess = null;
   self.currentStation = null;
   self.stationsDb = { fm: [], dab: [] };
   
@@ -87,31 +89,10 @@ ControllerRtlsdrRadio.prototype.onStop = function() {
   var self = this;
   var defer = libQ.defer();
   
-  self.logger.info('[RTL-SDR Radio] Stopping plugin - killing all RTL-SDR processes');
+  // Force terminate all processes
+  self.stopAllProcesses('onStop', true);
   
-  // Set intentional stop flag
-  self.intentionalStop = true;
-  
-  // Kill all RTL-SDR processes synchronously
-  try {
-    var execSync = require('child_process').execSync;
-    
-    // Kill all processes (playback and scan)
-    execSync('sudo pkill -9 -f "rtl_fm"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "rtl_power"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "dab-rtlsdr-3"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "dab-scanner-3"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "aplay -D volumio"', { timeout: 2000 });
-    
-    self.logger.info('[RTL-SDR Radio] All RTL-SDR processes killed');
-  } catch (e) {
-    // pkill returns error if no processes found - this is OK
-    self.logger.info('[RTL-SDR Radio] Process cleanup complete (some processes may not have been running)');
-  }
-  
-  // Clear state
-  self.decoderProcess = null;
-  self.scanProcess = null;
+  // Clear device state (process references already cleared by stopAllProcesses)
   self.deviceState = 'idle';
   
   // Remove browse source
@@ -146,17 +127,8 @@ ControllerRtlsdrRadio.prototype.onUnload = function() {
   
   self.logger.info('[RTL-SDR Radio] Unloading plugin - final cleanup');
   
-  // Use same cleanup as onStop
-  try {
-    var execSync = require('child_process').execSync;
-    execSync('sudo pkill -9 -f "rtl_fm"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "rtl_power"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "dab-rtlsdr-3"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "dab-scanner-3"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "aplay -D volumio"', { timeout: 2000 });
-  } catch (e) {
-    // Ignore errors - processes may already be gone
-  }
+  // Force terminate all processes
+  self.stopAllProcesses('onUnload', true);
   
   self.logger.info('[RTL-SDR Radio] Plugin unloaded');
   
@@ -480,32 +452,82 @@ ControllerRtlsdrRadio.prototype.removeManagerMenuItem = function() {
 ControllerRtlsdrRadio.prototype.onVolumioStop = function() {
   var self = this;
   
-  self.logger.info('[RTL-SDR Radio] Volumio stopping - killing all RTL-SDR processes');
+  // Force terminate all processes
+  self.stopAllProcesses('onVolumioStop', true);
   
-  // Set intentional stop flag
-  self.intentionalStop = true;
-  
-  // Use synchronous kill with SIGKILL for guaranteed termination
-  try {
-    var execSync = require('child_process').execSync;
-    execSync('sudo pkill -9 -f "rtl_fm"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "rtl_power"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "dab-rtlsdr-3"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "dab-scanner-3"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "aplay -D volumio"', { timeout: 2000 });
-    self.logger.info('[RTL-SDR Radio] All processes terminated');
-  } catch (e) {
-    // Ignore errors
-  }
-  
-  // Clear state
-  self.decoderProcess = null;
-  self.scanProcess = null;
+  // Clear device state (process references already cleared by stopAllProcesses)
   self.deviceState = 'idle';
   
   self.logger.info('[RTL-SDR Radio] Ready for Volumio restart');
   
   return libQ.resolve();
+};
+
+// Helper function to kill all RTL-SDR related processes
+// caller: string identifying which function called this (for logging)
+// Unified process termination function - single source of truth
+// caller: string identifying which function called this (for logging)
+// force: boolean - true for immediate cleanup, false for graceful 500ms delay
+// NOTE: Always uses SIGKILL (-9) because RTL-SDR processes ignore SIGTERM
+ControllerRtlsdrRadio.prototype.stopAllProcesses = function(caller, force) {
+  var self = this;
+  
+  var method = force ? 'force terminating' : 'stopping';
+  self.logger.info('[RTL-SDR Radio] ' + caller + ' - ' + method + ' all processes');
+  
+  // Set intentional stop flag
+  self.intentionalStop = true;
+  
+  try {
+    var execSync = require('child_process').execSync;
+    
+    // CRITICAL: Always use SIGKILL (-9) because RTL-SDR processes ignore SIGTERM
+    // The 'force' parameter only affects cleanup timing, not kill signal
+    execSync('sudo pkill -9 -f "rtl_fm"', { timeout: 2000 });
+    execSync('sudo pkill -9 -f "rtl_power"', { timeout: 2000 });
+    execSync('sudo pkill -9 -f "dab-rtlsdr-3"', { timeout: 2000 });
+    execSync('sudo pkill -9 -f "dab-scanner-3"', { timeout: 2000 });
+    execSync('sudo pkill -9 -f "sox"', { timeout: 2000 });
+    execSync('sudo pkill -9 -f "aplay -D volumio"', { timeout: 2000 });
+  } catch (e) {
+    // pkill returns error if no processes found - this is OK
+  }
+  
+  // Try to terminate process references with SIGKILL
+  if (self.decoderProcess !== null) {
+    try { self.decoderProcess.kill('SIGKILL'); } catch (e) {}
+  }
+  
+  if (self.scanProcess !== null) {
+    try { self.scanProcess.kill('SIGKILL'); } catch (e) {}
+  }
+  
+  if (self.soxProcess !== null) {
+    try { self.soxProcess.kill('SIGKILL'); } catch (e) {}
+  }
+  
+  if (self.aplayProcess !== null) {
+    try { self.aplayProcess.kill('SIGKILL'); } catch (e) {}
+  }
+  
+  self.logger.info('[RTL-SDR Radio] ' + caller + ' - processes ' + (force ? 'terminated' : 'stopped'));
+  
+  // Handle reference cleanup based on force mode
+  if (force) {
+    // Immediate cleanup for forced termination
+    self.decoderProcess = null;
+    self.scanProcess = null;
+    self.soxProcess = null;
+    self.aplayProcess = null;
+  } else {
+    // Graceful cleanup with timeout - allows device to reset
+    setTimeout(function() {
+      self.decoderProcess = null;
+      self.scanProcess = null;
+      self.soxProcess = null;
+      self.aplayProcess = null;
+    }, 500);
+  }
 };
 
 ControllerRtlsdrRadio.prototype.loadI18nStrings = function() {
@@ -2124,7 +2146,9 @@ ControllerRtlsdrRadio.prototype.clearAddPlayTrack = function(track) {
   
   self.logger.info('[RTL-SDR Radio] Play track: ' + JSON.stringify(track));
   
-  self.stopDecoder();
+  // NOTE: Volumio always calls stop() before clearAddPlayTrack()
+  // stop() already calls stopDecoder(), so we don't call it again here
+  // Calling stopDecoder() twice causes pkill to kill the newly started process
   
   // Parse URI to determine type (FM or DAB)
   if (track.uri && track.uri.indexOf('rtlsdr://fm/') === 0) {
@@ -2361,6 +2385,9 @@ ControllerRtlsdrRadio.prototype.stopDecoder = function() {
     // Kill DAB scan processes
     exec('sudo pkill -f "dab-scanner-3"');
     
+    // Kill sox resampling process
+    exec('sudo pkill -f "sox"');
+    
     // Kill stored process reference if exists
     if (self.decoderProcess !== null) {
       self.decoderProcess.kill('SIGTERM');
@@ -2370,6 +2397,20 @@ ControllerRtlsdrRadio.prototype.stopDecoder = function() {
     if (self.scanProcess !== null) {
       self.scanProcess.kill('SIGTERM');
     }
+    
+    // Kill sox process reference if exists
+    if (self.soxProcess !== null) {
+      try {
+        self.soxProcess.kill('SIGTERM');
+      } catch (e) {}
+    }
+    
+    // Kill aplay process reference if exists
+    if (self.aplayProcess !== null) {
+      try {
+        self.aplayProcess.kill('SIGTERM');
+      } catch (e) {}
+    }
   } catch (e) {
     self.logger.error('[RTL-SDR Radio] Error stopping processes: ' + e);
   }
@@ -2378,6 +2419,8 @@ ControllerRtlsdrRadio.prototype.stopDecoder = function() {
   setTimeout(function() {
     self.decoderProcess = null;
     self.scanProcess = null;
+    self.soxProcess = null;
+    self.aplayProcess = null;
     // DON'T clear currentStation - needed for resume
   }, 500);
 };
@@ -3873,6 +3916,9 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
   // Get DAB gain from config
   var dabGain = self.config.get('dab_gain', 80);
   
+  // Clear intentional stop flag when starting new playback
+  self.intentionalStop = false;
+  
   // Build dab-rtlsdr-3 command piped to aplay
   // -C <channel> = DAB channel (e.g., 12B)
   // -P "<service>" = Service name (must match exactly with spaces)
@@ -3880,30 +3926,140 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
   // -D 30 = Detection timeout (30 seconds to find ensemble)
   // 2>/dev/null = Discard debug output to stderr
   // Pipe PCM audio to aplay with Volumio device
-  var command = 'dab-rtlsdr-3 -C ' + channel + 
-                ' -P "' + serviceName.replace(/"/g, '\\"') + '"' +
-                ' -G ' + dabGain + 
-                ' -D 30' +
-                ' 2>/dev/null | aplay -D volumio -f S16_LE -r 48000 -c 2';
+  var dabCommand = 'dab-rtlsdr-3 -C ' + channel + 
+                   ' -P "' + serviceName.replace(/"/g, '\\"') + '"' +
+                   ' -G ' + dabGain + 
+                   ' -D 30';
   
-  self.logger.info('[RTL-SDR Radio] DAB command: ' + command);
+  self.logger.info('[RTL-SDR Radio] Starting DAB decoder: ' + dabCommand);
   
-  // Clear intentional stop flag when starting new playback
+  // Spawn dab-rtlsdr-3 process
+  var spawn = require('child_process').spawn;
+  var dabProcess = spawn('sh', ['-c', dabCommand]);
   
-  // Start decoder process
-  self.decoderProcess = exec(command, function(error, stdout, stderr) {
-    if (error) {
-      // Only log error if it wasn't an intentional stop
-      if (!self.intentionalStop) {
-        self.logger.error('[RTL-SDR Radio] DAB decoder error: ' + error);
-      }
-      self.decoderProcess = null;
+  var pcmDetected = false;
+  var soxProcess = null;
+  var aplayProcess = null;
+  
+  // Capture stderr to detect PCM format
+  dabProcess.stderr.on('data', function(data) {
+    var output = data.toString();
+    
+    // Look for PCM format line: "PCM: rate=32000 stereo=0 size=3840"
+    var pcmMatch = output.match(/PCM: rate=(\d+) stereo=(\d+)/);
+    if (pcmMatch && !pcmDetected) {
+      pcmDetected = true;
+      var sampleRate = parseInt(pcmMatch[1]);
+      var stereoFlag = parseInt(pcmMatch[2]);
+      
+      // CRITICAL: stereo flag is buggy - always assume stereo=2 channels
+      var channels = 2;
+      
+      self.logger.info('[RTL-SDR Radio] Detected PCM format: ' + sampleRate + ' Hz, ' + channels + ' channels');
+      
+      // Build sox command to resample to 48kHz stereo
+      var soxCommand = 'sox -t raw -r ' + sampleRate + ' -c ' + channels + 
+                      ' -e signed-integer -b 16 - -t raw -r 48000 -c 2 -';
+      
+      // Spawn sox process
+      soxProcess = spawn('sh', ['-c', soxCommand]);
+      
+      // Pipe dab stdout to sox stdin
+      dabProcess.stdout.pipe(soxProcess.stdin);
+      
+      // CRITICAL: Handle pipe errors to prevent EPIPE crashes
+      dabProcess.stdout.on('error', function(err) {
+        if (err.code !== 'EPIPE' && !self.intentionalStop) {
+          self.logger.error('[RTL-SDR Radio] dab stdout error: ' + err);
+        }
+      });
+      
+      // CRITICAL: Handle stdin write errors to prevent EPIPE crashes
+      soxProcess.stdin.on('error', function(err) {
+        if (err.code !== 'EPIPE' && !self.intentionalStop) {
+          self.logger.error('[RTL-SDR Radio] sox stdin error: ' + err);
+        }
+      });
+      
+      // Spawn aplay process
+      aplayProcess = spawn('aplay', ['-D', 'volumio', '-f', 'S16_LE', '-r', '48000', '-c', '2']);
+      
+      // Pipe sox stdout to aplay stdin
+      soxProcess.stdout.pipe(aplayProcess.stdin);
+      
+      // CRITICAL: Handle pipe errors to prevent EPIPE crashes
+      soxProcess.stdout.on('error', function(err) {
+        if (err.code !== 'EPIPE' && !self.intentionalStop) {
+          self.logger.error('[RTL-SDR Radio] sox stdout error: ' + err);
+        }
+      });
+      
+      // CRITICAL: Handle stdin write errors to prevent EPIPE crashes
+      aplayProcess.stdin.on('error', function(err) {
+        if (err.code !== 'EPIPE' && !self.intentionalStop) {
+          self.logger.error('[RTL-SDR Radio] aplay stdin error: ' + err);
+        }
+      });
+      
+      // Handle sox errors
+      soxProcess.on('error', function(err) {
+        if (!self.intentionalStop) {
+          self.logger.error('[RTL-SDR Radio] sox error: ' + err);
+        }
+      });
+      
+      soxProcess.on('exit', function(code) {
+        if (!self.intentionalStop && code !== null && code !== 0) {
+          self.logger.error('[RTL-SDR Radio] sox exited with code: ' + code);
+        }
+      });
+      
+      // Handle aplay errors
+      aplayProcess.on('error', function(err) {
+        if (!self.intentionalStop) {
+          self.logger.error('[RTL-SDR Radio] aplay error: ' + err);
+        }
+      });
+      
+      aplayProcess.on('exit', function(code) {
+        if (!self.intentionalStop && code !== null && code !== 0) {
+          self.logger.error('[RTL-SDR Radio] aplay exited with code: ' + code);
+        }
+      });
+      
+      // Store process references for cleanup
+      self.soxProcess = soxProcess;
+      self.aplayProcess = aplayProcess;
     }
   });
   
+  // Handle dab process errors
+  dabProcess.on('error', function(err) {
+    if (!self.intentionalStop) {
+      self.logger.error('[RTL-SDR Radio] DAB decoder error: ' + err);
+    }
+  });
+  
+  dabProcess.on('exit', function(code) {
+    if (!self.intentionalStop && code !== null && code !== 0) {
+      self.logger.error('[RTL-SDR Radio] DAB decoder exited with code: ' + code);
+    }
+    
+    // Cleanup child processes
+    if (soxProcess) {
+      try { soxProcess.kill(); } catch(e) {}
+    }
+    if (aplayProcess) {
+      try { aplayProcess.kill(); } catch(e) {}
+    }
+  });
+  
+  // Store processes for cleanup
+  self.decoderProcess = dabProcess;
+  
   // Store current station for resume
   self.currentStation = {
-    uri: 'rtlsdr://dab/' + channel + '/' + encodeURIComponent(serviceName),
+    uri: uri,
     name: stationTitle,
     service: 'rtlsdr_radio'
   };
@@ -3918,7 +4074,7 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
     artist: self.getI18nString('DAB_RADIO'),
     album: 'Channel ' + channel,
     albumart: '/albumart?sourceicon=music_service/rtlsdr_radio/assets/dab.svg',
-    uri: 'rtlsdr://dab/' + channel + '/' + encodeURIComponent(serviceName),
+    uri: uri,
     trackType: 'DAB',
     samplerate: '48 kHz',
     bitdepth: '16 bit',

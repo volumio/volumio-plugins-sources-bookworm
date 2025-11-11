@@ -1,6 +1,6 @@
 {
   "name": "rtlsdr_radio",
-  "version": "1.0.0",
+  "version": "1.0.6",
   "description": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "has_configuration": true,
     "has_alsa_contribution": true,
     "details": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
-    "changelog": "v1.0.0 - Production release. Eliminated restart requirement after installation. Streamlined install process removes obsolete reboot warnings."
+    "changelog": "v1.0.6 - Production release. Added sox resampling pipeline for DAB playback with automatic PCM format detection and EPIPE error handling."
   },
   "engines": {
     "node": ">=20",

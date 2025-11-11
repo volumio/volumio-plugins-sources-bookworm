@@ -146,7 +146,8 @@ Target repository: https://github.com/volumio/volumio-plugins-sources-bookworm
 
 - Uses ALSA loopback for lightweight audio routing
 - Minimal CPU overhead (suitable for Pi Zero W2)
-- Direct PCM passthrough (no encoding/decoding)
+- Direct PCM passthrough for FM (no encoding/decoding)
+- Sox resampling for DAB (handles variable sample rates: 32kHz, 48kHz)
 - Integrated with Volumio's music_service framework
 - Web management interface on port 3456
 - Station data stored in JSON format
@@ -184,7 +185,13 @@ Just a Nerd
 
 ## Version History
 
-### v1.0.0 (Current)
+### v1.0.6 (Current)
+- Added sox resampling pipeline for DAB playback with automatic PCM format detection
+- Handles variable DAB sample rates (32kHz, 48kHz) transparently
+- Added EPIPE error handling for robust process pipeline management
+- Fixed station switching regression
+
+### v1.0.0
 - Production release - beta testing complete
 - Eliminated restart requirement after installation
 - Streamlined install process removes obsolete reboot warnings
