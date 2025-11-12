@@ -1,13 +1,11 @@
 {
   "PLUGIN_NAME": "FM/DAB Radio",
   "PLUGIN_DESCRIPTION": "Ontvang FM en DAB/DAB+ radio met RTL-SDR USB-tuners",
-  
   "SECTION_FM_RADIO": "FM Radio",
   "SECTION_DAB_RADIO": "DAB/DAB+ Radio",
   "SECTION_WEB_MANAGEMENT": "Stationbeheer",
   "SECTION_WEB_MANAGEMENT_CONFIG": "Configuratie stationbeheer",
   "SECTION_DIAGNOSTICS": "Diagnostiek",
-  
   "RADIO_SETTINGS": "Radio-instellingen",
   "ENABLE_FM": "Toon FM Radio-configuratie",
   "ENABLE_FM_DOC": "Schakel om FM radio-instellingen te tonen",
@@ -16,7 +14,6 @@
   "SCAN_FM": "Scan FM-stations",
   "SCAN_FM_DOC": "Zoek naar beschikbare FM-radiostations",
   "SAVE_FM_SETTINGS": "Bewaar FM-instellingen",
-  
   "ENABLE_DAB": "Toon DAB/DAB+ Radio-configuratie",
   "ENABLE_DAB_DOC": "Schakel om DAB en DAB+ radio-instellingen te tonen",
   "DAB_GAIN": "DAB Versterking",
@@ -24,7 +21,6 @@
   "SCAN_DAB": "Scan DAB-stations",
   "SCAN_DAB_DOC": "Zoek naar beschikbare DAB/DAB+ stations (kan 2-3 minuten duren)",
   "SAVE_DAB_SETTINGS": "Bewaar DAB-instellingen",
-  
   "SCAN_SENSITIVITY": "FM Scangevoeligheid",
   "SCAN_SENSITIVITY_DOC": "Hoe gevoelig de FM-scanner moet zijn bij het detecteren van stations. Hogere waarden vinden alleen de sterkste signalen, lagere waarden vinden meer stations maar kunnen ruis bevatten.",
   "SENSITIVITY_CONSERVATIVE": "Conservatief (+15 dB) - Alleen zeer sterke signalen",
@@ -32,7 +28,6 @@
   "SENSITIVITY_BALANCED": "Gebalanceerd (+8 dB) - Goede signalen (aanbevolen)",
   "SENSITIVITY_SENSITIVE": "Gevoelig (+5 dB) - Alle redelijke signalen",
   "SENSITIVITY_VERY_SENSITIVE": "Zeer gevoelig (+3 dB) - Zwakkere signalen, kan ruis bevatten",
-  
   "SHOW_WEB_MANAGEMENT": "Toon stationbeheer",
   "SHOW_WEB_MANAGEMENT_DOC": "Schakel om toegangsopties voor stationbeheerder te tonen",
   "OPEN_CURRENT_WINDOW": "Open in huidig venster",
@@ -40,7 +35,6 @@
   "OPEN_NEW_TAB": "Open in nieuw tabblad",
   "OPEN_NEW_TAB_DOC": "Opent stationbeheerder in nieuw browsertabblad",
   "SAVE_WEB_MANAGEMENT": "Bewaar instellingen",
-  
   "SHOW_MANAGEMENT_CONFIG": "Toon configuratie",
   "SHOW_MANAGEMENT_CONFIG_DOC": "Schakel om geavanceerde beheerdersconfiguratie te tonen",
   "ENABLE_MENU_ITEM": "Schakel menu-item Instellingen in",
@@ -49,7 +43,14 @@
   "HOSTNAME_OVERRIDE_DOC": "Laat leeg om MDNS-hostnaam te gebruiken. Voer uw IP-adres in (bijv. 192.168.30.208) als MDNS niet beschikbaar is",
   "MANAGER_URL_LABEL": "Beheerder URL:",
   "SAVE_MANAGEMENT_CONFIG": "Bewaar configuratie",
-  
+  "CREATE_BACKUP": "Volledige back-up maken",
+  "CREATE_BACKUP_DOC": "Maakt een volledige back-up van alle stations en configuratie. Back-ups worden opgeslagen in /data/plugins/music_service/rtlsdr_radio/backups/",
+  "RESTORE_LATEST_BACKUP": "Laatste volledige back-up herstellen",
+  "RESTORE_LATEST_BACKUP_DOC": "Herstelt de meest recente volledige back-up (stations en configuratie). De plugin wordt opnieuw gestart na voltooiing.",
+  "CREATE_BACKUP": "Maak volledige back-up",
+  "CREATE_BACKUP_DOC": "Maakt een volledige back-up van alle stations en configuratie. Back-ups worden opgeslagen in /data/plugins/music_service/rtlsdr_radio/backups/",
+  "RESTORE_LATEST_BACKUP": "Herstel laatste volledige back-up",
+  "RESTORE_LATEST_BACKUP_DOC": "Herstelt de meest recente volledige back-up (stations en configuratie). De plugin wordt opnieuw gestart na het herstel.",
   "SHOW_DIAGNOSTICS": "Toon diagnostiek",
   "SHOW_DIAGNOSTICS_DOC": "Schakel om handmatige testtools voor verschillende USB-dongles te tonen",
   "DIAGNOSTICS_PURPOSE": "Deze tools testen of uw USB-dongle specifieke frequenties kan ontvangen. Gebruik dit wanneer: stations niet afspelen, signaal zwak is, of een nieuwe dongle testen. Voer een bekend sterk station in, bewaar instellingen, klik op test - u zou audio moeten horen. Als er geen audio is of vervormd, pas versterking aan: lager als het kraakt (NESDR Smart: probeer 20), hoger als stil (basis RTL-SDR: probeer 80). Test bevestigt dat uw dongle werkt voordat u naar alle stations scant.",
@@ -75,14 +76,12 @@
   "TEST_FM_FAILED": "FM-test mislukt: {0}",
   "TEST_DAB_SUCCESS": "DAB-test geslaagd",
   "TEST_DAB_FAILED": "DAB-test mislukt: {0}",
-  
   "SCANNING": "Station scannen",
   "SCAN_IN_PROGRESS": "Scannen bezig...",
   "SCAN_COMPLETE": "Scan voltooid",
   "NO_DEVICE": "Geen RTL-SDR apparaat gedetecteerd",
   "SAVE_SUCCESS": "Instellingen succesvol opgeslagen",
   "SAVE_ERROR": "Fout bij opslaan instellingen",
-  
   "DEVICE_BUSY_TITLE": "Apparaat bezet",
   "DEVICE_BUSY_MESSAGE": "RTL-SDR apparaat is momenteel {0}.",
   "DEVICE_STATE_SCANNING_FM": "FM-stations scannen",
@@ -96,7 +95,6 @@
   "MODAL_BTN_CANCEL_AND": "Annuleren en {0}",
   "MODAL_BTN_QUEUE": "In wachtrij (60s time-out)",
   "MODAL_BTN_CANCEL_REQUEST": "Verzoek annuleren",
-  
   "TOAST_FM_SCANNING": "Stations scannen (duurt 10-30 seconden)...",
   "TOAST_DAB_SCANNING": "DAB-stations scannen (duurt 2-5 minuten)...",
   "TOAST_FM_SCAN_COMPLETE": "{0} stations gevonden",
@@ -123,7 +121,6 @@
   "TOAST_FM_REAPPEARED": "{0} verwijderd(e) station(s) weer beschikbaar",
   "TOAST_DAB_REAPPEARED": "{0} verwijderde dienst(en) weer beschikbaar",
   "TOAST_SCAN_COMPLETE": "Scan voltooid: {0} gevonden, {1} totaal",
-  
   "MODAL_SCANNING_FM_TITLE": "FM-stations scannen",
   "MODAL_SCANNING_DAB_TITLE": "DAB-stations scannen",
   "MODAL_SCANNING_PROGRESS": "Scannen bezig...",
@@ -138,7 +135,6 @@
   "TOAST_FM_SCANNING_PROGRESS": "FM-stations nog aan het scannen...",
   "TOAST_DAB_SCANNING_UI": "DAB-stations scannen (2-5 minuten)...",
   "TOAST_DAB_SCANNING_PROGRESS": "DAB-stations nog aan het scannen... {0} verstreken",
-  
   "FM_RADIO": "FM Radio",
   "DAB_RADIO": "DAB Radio",
   "FAVORITES": "Favorieten",
@@ -147,24 +143,18 @@
   "STATIONS": "stations",
   "SERVICE": "dienst",
   "SERVICES": "diensten",
-  
   "MENU_MANAGER": "FM/DAB Stationbeheerder",
-  
   "WEB_MANAGER_TITLE": "Stationbeheer",
   "WEB_MANAGER_SUBTITLE": "RTL-SDR Radio Plugin",
-  
   "TAB_FM_RADIO": "FM Radio",
   "TAB_DAB_RADIO": "DAB Radio",
   "TAB_RECYCLE_BIN": "Prullenbak",
-  
   "STAT_TOTAL": "Totaal stations",
   "STAT_FAVORITES": "Favorieten",
   "STAT_HIDDEN": "Verborgen",
-  
   "SEARCH_FM": "Zoek FM-stations...",
   "SEARCH_DAB": "Zoek DAB-stations...",
   "SEARCH_RECYCLE": "Zoek verwijderde stations...",
-  
   "BTN_CLEAR_ALL_FM": "Wis alle FM",
   "BTN_CLEAR_ALL_DAB": "Wis alle DAB",
   "BTN_RESCAN_FM": "Herscan FM",
@@ -178,17 +168,13 @@
   "BTN_SAVE": "Bewaar wijzigingen",
   "BTN_CANCEL": "Annuleren",
   "BTN_CONFIRM": "Bevestigen",
-  
   "PLACEHOLDER_STATION_NAME": "Stationnaam",
   "PLACEHOLDER_FREQUENCY": "MHz",
-  
   "STATION_NAME_UNKNOWN": "Onbekend",
-  
   "STATUS_NO_CHANGES": "Geen wijzigingen",
   "STATUS_UNSAVED": "Niet-opgeslagen wijzigingen",
   "STATUS_SAVING": "Opslaan...",
   "STATUS_SAVED": "Alle wijzigingen opgeslagen",
-  
   "TOAST_SAVED": "Wijzigingen succesvol opgeslagen",
   "TOAST_SAVE_FAILED": "Opslaan mislukt: {0}",
   "TOAST_LOAD_FAILED": "Laden van stations mislukt: {0}",
@@ -201,7 +187,6 @@
   "TOAST_CLEARED_DAB": "{0} DAB-stations verplaatst naar prullenbak",
   "TOAST_RECYCLE_EMPTIED": "{0} stations permanent verwijderd",
   "TOAST_FREQUENCY_CHANGED": "Frequentie gewijzigd naar {0} MHz",
-  
   "CONFIRM_CLEAR_FM_TITLE": "Alle FM-stations wissen?",
   "CONFIRM_CLEAR_FM_MSG": "Alle {0} FM-stations naar prullenbak verplaatsen? U kunt ze later herstellen of permanent verwijderen.",
   "CONFIRM_CLEAR_DAB_TITLE": "Alle DAB-stations wissen?",
@@ -212,7 +197,6 @@
   "CONFIRM_EMPTY_RECYCLE_MSG": "{0} station(s) permanent verwijderen? Dit kan niet ongedaan worden gemaakt.",
   "CONFIRM_DELETE_ONE": "Dit station naar prullenbak verplaatsen?",
   "CONFIRM_PURGE_ONE": "Dit station permanent verwijderen? Dit kan niet ongedaan worden gemaakt.",
-  
   "WARN_FREQ_CHANGE_TITLE": "Waarschuwing: Frequentie wijzigen?",
   "WARN_FREQ_CHANGE_MSG": "U staat op het punt de frequentie te wijzigen voor \"{0}\"",
   "WARN_FREQ_CHANGE_FROM": "Van:",
@@ -221,19 +205,15 @@
   "WARN_FREQ_DUPLICATE": "Waarschuwing: {0} MHz bestaat al in uw stationlijst",
   "WARN_FREQ_INVALID": "Ongeldige frequentie. Moet tussen 87.5 en 108.0 MHz zijn",
   "WARN_FREQ_CHANGE_BTN": "Wijzig frequentie",
-  
   "RECYCLE_NOTICE": "Verwijderde stations worden hier bewaard totdat ze gewist worden. U kunt ze herstellen of permanent verwijderen.",
-  
   "EMPTY_FM": "Geen FM-stations gevonden",
   "EMPTY_DAB": "Geen DAB-stations gevonden",
   "EMPTY_RECYCLE": "Prullenbak is leeg",
   "EMPTY_SEARCH": "Geen stations gevonden",
-  
   "LABEL_FREQUENCY": "Frequentie",
   "LABEL_CHANNEL": "Kanaal",
   "LABEL_TYPE": "Type",
   "LABEL_STATION_NAME": "Stationnaam",
-  
   "BROWSE_RECENTLY_PLAYED": "Recent afgespeeld",
   "BROWSE_QUICK_ACCESS": "Snelle toegang",
   "BROWSE_RADIO_SOURCES": "Radiobronnen",
@@ -242,21 +222,17 @@
   "BROWSE_HIDDEN_STATIONS": "Verborgen stations",
   "BROWSE_DELETED_STATIONS": "Verwijderde stations",
   "BROWSE_MANAGEMENT": "Beheer",
-  
   "BROWSE_NO_FAVORITES": "Nog geen favorieten",
   "BROWSE_NO_FAVORITES_DESC": "Voeg stations toe aan favorieten vanuit FM- of DAB-lijsten",
   "BROWSE_FAVORITES_COUNT": "Favorieten ({0} stations)",
-  
   "BROWSE_NO_RECENT": "Geen recent afgespeelde stations",
   "BROWSE_NO_RECENT_DESC": "Speel enkele stations af om ze hier te zien",
-  
   "BROWSE_NO_FM": "Geen FM-stations gevonden",
   "BROWSE_NO_FM_DESC": "Klik op Herscannen om naar stations te zoeken",
   "BROWSE_RESCAN_FM": "Herscan FM-stations",
   "BROWSE_RESCAN_FM_DESC": "Zoek naar FM-stations (duurt 10-30 seconden)",
   "BROWSE_EDIT_INFO": "Om stations te bewerken: Instellingen > Plugins > FM/DAB Radio",
   "BROWSE_FM_COUNT": "FM Radio ({0} stations)",
-  
   "BROWSE_DAB_FLAT": "Alle DAB-stations (platte lijst)",
   "BROWSE_DAB_SERVICES_COUNT": "{0} diensten",
   "BROWSE_NO_DAB": "Geen DAB-stations gevonden",
@@ -264,7 +240,6 @@
   "BROWSE_RESCAN_DAB": "Herscan DAB-stations",
   "BROWSE_RESCAN_DAB_DESC": "Zoek naar DAB-stations (duurt 2-5 minuten)",
   "BROWSE_DAB_ALL": "Alle DAB-stations",
-  
   "BROWSE_FM_DELETED": "FM verwijderd",
   "BROWSE_DAB_DELETED": "DAB verwijderd",
   "BROWSE_PURGE_ALL": "Wis alle verwijderde (Permanent)",
@@ -273,9 +248,73 @@
   "BROWSE_DELETED_COUNT": "Verwijderde stations ({0} totaal)",
   "BROWSE_FM_DELETED_COUNT": "FM verwijderde stations ({0})",
   "BROWSE_DAB_DELETED_COUNT": "DAB verwijderde stations ({0})",
-  
   "BROWSE_NO_HIDDEN": "Geen verborgen stations",
   "BROWSE_HIDDEN_COUNT": "Verborgen stations ({0})",
-  
-  "CLOSE_WINDOW": "Sluiten"
+  "CLOSE_WINDOW": "Sluiten",
+  "TAB_MAINTENANCE": "Onderhoud",
+  "MAINTENANCE_BACKUP_TITLE": "Back-up maken",
+  "MAINTENANCE_BACKUP_TYPE_STATIONS": "Alleen stations",
+  "MAINTENANCE_BACKUP_TYPE_CONFIG": "Alleen configuratie",
+  "MAINTENANCE_BACKUP_TYPE_FULL": "Volledige back-up (Alles)",
+  "MAINTENANCE_AUTO_BACKUP": "Automatische back-up voor deïnstallatie",
+  "MAINTENANCE_CREATE_BACKUP": "Nu back-up maken",
+  "MAINTENANCE_RESTORE_SYSTEM_TITLE": "Herstellen uit systeem",
+  "MAINTENANCE_RESTORE_STATIONS": "Stations",
+  "MAINTENANCE_RESTORE_CONFIG": "Configuratie",
+  "MAINTENANCE_RESTORE_SELECTED": "Geselecteerde herstellen",
+  "MAINTENANCE_RESTORE_LATEST_FULL": "Laatste volledige herstellen",
+  "MAINTENANCE_SELECT_DATE_LATEST": "Laatste",
+  "MAINTENANCE_UPLOAD_TITLE": "Back-up uploaden",
+  "MAINTENANCE_UPLOAD_CHOOSE": "Bestand kiezen",
+  "MAINTENANCE_UPLOAD_RESTORE": "Uploaden en voorbeeld",
+  "MAINTENANCE_UPLOAD_ACCEPTED": "Geaccepteerd: .zip-bestanden (stations, configuratie of volledige back-ups)",
+  "MAINTENANCE_HISTORY_TITLE": "Back-upgeschiedenis",
+  "MAINTENANCE_HISTORY_TYPE": "Type",
+  "MAINTENANCE_HISTORY_DATE": "Datum",
+  "MAINTENANCE_HISTORY_SIZE": "Grootte",
+  "MAINTENANCE_HISTORY_DOWNLOAD": "Downloaden",
+  "MAINTENANCE_HISTORY_DELETE": "Verwijderen",
+  "MAINTENANCE_CONFIRM_RESTORE_TITLE": "Herstel bevestigen",
+  "MAINTENANCE_CONFIRM_RESTORE_MSG": "Dit zal geselecteerde back-ups herstellen. De plugin wordt opnieuw gestart en huidige afspelen wordt gestopt.",
+  "MAINTENANCE_CONFIRM_DELETE_TITLE": "Verwijderen bevestigen",
+  "MAINTENANCE_CONFIRM_DELETE_MSG": "Deze back-up permanent verwijderen?",
+  "MAINTENANCE_BACKUP_CREATED": "Back-up succesvol gemaakt",
+  "MAINTENANCE_BACKUP_FAILED": "Back-up maken mislukt: {0}",
+  "MAINTENANCE_RESTORE_SUCCESS": "Back-up succesvol hersteld. Plugin wordt opnieuw gestart...",
+  "MAINTENANCE_RESTORE_FAILED": "Herstel mislukt: {0}",
+  "MAINTENANCE_DELETE_SUCCESS": "Back-up verwijderd",
+  "MAINTENANCE_DELETE_FAILED": "Verwijderen mislukt: {0}",
+  "MAINTENANCE_DOWNLOAD_FAILED": "Download mislukt: {0}",
+  "MAINTENANCE_UPLOAD_PREVIEW_TITLE": "Upload voorbeeld",
+  "MAINTENANCE_UPLOAD_PREVIEW_STATIONS": "Stations gevonden: {0} FM, {1} DAB",
+  "MAINTENANCE_UPLOAD_PREVIEW_CONFIG": "Configuratie-instellingen gevonden",
+  "MAINTENANCE_UPLOAD_INVALID": "Ongeldig back-upbestand",
+  "MAINTENANCE_CONFIRM_UPLOAD_RESTORE_TITLE": "Back-up herstellen",
+  "MAINTENANCE_CONFIRM_UPLOAD_RESTORE_MSG": "Deze back-up herstellen?",
+  "MAINTENANCE_TITLE": "Back-up en herstel",
+  "BTN_SAVE_SETTINGS": "Instellingen opslaan",
+  "BTN_CHOOSE_FILE": "Bestand kiezen",
+  "TH_TYPE": "Type",
+  "TH_DATE": "Datum",
+  "TH_SIZE": "Grootte",
+  "TH_DOWNLOAD": "Download",
+  "TH_DELETE": "Verwijderen",
+  "OPTION_LATEST": "Nieuwste",
+  "BACKUP_TYPE_STATIONS_SHORT": "Stations",
+  "BACKUP_TYPE_CONFIG_SHORT": "Config",
+  "TOAST_BACKUP_CREATING": "Back-up maken...",
+  "TOAST_BACKUP_CREATED": "Back-up succesvol gemaakt",
+  "TOAST_BACKUP_FAILED": "Maken van back-up mislukt",
+  "TOAST_NO_BACKUPS": "Geen back-ups beschikbaar om te herstellen",
+  "TOAST_SELECT_BACKUP": "Selecteer minimaal één back-up",
+  "TOAST_RESTORING": "Herstellen...",
+  "TOAST_RESTORE_SUCCESS": "Hersteld. Opnieuw opstarten...",
+  "TOAST_RESTORE_FAILED_MSG": "Herstellen mislukt",
+  "TOAST_BACKUP_DELETED": "Back-up verwijderd",
+  "TOAST_DELETE_FAILED": "Verwijderen mislukt",
+  "TOAST_VALIDATING": "Valideren...",
+  "UPLOAD_PREVIEW_STATIONS_MSG": "Stations: {0} FM, {1} DAB",
+  "UPLOAD_PREVIEW_CONFIG_MSG": "Configuratie back-up",
+  "TOAST_INVALID_BACKUP": "Ongeldig back-upbestand",
+  "TOAST_UPLOAD_FAILED": "Upload mislukt"
 }

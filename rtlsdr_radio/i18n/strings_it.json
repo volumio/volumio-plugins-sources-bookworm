@@ -1,13 +1,11 @@
 {
   "PLUGIN_NAME": "Radio FM/DAB",
   "PLUGIN_DESCRIPTION": "Ricevi radio FM e DAB/DAB+ usando sintonizzatori USB RTL-SDR",
-  
   "SECTION_FM_RADIO": "Radio FM",
   "SECTION_DAB_RADIO": "Radio DAB/DAB+",
   "SECTION_WEB_MANAGEMENT": "Gestione stazioni radio",
   "SECTION_WEB_MANAGEMENT_CONFIG": "Configurazione gestione stazioni",
   "SECTION_DIAGNOSTICS": "Diagnostica",
-  
   "RADIO_SETTINGS": "Impostazioni radio",
   "ENABLE_FM": "Mostra configurazione radio FM",
   "ENABLE_FM_DOC": "Attiva/disattiva per mostrare le impostazioni radio FM",
@@ -16,7 +14,6 @@
   "SCAN_FM": "Scansiona stazioni FM",
   "SCAN_FM_DOC": "Cerca stazioni radio FM disponibili",
   "SAVE_FM_SETTINGS": "Salva impostazioni FM",
-  
   "ENABLE_DAB": "Mostra configurazione radio DAB/DAB+",
   "ENABLE_DAB_DOC": "Attiva/disattiva per mostrare le impostazioni radio DAB e DAB+",
   "DAB_GAIN": "Guadagno DAB",
@@ -24,7 +21,6 @@
   "SCAN_DAB": "Scansiona stazioni DAB",
   "SCAN_DAB_DOC": "Cerca stazioni DAB/DAB+ disponibili (può richiedere 2-3 minuti)",
   "SAVE_DAB_SETTINGS": "Salva impostazioni DAB",
-  
   "SCAN_SENSITIVITY": "Sensibilità scansione FM",
   "SCAN_SENSITIVITY_DOC": "Sensibilità dello scanner FM nel rilevamento delle stazioni. Valori più alti trovano solo i segnali più forti, valori più bassi trovano più stazioni ma possono includere rumore.",
   "SENSITIVITY_CONSERVATIVE": "Conservativo (+15 dB) - Solo segnali molto forti",
@@ -32,7 +28,6 @@
   "SENSITIVITY_BALANCED": "Bilanciato (+8 dB) - Buoni segnali (consigliato)",
   "SENSITIVITY_SENSITIVE": "Sensibile (+5 dB) - Tutti i segnali ragionevoli",
   "SENSITIVITY_VERY_SENSITIVE": "Molto sensibile (+3 dB) - Segnali più deboli, può includere rumore",
-  
   "SHOW_WEB_MANAGEMENT": "Mostra gestione stazioni",
   "SHOW_WEB_MANAGEMENT_DOC": "Attiva/disattiva per mostrare le opzioni di accesso al gestore stazioni",
   "OPEN_CURRENT_WINDOW": "Apri nella finestra corrente",
@@ -40,7 +35,6 @@
   "OPEN_NEW_TAB": "Apri in nuova scheda",
   "OPEN_NEW_TAB_DOC": "Apre il gestore stazioni in una nuova scheda del browser",
   "SAVE_WEB_MANAGEMENT": "Salva impostazioni",
-  
   "SHOW_MANAGEMENT_CONFIG": "Mostra configurazione",
   "SHOW_MANAGEMENT_CONFIG_DOC": "Attiva/disattiva per mostrare la configurazione avanzata del gestore",
   "ENABLE_MENU_ITEM": "Abilita voce menu Impostazioni",
@@ -49,7 +43,10 @@
   "HOSTNAME_OVERRIDE_DOC": "Lasciare vuoto per usare hostname MDNS. Inserire il proprio indirizzo IP (es. 192.168.30.208) se MDNS non è disponibile",
   "MANAGER_URL_LABEL": "URL gestore:",
   "SAVE_MANAGEMENT_CONFIG": "Salva configurazione",
-  
+  "CREATE_BACKUP": "Crea backup completo",
+  "CREATE_BACKUP_DOC": "Crea un backup completo di tutte le stazioni e della configurazione. I backup sono memorizzati in /data/plugins/music_service/rtlsdr_radio/backups/",
+  "RESTORE_LATEST_BACKUP": "Ripristina ultimo backup completo",
+  "RESTORE_LATEST_BACKUP_DOC": "Ripristina il backup completo più recente (stazioni e configurazione). Il plugin si riavvierà dopo il ripristino.",
   "SHOW_DIAGNOSTICS": "Mostra diagnostica",
   "SHOW_DIAGNOSTICS_DOC": "Attiva/disattiva per mostrare strumenti di test manuale per diversi dongle USB",
   "DIAGNOSTICS_PURPOSE": "Questi strumenti verificano se il tuo dongle USB può ricevere frequenze specifiche. Usali quando: le stazioni non si riproducono, il segnale è debole o stai testando un nuovo dongle. Inserisci una stazione forte conosciuta, salva le impostazioni, clicca test - dovresti sentire l'audio. Se non c'è audio o è distorto, regola il guadagno: più basso se crepita (NESDR Smart: prova 20), più alto se silenzioso (RTL-SDR base: prova 80). Il test conferma che il tuo dongle funziona prima di scansionare tutte le stazioni.",
@@ -75,14 +72,12 @@
   "TEST_FM_FAILED": "Test FM fallito: {0}",
   "TEST_DAB_SUCCESS": "Test DAB riuscito",
   "TEST_DAB_FAILED": "Test DAB fallito: {0}",
-  
   "SCANNING": "Scansione stazioni",
   "SCAN_IN_PROGRESS": "Scansione in corso...",
   "SCAN_COMPLETE": "Scansione completata",
   "NO_DEVICE": "Nessun dispositivo RTL-SDR rilevato",
   "SAVE_SUCCESS": "Impostazioni salvate con successo",
   "SAVE_ERROR": "Errore nel salvataggio delle impostazioni",
-  
   "DEVICE_BUSY_TITLE": "Dispositivo occupato",
   "DEVICE_BUSY_MESSAGE": "Il dispositivo RTL-SDR è attualmente {0}.",
   "DEVICE_STATE_SCANNING_FM": "in scansione stazioni FM",
@@ -96,7 +91,6 @@
   "MODAL_BTN_CANCEL_AND": "Annulla e {0}",
   "MODAL_BTN_QUEUE": "Metti in coda (timeout 60s)",
   "MODAL_BTN_CANCEL_REQUEST": "Annulla richiesta",
-  
   "TOAST_FM_SCANNING": "Scansione stazioni in corso (richiede 10-30 secondi)...",
   "TOAST_DAB_SCANNING": "Scansione stazioni DAB in corso (richiede 2-5 minuti)...",
   "TOAST_FM_SCAN_COMPLETE": "Trovate {0} stazioni",
@@ -123,7 +117,6 @@
   "TOAST_FM_REAPPEARED": "{0} stazione/i eliminata/e di nuovo disponibile/i",
   "TOAST_DAB_REAPPEARED": "{0} servizio/i eliminato/i di nuovo disponibile/i",
   "TOAST_SCAN_COMPLETE": "Scansione completata: {0} trovate, {1} totali",
-  
   "MODAL_SCANNING_FM_TITLE": "Scansione Stazioni FM",
   "MODAL_SCANNING_DAB_TITLE": "Scansione Stazioni DAB",
   "MODAL_SCANNING_PROGRESS": "Scansione in corso...",
@@ -138,7 +131,6 @@
   "TOAST_FM_SCANNING_PROGRESS": "Scansione FM ancora in corso...",
   "TOAST_DAB_SCANNING_UI": "Scansione stazioni DAB (2-5 minuti)...",
   "TOAST_DAB_SCANNING_PROGRESS": "Scansione DAB ancora in corso... {0} trascorsi",
-  
   "FM_RADIO": "Radio FM",
   "DAB_RADIO": "Radio DAB",
   "FAVORITES": "Preferiti",
@@ -147,24 +139,18 @@
   "STATIONS": "stazioni",
   "SERVICE": "servizio",
   "SERVICES": "servizi",
-  
   "MENU_MANAGER": "Gestore stazioni FM/DAB",
-  
   "WEB_MANAGER_TITLE": "Gestione stazioni",
   "WEB_MANAGER_SUBTITLE": "Plugin Radio RTL-SDR",
-  
   "TAB_FM_RADIO": "Radio FM",
   "TAB_DAB_RADIO": "Radio DAB",
   "TAB_RECYCLE_BIN": "Cestino",
-  
   "STAT_TOTAL": "Stazioni totali",
   "STAT_FAVORITES": "Preferiti",
   "STAT_HIDDEN": "Nascoste",
-  
   "SEARCH_FM": "Cerca stazioni FM...",
   "SEARCH_DAB": "Cerca stazioni DAB...",
   "SEARCH_RECYCLE": "Cerca stazioni eliminate...",
-  
   "BTN_CLEAR_ALL_FM": "Cancella tutto FM",
   "BTN_CLEAR_ALL_DAB": "Cancella tutto DAB",
   "BTN_RESCAN_FM": "Riscansiona FM",
@@ -178,17 +164,13 @@
   "BTN_SAVE": "Salva modifiche",
   "BTN_CANCEL": "Annulla",
   "BTN_CONFIRM": "Conferma",
-  
   "PLACEHOLDER_STATION_NAME": "Nome stazione",
   "PLACEHOLDER_FREQUENCY": "MHz",
-  
   "STATION_NAME_UNKNOWN": "Sconosciuto",
-  
   "STATUS_NO_CHANGES": "Nessuna modifica",
   "STATUS_UNSAVED": "Modifiche non salvate",
   "STATUS_SAVING": "Salvataggio...",
   "STATUS_SAVED": "Tutte le modifiche salvate",
-  
   "TOAST_SAVED": "Modifiche salvate con successo",
   "TOAST_SAVE_FAILED": "Salvataggio fallito: {0}",
   "TOAST_LOAD_FAILED": "Caricamento stazioni fallito: {0}",
@@ -201,7 +183,6 @@
   "TOAST_CLEARED_DAB": "{0} stazioni DAB spostate nel cestino",
   "TOAST_RECYCLE_EMPTIED": "{0} stazioni eliminate definitivamente",
   "TOAST_FREQUENCY_CHANGED": "Frequenza cambiata a {0} MHz",
-  
   "CONFIRM_CLEAR_FM_TITLE": "Cancellare tutte le stazioni FM?",
   "CONFIRM_CLEAR_FM_MSG": "Spostare tutte le {0} stazioni FM nel cestino? Potrai ripristinarle in seguito o eliminarle definitivamente.",
   "CONFIRM_CLEAR_DAB_TITLE": "Cancellare tutte le stazioni DAB?",
@@ -212,7 +193,6 @@
   "CONFIRM_EMPTY_RECYCLE_MSG": "Eliminare definitivamente {0} stazione/i? Questa azione non può essere annullata.",
   "CONFIRM_DELETE_ONE": "Spostare questa stazione nel cestino?",
   "CONFIRM_PURGE_ONE": "Eliminare definitivamente questa stazione? Questa azione non può essere annullata.",
-  
   "WARN_FREQ_CHANGE_TITLE": "Attenzione: Cambiare frequenza?",
   "WARN_FREQ_CHANGE_MSG": "Stai per cambiare la frequenza per \"{0}\"",
   "WARN_FREQ_CHANGE_FROM": "Da:",
@@ -221,19 +201,15 @@
   "WARN_FREQ_DUPLICATE": "Attenzione: {0} MHz esiste già nella tua lista stazioni",
   "WARN_FREQ_INVALID": "Frequenza non valida. Deve essere tra 87.5 e 108.0 MHz",
   "WARN_FREQ_CHANGE_BTN": "Cambia frequenza",
-  
   "RECYCLE_NOTICE": "Le stazioni eliminate vengono conservate qui fino alla rimozione. Puoi ripristinarle o eliminarle definitivamente.",
-  
   "EMPTY_FM": "Nessuna stazione FM trovata",
   "EMPTY_DAB": "Nessuna stazione DAB trovata",
   "EMPTY_RECYCLE": "Il cestino è vuoto",
   "EMPTY_SEARCH": "Nessuna stazione trovata",
-  
   "LABEL_FREQUENCY": "Frequenza",
   "LABEL_CHANNEL": "Canale",
   "LABEL_TYPE": "Tipo",
   "LABEL_STATION_NAME": "Nome stazione",
-  
   "BROWSE_RECENTLY_PLAYED": "Riprodotte di recente",
   "BROWSE_QUICK_ACCESS": "Accesso rapido",
   "BROWSE_RADIO_SOURCES": "Fonti radio",
@@ -242,21 +218,17 @@
   "BROWSE_HIDDEN_STATIONS": "Stazioni nascoste",
   "BROWSE_DELETED_STATIONS": "Stazioni eliminate",
   "BROWSE_MANAGEMENT": "Gestione",
-  
   "BROWSE_NO_FAVORITES": "Ancora nessun preferito",
   "BROWSE_NO_FAVORITES_DESC": "Aggiungi stazioni ai preferiti dalle liste FM o DAB",
   "BROWSE_FAVORITES_COUNT": "Preferiti ({0} stazioni)",
-  
   "BROWSE_NO_RECENT": "Nessuna stazione riprodotta di recente",
   "BROWSE_NO_RECENT_DESC": "Riproduci alcune stazioni per vederle qui",
-  
   "BROWSE_NO_FM": "Nessuna stazione FM trovata",
   "BROWSE_NO_FM_DESC": "Clicca su Riscansiona per cercare stazioni",
   "BROWSE_RESCAN_FM": "Riscansiona stazioni FM",
   "BROWSE_RESCAN_FM_DESC": "Cerca stazioni FM (richiede 10-30 secondi)",
   "BROWSE_EDIT_INFO": "Per modificare le stazioni: Impostazioni > Plugin > Radio FM/DAB",
   "BROWSE_FM_COUNT": "Radio FM ({0} stazioni)",
-  
   "BROWSE_DAB_FLAT": "Tutte le stazioni DAB (lista piatta)",
   "BROWSE_DAB_SERVICES_COUNT": "{0} servizi",
   "BROWSE_NO_DAB": "Nessuna stazione DAB trovata",
@@ -264,7 +236,6 @@
   "BROWSE_RESCAN_DAB": "Riscansiona stazioni DAB",
   "BROWSE_RESCAN_DAB_DESC": "Cerca stazioni DAB (richiede 2-5 minuti)",
   "BROWSE_DAB_ALL": "Tutte le stazioni DAB",
-  
   "BROWSE_FM_DELETED": "FM eliminate",
   "BROWSE_DAB_DELETED": "DAB eliminate",
   "BROWSE_PURGE_ALL": "Rimuovi tutte le eliminate (Definitivo)",
@@ -273,9 +244,73 @@
   "BROWSE_DELETED_COUNT": "Stazioni eliminate ({0} totali)",
   "BROWSE_FM_DELETED_COUNT": "Stazioni FM eliminate ({0})",
   "BROWSE_DAB_DELETED_COUNT": "Stazioni DAB eliminate ({0})",
-  
   "BROWSE_NO_HIDDEN": "Nessuna stazione nascosta",
   "BROWSE_HIDDEN_COUNT": "Stazioni nascoste ({0})",
-  
-  "CLOSE_WINDOW": "Chiudi"
+  "CLOSE_WINDOW": "Chiudi",
+  "TAB_MAINTENANCE": "Manutenzione",
+  "MAINTENANCE_BACKUP_TITLE": "Crea backup",
+  "MAINTENANCE_BACKUP_TYPE_STATIONS": "Solo stazioni",
+  "MAINTENANCE_BACKUP_TYPE_CONFIG": "Solo configurazione",
+  "MAINTENANCE_BACKUP_TYPE_FULL": "Backup completo (Tutto)",
+  "MAINTENANCE_AUTO_BACKUP": "Backup automatico prima della disinstallazione",
+  "MAINTENANCE_CREATE_BACKUP": "Crea backup ora",
+  "MAINTENANCE_RESTORE_SYSTEM_TITLE": "Ripristina dal sistema",
+  "MAINTENANCE_RESTORE_STATIONS": "Stazioni",
+  "MAINTENANCE_RESTORE_CONFIG": "Configurazione",
+  "MAINTENANCE_RESTORE_SELECTED": "Ripristina selezionati",
+  "MAINTENANCE_RESTORE_LATEST_FULL": "Ripristina ultimo completo",
+  "MAINTENANCE_SELECT_DATE_LATEST": "Ultimo",
+  "MAINTENANCE_UPLOAD_TITLE": "Carica backup",
+  "MAINTENANCE_UPLOAD_CHOOSE": "Scegli file",
+  "MAINTENANCE_UPLOAD_RESTORE": "Carica e anteprima",
+  "MAINTENANCE_UPLOAD_ACCEPTED": "Accettato: file .zip (stazioni, configurazione o backup completi)",
+  "MAINTENANCE_HISTORY_TITLE": "Cronologia backup",
+  "MAINTENANCE_HISTORY_TYPE": "Tipo",
+  "MAINTENANCE_HISTORY_DATE": "Data",
+  "MAINTENANCE_HISTORY_SIZE": "Dimensione",
+  "MAINTENANCE_HISTORY_DOWNLOAD": "Scarica",
+  "MAINTENANCE_HISTORY_DELETE": "Elimina",
+  "MAINTENANCE_CONFIRM_RESTORE_TITLE": "Conferma ripristino",
+  "MAINTENANCE_CONFIRM_RESTORE_MSG": "Questo ripristinerà i backup selezionati. Il plugin si riavvierà e la riproduzione corrente si fermerà.",
+  "MAINTENANCE_CONFIRM_DELETE_TITLE": "Conferma eliminazione",
+  "MAINTENANCE_CONFIRM_DELETE_MSG": "Eliminare definitivamente questo backup?",
+  "MAINTENANCE_BACKUP_CREATED": "Backup creato con successo",
+  "MAINTENANCE_BACKUP_FAILED": "Creazione backup fallita: {0}",
+  "MAINTENANCE_RESTORE_SUCCESS": "Backup ripristinato con successo. Riavvio del plugin...",
+  "MAINTENANCE_RESTORE_FAILED": "Ripristino fallito: {0}",
+  "MAINTENANCE_DELETE_SUCCESS": "Backup eliminato",
+  "MAINTENANCE_DELETE_FAILED": "Eliminazione fallita: {0}",
+  "MAINTENANCE_DOWNLOAD_FAILED": "Download fallito: {0}",
+  "MAINTENANCE_UPLOAD_PREVIEW_TITLE": "Anteprima caricamento",
+  "MAINTENANCE_UPLOAD_PREVIEW_STATIONS": "Stazioni trovate: {0} FM, {1} DAB",
+  "MAINTENANCE_UPLOAD_PREVIEW_CONFIG": "Impostazioni di configurazione trovate",
+  "MAINTENANCE_UPLOAD_INVALID": "File di backup non valido",
+  "MAINTENANCE_CONFIRM_UPLOAD_RESTORE_TITLE": "Ripristina backup",
+  "MAINTENANCE_CONFIRM_UPLOAD_RESTORE_MSG": "Ripristinare questo backup?",
+  "MAINTENANCE_TITLE": "Backup e Ripristino",
+  "BTN_SAVE_SETTINGS": "Salva impostazioni",
+  "BTN_CHOOSE_FILE": "Scegli file",
+  "TH_TYPE": "Tipo",
+  "TH_DATE": "Data",
+  "TH_SIZE": "Dimensione",
+  "TH_DOWNLOAD": "Scarica",
+  "TH_DELETE": "Elimina",
+  "OPTION_LATEST": "Più recente",
+  "BACKUP_TYPE_STATIONS_SHORT": "Stazioni",
+  "BACKUP_TYPE_CONFIG_SHORT": "Config",
+  "TOAST_BACKUP_CREATING": "Creazione backup...",
+  "TOAST_BACKUP_CREATED": "Backup creato con successo",
+  "TOAST_BACKUP_FAILED": "Creazione backup fallita",
+  "TOAST_NO_BACKUPS": "Nessun backup disponibile per il ripristino",
+  "TOAST_SELECT_BACKUP": "Seleziona almeno un backup",
+  "TOAST_RESTORING": "Ripristino...",
+  "TOAST_RESTORE_SUCCESS": "Ripristinato. Riavvio...",
+  "TOAST_RESTORE_FAILED_MSG": "Ripristino fallito",
+  "TOAST_BACKUP_DELETED": "Backup eliminato",
+  "TOAST_DELETE_FAILED": "Eliminazione fallita",
+  "TOAST_VALIDATING": "Validazione...",
+  "UPLOAD_PREVIEW_STATIONS_MSG": "Stazioni: {0} FM, {1} DAB",
+  "UPLOAD_PREVIEW_CONFIG_MSG": "Backup configurazione",
+  "TOAST_INVALID_BACKUP": "File di backup non valido",
+  "TOAST_UPLOAD_FAILED": "Caricamento fallito"
 }

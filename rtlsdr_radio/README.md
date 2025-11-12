@@ -54,6 +54,31 @@ The plugin fully supports internationalization with automatic language detection
 
 To change language: Settings > Appearance > Language. Both plugin settings and web manager will update automatically.
 
+### Backup and Restore
+The plugin includes a comprehensive backup and restore system to protect your station configurations:
+
+**Features:**
+- Three backup types: Stations Only, Configuration Only, or Full Backup
+- Automatic pruning (keeps 5 most recent backups per type)
+- Download backups as ZIP files
+- Upload and restore external backups
+- Mix-and-match restore (stations from one backup, config from another)
+- Optional auto-backup before plugin uninstall
+- Backup history with timestamps and sizes
+
+**Location:**
+- Access via Maintenance tab in web station manager
+- Backups stored in: `/data/rtlsdr_radio_backups/`
+
+**Usage:**
+1. Open web station manager (see Web Interface Access below)
+2. Click "Maintenance" tab
+3. Select backup type and click "Create Backup Now"
+4. Download backups or restore from history table
+
+**Auto-Backup:**
+Enable "Automatic backup before uninstall" checkbox to automatically create a full backup when uninstalling the plugin. Backups are preserved even after uninstall.
+
 ### Diagnostics Tools
 The plugin includes diagnostic tools to test your USB dongle before scanning:
 
@@ -185,7 +210,18 @@ Just a Nerd
 
 ## Version History
 
-### v1.0.6 (Current)
+### v1.0.7 (Current)
+- Added comprehensive backup and restore system
+- Three backup types: Stations Only, Configuration Only, Full Backup
+- Automatic backup pruning (keeps 5 most recent per type)
+- ZIP export/import functionality
+- Upload and validate external backups with preview
+- Mix-and-match restore capability
+- Optional auto-backup before plugin uninstall
+- Backup history table with download/delete actions
+- Fully internationalized (11 languages)
+
+### v1.0.6
 - Added sox resampling pipeline for DAB playback with automatic PCM format detection
 - Handles variable DAB sample rates (32kHz, 48kHz) transparently
 - Added EPIPE error handling for robust process pipeline management
