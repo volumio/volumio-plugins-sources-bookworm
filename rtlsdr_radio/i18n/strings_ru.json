@@ -1,13 +1,11 @@
 {
   "PLUGIN_NAME": "FM/DAB Радио",
   "PLUGIN_DESCRIPTION": "Приём FM и DAB/DAB+ радио с помощью USB-тюнеров RTL-SDR",
-  
   "SECTION_FM_RADIO": "FM Радио",
   "SECTION_DAB_RADIO": "DAB/DAB+ Радио",
   "SECTION_WEB_MANAGEMENT": "Управление станциями",
   "SECTION_WEB_MANAGEMENT_CONFIG": "Конфигурация управления станциями",
   "SECTION_DIAGNOSTICS": "Диагностика",
-  
   "RADIO_SETTINGS": "Настройки радио",
   "ENABLE_FM": "Показать конфигурацию FM радио",
   "ENABLE_FM_DOC": "Переключить для отображения настроек FM радио",
@@ -16,7 +14,6 @@
   "SCAN_FM": "Сканировать FM-станции",
   "SCAN_FM_DOC": "Искать доступные FM-радиостанции",
   "SAVE_FM_SETTINGS": "Сохранить настройки FM",
-  
   "ENABLE_DAB": "Показать конфигурацию DAB/DAB+ радио",
   "ENABLE_DAB_DOC": "Переключить для отображения настроек DAB и DAB+ радио",
   "DAB_GAIN": "Усиление DAB",
@@ -24,7 +21,6 @@
   "SCAN_DAB": "Сканировать DAB-станции",
   "SCAN_DAB_DOC": "Искать доступные DAB/DAB+ станции (может занять 2-3 минуты)",
   "SAVE_DAB_SETTINGS": "Сохранить настройки DAB",
-  
   "SCAN_SENSITIVITY": "Чувствительность сканирования FM",
   "SCAN_SENSITIVITY_DOC": "Чувствительность FM-сканера при обнаружении станций. Более высокие значения находят только самые сильные сигналы, более низкие значения находят больше станций, но могут включать шум.",
   "SENSITIVITY_CONSERVATIVE": "Консервативная (+15 dB) - Только очень сильные сигналы",
@@ -32,7 +28,6 @@
   "SENSITIVITY_BALANCED": "Сбалансированная (+8 dB) - Хорошие сигналы (рекомендуется)",
   "SENSITIVITY_SENSITIVE": "Чувствительная (+5 dB) - Все разумные сигналы",
   "SENSITIVITY_VERY_SENSITIVE": "Очень чувствительная (+3 dB) - Более слабые сигналы, может включать шум",
-  
   "SHOW_WEB_MANAGEMENT": "Показать управление станциями",
   "SHOW_WEB_MANAGEMENT_DOC": "Переключить для отображения параметров доступа к менеджеру станций",
   "OPEN_CURRENT_WINDOW": "Открыть в текущем окне",
@@ -40,7 +35,6 @@
   "OPEN_NEW_TAB": "Открыть в новой вкладке",
   "OPEN_NEW_TAB_DOC": "Открывает менеджер станций в новой вкладке браузера",
   "SAVE_WEB_MANAGEMENT": "Сохранить настройки",
-  
   "SHOW_MANAGEMENT_CONFIG": "Показать конфигурацию",
   "SHOW_MANAGEMENT_CONFIG_DOC": "Переключить для отображения расширенной конфигурации менеджера",
   "ENABLE_MENU_ITEM": "Включить элемент меню Настройки",
@@ -49,7 +43,14 @@
   "HOSTNAME_OVERRIDE_DOC": "Оставить пустым для использования MDNS hostname. Введите ваш IP-адрес (напр. 192.168.30.208), если MDNS недоступен",
   "MANAGER_URL_LABEL": "URL менеджера:",
   "SAVE_MANAGEMENT_CONFIG": "Сохранить конфигурацию",
-  
+  "CREATE_BACKUP": "Создать полную резервную копию",
+  "CREATE_BACKUP_DOC": "Создает полную резервную копию всех станций и конфигурации. Резервные копии сохраняются в /data/plugins/music_service/rtlsdr_radio/backups/",
+  "RESTORE_LATEST_BACKUP": "Восстановить последнюю полную копию",
+  "RESTORE_LATEST_BACKUP_DOC": "Восстанавливает самую последнюю полную резервную копию (станции и конфигурация). Плагин перезапустится после завершения.",
+  "CREATE_BACKUP": "Создать полную резервную копию",
+  "CREATE_BACKUP_DOC": "Создает полную резервную копию всех станций и конфигурации. Резервные копии хранятся в /data/plugins/music_service/rtlsdr_radio/backups/",
+  "RESTORE_LATEST_BACKUP": "Восстановить последнюю полную резервную копию",
+  "RESTORE_LATEST_BACKUP_DOC": "Восстанавливает самую последнюю полную резервную копию (станции и конфигурация). Плагин перезапустится после завершения восстановления.",
   "SHOW_DIAGNOSTICS": "Показать диагностику",
   "SHOW_DIAGNOSTICS_DOC": "Переключить для отображения ручных тестовых инструментов для разных USB-донглов",
   "DIAGNOSTICS_PURPOSE": "Эти инструменты проверяют, может ли ваш USB-донгл принимать определённые частоты. Используйте это, когда: станции не воспроизводятся, сигнал слабый, или тестируете новый донгл. Введите известную сильную станцию, сохраните настройки, нажмите тест - вы должны услышать аудио. Если нет аудио или искажено, отрегулируйте усиление: ниже, если трещит (NESDR Smart: попробуйте 20), выше, если тихо (базовый RTL-SDR: попробуйте 80). Тест подтверждает, что ваш донгл работает, прежде чем сканировать все станции.",
@@ -75,14 +76,12 @@
   "TEST_FM_FAILED": "Тест FM не удался: {0}",
   "TEST_DAB_SUCCESS": "Тест DAB успешен",
   "TEST_DAB_FAILED": "Тест DAB не удался: {0}",
-  
   "SCANNING": "Сканирование станций",
   "SCAN_IN_PROGRESS": "Сканирование в процессе...",
   "SCAN_COMPLETE": "Сканирование завершено",
   "NO_DEVICE": "Устройство RTL-SDR не обнаружено",
   "SAVE_SUCCESS": "Настройки успешно сохранены",
   "SAVE_ERROR": "Ошибка сохранения настроек",
-  
   "DEVICE_BUSY_TITLE": "Устройство занято",
   "DEVICE_BUSY_MESSAGE": "Устройство RTL-SDR в настоящее время {0}.",
   "DEVICE_STATE_SCANNING_FM": "сканирует FM-станции",
@@ -96,7 +95,6 @@
   "MODAL_BTN_CANCEL_AND": "Отменить и {0}",
   "MODAL_BTN_QUEUE": "Поставить в очередь (тайм-аут 60s)",
   "MODAL_BTN_CANCEL_REQUEST": "Отменить запрос",
-  
   "TOAST_FM_SCANNING": "Сканирование станций (занимает 10-30 секунд)...",
   "TOAST_DAB_SCANNING": "Сканирование DAB-станций (занимает 2-5 минут)...",
   "TOAST_FM_SCAN_COMPLETE": "Найдено {0} станций",
@@ -123,7 +121,6 @@
   "TOAST_FM_REAPPEARED": "{0} удалённая(ые) станция(ии) снова доступны",
   "TOAST_DAB_REAPPEARED": "{0} удалённая(ые) служба(ы) снова доступны",
   "TOAST_SCAN_COMPLETE": "Сканирование завершено: {0} найдено, {1} всего",
-  
   "MODAL_SCANNING_FM_TITLE": "Сканирование FM-станций",
   "MODAL_SCANNING_DAB_TITLE": "Сканирование DAB-станций",
   "MODAL_SCANNING_PROGRESS": "Идет сканирование...",
@@ -138,7 +135,6 @@
   "TOAST_FM_SCANNING_PROGRESS": "Все еще сканируются FM-станции...",
   "TOAST_DAB_SCANNING_UI": "Сканирование DAB-станций (2-5 минут)...",
   "TOAST_DAB_SCANNING_PROGRESS": "Все еще сканируются DAB-станции... прошло {0}",
-  
   "FM_RADIO": "FM Радио",
   "DAB_RADIO": "DAB Радио",
   "FAVORITES": "Избранное",
@@ -147,24 +143,18 @@
   "STATIONS": "станции",
   "SERVICE": "служба",
   "SERVICES": "службы",
-  
   "MENU_MANAGER": "Менеджер станций FM/DAB",
-  
   "WEB_MANAGER_TITLE": "Управление станциями",
   "WEB_MANAGER_SUBTITLE": "Плагин Radio RTL-SDR",
-  
   "TAB_FM_RADIO": "FM Радио",
   "TAB_DAB_RADIO": "DAB Радио",
   "TAB_RECYCLE_BIN": "Корзина",
-  
   "STAT_TOTAL": "Всего станций",
   "STAT_FAVORITES": "Избранные",
   "STAT_HIDDEN": "Скрытые",
-  
   "SEARCH_FM": "Искать FM-станции...",
   "SEARCH_DAB": "Искать DAB-станции...",
   "SEARCH_RECYCLE": "Искать удалённые станции...",
-  
   "BTN_CLEAR_ALL_FM": "Очистить все FM",
   "BTN_CLEAR_ALL_DAB": "Очистить все DAB",
   "BTN_RESCAN_FM": "Пересканировать FM",
@@ -178,17 +168,13 @@
   "BTN_SAVE": "Сохранить изменения",
   "BTN_CANCEL": "Отменить",
   "BTN_CONFIRM": "Подтвердить",
-  
   "PLACEHOLDER_STATION_NAME": "Название станции",
   "PLACEHOLDER_FREQUENCY": "MHz",
-  
   "STATION_NAME_UNKNOWN": "Неизвестно",
-  
   "STATUS_NO_CHANGES": "Нет изменений",
   "STATUS_UNSAVED": "Несохранённые изменения",
   "STATUS_SAVING": "Сохранение...",
   "STATUS_SAVED": "Все изменения сохранены",
-  
   "TOAST_SAVED": "Изменения успешно сохранены",
   "TOAST_SAVE_FAILED": "Сохранение не удалось: {0}",
   "TOAST_LOAD_FAILED": "Загрузка станций не удалась: {0}",
@@ -201,7 +187,6 @@
   "TOAST_CLEARED_DAB": "{0} DAB-станций перемещены в корзину",
   "TOAST_RECYCLE_EMPTIED": "{0} станций удалены навсегда",
   "TOAST_FREQUENCY_CHANGED": "Частота изменена на {0} MHz",
-  
   "CONFIRM_CLEAR_FM_TITLE": "Очистить все FM-станции?",
   "CONFIRM_CLEAR_FM_MSG": "Переместить все {0} FM-станций в корзину? Вы сможете восстановить их позже или удалить навсегда.",
   "CONFIRM_CLEAR_DAB_TITLE": "Очистить все DAB-станции?",
@@ -212,7 +197,6 @@
   "CONFIRM_EMPTY_RECYCLE_MSG": "Удалить навсегда {0} станцию(ий)? Это нельзя отменить.",
   "CONFIRM_DELETE_ONE": "Переместить эту станцию в корзину?",
   "CONFIRM_PURGE_ONE": "Удалить эту станцию навсегда? Это нельзя отменить.",
-  
   "WARN_FREQ_CHANGE_TITLE": "Предупреждение: Изменить частоту?",
   "WARN_FREQ_CHANGE_MSG": "Вы собираетесь изменить частоту для \"{0}\"",
   "WARN_FREQ_CHANGE_FROM": "С:",
@@ -221,19 +205,15 @@
   "WARN_FREQ_DUPLICATE": "Предупреждение: {0} MHz уже существует в вашем списке станций",
   "WARN_FREQ_INVALID": "Неправильная частота. Должна быть между 87.5 и 108.0 MHz",
   "WARN_FREQ_CHANGE_BTN": "Изменить частоту",
-  
   "RECYCLE_NOTICE": "Удалённые станции хранятся здесь, пока не будут уничтожены. Вы можете восстановить их или удалить навсегда.",
-  
   "EMPTY_FM": "FM-станции не найдены",
   "EMPTY_DAB": "DAB-станции не найдены",
   "EMPTY_RECYCLE": "Корзина пуста",
   "EMPTY_SEARCH": "Станции не найдены",
-  
   "LABEL_FREQUENCY": "Частота",
   "LABEL_CHANNEL": "Канал",
   "LABEL_TYPE": "Тип",
   "LABEL_STATION_NAME": "Название станции",
-  
   "BROWSE_RECENTLY_PLAYED": "Недавно воспроизведённые",
   "BROWSE_QUICK_ACCESS": "Быстрый доступ",
   "BROWSE_RADIO_SOURCES": "Источники радио",
@@ -242,21 +222,17 @@
   "BROWSE_HIDDEN_STATIONS": "Скрытые станции",
   "BROWSE_DELETED_STATIONS": "Удалённые станции",
   "BROWSE_MANAGEMENT": "Управление",
-  
   "BROWSE_NO_FAVORITES": "Ещё нет избранных",
   "BROWSE_NO_FAVORITES_DESC": "Добавить станции в избранные из списков FM или DAB",
   "BROWSE_FAVORITES_COUNT": "Избранные ({0} станций)",
-  
   "BROWSE_NO_RECENT": "Нет недавно воспроизведённых станций",
   "BROWSE_NO_RECENT_DESC": "Воспроизведите несколько станций, чтобы увидеть их здесь",
-  
   "BROWSE_NO_FM": "FM-станции не найдены",
   "BROWSE_NO_FM_DESC": "Нажмите Пересканировать, чтобы искать станции",
   "BROWSE_RESCAN_FM": "Пересканировать FM-станции",
   "BROWSE_RESCAN_FM_DESC": "Искать FM-станции (занимает 10-30 секунд)",
   "BROWSE_EDIT_INFO": "Для редактирования станций: Настройки > Плагины > FM/DAB Радио",
   "BROWSE_FM_COUNT": "FM Радио ({0} станций)",
-  
   "BROWSE_DAB_FLAT": "Все DAB-станции (плоский список)",
   "BROWSE_DAB_SERVICES_COUNT": "{0} служб",
   "BROWSE_NO_DAB": "DAB-станции не найдены",
@@ -264,7 +240,6 @@
   "BROWSE_RESCAN_DAB": "Пересканировать DAB-станции",
   "BROWSE_RESCAN_DAB_DESC": "Искать DAB-станции (занимает 2-5 минут)",
   "BROWSE_DAB_ALL": "Все DAB-станции",
-  
   "BROWSE_FM_DELETED": "FM удалены",
   "BROWSE_DAB_DELETED": "DAB удалены",
   "BROWSE_PURGE_ALL": "Уничтожить все удалённые (Навсегда)",
@@ -273,9 +248,73 @@
   "BROWSE_DELETED_COUNT": "Удалённые станции ({0} всего)",
   "BROWSE_FM_DELETED_COUNT": "FM удалённые станции ({0})",
   "BROWSE_DAB_DELETED_COUNT": "DAB удалённые станции ({0})",
-  
   "BROWSE_NO_HIDDEN": "Нет скрытых станций",
   "BROWSE_HIDDEN_COUNT": "Скрытые станции ({0})",
-  
-  "CLOSE_WINDOW": "Закрыть"
+  "CLOSE_WINDOW": "Закрыть",
+  "TAB_MAINTENANCE": "Обслуживание",
+  "MAINTENANCE_BACKUP_TITLE": "Создать резервную копию",
+  "MAINTENANCE_BACKUP_TYPE_STATIONS": "Только станции",
+  "MAINTENANCE_BACKUP_TYPE_CONFIG": "Только конфигурация",
+  "MAINTENANCE_BACKUP_TYPE_FULL": "Полная резервная копия (Всё)",
+  "MAINTENANCE_AUTO_BACKUP": "Автоматическое резервное копирование перед удалением",
+  "MAINTENANCE_CREATE_BACKUP": "Создать резервную копию сейчас",
+  "MAINTENANCE_RESTORE_SYSTEM_TITLE": "Восстановить из системы",
+  "MAINTENANCE_RESTORE_STATIONS": "Станции",
+  "MAINTENANCE_RESTORE_CONFIG": "Конфигурация",
+  "MAINTENANCE_RESTORE_SELECTED": "Восстановить выбранное",
+  "MAINTENANCE_RESTORE_LATEST_FULL": "Восстановить последнюю полную",
+  "MAINTENANCE_SELECT_DATE_LATEST": "Последняя",
+  "MAINTENANCE_UPLOAD_TITLE": "Загрузить резервную копию",
+  "MAINTENANCE_UPLOAD_CHOOSE": "Выбрать файл",
+  "MAINTENANCE_UPLOAD_RESTORE": "Загрузить и просмотреть",
+  "MAINTENANCE_UPLOAD_ACCEPTED": "Принимается: файлы .zip (станции, конфигурация или полные резервные копии)",
+  "MAINTENANCE_HISTORY_TITLE": "История резервных копий",
+  "MAINTENANCE_HISTORY_TYPE": "Тип",
+  "MAINTENANCE_HISTORY_DATE": "Дата",
+  "MAINTENANCE_HISTORY_SIZE": "Размер",
+  "MAINTENANCE_HISTORY_DOWNLOAD": "Скачать",
+  "MAINTENANCE_HISTORY_DELETE": "Удалить",
+  "MAINTENANCE_CONFIRM_RESTORE_TITLE": "Подтвердить восстановление",
+  "MAINTENANCE_CONFIRM_RESTORE_MSG": "Это восстановит выбранные резервные копии. Плагин будет перезапущен, а текущее воспроизведение остановлено.",
+  "MAINTENANCE_CONFIRM_DELETE_TITLE": "Подтвердить удаление",
+  "MAINTENANCE_CONFIRM_DELETE_MSG": "Удалить эту резервную копию навсегда?",
+  "MAINTENANCE_BACKUP_CREATED": "Резервная копия успешно создана",
+  "MAINTENANCE_BACKUP_FAILED": "Не удалось создать резервную копию: {0}",
+  "MAINTENANCE_RESTORE_SUCCESS": "Резервная копия успешно восстановлена. Перезапуск плагина...",
+  "MAINTENANCE_RESTORE_FAILED": "Не удалось восстановить: {0}",
+  "MAINTENANCE_DELETE_SUCCESS": "Резервная копия удалена",
+  "MAINTENANCE_DELETE_FAILED": "Не удалось удалить: {0}",
+  "MAINTENANCE_DOWNLOAD_FAILED": "Не удалось скачать: {0}",
+  "MAINTENANCE_UPLOAD_PREVIEW_TITLE": "Предпросмотр загрузки",
+  "MAINTENANCE_UPLOAD_PREVIEW_STATIONS": "Найдено станций: {0} FM, {1} DAB",
+  "MAINTENANCE_UPLOAD_PREVIEW_CONFIG": "Найдены настройки конфигурации",
+  "MAINTENANCE_UPLOAD_INVALID": "Недействительный файл резервной копии",
+  "MAINTENANCE_CONFIRM_UPLOAD_RESTORE_TITLE": "Восстановить резервную копию",
+  "MAINTENANCE_CONFIRM_UPLOAD_RESTORE_MSG": "Восстановить эту резервную копию?",
+  "MAINTENANCE_TITLE": "Резервное копирование и восстановление",
+  "BTN_SAVE_SETTINGS": "Сохранить настройки",
+  "BTN_CHOOSE_FILE": "Выбрать файл",
+  "TH_TYPE": "Тип",
+  "TH_DATE": "Дата",
+  "TH_SIZE": "Размер",
+  "TH_DOWNLOAD": "Скачать",
+  "TH_DELETE": "Удалить",
+  "OPTION_LATEST": "Последняя",
+  "BACKUP_TYPE_STATIONS_SHORT": "Станции",
+  "BACKUP_TYPE_CONFIG_SHORT": "Конфигурация",
+  "TOAST_BACKUP_CREATING": "Создание резервной копии...",
+  "TOAST_BACKUP_CREATED": "Резервная копия успешно создана",
+  "TOAST_BACKUP_FAILED": "Не удалось создать резервную копию",
+  "TOAST_NO_BACKUPS": "Нет доступных резервных копий для восстановления",
+  "TOAST_SELECT_BACKUP": "Выберите хотя бы одну резервную копию",
+  "TOAST_RESTORING": "Восстановление...",
+  "TOAST_RESTORE_SUCCESS": "Восстановлено. Перезапуск...",
+  "TOAST_RESTORE_FAILED_MSG": "Не удалось восстановить",
+  "TOAST_BACKUP_DELETED": "Резервная копия удалена",
+  "TOAST_DELETE_FAILED": "Не удалось удалить",
+  "TOAST_VALIDATING": "Проверка...",
+  "UPLOAD_PREVIEW_STATIONS_MSG": "Станции: {0} FM, {1} DAB",
+  "UPLOAD_PREVIEW_CONFIG_MSG": "Резервная копия конфигурации",
+  "TOAST_INVALID_BACKUP": "Недействительный файл резервной копии",
+  "TOAST_UPLOAD_FAILED": "Ошибка загрузки"
 }

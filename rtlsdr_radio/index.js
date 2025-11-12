@@ -25,6 +25,8 @@ function ControllerRtlsdrRadio(context) {
   self.aplayProcess = null;
   self.currentStation = null;
   self.stationsDb = { fm: [], dab: [] };
+  self.stationsDbFile = '/data/plugins/music_service/rtlsdr_radio/stations.json';
+  self.dbLoadedAt = null; // Timestamp when database was loaded
   
   // Device state management
   self.deviceState = 'idle'; // idle, scanning_fm, scanning_dab, playing_fm, playing_dab
@@ -62,6 +64,9 @@ ControllerRtlsdrRadio.prototype.onStart = function() {
     })
     .then(function() {
       return self.loadStations();
+    })
+    .then(function() {
+      return self.ensureBackupDirectory();
     })
     .then(function() {
       return self.startManagementServer();
@@ -134,6 +139,453 @@ ControllerRtlsdrRadio.prototype.onUnload = function() {
   
   return libQ.resolve();
 };
+
+ControllerRtlsdrRadio.prototype.onInstall = function() {
+  var self = this;
+  self.logger.info('[RTL-SDR Radio] onInstall: Performing installation tasks');
+  
+  // Check if database exists from previous installation
+  var stationsFile = '/data/plugins/music_service/rtlsdr_radio/stations.json';
+  if (fs.existsSync(stationsFile)) {
+    try {
+      var data = fs.readJsonSync(stationsFile);
+      var fmCount = (data.fm && data.fm.length) || 0;
+      var dabCount = (data.dab && data.dab.length) || 0;
+      self.logger.info('[RTL-SDR Radio] onInstall: Found existing database with ' + 
+                      fmCount + ' FM and ' + dabCount + ' DAB stations');
+    } catch (e) {
+      self.logger.warn('[RTL-SDR Radio] onInstall: Could not read existing database: ' + e);
+    }
+  } else {
+    self.logger.info('[RTL-SDR Radio] onInstall: No existing database found (fresh install)');
+  }
+};
+
+ControllerRtlsdrRadio.prototype.onUninstall = function() {
+  var self = this;
+  self.logger.info('[RTL-SDR Radio] onUninstall: Performing uninstallation tasks');
+  
+  var autoBackup = self.config.get('auto_backup_on_uninstall', false);
+  if (autoBackup) {
+    self.logger.info('[RTL-SDR Radio] Auto-backup enabled, creating backup...');
+    var timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    try {
+      self.createStationsBackup(timestamp);
+      self.createConfigBackup(timestamp);
+      self.logger.info('[RTL-SDR Radio] Auto-backup completed');
+    } catch (e) {
+      self.logger.error('[RTL-SDR Radio] Auto-backup failed: ' + e);
+    }
+  }
+  
+  self.logger.info('[RTL-SDR Radio] onUninstall: Station database preserved in /data/');
+};
+
+// ===============================
+// BACKUP AND RESTORE FUNCTIONS
+// ===============================
+
+ControllerRtlsdrRadio.prototype.ensureBackupDirectory = function() {
+  var self = this;
+  var backupDir = '/data/rtlsdr_radio_backups';
+  
+  try {
+    if (!fs.existsSync(backupDir)) {
+      fs.mkdirpSync(backupDir);
+      fs.mkdirpSync(backupDir + '/stations');
+      fs.mkdirpSync(backupDir + '/config');
+      self.logger.info('[RTL-SDR Radio] Created backup directories');
+    }
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to create backup directories: ' + e);
+  }
+  
+  return libQ.resolve();
+};
+
+ControllerRtlsdrRadio.prototype.createStationsBackup = function(timestamp) {
+  var self = this;
+  var defer = libQ.defer();
+  
+  try {
+    if (!timestamp) {
+      timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    }
+    
+    var sourceFile = self.stationsDbFile;
+    var backupFile = '/data/rtlsdr_radio_backups/stations/stations-' + timestamp + '.json';
+    
+    if (fs.existsSync(sourceFile)) {
+      fs.copySync(sourceFile, backupFile);
+      self.logger.info('[RTL-SDR Radio] Created stations backup: ' + backupFile);
+      self.pruneBackups('stations');
+      defer.resolve(backupFile);
+    } else {
+      defer.reject('Stations database file not found');
+    }
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to create stations backup: ' + e);
+    defer.reject(e);
+  }
+  
+  return defer.promise;
+};
+
+ControllerRtlsdrRadio.prototype.createConfigBackup = function(timestamp) {
+  var self = this;
+  var defer = libQ.defer();
+  
+  try {
+    if (!timestamp) {
+      timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    }
+    
+    var sourceFile = '/data/configuration/music_service/rtlsdr_radio/config.json';
+    var backupFile = '/data/rtlsdr_radio_backups/config/config-' + timestamp + '.json';
+    
+    if (fs.existsSync(sourceFile)) {
+      fs.copySync(sourceFile, backupFile);
+      self.logger.info('[RTL-SDR Radio] Created config backup: ' + backupFile);
+      self.pruneBackups('config');
+      defer.resolve(backupFile);
+    } else {
+      defer.reject('Config file not found');
+    }
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to create config backup: ' + e);
+    defer.reject(e);
+  }
+  
+  return defer.promise;
+};
+
+ControllerRtlsdrRadio.prototype.pruneBackups = function(type, keepCount) {
+  var self = this;
+  
+  if (!keepCount) {
+    keepCount = 5;
+  }
+  
+  try {
+    var backupDir = '/data/rtlsdr_radio_backups/' + type;
+    if (!fs.existsSync(backupDir)) {
+      return;
+    }
+    
+    var files = fs.readdirSync(backupDir);
+    files = files.filter(function(f) {
+      return f.endsWith('.json');
+    });
+    
+    if (files.length <= keepCount) {
+      return;
+    }
+    
+    files.sort().reverse();
+    
+    for (var i = keepCount; i < files.length; i++) {
+      var oldFile = backupDir + '/' + files[i];
+      fs.removeSync(oldFile);
+      self.logger.info('[RTL-SDR Radio] Pruned old backup: ' + oldFile);
+    }
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to prune backups: ' + e);
+  }
+};
+
+ControllerRtlsdrRadio.prototype.listAvailableBackups = function() {
+  var self = this;
+  var backups = {
+    stations: [],
+    config: []
+  };
+  
+  try {
+    var stationsDir = '/data/rtlsdr_radio_backups/stations';
+    var configDir = '/data/rtlsdr_radio_backups/config';
+    
+    if (fs.existsSync(stationsDir)) {
+      var stationsFiles = fs.readdirSync(stationsDir);
+      stationsFiles = stationsFiles.filter(function(f) {
+        return f.endsWith('.json');
+      });
+      stationsFiles.sort().reverse();
+      
+      backups.stations = stationsFiles.map(function(f) {
+        var filePath = stationsDir + '/' + f;
+        var stats = fs.statSync(filePath);
+        var timestamp = f.replace('stations-', '').replace('.json', '');
+        return {
+          filename: f,
+          timestamp: timestamp,
+          size: stats.size,
+          date: stats.mtime
+        };
+      });
+    }
+    
+    if (fs.existsSync(configDir)) {
+      var configFiles = fs.readdirSync(configDir);
+      configFiles = configFiles.filter(function(f) {
+        return f.endsWith('.json');
+      });
+      configFiles.sort().reverse();
+      
+      backups.config = configFiles.map(function(f) {
+        var filePath = configDir + '/' + f;
+        var stats = fs.statSync(filePath);
+        var timestamp = f.replace('config-', '').replace('.json', '');
+        return {
+          filename: f,
+          timestamp: timestamp,
+          size: stats.size,
+          date: stats.mtime
+        };
+      });
+    }
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to list backups: ' + e);
+  }
+  
+  return backups;
+};
+
+ControllerRtlsdrRadio.prototype.restoreStationsBackup = function(timestamp) {
+  var self = this;
+  var defer = libQ.defer();
+  
+  try {
+    var backupFile = '/data/rtlsdr_radio_backups/stations/stations-' + timestamp + '.json';
+    var targetFile = self.stationsDbFile;
+    
+    if (fs.existsSync(backupFile)) {
+      fs.copySync(backupFile, targetFile);
+      self.logger.info('[RTL-SDR Radio] Restored stations from: ' + backupFile);
+      defer.resolve();
+    } else {
+      defer.reject('Backup file not found: ' + timestamp);
+    }
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to restore stations backup: ' + e);
+    defer.reject(e);
+  }
+  
+  return defer.promise;
+};
+
+ControllerRtlsdrRadio.prototype.restoreConfigBackup = function(timestamp) {
+  var self = this;
+  var defer = libQ.defer();
+  
+  try {
+    var backupFile = '/data/rtlsdr_radio_backups/config/config-' + timestamp + '.json';
+    var targetFile = '/data/configuration/music_service/rtlsdr_radio/config.json';
+    
+    if (fs.existsSync(backupFile)) {
+      fs.copySync(backupFile, targetFile);
+      self.logger.info('[RTL-SDR Radio] Restored config from: ' + backupFile);
+      defer.resolve();
+    } else {
+      defer.reject('Backup file not found: ' + timestamp);
+    }
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to restore config backup: ' + e);
+    defer.reject(e);
+  }
+  
+  return defer.promise;
+};
+
+ControllerRtlsdrRadio.prototype.deleteBackup = function(type, timestamp) {
+  var self = this;
+  var defer = libQ.defer();
+  
+  try {
+    var backupFile = '/data/rtlsdr_radio_backups/' + type + '/' + type + '-' + timestamp + '.json';
+    
+    if (fs.existsSync(backupFile)) {
+      fs.removeSync(backupFile);
+      self.logger.info('[RTL-SDR Radio] Deleted backup: ' + backupFile);
+      defer.resolve();
+    } else {
+      defer.reject('Backup file not found');
+    }
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to delete backup: ' + e);
+    defer.reject(e);
+  }
+  
+  return defer.promise;
+};
+
+ControllerRtlsdrRadio.prototype.createBackupFromUI = function() {
+  var self = this;
+  var defer = libQ.defer();
+  
+  self.ensureBackupDirectory();
+  
+  self.createStationsBackup()
+    .then(function() {
+      return self.createConfigBackup();
+    })
+    .then(function() {
+      self.pruneBackups('stations');
+      self.pruneBackups('config');
+      self.commandRouter.pushToastMessage('success', 'FM/DAB Radio', 
+        self.getI18nString('TOAST_BACKUP_CREATED'));
+      defer.resolve();
+    })
+    .fail(function(e) {
+      self.logger.error('[RTL-SDR Radio] UI backup failed: ' + e);
+      self.commandRouter.pushToastMessage('error', 'FM/DAB Radio', 
+        self.getI18nString('TOAST_BACKUP_FAILED') + ': ' + e);
+      defer.reject(e);
+    });
+  
+  return defer.promise;
+};
+
+ControllerRtlsdrRadio.prototype.restoreLatestBackupFromUI = function() {
+  var self = this;
+  var defer = libQ.defer();
+  
+  try {
+    var backups = self.listAvailableBackups();
+    
+    if (backups.stations.length === 0 && backups.config.length === 0) {
+      self.commandRouter.pushToastMessage('warning', 'FM/DAB Radio', 
+        self.getI18nString('TOAST_NO_BACKUPS'));
+      defer.reject('No backups available');
+      return defer.promise;
+    }
+    
+    var promises = [];
+    
+    if (backups.stations.length > 0) {
+      var latestStations = backups.stations[0].timestamp;
+      promises.push(self.restoreStationsBackup(latestStations));
+    }
+    
+    if (backups.config.length > 0) {
+      var latestConfig = backups.config[0].timestamp;
+      promises.push(self.restoreConfigBackup(latestConfig));
+    }
+    
+    libQ.all(promises)
+      .then(function() {
+        self.commandRouter.pushToastMessage('success', 'FM/DAB Radio', 
+          self.getI18nString('TOAST_RESTORE_SUCCESS'));
+        setTimeout(function() {
+          self.onStop()
+            .then(function() {
+              return self.onStart();
+            })
+            .then(function() {
+              defer.resolve();
+            });
+        }, 2000);
+      })
+      .fail(function(e) {
+        self.logger.error('[RTL-SDR Radio] UI restore failed: ' + e);
+        self.commandRouter.pushToastMessage('error', 'FM/DAB Radio', 
+          self.getI18nString('TOAST_RESTORE_FAILED_MSG') + ': ' + e);
+        defer.reject(e);
+      });
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] UI restore error: ' + e);
+    self.commandRouter.pushToastMessage('error', 'FM/DAB Radio', 
+      self.getI18nString('TOAST_RESTORE_FAILED_MSG') + ': ' + e);
+    defer.reject(e);
+  }
+  
+  return defer.promise;
+};
+
+ControllerRtlsdrRadio.prototype.createZipBackup = function(type, timestamp, res) {
+  var self = this;
+  var execSync = require('child_process').execSync;
+  
+  try {
+    var backupFile = '/data/rtlsdr_radio_backups/' + type + '/' + type + '-' + timestamp + '.json';
+    var zipFile = '/tmp/' + type + '-' + timestamp + '.zip';
+    
+    if (!fs.existsSync(backupFile)) {
+      res.status(404).json({ error: 'Backup file not found' });
+      return;
+    }
+    
+    execSync('cd /data/rtlsdr_radio_backups/' + type + ' && zip -q "' + zipFile + '" "' + type + '-' + timestamp + '.json"');
+    
+    res.download(zipFile, type + '-' + timestamp + '.zip', function(err) {
+      if (fs.existsSync(zipFile)) {
+        fs.removeSync(zipFile);
+      }
+      if (err) {
+        self.logger.error('[RTL-SDR Radio] Download error: ' + err);
+      }
+    });
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to create zip: ' + e);
+    res.status(500).json({ error: e.toString() });
+  }
+};
+
+ControllerRtlsdrRadio.prototype.extractAndValidateZip = function(zipPath) {
+  var self = this;
+  var defer = libQ.defer();
+  var execSync = require('child_process').execSync;
+  
+  try {
+    var extractDir = '/tmp/rtlsdr_restore_' + Date.now();
+    fs.mkdirpSync(extractDir);
+    
+    execSync('unzip -q "' + zipPath + '" -d "' + extractDir + '"');
+    
+    var files = fs.readdirSync(extractDir);
+    var jsonFile = files.find(function(f) {
+      return f.endsWith('.json');
+    });
+    
+    if (!jsonFile) {
+      fs.removeSync(extractDir);
+      defer.reject('No JSON file found in backup');
+      return defer.promise;
+    }
+    
+    var jsonPath = extractDir + '/' + jsonFile;
+    var data = fs.readJsonSync(jsonPath);
+    
+    var isValid = false;
+    var info = {};
+    
+    if (data.version && (data.fm || data.dab)) {
+      isValid = true;
+      info.type = 'stations';
+      info.fmCount = data.fm ? data.fm.length : 0;
+      info.dabCount = data.dab ? data.dab.length : 0;
+    } else if (data.fm_gain !== undefined || data.dab_gain !== undefined) {
+      isValid = true;
+      info.type = 'config';
+    }
+    
+    if (isValid) {
+      defer.resolve({
+        extractDir: extractDir,
+        jsonFile: jsonPath,
+        info: info
+      });
+    } else {
+      fs.removeSync(extractDir);
+      defer.reject('Invalid backup file format');
+    }
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to extract/validate zip: ' + e);
+    defer.reject(e);
+  }
+  
+  return defer.promise;
+};
+
 
 // ===============================
 // STATION MANAGEMENT WEB SERVER
@@ -357,15 +809,190 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
     // API: Get device status
     self.expressApp.get('/api/status', function(req, res) {
       try {
+        var fmCount = self.stationsDb.fm ? self.stationsDb.fm.filter(function(s) { 
+          return !s.deleted; 
+        }).length : 0;
+        var dabCount = self.stationsDb.dab ? self.stationsDb.dab.filter(function(s) { 
+          return !s.deleted; 
+        }).length : 0;
+        
         res.json({ 
           deviceState: self.deviceState,
-          timestamp: Date.now()
+          fmStationsLoaded: fmCount,
+          dabStationsLoaded: dabCount,
+          dbLoadedAt: self.dbLoadedAt,
+          dbVersion: self.stationsDb.version || 0,
+          serverPort: self.managementPort,
+          timestamp: new Date().toISOString()
         });
       } catch (e) {
         self.logger.error('[RTL-SDR Radio] Failed to get status: ' + e);
         res.status(500).json({ error: e.toString() });
       }
     });
+    
+    
+    // ===== MAINTENANCE API ENDPOINTS =====
+    
+    self.expressApp.get('/api/maintenance/settings', function(req, res) {
+      try {
+        var autoBackup = self.config.get('auto_backup_on_uninstall', false);
+        res.json({ autoBackup: autoBackup });
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    self.expressApp.post('/api/maintenance/settings', function(req, res) {
+      try {
+        self.config.set('auto_backup_on_uninstall', req.body.autoBackup);
+        res.json({ success: true });
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    self.expressApp.get('/api/maintenance/backup/list', function(req, res) {
+      try {
+        res.json(self.listAvailableBackups());
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    self.expressApp.post('/api/maintenance/backup/create', function(req, res) {
+      try {
+        var type = req.body.type;
+        var timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        
+        if (type === 'stations') {
+          self.createStationsBackup(timestamp)
+            .then(function() { res.json({ success: true }); })
+            .fail(function(e) { res.status(500).json({ error: e.toString() }); });
+        } else if (type === 'config') {
+          self.createConfigBackup(timestamp)
+            .then(function() { res.json({ success: true }); })
+            .fail(function(e) { res.status(500).json({ error: e.toString() }); });
+        } else if (type === 'full') {
+          self.createStationsBackup(timestamp)
+            .then(function() { return self.createConfigBackup(timestamp); })
+            .then(function() { res.json({ success: true }); })
+            .fail(function(e) { res.status(500).json({ error: e.toString() }); });
+        } else {
+          res.status(400).json({ error: 'Invalid backup type' });
+        }
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    self.expressApp.post('/api/maintenance/backup/restore', function(req, res) {
+      try {
+        var promises = [];
+        if (req.body.stationsTimestamp) promises.push(self.restoreStationsBackup(req.body.stationsTimestamp));
+        if (req.body.configTimestamp) promises.push(self.restoreConfigBackup(req.body.configTimestamp));
+        
+        if (promises.length === 0) {
+          res.status(400).json({ error: 'No backups specified' });
+          return;
+        }
+        
+        libQ.all(promises)
+          .then(function() {
+            res.json({ success: true });
+            setTimeout(function() {
+              self.onStop()
+                .then(function() {
+                  return self.onStart();
+                });
+            }, 1000);
+          })
+          .fail(function(e) { res.status(500).json({ error: e.toString() }); });
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    self.expressApp.delete('/api/maintenance/backup/delete', function(req, res) {
+      try {
+        self.deleteBackup(req.body.type, req.body.timestamp)
+          .then(function() { res.json({ success: true }); })
+          .fail(function(e) { res.status(500).json({ error: e.toString() }); });
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    self.expressApp.get('/api/maintenance/backup/download', function(req, res) {
+      try {
+        self.createZipBackup(req.query.type, req.query.timestamp, res);
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    var multer = require('multer');
+    var upload = multer({ dest: '/tmp/' });
+    
+    self.expressApp.post('/api/maintenance/backup/upload', upload.single('file'), function(req, res) {
+      try {
+        if (!req.file) {
+          res.status(400).json({ error: 'No file uploaded' });
+          return;
+        }
+        
+        var zipPath = req.file.path;
+        
+        self.extractAndValidateZip(zipPath)
+          .then(function(result) {
+            fs.removeSync(zipPath);
+            fs.removeSync(result.extractDir);
+            res.json({ success: true, info: result.info });
+          })
+          .fail(function(e) {
+            fs.removeSync(zipPath);
+            res.status(400).json({ error: e.toString() });
+          });
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    self.expressApp.post('/api/maintenance/backup/upload-restore', upload.single('file'), function(req, res) {
+      try {
+        if (!req.file) {
+          res.status(400).json({ error: 'No file uploaded' });
+          return;
+        }
+        
+        var zipPath = req.file.path;
+        
+        self.extractAndValidateZip(zipPath)
+          .then(function(result) {
+            var targetFile = result.info.type === 'stations' ? self.stationsDbFile : '/data/configuration/music_service/rtlsdr_radio/config.json';
+            fs.copySync(result.jsonFile, targetFile);
+            fs.removeSync(zipPath);
+            fs.removeSync(result.extractDir);
+            
+            res.json({ success: true });
+            
+            setTimeout(function() {
+              self.onStop()
+                .then(function() {
+                  return self.onStart();
+                });
+            }, 1000);
+          })
+          .fail(function(e) {
+            fs.removeSync(zipPath);
+            res.status(400).json({ error: e.toString() });
+          });
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+
     
     // Start server
     self.expressServer = self.expressApp.listen(self.managementPort, function() {
@@ -2631,6 +3258,10 @@ ControllerRtlsdrRadio.prototype.loadStations = function() {
     self.logger.error('[RTL-SDR Radio] Error loading stations: ' + e);
     self.stationsDb = self.createEmptyDatabaseV2();
   }
+  
+  // Record when database was loaded for diagnostics
+  self.dbLoadedAt = new Date().toISOString();
+  self.logger.info('[RTL-SDR Radio] Database loaded at: ' + self.dbLoadedAt);
   
   return libQ.resolve();
 };

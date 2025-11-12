@@ -26,5 +26,9 @@
   "sample_rate": {
     "type": "number",
     "value": 48000
+  },
+  "auto_backup_on_uninstall": {
+    "type": "boolean",
+    "value": true
   }
 }

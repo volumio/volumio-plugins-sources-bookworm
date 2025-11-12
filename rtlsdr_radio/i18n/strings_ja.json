@@ -1,13 +1,11 @@
 {
   "PLUGIN_NAME": "FM/DAB ラジオ",
   "PLUGIN_DESCRIPTION": "RTL-SDR USB チューナーを使用して FM および DAB/DAB+ ラジオを受信",
-  
   "SECTION_FM_RADIO": "FM ラジオ",
   "SECTION_DAB_RADIO": "DAB/DAB+ ラジオ",
   "SECTION_WEB_MANAGEMENT": "局管理",
   "SECTION_WEB_MANAGEMENT_CONFIG": "局管理設定",
   "SECTION_DIAGNOSTICS": "診断",
-  
   "RADIO_SETTINGS": "ラジオ設定",
   "ENABLE_FM": "FM ラジオ設定を表示",
   "ENABLE_FM_DOC": "FM ラジオ設定の表示を切り替え",
@@ -16,7 +14,6 @@
   "SCAN_FM": "FM 局をスキャン",
   "SCAN_FM_DOC": "利用可能な FM ラジオ局を検索",
   "SAVE_FM_SETTINGS": "FM 設定を保存",
-  
   "ENABLE_DAB": "DAB/DAB+ ラジオ設定を表示",
   "ENABLE_DAB_DOC": "DAB および DAB+ ラジオ設定の表示を切り替え",
   "DAB_GAIN": "DAB ゲイン",
@@ -24,7 +21,6 @@
   "SCAN_DAB": "DAB 局をスキャン",
   "SCAN_DAB_DOC": "利用可能な DAB/DAB+ 局を検索（2～3分かかる場合があります）",
   "SAVE_DAB_SETTINGS": "DAB 設定を保存",
-  
   "SCAN_SENSITIVITY": "FM スキャン感度",
   "SCAN_SENSITIVITY_DOC": "局を検出する際の FM スキャナの感度。高い値は最も強い信号のみを見つけ、低い値はより多くの局を見つけますがノイズが含まれる場合があります。",
   "SENSITIVITY_CONSERVATIVE": "保守的 (+15 dB) - 非常に強い信号のみ",
@@ -32,7 +28,6 @@
   "SENSITIVITY_BALANCED": "バランス (+8 dB) - 良好な信号（推奨）",
   "SENSITIVITY_SENSITIVE": "敏感 (+5 dB) - すべての妥当な信号",
   "SENSITIVITY_VERY_SENSITIVE": "非常に敏感 (+3 dB) - 弱い信号、ノイズが含まれる場合あり",
-  
   "SHOW_WEB_MANAGEMENT": "局管理を表示",
   "SHOW_WEB_MANAGEMENT_DOC": "局マネージャーのアクセスオプションを表示",
   "OPEN_CURRENT_WINDOW": "現在のウィンドウで開く",
@@ -40,7 +35,6 @@
   "OPEN_NEW_TAB": "新しいタブで開く",
   "OPEN_NEW_TAB_DOC": "新しいブラウザタブで局マネージャーを開きます",
   "SAVE_WEB_MANAGEMENT": "設定を保存",
-  
   "SHOW_MANAGEMENT_CONFIG": "設定を表示",
   "SHOW_MANAGEMENT_CONFIG_DOC": "高度なマネージャー設定を表示",
   "ENABLE_MENU_ITEM": "設定メニュー項目を有効化",
@@ -49,7 +43,10 @@
   "HOSTNAME_OVERRIDE_DOC": "MDNS ホスト名を使用する場合は空白のままにします。MDNS が利用できない場合は IP アドレス（例：192.168.30.208）を入力してください",
   "MANAGER_URL_LABEL": "マネージャー URL：",
   "SAVE_MANAGEMENT_CONFIG": "設定を保存",
-  
+  "CREATE_BACKUP": "完全バックアップを作成",
+  "CREATE_BACKUP_DOC": "すべてのステーションと設定の完全なバックアップを作成します。バックアップは /data/plugins/music_service/rtlsdr_radio/backups/ に保存されます",
+  "RESTORE_LATEST_BACKUP": "最新の完全バックアップを復元",
+  "RESTORE_LATEST_BACKUP_DOC": "最新の完全バックアップ（ステーションと設定）を復元します。復元完了後、プラグインが再起動します。",
   "SHOW_DIAGNOSTICS": "診断を表示",
   "SHOW_DIAGNOSTICS_DOC": "異なる USB ドングル用の手動テストツールを表示",
   "DIAGNOSTICS_PURPOSE": "これらのツールは、USB ドングルが特定の周波数を受信できるかテストします。使用場面：局が再生されない、信号が弱い、または新しいドングルをテストする場合。既知の強い局を入力し、設定を保存し、テストをクリック - オーディオが聞こえるはずです。オーディオがないか歪んでいる場合は、ゲインを調整してください：ノイズがある場合は低く（NESDR Smart：20を試す）、無音の場合は高く（基本的な RTL-SDR：80を試す）。テストは、すべての局をスキャンする前にドングルが機能することを確認します。",
@@ -75,14 +72,12 @@
   "TEST_FM_FAILED": "FM テスト失敗：{0}",
   "TEST_DAB_SUCCESS": "DAB テスト成功",
   "TEST_DAB_FAILED": "DAB テスト失敗：{0}",
-  
   "SCANNING": "局スキャン",
   "SCAN_IN_PROGRESS": "スキャン中...",
   "SCAN_COMPLETE": "スキャン完了",
   "NO_DEVICE": "RTL-SDR デバイスが検出されません",
   "SAVE_SUCCESS": "設定を保存しました",
   "SAVE_ERROR": "設定の保存に失敗しました",
-  
   "DEVICE_BUSY_TITLE": "デバイスビジー",
   "DEVICE_BUSY_MESSAGE": "RTL-SDR デバイスは現在{0}しています。",
   "DEVICE_STATE_SCANNING_FM": "FM 局をスキャン",
@@ -96,7 +91,6 @@
   "MODAL_BTN_CANCEL_AND": "キャンセルして{0}",
   "MODAL_BTN_QUEUE": "キューに入れる（60秒タイムアウト）",
   "MODAL_BTN_CANCEL_REQUEST": "リクエストをキャンセル",
-  
   "TOAST_FM_SCANNING": "局をスキャン中（10〜30秒かかります）...",
   "TOAST_DAB_SCANNING": "DAB 局をスキャン中（2～5分かかります）...",
   "TOAST_FM_SCAN_COMPLETE": "{0} 局が見つかりました",
@@ -123,7 +117,6 @@
   "TOAST_FM_REAPPEARED": "{0} 個の削除された局が再び利用可能になりました",
   "TOAST_DAB_REAPPEARED": "{0} 個の削除されたサービスが再び利用可能になりました",
   "TOAST_SCAN_COMPLETE": "スキャン完了：{0} 個が見つかりました、合計 {1} 個",
-  
   "MODAL_SCANNING_FM_TITLE": "FM局をスキャン中",
   "MODAL_SCANNING_DAB_TITLE": "DAB局をスキャン中",
   "MODAL_SCANNING_PROGRESS": "スキャン中...",
@@ -138,7 +131,6 @@
   "TOAST_FM_SCANNING_PROGRESS": "FM局をスキャン中...",
   "TOAST_DAB_SCANNING_UI": "DAB局をスキャン中（2〜5分）...",
   "TOAST_DAB_SCANNING_PROGRESS": "DAB局をスキャン中... {0}経過",
-  
   "FM_RADIO": "FM ラジオ",
   "DAB_RADIO": "DAB ラジオ",
   "FAVORITES": "お気に入り",
@@ -147,24 +139,18 @@
   "STATIONS": "局",
   "SERVICE": "サービス",
   "SERVICES": "サービス",
-  
   "MENU_MANAGER": "FM/DAB 局マネージャー",
-  
   "WEB_MANAGER_TITLE": "局管理",
   "WEB_MANAGER_SUBTITLE": "RTL-SDR ラジオプラグイン",
-  
   "TAB_FM_RADIO": "FM ラジオ",
   "TAB_DAB_RADIO": "DAB ラジオ",
   "TAB_RECYCLE_BIN": "ごみ箱",
-  
   "STAT_TOTAL": "局の合計",
   "STAT_FAVORITES": "お気に入り",
   "STAT_HIDDEN": "非表示",
-  
   "SEARCH_FM": "FM 局を検索...",
   "SEARCH_DAB": "DAB 局を検索...",
   "SEARCH_RECYCLE": "削除された局を検索...",
-  
   "BTN_CLEAR_ALL_FM": "すべての FM をクリア",
   "BTN_CLEAR_ALL_DAB": "すべての DAB をクリア",
   "BTN_RESCAN_FM": "FM を再スキャン",
@@ -178,17 +164,13 @@
   "BTN_SAVE": "変更を保存",
   "BTN_CANCEL": "キャンセル",
   "BTN_CONFIRM": "確認",
-  
   "PLACEHOLDER_STATION_NAME": "局名",
   "PLACEHOLDER_FREQUENCY": "MHz",
-  
   "STATION_NAME_UNKNOWN": "不明",
-  
   "STATUS_NO_CHANGES": "変更なし",
   "STATUS_UNSAVED": "保存されていない変更",
   "STATUS_SAVING": "保存中...",
   "STATUS_SAVED": "すべての変更を保存しました",
-  
   "TOAST_SAVED": "変更を保存しました",
   "TOAST_SAVE_FAILED": "保存に失敗しました：{0}",
   "TOAST_LOAD_FAILED": "局の読み込みに失敗しました：{0}",
@@ -201,7 +183,6 @@
   "TOAST_CLEARED_DAB": "{0} 個の DAB 局をごみ箱に移動しました",
   "TOAST_RECYCLE_EMPTIED": "{0} 個の局を完全に削除しました",
   "TOAST_FREQUENCY_CHANGED": "周波数を {0} MHz に変更しました",
-  
   "CONFIRM_CLEAR_FM_TITLE": "すべての FM 局をクリアしますか？",
   "CONFIRM_CLEAR_FM_MSG": "すべての {0} 個の FM 局をごみ箱に移動しますか？後で復元または完全に削除できます。",
   "CONFIRM_CLEAR_DAB_TITLE": "すべての DAB 局をクリアしますか？",
@@ -212,7 +193,6 @@
   "CONFIRM_EMPTY_RECYCLE_MSG": "{0} 個の局を完全に削除しますか？この操作は元に戻せません。",
   "CONFIRM_DELETE_ONE": "この局をごみ箱に移動しますか？",
   "CONFIRM_PURGE_ONE": "この局を完全に削除しますか？この操作は元に戻せません。",
-  
   "WARN_FREQ_CHANGE_TITLE": "警告：周波数を変更しますか？",
   "WARN_FREQ_CHANGE_MSG": "「{0}」の周波数を変更しようとしています",
   "WARN_FREQ_CHANGE_FROM": "変更前：",
@@ -221,19 +201,15 @@
   "WARN_FREQ_DUPLICATE": "警告：{0} MHz は既に局リストに存在します",
   "WARN_FREQ_INVALID": "無効な周波数です。87.5 から 108.0 MHz の間である必要があります",
   "WARN_FREQ_CHANGE_BTN": "周波数を変更",
-  
   "RECYCLE_NOTICE": "削除された局は消去されるまでここに保管されます。復元または完全に削除できます。",
-  
   "EMPTY_FM": "FM 局が見つかりません",
   "EMPTY_DAB": "DAB 局が見つかりません",
   "EMPTY_RECYCLE": "ごみ箱は空です",
   "EMPTY_SEARCH": "局が見つかりません",
-  
   "LABEL_FREQUENCY": "周波数",
   "LABEL_CHANNEL": "チャンネル",
   "LABEL_TYPE": "タイプ",
   "LABEL_STATION_NAME": "局名",
-  
   "BROWSE_RECENTLY_PLAYED": "最近再生",
   "BROWSE_QUICK_ACCESS": "クイックアクセス",
   "BROWSE_RADIO_SOURCES": "ラジオソース",
@@ -242,21 +218,17 @@
   "BROWSE_HIDDEN_STATIONS": "非表示の局",
   "BROWSE_DELETED_STATIONS": "削除された局",
   "BROWSE_MANAGEMENT": "管理",
-  
   "BROWSE_NO_FAVORITES": "お気に入りはまだありません",
   "BROWSE_NO_FAVORITES_DESC": "FM または DAB リストから局をお気に入りに追加",
   "BROWSE_FAVORITES_COUNT": "お気に入り（{0} 局）",
-  
   "BROWSE_NO_RECENT": "最近再生した局はありません",
   "BROWSE_NO_RECENT_DESC": "いくつかの局を再生するとここに表示されます",
-  
   "BROWSE_NO_FM": "FM 局が見つかりません",
   "BROWSE_NO_FM_DESC": "再スキャンをクリックして局を検索",
   "BROWSE_RESCAN_FM": "FM 局を再スキャン",
   "BROWSE_RESCAN_FM_DESC": "FM 局を検索（10〜30秒かかります）",
   "BROWSE_EDIT_INFO": "局を編集するには：設定 > プラグイン > FM/DAB ラジオ",
   "BROWSE_FM_COUNT": "FM ラジオ（{0} 局）",
-  
   "BROWSE_DAB_FLAT": "すべての DAB 局（フラットリスト）",
   "BROWSE_DAB_SERVICES_COUNT": "{0} サービス",
   "BROWSE_NO_DAB": "DAB 局が見つかりません",
@@ -264,7 +236,6 @@
   "BROWSE_RESCAN_DAB": "DAB 局を再スキャン",
   "BROWSE_RESCAN_DAB_DESC": "DAB 局を検索（2～5分かかります）",
   "BROWSE_DAB_ALL": "すべての DAB 局",
-  
   "BROWSE_FM_DELETED": "FM 削除済み",
   "BROWSE_DAB_DELETED": "DAB 削除済み",
   "BROWSE_PURGE_ALL": "すべての削除済みを消去（完全削除）",
@@ -273,9 +244,73 @@
   "BROWSE_DELETED_COUNT": "削除された局（合計 {0} 個）",
   "BROWSE_FM_DELETED_COUNT": "FM 削除された局（{0} 個）",
   "BROWSE_DAB_DELETED_COUNT": "DAB 削除された局（{0} 個）",
-  
   "BROWSE_NO_HIDDEN": "非表示の局はありません",
   "BROWSE_HIDDEN_COUNT": "非表示の局（{0} 個）",
-  
-  "CLOSE_WINDOW": "閉じる"
+  "CLOSE_WINDOW": "閉じる",
+  "TAB_MAINTENANCE": "メンテナンス",
+  "MAINTENANCE_BACKUP_TITLE": "バックアップを作成",
+  "MAINTENANCE_BACKUP_TYPE_STATIONS": "ステーションのみ",
+  "MAINTENANCE_BACKUP_TYPE_CONFIG": "設定のみ",
+  "MAINTENANCE_BACKUP_TYPE_FULL": "完全バックアップ（すべて）",
+  "MAINTENANCE_AUTO_BACKUP": "アンインストール前の自動バックアップ",
+  "MAINTENANCE_CREATE_BACKUP": "今すぐバックアップを作成",
+  "MAINTENANCE_RESTORE_SYSTEM_TITLE": "システムから復元",
+  "MAINTENANCE_RESTORE_STATIONS": "ステーション",
+  "MAINTENANCE_RESTORE_CONFIG": "設定",
+  "MAINTENANCE_RESTORE_SELECTED": "選択したものを復元",
+  "MAINTENANCE_RESTORE_LATEST_FULL": "最新の完全版を復元",
+  "MAINTENANCE_SELECT_DATE_LATEST": "最新",
+  "MAINTENANCE_UPLOAD_TITLE": "バックアップをアップロード",
+  "MAINTENANCE_UPLOAD_CHOOSE": "ファイルを選択",
+  "MAINTENANCE_UPLOAD_RESTORE": "アップロードとプレビュー",
+  "MAINTENANCE_UPLOAD_ACCEPTED": "受け入れ：.zipファイル（ステーション、設定、または完全バックアップ）",
+  "MAINTENANCE_HISTORY_TITLE": "バックアップ履歴",
+  "MAINTENANCE_HISTORY_TYPE": "タイプ",
+  "MAINTENANCE_HISTORY_DATE": "日付",
+  "MAINTENANCE_HISTORY_SIZE": "サイズ",
+  "MAINTENANCE_HISTORY_DOWNLOAD": "ダウンロード",
+  "MAINTENANCE_HISTORY_DELETE": "削除",
+  "MAINTENANCE_CONFIRM_RESTORE_TITLE": "復元の確認",
+  "MAINTENANCE_CONFIRM_RESTORE_MSG": "選択したバックアップを復元します。プラグインが再起動され、現在の再生が停止します。",
+  "MAINTENANCE_CONFIRM_DELETE_TITLE": "削除の確認",
+  "MAINTENANCE_CONFIRM_DELETE_MSG": "このバックアップを完全に削除しますか？",
+  "MAINTENANCE_BACKUP_CREATED": "バックアップが正常に作成されました",
+  "MAINTENANCE_BACKUP_FAILED": "バックアップの作成に失敗しました：{0}",
+  "MAINTENANCE_RESTORE_SUCCESS": "バックアップが正常に復元されました。プラグインを再起動しています...",
+  "MAINTENANCE_RESTORE_FAILED": "復元に失敗しました：{0}",
+  "MAINTENANCE_DELETE_SUCCESS": "バックアップを削除しました",
+  "MAINTENANCE_DELETE_FAILED": "削除に失敗しました：{0}",
+  "MAINTENANCE_DOWNLOAD_FAILED": "ダウンロードに失敗しました：{0}",
+  "MAINTENANCE_UPLOAD_PREVIEW_TITLE": "アップロードのプレビュー",
+  "MAINTENANCE_UPLOAD_PREVIEW_STATIONS": "ステーションが見つかりました：{0} FM、{1} DAB",
+  "MAINTENANCE_UPLOAD_PREVIEW_CONFIG": "設定が見つかりました",
+  "MAINTENANCE_UPLOAD_INVALID": "無効なバックアップファイル",
+  "MAINTENANCE_CONFIRM_UPLOAD_RESTORE_TITLE": "バックアップを復元",
+  "MAINTENANCE_CONFIRM_UPLOAD_RESTORE_MSG": "このバックアップを復元しますか？",
+  "MAINTENANCE_TITLE": "バックアップと復元",
+  "BTN_SAVE_SETTINGS": "設定を保存",
+  "BTN_CHOOSE_FILE": "ファイルを選択",
+  "TH_TYPE": "種類",
+  "TH_DATE": "日付",
+  "TH_SIZE": "サイズ",
+  "TH_DOWNLOAD": "ダウンロード",
+  "TH_DELETE": "削除",
+  "OPTION_LATEST": "最新",
+  "BACKUP_TYPE_STATIONS_SHORT": "ステーション",
+  "BACKUP_TYPE_CONFIG_SHORT": "設定",
+  "TOAST_BACKUP_CREATING": "バックアップを作成中...",
+  "TOAST_BACKUP_CREATED": "バックアップが正常に作成されました",
+  "TOAST_BACKUP_FAILED": "バックアップの作成に失敗しました",
+  "TOAST_NO_BACKUPS": "復元するためのバックアップがありません",
+  "TOAST_SELECT_BACKUP": "少なくとも1つのバックアップを選択してください",
+  "TOAST_RESTORING": "復元中...",
+  "TOAST_RESTORE_SUCCESS": "復元しました。再起動中...",
+  "TOAST_RESTORE_FAILED_MSG": "復元に失敗しました",
+  "TOAST_BACKUP_DELETED": "バックアップを削除しました",
+  "TOAST_DELETE_FAILED": "削除に失敗しました",
+  "TOAST_VALIDATING": "検証中...",
+  "UPLOAD_PREVIEW_STATIONS_MSG": "ステーション: {0} FM、{1} DAB",
+  "UPLOAD_PREVIEW_CONFIG_MSG": "設定バックアップ",
+  "TOAST_INVALID_BACKUP": "無効なバックアップファイル",
+  "TOAST_UPLOAD_FAILED": "アップロードに失敗しました"
 }

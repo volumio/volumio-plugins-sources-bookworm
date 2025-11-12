@@ -92,6 +92,36 @@
             "field": "show_management_config",
             "value": true
           }
+        },
+        {
+          "id": "create_backup_button",
+          "element": "button",
+          "label": "TRANSLATE.CREATE_BACKUP",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "music_service/rtlsdr_radio",
+            "method": "createBackupFromUI"
+          },
+          "doc": "TRANSLATE.CREATE_BACKUP_DOC",
+          "visibleIf": {
+            "field": "show_management_config",
+            "value": true
+          }
+        },
+        {
+          "id": "restore_backup_button",
+          "element": "button",
+          "label": "TRANSLATE.RESTORE_LATEST_BACKUP",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "music_service/rtlsdr_radio",
+            "method": "restoreLatestBackupFromUI"
+          },
+          "doc": "TRANSLATE.RESTORE_LATEST_BACKUP_DOC",
+          "visibleIf": {
+            "field": "show_management_config",
+            "value": true
+          }
         }
       ]
     },

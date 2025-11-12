@@ -63,6 +63,15 @@ fi
 # Update package list
 apt-get update
 
+# Install zip utilities for backup/restore functionality
+echo "Installing zip utilities for backup/restore..."
+if ! command -v zip &> /dev/null || ! command -v unzip &> /dev/null; then
+  apt-get install -y zip unzip
+  echo "Zip utilities installed"
+else
+  echo "Zip utilities already present"
+fi
+
 # Install RTL-SDR libraries (lightweight, no compilation)
 echo "Installing RTL-SDR libraries..."
 apt-get install -y rtl-sdr librtlsdr0
@@ -169,7 +178,7 @@ echo ""
 echo "=========================================="
 echo "FM/DAB Radio plugin installation complete"
 echo "=========================================="
-echo "Version: 1.0.6"
+echo "Version: 1.0.7"
 echo "Architecture: $ARCH"
 echo "Binaries: /usr/local/bin/dab-{rtlsdr,scanner}-3"
 echo ""
