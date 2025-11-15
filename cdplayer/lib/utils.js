@@ -4,18 +4,6 @@ const { execFile } = require("child_process");
 const fs = require("fs");
 
 /**
- * @typedef {Object} CdTrack
- * @property {string}   album
- * @property {string}   artist
- * @property {string}   title
- * @property {string}   trackType
- * @property {string}   type
- * @property {string}   service
- * @property {string}   uri
- * @property {number}   duration
- */
-
-/**
  * Detects the CD device path available on the system.
  *
  * @function detectCdDevice

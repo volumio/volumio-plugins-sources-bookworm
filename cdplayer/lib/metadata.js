@@ -1,22 +1,10 @@
+/// <reference path="../types.js" />
 const { detectCdDevice } = require("./utils");
 const { execFile } = require("child_process");
 const { promisify } = require("util");
 const _nodeFetch = require("node-fetch");
 global.fetch = _nodeFetch.default || _nodeFetch;
 const execFileAsync = promisify(execFile);
-
-/**
- * @typedef {Object} TrackMetadata
- * @property {number|null} no
- * @property {string}       title
- * @property {number|null}  durationSec
- *
- * @typedef {Object} CdMetadata
- * @property {string}   album
- * @property {string}   artist
- * @property {string}   releaseId
- * @property {TrackMetadata[]} tracks
- */
 
 /**
  * Retrieves the MusicBrainz Disc ID of the currently inserted audio CD.

@@ -1,5 +1,5 @@
+/// <reference path="./types.js" />
 "use strict";
-
 var libQ = require("kew");
 const { listCD, pRetry, detectCdDevice } = require("./lib/utils");
 const {
@@ -25,6 +25,8 @@ function cdplayer(context) {
   this.configManager = this.context.configManager;
   /** @type {CdTrack[]|null} */
   this._items = null;
+  /** @type {TrayWatcher|null} */
+  this._trayWatcher = null;
 }
 
 cdplayer.prototype.log = function (msg) {
@@ -58,21 +60,46 @@ cdplayer.prototype.onStart = function () {
     .catch((err) => self.error("Failed to start Daemon: " + err.message))
     .finally(() => defer.resolve());
 
-  // Get back to this later
-  // this._trayWatcher = createTrayWatcher({
-  //   logger: this.logger,
-  //   device: detectCdDevice(),
-  //   onEvent: (info) => {
-  //     // Optional: verbose per-event logging for debugging
-  //     this.logger.info(`event: ${JSON.stringify(info)}`);
-  //   },
-  //   onEject: () => {
-  //     this.logger.info("Eject detected — clearing cache & stopping playback");
-  //     // this._onCdEjected && this._onCdEjected(); // your existing cleanup
-  //   },
-  // });
+  try {
+    if (!self._trayWatcher || !self._trayWatcher.isRunning()) {
+      const device = detectCdDevice();
+      self.log(`Using CD device: ${device} to monitor tray events`);
+      self._trayWatcher = createTrayWatcher({
+        logger: self,
+        device,
+        onEvent: function (info) {
+          // optional debug log; remove if too chatty
+          self.log(
+            `udev: ${info.action} ${info.devname} media=${
+              info.ID_CDROM_MEDIA ?? "<none>"
+            } ready=${info.SYSTEMD_READY ?? "<none>"}`
+          );
+        },
+        onEject: function () {
+          self.log("Eject detected — clearing cache & stopping playback");
+          self._items = null;
 
-  // this._trayWatcher.start();
+          // stop playback if our service is active
+          // {"status":"stop","position":0,"artist":"Guns N’ Roses","album":"Appetite for Destruction","albumart":"https://coverartarchive.org/release/2174675c-2159-4405-a3af-3a4860106b58/front-500","uri":"http://127.0.0.1:8088/wav/track/1","trackType":"wav","seek":0,"duration":274,"random":null,"repeat":false,"repeatSingle":false,"consume":false,"volume":100,"dbVolume":null,"disableVolumeControl":true,"mute":false,"stream":"wav","updatedb":false,"volatile":false,"service":"mpd"}
+          try {
+            var state = self.commandRouter.volumioGetState();
+            self.log(`Current state: ${JSON.stringify(state)}`);
+            if (state && state.service === "cdplayer") {
+              self.log("Stopping playback due to eject event");
+              self.commandRouter.volumioStop();
+            }
+          } catch (e) {
+            self.log("Error stopping playback on eject: " + e.message);
+            /* noop */
+          }
+        },
+      });
+
+      self._trayWatcher.start();
+    }
+  } catch (e) {
+    self.error("Tray watcher failed to start: " + e.message);
+  }
 
   return defer.promise;
 };
@@ -179,6 +206,7 @@ cdplayer.prototype.handleBrowseUri = function (curUri) {
     // TODO: we need to clear the cache in case the tray is opened.
     // We have tried with manually install the udev npm package, but it does not work.
     // We should instead use the native udev already installed on Volumio.
+    self.log("Using cached CD track list");
     return libQ.resolve({
       navigation: {
         prev: { uri: "cdplayer" },
