@@ -26,6 +26,8 @@
   "TEST_CREDS":"Test de connection",
   "RANDOMS_ALBUMS":"Albums aleatoires",
   "NEWEST_ALBUMS":"Nouveaux albums",
+  "RECENTLY_PLAYED_ALBUMS":"Récemment écoutés",
+  "MOST_PLAYED_ALBUMS":"Plus écoutés",
   "GENRES":"Genres",
   "ARTISTS":"Artistes",
   "PLAYLISTS":"Playlists",
@@ -51,5 +53,7 @@
   "PATH_DOC":"Memorise le chemin Volusonic pour la navigation suivante",
   "PATH":"Chemin rémanent",
   "SALT":"Salt + md5 encodage du mot de passe",
-  "SALT_DOC":"Recommendé. Certaines implementations de l'API (ie:owncloud/nextcloud) ne le supportent pas"
+  "SALT_DOC":"Recommendé. Certaines implementations de l'API (ie:owncloud/nextcloud) ne le supportent pas",
+  "EXPERIMENTAL_FEATURES":"Activer les fonctionnalités expérimentales",
+  "EXPERIMENTAL_FEATURES_DOC":"Activer les listes d'albums récemment écoutés et plus écoutés. ATTENTION: Ces fonctionnalités peuvent ne pas fonctionner avec tous les serveurs API Subsonic (problèmes connus avec certaines versions de Navidrome, Airsonic et Ampache)"
 }
