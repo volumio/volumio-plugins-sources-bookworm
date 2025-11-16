@@ -301,8 +301,6 @@ cdplayer.prototype.search = function (query) {
   }
 
   try {
-    // TODO: WORKS fine bu needs to clear when serach is empty.
-    self.log(JSON.stringify(query, null, 2));
     const resultItems = getResultItems(self._items, query.value);
     const list = [
       {
