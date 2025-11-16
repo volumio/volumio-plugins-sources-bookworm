@@ -62,8 +62,18 @@ FusionDsp.prototype.onVolumioStart = function () {
 
 FusionDsp.prototype.onStart = function () {
   const self = this;
+
   let defer = libQ.defer();
   self.socket = io.connect('http://localhost:3000');
+
+
+  if (!self.checkCamillaBinary()) {
+     const error = new Error("CamillaDSP binary check failed. Plugin startup aborted.");
+     self.logger.error(logPrefix + error.message);
+     
+     defer.reject(error);
+     return defer.promise;
+  }
 
   self.commandRouter.loadI18nStrings();
   self.commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'updateALSAConfigFile');
@@ -139,6 +149,33 @@ FusionDsp.prototype.onStop = function () {
   defer.resolve();
   return defer.promise;
 };
+
+FusionDsp.prototype.checkCamillaBinary = function () {
+  const self = this
+  const binary = "/data/plugins/audio_interface/fusiondsp/camilladsp";
+
+  if (!fs.existsSync(binary)) {
+    self.logger.error(logPrefix + " CamillaDSP binary NOT found. DSP disabled.");
+    setTimeout(function () {
+
+      self.commandRouter.pushToastMessage(
+        'error',
+        'FusionDsp',
+        '❌ The plugin is installed but CamillaDSP binary is missing. DSP disabled, Please reinstall the plugin!'
+      );
+    }, 2200);
+    // self.onStop();  
+    //    self.commandRouter.disableAndStopPlugin('audio_interface', 'fusiondsp');
+   // self.refreshUI()
+
+    return false;
+  } else {
+
+  this.logger.info(logPrefix + "CamillaDSP binary found.");
+  return true;
+  }
+};
+
 
 FusionDsp.prototype.onRestart = function () {
   const self = this;
@@ -851,7 +888,7 @@ function configurePresetSelection(self, uiconf, selectedsp) {
 
   self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.value', value);
   self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.label', plabel);
- 
+
   try {
     const items = fs.readdirSync(pFolder);
     const itemsf = items.map(item => item.replace(/^\./, '').replace(/\.json$/, ''));
