@@ -55,6 +55,3 @@ sudo cp "$PLUGIN_DIR/system/$SERVICE_FILE" "$SYSTEMD_DIR/$SERVICE_FILE"
 sudo systemctl daemon-reload
 
 echo "plugininstallend"
-
-
-

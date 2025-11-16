@@ -15,6 +15,7 @@ const execAsync = promisify(exec);
 module.exports = cdplayer;
 
 const SERVICE_FILE = "cdplayer_stream.service";
+const CD_HTTP_BASE_URL = "http://127.0.0.1:8088/wav/track/";
 
 function cdplayer(context) {
   var self = this;
@@ -63,38 +64,8 @@ cdplayer.prototype.onStart = function () {
   try {
     if (!self._trayWatcher || !self._trayWatcher.isRunning()) {
       const device = detectCdDevice();
-      self.log(`Using CD device: ${device} to monitor tray events`);
-      self._trayWatcher = createTrayWatcher({
-        logger: self,
-        device,
-        onEvent: function (info) {
-          // optional debug log; remove if too chatty
-          self.log(
-            `udev: ${info.action} ${info.devname} media=${
-              info.ID_CDROM_MEDIA ?? "<none>"
-            } ready=${info.SYSTEMD_READY ?? "<none>"}`
-          );
-        },
-        onEject: function () {
-          self.log("Eject detected — clearing cache & stopping playback");
-          self._items = null;
-
-          // stop playback if our service is active
-          // {"status":"stop","position":0,"artist":"Guns N’ Roses","album":"Appetite for Destruction","albumart":"https://coverartarchive.org/release/2174675c-2159-4405-a3af-3a4860106b58/front-500","uri":"http://127.0.0.1:8088/wav/track/1","trackType":"wav","seek":0,"duration":274,"random":null,"repeat":false,"repeatSingle":false,"consume":false,"volume":100,"dbVolume":null,"disableVolumeControl":true,"mute":false,"stream":"wav","updatedb":false,"volatile":false,"service":"mpd"}
-          try {
-            var state = self.commandRouter.volumioGetState();
-            self.log(`Current state: ${JSON.stringify(state)}`);
-            if (state && state.service === "cdplayer") {
-              self.log("Stopping playback due to eject event");
-              self.commandRouter.volumioStop();
-            }
-          } catch (e) {
-            self.log("Error stopping playback on eject: " + e.message);
-            /* noop */
-          }
-        },
-      });
-
+      const trayConfig = getTrayWatcherConfiguration(self, device);
+      self._trayWatcher = createTrayWatcher(trayConfig);
       self._trayWatcher.start();
     }
   } catch (e) {
@@ -116,17 +87,34 @@ cdplayer.prototype.onStop = function () {
     .catch((err) => self.error("Failed to stop Daemon: " + err.message))
     .finally(() => defer.resolve());
 
-  // this._trayWatcher.stop();
+  if (this._trayWatcher) {
+    this._trayWatcher.stop();
+  }
   return defer.promise;
 };
 
 cdplayer.prototype.onRestart = function () {
   var self = this;
   var defer = libQ.defer();
+
   execAsync(`sudo /bin/systemctl restart ${SERVICE_FILE}`)
     .then(() => self.log("Daemon service restarted"))
     .catch((err) => self.error("Failed to restart Daemon: " + err.message))
     .finally(() => defer.resolve());
+
+  try {
+    if (self._trayWatcher) {
+      self._trayWatcher.stop();
+    }
+    const device = detectCdDevice();
+    const trayConfig = getTrayWatcherConfiguration(self, device);
+    self._trayWatcher = createTrayWatcher(trayConfig);
+    self._trayWatcher.start();
+    self.log("Tray watcher restarted");
+  } catch (e) {
+    self.error("Tray watcher failed to start: " + e.message);
+  }
+
   return defer.promise;
 };
 
@@ -203,9 +191,6 @@ cdplayer.prototype.handleBrowseUri = function (curUri) {
   }
 
   if (self._items) {
-    // TODO: we need to clear the cache in case the tray is opened.
-    // We have tried with manually install the udev npm package, but it does not work.
-    // We should instead use the native udev already installed on Volumio.
     self.log("Using cached CD track list");
     return libQ.resolve({
       navigation: {
@@ -290,7 +275,7 @@ cdplayer.prototype.explodeUri = function (uri) {
     const track = {
       ...self._items[n - 1],
       service: "mpd",
-      uri: `http://127.0.0.1:8088/wav/track/${n}`,
+      uri: `${CD_HTTP_BASE_URL}${n}`,
     };
 
     defer.resolve([track]);
@@ -319,7 +304,6 @@ cdplayer.prototype.search = function (query) {
     // TODO: WORKS fine bu needs to clear when serach is empty.
     self.log(JSON.stringify(query, null, 2));
     const resultItems = getResultItems(self._items, query.value);
-    // Volumio expects a list (array of sections), even if there's only one
     const list = [
       {
         type: "title",
@@ -332,7 +316,7 @@ cdplayer.prototype.search = function (query) {
     self.log(`Search results: ${JSON.stringify(list)}`);
     defer.resolve(list);
   } catch (err) {
-    self.logger.error(`[CDPlayer] Search error: ${err.message}`);
+    self.error(`[CDPlayer] Search error: ${err.message}`);
     defer.reject(err);
   }
 
@@ -398,4 +382,51 @@ function toKew(promise) {
       }
     });
   return d.promise;
+}
+
+/**
+ * Build configuration object for tray watcher.
+ * Extracted to keep onStart concise.
+ * @param {any} self Plugin instance (for logging & callbacks)
+ * @param {string|null} device Detected device path
+ * @returns {TrayWatcherOptions}
+ */
+function getTrayWatcherConfiguration(self, device) {
+  return {
+    logger: self,
+    device,
+    onEvent: function () {},
+    onEject: function () {
+      self.log("Eject detected ... ");
+      // Drop CD track cache so next browse forces a re-scan
+      self._items = null;
+
+      try {
+        const state = self.commandRouter.volumioGetState();
+        self.log(`Current state: ${JSON.stringify(state)}`);
+
+        const isCdStream =
+          state &&
+          state.service === "mpd" &&
+          typeof state.uri === "string" &&
+          state.uri.indexOf(CD_HTTP_BASE_URL) === 0;
+
+        if (isCdStream) {
+          self.log("Stopping CD playback due to eject event");
+          self.commandRouter.volumioStop();
+          self.commandRouter.volumioClearQueue();
+        }
+      } catch (e) {
+        self.log("Error stopping playback on eject: " + e.message);
+      }
+
+      // Refresh browse source so albumart resets to the default icon
+      try {
+        self.removeToBrowseSources();
+        self.addToBrowseSources();
+      } catch (e) {
+        self.log("Error refreshing browse sources after eject: " + e.message);
+      }
+    },
+  };
 }

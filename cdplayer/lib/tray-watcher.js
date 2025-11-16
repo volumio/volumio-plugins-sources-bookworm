@@ -14,7 +14,15 @@ function findUdevadm() {
     "/bin/udevadm",
     "udevadm",
   ];
-  return c.find((p) => p === "udevadm" || fs.existsSync(p)) || "udevadm";
+  for (const p of c) {
+    if (p === "udevadm") return p; // fallback last
+    try {
+      if (fs.existsSync(p)) return p;
+    } catch (e) {
+      // ignore and continue
+    }
+  }
+  return "udevadm";
 }
 
 /**
@@ -88,13 +96,14 @@ function createTrayWatcher({
    * @param {{action: string, devname: string}} relevantEvent
    */
   async function handleEvent(relevantEvent) {
-    log.log(`handling ${relevantEvent.action} on ${relevantEvent.devname}`);
-
+    log.log(
+      `[tray-watcher] handling ${relevantEvent.action} on ${relevantEvent.devname}`
+    );
     let props = null;
     try {
       props = await readProps(relevantEvent.devname);
     } catch (err) {
-      log.log(`[tray-watcher] Error reading props: ${err.message}`);
+      log.error(`[tray-watcher] Error reading props: ${err.message}`);
     }
 
     const ejectRequested = relevantEvent.ejectReq === "1";
@@ -127,7 +136,6 @@ function createTrayWatcher({
       // Device removed completely
       noDisc = true;
     } else {
-      const mediaDefinitelyAbsent = mediaPresent === false;
       const mediaNotPresentOrUnknown =
         mediaPresent === false || mediaPresent === null;
 
@@ -157,11 +165,6 @@ function createTrayWatcher({
       const now = Date.now();
       if (now - lastEjectAt > debounceMs) {
         lastEjectAt = now;
-        log.log(
-          `[tray-watcher] eject detected ${relevantEvent.devname} media=${
-            mediaProp ?? "<none>"
-          } ready=${ready ?? "<none>"}`
-        );
         try {
           onEject &&
             onEject({
@@ -170,15 +173,9 @@ function createTrayWatcher({
               ready,
             });
         } catch (e) {
-          log.log(e.message);
+          log.error(`[tray-watcher] Error in onEject callback: ${e.message}`);
         }
       }
-    } else {
-      log.log(
-        `[tray-watcher] media present ${relevantEvent.devname} media=${
-          mediaProp ?? "<none>"
-        } ready=${ready ?? "<none>"}`
-      );
     }
 
     // Update last media state for next event
@@ -188,7 +185,6 @@ function createTrayWatcher({
   /** Start monitoring for block events. */
   function start() {
     if (proc) return;
-    log.log("[tray-watcher] have proc...");
     proc = spawn(udevadm, [
       "monitor",
       "--kernel",
@@ -196,7 +192,6 @@ function createTrayWatcher({
       "--subsystem-match=block",
       "--property",
     ]);
-    log.log("[tray-watcher] spawned proc...");
     proc.stdout.setEncoding("utf8");
     proc.stdout.on("data", (chunk) => {
       buffer += chunk;
@@ -207,18 +202,16 @@ function createTrayWatcher({
 
       for (const record of records) {
         const relevantEvent = parsedRecord(record);
-        log.log(`relevant event ${JSON.stringify(relevantEvent)}`);
         if (!relevantEvent) continue;
         // Handle the event asynchronously without blocking the loop
         handleEvent(relevantEvent);
       }
     });
     proc.on("error", (e) => log.error("[tray-watcher] " + e.message));
-    proc.on("close", (c, s) => {
-      log.log(`[tray-watcher] stopped (code=${c}, sig=${s || ""})`);
+    proc.on("close", (_c, _s) => {
       proc = null;
     });
-    log.log("[tray-watcher] udevadm monitor started");
+    log.log("[tray-watcher] Udevadm monitor started");
   }
 
   /** Stop monitoring and kill the underlying child process. */

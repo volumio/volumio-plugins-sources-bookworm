@@ -11,7 +11,11 @@ const fs = require("fs");
  */
 function detectCdDevice() {
   const envDev = process.env.CD_DEVICE;
-  if (envDev && fs.existsSync(envDev)) return envDev;
+  try {
+    if (envDev && fs.existsSync(envDev)) return envDev;
+  } catch (e) {
+    // ignore and fall through to candidates
+  }
   const candidates = [
     "/dev/sr0",
     "/dev/sr1",
@@ -19,7 +23,14 @@ function detectCdDevice() {
     "/dev/cdrw",
     "/dev/dvd",
   ];
-  return candidates.find((p) => fs.existsSync(p)) || "/dev/sr0";
+  for (const p of candidates) {
+    try {
+      if (fs.existsSync(p)) return p;
+    } catch (e) {
+      // ignore and continue
+    }
+  }
+  return "/dev/sr0";
 }
 
 /**
