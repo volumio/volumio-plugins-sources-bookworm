@@ -10,7 +10,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var _ConfigModel_instances, _ConfigModel_fetchSettingsPage, _ConfigModel_getCategoryFromSettingsPageResponse;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PLUGIN_CONFIG_SCHEMA = void 0;
-const volumio_youtubei_js_1 = require("volumio-youtubei.js");
+const innertube_1 = require("volumio-yt-support/dist/innertube");
 const YTMusicContext_1 = __importDefault(require("../YTMusicContext"));
 const BaseModel_1 = require("./BaseModel");
 const CATEGORY_IDS = {
@@ -21,6 +21,7 @@ const OPTION_IDS = {
     'language': 'I18N_LANGUAGE'
 };
 exports.PLUGIN_CONFIG_SCHEMA = {
+    hasAcceptedDisclaimer: { defaultValue: false, json: false },
     region: { defaultValue: 'US', json: false },
     language: { defaultValue: 'en', json: false },
     loadFullPlaylists: { defaultValue: false, json: false },
@@ -59,7 +60,7 @@ class ConfigModel extends BaseModel_1.BaseModel {
                         key = null;
                 }
                 if (key) {
-                    const label = new volumio_youtubei_js_1.Misc.Text(item.settingSingleOptionMenuRenderer.title).text;
+                    const label = new innertube_1.Misc.Text(item.settingSingleOptionMenuRenderer.title).text;
                     let optionValues = null;
                     if (Array.isArray(item.settingSingleOptionMenuRenderer.items)) {
                         optionValues = item.settingSingleOptionMenuRenderer.items.reduce((result, item) => {
