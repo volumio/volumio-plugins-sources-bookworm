@@ -1,6 +1,6 @@
 {
   "name": "rtlsdr_radio",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "has_configuration": true,
     "has_alsa_contribution": true,
     "details": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
-    "changelog": "v1.0.7 - Added backup and restore system with station/config management, automatic pruning, ZIP export/import, and optional auto-backup before uninstall."
+    "changelog": "v1.0.8 - Added missing purge deleted handler in music sources UI."
   },
   "engines": {
     "node": ">=20",

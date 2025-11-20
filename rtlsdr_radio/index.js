@@ -1971,6 +1971,19 @@ ControllerRtlsdrRadio.prototype.handleBrowseUri = function(curUri) {
     defer.resolve(self.showDeletedDabView());
   } else if (curUri === 'rtlsdr://hidden') {
     defer.resolve(self.showHiddenView());
+  } else if (curUri === 'rtlsdr://purge-all-deleted') {
+    self.purgeDeletedStations()
+      .then(function() {
+        return self.handleBrowseUri('rtlsdr://deleted');
+      })
+      .then(function(response) {
+        defer.resolve(response);
+      })
+      .fail(function(e) {
+        self.logger.error('[RTL-SDR Radio] Purge failed: ' + e);
+        defer.resolve(self.showDeletedView());
+      });
+    return defer.promise;
   } else {
     // Unknown URI
     self.logger.warn('[RTL-SDR Radio] Unknown URI: ' + curUri);
