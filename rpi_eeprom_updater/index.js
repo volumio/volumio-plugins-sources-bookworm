@@ -214,8 +214,16 @@ RpiEepromUpdater.prototype.getCurrentChannel = function() {
 // Get available version for a specific channel
 RpiEepromUpdater.prototype.getAvailableVersion = function(channel) {
     try {
-        // Temporarily create config file for the channel
-        const tempConfig = 'FIRMWARE_RELEASE_STATUS="' + channel + '"\n';
+        // Base config for all hardware
+        let tempConfig = 'FIRMWARE_RELEASE_STATUS="' + channel + '"\n';
+        
+        // Add CM4-specific settings only if running on CM4/CM4S
+        if (this.isCM4()) {
+            tempConfig += 'CM4_ENABLE_RPI_EEPROM_UPDATE=1\n';
+            tempConfig += 'RPI_EEPROM_USE_FLASHROM=1\n';
+            this.logger.info('[RpiEepromUpdater] CM4 detected - adding flashrom flags for version query');
+        }
+        
         const tempConfigPath = '/tmp/rpi-eeprom-channel-test-' + channel;
         fs.writeFileSync(tempConfigPath, tempConfig);
         

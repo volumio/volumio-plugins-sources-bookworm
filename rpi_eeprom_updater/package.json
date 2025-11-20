@@ -1,6 +1,6 @@
 {
   "name": "rpi_eeprom_updater",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "EEPROM bootloader firmware updater for Raspberry Pi 4/400/5/500/500+ and CM4/CM5.",
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,7 @@
     "icon": "fa-microchip",
     "plugin_type": "system_controller",
     "details": "EEPROM bootloader firmware updater for Raspberry Pi 4/400/5/500/500+ and CM4/CM5.",
-    "changelog": "Add automatic and manual rpi-eeprom package refresh to ensure latest firmware database.",
+    "changelog": "Add CM4 detection and conditional configuration flags to allow firmware version queries on CM4/CM4S hardware",
     "categories": [
       "system_hardware"
     ],
