@@ -214,16 +214,25 @@ RpiEepromUpdater.prototype.getCurrentChannel = function() {
 // Get available version for a specific channel
 RpiEepromUpdater.prototype.getAvailableVersion = function(channel) {
     try {
-        // Base config for all hardware
-        let tempConfig = 'FIRMWARE_RELEASE_STATUS="' + channel + '"\n';
-        
-        // Add CM4-specific settings only if running on CM4/CM4S
+        // For CM4/CM4S, check if system is configured for EEPROM updates
         if (this.isCM4()) {
-            tempConfig += 'CM4_ENABLE_RPI_EEPROM_UPDATE=1\n';
-            tempConfig += 'RPI_EEPROM_USE_FLASHROM=1\n';
-            this.logger.info('[RpiEepromUpdater] CM4 detected - adding flashrom flags for version query');
+            try {
+                const configContent = fs.readFileSync('/etc/default/rpi-eeprom-update', 'utf-8');
+                if (!configContent.includes('CM4_ENABLE_RPI_EEPROM_UPDATE=1')) {
+                    // CM4 not yet configured - don't attempt query
+                    this.logger.info('[RpiEepromUpdater] CM4 detected but not yet configured for EEPROM updates');
+                    this.logger.info('[RpiEepromUpdater] Version information will be available after first update');
+                    return null;
+                }
+                this.logger.info('[RpiEepromUpdater] CM4 detected and configured - proceeding with version query');
+            } catch (error) {
+                this.logger.error('[RpiEepromUpdater] Failed to check CM4 configuration: ' + error.message);
+                return null;
+            }
         }
         
+        // Temporarily create config file for the channel
+        const tempConfig = 'FIRMWARE_RELEASE_STATUS="' + channel + '"\n';
         const tempConfigPath = '/tmp/rpi-eeprom-channel-test-' + channel;
         fs.writeFileSync(tempConfigPath, tempConfig);
         
@@ -291,11 +300,10 @@ RpiEepromUpdater.prototype.getAvailableVersion = function(channel) {
         return {
             path: releasePath,
             timestamp: timestamp,
-            date: new Date(timestamp * 1000).toISOString(),
-            dateString: dateString
+            date: new Date(timestamp * 1000).toISOString()
         };
     } catch (error) {
-        this.logger.error('[RpiEepromUpdater] Failed to get available version for ' + channel + ': ' + error.message);
+        this.logger.error('[RpiEepromUpdater] Failed to get available version for channel ' + channel + ': ' + error.message);
         return null;
     }
 };
@@ -453,17 +461,42 @@ RpiEepromUpdater.prototype.refreshPackageDatabase = function() {
 };
 
 // Switch firmware channel
+// Set firmware release channel with hardware-aware configuration
 RpiEepromUpdater.prototype.setFirmwareChannel = function(channel) {
     try {
-        const configContent = 'FIRMWARE_RELEASE_STATUS="' + channel + '"';
+        let lines = [];
         
-        // Use sudo with tee to write to root-owned file
-        // Use printf instead of echo to preserve quotes properly
-        execSync('printf "%s\\n" \'' + configContent + '\' | sudo /usr/bin/tee /etc/default/rpi-eeprom-update > /dev/null', {
-            stdio: 'pipe'
-        });
+        // Read existing config to preserve non-managed settings
+        if (fs.existsSync('/etc/default/rpi-eeprom-update')) {
+            const existing = fs.readFileSync('/etc/default/rpi-eeprom-update', 'utf-8');
+            lines = existing.split('\n').filter(line => {
+                // Remove CM4-specific lines (will re-add if needed based on current hardware)
+                if (line.includes('CM4_ENABLE_RPI_EEPROM_UPDATE')) return false;
+                if (line.includes('RPI_EEPROM_USE_FLASHROM')) return false;
+                // Remove FIRMWARE_RELEASE_STATUS (will re-add with new channel)
+                if (line.includes('FIRMWARE_RELEASE_STATUS')) return false;
+                // Keep all other lines (comments, other settings)
+                return line.trim() !== '';
+            });
+        }
         
-        this.config.set('firmware_channel', channel);
+        // Add channel setting
+        lines.push('FIRMWARE_RELEASE_STATUS="' + channel + '"');
+        
+        // Add CM4-specific flags only if currently running on CM4/CM4S
+        if (this.isCM4()) {
+            lines.push('CM4_ENABLE_RPI_EEPROM_UPDATE=1');
+            lines.push('RPI_EEPROM_USE_FLASHROM=1');
+            this.logger.info('[RpiEepromUpdater] CM4 detected - adding flashrom configuration');
+        }
+        
+        const configContent = lines.join('\n') + '\n';
+        
+        // Write new config via sudo
+        const proc = execSync(
+            'echo ' + JSON.stringify(configContent) + ' | sudo /usr/bin/tee /etc/default/rpi-eeprom-update',
+            { encoding: 'utf-8', stdio: 'pipe' }
+        );
         
         this.logger.info('[RpiEepromUpdater] Firmware channel set to: ' + channel);
         return true;
