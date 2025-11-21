@@ -963,6 +963,257 @@
     .table-header-row {
       background: #1c1c1c;
     }
+    
+    /* Antenna alignment tools */
+    .antenna-info-box {
+      background: #1c1c1c;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      padding: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #999;
+    }
+    
+    .antenna-info-box i {
+      color: #54b948;
+      font-size: 18px;
+    }
+    
+    .antenna-tool-section {
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #404040;
+    }
+    
+    .antenna-tool-section:last-of-type {
+      border-bottom: none;
+    }
+    
+    .antenna-tool-section h4 {
+      color: #54b948;
+      margin-bottom: 15px;
+    }
+    
+    .antenna-tool-box {
+      background: #1c1c1c;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .antenna-tool-box p {
+      margin: 8px 0;
+      color: #ccc;
+    }
+    
+    .antenna-tool-box strong {
+      color: #54b948;
+    }
+    
+    .tool-description {
+      color: #999;
+      margin-bottom: 10px;
+    }
+    
+    .scan-status {
+      color: #999;
+      margin-left: 15px;
+      font-size: 14px;
+    }
+    
+    .spectrum-chart {
+      width: 100%;
+      max-width: 800px;
+      height: 300px;
+      background: #1c1c1c;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      margin: 15px auto 0 auto;
+      display: none;
+    }
+    
+    .spectrum-chart.visible {
+      display: block;
+    }
+    
+    .channel-selector {
+      margin-bottom: 15px;
+    }
+    
+    .channel-selector > label {
+      display: block;
+      margin-bottom: 10px;
+      color: #54b948;
+      font-weight: bold;
+    }
+    
+    .channel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 10px;
+      background: #1c1c1c;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      padding: 15px;
+    }
+    
+    .channel-grid label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #e0e0e0;
+      cursor: pointer;
+    }
+    
+    .channel-grid label:hover {
+      color: #54b948;
+    }
+    
+    .channel-grid input[type="checkbox"] {
+      margin: 0;
+      cursor: pointer;
+    }
+    
+    .channel-grid input[type="checkbox"]:focus {
+      outline: none;
+    }
+    
+    .channel-results {
+      background: #1c1c1c;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 15px;
+      display: none;
+    }
+    
+    .channel-results.visible {
+      display: block;
+    }
+    
+    .channel-result {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 10px;
+      border-bottom: 1px solid #404040;
+    }
+    
+    .channel-result:last-child {
+      border-bottom: none;
+    }
+    
+    .channel-result-name {
+      min-width: 60px;
+      font-weight: bold;
+      color: #e0e0e0;
+    }
+    
+    .channel-result-bar {
+      flex: 1;
+      height: 20px;
+      background: #282828;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .channel-result-fill {
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+    
+    .channel-result-fill.excellent {
+      width: 100%;
+      background: #27ae60;
+    }
+    
+    .channel-result-fill.strong {
+      width: 85%;
+      background: #54b948;
+    }
+    
+    .channel-result-fill.good {
+      width: 65%;
+      background: #95a5a6;
+    }
+    
+    .channel-result-fill.weak {
+      width: 45%;
+      background: #f39c12;
+    }
+    
+    .channel-result-fill.poor {
+      width: 25%;
+      background: #e67e22;
+    }
+    
+    .channel-result-fill.none {
+      width: 5%;
+      background: #e74c3c;
+    }
+    
+    .channel-result-fill.error {
+      width: 10%;
+      background: #95a5a6;
+    }
+    
+    .channel-result-text {
+      min-width: 120px;
+      color: #ccc;
+    }
+    
+    .workflow-guide {
+      background: #1c1c1c;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      padding: 20px;
+      margin-top: 30px;
+    }
+    
+    .workflow-guide h4 {
+      color: #54b948;
+      margin-bottom: 15px;
+    }
+    
+    .workflow-step {
+      margin-bottom: 15px;
+      padding-left: 10px;
+      border-left: 3px solid #54b948;
+    }
+    
+    .workflow-step strong {
+      display: block;
+      color: #e0e0e0;
+      margin-bottom: 5px;
+    }
+    
+    .workflow-step p {
+      color: #999;
+      margin: 0;
+    }
+    
+    .workflow-note {
+      margin-top: 20px;
+      padding: 15px;
+      background: #282828;
+      border-radius: 4px;
+      border-left: 3px solid #f39c12;
+    }
+    
+    .workflow-note strong {
+      display: block;
+      color: #f39c12;
+      margin-bottom: 5px;
+    }
+    
+    .workflow-note p {
+      color: #ccc;
+      margin: 0;
+    }
   </style>
 </head>
 <body>
@@ -994,6 +1245,10 @@
       <button class="tab" data-tab="maintenance">
         <i class="fa fa-wrench"></i>
         <span id="tab-maintenance">Maintenance</span>
+      </button>
+      <button class="tab" data-tab="antenna">
+        <i class="fa fa-adjust"></i>
+        <span id="tab-antenna">Antenna Alignment</span>
       </button>
     </div>
     
@@ -1196,6 +1451,133 @@
       </table>
     </div>
   </div>
+  
+    <div id="antenna-tab" class="tab-content">
+      <div class="tab-header">
+        <div class="flex-1">
+          <h2 class="maintenance-header" id="antenna-header">Antenna Alignment</h2>
+        </div>
+      </div>
+    
+      <!-- Antenna Alignment Tools Section -->
+      <div class="backup-section">
+      <div class="antenna-info-box">
+        <i class="fa fa-info-circle"></i>
+        <span id="antenna-tools-desc">Use these tools to optimize antenna positioning for best DAB reception. Run spectrum scan first for quick overview, then validate specific channels.</span>
+      </div>
+      
+      <!-- Tool 1: RF Spectrum Scan -->
+      <div class="antenna-tool-section">
+        <h4 id="tool-spectrum-title">Tool 1: RF Spectrum Scan</h4>
+        <div class="antenna-tool-box">
+          <p><strong id="spectrum-what">What it shows:</strong> <span id="spectrum-what-desc">Raw radio frequency power across entire DAB band (174-240 MHz)</span></p>
+          <p><strong id="spectrum-use">Use when:</strong> <span id="spectrum-use-desc">Initial antenna positioning - quickly see WHERE signals exist in your area</span></p>
+          <p><strong id="spectrum-speed">Speed:</strong> <span id="spectrum-speed-desc">2 seconds for full band</span></p>
+          <p><strong id="spectrum-limit">Limitation:</strong> <span id="spectrum-limit-desc">Shows RF power only, NOT whether signal is decodable DAB</span></p>
+        </div>
+        
+        <div class="tab-header tab-header-no-margin">
+          <button class="btn btn-primary" onclick="scanSpectrum()">
+            <i class="fa fa-line-chart"></i>
+            <span id="btn-scan-spectrum">Scan RF Spectrum</span>
+          </button>
+          <span class="scan-status" id="spectrum-status"></span>
+        </div>
+        
+        <canvas id="spectrum-chart" class="spectrum-chart" width="800" height="300"></canvas>
+      </div>
+      
+      <!-- Tool 2: DAB Channel Validation -->
+      <div class="antenna-tool-section">
+        <h4 id="tool-validation-title">Tool 2: DAB Channel Validation</h4>
+        <div class="antenna-tool-box">
+          <p><strong id="validation-what">What it shows:</strong> <span id="validation-what-desc">Which DAB channels can actually be decoded and provide audio</span></p>
+          <p><strong id="validation-use">Use when:</strong> <span id="validation-use-desc">Fine-tuning antenna after spectrum scan shows signals - verify decode capability</span></p>
+          <p><strong id="validation-speed">Speed:</strong> <span id="validation-speed-desc">2 seconds per channel (~12-20 seconds total)</span></p>
+          <p><strong id="validation-advantage">Advantage:</strong> <span id="validation-advantage-desc">Confirms real usable DAB stations</span></p>
+        </div>
+        
+        <div class="channel-selector">
+          <label id="channels-label">Select channels to check:</label>
+          <div class="channel-grid">
+            <label><input type="checkbox" class="channel-checkbox" value="5A"> 5A</label>
+            <label><input type="checkbox" class="channel-checkbox" value="5B"> 5B</label>
+            <label><input type="checkbox" class="channel-checkbox" value="5C"> 5C</label>
+            <label><input type="checkbox" class="channel-checkbox" value="5D"> 5D</label>
+            <label><input type="checkbox" class="channel-checkbox" value="6A"> 6A</label>
+            <label><input type="checkbox" class="channel-checkbox" value="6B"> 6B</label>
+            <label><input type="checkbox" class="channel-checkbox" value="6C"> 6C</label>
+            <label><input type="checkbox" class="channel-checkbox" value="6D"> 6D</label>
+            <label><input type="checkbox" class="channel-checkbox" value="7A"> 7A</label>
+            <label><input type="checkbox" class="channel-checkbox" value="7B"> 7B</label>
+            <label><input type="checkbox" class="channel-checkbox" value="7C"> 7C</label>
+            <label><input type="checkbox" class="channel-checkbox" value="7D"> 7D</label>
+            <label><input type="checkbox" class="channel-checkbox" value="8A"> 8A</label>
+            <label><input type="checkbox" class="channel-checkbox" value="8B"> 8B</label>
+            <label><input type="checkbox" class="channel-checkbox" value="8C"> 8C</label>
+            <label><input type="checkbox" class="channel-checkbox" value="8D"> 8D</label>
+            <label><input type="checkbox" class="channel-checkbox" value="9A"> 9A</label>
+            <label><input type="checkbox" class="channel-checkbox" value="9B"> 9B</label>
+            <label><input type="checkbox" class="channel-checkbox" value="9C"> 9C</label>
+            <label><input type="checkbox" class="channel-checkbox" value="9D"> 9D</label>
+            <label><input type="checkbox" class="channel-checkbox" value="10A"> 10A</label>
+            <label><input type="checkbox" class="channel-checkbox" value="10B"> 10B</label>
+            <label><input type="checkbox" class="channel-checkbox" value="10C"> 10C</label>
+            <label><input type="checkbox" class="channel-checkbox" value="10D"> 10D</label>
+            <label><input type="checkbox" class="channel-checkbox" value="11A"> 11A</label>
+            <label><input type="checkbox" class="channel-checkbox" value="11B"> 11B</label>
+            <label><input type="checkbox" class="channel-checkbox" value="11C"> 11C</label>
+            <label><input type="checkbox" class="channel-checkbox" value="11D"> 11D</label>
+            <label><input type="checkbox" class="channel-checkbox" value="12A"> 12A</label>
+            <label><input type="checkbox" class="channel-checkbox" value="12B"> 12B</label>
+            <label><input type="checkbox" class="channel-checkbox" value="12C"> 12C</label>
+            <label><input type="checkbox" class="channel-checkbox" value="12D"> 12D</label>
+            <label><input type="checkbox" class="channel-checkbox" value="13A"> 13A</label>
+            <label><input type="checkbox" class="channel-checkbox" value="13B"> 13B</label>
+            <label><input type="checkbox" class="channel-checkbox" value="13C"> 13C</label>
+            <label><input type="checkbox" class="channel-checkbox" value="13D"> 13D</label>
+            <label><input type="checkbox" class="channel-checkbox" value="13E"> 13E</label>
+            <label><input type="checkbox" class="channel-checkbox" value="13F"> 13F</label>
+          </div>
+        </div>
+        
+        <div class="tab-header tab-header-no-margin">
+          <button class="btn btn-primary" onclick="validateChannels()">
+            <i class="fa fa-check-circle"></i>
+            <span id="btn-validate-channels">Validate DAB Channels</span>
+          </button>
+          <span class="scan-status" id="validation-status"></span>
+        </div>
+        
+        <div id="channel-results" class="channel-results"></div>
+      </div>
+      
+      <!-- Workflow Guide -->
+      <div class="workflow-guide">
+        <h4 id="workflow-title">Antenna Alignment Workflow</h4>
+        <div class="workflow-step">
+          <strong id="workflow-step-1-title">Step 1: Run RF Spectrum Scan</strong>
+          <p id="workflow-step-1-desc">See if ANY signals present in your location. Identify frequency ranges with activity. Quick overview (2 seconds).</p>
+        </div>
+        <div class="workflow-step">
+          <strong id="workflow-step-2-title">Step 2: Adjust antenna based on spectrum</strong>
+          <p id="workflow-step-2-desc">Rotate/reposition antenna for stronger peaks in spectrum display. Re-scan to compare results.</p>
+        </div>
+        <div class="workflow-step">
+          <strong id="workflow-step-3-title">Step 3: Run DAB Channel Validation</strong>
+          <p id="workflow-step-3-desc">Verify signals are actually DAB. Confirm decode capability. See which ensembles work reliably.</p>
+        </div>
+        <div class="workflow-step">
+          <strong id="workflow-step-4-title">Step 4: Fine-tune based on validation</strong>
+          <p id="workflow-step-4-desc">Adjust for maximum Strong or Excellent channels. Re-validate to confirm improvement.</p>
+        </div>
+        <div class="workflow-note">
+          <strong id="workflow-note-title">Why use both tools?</strong>
+          <p id="workflow-note-desc">Spectrum shows WHERE RF exists. Validation shows IF it's usable DAB. Strong RF does not guarantee decodable signal - could be interference or wrong modulation.</p>
+        </div>
+      </div>
+    </div>
+    </div>
   </div>
   
   <div class="save-bar">
@@ -1520,6 +1902,49 @@
       document.getElementById('th-size').textContent = t('TH_SIZE');
       document.getElementById('th-download').textContent = t('TH_DOWNLOAD');
       document.getElementById('th-delete').textContent = t('TH_DELETE');
+      
+      // Antenna Alignment tab translations
+      document.getElementById('tab-antenna').textContent = t('TAB_ANTENNA');
+      document.getElementById('antenna-header').textContent = t('ANTENNA_HEADER');
+      document.getElementById('antenna-tools-desc').textContent = t('ANTENNA_TOOLS_DESC');
+      
+      // Tool 1: RF Spectrum Scan
+      document.getElementById('tool-spectrum-title').textContent = t('TOOL_SPECTRUM_TITLE');
+      document.getElementById('spectrum-what').textContent = t('SPECTRUM_WHAT');
+      document.getElementById('spectrum-what-desc').textContent = t('SPECTRUM_WHAT_DESC');
+      document.getElementById('spectrum-use').textContent = t('SPECTRUM_USE');
+      document.getElementById('spectrum-use-desc').textContent = t('SPECTRUM_USE_DESC');
+      document.getElementById('spectrum-speed').textContent = t('SPECTRUM_SPEED');
+      document.getElementById('spectrum-speed-desc').textContent = t('SPECTRUM_SPEED_DESC');
+      document.getElementById('spectrum-limit').textContent = t('SPECTRUM_LIMIT');
+      document.getElementById('spectrum-limit-desc').textContent = t('SPECTRUM_LIMIT_DESC');
+      document.getElementById('btn-scan-spectrum').textContent = t('BTN_SCAN_SPECTRUM');
+      
+      // Tool 2: DAB Channel Validation
+      document.getElementById('tool-validation-title').textContent = t('TOOL_VALIDATION_TITLE');
+      document.getElementById('validation-what').textContent = t('VALIDATION_WHAT');
+      document.getElementById('validation-what-desc').textContent = t('VALIDATION_WHAT_DESC');
+      document.getElementById('validation-use').textContent = t('VALIDATION_USE');
+      document.getElementById('validation-use-desc').textContent = t('VALIDATION_USE_DESC');
+      document.getElementById('validation-speed').textContent = t('VALIDATION_SPEED');
+      document.getElementById('validation-speed-desc').textContent = t('VALIDATION_SPEED_DESC');
+      document.getElementById('validation-advantage').textContent = t('VALIDATION_ADVANTAGE');
+      document.getElementById('validation-advantage-desc').textContent = t('VALIDATION_ADVANTAGE_DESC');
+      document.getElementById('channels-label').textContent = t('CHANNELS_LABEL');
+      document.getElementById('btn-validate-channels').textContent = t('BTN_VALIDATE_CHANNELS');
+      
+      // Antenna Alignment Workflow
+      document.getElementById('workflow-title').textContent = t('WORKFLOW_TITLE');
+      document.getElementById('workflow-step-1-title').textContent = t('WORKFLOW_STEP_1_TITLE');
+      document.getElementById('workflow-step-1-desc').textContent = t('WORKFLOW_STEP_1_DESC');
+      document.getElementById('workflow-step-2-title').textContent = t('WORKFLOW_STEP_2_TITLE');
+      document.getElementById('workflow-step-2-desc').textContent = t('WORKFLOW_STEP_2_DESC');
+      document.getElementById('workflow-step-3-title').textContent = t('WORKFLOW_STEP_3_TITLE');
+      document.getElementById('workflow-step-3-desc').textContent = t('WORKFLOW_STEP_3_DESC');
+      document.getElementById('workflow-step-4-title').textContent = t('WORKFLOW_STEP_4_TITLE');
+      document.getElementById('workflow-step-4-desc').textContent = t('WORKFLOW_STEP_4_DESC');
+      document.getElementById('workflow-note-title').textContent = t('WORKFLOW_NOTE_TITLE');
+      document.getElementById('workflow-note-desc').textContent = t('WORKFLOW_NOTE_DESC');
       
       // Show close button only when opened in new tab (not in iframe)
       const closeBtn = document.getElementById('close-window-btn');
@@ -2627,6 +3052,378 @@
         }
       }, false);
     }
+  
+  // Antenna alignment - RF spectrum scan
+  function scanSpectrum() {
+    const statusEl = document.getElementById('spectrum-status');
+    const canvasEl = document.getElementById('spectrum-chart');
+    const btn = document.querySelector('button[onclick="scanSpectrum()"]');
+    
+    // Disable button during scan
+    if (btn) btn.disabled = true;
+    
+    canvasEl.classList.remove('visible');
+    
+    const startTime = Date.now();
+    
+    function updateProgress() {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      statusEl.textContent = t('SCANNING_FREQUENCIES') + '... ' + elapsed + 's';
+      statusEl.style.color = '#f39c12';
+    }
+    
+    updateProgress();
+    const progressInterval = setInterval(updateProgress, 1000);
+    
+    fetch('/api/antenna/spectrum-scan', {
+      method: 'POST'
+    })
+    .then(res => res.json())
+    .then(data => {
+      clearInterval(progressInterval);
+      if (btn) btn.disabled = false;
+      
+      if (data.success) {
+        drawSpectrumChart(data.spectrum);
+        canvasEl.classList.add('visible');
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const timestamp = new Date(data.timestamp).toLocaleTimeString();
+        statusEl.textContent = t('LAST_SCAN') + ': ' + timestamp + ' (' + elapsed + 's)';
+        statusEl.style.color = '#54b948';
+        showToast(t('SPECTRUM_SCAN_COMPLETE') + ' (' + elapsed + 's)', 'success');
+      } else {
+        statusEl.textContent = t('SCAN_FAILED');
+        statusEl.style.color = '#e74c3c';
+        showToast(t('SCAN_FAILED') + ': ' + (data.error || 'Unknown error'), 'error');
+      }
+    })
+    .catch(err => {
+      clearInterval(progressInterval);
+      if (btn) btn.disabled = false;
+      statusEl.textContent = t('SCAN_FAILED');
+      statusEl.style.color = '#e74c3c';
+      showToast(t('SCAN_FAILED') + ': ' + err.toString(), 'error');
+    });
+  }
+  
+  function drawSpectrumChart(spectrum) {
+    const canvas = document.getElementById('spectrum-chart');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    const padding = 50;
+    const chartWidth = width - padding * 2;
+    const chartHeight = height - padding * 2;
+    
+    // Clear canvas
+    ctx.fillStyle = '#1c1c1c';
+    ctx.fillRect(0, 0, width, height);
+    
+    if (!spectrum || spectrum.length === 0) return;
+    
+    // Find min/max power for scaling
+    let minPower = Math.min(...spectrum.map(s => s.power));
+    let maxPower = Math.max(...spectrum.map(s => s.power));
+    const powerRange = maxPower - minPower;
+    
+    // Draw grid
+    ctx.strokeStyle = '#404040';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 5; i++) {
+      const y = padding + (chartHeight / 5) * i;
+      ctx.beginPath();
+      ctx.moveTo(padding, y);
+      ctx.lineTo(padding + chartWidth, y);
+      ctx.stroke();
+    }
+    
+    // Draw axes
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padding, padding);
+    ctx.lineTo(padding, padding + chartHeight);
+    ctx.lineTo(padding + chartWidth, padding + chartHeight);
+    ctx.stroke();
+    
+    // Draw DAB channel markers
+    const dabChannels = [
+      { name: '5A', freq: 174.9 },
+      { name: '6A', freq: 181.9 },
+      { name: '7A', freq: 188.9 },
+      { name: '8A', freq: 195.9 },
+      { name: '9A', freq: 202.9 },
+      { name: '10A', freq: 209.9 },
+      { name: '11A', freq: 216.9 },
+      { name: '12A', freq: 223.9 },
+      { name: '13A', freq: 230.7 }
+    ];
+    
+    const freqMin = 174;
+    const freqMax = 240;
+    const freqRange = freqMax - freqMin;
+    
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.fillStyle = '#999';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    
+    dabChannels.forEach(channel => {
+      const xPos = padding + ((channel.freq - freqMin) / freqRange) * chartWidth;
+      
+      // Draw vertical line
+      ctx.beginPath();
+      ctx.moveTo(xPos, padding);
+      ctx.lineTo(xPos, padding + chartHeight);
+      ctx.stroke();
+      
+      // Draw channel label at top
+      ctx.fillText(channel.name, xPos, padding - 5);
+    });
+    
+    ctx.setLineDash([]);
+    
+    // Draw spectrum bars
+    const barWidth = chartWidth / spectrum.length;
+    spectrum.forEach((point, i) => {
+      const barHeight = ((point.power - minPower) / powerRange) * chartHeight;
+      const x = padding + i * barWidth;
+      const y = padding + chartHeight - barHeight;
+      
+      // Color based on power level
+      const normalizedPower = (point.power - minPower) / powerRange;
+      if (normalizedPower > 0.7) {
+        ctx.fillStyle = '#54b948';
+      } else if (normalizedPower > 0.4) {
+        ctx.fillStyle = '#f39c12';
+      } else {
+        ctx.fillStyle = '#e74c3c';
+      }
+      
+      ctx.fillRect(x, y, barWidth - 1, barHeight);
+    });
+    
+    // Draw labels
+    ctx.fillStyle = '#ccc';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'center';
+    
+    // X-axis labels (frequency)
+    ctx.fillText('174 MHz', padding, padding + chartHeight + 20);
+    ctx.fillText('207 MHz', padding + chartWidth / 2, padding + chartHeight + 20);
+    ctx.fillText('240 MHz', padding + chartWidth, padding + chartHeight + 20);
+    
+    // Y-axis labels (power)
+    ctx.textAlign = 'right';
+    ctx.fillText(maxPower.toFixed(0) + ' dB', padding - 5, padding + 5);
+    ctx.fillText(minPower.toFixed(0) + ' dB', padding - 5, padding + chartHeight + 5);
+    
+    // Title
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#fff';
+    ctx.font = '14px sans-serif';
+    ctx.fillText(t('DAB_BAND_SPECTRUM'), width / 2, 20);
+  }
+  
+  function validateChannels() {
+    const checkboxes = document.querySelectorAll('.channel-checkbox:checked');
+    const channels = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (channels.length === 0) {
+      showToast(t('SELECT_CHANNELS'), 'warning');
+      return;
+    }
+    
+    const statusEl = document.getElementById('validation-status');
+    const resultsEl = document.getElementById('channel-results');
+    const btn = document.querySelector('button[onclick="validateChannels()"]');
+    
+    // Disable button during validation
+    if (btn) btn.disabled = true;
+    
+    resultsEl.innerHTML = '';
+    resultsEl.classList.remove('visible');
+    
+    // Progress tracking
+    const startTime = Date.now();
+    let completedChannels = 0;
+    let eventSource = null;
+    
+    // Show initial status
+    statusEl.textContent = t('VALIDATING') + ' (0/' + channels.length + ')... 0s';
+    statusEl.style.color = '#f39c12';
+    
+    // Update elapsed time every second
+    const timerInterval = setInterval(function() {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      statusEl.textContent = t('VALIDATING') + ' (' + completedChannels + '/' + channels.length + ')... ' + elapsed + 's';
+    }, 1000);
+    
+    // Use fetch to send POST data, then switch to EventSource
+    fetch('/api/antenna/validate-dab', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ channels: channels })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('HTTP ' + response.status);
+      }
+      
+      // Read the response as a stream
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      
+      function processChunk() {
+        reader.read().then(({ done, value }) => {
+          if (done) {
+            clearInterval(timerInterval);
+            if (btn) btn.disabled = false;
+            
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            statusEl.textContent = t('LAST_CHECK') + ': ' + new Date().toLocaleTimeString() + ' (' + elapsed + 's)';
+            statusEl.style.color = '#54b948';
+            showToast(t('VALIDATION_COMPLETE') + ' (' + elapsed + 's)', 'success');
+            return;
+          }
+          
+          // Decode the chunk and add to buffer
+          buffer += decoder.decode(value, { stream: true });
+          
+          // Process complete SSE messages
+          const lines = buffer.split('\n');
+          buffer = lines.pop(); // Keep incomplete line in buffer
+          
+          lines.forEach(line => {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.substring(6));
+                
+                if (data.status === 'started') {
+                  // Initial message
+                  resultsEl.classList.add('visible');
+                } else if (data.status === 'complete') {
+                  // All done - handled by done above
+                } else if (data.channel) {
+                  // Channel result received
+                  completedChannels = data.progress || (completedChannels + 1);
+                  displayChannelResult(data);
+                  
+                  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                  statusEl.textContent = t('VALIDATING') + ' (' + completedChannels + '/' + data.total + ')... ' + elapsed + 's';
+                }
+              } catch (e) {
+                console.error('Failed to parse SSE data:', e);
+              }
+            }
+          });
+          
+          // Continue reading
+          processChunk();
+        }).catch(err => {
+          clearInterval(timerInterval);
+          if (btn) btn.disabled = false;
+          statusEl.textContent = t('VALIDATION_FAILED');
+          statusEl.style.color = '#e74c3c';
+          showToast(t('VALIDATION_FAILED') + ': ' + err.toString(), 'error');
+        });
+      }
+      
+      processChunk();
+    })
+    .catch(err => {
+      clearInterval(timerInterval);
+      if (btn) btn.disabled = false;
+      statusEl.textContent = t('VALIDATION_FAILED');
+      statusEl.style.color = '#e74c3c';
+      showToast(t('VALIDATION_FAILED') + ': ' + err.toString(), 'error');
+    });
+  }
+  
+  function displayChannelResult(result) {
+    const resultsEl = document.getElementById('channel-results');
+    
+    const qualityText = {
+      'excellent': t('CHANNEL_EXCELLENT'),
+      'strong': t('CHANNEL_STRONG'),
+      'good': t('CHANNEL_GOOD'),
+      'weak': t('CHANNEL_WEAK'),
+      'poor': t('CHANNEL_POOR'),
+      'none': t('CHANNEL_NONE'),
+      'error': t('CHANNEL_ERROR')
+    };
+    
+    const quality = result.quality || 'none';
+    const text = qualityText[quality] || quality;
+    const services = result.services > 0 ? ' (' + result.services + ' ' + t('SERVICES') + ')' : '';
+    
+    const div = document.createElement('div');
+    div.className = 'channel-result';
+    div.dataset.channel = result.channel;
+    
+    div.innerHTML = `
+      <span class="channel-result-name">${result.channel}</span>
+      <div class="channel-result-bar">
+        <div class="channel-result-fill ${quality}"></div>
+      </div>
+      <span class="channel-result-text">${text}${services}</span>
+    `;
+    
+    // Insert in order (channels might arrive out of order)
+    const existingResults = Array.from(resultsEl.children);
+    let inserted = false;
+    
+    for (let i = 0; i < existingResults.length; i++) {
+      const existingChannel = existingResults[i].dataset.channel;
+      if (result.channel < existingChannel) {
+        resultsEl.insertBefore(div, existingResults[i]);
+        inserted = true;
+        break;
+      }
+    }
+    
+    if (!inserted) {
+      resultsEl.appendChild(div);
+    }
+  }
+  
+  function displayChannelResults(results) {
+    const resultsEl = document.getElementById('channel-results');
+    resultsEl.innerHTML = '';
+    
+    const qualityText = {
+      'excellent': t('CHANNEL_EXCELLENT'),
+      'strong': t('CHANNEL_STRONG'),
+      'good': t('CHANNEL_GOOD'),
+      'weak': t('CHANNEL_WEAK'),
+      'poor': t('CHANNEL_POOR'),
+      'none': t('CHANNEL_NONE'),
+      'error': t('CHANNEL_ERROR')
+    };
+    
+    Object.keys(results).sort().forEach(channel => {
+      const result = results[channel];
+      const div = document.createElement('div');
+      div.className = 'channel-result';
+      
+      const quality = result.quality || 'none';
+      const text = qualityText[quality] || quality;
+      const services = result.services > 0 ? ' (' + result.services + ' ' + t('SERVICES') + ')' : '';
+      
+      div.innerHTML = `
+        <span class="channel-result-name">${channel}</span>
+        <div class="channel-result-bar">
+          <div class="channel-result-fill ${quality}"></div>
+        </div>
+        <span class="channel-result-text">${text}${services}</span>
+      `;
+      
+      resultsEl.appendChild(div);
+    });
+  }
   </script>
 </body>
 </html>
