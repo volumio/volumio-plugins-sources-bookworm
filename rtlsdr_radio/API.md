@@ -148,6 +148,130 @@ Base URL: `http://<volumio-ip>:3456/api`
 - Scans all DAB Band III channels
 - Results automatically saved to database
 
+## Antenna Positioning API
+
+### RF Spectrum Scan
+
+**Endpoint:** `POST /api/antenna/spectrum-scan`
+
+**Description:** Performs a full-band RF spectrum scan to visualize signal strength across FM and DAB frequencies. Useful for antenna positioning and orientation.
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Spectrum scan started"
+}
+```
+
+**Notes:**
+- Scan duration: Approximately 2 seconds
+- Frequency range: 87.5 MHz to 240 MHz (covers FM and DAB Band III)
+- Uses rtl_power for spectrum analysis
+- Results provide relative signal strength visualization
+- Helps identify optimal antenna orientation for available signals
+- Requires network access to crates.io for rtl_power dependencies
+
+### DAB Channel Validation (SSE Streaming)
+
+**Endpoint:** `POST /api/antenna/validate-channels`
+
+**Description:** Validates DAB channels for signal presence and service count. Returns progressive results via Server-Sent Events (SSE) as each channel completes.
+
+**Request Body:**
+```json
+{
+  "channels": ["11C", "11D", "12A", "12B", "12C", "12D"]
+}
+```
+
+**Response Format:** `text/event-stream`
+
+**SSE Event Stream:**
+```
+data: {"status":"started","total":6}
+
+data: {"channel":"12A","sync":true,"services":17,"quality":"excellent","progress":1,"total":6}
+
+data: {"channel":"12B","sync":true,"services":14,"quality":"excellent","progress":2,"total":6}
+
+data: {"channel":"11C","sync":false,"services":0,"quality":"none","progress":3,"total":6}
+
+data: {"status":"complete","timestamp":"2025-11-21T12:30:45.678Z"}
+```
+
+**Event Types:**
+
+1. **Started Event:**
+```json
+{
+  "status": "started",
+  "total": 6
+}
+```
+
+2. **Channel Result Event:**
+```json
+{
+  "channel": "12A",
+  "sync": true,
+  "services": 17,
+  "quality": "excellent",
+  "progress": 1,
+  "total": 6
+}
+```
+
+3. **Complete Event:**
+```json
+{
+  "status": "complete",
+  "timestamp": "2025-11-21T12:30:45.678Z"
+}
+```
+
+**Quality Levels:**
+- `excellent` - Strong signal, sync achieved, services decoded
+- `none` - No signal detected on this channel
+
+**Notes:**
+- Progressive results: Each channel streams immediately upon completion
+- Validation time per channel:
+  - With signal: 10-15 seconds
+  - No signal: 2-3 seconds
+- Total validation time scales with selected channel count
+- Channels are validated sequentially
+- Results may arrive out of order (frontend handles automatic sorting)
+- Uses custom dab-scanner-3 binaries with filtered debug output
+- Three critical bugs fixed in chat 22:
+  - Service count detection (PTY wrapper filtering)
+  - Completion timeout (immediate kill on completion marker)
+  - No-signal overshoot (immediate kill on channel switch)
+
+**Integration Example (JavaScript):**
+```javascript
+const eventSource = new EventSource('/api/antenna/validate-channels');
+
+eventSource.addEventListener('message', (event) => {
+  const data = JSON.parse(event.data);
+  
+  if (data.status === 'started') {
+    console.log(`Validating ${data.total} channels...`);
+  } else if (data.channel) {
+    console.log(`${data.channel}: ${data.sync ? data.services + ' services' : 'No signal'}`);
+    // Update UI progressively
+  } else if (data.status === 'complete') {
+    console.log('Validation complete');
+    eventSource.close();
+  }
+});
+
+eventSource.addEventListener('error', (error) => {
+  console.error('SSE error:', error);
+  eventSource.close();
+});
+```
+
 ## Status API
 
 ### Get Plugin Status
@@ -628,6 +752,19 @@ curl -X POST http://volumio.local:3456/api/maintenance/backup/upload \
 ```
 
 ## Changelog
+
+### API v1.0.9
+- Added Antenna Positioning API
+- RF Spectrum Scan endpoint for full-band signal visualization
+- DAB Channel Validation with Server-Sent Events (SSE) streaming
+- Progressive channel validation results
+- Fixed three critical DAB scanner bugs:
+  - Service count detection (PTY wrapper filtering)
+  - Completion timeout (immediate scanner termination)
+  - No-signal channel overshoot (channel switch detection)
+- Translation concept corrected: "positioning" (antenna orientation) not "alignment" (leveling)
+- All 11 language files validated and aligned (366 keys each)
+- Complete antenna positioning tab translation coverage
 
 ### API v1.0.7
 - Added backup and restore endpoints

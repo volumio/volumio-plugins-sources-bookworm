@@ -79,6 +79,53 @@ The plugin includes a comprehensive backup and restore system to protect your st
 **Auto-Backup:**
 Enable "Automatic backup before uninstall" checkbox to automatically create a full backup when uninstalling the plugin. Backups are preserved even after uninstall.
 
+### Antenna Positioning Tools
+The plugin includes professional-grade tools for optimizing antenna placement and orientation:
+
+**Tool 1: RF Spectrum Scan**
+- Full-band spectrum analysis (87.5 MHz to 240 MHz)
+- 2-second scan covering FM and DAB frequencies
+- Visual signal strength display across entire spectrum
+- Identify which frequencies have strong signals in your location
+- Real-time feedback for antenna orientation adjustments
+
+**Tool 2: DAB Channel Validation**
+- Validate specific DAB channels for signal presence
+- Progressive results via Server-Sent Events (displays results as each channel completes)
+- Per-channel sync status and service count
+- Quality assessment (excellent vs no signal)
+- Typical validation time: 10-15 seconds per channel with signal, 2-3 seconds for no signal
+
+**When to Use:**
+- Before initial full scan to verify antenna reception
+- Antenna positioning and orientation (rotating/tilting for best signal)
+- Diagnosing reception problems
+- Comparing antenna locations
+- Verifying dongle functionality
+
+**How to Use:**
+1. Open web station manager (see Web Interface Access below)
+2. Click "Antenna Positioning" tab
+3. Tool 1: Click "Start Spectrum Scan" for full-band analysis
+4. Tool 2: Select channels to validate, click "Validate Selected Channels"
+5. View progressive results in real-time
+6. Adjust antenna and re-test until optimal signal achieved
+
+**Workflow Guide:**
+1. Start with RF Spectrum Scan to see available frequencies
+2. Use DAB Channel Validation to test specific channels
+3. Adjust antenna position/orientation between tests
+4. Repeat until signal strength is optimal
+5. Perform full station scan once antenna is positioned
+
+**Technical Details:**
+- Spectrum scan uses rtl_power for wide-band analysis
+- Channel validation uses custom dab-scanner-3 binaries
+- Progressive SSE streaming prevents long waits
+- Three critical bugs fixed in v1.0.8 for accurate validation
+- No signal channels terminate in 2-3 seconds (no timeout)
+- Strong signal channels complete in 10-15 seconds
+
 ### Diagnostics Tools
 The plugin includes diagnostic tools to test your USB dongle before scanning:
 
@@ -210,7 +257,21 @@ Just a Nerd
 
 ## Version History
 
-### v1.0.7 (Current)
+### v1.0.9 (Current)
+- Added Antenna Positioning Tools
+- RF Spectrum Scan: Full-band signal visualization (87.5-240 MHz, 2-second scan)
+- DAB Channel Validation: Progressive SSE streaming, per-channel sync and service count
+- Fixed three critical DAB scanner bugs:
+  - Service count detection (PTY wrapper filtering for PCM-only output)
+  - Completion timeout (immediate scanner kill on completion marker)
+  - No-signal channel overshoot (immediate kill on channel switch detection)
+- Typical validation times: 10-15s with signal, 2-3s no signal (no 30s timeouts)
+- Translation concept corrected across 11 languages: "positioning" (antenna orientation for signal) not "alignment" (physical leveling)
+- Complete antenna positioning tab translation coverage (49 UI elements)
+- All 11 language files validated: 366 keys each, no duplicates, valid JSON
+- Comprehensive DAB channel validation workflow guidance
+
+### v1.0.7
 - Added comprehensive backup and restore system
 - Three backup types: Stations Only, Configuration Only, Full Backup
 - Automatic backup pruning (keeps 5 most recent per type)

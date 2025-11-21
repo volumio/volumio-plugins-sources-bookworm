@@ -992,7 +992,236 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
       }
     });
     
-
+    // Antenna alignment tool - RF spectrum scan
+    self.expressApp.post('/api/antenna/spectrum-scan', function(req, res) {
+      try {
+        var spawn = require('child_process').spawn;
+        var rtlPower = spawn('rtl_power', ['-f', '174M:240M:1M', '-i', '1', '-1']);
+        
+        var csvOutput = '';
+        rtlPower.stdout.on('data', function(data) { 
+          csvOutput += data.toString(); 
+        });
+        
+        rtlPower.stderr.on('data', function(data) {
+          self.logger.info('[RTL-SDR Radio] rtl_power: ' + data.toString());
+        });
+        
+        rtlPower.on('close', function(code) {
+          if (code !== 0) {
+            res.status(500).json({ error: 'rtl_power failed with code ' + code });
+            return;
+          }
+          
+          // Parse CSV output
+          var spectrum = [];
+          var lines = csvOutput.trim().split('\n');
+          
+          lines.forEach(function(line) {
+            var parts = line.split(',');
+            if (parts.length >= 7) {
+              var freqStart = parseInt(parts[2]) / 1000000; // Hz to MHz
+              var power = parseFloat(parts[6]); // dBm
+              spectrum.push({ freq: freqStart, power: power });
+            }
+          });
+          
+          res.json({ 
+            success: true, 
+            spectrum: spectrum, 
+            timestamp: new Date().toISOString() 
+          });
+        });
+        
+        rtlPower.on('error', function(e) {
+          res.status(500).json({ error: 'Failed to start rtl_power: ' + e.toString() });
+        });
+        
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    // Antenna alignment tool - DAB channel validation
+    self.expressApp.post('/api/antenna/validate-dab', function(req, res) {
+      try {
+        var channels = req.body.channels;
+        if (!channels || !Array.isArray(channels) || channels.length === 0) {
+          res.status(400).json({ error: 'Channels array required' });
+          return;
+        }
+        
+        // Set up Server-Sent Events
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
+        res.flushHeaders();
+        
+        var spawn = require('child_process').spawn;
+        var channelIndex = 0;
+        var totalChannels = channels.length;
+        
+        // Send initial status
+        res.write('data: ' + JSON.stringify({ 
+          status: 'started', 
+          total: totalChannels 
+        }) + '\n\n');
+        
+        function checkNextChannel() {
+          if (channelIndex >= totalChannels) {
+            // All channels complete
+            res.write('data: ' + JSON.stringify({ 
+              status: 'complete',
+              timestamp: new Date().toISOString() 
+            }) + '\n\n');
+            res.end();
+            return;
+          }
+          
+          var targetChannel = channels[channelIndex];
+          channelIndex++;
+          
+          self.logger.info('[RTL-SDR Radio] Validating DAB channel ' + targetChannel + ' (' + channelIndex + '/' + totalChannels + ')');
+          
+          // Use script to create pseudo-TTY, forcing line-buffered stdout
+          // This ensures stdout data flushes immediately instead of being block-buffered
+          var scanCommand = 'dab-scanner-3 -C ' + targetChannel + ' -G 80';
+          var scanner = spawn('script', ['-qec', scanCommand, '/dev/null']);
+          var output = '';
+          var targetChannelFound = false;
+          var targetChannelComplete = false;
+          var processKilled = false;
+          
+          // Timeout safety - kill after 30 seconds (allows high-capacity ensembles to complete)
+          var timeout = setTimeout(function() {
+            if (!processKilled && scanner) {
+              processKilled = true;
+              self.logger.info('[RTL-SDR Radio] Validation timeout for channel ' + targetChannel);
+              scanner.kill('SIGTERM');
+            }
+          }, 30000);
+          
+          scanner.stdout.on('data', function(data) {
+            var chunk = data.toString();
+            output += chunk;
+            
+            // Log stdout for visibility
+            var lines = chunk.split('\n');
+            lines.forEach(function(line) {
+              if (line.trim()) {
+                self.logger.info('[RTL-SDR Radio] dab-scanner-3: ' + line);
+              }
+            });
+            
+            // Check for completion marker (summary line) - this appears on stdout
+            var completionPattern = new RegExp('; channel ' + targetChannel + ';');
+            if (completionPattern.test(chunk) && !processKilled) {
+              targetChannelComplete = true;
+              processKilled = true;
+              clearTimeout(timeout);
+              self.logger.info('[RTL-SDR Radio] Channel ' + targetChannel + ' validation complete, terminating scanner');
+              scanner.kill('SIGTERM');
+            }
+          });
+          
+          scanner.stderr.on('data', function(data) {
+            var chunk = data.toString();
+            output += chunk;
+            
+            // Log stderr for visibility
+            var lines = chunk.split('\n');
+            lines.forEach(function(line) {
+              if (line.trim() && !line.includes('No database available')) {
+                self.logger.info('[RTL-SDR Radio] dab-scanner-3: ' + line);
+              }
+            });
+            
+            // Monitor for channel switching (appears on stderr)
+            var channelMatch = chunk.match(/checking data in channel ([A-Z0-9]+)/);
+            if (channelMatch) {
+              var currentChannel = channelMatch[1];
+              
+              if (currentChannel === targetChannel) {
+                targetChannelFound = true;
+                self.logger.info('[RTL-SDR Radio] Started checking channel ' + targetChannel);
+              } else if (targetChannelFound && currentChannel !== targetChannel) {
+                // Scanner moved away from target channel - kill immediately
+                // This handles both cases: signal found OR no signal (scanner skipped)
+                if (!processKilled) {
+                  processKilled = true;
+                  clearTimeout(timeout);
+                  self.logger.info('[RTL-SDR Radio] Scanner moved to channel ' + currentChannel + ', terminating');
+                  scanner.kill('SIGTERM');
+                }
+              }
+            }
+          });
+          
+          scanner.on('close', function(code) {
+            clearTimeout(timeout);
+            
+            // Check for ensemble recognition (indicates successful sync)
+            var syncDetected = /ensemble.*is \([A-Z0-9]+\) recognized/.test(output);
+            
+            // Count audio services
+            var serviceMatches = output.match(/^audioservice;/gm);
+            var serviceCount = serviceMatches ? serviceMatches.length : 0;
+            
+            var quality = 'none';
+            if (syncDetected) {
+              if (serviceCount >= 10) quality = 'excellent';
+              else if (serviceCount >= 7) quality = 'strong';
+              else if (serviceCount >= 4) quality = 'good';
+              else if (serviceCount >= 2) quality = 'weak';
+              else if (serviceCount >= 1) quality = 'poor';
+            }
+            
+            var result = {
+              channel: targetChannel,
+              sync: syncDetected,
+              services: serviceCount,
+              quality: quality,
+              progress: channelIndex,
+              total: totalChannels
+            };
+            
+            self.logger.info('[RTL-SDR Radio] Channel ' + targetChannel + ' results: ' + 
+                           'sync=' + syncDetected + ', services=' + serviceCount + ', quality=' + quality);
+            
+            // Send result immediately via SSE
+            res.write('data: ' + JSON.stringify(result) + '\n\n');
+            
+            checkNextChannel();
+          });
+          
+          scanner.on('error', function(e) {
+            clearTimeout(timeout);
+            self.logger.error('[RTL-SDR Radio] Channel ' + targetChannel + ' validation error: ' + e.toString());
+            
+            var result = {
+              channel: targetChannel,
+              sync: false,
+              services: 0,
+              quality: 'error',
+              error: e.toString(),
+              progress: channelIndex,
+              total: totalChannels
+            };
+            
+            // Send error result via SSE
+            res.write('data: ' + JSON.stringify(result) + '\n\n');
+            
+            checkNextChannel();
+          });
+        }
+        
+        checkNextChannel();
+        
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
     
     // Start server
     self.expressServer = self.expressApp.listen(self.managementPort, function() {
