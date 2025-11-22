@@ -1,0 +1,106 @@
+# Audiophonics Remote to Volumio Command Mappings
+# For RaspDacMini LCD Plugin
+
+# Play/Pause toggle
+begin
+  prog = irexec
+  button = play
+  config = /usr/local/bin/volumio toggle &
+  delay = 2
+  repeat = 3
+end
+
+# Seek backward (hold button)
+begin
+  prog = irexec
+  button = playleft
+  config = /usr/local/bin/volumio seek minus &
+  delay = 2
+  repeat = 3
+end
+
+# Seek forward (hold button)
+begin
+  prog = irexec
+  button = playright
+  config = /usr/local/bin/volumio seek plus &
+  delay = 2
+  repeat = 3
+end
+
+# Previous track
+begin
+  prog = irexec
+  button = left
+  config = /usr/local/bin/volumio previous &
+end
+
+# Next track
+begin
+  prog = irexec
+  button = right
+  config = /usr/local/bin/volumio next &
+end
+
+# Volume up
+begin
+  prog = irexec
+  button = volplus
+  config = /usr/local/bin/volumio volume plus &
+  repeat = 1
+end
+
+# Volume down
+begin
+  prog = irexec
+  button = volminus
+  config = /usr/local/bin/volumio volume minus &
+  repeat = 1
+end
+
+# Mute toggle
+begin
+  prog = irexec
+  button = mute
+  config = /usr/local/bin/volumio volume mute &
+end
+
+# Stop playback
+begin
+  prog = irexec
+  button = ok
+  config = /usr/local/bin/volumio stop &
+end
+
+# Browse sources - scroll up
+begin
+  prog = irexec
+  button = up
+  config = /usr/local/bin/volumio-browse-source next &
+  repeat = 3
+end
+
+# Browse sources - scroll down
+begin
+  prog = irexec
+  button = down
+  config = /usr/local/bin/volumio-browse-source prev &
+  repeat = 3
+end
+
+# Browse sources - select/activate
+begin
+  prog = irexec
+  button = option
+  config = /usr/local/bin/volumio-browse-source select &
+  repeat = 0
+end
+
+# System shutdown
+begin
+  prog = irexec
+  button = poweroff
+  config = /sbin/shutdown -h now
+  repeat = 0
+end
+
