@@ -16,7 +16,7 @@ sudo usermod -aG render volumio
 sudo apt-get update
 
 #echo "cloning peppyspectrum repo"
-#git clone https://github.com/project-owner/PeppySpectrum.git $peppymeterpath
+git clone https://github.com/project-owner/PeppySpectrum.git $peppymeterpath
 chmod 777 -R $peppymeterpath
 sudo chown -R volumio "$spath" "$customfolder"
 sudo chgrp -R volumio "$spath" "$customfolder"
