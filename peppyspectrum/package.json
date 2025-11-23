@@ -1,6 +1,6 @@
 {
   "name": "peppyspectrum",
-  "version": "1.0.35",
+  "version": "1.0.36",
   "description": "Peppy-spectrum for Volumio",
   "main": "index.js",
   "scripts": {
@@ -15,14 +15,13 @@
     "os": [
       "bookworm"
     ],
-    "changelog": "Fix remove, fix on arm",
+    "changelog": "Alsa path for Spotify",
     "details": "Easy install Peppy-spectrum",
     "architectures": [
       "armhf",
       "amd64"
     ],
-    "has_alsa_contribution": true,
-    "manually_installed": true
+    "has_alsa_contribution": true
   },
   "dependencies": {
     "child_process": "",
@@ -33,6 +32,6 @@
   },
   "engines": {
     "node": ">=20",
-    "volumio": ">=0"
+    "volumio": ">=4"
   }
 }
