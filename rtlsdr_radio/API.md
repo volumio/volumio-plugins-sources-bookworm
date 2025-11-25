@@ -167,10 +167,10 @@ Base URL: `http://<volumio-ip>:3456/api`
 **Notes:**
 - Scan duration: Approximately 2 seconds
 - Frequency range: 87.5 MHz to 240 MHz (covers FM and DAB Band III)
-- Uses rtl_power for spectrum analysis
+- Uses fn-rtl_power for spectrum analysis
 - Results provide relative signal strength visualization
 - Helps identify optimal antenna orientation for available signals
-- Requires network access to crates.io for rtl_power dependencies
+- Requires network access to crates.io for fn-rtl_power dependencies
 
 ### DAB Channel Validation (SSE Streaming)
 
@@ -242,7 +242,7 @@ data: {"status":"complete","timestamp":"2025-11-21T12:30:45.678Z"}
 - Total validation time scales with selected channel count
 - Channels are validated sequentially
 - Results may arrive out of order (frontend handles automatic sorting)
-- Uses custom dab-scanner-3 binaries with filtered debug output
+- Uses custom fn-dab-scanner binaries with filtered debug output
 - Three critical bugs fixed in chat 22:
   - Service count detection (PTY wrapper filtering)
   - Completion timeout (immediate kill on completion marker)

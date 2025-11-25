@@ -996,7 +996,7 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
     self.expressApp.post('/api/antenna/spectrum-scan', function(req, res) {
       try {
         var spawn = require('child_process').spawn;
-        var rtlPower = spawn('rtl_power', ['-f', '174M:240M:1M', '-i', '1', '-1']);
+        var rtlPower = spawn('fn-rtl_power', ['-f', '174M:240M:1M', '-i', '1', '-1']);
         
         var csvOutput = '';
         rtlPower.stdout.on('data', function(data) { 
@@ -1004,12 +1004,12 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
         });
         
         rtlPower.stderr.on('data', function(data) {
-          self.logger.info('[RTL-SDR Radio] rtl_power: ' + data.toString());
+          self.logger.info('[RTL-SDR Radio] fn-rtl_power: ' + data.toString());
         });
         
         rtlPower.on('close', function(code) {
           if (code !== 0) {
-            res.status(500).json({ error: 'rtl_power failed with code ' + code });
+            res.status(500).json({ error: 'fn-rtl_power failed with code ' + code });
             return;
           }
           
@@ -1034,7 +1034,7 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
         });
         
         rtlPower.on('error', function(e) {
-          res.status(500).json({ error: 'Failed to start rtl_power: ' + e.toString() });
+          res.status(500).json({ error: 'Failed to start fn-rtl_power: ' + e.toString() });
         });
         
       } catch (e) {
@@ -1086,7 +1086,7 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
           
           // Use script to create pseudo-TTY, forcing line-buffered stdout
           // This ensures stdout data flushes immediately instead of being block-buffered
-          var scanCommand = 'dab-scanner-3 -C ' + targetChannel + ' -G 80';
+          var scanCommand = 'fn-dab-scanner -C ' + targetChannel + ' -G 80';
           var scanner = spawn('script', ['-qec', scanCommand, '/dev/null']);
           var output = '';
           var targetChannelFound = false;
@@ -1110,7 +1110,7 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
             var lines = chunk.split('\n');
             lines.forEach(function(line) {
               if (line.trim()) {
-                self.logger.info('[RTL-SDR Radio] dab-scanner-3: ' + line);
+                self.logger.info('[RTL-SDR Radio] fn-dab-scanner: ' + line);
               }
             });
             
@@ -1133,7 +1133,7 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
             var lines = chunk.split('\n');
             lines.forEach(function(line) {
               if (line.trim() && !line.includes('No database available')) {
-                self.logger.info('[RTL-SDR Radio] dab-scanner-3: ' + line);
+                self.logger.info('[RTL-SDR Radio] fn-dab-scanner: ' + line);
               }
             });
             
@@ -1339,10 +1339,10 @@ ControllerRtlsdrRadio.prototype.stopAllProcesses = function(caller, force) {
     
     // CRITICAL: Always use SIGKILL (-9) because RTL-SDR processes ignore SIGTERM
     // The 'force' parameter only affects cleanup timing, not kill signal
-    execSync('sudo pkill -9 -f "rtl_fm"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "rtl_power"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "dab-rtlsdr-3"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "dab-scanner-3"', { timeout: 2000 });
+    execSync('sudo pkill -9 -f "fn-rtl_fm"', { timeout: 2000 });
+    execSync('sudo pkill -9 -f "fn-rtl_power"', { timeout: 2000 });
+    execSync('sudo pkill -9 -f "fn-dab"', { timeout: 2000 });
+    execSync('sudo pkill -9 -f "fn-dab-scanner"', { timeout: 2000 });
     execSync('sudo pkill -9 -f "sox"', { timeout: 2000 });
     execSync('sudo pkill -9 -f "aplay -D volumio"', { timeout: 2000 });
   } catch (e) {
@@ -1981,7 +1981,7 @@ ControllerRtlsdrRadio.prototype.handleDeviceConflict = function(data) {
     self.stopCurrentOperation()
       .then(function() {
         // Wait for processes to fully terminate and release USB device
-        // Processes need time for graceful shutdown (rtl_power finishes scan pass)
+        // Processes need time for graceful shutdown (fn-rtl_power finishes scan pass)
         // stopDecoder has 500ms timeout, add extra margin for graceful shutdown
         self.logger.info('[RTL-SDR Radio] Waiting for device cleanup...');
         setTimeout(function() {
@@ -3127,10 +3127,10 @@ ControllerRtlsdrRadio.prototype.startFmPlayback = function(freq, stationName, de
   // Get gain from config
   var gain = self.config.get('fm_gain', 50);
   
-  // Build rtl_fm command piped to aplay
-  // rtl_fm: -f frequency, -M wfm (wideband FM), -s 180k sample rate, -r 48k resample, -g gain
+  // Build fn-rtl_fm command piped to aplay
+  // fn-rtl_fm: -f frequency, -M wfm (wideband FM), -s 180k sample rate, -r 48k resample, -g gain
   // aplay: -D volumio (Volumio's modular ALSA device), -f S16_LE (format), -r 48000 (rate), -c 1 (mono)
-  var command = 'rtl_fm -f ' + freq + 'M -M wfm -s 180k -r 48k -g ' + gain + 
+  var command = 'fn-rtl_fm -f ' + freq + 'M -M wfm -s 180k -r 48k -g ' + gain + 
                 ' | aplay -D volumio -f S16_LE -r 48000 -c 1';
   
   self.logger.info('[RTL-SDR Radio] Command: ' + command);
@@ -3242,17 +3242,17 @@ ControllerRtlsdrRadio.prototype.stopDecoder = function() {
   
   try {
     // Kill FM playback processes
-    exec('sudo pkill -f "rtl_fm -f"');
+    exec('sudo pkill -f "fn-rtl_fm -f"');
     exec('sudo pkill -f "aplay -D volumio"');
     
     // Kill DAB playback processes
-    exec('sudo pkill -f "dab-rtlsdr-3"');
+    exec('sudo pkill -f "fn-dab"');
     
     // Kill FM scan processes
-    exec('sudo pkill -f "rtl_power"');
+    exec('sudo pkill -f "fn-rtl_power"');
     
     // Kill DAB scan processes
-    exec('sudo pkill -f "dab-scanner-3"');
+    exec('sudo pkill -f "fn-dab-scanner"');
     
     // Kill sox resampling process
     exec('sudo pkill -f "sox"');
@@ -4312,11 +4312,11 @@ ControllerRtlsdrRadio.prototype.scanFm = function() {
       // Generate unique temp file name
       var scanFile = '/tmp/fm_scan_' + Date.now() + '.csv';
       
-      // rtl_power command:
+      // fn-rtl_power command:
       // -f 88M:108M:125k = Scan 88-108 MHz in 125kHz steps (160 bins)
       // -i 10 = Integrate for 10 seconds
       // -1 = Single-shot mode (exit after one scan)
-      var command = 'rtl_power -f 88M:108M:125k -i 10 -1 ' + scanFile;
+      var command = 'fn-rtl_power -f 88M:108M:125k -i 10 -1 ' + scanFile;
       
       self.logger.info('[RTL-SDR Radio] Scan command: ' + command);
       
@@ -4541,11 +4541,11 @@ ControllerRtlsdrRadio.prototype.scanDab = function() {
       // Get DAB gain from config
       var dabGain = self.config.get('dab_gain', 80);
       
-      // dab-scanner-3 command:
+      // fn-dab-scanner command:
       // -B BAND_III = Scan Band III (European DAB standard, 174-240 MHz)
       // -G <gain> = Tuner gain (0-49.6, higher = more sensitive)
       // -j = JSON output format
-      var command = 'dab-scanner-3 -B BAND_III -G ' + dabGain + ' -j > ' + scanFile;
+      var command = 'fn-dab-scanner -B BAND_III -G ' + dabGain + ' -j > ' + scanFile;
       
       self.logger.info('[RTL-SDR Radio] DAB scan command: ' + command);
       
@@ -4643,7 +4643,7 @@ ControllerRtlsdrRadio.prototype.parseDabScanResults = function(scanFile) {
     }
     
     try {
-      // dab-scanner-3 outputs debug text before JSON
+      // fn-dab-scanner outputs debug text before JSON
       // Extract only the JSON portion (starts with '{')
       var jsonStart = data.indexOf('{');
       if (jsonStart === -1) {
@@ -4655,7 +4655,7 @@ ControllerRtlsdrRadio.prototype.parseDabScanResults = function(scanFile) {
       var jsonData = data.substring(jsonStart);
       self.logger.info('[RTL-SDR Radio] Extracted JSON from position ' + jsonStart);
       
-      // Parse JSON output from dab-scanner-3
+      // Parse JSON output from fn-dab-scanner
       var scanData = JSON.parse(jsonData);
       
       // Scanner returns ensembles as object with ensemble IDs as keys
@@ -4792,21 +4792,21 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
   // Clear intentional stop flag when starting new playback
   self.intentionalStop = false;
   
-  // Build dab-rtlsdr-3 command piped to aplay
+  // Build fn-dab command piped to aplay
   // -C <channel> = DAB channel (e.g., 12B)
   // -P "<service>" = Service name (must match exactly with spaces)
   // -G <gain> = Tuner gain
   // -D 30 = Detection timeout (30 seconds to find ensemble)
   // 2>/dev/null = Discard debug output to stderr
   // Pipe PCM audio to aplay with Volumio device
-  var dabCommand = 'dab-rtlsdr-3 -C ' + channel + 
+  var dabCommand = 'fn-dab -C ' + channel + 
                    ' -P "' + serviceName.replace(/"/g, '\\"') + '"' +
                    ' -G ' + dabGain + 
                    ' -D 30';
   
   self.logger.info('[RTL-SDR Radio] Starting DAB decoder: ' + dabCommand);
   
-  // Spawn dab-rtlsdr-3 process
+  // Spawn fn-dab process
   var spawn = require('child_process').spawn;
   var dabProcess = spawn('sh', ['-c', dabCommand]);
   
