@@ -7,6 +7,7 @@ pkill -f fn-rtl_fm
 pkill -f fn-rtl_power
 pkill -f fn-dab
 pkill -f fn-dab-scanner
+pkill -f fn-redsea
 
 # Remove sudoers entry
 if [ -f /etc/sudoers.d/volumio-user-rtlsdr-radio ]; then
@@ -27,9 +28,10 @@ sed -i '/snd-aloop/d' /etc/modules
 # Unload ALSA loopback module
 rmmod snd-aloop 2>/dev/null
 
-# Remove DAB binaries
+# Remove DAB and RDS binaries
 rm -f /usr/local/bin/fn-dab
 rm -f /usr/local/bin/fn-dab-scanner
+rm -f /usr/local/bin/fn-redsea
 
 # Remove foonerd RTL-SDR packages
 echo "Removing foonerd RTL-SDR packages..."
@@ -63,7 +65,7 @@ echo ""
 echo "FM/DAB Radio plugin uninstalled"
 echo ""
 echo "Removed components:"
-echo "- RTL-SDR and DAB decoder processes"
+echo "- RTL-SDR, DAB decoder, and RDS decoder processes"
 echo "- Web management interface (port 3456)"
 echo "- Sudoers entry"
 echo "- Kernel module blacklist"
@@ -71,5 +73,6 @@ echo "- ALSA loopback configuration"
 echo "- foonerd-rtlsdr package"
 echo "- libfn-rtlsdr0 package"
 echo "- DAB binaries (fn-dab, fn-dab-scanner)"
+echo "- RDS binary (fn-redsea)"
 echo ""
 echo "pluginuninstallend"
