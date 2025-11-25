@@ -213,6 +213,10 @@ fi
 echo "Installing DAB runtime dependencies..."
 apt-get install -y libfftw3-single3 libsamplerate0 libfaad2
 
+# Install sox for RDS audio resampling
+echo "Installing sox for RDS audio processing..."
+apt-get install -y sox
+
 # Install bundled foonerd RTL-SDR packages
 # Order matters: library first, then binaries
 # Note: libfn-rtlsdr-dev is NOT installed - only needed for development, not runtime
@@ -284,6 +288,11 @@ cp "$BIN_SOURCE/fn-dab-scanner" /usr/local/bin/
 chmod +x /usr/local/bin/fn-dab
 chmod +x /usr/local/bin/fn-dab-scanner
 
+# Copy pre-compiled RDS decoder binary
+echo "Installing RDS decoder binary..."
+cp "$BIN_SOURCE/fn-redsea" /usr/local/bin/
+chmod +x /usr/local/bin/fn-redsea
+
 # Verify installation
 if [ ! -f /usr/local/bin/fn-dab ]; then
   echo "ERROR: fn-dab installation failed"
@@ -295,7 +304,12 @@ if [ ! -f /usr/local/bin/fn-dab-scanner ]; then
   exit 1
 fi
 
-echo "DAB binaries installed successfully"
+if [ ! -f /usr/local/bin/fn-redsea ]; then
+  echo "ERROR: fn-redsea installation failed"
+  exit 1
+fi
+
+echo "DAB and RDS binaries installed successfully"
 
 # Verify RTL-SDR binaries are available
 if [ ! -x /usr/bin/fn-rtl_fm ]; then
@@ -350,16 +364,18 @@ echo ""
 echo "=========================================="
 echo "FM/DAB Radio plugin installation complete"
 echo "=========================================="
-echo "Version: 1.1.0"
+echo "Version: 1.2.0"
 echo "Architecture: $ARCH"
 echo ""
 echo "Installed packages:"
 echo "  - foonerd-rtlsdr (fn-rtl_fm, fn-rtl_power, etc.)"
 echo "  - libfn-rtlsdr0 (shared library)"
+echo "  - sox (audio resampling for RDS)"
 echo ""
 echo "Installed binaries:"
 echo "  - /usr/local/bin/fn-dab"
 echo "  - /usr/local/bin/fn-dab-scanner"
+echo "  - /usr/local/bin/fn-redsea"
 echo ""
 echo "=========================================="
 echo ""

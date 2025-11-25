@@ -1,6 +1,6 @@
 {
   "name": "rtlsdr_radio",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "has_configuration": true,
     "has_alsa_contribution": true,
     "details": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
-    "changelog": "v1.1.0 - Custom foonerd RTL-SDR packages replace mainstream Debian packages for improved V4 dongle support."
+    "changelog": "v1.2.0 - RDS (Radio Data System) support for FM stations with artist/title metadata display."
   },
   "engines": {
     "node": ">=20",

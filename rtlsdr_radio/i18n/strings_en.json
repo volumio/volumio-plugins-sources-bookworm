@@ -118,6 +118,7 @@
   "TOAST_FM_REAPPEARED": "{0} deleted station(s) available again",
   "TOAST_DAB_REAPPEARED": "{0} deleted service(s) available again",
   "TOAST_SCAN_COMPLETE": "Scan complete: {0} found, {1} total",
+  "TRAFFIC_ALERT": "Traffic Alert",
   "MODAL_SCANNING_FM_TITLE": "Scanning FM Stations",
   "MODAL_SCANNING_DAB_TITLE": "Scanning DAB Stations",
   "MODAL_SCANNING_PROGRESS": "Scanning in progress...",
