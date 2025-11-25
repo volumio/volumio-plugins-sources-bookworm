@@ -119,8 +119,8 @@ The plugin includes professional-grade tools for optimizing antenna placement an
 5. Perform full station scan once antenna is positioned
 
 **Technical Details:**
-- Spectrum scan uses rtl_power for wide-band analysis
-- Channel validation uses custom dab-scanner-3 binaries
+- Spectrum scan uses fn-rtl_power for wide-band analysis
+- Channel validation uses custom fn-dab-scanner binaries
 - Progressive SSE streaming prevents long waits
 - Three critical bugs fixed in v1.0.8 for accurate validation
 - No signal channels terminate in 2-3 seconds (no timeout)
