@@ -18,6 +18,8 @@
   "ENABLE_DAB_DOC": "Activar/desactivar para mostrar ajustes de radio DAB y DAB+",
   "DAB_GAIN": "Ganancia DAB",
   "DAB_GAIN_DOC": "Ganancia RTL-SDR para recepción DAB (0-100)",
+  "DAB_PPM": "Correccion PPM",
+  "DAB_PPM_DOC": "Correccion de frecuencia en partes por millon para dongles RTL-SDR economicos con cristales imprecisos. Los dongles de calidad (Nooelec NESDR, RTL-SDR Blog V3/V4) funcionan en 0. Los dongles genericos azules baratos normalmente necesitan 40-60. Si las estaciones DAB no se detectan durante el escaneo, pruebe valores entre -100 y +100 en pasos de 10. Cada dongle tiene su propio valor debido a la variacion de fabricacion del oscilador de cristal.",
   "SCAN_DAB": "Escanear emisoras DAB",
   "SCAN_DAB_DOC": "Buscar emisoras DAB/DAB+ disponibles (puede tomar 2-3 minutos)",
   "SAVE_DAB_SETTINGS": "Guardar ajustes DAB",
@@ -64,6 +66,8 @@
   "MANUAL_DAB_SERVICE_DOC": "Nombre exacto del servicio tal como se transmite (ej. BBC Radio1 no BBC Radio 1). Este es el identificador técnico del conjunto, que puede diferir del nombre mostrado de la emisora.",
   "MANUAL_DAB_GAIN": "Ganancia de prueba",
   "MANUAL_DAB_GAIN_DOC": "Ganancia del amplificador RF RTL-SDR (0-100). Afecta la relación señal-ruido y el umbral de sobrecarga, no el volumen. Los dongles NESDR Smart tienen mejores amplificadores: comienza en 20. Los RTL-SDR genéricos necesitan mayor ganancia: comienza en 80. Ajusta si está distorsionado (más bajo) o sin señal (más alto).",
+  "MANUAL_DAB_PPM": "PPM de prueba",
+  "MANUAL_DAB_PPM_DOC": "Correccion de frecuencia PPM para pruebas. Pruebe valores de -100 a +100 en pasos de 10. La mayoria de los dongles azules baratos necesitan 40-60. Los dongles de calidad (Nooelec, RTL-SDR Blog) funcionan en 0.",
   "TEST_DAB_SAVE_REQUIRED": "Requerido: La prueba usa valores guardados. Guarda primero los ajustes para probar la emisora actual.",
   "TEST_DAB_STATION": "Probar emisora DAB",
   "TESTING_FM": "Probando FM {0} MHz",
@@ -365,5 +369,6 @@
   "CHANNEL_WEAK": "Débil",
   "CHANNEL_POOR": "Pobre",
   "CHANNEL_NONE": "Sin Señal",
-  "CHANNEL_ERROR": "Error"
+  "CHANNEL_ERROR": "Error",
+  "TRAFFIC_ALERT": "Alerta de Trafico"
 }

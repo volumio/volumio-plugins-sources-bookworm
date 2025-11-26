@@ -18,6 +18,8 @@
   "ENABLE_DAB_DOC": "切换显示 DAB 和 DAB+ 收音机设置",
   "DAB_GAIN": "DAB 增益",
   "DAB_GAIN_DOC": "DAB 接收的 RTL-SDR 增益 (0-100)",
+  "DAB_PPM": "PPM校正",
+  "DAB_PPM_DOC": "廉价RTL-SDR加密狗因晶体不精确而需要的频率校正（百万分之一）。优质加密狗（Nooelec NESDR、RTL-SDR Blog V3/V4）在0时工作正常。廉价的通用蓝色加密狗通常需要40-60。如果扫描时未检测到DAB电台，请尝试-100到+100之间的值，每次增加10。由于晶体振荡器制造公差，每个加密狗都有自己的特定值。",
   "SCAN_DAB": "扫描 DAB 电台",
   "SCAN_DAB_DOC": "搜索可用的 DAB/DAB+ 电台（可能需要 2-3 分钟）",
   "SAVE_DAB_SETTINGS": "保存 DAB 设置",
@@ -64,6 +66,8 @@
   "MANUAL_DAB_SERVICE_DOC": "广播的确切服务名称（例如，BBC Radio1 而不是 BBC Radio 1）。这是来自集合的技术标识符，可能与电台的显示名称不同。",
   "MANUAL_DAB_GAIN": "测试增益",
   "MANUAL_DAB_GAIN_DOC": "RTL-SDR RF 放大器增益（0-100）。影响信噪比和过载阈值，而不是音量。NESDR Smart 接收器具有更好的放大器：从 20 开始。普通 RTL-SDR 需要更高的增益：从 80 开始。如果失真则降低，如果无信号则提高。",
+  "MANUAL_DAB_PPM": "测试PPM",
+  "MANUAL_DAB_PPM_DOC": "用于测试的PPM频率校正。尝试-100到+100之间的值，每次增加10。大多数廉价蓝色加密狗需要40-60。优质加密狗（Nooelec、RTL-SDR Blog）在0时工作正常。",
   "TEST_DAB_SAVE_REQUIRED": "必需：测试使用保存的值。请先保存设置以测试当前电台。",
   "TEST_DAB_STATION": "测试 DAB 电台",
   "TESTING_FM": "正在测试 FM {0} MHz",
@@ -365,5 +369,6 @@
   "CHANNEL_WEAK": "弱",
   "CHANNEL_POOR": "差",
   "CHANNEL_NONE": "无信号",
-  "CHANNEL_ERROR": "错误"
+  "CHANNEL_ERROR": "错误",
+  "TRAFFIC_ALERT": "交通提醒"
 }

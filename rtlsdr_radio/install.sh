@@ -215,7 +215,12 @@ apt-get install -y libfftw3-single3 libsamplerate0 libfaad2
 
 # Install sox for RDS audio resampling
 echo "Installing sox for RDS audio processing..."
-apt-get install -y sox
+if ! command -v sox &> /dev/null; then
+  apt-get install -y sox
+  echo "Sox installed"
+else
+  echo "Sox already present"
+fi
 
 # Install bundled foonerd RTL-SDR packages
 # Order matters: library first, then binaries
@@ -364,7 +369,7 @@ echo ""
 echo "=========================================="
 echo "FM/DAB Radio plugin installation complete"
 echo "=========================================="
-echo "Version: 1.2.0"
+echo "Version: 1.2.1"
 echo "Architecture: $ARCH"
 echo ""
 echo "Installed packages:"

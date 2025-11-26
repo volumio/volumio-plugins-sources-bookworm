@@ -5,7 +5,9 @@ Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.
 ## Hardware Requirements
 
 - RTL-SDR USB dongle (RTL2832U chipset)
-- Compatible with R820T, R820T2, E4000 tuners
+- Compatible with R820T, R820T2, R828D, E4000 tuners
+- Quality dongles recommended: Nooelec NESDR Smart, RTL-SDR Blog V3/V4
+- Cheap generic blue dongles work but may require PPM frequency correction for DAB
 - Antenna suitable for FM (88-108 MHz) and/or DAB Band III (174-240 MHz)
 
 ## Supported Platforms
@@ -141,6 +143,14 @@ The plugin includes diagnostic tools to test your USB dongle before scanning:
 - Adjust if: distorted (lower gain) or no signal (higher gain)
 - Note: This is RF amplification, not volume control
 
+**Understanding PPM Correction** (DAB only):
+- PPM corrects frequency error from cheap crystal oscillators
+- **Quality dongles** (Nooelec, RTL-SDR Blog V3/V4): Use PPM=0
+- **Cheap blue dongles**: Typically need PPM 40-60 (varies per dongle)
+- If DAB scan finds no stations, try PPM values from -100 to +100 in steps of 10
+- Each dongle has its own specific PPM value due to manufacturing variance
+- FM reception is more tolerant and usually works without PPM correction
+
 **Technical Service Names**:
 DAB stations use technical identifiers that may differ from display names:
 - Example: Enter "BBC Radio1" (no space) for the station branded as "BBC Radio 1" (with space)
@@ -257,7 +267,28 @@ Just a Nerd
 
 ## Version History
 
-### v1.0.9 (Current)
+### v1.2.1 (Current)
+- Added PPM (frequency correction) setting for DAB reception
+- Resolves DAB reception issues with cheap RTL-SDR dongles that have inaccurate crystal oscillators
+- Quality dongles (Nooelec NESDR, RTL-SDR Blog V3/V4) work at PPM=0
+- Cheap generic blue dongles typically need PPM 40-60
+- PPM setting available in both DAB Radio section and Diagnostics for testing
+- DAB channel validation now uses configured gain (was hardcoded to 80)
+- Added tuner type detection and logging in fn-dab binaries
+- Fixed bug in rtlsdr-handler checking wrong variable for V4 dongle support
+- Added missing TRAFFIC_ALERT translations for 10 languages
+
+### v1.2.0
+- Major rewrite of DAB audio pipeline with dynamic sample rate detection
+- Automatic PCM format detection from fn-dab stderr output
+- Sox-based resampling handles 32kHz/48kHz DAB streams transparently
+- Consolidated timeout constants for easier maintenance
+- Fixed race conditions in station switching
+- 600ms hardware cleanup delay prevents device conflicts
+- RDS metadata display for FM stations via fn-redsea
+- Complete 11-language internationalization
+
+### v1.0.9
 - Added Antenna Positioning Tools
 - RF Spectrum Scan: Full-band signal visualization (87.5-240 MHz, 2-second scan)
 - DAB Channel Validation: Progressive SSE streaming, per-channel sync and service count

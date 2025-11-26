@@ -1151,9 +1151,14 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
           
           self.logger.info('[RTL-SDR Radio] Validating DAB channel ' + targetChannel + ' (' + channelIndex + '/' + totalChannels + ')');
           
+          // Get DAB settings from config
+          var validationGain = self.config.get('dab_gain', 80);
+          var validationPpm = self.config.get('dab_ppm', 0);
+          
           // Use script to create pseudo-TTY, forcing line-buffered stdout
           // This ensures stdout data flushes immediately instead of being block-buffered
-          var scanCommand = 'fn-dab-scanner -C ' + targetChannel + ' -G 80';
+          var scanCommand = 'fn-dab-scanner -C ' + targetChannel + ' -G ' + validationGain +
+                            (validationPpm !== 0 ? ' -p ' + validationPpm : '');
           var scanner = spawn('script', ['-qec', scanCommand, '/dev/null']);
           var output = '';
           var targetChannelFound = false;
@@ -1654,6 +1659,11 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
     if (dabGain) {
       dabGain.value = self.config.get('dab_gain', 80);
     }
+    
+    var dabPpm = findContentItem(dabSection, 'dab_ppm');
+    if (dabPpm) {
+      dabPpm.value = self.config.get('dab_ppm', 0);
+    }
   }
   
   // SECTION 5: DIAGNOSTICS
@@ -1683,6 +1693,11 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
     var manualDabGain = findContentItem(diagnosticsSection, 'manual_dab_gain');
     if (manualDabGain) {
       manualDabGain.value = self.config.get('manual_dab_gain', 20);
+    }
+    
+    var manualDabPpm = findContentItem(diagnosticsSection, 'manual_dab_ppm');
+    if (manualDabPpm) {
+      manualDabPpm.value = self.config.get('manual_dab_ppm', 0);
     }
   }
 };
@@ -1812,6 +1827,14 @@ ControllerRtlsdrRadio.prototype.saveDabSettings = function(data) {
       }
     }
     
+    // Save DAB PPM correction
+    if (data.dab_ppm !== undefined) {
+      var dabPpm = parseInt(data.dab_ppm);
+      if (!isNaN(dabPpm) && dabPpm >= -200 && dabPpm <= 200) {
+        self.config.set('dab_ppm', dabPpm);
+      }
+    }
+    
     self.commandRouter.pushToastMessage('success', 'FM/DAB Radio', 
       self.getI18nString('SAVE_SUCCESS'));
     defer.resolve();
@@ -1870,6 +1893,9 @@ ControllerRtlsdrRadio.prototype.saveDiagnosticsSettings = function(data) {
     }
     if (data.manual_dab_gain !== undefined) {
       self.config.set('manual_dab_gain', data.manual_dab_gain);
+    }
+    if (data.manual_dab_ppm !== undefined) {
+      self.config.set('manual_dab_ppm', data.manual_dab_ppm);
     }
     
     self.commandRouter.pushToastMessage('success', 'FM/DAB Radio', 
@@ -4010,8 +4036,9 @@ ControllerRtlsdrRadio.prototype.testManualDab = function(data) {
   var ensemble = (data && data.manual_dab_ensemble) || self.config.get('manual_dab_ensemble', '12B');
   var serviceName = (data && data.manual_dab_service) || self.config.get('manual_dab_service', '');
   var testGain = parseInt((data && data.manual_dab_gain) || self.config.get('manual_dab_gain', 80));
+  var testPpm = parseInt((data && data.manual_dab_ppm) || self.config.get('manual_dab_ppm', 0));
   
-  self.logger.info('[RTL-SDR Radio] Testing manual DAB: ' + ensemble + '/' + serviceName + ' (gain: ' + testGain + ')');
+  self.logger.info('[RTL-SDR Radio] Testing manual DAB: ' + ensemble + '/' + serviceName + ' (gain: ' + testGain + ', ppm: ' + testPpm + ')');
   
   // Validate inputs
   if (!ensemble || ensemble.trim() === '') {
@@ -4028,11 +4055,13 @@ ControllerRtlsdrRadio.prototype.testManualDab = function(data) {
     return defer.promise;
   }
   
-  // Store current DAB gain
+  // Store current DAB settings
   var originalGain = self.config.get('dab_gain', 80);
+  var originalPpm = self.config.get('dab_ppm', 0);
   
-  // Temporarily set test gain
+  // Temporarily set test values
   self.config.set('dab_gain', testGain);
+  self.config.set('dab_ppm', testPpm);
   
   // Create track object (DAB URI format: rtlsdr://dab/{ensemble}/{serviceName})
   var track = {
@@ -4047,17 +4076,19 @@ ControllerRtlsdrRadio.prototype.testManualDab = function(data) {
       self.commandRouter.pushToastMessage('success', self.getI18nString('DAB_RADIO'), 
         self.getI18nString('TESTING_DAB').replace('{0}', serviceName));
       
-      // Restore original gain after test duration
+      // Restore original settings after test duration
       setTimeout(function() {
         self.config.set('dab_gain', originalGain);
-        self.logger.info('[RTL-SDR Radio] Restored DAB gain to ' + originalGain);
+        self.config.set('dab_ppm', originalPpm);
+        self.logger.info('[RTL-SDR Radio] Restored DAB settings (gain: ' + originalGain + ', ppm: ' + originalPpm + ')');
       }, self.TEST_PLAYBACK_DURATION);
       
       defer.resolve();
     })
     .fail(function(e) {
-      // Restore original gain on failure
+      // Restore original settings on failure
       self.config.set('dab_gain', originalGain);
+      self.config.set('dab_ppm', originalPpm);
       
       self.commandRouter.pushToastMessage('error', self.getI18nString('DAB_RADIO'), 
         self.getI18nString('TEST_DAB_FAILED').replace('{0}', e.message || e));
@@ -5209,14 +5240,17 @@ ControllerRtlsdrRadio.prototype.scanDab = function() {
       // Generate unique temp file name
       var scanFile = '/tmp/dab_scan_' + Date.now() + '.json';
       
-      // Get DAB gain from config
+      // Get DAB settings from config
       var dabGain = self.config.get('dab_gain', 80);
+      var dabPpm = self.config.get('dab_ppm', 0);
       
       // fn-dab-scanner command:
       // -B BAND_III = Scan Band III (European DAB standard, 174-240 MHz)
       // -G <gain> = Tuner gain (0-49.6, higher = more sensitive)
+      // -p <ppm> = Frequency correction for cheap dongles
       // -j = JSON output format
-      var command = 'fn-dab-scanner -B BAND_III -G ' + dabGain + ' -j > ' + scanFile;
+      var command = 'fn-dab-scanner -B BAND_III -G ' + dabGain + 
+                    (dabPpm !== 0 ? ' -p ' + dabPpm : '') + ' -j > ' + scanFile;
       
       self.logger.info('[RTL-SDR Radio] DAB scan command: ' + command);
       
@@ -5459,8 +5493,9 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
     self.saveStations();
   }
   
-  // Get DAB gain from config
+  // Get DAB settings from config
   var dabGain = self.config.get('dab_gain', 80);
+  var dabPpm = self.config.get('dab_ppm', 0);
   
   // Clear intentional stop flag when starting new playback
   self.intentionalStop = false;
@@ -5469,12 +5504,14 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
   // -C <channel> = DAB channel (e.g., 12B)
   // -P "<service>" = Service name (must match exactly with spaces)
   // -G <gain> = Tuner gain
+  // -p <ppm> = Frequency correction for cheap dongles
   // -D 30 = Detection timeout (30 seconds to find ensemble)
   // 2>/dev/null = Discard debug output to stderr
   // Pipe PCM audio to aplay with Volumio device
   var dabCommand = 'fn-dab -C ' + channel + 
                    ' -P "' + serviceName.replace(/"/g, '\\"') + '"' +
                    ' -G ' + dabGain + 
+                   (dabPpm !== 0 ? ' -p ' + dabPpm : '') +
                    ' -D 30';
   
   self.logger.info('[RTL-SDR Radio] Starting DAB decoder: ' + dabCommand);

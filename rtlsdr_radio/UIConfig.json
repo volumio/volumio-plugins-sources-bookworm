@@ -229,7 +229,8 @@
         "label": "TRANSLATE.SAVE_DAB_SETTINGS",
         "data": [
           "dab_enabled",
-          "dab_gain"
+          "dab_gain",
+          "dab_ppm"
         ]
       },
       "content": [
@@ -246,6 +247,17 @@
           "label": "TRANSLATE.DAB_GAIN",
           "value": 80,
           "doc": "TRANSLATE.DAB_GAIN_DOC",
+          "visibleIf": {
+            "field": "dab_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "dab_ppm",
+          "element": "input",
+          "label": "TRANSLATE.DAB_PPM",
+          "value": 0,
+          "doc": "TRANSLATE.DAB_PPM_DOC",
           "visibleIf": {
             "field": "dab_enabled",
             "value": true
@@ -285,7 +297,8 @@
           "manual_fm_frequency",
           "manual_dab_ensemble",
           "manual_dab_service",
-          "manual_dab_gain"
+          "manual_dab_gain",
+          "manual_dab_ppm"
         ]
       },
       "content": [
@@ -390,6 +403,17 @@
           "label": "TRANSLATE.MANUAL_DAB_GAIN",
           "value": 20,
           "doc": "TRANSLATE.MANUAL_DAB_GAIN_DOC",
+          "visibleIf": {
+            "field": "show_diagnostics",
+            "value": true
+          }
+        },
+        {
+          "id": "manual_dab_ppm",
+          "element": "input",
+          "label": "TRANSLATE.MANUAL_DAB_PPM",
+          "value": 0,
+          "doc": "TRANSLATE.MANUAL_DAB_PPM_DOC",
           "visibleIf": {
             "field": "show_diagnostics",
             "value": true

@@ -18,6 +18,8 @@
   "ENABLE_DAB_DOC": "DAB および DAB+ ラジオ設定の表示を切り替え",
   "DAB_GAIN": "DAB ゲイン",
   "DAB_GAIN_DOC": "DAB 受信用 RTL-SDR ゲイン (0-100)",
+  "DAB_PPM": "PPM補正",
+  "DAB_PPM_DOC": "不正確な水晶を持つ安価なRTL-SDRドングル用の周波数補正（PPM単位）。高品質ドングル（Nooelec NESDR、RTL-SDR Blog V3/V4）は0で動作します。安価な青い汎用ドングルは通常40-60が必要です。スキャン中にDAB局が検出されない場合は、-100から+100の間で10刻みで値を試してください。各ドングルは水晶発振器の製造ばらつきにより固有の値を持っています。",
   "SCAN_DAB": "DAB 局をスキャン",
   "SCAN_DAB_DOC": "利用可能な DAB/DAB+ 局を検索（2～3分かかる場合があります）",
   "SAVE_DAB_SETTINGS": "DAB 設定を保存",
@@ -64,6 +66,8 @@
   "MANUAL_DAB_SERVICE_DOC": "放送されている正確なサービス名（例：BBC Radio1、BBC Radio 1 ではない）。これはアンサンブルからの技術的な識別子であり、局の表示名とは異なる場合があります。",
   "MANUAL_DAB_GAIN": "テストゲイン",
   "MANUAL_DAB_GAIN_DOC": "RTL-SDR RF アンプゲイン（0～100）。音量ではなく、信号対雑音比と過負荷しきい値に影響します。NESDR Smart ドングルはより良いアンプを持っています：20から始めます。一般的な RTL-SDR はより高いゲインが必要です：80から始めます。歪んでいる場合は低く、信号がない場合は高く調整してください。",
+  "MANUAL_DAB_PPM": "テストPPM",
+  "MANUAL_DAB_PPM_DOC": "テスト用PPM周波数補正。-100から+100の間で10刻みで値を試してください。ほとんどの安価な青いドングルは40-60が必要です。高品質ドングル（Nooelec、RTL-SDR Blog）は0で動作します。",
   "TEST_DAB_SAVE_REQUIRED": "必須：テストは保存された値を使用します。現在の局をテストするには、まず設定を保存してください。",
   "TEST_DAB_STATION": "DAB 局をテスト",
   "TESTING_FM": "FM {0} MHz をテスト中",
@@ -365,5 +369,6 @@
   "CHANNEL_WEAK": "弱い",
   "CHANNEL_POOR": "貧弱",
   "CHANNEL_NONE": "信号なし",
-  "CHANNEL_ERROR": "エラー"
+  "CHANNEL_ERROR": "エラー",
+  "TRAFFIC_ALERT": "交通情報"
 }

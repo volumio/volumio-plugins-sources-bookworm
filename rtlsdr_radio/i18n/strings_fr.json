@@ -18,6 +18,8 @@
   "ENABLE_DAB_DOC": "Basculer pour afficher les paramètres radio DAB et DAB+",
   "DAB_GAIN": "Gain DAB",
   "DAB_GAIN_DOC": "Gain RTL-SDR pour la réception DAB (0-100)",
+  "DAB_PPM": "Correction PPM",
+  "DAB_PPM_DOC": "Correction de frequence en parties par million pour les dongles RTL-SDR bon marche avec des cristaux imprecis. Les dongles de qualite (Nooelec NESDR, RTL-SDR Blog V3/V4) fonctionnent a 0. Les dongles bleus generiques necessitent generalement 40-60. Si les stations DAB ne sont pas detectees lors du scan, essayez des valeurs entre -100 et +100 par increments de 10. Chaque dongle a sa propre valeur en raison de la variance de fabrication de l'oscillateur a cristal.",
   "SCAN_DAB": "Scanner les stations DAB",
   "SCAN_DAB_DOC": "Rechercher les stations DAB/DAB+ disponibles (peut prendre 2-3 minutes)",
   "SAVE_DAB_SETTINGS": "Enregistrer les paramètres DAB",
@@ -64,6 +66,8 @@
   "MANUAL_DAB_SERVICE_DOC": "Nom exact du service tel que diffusé (ex: BBC Radio1 et non BBC Radio 1). C'est l'identifiant technique de l'ensemble, qui peut différer du nom d'affichage de la station.",
   "MANUAL_DAB_GAIN": "Gain de test",
   "MANUAL_DAB_GAIN_DOC": "Gain de l'amplificateur RF RTL-SDR (0-100). Affecte le rapport signal/bruit et le seuil de surcharge, pas le volume. Les dongles NESDR Smart ont de meilleurs amplificateurs: commencez à 20. Les RTL-SDR génériques nécessitent un gain plus élevé: commencez à 80. Ajustez si distorsion (plus bas) ou pas de signal (plus haut).",
+  "MANUAL_DAB_PPM": "PPM de test",
+  "MANUAL_DAB_PPM_DOC": "Correction de frequence PPM pour les tests. Essayez des valeurs de -100 a +100 par increments de 10. La plupart des dongles bleus bon marche necessitent 40-60. Les dongles de qualite (Nooelec, RTL-SDR Blog) fonctionnent a 0.",
   "TEST_DAB_SAVE_REQUIRED": "Requis: Le test utilise les valeurs enregistrées. Enregistrez d'abord les paramètres pour tester la station actuelle.",
   "TEST_DAB_STATION": "Tester la station DAB",
   "TESTING_FM": "Test de FM {0} MHz",
@@ -365,5 +369,6 @@
   "CHANNEL_WEAK": "Faible",
   "CHANNEL_POOR": "Médiocre",
   "CHANNEL_NONE": "Aucun Signal",
-  "CHANNEL_ERROR": "Erreur"
+  "CHANNEL_ERROR": "Erreur",
+  "TRAFFIC_ALERT": "Alerte Trafic"
 }

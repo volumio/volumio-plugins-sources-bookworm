@@ -18,6 +18,8 @@
   "ENABLE_DAB_DOC": "Attiva/disattiva per mostrare le impostazioni radio DAB e DAB+",
   "DAB_GAIN": "Guadagno DAB",
   "DAB_GAIN_DOC": "Guadagno RTL-SDR per la ricezione DAB (0-100)",
+  "DAB_PPM": "Correzione PPM",
+  "DAB_PPM_DOC": "Correzione della frequenza in parti per milione per dongle RTL-SDR economici con cristalli imprecisi. I dongle di qualita (Nooelec NESDR, RTL-SDR Blog V3/V4) funzionano a 0. I dongle blu generici economici richiedono tipicamente 40-60. Se le stazioni DAB non vengono rilevate durante la scansione, provare valori tra -100 e +100 con incrementi di 10. Ogni dongle ha il proprio valore a causa della varianza di produzione dell'oscillatore a cristallo.",
   "SCAN_DAB": "Scansiona stazioni DAB",
   "SCAN_DAB_DOC": "Cerca stazioni DAB/DAB+ disponibili (può richiedere 2-3 minuti)",
   "SAVE_DAB_SETTINGS": "Salva impostazioni DAB",
@@ -64,6 +66,8 @@
   "MANUAL_DAB_SERVICE_DOC": "Nome esatto del servizio come trasmesso (es. BBC Radio1 non BBC Radio 1). Questo è l'identificatore tecnico dall'ensemble, che può differire dal nome visualizzato della stazione.",
   "MANUAL_DAB_GAIN": "Guadagno test",
   "MANUAL_DAB_GAIN_DOC": "Guadagno amplificatore RF RTL-SDR (0-100). Influenza il rapporto segnale-rumore e la soglia di sovraccarico, non il volume. I dongle NESDR Smart hanno amplificatori migliori: inizia da 20. Gli RTL-SDR generici necessitano di guadagno più alto: inizia da 80. Regola se distorto (più basso) o nessun segnale (più alto).",
+  "MANUAL_DAB_PPM": "PPM test",
+  "MANUAL_DAB_PPM_DOC": "Correzione frequenza PPM per i test. Prova valori da -100 a +100 con incrementi di 10. La maggior parte dei dongle blu economici necessita 40-60. I dongle di qualita (Nooelec, RTL-SDR Blog) funzionano a 0.",
   "TEST_DAB_SAVE_REQUIRED": "Richiesto: Il test usa i valori salvati. Salva prima le impostazioni per testare la stazione corrente.",
   "TEST_DAB_STATION": "Testa stazione DAB",
   "TESTING_FM": "Test FM {0} MHz",
@@ -365,5 +369,6 @@
   "CHANNEL_WEAK": "Debole",
   "CHANNEL_POOR": "Scarso",
   "CHANNEL_NONE": "Nessun Segnale",
-  "CHANNEL_ERROR": "Errore"
+  "CHANNEL_ERROR": "Errore",
+  "TRAFFIC_ALERT": "Avviso Traffico"
 }
