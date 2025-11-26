@@ -49,6 +49,18 @@ function ControllerRtlsdrRadio(context) {
   self.psHistory = [];      // Track PS name stability
   self.stablePs = null;     // Confirmed stable PS name
   
+  // DAB DLS metadata state tracking
+  self.currentDls = null;
+  self.lastDlsLabel = '';
+  self.lastDlsUpdate = 0;
+  self.lastDabState = null;
+  self.dlsMonitorInterval = null;
+  self.dabMetadataDir = '/tmp/dab';
+  self.currentDabStation = null;
+  self.lastValidAlbumart = null;  // Reserved for future use
+  self.lastValidArtist = null;    // Reserved for future use
+  self.lastValidTitle = null;     // Reserved for future use
+  
   // Express server for station management web interface
   self.expressApp = null;
   self.expressServer = null;
@@ -61,6 +73,8 @@ function ControllerRtlsdrRadio(context) {
   self.RESTART_DELAY = 2000;         // Delay before restarting plugin
   self.QUEUE_TIMEOUT = 60000;        // Operation queue timeout (60s)
   self.RDS_UPDATE_INTERVAL = 2000;   // Minimum between RDS state pushes
+  self.DLS_UPDATE_INTERVAL = 2000;   // Minimum between DLS state pushes
+  self.DLS_POLL_INTERVAL = 2000;     // DLS file polling interval
   self.TMC_THROTTLE = 30000;         // Traffic alert throttle (30s)
   self.SPINNER_UPDATE = 1000;        // UI spinner update interval
   self.TOAST_DELAY = 1200;           // Delay before showing toast
@@ -3881,6 +3895,292 @@ ControllerRtlsdrRadio.prototype.handleTmcAlert = function(tmc) {
   );
 };
 
+// ============================================
+// DAB DLS METADATA FUNCTIONS
+// ============================================
+
+// Setup metadata directory for fn-dab output
+ControllerRtlsdrRadio.prototype.setupDabMetadataDir = function() {
+  var self = this;
+  
+  try {
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(self.dabMetadataDir)) {
+      fs.mkdirpSync(self.dabMetadataDir);
+      self.logger.info('[RTL-SDR Radio] Created DAB metadata directory: ' + self.dabMetadataDir);
+    }
+    
+    // Clean any existing files
+    self.cleanupDabMetadataDir();
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to setup DAB metadata directory: ' + e);
+  }
+};
+
+// Cleanup metadata directory
+ControllerRtlsdrRadio.prototype.cleanupDabMetadataDir = function() {
+  var self = this;
+  
+  try {
+    if (fs.existsSync(self.dabMetadataDir)) {
+      var files = fs.readdirSync(self.dabMetadataDir);
+      files.forEach(function(file) {
+        try {
+          fs.unlinkSync(path.join(self.dabMetadataDir, file));
+        } catch (e) {
+          // Ignore individual file errors
+        }
+      });
+    }
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to cleanup DAB metadata directory: ' + e);
+  }
+};
+
+// Start DLS file monitor
+ControllerRtlsdrRadio.prototype.startDabDlsMonitor = function() {
+  var self = this;
+  
+  // Clear any existing monitor
+  self.stopDabDlsMonitor();
+  
+  // Reset DLS state
+  self.currentDls = null;
+  self.lastDlsLabel = '';
+  self.lastDlsUpdate = 0;
+  self.lastDabState = null;
+  
+  var dlsPath = path.join(self.dabMetadataDir, 'DABlabel.txt');
+  var dlPlusPath = path.join(self.dabMetadataDir, 'DABdlplus.txt');
+  
+  self.logger.info('[RTL-SDR Radio] Starting DLS monitor: ' + dlsPath);
+  
+  self.dlsMonitorInterval = setInterval(function() {
+    try {
+      // First check for DL Plus file (has semantic tags)
+      var dlPlusData = null;
+      if (fs.existsSync(dlPlusPath)) {
+        var dlPlusContent = fs.readFileSync(dlPlusPath, 'utf8');
+        dlPlusData = self.parseDlPlusFile(dlPlusContent);
+      }
+      
+      // Also read basic DLS label
+      var label = '';
+      if (fs.existsSync(dlsPath)) {
+        var content = fs.readFileSync(dlsPath, 'utf8');
+        var lines = content.split('\n');
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          if (line.indexOf('label=') === 0) {
+            label = line.substring(6);
+            break;
+          }
+        }
+      }
+      
+      // Build state key for change detection
+      var stateKey = label + '|' + (dlPlusData ? dlPlusData.artist + '|' + dlPlusData.title : '');
+      
+      // Only process if changed
+      if (stateKey !== self.lastDlsLabel) {
+        self.lastDlsLabel = stateKey;
+        self.handleDabDls(label, dlPlusData);
+      }
+    } catch (e) {
+      // File may be mid-write, ignore
+    }
+  }, self.DLS_POLL_INTERVAL);
+};
+
+// Stop DLS file monitor
+ControllerRtlsdrRadio.prototype.stopDabDlsMonitor = function() {
+  var self = this;
+  
+  if (self.dlsMonitorInterval) {
+    clearInterval(self.dlsMonitorInterval);
+    self.dlsMonitorInterval = null;
+  }
+};
+
+// Parse DL Plus file content
+// Returns { artist, title, itemRunning } or null if no music tags
+ControllerRtlsdrRadio.prototype.parseDlPlusFile = function(content) {
+  var self = this;
+  
+  if (!content) return null;
+  
+  var lines = content.split('\n');
+  var data = {};
+  
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].trim();
+    var eqPos = line.indexOf('=');
+    if (eqPos > 0) {
+      var key = line.substring(0, eqPos);
+      var value = line.substring(eqPos + 1);
+      data[key] = value;
+    }
+  }
+  
+  // Check if we have ITEM.ARTIST and ITEM.TITLE
+  var artist = data['ITEM.ARTIST'];
+  var title = data['ITEM.TITLE'];
+  var itemRunning = data['itemRunning'] === '1';
+  
+  if (artist && title) {
+    self.logger.info('[RTL-SDR Radio] DL+ music detected: ' + artist + ' - ' + title);
+    return {
+      artist: artist,
+      title: title,
+      itemRunning: itemRunning
+    };
+  }
+  
+  return null;
+};
+
+// Handle DLS label update
+// TEXT: Always display raw label (could be emergency, song info, promo, anything)
+// ARTWORK: Separate concern - only from DL Plus or MOT, never from text parsing
+ControllerRtlsdrRadio.prototype.handleDabDls = function(label, dlPlusData) {
+  var self = this;
+  
+  // Always store raw label for display (never parse, could be emergency broadcast)
+  var rawLabel = label || '';
+  
+  // Check if label changed
+  if (rawLabel === self.lastRawLabel) {
+    return;  // No change
+  }
+  self.lastRawLabel = rawLabel;
+  
+  self.logger.info('[RTL-SDR Radio] DLS: ' + rawLabel);
+  
+  // Artwork source 1: DL Plus semantic tags (broadcaster-provided, language-agnostic)
+  var artworkArtist = null;
+  var artworkTitle = null;
+  
+  if (dlPlusData && dlPlusData.artist && dlPlusData.title) {
+    artworkArtist = dlPlusData.artist;
+    artworkTitle = dlPlusData.title;
+    self.logger.info('[RTL-SDR Radio] DL+ metadata: ' + artworkArtist + ' - ' + artworkTitle);
+  }
+  
+  // Artwork source 2: MOT slideshow image (checked in pushDabState)
+  // No action here - file existence checked when pushing state
+  
+  // Store current state
+  self.currentDls = {
+    rawLabel: rawLabel,           // Always display this
+    artworkArtist: artworkArtist, // For Cover Art Archive (if DL Plus available)
+    artworkTitle: artworkTitle    // For Cover Art Archive (if DL Plus available)
+  };
+  
+  // Push updated state
+  self.pushDabState();
+};
+
+// Push DAB state with DLS metadata to Volumio
+// TEXT: Always show raw label (could be emergency broadcast, song info, anything)
+// ARTWORK: Only from DL Plus or MOT, never from text parsing
+ControllerRtlsdrRadio.prototype.pushDabState = function() {
+  var self = this;
+  var fs = require('fs');
+  var path = require('path');
+  
+  if (!self.currentDabStation) {
+    return;
+  }
+  
+  var dls = self.currentDls || {};
+  var dabStation = self.currentDabStation;
+  
+  // Get station from database for customName and ensemble
+  var station = self.stationsDb.dab ? self.stationsDb.dab.find(function(s) {
+    return s.channel === dabStation.channel && s.exactName === dabStation.serviceName;
+  }) : null;
+  
+  // Station name priority: customName > station.name > stationTitle
+  var stationName = dabStation.stationTitle;
+  if (station && station.customName) {
+    stationName = station.customName;
+  } else if (station && station.name) {
+    stationName = station.name;
+  }
+  
+  // Ensemble with channel ID, e.g., "London 1 (12C)"
+  var ensembleName = station && station.ensemble ? station.ensemble : '';
+  var channelId = dabStation.channel || '';
+  var ensembleDisplay = ensembleName ? 
+    ensembleName + ' (' + channelId + ')' : 
+    'DAB Channel ' + channelId;
+  
+  // DLS text - always show raw label, could be emergency broadcast
+  var dlsText = dls.rawLabel || self.getI18nString('DAB_RADIO');
+  
+  var defaultArt = '/albumart?sourceicon=music_service/rtlsdr_radio/assets/dab.svg';
+  
+  // ARTWORK: Priority order
+  // 1. DL Plus metadata (broadcaster-provided semantic tags)
+  // 2. MOT slideshow image (broadcaster-provided image)
+  // 3. Default dab.svg
+  var albumartUrl = defaultArt;
+  
+  // Check for DL Plus metadata
+  if (dls.artworkArtist && dls.artworkTitle) {
+    // Use Volumio's albumart service which queries Last.fm
+    albumartUrl = '/albumart?web=' + encodeURIComponent(dls.artworkArtist) + 
+                  '/' + encodeURIComponent(dls.artworkTitle) + '/extralarge';
+    self.logger.info('[RTL-SDR Radio] Artwork from DL+: ' + dls.artworkArtist + ' - ' + dls.artworkTitle);
+  } else {
+    // Check for MOT slideshow image
+    var dabDir = '/tmp/dab';
+    try {
+      var files = fs.readdirSync(dabDir);
+      var motImage = files.find(function(f) {
+        return f.startsWith('slide_') && (f.endsWith('.jpg') || f.endsWith('.png'));
+      });
+      if (motImage) {
+        albumartUrl = 'file://' + path.join(dabDir, motImage);
+        self.logger.info('[RTL-SDR Radio] Artwork from MOT: ' + motImage);
+      }
+    } catch (e) {
+      // No MOT images, use default
+    }
+  }
+  
+  // Build state key for deduplication
+  var stateKey = stationName + '|' + dlsText + '|' + albumartUrl;
+  if (self.lastDabState === stateKey) {
+    return;
+  }
+  self.lastDabState = stateKey;
+  
+  // Field mapping:
+  // title  = Station name (what you're tuned to)
+  // artist = DLS text (dynamic content - prominent in UI)
+  // album  = Ensemble (Channel) - container info
+  var state = {
+    status: 'play',
+    service: 'rtlsdr_radio',
+    title: stationName,
+    artist: dlsText,
+    album: ensembleDisplay,
+    albumart: albumartUrl,
+    uri: dabStation.uri,
+    trackType: 'DAB',
+    samplerate: '48 kHz',
+    bitdepth: '16 bit',
+    channels: 2,
+    seek: 0,
+    duration: 0,
+    isStreaming: true,
+    volatile: true
+  };
+  
+  self.commandRouter.servicePushState(state, 'rtlsdr_radio');
+};
+
 ControllerRtlsdrRadio.prototype.stop = function() {
   var self = this;
   self.stopDecoder();
@@ -3941,6 +4241,9 @@ ControllerRtlsdrRadio.prototype.stopDecoder = function() {
     try { execSync('sudo pkill -f "fn-dab-scanner"', { timeout: self.PKILL_TIMEOUT }); } catch (e) {}
     try { execSync('sudo pkill -f "sox"', { timeout: self.PKILL_TIMEOUT }); } catch (e) {}
     
+    // Stop DLS monitor
+    self.stopDabDlsMonitor();
+    
     // Kill stored process references with SIGTERM
     if (self.decoderProcess !== null) {
       try { self.decoderProcess.kill('SIGTERM'); } catch (e) {}
@@ -3979,6 +4282,15 @@ ControllerRtlsdrRadio.prototype.stopDecoder = function() {
     self.lastRdsUpdate = 0;
     self.psHistory = [];
     self.stablePs = null;
+    self.currentDls = null;
+    self.lastDlsLabel = '';
+    self.lastDabState = null;
+    self.currentDabStation = null;
+    self.lastValidAlbumart = null;
+    self.lastValidArtist = null;
+    self.lastValidTitle = null;
+    // Cleanup metadata directory
+    self.cleanupDabMetadataDir();
     self.cleanupTimeout = null;
     // DON'T clear currentStation - needed for resume
   }, self.CLEANUP_TIMEOUT);
@@ -5500,19 +5812,23 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
   // Clear intentional stop flag when starting new playback
   self.intentionalStop = false;
   
+  // Setup metadata directory for DLS output
+  self.setupDabMetadataDir();
+  
   // Build fn-dab command piped to aplay
   // -C <channel> = DAB channel (e.g., 12B)
   // -P "<service>" = Service name (must match exactly with spaces)
   // -G <gain> = Tuner gain
   // -p <ppm> = Frequency correction for cheap dongles
   // -D 30 = Detection timeout (30 seconds to find ensemble)
-  // 2>/dev/null = Discard debug output to stderr
+  // -i <dir> = Metadata output directory (DLS text)
   // Pipe PCM audio to aplay with Volumio device
   var dabCommand = 'fn-dab -C ' + channel + 
                    ' -P "' + serviceName.replace(/"/g, '\\"') + '"' +
                    ' -G ' + dabGain + 
                    (dabPpm !== 0 ? ' -p ' + dabPpm : '') +
-                   ' -D 30';
+                   ' -D 30' +
+                   ' -i ' + self.dabMetadataDir + '/';
   
   self.logger.info('[RTL-SDR Radio] Starting DAB decoder: ' + dabCommand);
   
@@ -5523,6 +5839,14 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
   var pcmDetected = false;
   var soxProcess = null;
   var aplayProcess = null;
+  
+  // Store station info for DLS updates
+  self.currentDabStation = {
+    channel: channel,
+    serviceName: serviceName,
+    stationTitle: stationTitle,
+    uri: uri
+  };
   
   // Capture stderr to detect PCM format
   dabProcess.stderr.on('data', function(data) {
@@ -5613,6 +5937,9 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
       // Store process references for cleanup
       self.soxProcess = soxProcess;
       self.aplayProcess = aplayProcess;
+      
+      // Start DLS metadata monitor after audio pipeline established
+      self.startDabDlsMonitor();
     }
   });
   
@@ -5650,12 +5977,27 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
   // Update Volumio state machine
   self.commandRouter.stateMachine.setConsumeUpdateService('rtlsdr_radio');
   
+  // Get station from database for customName and ensemble
+  var station = self.stationsDb.dab ? self.stationsDb.dab.find(function(s) {
+    return s.channel === channel && s.exactName === serviceName;
+  }) : null;
+  
+  // Display name priority: customName > station.name > stationTitle
+  var displayName = stationTitle;
+  if (station && station.customName) {
+    displayName = station.customName;
+  } else if (station && station.name) {
+    displayName = station.name;
+  }
+  
+  var ensemble = station ? station.ensemble : ('Channel ' + channel);
+  
   var state = {
     status: 'play',
     service: 'rtlsdr_radio',
-    title: stationTitle,
-    artist: self.getI18nString('DAB_RADIO'),
-    album: 'Channel ' + channel,
+    title: displayName,
+    artist: ensemble,
+    album: self.getI18nString('DAB_RADIO'),
     albumart: '/albumart?sourceicon=music_service/rtlsdr_radio/assets/dab.svg',
     uri: uri,
     trackType: 'DAB',

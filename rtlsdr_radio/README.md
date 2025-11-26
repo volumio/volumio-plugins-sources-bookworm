@@ -151,6 +151,20 @@ The plugin includes diagnostic tools to test your USB dongle before scanning:
 - Each dongle has its own specific PPM value due to manufacturing variance
 - FM reception is more tolerant and usually works without PPM correction
 
+**DAB Metadata (DLS)**:
+The plugin automatically extracts now-playing information from DAB broadcasts:
+- **DLS (Dynamic Label Segment)**: Text metadata broadcast by DAB stations
+- **Artist/Title Parsing**: Automatically parses "Artist - Title" format
+- **Volumio Integration**: Pushes metadata so Volumio can fetch album artwork via MusicBrainz
+
+When playing a DAB station, you may see:
+- Station name in the title field
+- Artist name from DLS
+- Track title from DLS
+- Album artwork fetched automatically by Volumio
+
+Note: Not all stations broadcast DLS metadata, and formats vary by broadcaster.
+
 **Technical Service Names**:
 DAB stations use technical identifiers that may differ from display names:
 - Example: Enter "BBC Radio1" (no space) for the station branded as "BBC Radio 1" (with space)
@@ -267,7 +281,13 @@ Just a Nerd
 
 ## Version History
 
-### v1.2.1 (Current)
+### v1.2.2 (Current)
+- Added DAB DLS metadata extraction (artist/title from broadcast)
+- Volumio now fetches album artwork via MusicBrainz for DAB stations
+- Improved state management for DAB playback with customName priority
+- DLS text parsed for common formats: "Artist - Title", "Title by Artist"
+
+### v1.2.1
 - Added PPM (frequency correction) setting for DAB reception
 - Resolves DAB reception issues with cheap RTL-SDR dongles that have inaccurate crystal oscillators
 - Quality dongles (Nooelec NESDR, RTL-SDR Blog V3/V4) work at PPM=0

@@ -757,6 +757,15 @@ curl -X POST http://volumio.local:3456/api/maintenance/backup/upload \
 
 ## Changelog
 
+### API v1.2.2
+- DAB playback now pushes DLS metadata (artist/title) to Volumio state
+- Volumio state fields updated during DAB playback:
+  - `title`: Station display name (customName > station.name)
+  - `artist`: DLS-parsed artist or ensemble name
+  - `album`: DLS-parsed title or "DAB Radio"
+- Internal: Added `-i /tmp/dab/` flag to fn-dab command for metadata output
+- No new configuration fields - DLS metadata is automatically enabled
+
 ### API v1.2.1
 - Added dab_ppm configuration field for frequency correction
 - PPM correction resolves DAB reception issues with cheap RTL-SDR dongles
