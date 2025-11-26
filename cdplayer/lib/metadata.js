@@ -2,8 +2,6 @@
 const { detectCdDevice } = require("./utils");
 const { execFile } = require("child_process");
 const { promisify } = require("util");
-const _nodeFetch = require("node-fetch");
-global.fetch = _nodeFetch.default || _nodeFetch;
 const execFileAsync = promisify(execFile);
 
 /**
@@ -213,7 +211,9 @@ function parseMusicBrainzResponse(mbJson) {
  */
 async function fetchCdMetadata() {
   try {
-    const discid = await getDiscId();
+    // TEMPORARY DISABLED FOR TESTING PURPOSES
+    // https://community.volumio.com/t/node-modules-for-volumio-3/54701/2
+    const discid = null; // await getDiscId();
     if (!discid) {
       return null;
     }

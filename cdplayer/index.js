@@ -343,12 +343,16 @@ function getResultItems(items, query) {
 }
 
 function retryFetchMetadata(items, self) {
-  void pRetry(
+  pRetry(
     async () => {
       const meta = await fetchCdMetadata();
+
       if (!meta) {
-        throw new Error();
+        // If null, we force a retry
+        throw new Error("CD metadata unavailable");
       }
+
+      // If metadata retrieved:
       const albumart = getAlbumartUrl(meta.releaseId);
       const decoratedItems = decorateItems(items, meta, albumart);
       self.removeToBrowseSources();
@@ -359,8 +363,16 @@ function retryFetchMetadata(items, self) {
       delay: 700,
       maxAttempts: 3,
       logger: self,
+      name: "CD metadata fetch",
     }
-  );
+  ).catch((err) => {
+    // This is ONLY the last retry failure.
+    self.error(
+      "CD metadata fetch failed after retries: " +
+        (err && err.stack ? err.stack : err)
+    );
+    // Do NOT rethrow – swallow the error so the plugin continues
+  });
 }
 
 function toKew(promise) {

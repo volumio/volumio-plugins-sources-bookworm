@@ -244,7 +244,7 @@ async function pRetry(fn, opt = {}) {
         (predicate && !predicate(err, attempt, maxAttempts))
       ) {
         // Give up
-        throw _errorDataAppend(err, opt.errorData);
+        throw err;
       }
       // Retry after delay
       delay *= delayMultiplier;

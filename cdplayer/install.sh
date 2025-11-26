@@ -17,31 +17,31 @@ sudo apt-get install -y --no-install-recommends \
   gstreamer1.0-plugins-ugly \
   cdparanoia \
   build-essential \
-  wget \
-  tar \
-  cmake
+ # wget \
+ # tar \
+ # cmake
 
 # --- CD info deps ---
-echo "Libdiscid install and setup"
+# echo "Libdiscid install and setup"
 
 # 1. Download libdiscid source
-wget -O libdiscid.tar.gz https://codeload.github.com/metabrainz/libdiscid/tar.gz/refs/tags/v${LIBDISCID_VER}
-tar xzf libdiscid.tar.gz
-cd libdiscid-${LIBDISCID_VER}
+# wget -O libdiscid.tar.gz https://codeload.github.com/metabrainz/libdiscid/tar.gz/refs/tags/v${LIBDISCID_VER}
+# tar xzf libdiscid.tar.gz
+# cd libdiscid-${LIBDISCID_VER}
 
 # 1. Build only the CLI
-mkdir build
-cd build
-cmake ..
-make discid
+# mkdir build
+# cd build
+# cmake ..
+# make discid
 
 # 2. Copy the small binary to your path
-sudo cp ./discid /usr/local/bin/
+# sudo cp ./discid /usr/local/bin/
 
 # 3. Cleanup (optional)
-cd ..
-cd ..
-rm -rf libdiscid-${LIBDISCID_VER} libdiscid.tar.gz
+# cd ..
+# cd ..
+# rm -rf libdiscid-${LIBDISCID_VER} libdiscid.tar.gz
 
 # --- volumio permissions ---
 echo "Volumio permissions"
