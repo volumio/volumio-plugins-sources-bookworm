@@ -18,6 +18,8 @@
   "ENABLE_DAB_DOC": "Przełącz, aby pokazać ustawienia radia DAB i DAB+",
   "DAB_GAIN": "Wzmocnienie DAB",
   "DAB_GAIN_DOC": "Wzmocnienie RTL-SDR dla odbioru DAB (0-100)",
+  "DAB_PPM": "Korekcja PPM",
+  "DAB_PPM_DOC": "Korekcja czestotliwosci w czesciach na milion dla tanich donglow RTL-SDR z niedokladnymi kryształami. Dongle wysokiej jakosci (Nooelec NESDR, RTL-SDR Blog V3/V4) dzialaja przy 0. Tanie generyczne niebieskie dongle zazwyczaj wymagaja 40-60. Jesli stacje DAB nie sa wykrywane podczas skanowania, sprobuj wartosci od -100 do +100 co 10. Kazdy dongle ma swoja wlasna wartosc z powodu tolerancji produkcyjnych oscylatora kwarcowego.",
   "SCAN_DAB": "Skanuj stacje DAB",
   "SCAN_DAB_DOC": "Wyszukaj dostępne stacje DAB/DAB+ (może potrwać 2-3 minuty)",
   "SAVE_DAB_SETTINGS": "Zapisz ustawienia DAB",
@@ -64,6 +66,8 @@
   "MANUAL_DAB_SERVICE_DOC": "Dokładna nazwa usługi, jak jest nadawana (np. BBC Radio1 a nie BBC Radio 1). To jest techniczny identyfikator z zespołu, który może różnić się od wyświetlanej nazwy stacji.",
   "MANUAL_DAB_GAIN": "Wzmocnienie testowe",
   "MANUAL_DAB_GAIN_DOC": "Wzmocnienie wzmacniacza RF RTL-SDR (0-100). Wpływa na stosunek sygnału do szumu i próg przeciążenia, nie na głośność. Dongle NESDR Smart mają lepsze wzmacniacze: zacznij od 20. Zwykłe RTL-SDR wymagają wyższego wzmocnienia: zacznij od 80. Dostosuj, jeśli zniekształcony (niżej) lub brak sygnału (wyżej).",
+  "MANUAL_DAB_PPM": "Testowe PPM",
+  "MANUAL_DAB_PPM_DOC": "Korekcja czestotliwosci PPM do testow. Sprobuj wartosci od -100 do +100 co 10. Wiekszosc tanich niebieskich donglow wymaga 40-60. Dongle wysokiej jakosci (Nooelec, RTL-SDR Blog) dzialaja przy 0.",
   "TEST_DAB_SAVE_REQUIRED": "Wymagane: Test używa zapisanych wartości. Najpierw zapisz ustawienia, aby przetestować bieżącą stację.",
   "TEST_DAB_STATION": "Testuj stację DAB",
   "TESTING_FM": "Testowanie FM {0} MHz",
@@ -365,5 +369,6 @@
   "CHANNEL_WEAK": "Słaby",
   "CHANNEL_POOR": "Kiepski",
   "CHANNEL_NONE": "Brak Sygnału",
-  "CHANNEL_ERROR": "Błąd"
+  "CHANNEL_ERROR": "Błąd",
+  "TRAFFIC_ALERT": "Alert Drogowy"
 }

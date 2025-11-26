@@ -19,6 +19,14 @@
     "type": "number",
     "value": 80
   },
+  "dab_ppm": {
+    "type": "number",
+    "value": 0
+  },
+  "manual_dab_ppm": {
+    "type": "number",
+    "value": 0
+  },
   "scan_sensitivity": {
     "type": "number",
     "value": 8

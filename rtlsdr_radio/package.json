@@ -1,6 +1,6 @@
 {
   "name": "rtlsdr_radio",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "has_configuration": true,
     "has_alsa_contribution": true,
     "details": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
-    "changelog": "v1.2.0 - RDS (Radio Data System) support for FM stations with artist/title metadata display."
+    "changelog": "v1.2.1 - Added PPM frequency correction for cheap RTL-SDR dongles. Fixes DAB reception issues with generic blue dongles that have inaccurate crystal oscillators."
   },
   "engines": {
     "node": ">=20",

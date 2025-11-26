@@ -661,6 +661,10 @@ No authentication is currently required. Access control should be implemented at
     "type": "number",
     "value": 80
   },
+  "dab_ppm": {
+    "type": "number",
+    "value": 0
+  },
   "scan_sensitivity": {
     "type": "number",
     "value": 8
@@ -752,6 +756,12 @@ curl -X POST http://volumio.local:3456/api/maintenance/backup/upload \
 ```
 
 ## Changelog
+
+### API v1.2.1
+- Added dab_ppm configuration field for frequency correction
+- PPM correction resolves DAB reception issues with cheap RTL-SDR dongles
+- Range: -200 to +200 (typical values: 40-60 for cheap dongles, 0 for quality dongles)
+- DAB scanning and playback commands now include -p flag when PPM is non-zero
 
 ### API v1.0.9
 - Added Antenna Positioning API

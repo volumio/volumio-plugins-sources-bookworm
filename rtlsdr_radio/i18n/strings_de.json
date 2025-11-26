@@ -18,6 +18,8 @@
   "ENABLE_DAB_DOC": "DAB und DAB+ Radio-Einstellungen ein-/ausblenden",
   "DAB_GAIN": "DAB Verstärkung",
   "DAB_GAIN_DOC": "RTL-SDR Verstärkung für DAB-Empfang (0-100)",
+  "DAB_PPM": "PPM-Korrektur",
+  "DAB_PPM_DOC": "Frequenzkorrektur in Parts-per-Million fuer guenstige RTL-SDR-Dongles mit ungenauen Kristallen. Qualitaets-Dongles (Nooelec NESDR, RTL-SDR Blog V3/V4) funktionieren bei 0. Guenstige generische blaue Dongles benoetigen typischerweise 40-60. Wenn DAB-Sender beim Scan nicht erkannt werden, versuchen Sie Werte zwischen -100 und +100 in 10er-Schritten. Jeder Dongle hat seinen eigenen Wert aufgrund von Kristalloszillator-Fertigungstoleranzen.",
   "SCAN_DAB": "DAB-Sender suchen",
   "SCAN_DAB_DOC": "Nach verfügbaren DAB/DAB+ Sendern suchen (kann 2-3 Minuten dauern)",
   "SAVE_DAB_SETTINGS": "DAB-Einstellungen speichern",
@@ -64,6 +66,8 @@
   "MANUAL_DAB_SERVICE_DOC": "Exakter Dienstname wie gesendet (z.B. BBC Radio1 nicht BBC Radio 1). Dies ist die technische Kennung aus dem Ensemble, die vom Anzeigenamen des Senders abweichen kann.",
   "MANUAL_DAB_GAIN": "Test-Verstärkung",
   "MANUAL_DAB_GAIN_DOC": "RTL-SDR HF-Verstärkerverstärkung (0-100). Beeinflusst Signal-Rausch-Verhältnis und Überlastschwelle, nicht Lautstärke. NESDR Smart Empfänger haben bessere Verstärker: beginnen Sie bei 20. Generische RTL-SDR benötigen höhere Verstärkung: beginnen Sie bei 80. Anpassen bei Verzerrung (niedriger) oder kein Signal (höher).",
+  "MANUAL_DAB_PPM": "Test-PPM",
+  "MANUAL_DAB_PPM_DOC": "PPM-Frequenzkorrektur zum Testen. Versuchen Sie Werte von -100 bis +100 in 10er-Schritten. Die meisten guenstigen blauen Dongles benoetigen 40-60. Qualitaets-Dongles (Nooelec, RTL-SDR Blog) funktionieren bei 0.",
   "TEST_DAB_SAVE_REQUIRED": "Erforderlich: Test verwendet gespeicherte Werte. Speichern Sie zuerst die Einstellungen, um den aktuellen Sender zu testen.",
   "TEST_DAB_STATION": "DAB-Sender testen",
   "TESTING_FM": "Teste FM {0} MHz",
@@ -235,7 +239,7 @@
   "BROWSE_NO_DAB": "Keine DAB-Sender gefunden",
   "BROWSE_NO_DAB_DESC": "Klicken Sie auf Neu suchen, um nach Sendern zu suchen",
   "BROWSE_RESCAN_DAB": "DAB-Sender neu suchen",
-  "BROWSE_RESCAN_DAB_DESC": "Nach DAB-Sendern suchen (dauert 30-60 Sekunden)",
+  "BROWSE_RESCAN_DAB_DESC": "Nach DAB-Sendern suchen (dauert 2-5 Minuten)",
   "BROWSE_DAB_ALL": "Alle DAB-Sender",
   "BROWSE_FM_DELETED": "FM gelöscht",
   "BROWSE_DAB_DELETED": "DAB gelöscht",
@@ -365,5 +369,6 @@
   "CHANNEL_WEAK": "Schwach",
   "CHANNEL_POOR": "Dürftig",
   "CHANNEL_NONE": "Kein Signal",
-  "CHANNEL_ERROR": "Fehler"
+  "CHANNEL_ERROR": "Fehler",
+  "TRAFFIC_ALERT": "Verkehrsmeldung"
 }

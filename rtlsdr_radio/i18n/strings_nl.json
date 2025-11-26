@@ -18,6 +18,8 @@
   "ENABLE_DAB_DOC": "Schakel om DAB en DAB+ radio-instellingen te tonen",
   "DAB_GAIN": "DAB Versterking",
   "DAB_GAIN_DOC": "RTL-SDR versterking voor DAB-ontvangst (0-100)",
+  "DAB_PPM": "PPM-correctie",
+  "DAB_PPM_DOC": "Frequentiecorrectie in delen per miljoen voor goedkope RTL-SDR-dongles met onnauwkeurige kristallen. Kwaliteitsdongles (Nooelec NESDR, RTL-SDR Blog V3/V4) werken op 0. Goedkope generieke blauwe dongles hebben meestal 40-60 nodig. Als DAB-stations niet worden gedetecteerd tijdens het scannen, probeer waarden tussen -100 en +100 in stappen van 10. Elke dongle heeft zijn eigen waarde door variatie in de fabricage van de kristaloscillator.",
   "SCAN_DAB": "Scan DAB-stations",
   "SCAN_DAB_DOC": "Zoek naar beschikbare DAB/DAB+ stations (kan 2-3 minuten duren)",
   "SAVE_DAB_SETTINGS": "Bewaar DAB-instellingen",
@@ -64,6 +66,8 @@
   "MANUAL_DAB_SERVICE_DOC": "Exacte dienstnaam zoals uitgezonden (bijv. BBC Radio1 niet BBC Radio 1). Dit is de technische identifier uit het ensemble, die kan verschillen van de weergavenaam van het station.",
   "MANUAL_DAB_GAIN": "Test versterking",
   "MANUAL_DAB_GAIN_DOC": "RTL-SDR RF-versterkerversterking (0-100). Beïnvloedt signaal-ruisverhouding en overbelastingsdrempel, niet volume. NESDR Smart dongles hebben betere versterkers: begin bij 20. Generieke RTL-SDR heeft hogere versterking nodig: begin bij 80. Pas aan als vervormd (lager) of geen signaal (hoger).",
+  "MANUAL_DAB_PPM": "Test PPM",
+  "MANUAL_DAB_PPM_DOC": "PPM-frequentiecorrectie voor testen. Probeer waarden van -100 tot +100 in stappen van 10. De meeste goedkope blauwe dongles hebben 40-60 nodig. Kwaliteitsdongles (Nooelec, RTL-SDR Blog) werken op 0.",
   "TEST_DAB_SAVE_REQUIRED": "Vereist: Test gebruikt opgeslagen waarden. Bewaar eerst instellingen om huidig station te testen.",
   "TEST_DAB_STATION": "Test DAB-station",
   "TESTING_FM": "Testen FM {0} MHz",
@@ -365,5 +369,6 @@
   "CHANNEL_WEAK": "Zwak",
   "CHANNEL_POOR": "Slecht",
   "CHANNEL_NONE": "Geen signaal",
-  "CHANNEL_ERROR": "Fout"
+  "CHANNEL_ERROR": "Fout",
+  "TRAFFIC_ALERT": "Verkeerswaarschuwing"
 }

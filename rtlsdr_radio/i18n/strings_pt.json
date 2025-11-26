@@ -18,6 +18,8 @@
   "ENABLE_DAB_DOC": "Alternar para mostrar definições de rádio DAB e DAB+",
   "DAB_GAIN": "Ganho DAB",
   "DAB_GAIN_DOC": "Ganho RTL-SDR para receção DAB (0-100)",
+  "DAB_PPM": "Correcao PPM",
+  "DAB_PPM_DOC": "Correcao de frequencia em partes por milhao para dongles RTL-SDR baratos com cristais imprecisos. Dongles de qualidade (Nooelec NESDR, RTL-SDR Blog V3/V4) funcionam com 0. Dongles azuis genericos baratos normalmente precisam de 40-60. Se as estacoes DAB nao forem detectadas durante o scan, tente valores entre -100 e +100 em incrementos de 10. Cada dongle tem seu proprio valor devido a variacao de fabricacao do oscilador de cristal.",
   "SCAN_DAB": "Procurar estações DAB",
   "SCAN_DAB_DOC": "Procurar estações DAB/DAB+ disponíveis (pode demorar 2-3 minutos)",
   "SAVE_DAB_SETTINGS": "Guardar definições DAB",
@@ -64,6 +66,8 @@
   "MANUAL_DAB_SERVICE_DOC": "Nome exato do serviço tal como transmitido (ex. BBC Radio1 não BBC Radio 1). Este é o identificador técnico do conjunto, que pode diferir do nome exibido da estação.",
   "MANUAL_DAB_GAIN": "Ganho de teste",
   "MANUAL_DAB_GAIN_DOC": "Ganho do amplificador RF RTL-SDR (0-100). Afeta a relação sinal-ruído e o limiar de sobrecarga, não o volume. Os dongles NESDR Smart têm melhores amplificadores: comece em 20. Os RTL-SDR genéricos precisam de maior ganho: comece em 80. Ajuste se distorcido (mais baixo) ou sem sinal (mais alto).",
+  "MANUAL_DAB_PPM": "PPM de teste",
+  "MANUAL_DAB_PPM_DOC": "Correcao de frequencia PPM para testes. Tente valores de -100 a +100 em incrementos de 10. A maioria dos dongles azuis baratos precisa de 40-60. Dongles de qualidade (Nooelec, RTL-SDR Blog) funcionam com 0.",
   "TEST_DAB_SAVE_REQUIRED": "Necessário: O teste usa valores guardados. Guarde primeiro as definições para testar a estação atual.",
   "TEST_DAB_STATION": "Testar estação DAB",
   "TESTING_FM": "A testar FM {0} MHz",
@@ -365,5 +369,6 @@
   "CHANNEL_WEAK": "Fraco",
   "CHANNEL_POOR": "Ruim",
   "CHANNEL_NONE": "Sem Sinal",
-  "CHANNEL_ERROR": "Erro"
+  "CHANNEL_ERROR": "Erro",
+  "TRAFFIC_ALERT": "Alerta de Trafego"
 }
