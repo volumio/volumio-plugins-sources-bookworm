@@ -45,6 +45,7 @@ function ControllerRtlsdrRadio(context) {
   self.rdsBuffer = '';
   self.lastRdsState = null;
   self.lastRdsUpdate = 0;
+  self.lastSignalLevel = undefined;
   self.lastTmcAlert = null;
   self.psHistory = [];      // Track PS name stability
   self.stablePs = null;     // Confirmed stable PS name
@@ -1491,6 +1492,7 @@ ControllerRtlsdrRadio.prototype.stopAllProcesses = function(caller, force) {
     self.rdsBuffer = '';
     self.lastRdsState = null;
     self.lastRdsUpdate = 0;
+    self.lastSignalLevel = undefined;
     self.psHistory = [];
     self.stablePs = null;
   } else {
@@ -1505,6 +1507,7 @@ ControllerRtlsdrRadio.prototype.stopAllProcesses = function(caller, force) {
       self.rdsBuffer = '';
       self.lastRdsState = null;
       self.lastRdsUpdate = 0;
+      self.lastSignalLevel = undefined;
       self.psHistory = [];
       self.stablePs = null;
     }, self.CLEANUP_TIMEOUT);
@@ -2678,7 +2681,7 @@ ControllerRtlsdrRadio.prototype.showFmView = function() {
   
   if (self.stationsDb.fm) {
     self.stationsDb.fm.forEach(function(station) {
-      if (!station.deleted) {
+      if (!station.deleted && !station.hidden) {
         var uri = 'rtlsdr://fm/' + station.frequency;
         items.push({
           service: 'rtlsdr_radio',
@@ -2687,9 +2690,9 @@ ControllerRtlsdrRadio.prototype.showFmView = function() {
           artist: station.frequency + ' MHz',
           album: self.getI18nString('FM_RADIO'),
           albumart: '/albumart?sourceicon=music_service/rtlsdr_radio/assets/fm.svg',
-          icon: station.favorite ? 'fa fa-star' : (station.hidden ? 'fa fa-eye-slash' : ''),
+          icon: station.favorite ? 'fa fa-star' : '',
           uri: uri,
-          menu: self.getStationContextMenu(uri, 'fm', false, station.hidden || false)
+          menu: self.getStationContextMenu(uri, 'fm', false, false)
         });
       }
     });
@@ -2827,7 +2830,7 @@ ControllerRtlsdrRadio.prototype.showDabEnsembleStations = function(ensembleName)
   
   if (self.stationsDb.dab) {
     self.stationsDb.dab.forEach(function(station) {
-      if (!station.deleted && station.ensemble === ensembleName) {
+      if (!station.deleted && !station.hidden && station.ensemble === ensembleName) {
         var uri = 'rtlsdr://dab/' + station.channel + '/' + encodeURIComponent(station.exactName);
         items.push({
           service: 'rtlsdr_radio',
@@ -2836,9 +2839,9 @@ ControllerRtlsdrRadio.prototype.showDabEnsembleStations = function(ensembleName)
           artist: station.ensemble,
           album: 'Channel ' + station.channel,
           albumart: '/albumart?sourceicon=music_service/rtlsdr_radio/assets/dab.svg',
-          icon: station.favorite ? 'fa fa-star' : (station.hidden ? 'fa fa-eye-slash' : ''),
+          icon: station.favorite ? 'fa fa-star' : '',
           uri: uri,
-          menu: self.getStationContextMenu(uri, 'dab', false, station.hidden || false)
+          menu: self.getStationContextMenu(uri, 'dab', false, false)
         });
       }
     });
@@ -2864,7 +2867,7 @@ ControllerRtlsdrRadio.prototype.showDabFlatView = function() {
   
   if (self.stationsDb.dab) {
     self.stationsDb.dab.forEach(function(station) {
-      if (!station.deleted) {
+      if (!station.deleted && !station.hidden) {
         var uri = 'rtlsdr://dab/' + station.channel + '/' + encodeURIComponent(station.exactName);
         items.push({
           service: 'rtlsdr_radio',
@@ -2873,9 +2876,9 @@ ControllerRtlsdrRadio.prototype.showDabFlatView = function() {
           artist: station.ensemble,
           album: 'Channel ' + station.channel,
           albumart: '/albumart?sourceicon=music_service/rtlsdr_radio/assets/dab.svg',
-          icon: station.favorite ? 'fa fa-star' : (station.hidden ? 'fa fa-eye-slash' : ''),
+          icon: station.favorite ? 'fa fa-star' : '',
           uri: uri,
-          menu: self.getStationContextMenu(uri, 'dab', false, station.hidden || false)
+          menu: self.getStationContextMenu(uri, 'dab', false, false)
         });
       }
     });
@@ -3375,7 +3378,7 @@ ControllerRtlsdrRadio.prototype.playFmStation = function(frequency, stationName)
   
   // Check if station is deleted
   var station = self.stationsDb.fm ? self.stationsDb.fm.find(function(s) {
-    return s.frequency === frequency;
+    return parseFloat(s.frequency) === freq;
   }) : null;
   
   if (station && station.deleted) {
@@ -3384,6 +3387,11 @@ ControllerRtlsdrRadio.prototype.playFmStation = function(frequency, stationName)
       self.getI18nString('TOAST_DELETED_STATION'));
     defer.reject(new Error('Station is deleted'));
     return defer.promise;
+  }
+  
+  // Use customName from database if available (overrides track.name)
+  if (station && station.customName) {
+    stationName = station.customName;
   }
   
   // Check device availability
@@ -3436,6 +3444,7 @@ ControllerRtlsdrRadio.prototype.startFmPlayback = function(freq, stationName, de
   self.rdsBuffer = '';
   self.lastRdsState = null;
   self.lastRdsUpdate = 0;
+  self.lastSignalLevel = undefined;
   self.psHistory = [];
   self.stablePs = null;
   self.currentFmFrequency = freq;
@@ -3842,8 +3851,12 @@ ControllerRtlsdrRadio.prototype.pushRdsState = function(freq, stationName) {
   if (!rds) return;
   
   // Throttle updates - minimum interval between pushes
+  // Exception: Signal level changes bypass throttle for responsive UI
   var now = Date.now();
-  if ((now - self.lastRdsUpdate) < self.RDS_UPDATE_INTERVAL) {
+  var sigLevel = rds.signalLevel || 0;
+  var signalChanged = (self.lastSignalLevel !== undefined && self.lastSignalLevel !== sigLevel);
+  
+  if (!signalChanged && (now - self.lastRdsUpdate) < self.RDS_UPDATE_INTERVAL) {
     return;
   }
   
@@ -3865,8 +3878,9 @@ ControllerRtlsdrRadio.prototype.pushRdsState = function(freq, stationName) {
   
   // Display name priority: customName > RDS PS > stationName (default)
   var displayName = stationName;
+  var freqNum = parseFloat(freq);
   var station = self.stationsDb.fm ? self.stationsDb.fm.find(function(s) {
-    return s.frequency === freq;
+    return parseFloat(s.frequency) === freqNum;
   }) : null;
   
   if (station && station.customName) {
@@ -3885,7 +3899,7 @@ ControllerRtlsdrRadio.prototype.pushRdsState = function(freq, stationName) {
   
   // Build state key fields for comparison (include signal level for UI updates)
   // Must match actual state values to detect changes correctly
-  var sigLevel = rds.signalLevel || 0;
+  // Note: sigLevel already defined above for throttle bypass
   var stateKey = displayName + '|' + (artist || rds.radiotext || '') + '|' + (title || rds.prog_type || '') + '|' + sigLevel;
   
   // Skip if state hasn't changed
@@ -3896,6 +3910,7 @@ ControllerRtlsdrRadio.prototype.pushRdsState = function(freq, stationName) {
   // Update tracking
   self.lastRdsState = stateKey;
   self.lastRdsUpdate = now;
+  self.lastSignalLevel = sigLevel;
   
   var state = {
     status: 'play',
@@ -4368,6 +4383,7 @@ ControllerRtlsdrRadio.prototype.stopDecoder = function() {
     self.rdsBuffer = '';
     self.lastRdsState = null;
     self.lastRdsUpdate = 0;
+    self.lastSignalLevel = undefined;
     self.psHistory = [];
     self.stablePs = null;
     self.currentDls = null;
@@ -5853,6 +5869,11 @@ ControllerRtlsdrRadio.prototype.playDabStation = function(channel, serviceName, 
       self.getI18nString('TOAST_DELETED_STATION'));
     defer.reject(new Error('Station is deleted'));
     return defer.promise;
+  }
+  
+  // Use customName from database if available (overrides track.title)
+  if (station && station.customName) {
+    stationTitle = station.customName;
   }
   
   // Check device availability

@@ -282,7 +282,16 @@ Just a Nerd
 
 ## Version History
 
-### v1.2.5 (Current)
+### v1.2.6 (Current)
+- Fixed signal quality indicator not updating in Volumio playback screen
+- Signal level changes now bypass 2-second throttle for responsive UI
+- Fixed custom station names not displaying on playback start
+- Custom names now looked up from database at playback time (FM and DAB)
+- Fixed frequency comparison using parseFloat for reliable matching
+- Fixed hidden stations still showing in Volumio media sources
+- Hidden stations now properly filtered from FM, DAB, and ensemble browse views
+
+### v1.2.5
 - Added real-time signal quality indicator for FM and DAB
 - Signal strength displayed in Volumio playback screen (5-level indicator)
 - Signal quality shown in station manager for currently playing station

@@ -802,6 +802,12 @@ curl -X POST http://volumio.local:3456/api/maintenance/backup/upload \
 
 ## Changelog
 
+### API v1.2.6
+- Fixed signal quality not updating in playback screen (throttle bypass for signal changes)
+- Fixed custom station names not displaying at playback start (FM and DAB)
+- Custom names now looked up from database at playback time, not from queued track
+- Fixed hidden stations still appearing in browse views (FM, DAB, ensemble)
+
 ### API v1.2.5
 - Added real-time signal quality to `/api/status` endpoint
 - Signal object includes: type, level (0-5), percent, and station info
