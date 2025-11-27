@@ -57,6 +57,7 @@ function ControllerRtlsdrRadio(context) {
   self.dlsMonitorInterval = null;
   self.dabMetadataDir = '/tmp/dab';
   self.currentDabStation = null;
+  self.currentFmFrequency = null;
   self.lastValidAlbumart = null;  // Reserved for future use
   self.lastValidArtist = null;    // Reserved for future use
   self.lastValidTitle = null;     // Reserved for future use
@@ -868,6 +869,24 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
           return !s.deleted; 
         }).length : 0;
         
+        // Get current signal info
+        var signalInfo = null;
+        if (self.deviceState === 'playing_fm' && self.currentRds) {
+          signalInfo = {
+            type: 'fm',
+            level: self.currentRds.signalLevel || 0,
+            percent: self.currentRds.signalPercent || 0,
+            frequency: self.currentFmFrequency || null
+          };
+        } else if (self.deviceState === 'playing_dab' && self.currentDabSignal) {
+          signalInfo = {
+            type: 'dab',
+            level: self.currentDabSignal.level || 0,
+            percent: self.currentDabSignal.percent || 0,
+            station: self.currentDabStation || null
+          };
+        }
+        
         res.json({ 
           deviceState: self.deviceState,
           fmStationsLoaded: fmCount,
@@ -875,6 +894,7 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
           dbLoadedAt: self.dbLoadedAt,
           dbVersion: self.stationsDb.version || 0,
           serverPort: self.MANAGEMENT_PORT,
+          signal: signalInfo,
           timestamp: new Date().toISOString()
         });
       } catch (e) {
@@ -3418,6 +3438,7 @@ ControllerRtlsdrRadio.prototype.startFmPlayback = function(freq, stationName, de
   self.lastRdsUpdate = 0;
   self.psHistory = [];
   self.stablePs = null;
+  self.currentFmFrequency = freq;
   
   // Build fn-rtl_fm command for RDS-compatible output
   // -M fm: FM mode without stereo decode (outputs MPX baseband for RDS)
@@ -3434,7 +3455,8 @@ ControllerRtlsdrRadio.prototype.startFmPlayback = function(freq, stationName, de
   self.decoderProcess = rtlProcess;
   
   // Spawn fn-redsea for RDS decoding
-  var redseaProcess = spawn('fn-redsea', ['-r', self.FM_SAMPLE_RATE, '--show-partial']);
+  // -E flag enables BLER (Block Error Rate) output for signal quality
+  var redseaProcess = spawn('fn-redsea', ['-r', self.FM_SAMPLE_RATE, '--show-partial', '-E']);
   self.redseaProcess = redseaProcess;
   
   // Spawn sox for resampling: FM sample rate mono -> output rate stereo
@@ -3609,7 +3631,7 @@ ControllerRtlsdrRadio.prototype.startFmPlayback = function(freq, stationName, de
     album: self.getI18nString('FM_RADIO'),
     albumart: '/albumart?sourceicon=music_service/rtlsdr_radio/assets/fm.svg',
     uri: 'rtlsdr://fm/' + freqStr,
-    trackType: 'fm',
+    trackType: 'FM ' + self.getSignalBars(0),
     samplerate: '48 KHz',
     bitdepth: '16 bit',
     channels: 2,
@@ -3671,6 +3693,22 @@ ControllerRtlsdrRadio.prototype.handleRdsUpdate = function(rds, freq, stationNam
   // Merge new RDS data with existing
   if (!self.currentRds) {
     self.currentRds = {};
+  }
+  
+  // Extract BLER for signal quality (from -E flag)
+  if (rds.bler !== undefined) {
+    self.currentRds.bler = rds.bler;
+    // Calculate signal level (0-5)
+    var hasStereo = rds.di && rds.di.stereo;
+    var bler = rds.bler;
+    var signalLevel = 0;
+    if (bler < 5 && hasStereo) signalLevel = 5;
+    else if (bler < 15 && hasStereo) signalLevel = 4;
+    else if (bler < 30) signalLevel = 3;
+    else if (bler < 50) signalLevel = 2;
+    else signalLevel = 1;
+    self.currentRds.signalLevel = signalLevel;
+    self.currentRds.signalPercent = Math.max(0, 100 - bler);
   }
   
   // Initialize PS stability tracking
@@ -3737,9 +3775,11 @@ ControllerRtlsdrRadio.prototype.handleRdsUpdate = function(rds, freq, stationNam
   
   // Only push state if meaningful data changed
   if (psChanged || rtChanged || rtPlusChanged) {
-    // Log significant changes
+    // Log significant changes including signal quality
+    var sigInfo = self.currentRds.signalLevel !== undefined ? 
+      ' Signal=' + self.currentRds.signalLevel + '/5 (' + self.currentRds.signalPercent + '%)' : '';
     self.logger.info('[RTL-SDR Radio] RDS: PS=' + (self.currentRds.ps || '?') + 
-                    ', RT=' + (self.currentRds.radiotext || '?').substring(0, 40));
+                    ', RT=' + (self.currentRds.radiotext || '?').substring(0, 40) + sigInfo);
     
     // Attempt to push updated state (will be throttled internally)
     self.pushRdsState(freq, stationName);
@@ -3776,6 +3816,21 @@ ControllerRtlsdrRadio.prototype.sanitizeRdsText = function(text) {
   }
   
   return sanitized;
+};
+
+// Generate signal strength bars using Unicode block characters
+// Level 0-5 returns centered circle visualization with empty placeholders
+ControllerRtlsdrRadio.prototype.getSignalBars = function(level) {
+  // Centered circles: ◦ (empty U+25E6) and ● (filled U+25CF)
+  var empty = '\u25E6';
+  var filled = '\u25CF';
+  
+  var idx = Math.max(0, Math.min(5, level || 0));
+  var result = '';
+  for (var i = 0; i < 5; i++) {
+    result += (i < idx) ? filled : empty;
+  }
+  return result;
 };
 
 // Push updated state to Volumio with RDS metadata
@@ -3828,9 +3883,10 @@ ControllerRtlsdrRadio.prototype.pushRdsState = function(freq, stationName) {
     channels = 1;
   }
   
-  // Build state key fields for comparison
+  // Build state key fields for comparison (include signal level for UI updates)
   // Must match actual state values to detect changes correctly
-  var stateKey = displayName + '|' + (artist || rds.radiotext || '') + '|' + (title || rds.prog_type || '');
+  var sigLevel = rds.signalLevel || 0;
+  var stateKey = displayName + '|' + (artist || rds.radiotext || '') + '|' + (title || rds.prog_type || '') + '|' + sigLevel;
   
   // Skip if state hasn't changed
   if (self.lastRdsState === stateKey) {
@@ -3855,7 +3911,7 @@ ControllerRtlsdrRadio.prototype.pushRdsState = function(freq, stationName) {
     
     // URI and type
     uri: 'rtlsdr://fm/' + freq,
-    trackType: 'fm',
+    trackType: 'FM ' + self.getSignalBars(rds.signalLevel),
     
     // Technical
     samplerate: '48 KHz',
@@ -3949,14 +4005,39 @@ ControllerRtlsdrRadio.prototype.startDabDlsMonitor = function() {
   self.lastDlsLabel = '';
   self.lastDlsUpdate = 0;
   self.lastDabState = null;
+  self.currentDabSignal = null;
   
   var dlsPath = path.join(self.dabMetadataDir, 'DABlabel.txt');
   var dlPlusPath = path.join(self.dabMetadataDir, 'DABdlplus.txt');
+  var signalPath = path.join(self.dabMetadataDir, 'DABsignal.txt');
   
   self.logger.info('[RTL-SDR Radio] Starting DLS monitor: ' + dlsPath);
   
   self.dlsMonitorInterval = setInterval(function() {
     try {
+      // Read signal quality file (written by fn-dab every 2 seconds)
+      if (fs.existsSync(signalPath)) {
+        var sigContent = fs.readFileSync(signalPath, 'utf8');
+        var sigLines = sigContent.split('\n');
+        var sigData = {};
+        for (var j = 0; j < sigLines.length; j++) {
+          var sigLine = sigLines[j].trim();
+          var eqPos = sigLine.indexOf('=');
+          if (eqPos > 0) {
+            sigData[sigLine.substring(0, eqPos)] = sigLine.substring(eqPos + 1);
+          }
+        }
+        if (sigData.signal_level !== undefined) {
+          self.currentDabSignal = {
+            level: parseInt(sigData.signal_level) || 0,
+            percent: parseInt(sigData.signal_percent) || 0,
+            fibQuality: parseInt(sigData.fib_quality) || 0,
+            audioOk: parseInt(sigData.audio_ok) || 0,
+            snr: parseInt(sigData.snr) || 0
+          };
+        }
+      }
+      
       // First check for DL Plus file (has semantic tags)
       var dlPlusData = null;
       if (fs.existsSync(dlPlusPath)) {
@@ -3978,8 +4059,9 @@ ControllerRtlsdrRadio.prototype.startDabDlsMonitor = function() {
         }
       }
       
-      // Build state key for change detection
-      var stateKey = label + '|' + (dlPlusData ? dlPlusData.artist + '|' + dlPlusData.title : '');
+      // Build state key for change detection (include signal for UI updates)
+      var sigLevel = self.currentDabSignal ? self.currentDabSignal.level : 0;
+      var stateKey = label + '|' + (dlPlusData ? dlPlusData.artist + '|' + dlPlusData.title : '') + '|' + sigLevel;
       
       // Only process if changed
       if (stateKey !== self.lastDlsLabel) {
@@ -4054,7 +4136,12 @@ ControllerRtlsdrRadio.prototype.handleDabDls = function(label, dlPlusData) {
   }
   self.lastRawLabel = rawLabel;
   
-  self.logger.info('[RTL-SDR Radio] DLS: ' + rawLabel);
+  // Log with signal quality if available
+  var sigInfo = '';
+  if (self.currentDabSignal && self.currentDabSignal.level !== undefined) {
+    sigInfo = ' Signal=' + self.currentDabSignal.level + '/5 (' + self.currentDabSignal.percent + '%)';
+  }
+  self.logger.info('[RTL-SDR Radio] DLS: ' + rawLabel.substring(0, 50) + sigInfo);
   
   // Artwork source 1: DL Plus semantic tags (broadcaster-provided, language-agnostic)
   var artworkArtist = null;
@@ -4149,8 +4236,9 @@ ControllerRtlsdrRadio.prototype.pushDabState = function() {
     }
   }
   
-  // Build state key for deduplication
-  var stateKey = stationName + '|' + dlsText + '|' + albumartUrl;
+  // Build state key for deduplication (include signal level for UI updates)
+  var sigLevel = self.currentDabSignal ? self.currentDabSignal.level : 0;
+  var stateKey = stationName + '|' + dlsText + '|' + albumartUrl + '|' + sigLevel;
   if (self.lastDabState === stateKey) {
     return;
   }
@@ -4168,7 +4256,7 @@ ControllerRtlsdrRadio.prototype.pushDabState = function() {
     album: ensembleDisplay,
     albumart: albumartUrl,
     uri: dabStation.uri,
-    trackType: 'DAB',
+    trackType: 'DAB ' + self.getSignalBars(self.currentDabSignal ? self.currentDabSignal.level : 0),
     samplerate: '48 kHz',
     bitdepth: '16 bit',
     channels: 2,
@@ -5844,6 +5932,7 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
   self.currentDabStation = {
     channel: channel,
     serviceName: serviceName,
+    exactName: serviceName,  // For station manager matching
     stationTitle: stationTitle,
     uri: uri
   };
@@ -6000,7 +6089,7 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
     album: self.getI18nString('DAB_RADIO'),
     albumart: '/albumart?sourceicon=music_service/rtlsdr_radio/assets/dab.svg',
     uri: uri,
-    trackType: 'DAB',
+    trackType: 'DAB ' + self.getSignalBars(0),
     samplerate: '48 kHz',
     bitdepth: '16 bit',
     channels: 2,

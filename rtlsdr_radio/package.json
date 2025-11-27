@@ -1,6 +1,6 @@
 {
   "name": "rtlsdr_radio",
-  "version": "1.2.3",
+  "version": "1.2.5",
   "description": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "has_configuration": true,
     "has_alsa_contribution": true,
     "details": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
-    "changelog": "v1.2.2 - Added DAB DLS metadata (artist/title) with Volumio artwork lookup."
+    "changelog": "v1.2.5 - Architecture refactoring for maintainability. Signal quality foundation."
   },
   "engines": {
     "node": ">=20",
