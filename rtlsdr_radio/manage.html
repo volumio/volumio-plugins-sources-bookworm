@@ -233,6 +233,36 @@
       color: #e74c3c;
     }
     
+    .signal-indicator {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      margin-left: auto;
+      padding-right: 10px;
+    }
+    
+    .signal-indicator .fa-signal {
+      font-size: 14px;
+    }
+    
+    .signal-indicator.signal-0 .fa-signal { color: #666; }
+    .signal-indicator.signal-1 .fa-signal { color: #e74c3c; }
+    .signal-indicator.signal-2 .fa-signal { color: #e67e22; }
+    .signal-indicator.signal-3 .fa-signal { color: #f1c40f; }
+    .signal-indicator.signal-4 .fa-signal { color: #2ecc71; }
+    .signal-indicator.signal-5 .fa-signal { color: #27ae60; }
+    
+    .signal-indicator .signal-text {
+      font-size: 11px;
+      color: #999;
+      min-width: 28px;
+    }
+    
+    .station-item.now-playing {
+      background: #2a3a2a;
+      border-left: 3px solid #2ecc71;
+    }
+    
     .station-info {
       flex: 1;
       min-width: 0;
@@ -1686,6 +1716,8 @@
     let pendingFreqChange = null;
     let scanningInterval = null;
     let scanStartTime = null;
+    let currentSignal = null;
+    let signalPollInterval = null;
     
     // i18n functions
     function t(key, ...args) {
@@ -2058,8 +2090,31 @@
           frequencyHtml = '<span class="frequency-display">' + (station.channelName || '') + '</span>';
         }
         
+        // Check if this station is currently playing
+        let isPlaying = false;
+        let signalHtml = '';
+        if (currentSignal) {
+          if (type === 'fm' && currentSignal.type === 'fm' && 
+              Math.abs(station.frequency - currentSignal.frequency) < 0.05) {
+            isPlaying = true;
+          } else if (type === 'dab' && currentSignal.type === 'dab' && 
+                     currentSignal.station && station.exactName === currentSignal.station.exactName) {
+            isPlaying = true;
+          }
+          
+          if (isPlaying) {
+            const level = currentSignal.level || 0;
+            signalHtml = `<div class="signal-indicator signal-${level}">
+              <i class="fa fa-signal"></i>
+              <span class="signal-text">${level}/5</span>
+            </div>`;
+          }
+        }
+        
+        const playingClass = isPlaying ? ' now-playing' : '';
+        
         return `
-          <div class="station-item${station.dirty ? ' dirty' : ''}" data-type="${type}" data-index="${realIdx}">
+          <div class="station-item${station.dirty ? ' dirty' : ''}${playingClass}" data-type="${type}" data-index="${realIdx}" data-frequency="${station.frequency || ''}" data-exactname="${station.exactName || ''}">
             ${icon}
             <div class="station-info">
               <div class="station-name">
@@ -2069,6 +2124,7 @@
                 ${frequencyHtml}
               </div>
             </div>
+            ${signalHtml}
             <div class="station-actions">
               <button class="btn btn-icon ${favoriteClass}" title="${t('BTN_FAVORITE')}" data-type="${type}" data-index="${realIdx}" data-action="favorite">
                 <i class="fa ${station.favorite ? 'fa-star' : 'fa-star-o'}"></i>
@@ -2688,7 +2744,10 @@
     });
     
     // Initialize
-    loadTranslations().then(() => loadStations());
+    loadTranslations().then(() => {
+      loadStations();
+      startSignalPolling();
+    });
     
     // Maintenance Tab Functions
     function initMaintenanceTab() {
@@ -2928,6 +2987,45 @@
       .then(res => res.json())
       .then(() => showToast(t('TOAST_RESTORE_SUCCESS'), 'success'))
       .catch(err => showToast(t('TOAST_RESTORE_FAILED_MSG') + ': ' + err.message, 'error'));
+    }
+    
+    // Signal quality polling
+    function startSignalPolling() {
+      // Clear any existing interval
+      if (signalPollInterval) {
+        clearInterval(signalPollInterval);
+      }
+      
+      // Poll every 2 seconds
+      signalPollInterval = setInterval(pollSignal, 2000);
+      // Initial poll
+      pollSignal();
+    }
+    
+    function pollSignal() {
+      fetch('/api/status')
+        .then(res => res.json())
+        .then(data => {
+          const oldSignal = currentSignal;
+          currentSignal = data.signal;
+          
+          // Check if signal state changed
+          const oldKey = oldSignal ? `${oldSignal.type}-${oldSignal.level}-${oldSignal.frequency || ''}-${oldSignal.station?.exactName || ''}` : '';
+          const newKey = currentSignal ? `${currentSignal.type}-${currentSignal.level}-${currentSignal.frequency || ''}-${currentSignal.station?.exactName || ''}` : '';
+          
+          if (oldKey !== newKey) {
+            // Signal changed, re-render affected station lists
+            if (currentSignal?.type === 'fm' || oldSignal?.type === 'fm') {
+              renderStations('fm', fmStations);
+            }
+            if (currentSignal?.type === 'dab' || oldSignal?.type === 'dab') {
+              renderStations('dab', dabStations);
+            }
+          }
+        })
+        .catch(() => {
+          // Ignore polling errors silently
+        });
     }
     
     function formatBytes(bytes) {

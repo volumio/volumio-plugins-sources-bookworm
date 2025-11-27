@@ -24,6 +24,7 @@ Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.
 - Automatic station scanning with configurable sensitivity
 - Integrated with Volumio's playback system
 - Volume control through Volumio
+- Real-time signal quality indicator (5-level display)
 
 ### Station Management
 - Web-based station management interface
@@ -281,7 +282,17 @@ Just a Nerd
 
 ## Version History
 
-### v1.2.2 (Current)
+### v1.2.5 (Current)
+- Added real-time signal quality indicator for FM and DAB
+- Signal strength displayed in Volumio playback screen (5-level indicator)
+- Signal quality shown in station manager for currently playing station
+- Color-coded Font Awesome signal icon (red/orange/yellow/green based on level)
+- Currently playing station highlighted with green border in station manager
+- FM signal quality derived from RDS block error rate (BLER)
+- DAB signal quality derived from FIB quality and AAC decode success rate
+- Updated fn-dab binaries with signal quality callbacks
+
+### v1.2.2
 - Added DAB DLS metadata extraction (artist/title from broadcast)
 - Volumio now fetches album artwork via MusicBrainz for DAB stations
 - Improved state management for DAB playback with customName priority

@@ -278,20 +278,65 @@ eventSource.addEventListener('error', (error) => {
 
 **Endpoint:** `GET /api/status`
 
-**Description:** Retrieves current plugin status and statistics.
+**Description:** Retrieves current plugin status, statistics, and signal quality information.
 
 **Response:**
 ```json
 {
-  "deviceState": "idle",
+  "deviceState": "playing_fm",
   "fmStationsLoaded": 15,
   "dabStationsLoaded": 23,
   "dbLoadedAt": "2025-01-15T10:30:00.000Z",
   "dbVersion": 1,
   "serverPort": 3456,
+  "signal": {
+    "type": "fm",
+    "level": 3,
+    "percent": 72,
+    "frequency": 94.9
+  },
   "timestamp": "2025-01-15T12:45:30.000Z"
 }
 ```
+
+**Signal Object (FM):**
+```json
+{
+  "type": "fm",
+  "level": 3,
+  "percent": 72,
+  "frequency": 94.9
+}
+```
+
+**Signal Object (DAB):**
+```json
+{
+  "type": "dab",
+  "level": 4,
+  "percent": 87,
+  "station": {
+    "channel": "12C",
+    "serviceName": "Heart London",
+    "exactName": "Heart London",
+    "stationTitle": "Heart London"
+  }
+}
+```
+
+**Signal Levels:**
+- Level 0: No signal / very poor
+- Level 1: Weak signal (red indicator)
+- Level 2: Fair signal (orange indicator)
+- Level 3: Good signal (yellow indicator)
+- Level 4: Strong signal (green indicator)
+- Level 5: Excellent signal (bright green indicator)
+
+**Notes:**
+- `signal` is null when no station is playing
+- FM signal derived from RDS block error rate (BLER)
+- DAB signal derived from FIB quality and AAC decode success rate
+- Signal is polled by station manager every 2 seconds
 
 ## Internationalization API
 
@@ -756,6 +801,15 @@ curl -X POST http://volumio.local:3456/api/maintenance/backup/upload \
 ```
 
 ## Changelog
+
+### API v1.2.5
+- Added real-time signal quality to `/api/status` endpoint
+- Signal object includes: type, level (0-5), percent, and station info
+- FM signal quality derived from RDS block error rate (BLER)
+- DAB signal quality derived from FIB quality and AAC decode success rate
+- Station manager polls signal every 2 seconds for live display
+- Signal indicator shown in playback screen (Unicode circles)
+- Signal indicator shown in station manager (Font Awesome icon, color-coded)
 
 ### API v1.2.2
 - DAB playback now pushes DLS metadata (artist/title) to Volumio state
