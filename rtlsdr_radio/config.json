@@ -38,5 +38,21 @@
   "auto_backup_on_uninstall": {
     "type": "boolean",
     "value": true
+  },
+  "show_artwork_settings": {
+    "type": "boolean",
+    "value": false
+  },
+  "best_effort_artwork": {
+    "type": "boolean",
+    "value": true
+  },
+  "artwork_threshold": {
+    "type": "number",
+    "value": 60
+  },
+  "artwork_persistence": {
+    "type": "string",
+    "value": "artist"
   }
 }

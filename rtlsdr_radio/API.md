@@ -372,6 +372,76 @@ eventSource.addEventListener('error', (error) => {
 }
 ```
 
+## Artwork Block List API
+
+### Get Block List
+
+**Endpoint:** `GET /api/blocklist`
+
+**Description:** Retrieves current artwork blocklist phrases. These phrases are excluded from artwork lookups to prevent false matches on station slogans, time announcements, etc.
+
+**Response:**
+```json
+{
+  "phrases": [
+    "traffic update",
+    "news update",
+    "weather",
+    "breaking news",
+    "travel news"
+  ]
+}
+```
+
+### Save Block List
+
+**Endpoint:** `POST /api/blocklist`
+
+**Description:** Saves artwork blocklist phrases.
+
+**Request Body:**
+```json
+{
+  "phrases": [
+    "traffic update",
+    "news update",
+    "custom phrase"
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "success": true
+}
+```
+
+### Reset Block List
+
+**Endpoint:** `POST /api/blocklist/reset`
+
+**Description:** Resets blocklist to default phrases.
+
+**Response:**
+```json
+{
+  "success": true,
+  "phrases": [
+    "traffic update",
+    "news update",
+    "weather",
+    "breaking news",
+    "travel news"
+  ]
+}
+```
+
+**Notes:**
+- Blocklist uses fuzzy matching (75% similarity threshold) to handle RDS text corruption
+- Phrases are case-insensitive
+- Blocklist has separate backup/restore from stations and config
+
 ## Backup and Restore API
 
 ### Get Maintenance Settings
@@ -721,6 +791,14 @@ No authentication is currently required. Access control should be implemented at
   "auto_backup_on_uninstall": {
     "type": "boolean",
     "value": false
+  },
+  "artwork_ttl": {
+    "type": "number",
+    "value": 0
+  },
+  "artwork_debug_logging": {
+    "type": "boolean",
+    "value": false
   }
 }
 ```
@@ -801,6 +879,26 @@ curl -X POST http://volumio.local:3456/api/maintenance/backup/upload \
 ```
 
 ## Changelog
+
+### API v1.2.8
+- Added Last.fm artwork integration via track.getInfo API
+- New configuration fields:
+  - artwork_confidence_threshold (0, 20, 40, 60, 80, 95 - default 60)
+  - artwork_persistence (boolean, default true)
+  - artwork_ttl (0, 2, 5, 10, 15, 30 minutes)
+  - artwork_debug_logging (boolean, default false)
+- New blocklist API endpoints:
+  - GET /api/blocklist - retrieve current blocklist phrases
+  - POST /api/blocklist - save blocklist phrases
+  - POST /api/blocklist/reset - reset to default blocklist
+- Blocklist backup/restore:
+  - Separate backup folder: /data/rtlsdr_radio_backups/blocklist/
+  - GET /api/maintenance/backups now includes blocklist backups
+  - POST /api/maintenance/backup/create supports type: "blocklist"
+  - POST /api/maintenance/restore supports blocklistTimestamp parameter
+- POST /api/stations now validates FM frequency types, converting numbers to strings
+- Fixes issue where Station Manager frequency edits broke Recently Played tracking
+- Plugin startup auto-repairs existing stations with number frequencies
 
 ### API v1.2.6
 - Fixed signal quality not updating in playback screen (throttle bypass for signal changes)

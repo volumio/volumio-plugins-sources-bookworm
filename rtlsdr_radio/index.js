@@ -8,6 +8,7 @@ var execSync = require('child_process').execSync;
 var express = require('express');
 var bodyParser = require('body-parser');
 var path = require('path');
+var metadata = require('./lib/metadata');
 
 module.exports = ControllerRtlsdrRadio;
 
@@ -59,9 +60,11 @@ function ControllerRtlsdrRadio(context) {
   self.dabMetadataDir = '/tmp/dab';
   self.currentDabStation = null;
   self.currentFmFrequency = null;
-  self.lastValidAlbumart = null;  // Reserved for future use
-  self.lastValidArtist = null;    // Reserved for future use
-  self.lastValidTitle = null;     // Reserved for future use
+  self.lastValidAlbumart = null;  // Cached artwork URL
+  self.lastValidArtist = null;    // Cached artist for artwork
+  self.lastValidTitle = null;     // Cached title for artwork
+  self.pendingArtworkLookup = null;  // Track key of in-progress lookup
+  self.lastArtworkLogKey = null;     // Prevent duplicate cache log messages
   
   // Express server for station management web interface
   self.expressApp = null;
@@ -120,6 +123,8 @@ ControllerRtlsdrRadio.prototype.onStart = function() {
       return self.loadStations();
     })
     .then(function() {
+      // Load artwork blocklist
+      self.loadBlocklistOnStartup();
       return self.ensureBackupDirectory();
     })
     .then(function() {
@@ -272,6 +277,7 @@ ControllerRtlsdrRadio.prototype.createStationsBackup = function(timestamp) {
     if (fs.existsSync(sourceFile)) {
       fs.copySync(sourceFile, backupFile);
       self.logger.info('[RTL-SDR Radio] Created stations backup: ' + backupFile);
+      
       self.pruneBackups('stations');
       defer.resolve(backupFile);
     } else {
@@ -307,6 +313,40 @@ ControllerRtlsdrRadio.prototype.createConfigBackup = function(timestamp) {
     }
   } catch (e) {
     self.logger.error('[RTL-SDR Radio] Failed to create config backup: ' + e);
+    defer.reject(e);
+  }
+  
+  return defer.promise;
+};
+
+ControllerRtlsdrRadio.prototype.createBlocklistBackup = function(timestamp) {
+  var self = this;
+  var defer = libQ.defer();
+  
+  try {
+    if (!timestamp) {
+      timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    }
+    
+    // Ensure blocklist backup directory exists
+    var backupDir = '/data/rtlsdr_radio_backups/blocklist';
+    fs.ensureDirSync(backupDir);
+    
+    var sourceFile = '/data/plugins/music_service/rtlsdr_radio/blocklist.json';
+    var backupFile = backupDir + '/blocklist-' + timestamp + '.json';
+    
+    if (fs.existsSync(sourceFile)) {
+      fs.copySync(sourceFile, backupFile);
+      self.logger.info('[RTL-SDR Radio] Created blocklist backup: ' + backupFile);
+      self.pruneBackups('blocklist');
+      defer.resolve(backupFile);
+    } else {
+      // No blocklist file exists - this is OK, just resolve with null
+      self.logger.info('[RTL-SDR Radio] No blocklist file to backup');
+      defer.resolve(null);
+    }
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to create blocklist backup: ' + e);
     defer.reject(e);
   }
   
@@ -351,17 +391,19 @@ ControllerRtlsdrRadio.prototype.listAvailableBackups = function() {
   var self = this;
   var backups = {
     stations: [],
-    config: []
+    config: [],
+    blocklist: []
   };
   
   try {
     var stationsDir = '/data/rtlsdr_radio_backups/stations';
     var configDir = '/data/rtlsdr_radio_backups/config';
+    var blocklistDir = '/data/rtlsdr_radio_backups/blocklist';
     
     if (fs.existsSync(stationsDir)) {
       var stationsFiles = fs.readdirSync(stationsDir);
       stationsFiles = stationsFiles.filter(function(f) {
-        return f.endsWith('.json');
+        return f.startsWith('stations-') && f.endsWith('.json');
       });
       stationsFiles.sort().reverse();
       
@@ -381,7 +423,7 @@ ControllerRtlsdrRadio.prototype.listAvailableBackups = function() {
     if (fs.existsSync(configDir)) {
       var configFiles = fs.readdirSync(configDir);
       configFiles = configFiles.filter(function(f) {
-        return f.endsWith('.json');
+        return f.startsWith('config-') && f.endsWith('.json');
       });
       configFiles.sort().reverse();
       
@@ -389,6 +431,26 @@ ControllerRtlsdrRadio.prototype.listAvailableBackups = function() {
         var filePath = configDir + '/' + f;
         var stats = fs.statSync(filePath);
         var timestamp = f.replace('config-', '').replace('.json', '');
+        return {
+          filename: f,
+          timestamp: timestamp,
+          size: stats.size,
+          date: stats.mtime
+        };
+      });
+    }
+    
+    if (fs.existsSync(blocklistDir)) {
+      var blocklistFiles = fs.readdirSync(blocklistDir);
+      blocklistFiles = blocklistFiles.filter(function(f) {
+        return f.startsWith('blocklist-') && f.endsWith('.json');
+      });
+      blocklistFiles.sort().reverse();
+      
+      backups.blocklist = blocklistFiles.map(function(f) {
+        var filePath = blocklistDir + '/' + f;
+        var stats = fs.statSync(filePath);
+        var timestamp = f.replace('blocklist-', '').replace('.json', '');
         return {
           filename: f,
           timestamp: timestamp,
@@ -421,6 +483,31 @@ ControllerRtlsdrRadio.prototype.restoreStationsBackup = function(timestamp) {
     }
   } catch (e) {
     self.logger.error('[RTL-SDR Radio] Failed to restore stations backup: ' + e);
+    defer.reject(e);
+  }
+  
+  return defer.promise;
+};
+
+ControllerRtlsdrRadio.prototype.restoreBlocklistBackup = function(timestamp) {
+  var self = this;
+  var defer = libQ.defer();
+  
+  try {
+    var backupFile = '/data/rtlsdr_radio_backups/blocklist/blocklist-' + timestamp + '.json';
+    var targetFile = '/data/plugins/music_service/rtlsdr_radio/blocklist.json';
+    
+    if (fs.existsSync(backupFile)) {
+      fs.copySync(backupFile, targetFile);
+      self.logger.info('[RTL-SDR Radio] Restored blocklist from: ' + backupFile);
+      // Reload blocklist into metadata module
+      self.loadBlocklistOnStartup();
+      defer.resolve();
+    } else {
+      defer.reject('Backup file not found: ' + timestamp);
+    }
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to restore blocklist backup: ' + e);
     defer.reject(e);
   }
   
@@ -483,8 +570,12 @@ ControllerRtlsdrRadio.prototype.createBackupFromUI = function() {
       return self.createConfigBackup();
     })
     .then(function() {
+      return self.createBlocklistBackup();
+    })
+    .then(function() {
       self.pruneBackups('stations');
       self.pruneBackups('config');
+      self.pruneBackups('blocklist');
       self.commandRouter.pushToastMessage('success', 'FM/DAB Radio', 
         self.getI18nString('TOAST_BACKUP_CREATED'));
       defer.resolve();
@@ -506,7 +597,7 @@ ControllerRtlsdrRadio.prototype.restoreLatestBackupFromUI = function() {
   try {
     var backups = self.listAvailableBackups();
     
-    if (backups.stations.length === 0 && backups.config.length === 0) {
+    if (backups.stations.length === 0 && backups.config.length === 0 && backups.blocklist.length === 0) {
       self.commandRouter.pushToastMessage('warning', 'FM/DAB Radio', 
         self.getI18nString('TOAST_NO_BACKUPS'));
       defer.reject('No backups available');
@@ -523,6 +614,11 @@ ControllerRtlsdrRadio.prototype.restoreLatestBackupFromUI = function() {
     if (backups.config.length > 0) {
       var latestConfig = backups.config[0].timestamp;
       promises.push(self.restoreConfigBackup(latestConfig));
+    }
+    
+    if (backups.blocklist.length > 0) {
+      var latestBlocklist = backups.blocklist[0].timestamp;
+      promises.push(self.restoreBlocklistBackup(latestBlocklist));
     }
     
     libQ.all(promises)
@@ -704,6 +800,13 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
         if (!data.fm || !data.dab) {
           return res.status(400).json({ error: 'Invalid data format' });
         }
+        
+        // Ensure FM frequencies are strings (fix for number input type)
+        data.fm.forEach(function(station) {
+          if (typeof station.frequency === 'number') {
+            station.frequency = station.frequency.toFixed(1);
+          }
+        });
         
         // Update database
         self.stationsDb.fm = data.fm;
@@ -946,9 +1049,14 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
           self.createConfigBackup(timestamp)
             .then(function() { res.json({ success: true }); })
             .fail(function(e) { res.status(500).json({ error: e.toString() }); });
+        } else if (type === 'blocklist') {
+          self.createBlocklistBackup(timestamp)
+            .then(function() { res.json({ success: true }); })
+            .fail(function(e) { res.status(500).json({ error: e.toString() }); });
         } else if (type === 'full') {
           self.createStationsBackup(timestamp)
             .then(function() { return self.createConfigBackup(timestamp); })
+            .then(function() { return self.createBlocklistBackup(timestamp); })
             .then(function() { res.json({ success: true }); })
             .fail(function(e) { res.status(500).json({ error: e.toString() }); });
         } else {
@@ -964,6 +1072,7 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
         var promises = [];
         if (req.body.stationsTimestamp) promises.push(self.restoreStationsBackup(req.body.stationsTimestamp));
         if (req.body.configTimestamp) promises.push(self.restoreConfigBackup(req.body.configTimestamp));
+        if (req.body.blocklistTimestamp) promises.push(self.restoreBlocklistBackup(req.body.blocklistTimestamp));
         
         if (promises.length === 0) {
           res.status(400).json({ error: 'No backups specified' });
@@ -1330,6 +1439,39 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
       }
     });
     
+    // ===== ARTWORK BLOCK LIST API ENDPOINTS =====
+    
+    // Get blocklist phrases
+    self.expressApp.get('/api/blocklist', function(req, res) {
+      try {
+        var phrases = self.getBlocklistPhrases();
+        res.json({ phrases: phrases });
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    // Save blocklist phrases
+    self.expressApp.post('/api/blocklist', function(req, res) {
+      try {
+        var phrases = req.body.phrases || [];
+        self.saveBlocklistPhrases(phrases);
+        res.json({ success: true, count: phrases.length });
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    // Reset blocklist to defaults
+    self.expressApp.post('/api/blocklist/reset', function(req, res) {
+      try {
+        var phrases = self.resetBlocklistPhrases();
+        res.json({ success: true, phrases: phrases });
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
     // Start server
     self.expressServer = self.expressApp.listen(self.MANAGEMENT_PORT, function() {
       self.logger.info('[RTL-SDR Radio] Management server started on port ' + self.MANAGEMENT_PORT);
@@ -1523,12 +1665,26 @@ ControllerRtlsdrRadio.prototype.loadI18nStrings = function() {
   var langFile = __dirname + '/i18n/strings_' + lang_code + '.json';
   var defaultFile = __dirname + '/i18n/strings_en.json';
   
+  // Always load English as fallback
   try {
-    self.i18nStrings = fs.readJsonSync(langFile);
-    self.logger.info('[RTL-SDR Radio] Loaded i18n strings for language: ' + lang_code);
+    self.i18nStringsDefault = fs.readJsonSync(defaultFile);
   } catch (e) {
-    self.logger.warn('[RTL-SDR Radio] Failed to load ' + lang_code + ' translations, using English');
-    self.i18nStrings = fs.readJsonSync(defaultFile);
+    self.logger.error('[RTL-SDR Radio] Failed to load English fallback strings');
+    self.i18nStringsDefault = {};
+  }
+  
+  // Load requested language (or English if same)
+  if (lang_code === 'en') {
+    self.i18nStrings = self.i18nStringsDefault;
+    self.logger.info('[RTL-SDR Radio] Loaded i18n strings for language: en');
+  } else {
+    try {
+      self.i18nStrings = fs.readJsonSync(langFile);
+      self.logger.info('[RTL-SDR Radio] Loaded i18n strings for language: ' + lang_code);
+    } catch (e) {
+      self.logger.warn('[RTL-SDR Radio] Failed to load ' + lang_code + ' translations, using English');
+      self.i18nStrings = self.i18nStringsDefault;
+    }
   }
   
   defer.resolve();
@@ -1538,11 +1694,17 @@ ControllerRtlsdrRadio.prototype.loadI18nStrings = function() {
 ControllerRtlsdrRadio.prototype.getI18nString = function(key) {
   var self = this;
   
+  // Try current language first
   if (self.i18nStrings && self.i18nStrings[key]) {
     return self.i18nStrings[key];
   }
   
-  // Fallback to key if translation not found
+  // Fallback to English
+  if (self.i18nStringsDefault && self.i18nStringsDefault[key]) {
+    return self.i18nStringsDefault[key];
+  }
+  
+  // Last resort: return key itself
   self.logger.warn('[RTL-SDR Radio] Missing translation for key: ' + key);
   return key;
 };
@@ -1703,9 +1865,69 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
     }
   }
   
-  // SECTION 5: DIAGNOSTICS
+  // SECTION 5: ARTWORK SETTINGS
+  // ============================
+  var artworkSection = uiconf.sections[4];
+  if (artworkSection) {
+    var showArtworkSettings = findContentItem(artworkSection, 'show_artwork_settings');
+    if (showArtworkSettings) {
+      showArtworkSettings.value = self.config.get('show_artwork_settings', false);
+    }
+    
+    var bestEffortArtwork = findContentItem(artworkSection, 'best_effort_artwork');
+    if (bestEffortArtwork) {
+      bestEffortArtwork.value = self.config.get('best_effort_artwork', true);
+    }
+    
+    var artworkThreshold = findContentItem(artworkSection, 'artwork_threshold');
+    if (artworkThreshold) {
+      var thresholdValue = self.config.get('artwork_threshold', 60);
+      artworkThreshold.value = {
+        value: String(thresholdValue),
+        label: thresholdValue + '%' + (thresholdValue === 60 ? ' (Default)' : '')
+      };
+    }
+    
+    var artworkPersistence = findContentItem(artworkSection, 'artwork_persistence');
+    if (artworkPersistence) {
+      var persistValue = self.config.get('artwork_persistence', 'artist');
+      var persistLabels = {
+        'artist': self.getI18nString('ARTWORK_PERSIST_ARTIST') || 'Keep until artist changes',
+        'track': self.getI18nString('ARTWORK_PERSIST_TRACK') || 'Keep until track changes',
+        'always': self.getI18nString('ARTWORK_PERSIST_ALWAYS') || 'Always refresh'
+      };
+      artworkPersistence.value = {
+        value: persistValue,
+        label: persistLabels[persistValue] || persistLabels['artist']
+      };
+    }
+    
+    var artworkTtl = findContentItem(artworkSection, 'artwork_ttl');
+    if (artworkTtl) {
+      var ttlValue = self.config.get('artwork_ttl', 0);
+      var ttlLabels = {
+        0: self.getI18nString('ARTWORK_TTL_DISABLED') || 'Disabled',
+        2: self.getI18nString('ARTWORK_TTL_2MIN') || '2 minutes',
+        5: self.getI18nString('ARTWORK_TTL_5MIN') || '5 minutes',
+        10: self.getI18nString('ARTWORK_TTL_10MIN') || '10 minutes',
+        15: self.getI18nString('ARTWORK_TTL_15MIN') || '15 minutes',
+        30: self.getI18nString('ARTWORK_TTL_30MIN') || '30 minutes'
+      };
+      artworkTtl.value = {
+        value: String(ttlValue),
+        label: ttlLabels[ttlValue] || ttlLabels[0]
+      };
+    }
+    
+    var artworkDebugLogging = findContentItem(artworkSection, 'artwork_debug_logging');
+    if (artworkDebugLogging) {
+      artworkDebugLogging.value = self.config.get('artwork_debug_logging', false);
+    }
+  }
+  
+  // SECTION 6: DIAGNOSTICS
   // =======================
-  var diagnosticsSection = uiconf.sections[4];
+  var diagnosticsSection = uiconf.sections[5];
   if (diagnosticsSection) {
     var showDiagnostics = findContentItem(diagnosticsSection, 'show_diagnostics');
     if (showDiagnostics) {
@@ -1900,6 +2122,46 @@ ControllerRtlsdrRadio.prototype.saveWebManagementToggle = function(data) {
     defer.resolve();
   } catch (e) {
     self.logger.error('[RTL-SDR Radio] Failed to save web management toggle: ' + e);
+    self.commandRouter.pushToastMessage('error', 'FM/DAB Radio', 
+      self.getI18nString('SAVE_ERROR'));
+    defer.reject(e);
+  }
+  
+  return defer.promise;
+};
+
+ControllerRtlsdrRadio.prototype.saveArtworkSettings = function(data) {
+  var self = this;
+  var defer = libQ.defer();
+  
+  try {
+    if (data.show_artwork_settings !== undefined) {
+      self.config.set('show_artwork_settings', data.show_artwork_settings);
+    }
+    if (data.best_effort_artwork !== undefined) {
+      self.config.set('best_effort_artwork', data.best_effort_artwork);
+    }
+    if (data.artwork_threshold !== undefined) {
+      var threshold = data.artwork_threshold.value || data.artwork_threshold;
+      self.config.set('artwork_threshold', parseInt(threshold, 10));
+    }
+    if (data.artwork_persistence !== undefined) {
+      var persistence = data.artwork_persistence.value || data.artwork_persistence;
+      self.config.set('artwork_persistence', persistence);
+    }
+    if (data.artwork_ttl !== undefined) {
+      var ttl = data.artwork_ttl.value || data.artwork_ttl;
+      self.config.set('artwork_ttl', parseInt(ttl, 10));
+    }
+    if (data.artwork_debug_logging !== undefined) {
+      self.config.set('artwork_debug_logging', data.artwork_debug_logging);
+    }
+    
+    self.commandRouter.pushToastMessage('success', 'FM/DAB Radio', 
+      self.getI18nString('SAVE_SUCCESS'));
+    defer.resolve();
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to save artwork settings: ' + e);
     self.commandRouter.pushToastMessage('error', 'FM/DAB Radio', 
       self.getI18nString('SAVE_ERROR'));
     defer.reject(e);
@@ -3368,6 +3630,12 @@ ControllerRtlsdrRadio.prototype.playFmStation = function(frequency, stationName)
   
   self.logger.info('[RTL-SDR Radio] Playing FM station: ' + frequency + ' MHz');
   
+  // Reset artwork state when changing stations
+  self.lastValidArtwork = null;
+  self.artworkTimestamp = null;
+  self.albumLookupCache = {};
+  self.lastArtworkLogKey = null;
+  
   // Validate frequency (FM band: 88-108 MHz)
   var freq = parseFloat(frequency);
   if (isNaN(freq) || freq < 88 || freq > 108) {
@@ -3677,22 +3945,24 @@ ControllerRtlsdrRadio.prototype.startFmPlayback = function(freq, stationName, de
 // Parse RadioText for artist/title information
 // Handles formats like "Now playing: Artist - Title" and "Artist - Title"
 ControllerRtlsdrRadio.prototype.parseRadioText = function(radiotext) {
-  if (!radiotext) return { artist: null, title: null };
+  // Use enhanced metadata extraction (LAYER 2)
+  // Priority: NLP > Dash > Pipe > Colon > Slash > Word patterns
+  // Returns { artist, title, confidence, method }
+  var result = metadata.extract(radiotext);
   
-  // Classic FM style: "Now playing: Artist - Title"
-  var match = radiotext.match(/^Now playing:\s*(.+?)\s*-\s*(.+)$/i);
-  if (match) {
-    return { artist: match[1].trim(), title: match[2].trim() };
+  // For backward compatibility, return simple object
+  // Confidence and method available for logging/debugging
+  if (result.artist && result.title) {
+    this.logger.info('[RTL-SDR Radio] Parsed: ' + result.artist + ' - ' + result.title + 
+                     ' (' + result.confidence + '% via ' + result.method + ')');
   }
   
-  // Generic "Artist - Title" format
-  match = radiotext.match(/^(.+?)\s*-\s*(.+)$/);
-  if (match) {
-    return { artist: match[1].trim(), title: match[2].trim() };
-  }
-  
-  // No parseable format
-  return { artist: null, title: null };
+  return { 
+    artist: result.artist, 
+    title: result.title,
+    confidence: result.confidence,
+    method: result.method
+  };
 };
 
 // Handle RDS data update from fn-redsea
@@ -3842,6 +4112,112 @@ ControllerRtlsdrRadio.prototype.getSignalBars = function(level) {
   return result;
 };
 
+// Lookup album artwork from MusicBrainz/Cover Art Archive
+// Async - updates state when artwork is found
+// Get albumart URL using Volumio's albumart plugin
+// Uses the same method as MPD and other core services
+ControllerRtlsdrRadio.prototype.getAlbumArt = function(data, path, icon) {
+  var self = this;
+  
+  // Initialize albumart plugin reference (cached after first call)
+  if (self.albumArtPlugin === undefined) {
+    self.albumArtPlugin = self.commandRouter.pluginManager.getPlugin('miscellanea', 'albumart');
+  }
+  
+  if (self.albumArtPlugin) {
+    return self.albumArtPlugin.getAlbumArt(data, path, icon);
+  } else {
+    // Fallback if albumart plugin not available
+    return '/albumart';
+  }
+};
+
+// Build artwork URL for artist/album using Volumio's albumart service
+// sourceicon parameter provides fallback to our plugin's SVG if Last.fm lookup fails
+ControllerRtlsdrRadio.prototype.buildArtworkUrl = function(artist, album, fallbackIcon) {
+  var self = this;
+  
+  if (!artist || !album) {
+    return '/albumart?sourceicon=' + fallbackIcon;
+  }
+  
+  var artworkDebugLogging = self.config.get('artwork_debug_logging', false);
+  
+  // Build URL directly - don't use getAlbumArt() as it may add icon parameter
+  // Format: /albumart?web=artist/album/size&sourceicon=fallback
+  var url = '/albumart?web=' + encodeURIComponent(artist) + '/' + 
+            encodeURIComponent(album) + '/extralarge' +
+            '&sourceicon=' + fallbackIcon;
+  
+  if (artworkDebugLogging) {
+    self.logger.info('[RTL-SDR Radio] Built artwork URL: ' + url);
+  }
+  return url;
+};
+
+// Lookup artwork from Last.fm using track.getInfo API (PRIMARY METHOD)
+// This is much more reliable than MusicBrainz because:
+// 1. Last.fm returns album name AND artwork in one call
+// 2. Has autocorrect for misspelled artist/track names
+// 3. Returns the album that Last.fm users most commonly associate with the track
+// 4. No complex compilation filtering needed
+//
+// Returns { artist, title, album, artworkUrl } if found, null otherwise
+ControllerRtlsdrRadio.prototype.lookupAlbum = function(artist, title, callback) {
+  var self = this;
+  
+  if (!artist || !title) {
+    return callback(null, null);
+  }
+  
+  var artworkDebugLogging = self.config.get('artwork_debug_logging', false);
+  
+  // Check cache first
+  var cacheKey = artist.toLowerCase() + '|' + title.toLowerCase();
+  if (self.albumLookupCache && self.albumLookupCache[cacheKey] !== undefined) {
+    return callback(null, self.albumLookupCache[cacheKey]);
+  }
+  
+  // Use Last.fm track.getInfo - returns album AND artwork directly
+  metadata.lastfmLookup(artist, title, function(err, result) {
+    if (err) {
+      if (artworkDebugLogging) {
+        self.logger.warn('[RTL-SDR Radio] Last.fm error: ' + err.message);
+      }
+      return callback(null, null);
+    }
+    
+    if (result && result.found && result.album) {
+      var lookupResult = {
+        artist: result.artist || artist,
+        title: result.title || title,
+        album: result.album,
+        artworkUrl: result.albumArtwork  // Direct artwork URL from Last.fm
+      };
+      
+      // Cache the result
+      if (!self.albumLookupCache) {
+        self.albumLookupCache = {};
+      }
+      self.albumLookupCache[cacheKey] = lookupResult;
+      
+      if (artworkDebugLogging) {
+        self.logger.info('[RTL-SDR Radio] Last.fm: ' + lookupResult.artist + ' - ' + 
+                         lookupResult.title + ' [' + lookupResult.album + ']' +
+                         (lookupResult.artworkUrl ? ' (artwork)' : ''));
+      }
+      callback(null, lookupResult);
+    } else {
+      // Cache negative result too to avoid repeated lookups
+      if (!self.albumLookupCache) {
+        self.albumLookupCache = {};
+      }
+      self.albumLookupCache[cacheKey] = null;
+      callback(null, null);
+    }
+  });
+};
+
 // Push updated state to Volumio with RDS metadata
 // Throttled and only pushes when state actually changes
 ControllerRtlsdrRadio.prototype.pushRdsState = function(freq, stationName) {
@@ -3912,35 +4288,139 @@ ControllerRtlsdrRadio.prototype.pushRdsState = function(freq, stationName) {
   self.lastRdsUpdate = now;
   self.lastSignalLevel = sigLevel;
   
-  var state = {
-    status: 'play',
-    service: 'rtlsdr_radio',
+  // Get artwork settings
+  var bestEffortArtwork = self.config.get('best_effort_artwork', true);
+  var artworkThreshold = self.config.get('artwork_threshold', 60);
+  
+  // Default artwork is always our FM icon - NEVER Volumio placeholder
+  var fallbackIcon = 'music_service/rtlsdr_radio/assets/fm.svg';
+  var albumart = '/albumart?sourceicon=' + fallbackIcon;
+  
+  // If best effort artwork is disabled, skip all parsing and lookups
+  if (!bestEffortArtwork) {
+    artist = null;
+    title = null;
+  }
+  
+  // Artwork persistence: Keep last valid artwork when no metadata is parsed
+  // This prevents flicker when station shows promos between songs
+  var artworkPersistence = self.config.get('artwork_persistence', 'track');
+  var artworkTtl = self.config.get('artwork_ttl', 0);  // 0 = disabled, else minutes
+  var artworkDebugLogging = self.config.get('artwork_debug_logging', false);
+  var usePersistedArtwork = false;
+  
+  // Check TTL expiration (only if TTL is enabled)
+  if (artworkTtl > 0 && self.lastValidArtwork && self.artworkTimestamp) {
+    var ttlMs = artworkTtl * 60 * 1000;  // Convert minutes to ms
+    var age = Date.now() - self.artworkTimestamp;
+    if (age > ttlMs) {
+      // TTL expired - clear artwork
+      if (artworkDebugLogging) {
+        self.logger.info('[RTL-SDR Radio] Artwork TTL expired (' + artworkTtl + ' min) - clearing');
+      }
+      self.lastValidArtwork = null;
+      self.artworkTimestamp = null;
+    }
+  }
+  
+  if (!artist && !title) {
+    // No new metadata - check if we should persist previous artwork
+    if (self.lastValidArtwork && self.lastValidArtwork.url) {
+      if (artworkPersistence === 'artist' || artworkPersistence === 'track') {
+        albumart = self.lastValidArtwork.url;
+        usePersistedArtwork = true;
+        if (artworkDebugLogging) {
+          self.logger.info('[RTL-SDR Radio] Using persisted artwork: ' + self.lastValidArtwork.artist);
+        }
+      }
+    }
+  } else if (artist && self.lastValidArtwork && self.lastValidArtwork.artist) {
+    // New metadata arrived - check if artist changed (resets TTL)
+    if (artist.toLowerCase() !== self.lastValidArtwork.artist.toLowerCase()) {
+      // Artist changed - TTL will be reset when new artwork is saved
+      if (artworkDebugLogging) {
+        self.logger.info('[RTL-SDR Radio] Artist changed: ' + self.lastValidArtwork.artist + ' -> ' + artist);
+      }
+    }
+  }
+  
+  // Helper function to push state
+  var pushFmState = function(artUrl) {
+    var state = {
+      status: 'play',
+      service: 'rtlsdr_radio',
+      title: displayName,
+      artist: artist || rds.radiotext || 'FM ' + freq + ' MHz',
+      album: title || rds.prog_type || self.getI18nString('FM_RADIO'),
+      albumart: artUrl,
+      uri: 'rtlsdr://fm/' + freq,
+      trackType: 'FM ' + self.getSignalBars(rds.signalLevel),
+      samplerate: '48 KHz',
+      bitdepth: '16 bit',
+      channels: channels,
+      seek: 0,
+      duration: 0,
+      isStreaming: true,
+      volatile: true
+    };
     
-    // Metadata - use RDS data when available
-    title: displayName,
-    artist: artist || rds.radiotext || 'FM ' + freq + ' MHz',
-    album: title || rds.prog_type || self.getI18nString('FM_RADIO'),
-    
-    // Artwork
-    albumart: '/albumart?sourceicon=music_service/rtlsdr_radio/assets/fm.svg',
-    
-    // URI and type
-    uri: 'rtlsdr://fm/' + freq,
-    trackType: 'FM ' + self.getSignalBars(rds.signalLevel),
-    
-    // Technical
-    samplerate: '48 KHz',
-    bitdepth: '16 bit',
-    channels: channels,
-    
-    // Streaming flags
-    seek: 0,
-    duration: 0,
-    isStreaming: true,
-    volatile: true
+    self.commandRouter.servicePushState(state, 'rtlsdr_radio');
   };
   
-  self.commandRouter.servicePushState(state, 'rtlsdr_radio');
+  // If we have valid metadata above threshold, do Last.fm lookup for album name
+  if (bestEffortArtwork && artist && title && parsed.confidence >= artworkThreshold) {
+    var lookupKey = artist.toLowerCase() + '|' + title.toLowerCase();
+    
+    if (artworkDebugLogging) {
+      self.logger.info('[RTL-SDR Radio] Artwork lookup: ' + artist + ' - ' + title + 
+                       ' (confidence ' + parsed.confidence + '% >= ' + artworkThreshold + '%)');
+    }
+    
+    // Check if we already have cached album info
+    if (self.albumLookupCache && self.albumLookupCache[lookupKey]) {
+      var cached = self.albumLookupCache[lookupKey];
+      if (artworkDebugLogging) {
+        self.logger.info('[RTL-SDR Radio] Cache HIT: ' + lookupKey);
+      }
+      if (cached && cached.album) {
+        albumart = self.buildArtworkUrl(cached.artist, cached.album, fallbackIcon);
+        // Save as last valid artwork for persistence and reset TTL
+        self.lastValidArtwork = {
+          url: albumart,
+          artist: cached.artist,
+          title: title
+        };
+        self.artworkTimestamp = Date.now();
+      }
+      // Cache hit - push state once with correct artwork
+      pushFmState(albumart);
+    } else {
+      if (artworkDebugLogging) {
+        self.logger.info('[RTL-SDR Radio] Cache MISS: ' + lookupKey);
+      }
+      // No cache - push state with persisted/default icon, then update after lookup
+      pushFmState(albumart);
+      
+      // Async Last.fm lookup for album name
+      self.lookupAlbum(artist, title, function(err, result) {
+        if (result && result.album) {
+          var artUrl = self.buildArtworkUrl(result.artist, result.album, fallbackIcon);
+          // Save as last valid artwork for persistence and reset TTL
+          self.lastValidArtwork = {
+            url: artUrl,
+            artist: result.artist,
+            title: title
+          };
+          self.artworkTimestamp = Date.now();
+          // Push updated state with proper artwork URL
+          pushFmState(artUrl);
+        }
+      });
+    }
+  } else {
+    // No metadata or below threshold - push with persisted or default artwork
+    pushFmState(albumart);
+  }
 };
 
 // Handle TMC traffic alerts with toast notifications
@@ -4138,7 +4618,7 @@ ControllerRtlsdrRadio.prototype.parseDlPlusFile = function(content) {
 
 // Handle DLS label update
 // TEXT: Always display raw label (could be emergency, song info, promo, anything)
-// ARTWORK: Separate concern - only from DL Plus or MOT, never from text parsing
+// ARTWORK: DL Plus first, then text parsing fallback, then MOT
 ControllerRtlsdrRadio.prototype.handleDabDls = function(label, dlPlusData) {
   var self = this;
   
@@ -4166,16 +4646,27 @@ ControllerRtlsdrRadio.prototype.handleDabDls = function(label, dlPlusData) {
     artworkArtist = dlPlusData.artist;
     artworkTitle = dlPlusData.title;
     self.logger.info('[RTL-SDR Radio] DL+ metadata: ' + artworkArtist + ' - ' + artworkTitle);
+  } else if (rawLabel) {
+    // Artwork source 2: Text parsing fallback (LAYER 2 metadata extraction)
+    var parsed = self.parseRadioText(rawLabel);
+    if (parsed.artist && parsed.title) {
+      // Always store parsed data - threshold check happens in pushDabState
+      artworkArtist = parsed.artist;
+      artworkTitle = parsed.title;
+      self.logger.info('[RTL-SDR Radio] Parsed: ' + artworkArtist + ' - ' + artworkTitle + 
+                       ' (' + parsed.confidence + '% via ' + parsed.method + ')');
+    }
   }
   
-  // Artwork source 2: MOT slideshow image (checked in pushDabState)
+  // Artwork source 3: MOT slideshow image (checked in pushDabState)
   // No action here - file existence checked when pushing state
   
   // Store current state
   self.currentDls = {
     rawLabel: rawLabel,           // Always display this
-    artworkArtist: artworkArtist, // For Cover Art Archive (if DL Plus available)
-    artworkTitle: artworkTitle    // For Cover Art Archive (if DL Plus available)
+    artworkArtist: artworkArtist, // For Cover Art Archive
+    artworkTitle: artworkTitle,   // For Cover Art Archive
+    parsedConfidence: (dlPlusData && dlPlusData.artist) ? 100 : (parsed ? parsed.confidence : 0)
   };
   
   // Push updated state
@@ -4220,68 +4711,176 @@ ControllerRtlsdrRadio.prototype.pushDabState = function() {
   // DLS text - always show raw label, could be emergency broadcast
   var dlsText = dls.rawLabel || self.getI18nString('DAB_RADIO');
   
-  var defaultArt = '/albumart?sourceicon=music_service/rtlsdr_radio/assets/dab.svg';
+  // Get artwork settings
+  var bestEffortArtwork = self.config.get('best_effort_artwork', true);
+  var artworkThreshold = self.config.get('artwork_threshold', 60);
+  var artworkPersistence = self.config.get('artwork_persistence', 'track');
+  var artworkTtl = self.config.get('artwork_ttl', 0);  // 0 = disabled, else minutes
+  var artworkDebugLogging = self.config.get('artwork_debug_logging', false);
   
-  // ARTWORK: Priority order
-  // 1. DL Plus metadata (broadcaster-provided semantic tags)
-  // 2. MOT slideshow image (broadcaster-provided image)
-  // 3. Default dab.svg
-  var albumartUrl = defaultArt;
+  // Default artwork is always our DAB icon - NEVER Volumio placeholder
+  var fallbackIcon = 'music_service/rtlsdr_radio/assets/dab.svg';
+  var albumartUrl = '/albumart?sourceicon=' + fallbackIcon;
   
-  // Check for DL Plus metadata
-  if (dls.artworkArtist && dls.artworkTitle) {
-    // Use Volumio's albumart service which queries Last.fm
-    albumartUrl = '/albumart?web=' + encodeURIComponent(dls.artworkArtist) + 
-                  '/' + encodeURIComponent(dls.artworkTitle) + '/extralarge';
-    self.logger.info('[RTL-SDR Radio] Artwork from DL+: ' + dls.artworkArtist + ' - ' + dls.artworkTitle);
-  } else {
-    // Check for MOT slideshow image
+  // If best effort artwork is disabled, skip all parsing and lookups
+  if (!bestEffortArtwork) {
+    dls.artworkArtist = null;
+    dls.artworkTitle = null;
+  }
+  
+  // Check for MOT slideshow first (broadcaster-provided image)
+  var motImage = null;
+  if (!dls.artworkArtist || !dls.artworkTitle) {
     var dabDir = '/tmp/dab';
     try {
       var files = fs.readdirSync(dabDir);
-      var motImage = files.find(function(f) {
+      motImage = files.find(function(f) {
         return f.startsWith('slide_') && (f.endsWith('.jpg') || f.endsWith('.png'));
       });
       if (motImage) {
         albumartUrl = 'file://' + path.join(dabDir, motImage);
-        self.logger.info('[RTL-SDR Radio] Artwork from MOT: ' + motImage);
+        if (artworkDebugLogging) {
+          self.logger.info('[RTL-SDR Radio] Artwork from MOT: ' + motImage);
+        }
       }
     } catch (e) {
-      // No MOT images, use default
+      // No MOT images
     }
   }
   
-  // Build state key for deduplication (include signal level for UI updates)
-  var sigLevel = self.currentDabSignal ? self.currentDabSignal.level : 0;
-  var stateKey = stationName + '|' + dlsText + '|' + albumartUrl + '|' + sigLevel;
-  if (self.lastDabState === stateKey) {
-    return;
+  // Check TTL expiration (only if TTL is enabled)
+  if (artworkTtl > 0 && self.lastValidArtwork && self.artworkTimestamp) {
+    var ttlMs = artworkTtl * 60 * 1000;  // Convert minutes to ms
+    var age = Date.now() - self.artworkTimestamp;
+    if (age > ttlMs) {
+      // TTL expired - clear artwork
+      if (artworkDebugLogging) {
+        self.logger.info('[RTL-SDR Radio] Artwork TTL expired (' + artworkTtl + ' min) - clearing');
+      }
+      self.lastValidArtwork = null;
+      self.artworkTimestamp = null;
+    }
   }
-  self.lastDabState = stateKey;
   
-  // Field mapping:
-  // title  = Station name (what you're tuned to)
-  // artist = DLS text (dynamic content - prominent in UI)
-  // album  = Ensemble (Channel) - container info
-  var state = {
-    status: 'play',
-    service: 'rtlsdr_radio',
-    title: stationName,
-    artist: dlsText,
-    album: ensembleDisplay,
-    albumart: albumartUrl,
-    uri: dabStation.uri,
-    trackType: 'DAB ' + self.getSignalBars(self.currentDabSignal ? self.currentDabSignal.level : 0),
-    samplerate: '48 kHz',
-    bitdepth: '16 bit',
-    channels: 2,
-    seek: 0,
-    duration: 0,
-    isStreaming: true,
-    volatile: true
+  // Artwork persistence: Keep last valid artwork when no metadata is parsed
+  // This prevents flicker when station shows promos between songs
+  var usePersistedArtwork = false;
+  if (!dls.artworkArtist && !dls.artworkTitle && !motImage) {
+    // No new metadata and no MOT - check if we should persist previous artwork
+    if (self.lastValidArtwork && self.lastValidArtwork.url) {
+      if (artworkPersistence === 'artist') {
+        // Keep artwork until artist changes - always persist when no new data
+        albumartUrl = self.lastValidArtwork.url;
+        usePersistedArtwork = true;
+        if (artworkDebugLogging) {
+          self.logger.info('[RTL-SDR Radio] Using persisted artwork: ' + self.lastValidArtwork.artist);
+        }
+      } else if (artworkPersistence === 'track') {
+        // Keep artwork until track changes - persist when no new data
+        albumartUrl = self.lastValidArtwork.url;
+        usePersistedArtwork = true;
+        if (artworkDebugLogging) {
+          self.logger.info('[RTL-SDR Radio] Using persisted artwork: ' + self.lastValidArtwork.artist);
+        }
+      }
+      // 'none' = don't persist, use default icon
+    }
+  } else if (dls.artworkArtist && self.lastValidArtwork && self.lastValidArtwork.artist) {
+    // New metadata arrived - check if artist changed (resets TTL)
+    if (dls.artworkArtist.toLowerCase() !== self.lastValidArtwork.artist.toLowerCase()) {
+      // Artist changed - TTL will be reset when new artwork is saved
+      if (artworkDebugLogging) {
+        self.logger.info('[RTL-SDR Radio] Artist changed: ' + self.lastValidArtwork.artist + ' -> ' + dls.artworkArtist);
+      }
+    }
+  }
+  
+  // Helper function to push state
+  var pushState = function(artUrl) {
+    var sigLevel = self.currentDabSignal ? self.currentDabSignal.level : 0;
+    var stateKey = stationName + '|' + dlsText + '|' + artUrl + '|' + sigLevel;
+    if (self.lastDabState === stateKey) {
+      return;
+    }
+    self.lastDabState = stateKey;
+    
+    var state = {
+      status: 'play',
+      service: 'rtlsdr_radio',
+      title: stationName,
+      artist: dlsText,
+      album: ensembleDisplay,
+      albumart: artUrl,
+      uri: dabStation.uri,
+      trackType: 'DAB ' + self.getSignalBars(sigLevel),
+      samplerate: '48 kHz',
+      bitdepth: '16 bit',
+      channels: 2,
+      seek: 0,
+      duration: 0,
+      isStreaming: true,
+      volatile: true
+    };
+    
+    self.commandRouter.servicePushState(state, 'rtlsdr_radio');
   };
   
-  self.commandRouter.servicePushState(state, 'rtlsdr_radio');
+  // If we have parsed metadata above threshold, do Last.fm lookup for album name
+  if (bestEffortArtwork && dls.artworkArtist && dls.artworkTitle && dls.parsedConfidence >= artworkThreshold) {
+    var lookupKey = dls.artworkArtist + '|' + dls.artworkTitle;
+    
+    // Only log and lookup once per track
+    if (self.lastArtworkLogKey !== lookupKey) {
+      if (artworkDebugLogging) {
+        self.logger.info('[RTL-SDR Radio] Artwork lookup: ' + dls.artworkArtist + ' - ' + dls.artworkTitle +
+                         ' (confidence ' + dls.parsedConfidence + '% >= ' + artworkThreshold + '%)');
+      }
+      self.lastArtworkLogKey = lookupKey;
+    }
+    
+    // Check if we already have cached album info
+    if (self.albumLookupCache && self.albumLookupCache[lookupKey]) {
+      var cached = self.albumLookupCache[lookupKey];
+      if (cached && cached.album) {
+        albumartUrl = self.buildArtworkUrl(cached.artist, cached.album, fallbackIcon);
+        // Save as last valid artwork for persistence and reset TTL
+        self.lastValidArtwork = {
+          url: albumartUrl,
+          artist: cached.artist,
+          title: dls.artworkTitle
+        };
+        self.artworkTimestamp = Date.now();
+      }
+      pushState(albumartUrl);
+    } else {
+      // Push state immediately with persisted or default icon, then update after lookup
+      pushState(albumartUrl);
+      
+      // Async Last.fm lookup for album name
+      self.lookupAlbum(dls.artworkArtist, dls.artworkTitle, function(err, result) {
+        if (result && result.album) {
+          var artUrl = self.buildArtworkUrl(result.artist, result.album, fallbackIcon);
+          // Save as last valid artwork for persistence and reset TTL
+          self.lastValidArtwork = {
+            url: artUrl,
+            artist: result.artist,
+            title: dls.artworkTitle
+          };
+          self.artworkTimestamp = Date.now();
+          // Push updated state with proper artwork URL
+          self.lastDabState = null; // Force state update
+          pushState(artUrl);
+        }
+      });
+    }
+  } else if (!usePersistedArtwork) {
+    // No metadata or below threshold, and not using persisted artwork
+    // Push with default/MOT artwork
+    pushState(albumartUrl);
+  } else {
+    // Using persisted artwork - still need to push state with updated DLS text
+    pushState(albumartUrl);
+  }
 };
 
 ControllerRtlsdrRadio.prototype.stop = function() {
@@ -4619,6 +5218,21 @@ ControllerRtlsdrRadio.prototype.loadStations = function() {
   self.dbLoadedAt = new Date().toISOString();
   self.logger.info('[RTL-SDR Radio] Database loaded at: ' + self.dbLoadedAt);
   
+  // Repair FM frequencies that were saved as numbers instead of strings
+  var repaired = 0;
+  if (self.stationsDb && self.stationsDb.fm) {
+    self.stationsDb.fm.forEach(function(station) {
+      if (typeof station.frequency === 'number') {
+        station.frequency = station.frequency.toFixed(1);
+        repaired++;
+      }
+    });
+    if (repaired > 0) {
+      self.logger.info('[RTL-SDR Radio] Repaired ' + repaired + ' FM frequency values (number->string)');
+      self.saveStations();
+    }
+  }
+  
   return libQ.resolve();
 };
 
@@ -4642,6 +5256,99 @@ ControllerRtlsdrRadio.prototype.saveStations = function() {
   } catch (e) {
     self.logger.error('[RTL-SDR Radio] Failed to save stations: ' + e);
   }
+};
+
+// ========== ARTWORK BLOCK LIST FUNCTIONS ==========
+
+ControllerRtlsdrRadio.prototype.getDefaultBlocklistPhrases = function() {
+  // Default phrases that should NOT trigger artwork lookup
+  // These are station slogans, show names, promotional messages
+  return [
+    'We love pop',
+    'We love music',
+    'We love hits',
+    'We love rock',
+    'We play the hits',
+    'We play the best',
+    'The best hits',
+    'The best music',
+    'The home of',
+    'More music',
+    'More hits',
+    'All the hits',
+    'Non-stop music',
+    'Non-stop hits',
+    'Feel good music',
+    'Feel good hits',
+    'at Breakfast with',
+    'at Drivetime with',
+    'at Lunch with',
+    'Greatest Hits Radio',
+    'when you wake up'
+  ];
+};
+
+ControllerRtlsdrRadio.prototype.getBlocklistPhrases = function() {
+  var self = this;
+  var blocklistFile = '/data/plugins/music_service/rtlsdr_radio/blocklist.json';
+  
+  try {
+    if (fs.existsSync(blocklistFile)) {
+      var data = fs.readJsonSync(blocklistFile);
+      return data.phrases || [];
+    }
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Error loading blocklist: ' + e);
+  }
+  
+  // Return defaults if file doesn't exist or error
+  return self.getDefaultBlocklistPhrases();
+};
+
+ControllerRtlsdrRadio.prototype.saveBlocklistPhrases = function(phrases) {
+  var self = this;
+  var blocklistFile = '/data/plugins/music_service/rtlsdr_radio/blocklist.json';
+  
+  try {
+    fs.writeJsonSync(blocklistFile, { 
+      phrases: phrases,
+      updated: new Date().toISOString()
+    });
+    self.logger.info('[RTL-SDR Radio] Saved blocklist with ' + phrases.length + ' phrases');
+    
+    // Update metadata module with new phrases
+    self.updateMetadataBlocklist(phrases);
+    
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to save blocklist: ' + e);
+    throw e;
+  }
+};
+
+ControllerRtlsdrRadio.prototype.resetBlocklistPhrases = function() {
+  var self = this;
+  var phrases = self.getDefaultBlocklistPhrases();
+  self.saveBlocklistPhrases(phrases);
+  return phrases;
+};
+
+ControllerRtlsdrRadio.prototype.updateMetadataBlocklist = function(phrases) {
+  var self = this;
+  
+  // Update the metadata module with user phrases
+  if (typeof metadata !== 'undefined' && metadata.setUserPhrases) {
+    metadata.setUserPhrases(phrases);
+    self.logger.info('[RTL-SDR Radio] Updated metadata blocklist');
+  }
+};
+
+ControllerRtlsdrRadio.prototype.loadBlocklistOnStartup = function() {
+  var self = this;
+  
+  // Load user blocklist and apply to metadata module
+  var phrases = self.getBlocklistPhrases();
+  self.updateMetadataBlocklist(phrases);
+  self.logger.info('[RTL-SDR Radio] Loaded blocklist with ' + phrases.length + ' phrases');
 };
 
 // ========== DATABASE V2 FUNCTIONS ==========
@@ -5857,6 +6564,12 @@ ControllerRtlsdrRadio.prototype.playDabStation = function(channel, serviceName, 
   var defer = libQ.defer();
   
   self.logger.info('[RTL-SDR Radio] Playing DAB station: ' + serviceName + ' on channel ' + channel);
+  
+  // Reset artwork state when changing stations
+  self.lastValidArtwork = null;
+  self.artworkTimestamp = null;
+  self.albumLookupCache = {};
+  self.lastArtworkLogKey = null;
   
   // Check if station is deleted
   var station = self.stationsDb.dab ? self.stationsDb.dab.find(function(s) {
