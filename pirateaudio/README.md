@@ -24,3 +24,12 @@ volumio plugin install
 ## Notes
 
 After enabling the **SPI interface**, Volumio may need to be **restarted** for the display to function correctly.
+
+## Changelog 
+**Version 0.1.4 (Volumio 4 Bookworm Port)**
+
+- Updated and integrated all dependencies for Bookworm compatibility  
+- Added the `libopenblas0` dependency  
+- Python pip dependencies are now installed inside a local `venv` within the plugin directory instead of system-wide  
+- Updated `display.py` to use the latest PIL APIs  
+- Added an informational message prompting the user to restart Volumio after activating the plugin
