@@ -31,9 +31,21 @@ pirateaudio.prototype.onStart = function() {
     var self = this;
 	var defer=libQ.defer();
 
+	const flagFile = __dirname+'/post_install_reboot';
+
 	// Once the Plugin has successfull started resolve the promise
 	defer.resolve();
 	self.startpirateaudioservice();
+
+	if (fs.existsSync(flagFile)) {
+		fs.unlinkSync(flagFile);
+		this.commandRouter.pushToastMessage(
+			'info',
+			"Pirate Audio Plugin",
+			"Installation completed. A system reboot may be required for SPI to work properly."
+		);
+	}
+
     return defer.promise;
 };
 

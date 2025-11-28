@@ -1,6 +1,8 @@
 #!/bin/bash
 papath=/data/plugins/system_hardware/pirateaudio
 echo "Uninstall pirate audio dependencies"
+
+sudo rm -rf /data/plugins/system_hardware/pirateaudio
 # Delete service 
 sudo rm -rf /etc/systemd/system/pirateaudio.service
 # inform system about deleted service

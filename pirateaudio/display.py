@@ -10,7 +10,7 @@ import json
 from time import strftime, gmtime, sleep, time  # v.0.0.7
 from threading import Thread
 from PIL import ImageFont, Image, ImageDraw, ImageStat, ImageFilter
-import ST7789  # v0.0.6
+import st7789  # v0.0.6
 import socketio
 import requests
 from numpy import mean
@@ -26,7 +26,7 @@ os.chdir(SCRIPT_PATH)
 
 
 # Create ST7789 LCD Display class.
-DISP = ST7789.ST7789(
+DISP = st7789.ST7789(
     height=240,  # v0.0.6
     width=240,  # v0.0.6
     rotation=90,  # Needed to display the right way up on Pirate Audio
@@ -270,7 +270,11 @@ def display_stuff(picture, text, marked, start, icons='nav'):  # v.0.0.4 test fo
 
     def f_xy(text, font):
         """helper for width and height of text"""
-        len1, hei1 = draw3.textsize(text, font)
+        # len1, hei1 = draw3.textsize(text, font)
+        bbox = draw3.textbbox((0, 0), text, font=font)
+        len1 = bbox[2] - bbox[0]
+        hei1 = bbox[3] - bbox[1]
+
         x = (IMAGE_DICT['WIDTH'] - len1)//2
         Y = (IMAGE_DICT['HEIGHT'] - hei1)//2
         return [len1, hei1, x, Y]
@@ -382,7 +386,11 @@ def on_push_state(*args):
 
     def f_textsize(text, fontsize):
         """"helper textsize"""
-        w1, y1 = draw.textsize(text, fontsize)
+        #w1, y1 = draw.textsize(text, fontsize)
+        bbox = draw.textbbox((0, 0), text, font=fontsize)
+        w1 = bbox[2] - bbox[0]
+        h1 = bbox[3] - bbox[1]
+
         return w1
 
     def f_drawtext(x, y, text, fontstring, fillstring):

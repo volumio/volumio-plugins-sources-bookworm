@@ -1,12 +1,15 @@
 {
 	"name": "pirateaudio",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"description": "Volumio plugin to use pirate audio DAC (including display and the 4 buttons) on raspberry pi.",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
-	"author": "Ax-LED",
+	"author": [
+		"Ax-LED",
+		"Faster3ck"
+	],
 	"license": "ISC",
 	"repository": "https://github.com/Ax-LED/volumio-plugins-sources/pirateaudio",
 	"volumio_info": {
@@ -17,14 +20,14 @@
 			"armhf"
 		],
 		"os": [
-			"buster"
+			"bookworm"
 		],
 		"details": "Volumio plugin to use pirate audio DAC (including display and the 4 buttons) on raspberry pi.",
 		"changelog": ""
 	},
 	"engines": {
-		"node": ">=14.15.4",
-		"volumio": ">=3.173"
+		"node": ">=20",
+		"volumio": ">=4"
 	},
 	"dependencies": {
 		"fs-extra": "^0.28.0",
