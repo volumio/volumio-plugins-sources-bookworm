@@ -31,7 +31,11 @@ volumio plugin install
 - After enabling the **SPI interface**, Volumio may need to be **restarted** for the display to function correctly.
 
 ## Changelog 
-**Version 0.1.4 (Volumio 4 Bookworm Port)**
+**Version 0.1.5 - 2025-11-28**
+- Fixed some formatting issues in package.json and added the changelog
+- Updated README.md with configuration instructions for Pirate Audio DAC
+
+**Version 0.1.4 (Volumio 4 Bookworm Port) - 2025-11-28**
 
 - Updated and integrated all dependencies for Bookworm compatibility  
 - Added the `libopenblas0` dependency  
