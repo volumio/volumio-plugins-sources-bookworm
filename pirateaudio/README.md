@@ -22,8 +22,8 @@ volumio plugin install
 ```
 
 ## Notes
-
-After enabling the **SPI interface**, Volumio may need to be **restarted** for the display to function correctly.
+- Please wait a few seconds for the plugin to fully activate.
+- After enabling the **SPI interface**, Volumio may need to be **restarted** for the display to function correctly.
 
 ## Changelog 
 **Version 0.1.4 (Volumio 4 Bookworm Port)**
