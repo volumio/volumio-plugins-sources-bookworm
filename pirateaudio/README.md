@@ -10,7 +10,12 @@ The plugin enables full support for the **Pimoroni Pirate Audio** module on Rasp
 ## Features
 - Support for the Pirate Audio display  
 - Button handling  
-- SPI-based display communication  
+- SPI-based display communication
+
+## How to Configure the Pirate Audio DAC
+1. In Volumio, go to **Menu → Playback Options**.  
+2. Under **Audio Output**, enable **I2S DAC**.  
+3. For **DAC Model**, select **HiFiBerry DAC**.
 
 ## Installation (Manual)
 To install the plugin manually on Volumio 4:
