@@ -58,29 +58,111 @@ The plugin fully supports internationalization with automatic language detection
 To change language: Settings > Appearance > Language. Both plugin settings and web manager will update automatically.
 
 ### Backup and Restore
-The plugin includes a comprehensive backup and restore system to protect your station configurations:
+The plugin includes a comprehensive backup and restore system to protect your configurations:
 
 **Features:**
-- Three backup types: Stations Only, Configuration Only, or Full Backup
+- Four backup types: Stations, Configuration, Block List, or Full Backup
 - Automatic pruning (keeps 5 most recent backups per type)
 - Download backups as ZIP files
 - Upload and restore external backups
-- Mix-and-match restore (stations from one backup, config from another)
+- Mix-and-match restore (stations from one backup, config from another, blocklist from another)
 - Optional auto-backup before plugin uninstall
 - Backup history with timestamps and sizes
+
+**Backup Types:**
+- **Stations**: FM and DAB station database (favorites, custom names, play counts)
+- **Configuration**: Plugin settings (gain, PPM, scan sensitivity, artwork settings)
+- **Block List**: Artwork blocklist phrases
+- **Full**: All of the above
 
 **Location:**
 - Access via Maintenance tab in web station manager
 - Backups stored in: `/data/rtlsdr_radio_backups/`
+  - `/data/rtlsdr_radio_backups/stations/`
+  - `/data/rtlsdr_radio_backups/config/`
+  - `/data/rtlsdr_radio_backups/blocklist/`
 
 **Usage:**
 1. Open web station manager (see Web Interface Access below)
 2. Click "Maintenance" tab
 3. Select backup type and click "Create Backup Now"
-4. Download backups or restore from history table
+4. Download backups or restore from history table (three columns: Stations, Config, Block List)
 
 **Auto-Backup:**
 Enable "Automatic backup before uninstall" checkbox to automatically create a full backup when uninstalling the plugin. Backups are preserved even after uninstall.
+
+### Best Effort Artwork
+
+Radio broadcasts include metadata (RDS on FM, DLS on DAB) that often contains artist and title information. The plugin attempts to parse this metadata and fetch matching album artwork from Last.fm.
+
+This is called "Best Effort" because broadcast metadata is inconsistent - stations format it differently, RDS has bit errors, and non-music content (adverts, news, DJ chat) gets mixed in. The plugin uses multiple strategies to maximise artwork success rate while minimising false matches.
+
+**How It Works:**
+
+1. Broadcast metadata arrives (e.g., "Playing: Dua Lipa - Levitating")
+2. Plugin parses text to extract artist and title
+3. Parser assigns confidence score based on pattern quality
+4. If confidence meets threshold, Last.fm lookup is triggered
+5. Artwork cached locally for instant display on repeat plays
+
+**When Artwork Won't Appear:**
+
+- Station doesn't broadcast metadata (some stations transmit only station name)
+- Metadata is non-music content (news, adverts, DJ speech)
+- Confidence score below threshold (ambiguous format)
+- Track not in Last.fm database
+- Phrase matches blocklist (traffic updates, time checks)
+
+**Training the System:**
+
+The blocklist is your primary tool for improving accuracy. When you see wrong artwork:
+
+1. Note what text triggered the false match (check logs if needed)
+2. Open Station Manager > Block List tab
+3. Add the problematic phrase
+4. Save - future broadcasts containing that phrase are skipped
+
+Common additions: DJ names, show titles, station slogans, local business adverts.
+
+**Settings Guide (Plugin Settings > Artwork Settings):**
+
+| Setting | Purpose | Recommendation |
+|---------|---------|----------------|
+| Best Effort Artwork | Master on/off for all artwork features | ON unless headless system |
+| Confidence Threshold | How certain parser must be before lookup | Start at 60%, lower if missing artwork, raise if false matches |
+| Artwork Persistence | Keep artwork during metadata gaps | "Keep until artist changes" prevents flicker |
+| Artwork Timeout | Auto-clear after N minutes | Use for audiobooks/talk radio, else Disabled |
+| Debug Logging | Verbose logs for troubleshooting | OFF unless debugging |
+
+**Confidence Threshold Explained:**
+
+- **0% (Always lookup)**: Attempts lookup on any parsed text. Maximum artwork, but more false matches.
+- **60% (Default)**: Balanced. Requires reasonable "Artist - Title" pattern.
+- **95% (Very high)**: Only clear, unambiguous patterns. Fewer false matches, but misses non-standard formats.
+
+Adjust based on your stations. Music stations with clean metadata can use lower thresholds. Stations mixing music with speech benefit from higher thresholds.
+
+**Artwork Persistence Explained:**
+
+Radio metadata updates constantly. Between songs, stations often display promos, frequencies, or slogans. Without persistence, artwork would disappear and reappear, causing flicker.
+
+- **Keep until artist changes**: Best for music stations. Artwork stays until a different artist is detected.
+- **Keep until track changes**: More responsive, but may flicker on stations with inconsistent metadata.
+- **Always refresh**: Updates on every metadata change. Use only if persistence causes stale artwork.
+
+**Artwork Timeout Explained:**
+
+For spoken word content (audiobooks, talk radio, long DJ sets), the last song's artwork may persist indefinitely since no new "artist" is detected.
+
+Setting a timeout (2-30 minutes) automatically reverts to the station icon when no artist change occurs. The timer resets each time a new artist is detected.
+
+**Block List (Station Manager > Block List tab):**
+
+Phrases in the blocklist are excluded from artwork lookup. The plugin uses fuzzy matching (75% similarity) so minor variations and RDS corruption are handled automatically.
+
+Default blocklist includes: traffic update, news update, weather, breaking news, travel news.
+
+Add station-specific phrases as you encounter false matches. The blocklist has separate backup/restore from stations.
 
 ### Antenna Positioning Tools
 The plugin includes professional-grade tools for optimizing antenna placement and orientation:
@@ -156,13 +238,13 @@ The plugin includes diagnostic tools to test your USB dongle before scanning:
 The plugin automatically extracts now-playing information from DAB broadcasts:
 - **DLS (Dynamic Label Segment)**: Text metadata broadcast by DAB stations
 - **Artist/Title Parsing**: Automatically parses "Artist - Title" format
-- **Volumio Integration**: Pushes metadata so Volumio can fetch album artwork via MusicBrainz
+- **Artwork Integration**: Plugin fetches album artwork via Last.fm API
 
 When playing a DAB station, you may see:
 - Station name in the title field
 - Artist name from DLS
 - Track title from DLS
-- Album artwork fetched automatically by Volumio
+- Album artwork fetched via Last.fm
 
 Note: Not all stations broadcast DLS metadata, and formats vary by broadcaster.
 
@@ -282,7 +364,21 @@ Just a Nerd
 
 ## Version History
 
-### v1.2.6 (Current)
+### v1.2.8 (Current)
+- Best Effort Artwork: Album artwork via Last.fm API with intelligent metadata parsing
+- Configurable confidence threshold (0-95%) controls when lookups are triggered
+- Artwork persistence prevents flicker during metadata gaps
+- Artwork timeout for spoken word content (auto-revert to station icon)
+- Artwork Block List in Station Manager to filter false matches
+- Fuzzy matching tolerates RDS/DAB text corruption (75% similarity threshold)
+- Time and date announcements filtered automatically
+- Blocklist has dedicated backup/restore (separate from stations)
+- Debug logging toggle for artwork troubleshooting
+- Fixed: FM Recently Played not updating for stations with edited frequencies
+- Fixed: Auto-repairs stations where frequency was saved as number instead of string
+- 11-language translations for all new features
+
+### v1.2.6
 - Fixed signal quality indicator not updating in Volumio playback screen
 - Signal level changes now bypass 2-second throttle for responsive UI
 - Fixed custom station names not displaying on playback start

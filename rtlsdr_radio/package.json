@@ -1,6 +1,6 @@
 {
   "name": "rtlsdr_radio",
-  "version": "1.2.6",
+  "version": "1.2.8",
   "description": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "has_configuration": true,
     "has_alsa_contribution": true,
     "details": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
-    "changelog": "v1.2.6 - Real-time signal quality indicator for FM and DAB. Fixed custom station names not displaying. Fixed hidden stations appearing in browse views."
+    "changelog": "v1.2.8 - Feature - Best Effort Artwork."
   },
   "engines": {
     "node": ">=20",
@@ -36,6 +36,7 @@
     "v-conf": "*",
     "express": "^4.18.2",
     "body-parser": "^1.20.2",
-    "multer": "^1.4.5-lts.1"
+    "multer": "^1.4.5-lts.1",
+    "compromise": "^14.14.3"
   }
 }

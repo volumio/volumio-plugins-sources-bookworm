@@ -844,6 +844,10 @@
       margin-bottom: 15px;
     }
     
+    .backup-grid-3 {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+    
     .backup-table-header {
       text-align: left;
       padding: 10px;
@@ -992,6 +996,39 @@
     
     .table-header-row {
       background: #1c1c1c;
+    }
+    
+    /* Artwork Block List */
+    .blocklist-textarea-container {
+      margin-bottom: 10px;
+    }
+    
+    .blocklist-textarea {
+      width: 100%;
+      padding: 12px;
+      background: #1c1c1c;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      color: #e0e0e0;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.5;
+      resize: vertical;
+      min-height: 200px;
+    }
+    
+    .blocklist-textarea:focus {
+      outline: none;
+      border-color: #54b948;
+    }
+    
+    .blocklist-textarea::placeholder {
+      color: #666;
+    }
+    
+    .blocklist-stats {
+      color: #999;
+      font-size: 13px;
     }
     
     /* Antenna alignment tools */
@@ -1280,6 +1317,10 @@
         <i class="fa fa-adjust"></i>
         <span id="tab-antenna">Antenna Alignment</span>
       </button>
+      <button class="tab" data-tab="blocklist">
+        <i class="fa fa-ban"></i>
+        <span id="tab-blocklist">Artwork Block List</span>
+      </button>
     </div>
     
     <div id="fm-tab" class="tab-content active">
@@ -1397,8 +1438,12 @@
           <span id="backup-config">Configuration Only</span>
         </label>
         <label>
+          <input type="radio" name="backup-type" value="blocklist">
+          <span id="backup-blocklist">Blocklist Only</span>
+        </label>
+        <label>
           <input type="radio" name="backup-type" value="full">
-          <span id="backup-full">Full Backup (Stations + Config)</span>
+          <span id="backup-full">Full Backup (Everything)</span>
         </label>
       </div>
       <div class="backup-form-row">
@@ -1421,7 +1466,7 @@
     
     <div class="backup-section">
       <h3 id="restore-system-title">Restore from System</h3>
-      <div class="backup-grid">
+      <div class="backup-grid backup-grid-3">
         <div>
           <label class="restore-label" id="restore-stations-label">Stations:</label>
           <select id="stations-restore-select" class="restore-select">
@@ -1431,6 +1476,12 @@
         <div>
           <label class="restore-label" id="restore-config-label">Configuration:</label>
           <select id="config-restore-select" class="restore-select">
+            <option value="">Latest</option>
+          </select>
+        </div>
+        <div>
+          <label class="restore-label" id="restore-blocklist-label">Blocklist:</label>
+          <select id="blocklist-restore-select" class="restore-select">
             <option value="">Latest</option>
           </select>
         </div>
@@ -1607,6 +1658,48 @@
         </div>
       </div>
     </div>
+    </div>
+    
+    <div id="blocklist-tab" class="tab-content">
+      <div class="tab-header">
+        <div class="flex-1">
+          <h2 class="maintenance-header" id="blocklist-title">Artwork Block List</h2>
+        </div>
+      </div>
+      
+      <div class="antenna-info-box">
+        <i class="fa fa-info-circle"></i>
+        <span id="blocklist-info">Add phrases that should NOT trigger artwork lookup. These are typically station slogans, show names, or promotional messages - not song metadata. One phrase per line.</span>
+      </div>
+      
+      <div class="backup-section">
+        <h3 id="blocklist-phrases-title">Blocked Phrases</h3>
+        <div class="blocklist-textarea-container">
+          <textarea id="blocklist-textarea" class="blocklist-textarea" rows="12" placeholder="We love pop!&#10;Best radio playing...&#10;Greatest Hits at Breakfast"></textarea>
+        </div>
+        <div class="blocklist-stats">
+          <span id="blocklist-count">0 phrases</span>
+        </div>
+      </div>
+      
+      <div class="backup-section">
+        <h3 id="blocklist-defaults-title">Default Patterns</h3>
+        <div class="antenna-info-box" style="margin-bottom: 0;">
+          <i class="fa fa-cog"></i>
+          <span id="blocklist-defaults-info">The plugin includes built-in universal patterns for frequencies, URLs, phone numbers, and technical data. These cannot be edited but are always active.</span>
+        </div>
+      </div>
+      
+      <div class="tab-header tab-header-no-margin">
+        <button class="btn btn-secondary" onclick="resetBlocklist()">
+          <i class="fa fa-undo"></i>
+          <span id="btn-reset-blocklist">Reset to Defaults</span>
+        </button>
+        <button class="btn btn-primary" onclick="saveBlocklist()">
+          <i class="fa fa-floppy-o"></i>
+          <span id="btn-save-blocklist">Save Block List</span>
+        </button>
+      </div>
     </div>
   </div>
   
@@ -1916,6 +2009,7 @@
       document.getElementById('backup-title').textContent = t('MAINTENANCE_BACKUP_TITLE');
       document.getElementById('backup-stations').textContent = t('MAINTENANCE_BACKUP_TYPE_STATIONS');
       document.getElementById('backup-config').textContent = t('MAINTENANCE_BACKUP_TYPE_CONFIG');
+      document.getElementById('backup-blocklist').textContent = t('MAINTENANCE_BACKUP_TYPE_BLOCKLIST');
       document.getElementById('backup-full').textContent = t('MAINTENANCE_BACKUP_TYPE_FULL');
       document.getElementById('auto-backup-label').textContent = t('MAINTENANCE_AUTO_BACKUP');
       document.getElementById('btn-save-settings').textContent = t('BTN_SAVE_SETTINGS');
@@ -1923,6 +2017,7 @@
       document.getElementById('restore-system-title').textContent = t('MAINTENANCE_RESTORE_SYSTEM_TITLE');
       document.getElementById('restore-stations-label').textContent = t('MAINTENANCE_RESTORE_STATIONS');
       document.getElementById('restore-config-label').textContent = t('MAINTENANCE_RESTORE_CONFIG');
+      document.getElementById('restore-blocklist-label').textContent = t('MAINTENANCE_RESTORE_BLOCKLIST');
       document.getElementById('btn-restore-selected').textContent = t('MAINTENANCE_RESTORE_SELECTED');
       document.getElementById('btn-restore-latest').textContent = t('MAINTENANCE_RESTORE_LATEST_FULL');
       document.getElementById('upload-title').textContent = t('MAINTENANCE_UPLOAD_TITLE');
@@ -1977,6 +2072,18 @@
       document.getElementById('workflow-step-4-desc').textContent = t('WORKFLOW_STEP_4_DESC');
       document.getElementById('workflow-note-title').textContent = t('WORKFLOW_NOTE_TITLE');
       document.getElementById('workflow-note-desc').textContent = t('WORKFLOW_NOTE_DESC');
+      
+      // Artwork Block List tab translations
+      document.getElementById('tab-blocklist').textContent = t('TAB_BLOCKLIST');
+      document.getElementById('blocklist-title').textContent = t('BLOCKLIST_TITLE');
+      document.getElementById('blocklist-info').textContent = t('BLOCKLIST_INFO');
+      document.getElementById('blocklist-phrases-title').textContent = t('BLOCKLIST_PHRASES_TITLE');
+      document.getElementById('blocklist-textarea').placeholder = t('BLOCKLIST_PLACEHOLDER');
+      document.getElementById('blocklist-defaults-title').textContent = t('BLOCKLIST_DEFAULTS_TITLE');
+      document.getElementById('blocklist-defaults-info').textContent = t('BLOCKLIST_DEFAULTS_INFO');
+      document.getElementById('btn-reset-blocklist').textContent = t('BTN_RESET_BLOCKLIST');
+      document.getElementById('btn-save-blocklist').textContent = t('BTN_SAVE_BLOCKLIST');
+      updateBlocklistCount();
       
       // Show close button only when opened in new tab (not in iframe)
       const closeBtn = document.getElementById('close-window-btn');
@@ -2753,6 +2860,7 @@
     function initMaintenanceTab() {
       loadBackupHistory();
       loadMaintenanceSettings();
+      loadBlocklist();
       
       const uploadInput = document.getElementById('backup-upload');
       if (uploadInput) {
@@ -2772,6 +2880,91 @@
         })
         .catch(err => console.error('Failed to load settings:', err));
     }
+    
+    // Artwork Block List functions
+    function loadBlocklist() {
+      fetch('/api/blocklist')
+        .then(res => res.json())
+        .then(data => {
+          var phrases = data.phrases || [];
+          document.getElementById('blocklist-textarea').value = phrases.join('\n');
+          updateBlocklistCount();
+        })
+        .catch(err => console.error('Failed to load blocklist:', err));
+    }
+    
+    function updateBlocklistCount() {
+      var textarea = document.getElementById('blocklist-textarea');
+      var lines = textarea.value.split('\n').filter(function(line) {
+        return line.trim().length > 0;
+      });
+      var count = lines.length;
+      var label = count === 1 ? t('BLOCKLIST_COUNT_SINGLE') : t('BLOCKLIST_COUNT_PLURAL');
+      document.getElementById('blocklist-count').textContent = count + ' ' + label;
+    }
+    
+    function saveBlocklist() {
+      var textarea = document.getElementById('blocklist-textarea');
+      var lines = textarea.value.split('\n');
+      var phrases = lines.map(function(line) {
+        return line.trim();
+      }).filter(function(line) {
+        return line.length > 0;
+      });
+      
+      // Warn if saving empty list
+      if (phrases.length === 0) {
+        showConfirmModal(
+          t('BLOCKLIST_EMPTY_TITLE'),
+          t('BLOCKLIST_EMPTY_MSG'),
+          function() {
+            doSaveBlocklist(phrases);
+          }
+        );
+        return;
+      }
+      
+      doSaveBlocklist(phrases);
+    }
+    
+    function doSaveBlocklist(phrases) {
+      fetch('/api/blocklist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phrases: phrases })
+      })
+      .then(res => res.json())
+      .then(function() {
+        showToast(t('TOAST_BLOCKLIST_SAVED'), 'success');
+        updateBlocklistCount();
+      })
+      .catch(function(err) {
+        showToast(t('TOAST_BLOCKLIST_SAVE_FAILED'), 'error');
+      });
+    }
+    
+    function resetBlocklist() {
+      showConfirmModal(
+        t('BLOCKLIST_RESET_TITLE'),
+        t('BLOCKLIST_RESET_MSG'),
+        function() {
+          fetch('/api/blocklist/reset', { method: 'POST' })
+            .then(res => res.json())
+            .then(function(data) {
+              var phrases = data.phrases || [];
+              document.getElementById('blocklist-textarea').value = phrases.join('\n');
+              updateBlocklistCount();
+              showToast(t('TOAST_BLOCKLIST_RESET'), 'success');
+            })
+            .catch(function(err) {
+              showToast(t('TOAST_BLOCKLIST_RESET_FAILED'), 'error');
+            });
+        }
+      );
+    }
+    
+    // Add event listener for blocklist textarea
+    document.getElementById('blocklist-textarea').addEventListener('input', updateBlocklistCount);
     
     function saveMaintenanceSettings() {
       const autoBackup = document.getElementById('auto-backup-checkbox').checked;
@@ -2819,12 +3012,20 @@
       const allBackups = [];
       data.stations.forEach(b => { b.type = 'stations'; allBackups.push(b); });
       data.config.forEach(b => { b.type = 'config'; allBackups.push(b); });
+      data.blocklist.forEach(b => { b.type = 'blocklist'; allBackups.push(b); });
       allBackups.sort((a, b) => new Date(b.date) - new Date(a.date));
       
       allBackups.forEach(backup => {
         const row = document.createElement('tr');
         
-        const typeText = backup.type === 'stations' ? t('BACKUP_TYPE_STATIONS_SHORT') : t('BACKUP_TYPE_CONFIG_SHORT');
+        let typeText;
+        if (backup.type === 'stations') {
+          typeText = t('BACKUP_TYPE_STATIONS_SHORT');
+        } else if (backup.type === 'config') {
+          typeText = t('BACKUP_TYPE_CONFIG_SHORT');
+        } else {
+          typeText = t('BACKUP_TYPE_BLOCKLIST_SHORT');
+        }
         
         const cells = [
           typeText,
@@ -2851,9 +3052,11 @@
     function populateRestoreSelects(data) {
       const stationsSelect = document.getElementById('stations-restore-select');
       const configSelect = document.getElementById('config-restore-select');
+      const blocklistSelect = document.getElementById('blocklist-restore-select');
       
       stationsSelect.innerHTML = '<option value="">' + t('OPTION_LATEST') + '</option>';
       configSelect.innerHTML = '<option value="">' + t('OPTION_LATEST') + '</option>';
+      blocklistSelect.innerHTML = '<option value="">' + t('OPTION_LATEST') + '</option>';
       
       data.stations.forEach(backup => {
         const option = document.createElement('option');
@@ -2868,13 +3071,21 @@
         option.textContent = new Date(backup.date).toLocaleString();
         configSelect.appendChild(option);
       });
+      
+      data.blocklist.forEach(backup => {
+        const option = document.createElement('option');
+        option.value = backup.timestamp;
+        option.textContent = new Date(backup.date).toLocaleString();
+        blocklistSelect.appendChild(option);
+      });
     }
     
     async function restoreSelected() {
       const stationsTimestamp = document.getElementById('stations-restore-select').value;
       const configTimestamp = document.getElementById('config-restore-select').value;
+      const blocklistTimestamp = document.getElementById('blocklist-restore-select').value;
       
-      if (!stationsTimestamp && !configTimestamp) {
+      if (!stationsTimestamp && !configTimestamp && !blocklistTimestamp) {
         showToast(t('TOAST_SELECT_BACKUP'), 'warning');
         return;
       }
@@ -2891,7 +3102,7 @@
       fetch('/api/maintenance/backup/restore', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stationsTimestamp, configTimestamp })
+        body: JSON.stringify({ stationsTimestamp, configTimestamp, blocklistTimestamp })
       })
       .then(res => res.json())
       .then(() => showToast(t('TOAST_RESTORE_SUCCESS'), 'success'))
@@ -2901,9 +3112,11 @@
     function restoreLatestFull() {
       const stationsSelect = document.getElementById('stations-restore-select');
       const configSelect = document.getElementById('config-restore-select');
+      const blocklistSelect = document.getElementById('blocklist-restore-select');
       
       if (stationsSelect.options.length > 1) stationsSelect.selectedIndex = 1;
       if (configSelect.options.length > 1) configSelect.selectedIndex = 1;
+      if (blocklistSelect.options.length > 1) blocklistSelect.selectedIndex = 1;
       
       restoreSelected();
     }
