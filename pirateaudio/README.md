@@ -12,6 +12,17 @@ The plugin enables full support for the **Pimoroni Pirate Audio** module on Rasp
 - Button handling  
 - SPI-based display communication  
 
+## How to Configure the Pirate Audio DAC
+
+1. In Volumio, go to **Menu → Playback Options**.  
+2. Under **Audio Output**, enable **I2S DAC**.  
+3. For **DAC Model**, select **HiFiBerry DAC**.
+
+## Additional Configuration
+
+On some older **Pirate Audio DAC** models, you may need to change the **Y** button pin from **24** to **20** using the plugin options.
+
+
 ## Installation (Manual)
 To install the plugin manually on Volumio 4:
 
@@ -26,7 +37,13 @@ volumio plugin install
 - After enabling the **SPI interface**, Volumio may need to be **restarted** for the display to function correctly.
 
 ## Changelog 
-**Version 0.1.4 (Volumio 4 Bookworm Port)**
+**Version 0.1.5 - 2025-11-29**
+
+- Changed the default GPIO pin for button Y from 20 to 24
+- Fixed a minor formatting issue in `package.json`
+- Added configuration instructions for the Pirate Audio DAC in `README.md`
+
+**Version 0.1.4 (Volumio 4 Bookworm Port)  - 2025-11-28**
 
 - Updated and integrated all dependencies for Bookworm compatibility  
 - Added the `libopenblas0` dependency  
