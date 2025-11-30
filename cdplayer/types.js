@@ -3,6 +3,7 @@
  * @property {string}   album
  * @property {string}   artist
  * @property {string}   title
+ * @property {string}   name
  * @property {string}   trackType
  * @property {string}   type
  * @property {string}   service

@@ -116,6 +116,7 @@ async function listCD() {
         album: "Audio CD",
         artist: "Unknown",
         title: `Track ${trackNumber}`,
+        name: `Track ${trackNumber}`,
         trackType: "wav",
         type: "song",
         service: "cdplayer",
@@ -244,7 +245,7 @@ async function pRetry(fn, opt = {}) {
         (predicate && !predicate(err, attempt, maxAttempts))
       ) {
         // Give up
-        throw _errorDataAppend(err, opt.errorData);
+        throw err;
       }
       // Retry after delay
       delay *= delayMultiplier;

@@ -16,6 +16,8 @@ module.exports = cdplayer;
 
 const SERVICE_FILE = "cdplayer_stream.service";
 const CD_HTTP_BASE_URL = "http://127.0.0.1:8088/wav/track/";
+const DEFAULT_COVERART_URL =
+  "/albumart?sourceicon=music_service/cdplayer/cdplayer.png";
 
 function cdplayer(context) {
   var self = this;
@@ -24,10 +26,13 @@ function cdplayer(context) {
   this.commandRouter = this.context.coreCommand;
   this.logger = this.context.logger;
   this.configManager = this.context.configManager;
+
   /** @type {CdTrack[]|null} */
   this._items = null;
   /** @type {TrayWatcher|null} */
   this._trayWatcher = null;
+  /** @type {number|null} */
+  this._discIdentifier = null;
 }
 
 cdplayer.prototype.log = function (msg) {
@@ -54,7 +59,7 @@ cdplayer.prototype.onVolumioStart = function () {
 cdplayer.prototype.onStart = function () {
   var self = this;
   var defer = libQ.defer();
-  self.addToBrowseSources();
+  self.addToBrowseSources(DEFAULT_COVERART_URL);
 
   execAsync(`sudo /bin/systemctl enable --now ${SERVICE_FILE}`)
     .then(() => self.log("Daemon service started"))
@@ -164,9 +169,7 @@ cdplayer.prototype.setConf = function (varName, varValue) {
 // Playback Controls ---------------------------------------------------------------------------------------
 // If your plugin is not a music_sevice don't use this part and delete it
 
-cdplayer.prototype.addToBrowseSources = function (
-  albumart = "/albumart?sourceicon=music_service/cdplayer/cdplayer.png"
-) {
+cdplayer.prototype.addToBrowseSources = function (albumart) {
   this.log("Adding CDPlayer to Browse Sources");
   var data = {
     name: "CDPlayer",
@@ -226,16 +229,17 @@ cdplayer.prototype.handleBrowseUri = function (curUri) {
       let decoratedItems = items;
       if (meta) {
         // eg. https://coverartarchive.org/release/2174675c-2159-4405-a3af-3a4860106b58/front
-        const albumart = getAlbumartUrl(meta.releaseId);
+        const albumart = await getAlbumartUrl(meta.releaseId);
         decoratedItems = decorateItems(items, meta, albumart);
         self.removeToBrowseSources();
-        self.addToBrowseSources(albumart);
+        self.addToBrowseSources(albumart || DEFAULT_COVERART_URL);
       } else {
         self.log("No CD metadata found, retrying in background");
         void retryFetchMetadata(items, self);
       }
 
       self._items = decoratedItems;
+      self._discIdentifier = Date.now();
 
       return {
         navigation: {
@@ -268,14 +272,23 @@ cdplayer.prototype.explodeUri = function (uri) {
   const self = this;
   const defer = libQ.defer();
 
-  // Match single track: cdplayer/1, cdplayer/2, ...
   const match = uri.match(/^cdplayer\/(\d+)$/);
   if (match) {
     const n = parseInt(match[1], 10);
+
+    // Safety: if for some reason this is the first time we touch this disc
+    // and _discIdentifier wasn't set yet, initialize it now.
+    if (self._discIdentifier == null) {
+      self._discIdentifier = Date.now();
+      self.log(
+        `explodeUri: _discIdentifier was null, initializing to ${self._discIdentifier}`
+      );
+    }
+
     const track = {
       ...self._items[n - 1],
       service: "mpd",
-      uri: `${CD_HTTP_BASE_URL}${n}`,
+      uri: `${CD_HTTP_BASE_URL}${n}?disc=${self._discIdentifier}`,
     };
 
     defer.resolve([track]);
@@ -343,24 +356,38 @@ function getResultItems(items, query) {
 }
 
 function retryFetchMetadata(items, self) {
-  void pRetry(
+  pRetry(
     async () => {
       const meta = await fetchCdMetadata();
+
       if (!meta) {
-        throw new Error();
+        // If null, we force a retry
+        throw new Error("CD metadata unavailable");
       }
-      const albumart = getAlbumartUrl(meta.releaseId);
+
+      // If metadata retrieved:
+      const albumart = await getAlbumartUrl(meta.releaseId);
       const decoratedItems = decorateItems(items, meta, albumart);
       self.removeToBrowseSources();
-      self.addToBrowseSources(albumart);
+      self.addToBrowseSources(albumart || DEFAULT_COVERART_URL);
+
       self._items = decoratedItems;
+      self._discIdentifier = Date.now();
     },
     {
       delay: 700,
       maxAttempts: 3,
       logger: self,
+      name: "CD metadata fetch",
     }
-  );
+  ).catch((err) => {
+    // This is ONLY the last retry failure.
+    self.error(
+      "CD metadata fetch failed after retries: " +
+        (err && err.stack ? err.stack : err)
+    );
+    // Do NOT rethrow – swallow the error so the plugin continues
+  });
 }
 
 function toKew(promise) {
@@ -398,6 +425,7 @@ function getTrayWatcherConfiguration(self, device) {
       self.log("Eject detected ... ");
       // Drop CD track cache so next browse forces a re-scan
       self._items = null;
+      self._discIdentifier = null;
 
       try {
         const state = self.commandRouter.volumioGetState();
@@ -421,7 +449,7 @@ function getTrayWatcherConfiguration(self, device) {
       // Refresh browse source so albumart resets to the default icon
       try {
         self.removeToBrowseSources();
-        self.addToBrowseSources();
+        self.addToBrowseSources(DEFAULT_COVERART_URL);
       } catch (e) {
         self.log("Error refreshing browse sources after eject: " + e.message);
       }

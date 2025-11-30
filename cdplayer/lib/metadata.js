@@ -2,9 +2,8 @@
 const { detectCdDevice } = require("./utils");
 const { execFile } = require("child_process");
 const { promisify } = require("util");
-const _nodeFetch = require("node-fetch");
-global.fetch = _nodeFetch.default || _nodeFetch;
 const execFileAsync = promisify(execFile);
+const { calculateMusicBrainzDiscId } = require("./discid");
 
 /**
  * Retrieves the MusicBrainz Disc ID of the currently inserted audio CD.
@@ -13,32 +12,30 @@ const execFileAsync = promisify(execFile);
  * @function getDiscId
  * @returns {Promise<string|null>} Resolves with the MusicBrainz Disc ID string, or `null` if not found.
  * @throws {Error} If the `discid` command fails to execute or times out.
- *
  */
 async function getDiscId() {
   const device = detectCdDevice();
+
   try {
-    const { stdout } = await execFileAsync("/usr/local/bin/discid", [device], {
-      env: { LANG: "C" },
-      timeout: 10000,
-      windowsHide: true,
-    });
+    // Run cd-discid with the MusicBrainz option to get an appropriate TOC format
+    const { stdout } = await execFileAsync(
+      "cd-discid",
+      ["--musicbrainz", device],
+      {
+        env: { LANG: "C" },
+        timeout: 10000,
+        windowsHide: true,
+      }
+    );
 
     if (!stdout) {
       return null;
     }
 
-    const out = stdout.trim();
-    // Common outputs to handle:
-    // DiscID        : eWrWSTdIuUCI95ca00chZOSFHug-
-    // FreeDB DiscID : b10c9c0c
-    // First track   : 1
-    // Last track    : 12
-    // Length        : 242310 sectors (  53:50.80)
-    // Track 1       :      150    20520 (   4:33.60)
-    // Track 2       :    20670    15218 (   3:22.91)
-    const m = /DiscID\s*:\s*([A-Za-z0-9._-]{20,})/i.exec(out);
-    return m ? m[1] : null;
+    // Clean the TOC line
+    const tocLine = stdout.trim();
+    const discId = calculateMusicBrainzDiscId(tocLine);
+    return discId || null;
   } catch (err) {
     throw err;
   }
@@ -243,23 +240,40 @@ async function fetchCdMetadata() {
  * @returns {CdTrack[]} The decorated list of CD track items.
  */
 function decorateItems(items, meta, albumart) {
-  return items.map((item, index) => ({
-    ...item,
-    album: meta.album,
-    artist: meta.artist,
-    title: meta.tracks[index]?.title || item.title,
-    albumart,
-  }));
+  return items.map((item, index) => {
+    return {
+      ...item,
+      album: meta.album,
+      artist: meta.artist,
+      title: meta.tracks[index]?.title || item.title,
+      name: meta.tracks[index]?.title || item.title,
+      albumart,
+    };
+  });
 }
 
 /**
  * Constructs the URL for the album art image from MusicBrainz Cover Art Archive.
+ * Validates that the URL actually exists before returning it.
  *
  * @param {string} releaseId - The MusicBrainz release ID.
- * @returns {string} The URL of the album art image.
+ * @returns {Promise<string|null>} The URL if it exists, otherwise null.
  */
-function getAlbumartUrl(releaseId) {
-  return `https://coverartarchive.org/release/${releaseId}/front-500`;
+async function getAlbumartUrl(releaseId) {
+  const url = `https://coverartarchive.org/release/${releaseId}/front-500`;
+
+  try {
+    // HEAD is lighter and sufficient to check existence
+    const response = await fetch(url, { method: "HEAD" });
+
+    if (response.ok) {
+      return url; // cover exists
+    }
+
+    return null;
+  } catch (err) {
+    return null;
+  }
 }
 
 module.exports = {
