@@ -1,0 +1,37 @@
+{
+  "name": "mqtt_client",
+  "version": "1.0.1",
+  "description": "MQTT client for home automation integration. Publishes Volumio state and receives playback commands via MQTT.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Just a Nerd",
+  "license": "MIT",
+  "repository": "https://github.com/volumio/volumio-plugins-sources-bookworm",
+  "volumio_info": {
+    "prettyName": "MQTT Client",
+    "icon": "fa-exchange",
+    "plugin_type": "system_controller",
+    "architectures": [
+      "armhf",
+      "amd64"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "has_settings_page": true,
+    "details": "MQTT client for home automation integration (Home Assistant, OpenHAB, Node-RED, etc.). Publishes Volumio playback state to configurable MQTT topics and receives commands for playback control, volume adjustment, and queue management. Supports TLS/SSL with client certificates.",
+    "changelog": "v1.0.1 - Initial release with full playback control, state publishing, TLS support, and group topics."
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "fs-extra": "*",
+    "kew": "*",
+    "v-conf": "*",
+    "mqtt": "^5.10.0"
+  }
+}
