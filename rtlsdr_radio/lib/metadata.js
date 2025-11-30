@@ -40,7 +40,7 @@ var userBlocklistPhrases = [];
 var config = {
   // MusicBrainz API
   musicbrainzEndpoint: 'https://musicbrainz.org/ws/2',
-  musicbrainzUserAgent: 'VolumioRTLSDRRadio/1.2.8 (https://github.com/foonerd/volumio-rtlsdr-radio)',
+  musicbrainzUserAgent: 'VolumioRTLSDRRadio/1.2.9 (https://github.com/foonerd/volumio-rtlsdr-radio)',
   musicbrainzRateLimit: 1000,  // 1 request per second
   
   // Last.fm API - primary source for artwork lookups
@@ -491,7 +491,63 @@ var separatorPatterns = [
   }
 ];
 
+// Special pattern: Soundtrack format "Album/Movie - Track by Artist"
+// Used by Classic FM and other soundtrack-focused stations
+// Example: "Top Gun: Maverick - Top Gun Anthem by Lorne Balfe"
+function methodSoundtrack(text) {
+  // Pattern: [Album/Movie] - [Track] by [Artist]
+  // Must have dash AND "by" to qualify
+  var match = text.match(/^(.+?)\s+-\s+(.+?)\s+by\s+(.+)$/i);
+  if (match) {
+    var album = match[1].trim();
+    var track = match[2].trim();
+    var artist = match[3].trim();
+    
+    // Validate: album should look like a movie/album title (allow colons)
+    // Track and artist should be reasonable lengths
+    if (album && track && artist && 
+        album.length > 2 && track.length > 2 && artist.length > 2 &&
+        artist.length < 50) {
+      return {
+        artist: artist,
+        title: track,
+        album: album,
+        confidence: 90,
+        method: 'soundtrack'
+      };
+    }
+  }
+  
+  // Also try: [Track] by [Artist] from [Album]
+  match = text.match(/^(.+?)\s+by\s+(.+?)\s+from\s+(.+)$/i);
+  if (match) {
+    var track = match[1].trim();
+    var artist = match[2].trim();
+    var album = match[3].trim();
+    
+    if (album && track && artist && 
+        album.length > 2 && track.length > 2 && artist.length > 2 &&
+        artist.length < 50) {
+      return {
+        artist: artist,
+        title: track,
+        album: album,
+        confidence: 90,
+        method: 'soundtrack-from'
+      };
+    }
+  }
+  
+  return null;
+}
+
 function methodSeparators(text) {
+  // Try soundtrack pattern first (higher specificity)
+  var soundtrackResult = methodSoundtrack(text);
+  if (soundtrackResult) {
+    return soundtrackResult;
+  }
+  
   for (var i = 0; i < separatorPatterns.length; i++) {
     var pattern = separatorPatterns[i];
     var match = text.match(pattern.regex);

@@ -364,7 +364,12 @@ Just a Nerd
 
 ## Version History
 
-### v1.2.8 (Current)
+### v1.2.9 (Current)
+- Fixed Signal suffix in DLS breaking metadata parser
+- Added soundtrack pattern for Classic FM format (Album - Track by Artist)
+- Added alternative pattern (Track by Artist from Album)
+
+### v1.2.8
 - Best Effort Artwork: Album artwork via Last.fm API with intelligent metadata parsing
 - Configurable confidence threshold (0-95%) controls when lookups are triggered
 - Artwork persistence prevents flicker during metadata gaps
