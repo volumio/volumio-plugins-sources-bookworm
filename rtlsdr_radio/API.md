@@ -880,7 +880,7 @@ curl -X POST http://volumio.local:3456/api/maintenance/backup/upload \
 
 ## Changelog
 
-### API v1.2.8
+### API v1.2.9
 - Added Last.fm artwork integration via track.getInfo API
 - New configuration fields:
   - artwork_confidence_threshold (0, 20, 40, 60, 80, 95 - default 60)

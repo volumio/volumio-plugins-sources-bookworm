@@ -1,6 +1,6 @@
 {
   "name": "rtlsdr_radio",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "has_configuration": true,
     "has_alsa_contribution": true,
     "details": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
-    "changelog": "v1.2.8 - Feature - Best Effort Artwork."
+    "changelog": "v1.2.9 - Fixed Signal suffix in DLS breaking parser. Added soundtrack pattern for Classic FM format (Album - Track by Artist)."
   },
   "engines": {
     "node": ">=20",

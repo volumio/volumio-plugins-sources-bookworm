@@ -4648,7 +4648,9 @@ ControllerRtlsdrRadio.prototype.handleDabDls = function(label, dlPlusData) {
     self.logger.info('[RTL-SDR Radio] DL+ metadata: ' + artworkArtist + ' - ' + artworkTitle);
   } else if (rawLabel) {
     // Artwork source 2: Text parsing fallback (LAYER 2 metadata extraction)
-    var parsed = self.parseRadioText(rawLabel);
+    // Strip signal info suffix if present (fn-dab appends "Signal=X/5 (Y%)")
+    var labelForParsing = rawLabel.replace(/\s*Signal=\d+\/\d+\s*\(\d+%\)\s*$/, '');
+    var parsed = self.parseRadioText(labelForParsing);
     if (parsed.artist && parsed.title) {
       // Always store parsed data - threshold check happens in pushDabState
       artworkArtist = parsed.artist;
