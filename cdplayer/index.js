@@ -16,6 +16,8 @@ module.exports = cdplayer;
 
 const SERVICE_FILE = "cdplayer_stream.service";
 const CD_HTTP_BASE_URL = "http://127.0.0.1:8088/wav/track/";
+const DEFAUULT_COVERART_URL =
+  '"/albumart?sourceicon=music_service/cdplayer/cdplayer.png"';
 
 function cdplayer(context) {
   var self = this;
@@ -54,7 +56,7 @@ cdplayer.prototype.onVolumioStart = function () {
 cdplayer.prototype.onStart = function () {
   var self = this;
   var defer = libQ.defer();
-  self.addToBrowseSources();
+  self.addToBrowseSources(DEFAUULT_COVERART_URL);
 
   execAsync(`sudo /bin/systemctl enable --now ${SERVICE_FILE}`)
     .then(() => self.log("Daemon service started"))
@@ -164,9 +166,7 @@ cdplayer.prototype.setConf = function (varName, varValue) {
 // Playback Controls ---------------------------------------------------------------------------------------
 // If your plugin is not a music_sevice don't use this part and delete it
 
-cdplayer.prototype.addToBrowseSources = function (
-  albumart = "/albumart?sourceicon=music_service/cdplayer/cdplayer.png"
-) {
+cdplayer.prototype.addToBrowseSources = function (albumart) {
   this.log("Adding CDPlayer to Browse Sources");
   var data = {
     name: "CDPlayer",
@@ -433,7 +433,7 @@ function getTrayWatcherConfiguration(self, device) {
       // Refresh browse source so albumart resets to the default icon
       try {
         self.removeToBrowseSources();
-        self.addToBrowseSources();
+        self.addToBrowseSources(DEFAUULT_COVERART_URL);
       } catch (e) {
         self.log("Error refreshing browse sources after eject: " + e.message);
       }
