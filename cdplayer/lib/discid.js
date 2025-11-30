@@ -1,6 +1,12 @@
 const crypto = require("crypto");
 
 /**
+ *
+ * @function calculateMusicBrainzDiscId
+ * @param {string} cdDiscIdOutput - The output string from `cd-discid --musicbrainz`.
+ * @returns {string} The calculated MusicBrainz Disc ID.
+ *
+ * @description
  * Calculate MusicBrainz DiscID from the output of:
  *   cd-discid --musicbrainz /dev/sr0
  *
@@ -10,6 +16,7 @@ const crypto = require("crypto");
  * This follows the official MusicBrainz "Disc ID Calculation" algorithm:
  * https://musicbrainz.org/doc/Disc_ID_Calculation
  */
+
 function calculateMusicBrainzDiscId(cdDiscIdOutput) {
   if (!cdDiscIdOutput || typeof cdDiscIdOutput !== "string") {
     throw new Error("cdDiscIdOutput must be a non-empty string");
@@ -102,7 +109,7 @@ function calculateMusicBrainzDiscId(cdDiscIdOutput) {
   return discId;
 }
 
-// Example usage with your sample line:
+// Example usage
 // const example =
 //   "12 150 20670 35888 56025 75815 92983 123455 139950 157323 184053 198843 214320 242310";
 // console.log(calculateMusicBrainzDiscId(example));

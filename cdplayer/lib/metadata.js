@@ -5,9 +5,6 @@ const { promisify } = require("util");
 const execFileAsync = promisify(execFile);
 const { calculateMusicBrainzDiscId } = require("./discid");
 
-// cd-discid /dev/sr0 is the tool already installed on volumio
-//  cd-discid --musicbrainz /dev/sr0
-
 /**
  * Retrieves the MusicBrainz Disc ID of the currently inserted audio CD.
  *
@@ -20,9 +17,7 @@ async function getDiscId() {
   const device = detectCdDevice();
 
   try {
-    //
-    // 1. Run cd-discid with the MusicBrainz TOC format
-    //
+    // Run cd-discid with the MusicBrainz option to get an appropriate TOC format
     const { stdout } = await execFileAsync(
       "cd-discid",
       ["--musicbrainz", device],
@@ -37,19 +32,11 @@ async function getDiscId() {
       return null;
     }
 
-    //
-    // 2. Clean the TOC line
-    //
+    // Clean the TOC line
     const tocLine = stdout.trim();
-
-    //
-    // 3. Calculate the MusicBrainz Disc ID using your JS implementation
-    //
     const discId = calculateMusicBrainzDiscId(tocLine);
-
     return discId || null;
   } catch (err) {
-    // You may prefer to log and return null instead of throwing
     throw err;
   }
 }
