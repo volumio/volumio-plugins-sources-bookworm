@@ -6,9 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Matteo",
+  "author": "Matteo Tonini",
   "license": "ISC",
-  "repository": "https://github.com/yourname/yourrepo",
+  "repository": "https://github.com/matteo-tonini/volumio-plugins-sources-bookworm/cdplayer",
   "volumio_info": {
     "prettyName": "CDPlayer",
     "icon": "fa-lightbulb-o",
