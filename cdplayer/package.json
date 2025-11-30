@@ -1,7 +1,7 @@
 {
   "name": "cdplayer",
   "version": "1.0.0",
-  "description": "CD playback for Volumio 3",
+  "description": "CD playback for Volumio 4",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -27,7 +27,6 @@
     "volumio": ">=4"
   },
   "dependencies": {
-    "discid": "latest",
     "kew": "^0.7.0",
     "v-conf": "^1.4.0"
   }
