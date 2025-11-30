@@ -116,6 +116,7 @@ async function listCD() {
         album: "Audio CD",
         artist: "Unknown",
         title: `Track ${trackNumber}`,
+        name: `Track ${trackNumber}`,
         trackType: "wav",
         type: "song",
         service: "cdplayer",

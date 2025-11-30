@@ -240,13 +240,16 @@ async function fetchCdMetadata() {
  * @returns {CdTrack[]} The decorated list of CD track items.
  */
 function decorateItems(items, meta, albumart) {
-  return items.map((item, index) => ({
-    ...item,
-    album: meta.album,
-    artist: meta.artist,
-    title: meta.tracks[index]?.title || item.title,
-    albumart,
-  }));
+  return items.map((item, index) => {
+    return {
+      ...item,
+      album: meta.album,
+      artist: meta.artist,
+      title: meta.tracks[index]?.title || item.title,
+      name: meta.tracks[index]?.title || item.title,
+      albumart,
+    };
+  });
 }
 
 /**

@@ -16,8 +16,8 @@ module.exports = cdplayer;
 
 const SERVICE_FILE = "cdplayer_stream.service";
 const CD_HTTP_BASE_URL = "http://127.0.0.1:8088/wav/track/";
-const DEFAUULT_COVERART_URL =
-  '"/albumart?sourceicon=music_service/cdplayer/cdplayer.png"';
+const DEFAULT_COVERART_URL =
+  "/albumart?sourceicon=music_service/cdplayer/cdplayer.png";
 
 function cdplayer(context) {
   var self = this;
@@ -26,10 +26,13 @@ function cdplayer(context) {
   this.commandRouter = this.context.coreCommand;
   this.logger = this.context.logger;
   this.configManager = this.context.configManager;
+
   /** @type {CdTrack[]|null} */
   this._items = null;
   /** @type {TrayWatcher|null} */
   this._trayWatcher = null;
+  /** @type {number|null} */
+  this._discIdentifier = null;
 }
 
 cdplayer.prototype.log = function (msg) {
@@ -56,7 +59,7 @@ cdplayer.prototype.onVolumioStart = function () {
 cdplayer.prototype.onStart = function () {
   var self = this;
   var defer = libQ.defer();
-  self.addToBrowseSources(DEFAUULT_COVERART_URL);
+  self.addToBrowseSources(DEFAULT_COVERART_URL);
 
   execAsync(`sudo /bin/systemctl enable --now ${SERVICE_FILE}`)
     .then(() => self.log("Daemon service started"))
@@ -229,13 +232,14 @@ cdplayer.prototype.handleBrowseUri = function (curUri) {
         const albumart = await getAlbumartUrl(meta.releaseId);
         decoratedItems = decorateItems(items, meta, albumart);
         self.removeToBrowseSources();
-        self.addToBrowseSources(albumart);
+        self.addToBrowseSources(albumart || DEFAULT_COVERART_URL);
       } else {
         self.log("No CD metadata found, retrying in background");
         void retryFetchMetadata(items, self);
       }
 
       self._items = decoratedItems;
+      self._discIdentifier = Date.now();
 
       return {
         navigation: {
@@ -268,14 +272,23 @@ cdplayer.prototype.explodeUri = function (uri) {
   const self = this;
   const defer = libQ.defer();
 
-  // Match single track: cdplayer/1, cdplayer/2, ...
   const match = uri.match(/^cdplayer\/(\d+)$/);
   if (match) {
     const n = parseInt(match[1], 10);
+
+    // Safety: if for some reason this is the first time we touch this disc
+    // and _discIdentifier wasn't set yet, initialize it now.
+    if (self._discIdentifier == null) {
+      self._discIdentifier = Date.now();
+      self.log(
+        `explodeUri: _discIdentifier was null, initializing to ${self._discIdentifier}`
+      );
+    }
+
     const track = {
       ...self._items[n - 1],
       service: "mpd",
-      uri: `${CD_HTTP_BASE_URL}${n}`,
+      uri: `${CD_HTTP_BASE_URL}${n}?disc=${self._discIdentifier}`,
     };
 
     defer.resolve([track]);
@@ -356,8 +369,10 @@ function retryFetchMetadata(items, self) {
       const albumart = await getAlbumartUrl(meta.releaseId);
       const decoratedItems = decorateItems(items, meta, albumart);
       self.removeToBrowseSources();
-      self.addToBrowseSources(albumart);
+      self.addToBrowseSources(albumart || DEFAULT_COVERART_URL);
+
       self._items = decoratedItems;
+      self._discIdentifier = Date.now();
     },
     {
       delay: 700,
@@ -410,6 +425,7 @@ function getTrayWatcherConfiguration(self, device) {
       self.log("Eject detected ... ");
       // Drop CD track cache so next browse forces a re-scan
       self._items = null;
+      self._discIdentifier = null;
 
       try {
         const state = self.commandRouter.volumioGetState();
@@ -433,7 +449,7 @@ function getTrayWatcherConfiguration(self, device) {
       // Refresh browse source so albumart resets to the default icon
       try {
         self.removeToBrowseSources();
-        self.addToBrowseSources(DEFAUULT_COVERART_URL);
+        self.addToBrowseSources(DEFAULT_COVERART_URL);
       } catch (e) {
         self.log("Error refreshing browse sources after eject: " + e.message);
       }
