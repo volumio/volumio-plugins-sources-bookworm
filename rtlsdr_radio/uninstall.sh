@@ -3,8 +3,11 @@
 echo "Uninstalling FM/DAB Radio plugin"
 
 # Stop any running decoder processes
-pkill -f rtl_fm
-pkill -f dab-rtlsdr
+pkill -f fn-rtl_fm
+pkill -f fn-rtl_power
+pkill -f fn-dab
+pkill -f fn-dab-scanner
+pkill -f fn-redsea
 
 # Remove sudoers entry
 if [ -f /etc/sudoers.d/volumio-user-rtlsdr-radio ]; then
@@ -25,20 +28,51 @@ sed -i '/snd-aloop/d' /etc/modules
 # Unload ALSA loopback module
 rmmod snd-aloop 2>/dev/null
 
+# Remove DAB and RDS binaries
+rm -f /usr/local/bin/fn-dab
+rm -f /usr/local/bin/fn-dab-scanner
+rm -f /usr/local/bin/fn-redsea
+
+# Remove foonerd RTL-SDR packages
+echo "Removing foonerd RTL-SDR packages..."
+if dpkg -l | grep -q "^ii  foonerd-rtlsdr "; then
+  dpkg --purge foonerd-rtlsdr 2>/dev/null
+  echo "Removed foonerd-rtlsdr"
+fi
+
+if dpkg -l | grep -q "^ii  libfn-rtlsdr0 "; then
+  dpkg --purge libfn-rtlsdr0 2>/dev/null
+  echo "Removed libfn-rtlsdr0"
+fi
+
+# Clean up udev rules that may be left behind
+echo "Cleaning up udev rules..."
+rm -f /lib/udev/rules.d/60-libfn-rtlsdr0.rules 2>/dev/null
+rm -f /etc/udev/rules.d/60-libfn-rtlsdr0.rules 2>/dev/null
+
+# Remove librtlsdr.so compatibility symlink
+echo "Removing compatibility symlinks..."
+rm -f /usr/lib/arm-linux-gnueabihf/librtlsdr.so 2>/dev/null
+rm -f /usr/lib/aarch64-linux-gnu/librtlsdr.so 2>/dev/null
+rm -f /usr/lib/x86_64-linux-gnu/librtlsdr.so 2>/dev/null
+
+# Reload udev rules after package removal
+echo "Reloading udev rules..."
+udevadm control --reload-rules
+udevadm trigger
+
 echo ""
 echo "FM/DAB Radio plugin uninstalled"
 echo ""
 echo "Removed components:"
-echo "- RTL-SDR and DAB decoder processes"
+echo "- RTL-SDR, DAB decoder, and RDS decoder processes"
 echo "- Web management interface (port 3456)"
 echo "- Sudoers entry"
 echo "- Kernel module blacklist"
 echo "- ALSA loopback configuration"
-echo ""
-echo "Note: RTL-SDR libraries and DAB binaries were NOT removed"
-echo "To remove them manually, run:"
-echo "  apt-get remove rtl-sdr librtlsdr0"
-echo "  rm -f /usr/local/bin/dab-rtlsdr-3"
-echo "  rm -f /usr/local/bin/dab-scanner-3"
+echo "- foonerd-rtlsdr package"
+echo "- libfn-rtlsdr0 package"
+echo "- DAB binaries (fn-dab, fn-dab-scanner)"
+echo "- RDS binary (fn-redsea)"
 echo ""
 echo "pluginuninstallend"

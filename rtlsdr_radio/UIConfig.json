@@ -229,7 +229,8 @@
         "label": "TRANSLATE.SAVE_DAB_SETTINGS",
         "data": [
           "dab_enabled",
-          "dab_gain"
+          "dab_gain",
+          "dab_ppm"
         ]
       },
       "content": [
@@ -246,6 +247,17 @@
           "label": "TRANSLATE.DAB_GAIN",
           "value": 80,
           "doc": "TRANSLATE.DAB_GAIN_DOC",
+          "visibleIf": {
+            "field": "dab_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "dab_ppm",
+          "element": "input",
+          "label": "TRANSLATE.DAB_PPM",
+          "value": 0,
+          "doc": "TRANSLATE.DAB_PPM_DOC",
           "visibleIf": {
             "field": "dab_enabled",
             "value": true
@@ -269,6 +281,122 @@
       ]
     },
     {
+      "id": "artwork_settings",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_ARTWORK",
+      "icon": "fa-image",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/rtlsdr_radio",
+        "method": "saveArtworkSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE_ARTWORK_SETTINGS",
+        "data": [
+          "show_artwork_settings",
+          "best_effort_artwork",
+          "artwork_threshold",
+          "artwork_persistence",
+          "artwork_ttl",
+          "artwork_debug_logging"
+        ]
+      },
+      "content": [
+        {
+          "id": "show_artwork_settings",
+          "element": "switch",
+          "label": "TRANSLATE.SHOW_ARTWORK_SETTINGS",
+          "value": false,
+          "doc": "TRANSLATE.SHOW_ARTWORK_SETTINGS_DOC"
+        },
+        {
+          "id": "best_effort_artwork",
+          "element": "switch",
+          "label": "TRANSLATE.BEST_EFFORT_ARTWORK",
+          "value": true,
+          "doc": "TRANSLATE.BEST_EFFORT_ARTWORK_DOC",
+          "visibleIf": {
+            "field": "show_artwork_settings",
+            "value": true
+          }
+        },
+        {
+          "id": "artwork_threshold",
+          "element": "select",
+          "label": "TRANSLATE.ARTWORK_THRESHOLD",
+          "value": {
+            "value": "60",
+            "label": "60% (Default)"
+          },
+          "options": [
+            { "value": "0", "label": "0% (Always lookup)" },
+            { "value": "20", "label": "20% (Very low)" },
+            { "value": "40", "label": "40% (Low)" },
+            { "value": "60", "label": "60% (Default)" },
+            { "value": "80", "label": "80% (High)" },
+            { "value": "95", "label": "95% (Very high)" }
+          ],
+          "doc": "TRANSLATE.ARTWORK_THRESHOLD_DOC",
+          "visibleIf": {
+            "field": "show_artwork_settings",
+            "value": true
+          }
+        },
+        {
+          "id": "artwork_persistence",
+          "element": "select",
+          "label": "TRANSLATE.ARTWORK_PERSISTENCE",
+          "value": {
+            "value": "artist",
+            "label": "Keep until artist changes"
+          },
+          "options": [
+            { "value": "artist", "label": "TRANSLATE.ARTWORK_PERSIST_ARTIST" },
+            { "value": "track", "label": "TRANSLATE.ARTWORK_PERSIST_TRACK" },
+            { "value": "always", "label": "TRANSLATE.ARTWORK_PERSIST_ALWAYS" }
+          ],
+          "doc": "TRANSLATE.ARTWORK_PERSISTENCE_DOC",
+          "visibleIf": {
+            "field": "show_artwork_settings",
+            "value": true
+          }
+        },
+        {
+          "id": "artwork_ttl",
+          "element": "select",
+          "label": "TRANSLATE.ARTWORK_TTL",
+          "value": {
+            "value": "0",
+            "label": "Disabled"
+          },
+          "options": [
+            { "value": "0", "label": "TRANSLATE.ARTWORK_TTL_DISABLED" },
+            { "value": "2", "label": "TRANSLATE.ARTWORK_TTL_2MIN" },
+            { "value": "5", "label": "TRANSLATE.ARTWORK_TTL_5MIN" },
+            { "value": "10", "label": "TRANSLATE.ARTWORK_TTL_10MIN" },
+            { "value": "15", "label": "TRANSLATE.ARTWORK_TTL_15MIN" },
+            { "value": "30", "label": "TRANSLATE.ARTWORK_TTL_30MIN" }
+          ],
+          "doc": "TRANSLATE.ARTWORK_TTL_DOC",
+          "visibleIf": {
+            "field": "show_artwork_settings",
+            "value": true
+          }
+        },
+        {
+          "id": "artwork_debug_logging",
+          "element": "switch",
+          "label": "TRANSLATE.ARTWORK_DEBUG_LOGGING",
+          "value": false,
+          "doc": "TRANSLATE.ARTWORK_DEBUG_LOGGING_DOC",
+          "visibleIf": {
+            "field": "show_artwork_settings",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
       "id": "diagnostics",
       "element": "section",
       "label": "TRANSLATE.SECTION_DIAGNOSTICS",
@@ -285,7 +413,8 @@
           "manual_fm_frequency",
           "manual_dab_ensemble",
           "manual_dab_service",
-          "manual_dab_gain"
+          "manual_dab_gain",
+          "manual_dab_ppm"
         ]
       },
       "content": [
@@ -390,6 +519,17 @@
           "label": "TRANSLATE.MANUAL_DAB_GAIN",
           "value": 20,
           "doc": "TRANSLATE.MANUAL_DAB_GAIN_DOC",
+          "visibleIf": {
+            "field": "show_diagnostics",
+            "value": true
+          }
+        },
+        {
+          "id": "manual_dab_ppm",
+          "element": "input",
+          "label": "TRANSLATE.MANUAL_DAB_PPM",
+          "value": 0,
+          "doc": "TRANSLATE.MANUAL_DAB_PPM_DOC",
           "visibleIf": {
             "field": "show_diagnostics",
             "value": true

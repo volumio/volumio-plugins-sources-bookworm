@@ -1,0 +1,419 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_NAME"
+  },
+  "sections": [
+    {
+      "id": "connection_settings",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_CONNECTION",
+      "icon": "fa-plug",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/mqtt_client",
+        "method": "saveConnectionSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "enabled",
+          "broker_host",
+          "broker_port",
+          "broker_username",
+          "broker_password"
+        ]
+      },
+      "content": [
+        {
+          "id": "enabled",
+          "element": "switch",
+          "label": "TRANSLATE.ENABLED",
+          "value": false,
+          "doc": "TRANSLATE.ENABLED_DOC"
+        },
+        {
+          "id": "broker_host",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.BROKER_HOST",
+          "value": "localhost",
+          "doc": "TRANSLATE.BROKER_HOST_DOC",
+          "attributes": [
+            {"placeholder": "mqtt.local or 192.168.1.100"}
+          ]
+        },
+        {
+          "id": "broker_port",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.BROKER_PORT",
+          "value": 1883,
+          "doc": "TRANSLATE.BROKER_PORT_DOC"
+        },
+        {
+          "id": "broker_username",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.BROKER_USERNAME",
+          "value": "",
+          "doc": "TRANSLATE.BROKER_USERNAME_DOC"
+        },
+        {
+          "id": "broker_password",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.BROKER_PASSWORD",
+          "value": "",
+          "doc": "TRANSLATE.BROKER_PASSWORD_DOC"
+        }
+      ]
+    },
+    {
+      "id": "topic_settings",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_TOPICS",
+      "icon": "fa-sitemap",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/mqtt_client",
+        "method": "saveTopicSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "base_topic",
+          "device_id",
+          "publish_full_state",
+          "publish_individual_topics",
+          "state_update_interval",
+          "retain_state"
+        ]
+      },
+      "content": [
+        {
+          "id": "base_topic",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.BASE_TOPIC",
+          "value": "volumio",
+          "doc": "TRANSLATE.BASE_TOPIC_DOC",
+          "attributes": [
+            {"placeholder": "volumio"}
+          ]
+        },
+        {
+          "id": "device_id",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.DEVICE_ID",
+          "value": "",
+          "doc": "TRANSLATE.DEVICE_ID_DOC",
+          "attributes": [
+            {"placeholder": "Leave empty to use hostname"}
+          ]
+        },
+        {
+          "id": "publish_full_state",
+          "element": "switch",
+          "label": "TRANSLATE.PUBLISH_FULL_STATE",
+          "value": true,
+          "doc": "TRANSLATE.PUBLISH_FULL_STATE_DOC"
+        },
+        {
+          "id": "publish_individual_topics",
+          "element": "switch",
+          "label": "TRANSLATE.PUBLISH_INDIVIDUAL_TOPICS",
+          "value": true,
+          "doc": "TRANSLATE.PUBLISH_INDIVIDUAL_TOPICS_DOC"
+        },
+        {
+          "id": "state_update_interval",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.STATE_UPDATE_INTERVAL",
+          "value": 10,
+          "doc": "TRANSLATE.STATE_UPDATE_INTERVAL_DOC"
+        },
+        {
+          "id": "retain_state",
+          "element": "switch",
+          "label": "TRANSLATE.RETAIN_STATE",
+          "value": true,
+          "doc": "TRANSLATE.RETAIN_STATE_DOC"
+        }
+      ]
+    },
+    {
+      "id": "tls_settings",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_TLS",
+      "icon": "fa-lock",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/mqtt_client",
+        "method": "saveTlsSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "tls_enabled",
+          "tls_ca_cert",
+          "tls_client_cert",
+          "tls_client_key",
+          "tls_reject_unauthorized"
+        ]
+      },
+      "content": [
+        {
+          "id": "tls_enabled",
+          "element": "switch",
+          "label": "TRANSLATE.TLS_ENABLED",
+          "value": false,
+          "doc": "TRANSLATE.TLS_ENABLED_DOC"
+        },
+        {
+          "id": "tls_ca_cert",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.TLS_CA_CERT",
+          "value": "",
+          "doc": "TRANSLATE.TLS_CA_CERT_DOC",
+          "attributes": [
+            {"placeholder": "/path/to/ca.crt"}
+          ],
+          "visibleIf": {
+            "field": "tls_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "tls_client_cert",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.TLS_CLIENT_CERT",
+          "value": "",
+          "doc": "TRANSLATE.TLS_CLIENT_CERT_DOC",
+          "attributes": [
+            {"placeholder": "/path/to/client.crt"}
+          ],
+          "visibleIf": {
+            "field": "tls_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "tls_client_key",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.TLS_CLIENT_KEY",
+          "value": "",
+          "doc": "TRANSLATE.TLS_CLIENT_KEY_DOC",
+          "attributes": [
+            {"placeholder": "/path/to/client.key"}
+          ],
+          "visibleIf": {
+            "field": "tls_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "tls_reject_unauthorized",
+          "element": "switch",
+          "label": "TRANSLATE.TLS_REJECT_UNAUTHORIZED",
+          "value": true,
+          "doc": "TRANSLATE.TLS_REJECT_UNAUTHORIZED_DOC",
+          "visibleIf": {
+            "field": "tls_enabled",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "advanced_settings",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_ADVANCED",
+      "icon": "fa-cogs",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/mqtt_client",
+        "method": "saveAdvancedSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "client_id",
+          "keepalive",
+          "reconnect_interval",
+          "qos_state",
+          "qos_command",
+          "protocol_version"
+        ]
+      },
+      "content": [
+        {
+          "id": "client_id",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.CLIENT_ID",
+          "value": "",
+          "doc": "TRANSLATE.CLIENT_ID_DOC",
+          "attributes": [
+            {"placeholder": "Leave empty for auto-generated"}
+          ]
+        },
+        {
+          "id": "keepalive",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.KEEPALIVE",
+          "value": 60,
+          "doc": "TRANSLATE.KEEPALIVE_DOC"
+        },
+        {
+          "id": "reconnect_interval",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.RECONNECT_INTERVAL",
+          "value": 5000,
+          "doc": "TRANSLATE.RECONNECT_INTERVAL_DOC"
+        },
+        {
+          "id": "qos_state",
+          "element": "select",
+          "label": "TRANSLATE.QOS_STATE",
+          "value": {
+            "value": 0,
+            "label": "0 - At most once"
+          },
+          "options": [
+            {"value": 0, "label": "0 - At most once"},
+            {"value": 1, "label": "1 - At least once"},
+            {"value": 2, "label": "2 - Exactly once"}
+          ],
+          "doc": "TRANSLATE.QOS_STATE_DOC"
+        },
+        {
+          "id": "qos_command",
+          "element": "select",
+          "label": "TRANSLATE.QOS_COMMAND",
+          "value": {
+            "value": 1,
+            "label": "1 - At least once"
+          },
+          "options": [
+            {"value": 0, "label": "0 - At most once"},
+            {"value": 1, "label": "1 - At least once"},
+            {"value": 2, "label": "2 - Exactly once"}
+          ],
+          "doc": "TRANSLATE.QOS_COMMAND_DOC"
+        },
+        {
+          "id": "protocol_version",
+          "element": "select",
+          "label": "TRANSLATE.PROTOCOL_VERSION",
+          "value": {
+            "value": 4,
+            "label": "4 - MQTT 3.1.1 (recommended)"
+          },
+          "options": [
+            {"value": 3, "label": "3 - MQTT 3.1 (legacy)"},
+            {"value": 4, "label": "4 - MQTT 3.1.1 (recommended)"},
+            {"value": 5, "label": "5 - MQTT 5.0"}
+          ],
+          "doc": "TRANSLATE.PROTOCOL_VERSION_DOC"
+        }
+      ]
+    },
+    {
+      "id": "group_settings",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_GROUP",
+      "icon": "fa-users",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/mqtt_client",
+        "method": "saveGroupSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "group_topic_enabled",
+          "group_id"
+        ]
+      },
+      "content": [
+        {
+          "id": "group_topic_enabled",
+          "element": "switch",
+          "label": "TRANSLATE.GROUP_TOPIC_ENABLED",
+          "value": false,
+          "doc": "TRANSLATE.GROUP_TOPIC_ENABLED_DOC"
+        },
+        {
+          "id": "group_id",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.GROUP_ID",
+          "value": "all",
+          "doc": "TRANSLATE.GROUP_ID_DOC",
+          "attributes": [
+            {"placeholder": "all"}
+          ],
+          "visibleIf": {
+            "field": "group_topic_enabled",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "debug_settings",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_DEBUG",
+      "icon": "fa-bug",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/mqtt_client",
+        "method": "saveDebugSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "debug_enabled"
+        ]
+      },
+      "content": [
+        {
+          "id": "debug_enabled",
+          "element": "switch",
+          "label": "TRANSLATE.DEBUG_ENABLED",
+          "value": false,
+          "doc": "TRANSLATE.DEBUG_ENABLED_DOC"
+        },
+        {
+          "id": "connection_status",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.CONNECTION_STATUS",
+          "value": "",
+          "doc": "TRANSLATE.CONNECTION_STATUS_DOC",
+          "attributes": [
+            {"readonly": true}
+          ]
+        },
+        {
+          "id": "test_connection",
+          "element": "button",
+          "label": "TRANSLATE.TEST_CONNECTION",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_controller/mqtt_client",
+            "method": "testConnection"
+          },
+          "doc": "TRANSLATE.TEST_CONNECTION_DOC"
+        }
+      ]
+    }
+  ]
+}

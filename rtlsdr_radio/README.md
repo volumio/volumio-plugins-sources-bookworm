@@ -5,7 +5,9 @@ Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.
 ## Hardware Requirements
 
 - RTL-SDR USB dongle (RTL2832U chipset)
-- Compatible with R820T, R820T2, E4000 tuners
+- Compatible with R820T, R820T2, R828D, E4000 tuners
+- Quality dongles recommended: Nooelec NESDR Smart, RTL-SDR Blog V3/V4
+- Cheap generic blue dongles work but may require PPM frequency correction for DAB
 - Antenna suitable for FM (88-108 MHz) and/or DAB Band III (174-240 MHz)
 
 ## Supported Platforms
@@ -22,6 +24,7 @@ Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.
 - Automatic station scanning with configurable sensitivity
 - Integrated with Volumio's playback system
 - Volume control through Volumio
+- Real-time signal quality indicator (5-level display)
 
 ### Station Management
 - Web-based station management interface
@@ -55,29 +58,158 @@ The plugin fully supports internationalization with automatic language detection
 To change language: Settings > Appearance > Language. Both plugin settings and web manager will update automatically.
 
 ### Backup and Restore
-The plugin includes a comprehensive backup and restore system to protect your station configurations:
+The plugin includes a comprehensive backup and restore system to protect your configurations:
 
 **Features:**
-- Three backup types: Stations Only, Configuration Only, or Full Backup
+- Four backup types: Stations, Configuration, Block List, or Full Backup
 - Automatic pruning (keeps 5 most recent backups per type)
 - Download backups as ZIP files
 - Upload and restore external backups
-- Mix-and-match restore (stations from one backup, config from another)
+- Mix-and-match restore (stations from one backup, config from another, blocklist from another)
 - Optional auto-backup before plugin uninstall
 - Backup history with timestamps and sizes
+
+**Backup Types:**
+- **Stations**: FM and DAB station database (favorites, custom names, play counts)
+- **Configuration**: Plugin settings (gain, PPM, scan sensitivity, artwork settings)
+- **Block List**: Artwork blocklist phrases
+- **Full**: All of the above
 
 **Location:**
 - Access via Maintenance tab in web station manager
 - Backups stored in: `/data/rtlsdr_radio_backups/`
+  - `/data/rtlsdr_radio_backups/stations/`
+  - `/data/rtlsdr_radio_backups/config/`
+  - `/data/rtlsdr_radio_backups/blocklist/`
 
 **Usage:**
 1. Open web station manager (see Web Interface Access below)
 2. Click "Maintenance" tab
 3. Select backup type and click "Create Backup Now"
-4. Download backups or restore from history table
+4. Download backups or restore from history table (three columns: Stations, Config, Block List)
 
 **Auto-Backup:**
 Enable "Automatic backup before uninstall" checkbox to automatically create a full backup when uninstalling the plugin. Backups are preserved even after uninstall.
+
+### Best Effort Artwork
+
+Radio broadcasts include metadata (RDS on FM, DLS on DAB) that often contains artist and title information. The plugin attempts to parse this metadata and fetch matching album artwork from Last.fm.
+
+This is called "Best Effort" because broadcast metadata is inconsistent - stations format it differently, RDS has bit errors, and non-music content (adverts, news, DJ chat) gets mixed in. The plugin uses multiple strategies to maximise artwork success rate while minimising false matches.
+
+**How It Works:**
+
+1. Broadcast metadata arrives (e.g., "Playing: Dua Lipa - Levitating")
+2. Plugin parses text to extract artist and title
+3. Parser assigns confidence score based on pattern quality
+4. If confidence meets threshold, Last.fm lookup is triggered
+5. Artwork cached locally for instant display on repeat plays
+
+**When Artwork Won't Appear:**
+
+- Station doesn't broadcast metadata (some stations transmit only station name)
+- Metadata is non-music content (news, adverts, DJ speech)
+- Confidence score below threshold (ambiguous format)
+- Track not in Last.fm database
+- Phrase matches blocklist (traffic updates, time checks)
+
+**Training the System:**
+
+The blocklist is your primary tool for improving accuracy. When you see wrong artwork:
+
+1. Note what text triggered the false match (check logs if needed)
+2. Open Station Manager > Block List tab
+3. Add the problematic phrase
+4. Save - future broadcasts containing that phrase are skipped
+
+Common additions: DJ names, show titles, station slogans, local business adverts.
+
+**Settings Guide (Plugin Settings > Artwork Settings):**
+
+| Setting | Purpose | Recommendation |
+|---------|---------|----------------|
+| Best Effort Artwork | Master on/off for all artwork features | ON unless headless system |
+| Confidence Threshold | How certain parser must be before lookup | Start at 60%, lower if missing artwork, raise if false matches |
+| Artwork Persistence | Keep artwork during metadata gaps | "Keep until artist changes" prevents flicker |
+| Artwork Timeout | Auto-clear after N minutes | Use for audiobooks/talk radio, else Disabled |
+| Debug Logging | Verbose logs for troubleshooting | OFF unless debugging |
+
+**Confidence Threshold Explained:**
+
+- **0% (Always lookup)**: Attempts lookup on any parsed text. Maximum artwork, but more false matches.
+- **60% (Default)**: Balanced. Requires reasonable "Artist - Title" pattern.
+- **95% (Very high)**: Only clear, unambiguous patterns. Fewer false matches, but misses non-standard formats.
+
+Adjust based on your stations. Music stations with clean metadata can use lower thresholds. Stations mixing music with speech benefit from higher thresholds.
+
+**Artwork Persistence Explained:**
+
+Radio metadata updates constantly. Between songs, stations often display promos, frequencies, or slogans. Without persistence, artwork would disappear and reappear, causing flicker.
+
+- **Keep until artist changes**: Best for music stations. Artwork stays until a different artist is detected.
+- **Keep until track changes**: More responsive, but may flicker on stations with inconsistent metadata.
+- **Always refresh**: Updates on every metadata change. Use only if persistence causes stale artwork.
+
+**Artwork Timeout Explained:**
+
+For spoken word content (audiobooks, talk radio, long DJ sets), the last song's artwork may persist indefinitely since no new "artist" is detected.
+
+Setting a timeout (2-30 minutes) automatically reverts to the station icon when no artist change occurs. The timer resets each time a new artist is detected.
+
+**Block List (Station Manager > Block List tab):**
+
+Phrases in the blocklist are excluded from artwork lookup. The plugin uses fuzzy matching (75% similarity) so minor variations and RDS corruption are handled automatically.
+
+Default blocklist includes: traffic update, news update, weather, breaking news, travel news.
+
+Add station-specific phrases as you encounter false matches. The blocklist has separate backup/restore from stations.
+
+### Antenna Positioning Tools
+The plugin includes professional-grade tools for optimizing antenna placement and orientation:
+
+**Tool 1: RF Spectrum Scan**
+- Full-band spectrum analysis (87.5 MHz to 240 MHz)
+- 2-second scan covering FM and DAB frequencies
+- Visual signal strength display across entire spectrum
+- Identify which frequencies have strong signals in your location
+- Real-time feedback for antenna orientation adjustments
+
+**Tool 2: DAB Channel Validation**
+- Validate specific DAB channels for signal presence
+- Progressive results via Server-Sent Events (displays results as each channel completes)
+- Per-channel sync status and service count
+- Quality assessment (excellent vs no signal)
+- Typical validation time: 10-15 seconds per channel with signal, 2-3 seconds for no signal
+
+**When to Use:**
+- Before initial full scan to verify antenna reception
+- Antenna positioning and orientation (rotating/tilting for best signal)
+- Diagnosing reception problems
+- Comparing antenna locations
+- Verifying dongle functionality
+
+**How to Use:**
+1. Open web station manager (see Web Interface Access below)
+2. Click "Antenna Positioning" tab
+3. Tool 1: Click "Start Spectrum Scan" for full-band analysis
+4. Tool 2: Select channels to validate, click "Validate Selected Channels"
+5. View progressive results in real-time
+6. Adjust antenna and re-test until optimal signal achieved
+
+**Workflow Guide:**
+1. Start with RF Spectrum Scan to see available frequencies
+2. Use DAB Channel Validation to test specific channels
+3. Adjust antenna position/orientation between tests
+4. Repeat until signal strength is optimal
+5. Perform full station scan once antenna is positioned
+
+**Technical Details:**
+- Spectrum scan uses fn-rtl_power for wide-band analysis
+- Channel validation uses custom fn-dab-scanner binaries
+- Progressive SSE streaming prevents long waits
+- Three critical bugs fixed in v1.0.8 for accurate validation
+- No signal channels terminate in 2-3 seconds (no timeout)
+- Strong signal channels complete in 10-15 seconds
 
 ### Diagnostics Tools
 The plugin includes diagnostic tools to test your USB dongle before scanning:
@@ -93,6 +225,28 @@ The plugin includes diagnostic tools to test your USB dongle before scanning:
 - **Generic RTL-SDR**: Start with gain 80 (needs higher amplification)
 - Adjust if: distorted (lower gain) or no signal (higher gain)
 - Note: This is RF amplification, not volume control
+
+**Understanding PPM Correction** (DAB only):
+- PPM corrects frequency error from cheap crystal oscillators
+- **Quality dongles** (Nooelec, RTL-SDR Blog V3/V4): Use PPM=0
+- **Cheap blue dongles**: Typically need PPM 40-60 (varies per dongle)
+- If DAB scan finds no stations, try PPM values from -100 to +100 in steps of 10
+- Each dongle has its own specific PPM value due to manufacturing variance
+- FM reception is more tolerant and usually works without PPM correction
+
+**DAB Metadata (DLS)**:
+The plugin automatically extracts now-playing information from DAB broadcasts:
+- **DLS (Dynamic Label Segment)**: Text metadata broadcast by DAB stations
+- **Artist/Title Parsing**: Automatically parses "Artist - Title" format
+- **Artwork Integration**: Plugin fetches album artwork via Last.fm API
+
+When playing a DAB station, you may see:
+- Station name in the title field
+- Artist name from DLS
+- Track title from DLS
+- Album artwork fetched via Last.fm
+
+Note: Not all stations broadcast DLS metadata, and formats vary by broadcaster.
 
 **Technical Service Names**:
 DAB stations use technical identifiers that may differ from display names:
@@ -210,7 +364,86 @@ Just a Nerd
 
 ## Version History
 
-### v1.0.7 (Current)
+### v1.2.9 (Current)
+- Fixed Signal suffix in DLS breaking metadata parser
+- Added soundtrack pattern for Classic FM format (Album - Track by Artist)
+- Added alternative pattern (Track by Artist from Album)
+
+### v1.2.8
+- Best Effort Artwork: Album artwork via Last.fm API with intelligent metadata parsing
+- Configurable confidence threshold (0-95%) controls when lookups are triggered
+- Artwork persistence prevents flicker during metadata gaps
+- Artwork timeout for spoken word content (auto-revert to station icon)
+- Artwork Block List in Station Manager to filter false matches
+- Fuzzy matching tolerates RDS/DAB text corruption (75% similarity threshold)
+- Time and date announcements filtered automatically
+- Blocklist has dedicated backup/restore (separate from stations)
+- Debug logging toggle for artwork troubleshooting
+- Fixed: FM Recently Played not updating for stations with edited frequencies
+- Fixed: Auto-repairs stations where frequency was saved as number instead of string
+- 11-language translations for all new features
+
+### v1.2.6
+- Fixed signal quality indicator not updating in Volumio playback screen
+- Signal level changes now bypass 2-second throttle for responsive UI
+- Fixed custom station names not displaying on playback start
+- Custom names now looked up from database at playback time (FM and DAB)
+- Fixed frequency comparison using parseFloat for reliable matching
+- Fixed hidden stations still showing in Volumio media sources
+- Hidden stations now properly filtered from FM, DAB, and ensemble browse views
+
+### v1.2.5
+- Added real-time signal quality indicator for FM and DAB
+- Signal strength displayed in Volumio playback screen (5-level indicator)
+- Signal quality shown in station manager for currently playing station
+- Color-coded Font Awesome signal icon (red/orange/yellow/green based on level)
+- Currently playing station highlighted with green border in station manager
+- FM signal quality derived from RDS block error rate (BLER)
+- DAB signal quality derived from FIB quality and AAC decode success rate
+- Updated fn-dab binaries with signal quality callbacks
+
+### v1.2.2
+- Added DAB DLS metadata extraction (artist/title from broadcast)
+- Volumio now fetches album artwork via MusicBrainz for DAB stations
+- Improved state management for DAB playback with customName priority
+- DLS text parsed for common formats: "Artist - Title", "Title by Artist"
+
+### v1.2.1
+- Added PPM (frequency correction) setting for DAB reception
+- Resolves DAB reception issues with cheap RTL-SDR dongles that have inaccurate crystal oscillators
+- Quality dongles (Nooelec NESDR, RTL-SDR Blog V3/V4) work at PPM=0
+- Cheap generic blue dongles typically need PPM 40-60
+- PPM setting available in both DAB Radio section and Diagnostics for testing
+- DAB channel validation now uses configured gain (was hardcoded to 80)
+- Added tuner type detection and logging in fn-dab binaries
+- Fixed bug in rtlsdr-handler checking wrong variable for V4 dongle support
+- Added missing TRAFFIC_ALERT translations for 10 languages
+
+### v1.2.0
+- Major rewrite of DAB audio pipeline with dynamic sample rate detection
+- Automatic PCM format detection from fn-dab stderr output
+- Sox-based resampling handles 32kHz/48kHz DAB streams transparently
+- Consolidated timeout constants for easier maintenance
+- Fixed race conditions in station switching
+- 600ms hardware cleanup delay prevents device conflicts
+- RDS metadata display for FM stations via fn-redsea
+- Complete 11-language internationalization
+
+### v1.0.9
+- Added Antenna Positioning Tools
+- RF Spectrum Scan: Full-band signal visualization (87.5-240 MHz, 2-second scan)
+- DAB Channel Validation: Progressive SSE streaming, per-channel sync and service count
+- Fixed three critical DAB scanner bugs:
+  - Service count detection (PTY wrapper filtering for PCM-only output)
+  - Completion timeout (immediate scanner kill on completion marker)
+  - No-signal channel overshoot (immediate kill on channel switch detection)
+- Typical validation times: 10-15s with signal, 2-3s no signal (no 30s timeouts)
+- Translation concept corrected across 11 languages: "positioning" (antenna orientation for signal) not "alignment" (physical leveling)
+- Complete antenna positioning tab translation coverage (49 UI elements)
+- All 11 language files validated: 366 keys each, no duplicates, valid JSON
+- Comprehensive DAB channel validation workflow guidance
+
+### v1.0.7
 - Added comprehensive backup and restore system
 - Three backup types: Stations Only, Configuration Only, Full Backup
 - Automatic backup pruning (keeps 5 most recent per type)

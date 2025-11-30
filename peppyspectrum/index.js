@@ -1,5 +1,5 @@
 'use strict';
-/*By balbuze May 2024
+/*By balbuze August 2025
 */
 var fs = require('fs-extra');
 var libFsExtra = require('fs-extra');
@@ -88,6 +88,7 @@ peppyspectrum.prototype.onStart = function () {
             return Defer.promise;
         });
     defer.resolve();
+    self.modprobeDummyDevice();
     setTimeout(function () {
         self.checkIfPlay()
 
@@ -97,23 +98,26 @@ peppyspectrum.prototype.onStart = function () {
     return defer.promise;
 };
 
+peppyspectrum.prototype.modprobeDummyDevice = function () {
+    var self = this;
+    var defer = libQ.defer();
 
-//here we load snd-dummy module
-peppyspectrum.prototype.modprobedummy = function () {
-    const self = this;
-    let defer = libQ.defer();
-    //self.hwinfo();
-    try {
-        execSync("/usr/bin/sudo /sbin/modprobe snd-dummy index=6 pcm_substreams=1", {
-            uid: 1000,
-            gid: 1000
-        });
-        self.commandRouter.pushConsoleMessage('snd-dummy loaded');
-        defer.resolve();
-    } catch (err) {
-        self.logger.info(logPrefix + 'failed to load snd-dummy' + err);
-    }
+    exec("/usr/bin/sudo /sbin/modprobe snd-aloop index=7 pcm_substreams=1", {
+        uid: 1000,
+        gid: 1000
+    }, function (error, stdout, stderr) {
+        if (error) {
+            self.logger.error('failed to load snd_dummy: ' + error);
+            defer.reject(error);  // Reject the promise if there’s an error
+        } else {
+            self.commandRouter.pushConsoleMessage('snd_dummy loaded');
+            defer.resolve(); 
+        }
+    });
+
+    return defer.promise;  // Return the promise immediately
 };
+
 
 
 peppyspectrum.prototype.startpeppyservice = function () {
@@ -197,179 +201,180 @@ peppyspectrum.prototype.checkIfPlay = function () {
     })
 };
 
-
-
 peppyspectrum.prototype.getUIConfig = function () {
-    const self = this;
-    const defer = libQ.defer();
-    var lang_code = this.commandRouter.sharedVars.get('language_code');
-    self.commandRouter.i18nJson(__dirname + '/i18n/strings_' + lang_code + '.json',
-        __dirname + '/i18n/strings_en.json',
-        __dirname + '/UIConfig.json')
-        .then(function (uiconf) {
-            let spectrumfolder;
-            var showsize = self.config.get("showsize")
-            var autosize = self.config.get("auutosize")
+  const self = this;
+  const defer = libQ.defer();
+  const lang_code = this.commandRouter.sharedVars.get("language_code");
 
-            var valuescreen = self.config.get('screensize');
-            self.configManager.setUIConfigParam(uiconf, 'sections[0].content[0].value.value', valuescreen);
-            self.configManager.setUIConfigParam(uiconf, 'sections[0].content[0].value.label', valuescreen);
+  self.commandRouter
+    .i18nJson(
+      __dirname + "/i18n/strings_" + lang_code + ".json",
+      __dirname + "/i18n/strings_en.json",
+      __dirname + "/UIConfig.json"
+    )
+    .then(function (uiconf) {
+      let spectrumfolder;
 
+      // Screensize selector
+      const valuescreen = self.config.get("screensize");
+      self.configManager.setUIConfigParam(
+        uiconf,
+        "sections[0].content[0].value.value",
+        valuescreen
+      );
+      self.configManager.setUIConfigParam(
+        uiconf,
+        "sections[0].content[0].value.label",
+        valuescreen
+      );
 
-            const directoryPath = '/data/INTERNAL/PeppySpectrum/Templates/';
+      // -------- Templates directory sync read --------
+      try {
+        const directoryPath = "/data/INTERNAL/PeppySpectrum/Templates/";
+        const files = fs.readdirSync(directoryPath);
+        const folders = files.filter((file) =>
+          fs.statSync(path.join(directoryPath, file)).isDirectory()
+        );
 
-            // Use a Promise for asynchronous operations
-            function readDirectory() {
-                return new Promise((resolve, reject) => {
-                    fs.readdir(directoryPath, (err, files) => {
-                        if (err) {
-                            reject(err);
-                            return;
-                        }
+        const allfolder = ["320x240", "480x320", "800x480", "1280x400", ...folders];
+        for (let item of allfolder) {
+          self.configManager.pushUIConfigParam(
+            uiconf,
+            "sections[0].content[0].options",
+            { value: item, label: item }
+          );
+        }
+      } catch (err) {
+        self.logger.error("Error reading template folders: " + err);
+      }
+      // ------------------------------------------------
 
-                        const folders = files.filter(file => fs.statSync(`${directoryPath}/${file}`).isDirectory());
-                        resolve(folders);
-                    });
-                });
+      // Hide unused settings
+      uiconf.sections[1].content[1].hidden = true;
+      uiconf.sections[1].content[2].hidden = true;
+      uiconf.sections[1].content[3].hidden = true;
+
+      // Screen width/height values
+      const screenwidth = self.config.get("screenwidth");
+      uiconf.sections[1].content[1].value = screenwidth;
+      uiconf.sections[1].content[1].attributes = [
+        { placeholder: screenwidth, min: 0, max: 3500 },
+      ];
+
+      const screenheight = self.config.get("screenheight");
+      uiconf.sections[1].content[2].value = screenheight;
+      uiconf.sections[1].content[2].attributes = [
+        { placeholder: screenheight, min: 0, max: 3500 },
+      ];
+
+      // Spectrum selector
+      const valuespectrum = self.config.get("spectrum");
+      self.configManager.setUIConfigParam(
+        uiconf,
+        "sections[1].content[0].value.value",
+        valuespectrum
+      );
+      self.configManager.setUIConfigParam(
+        uiconf,
+        "sections[1].content[0].value.label",
+        valuespectrum
+      );
+
+      // -------- Spectrum.txt sync read --------
+      try {
+        if (
+          valuescreen === "320x240" ||
+          valuescreen === "480x320" ||
+          valuescreen === "800x480" ||
+          valuescreen === "1280x400"
+        ) {
+          spectrumfolder = "/data/plugins/user_interface/peppyspectrum/PeppySpectrum/";
+        } else {
+          spectrumfolder = "/data/INTERNAL/PeppySpectrum/Templates/";
+        }
+
+        const idata = fs.readFileSync(
+          path.join(spectrumfolder, valuescreen, "spectrum.txt"),
+          "utf8"
+        );
+
+        const regex = /\[(.*?)\]/g;
+        const matches = [];
+        let match;
+        while ((match = regex.exec(idata)) !== null) {
+          matches.push(match[1]);
+        }
+
+        const allfilter = ["Random", ...matches];
+        for (let item of allfilter) {
+          self.configManager.pushUIConfigParam(
+            uiconf,
+            "sections[1].content[0].options",
+            { value: item, label: item }
+          );
+        }
+      } catch (err) {
+        self.logger.error("Error reading spectrum.txt: " + err);
+        self.configManager.pushUIConfigParam(
+          uiconf,
+          "sections[1].content[0].options",
+          { value: "no config!", label: "no config!" }
+        );
+      }
+      // ------------------------------------------------
+
+      uiconf.sections[2].content[0].value = self.config.get("debuglog");
+      uiconf.sections[2].hidden = true;
+
+      // -------- Section 4: zipfile --------
+      const value = self.config.get("zipfile");
+      self.configManager.setUIConfigParam(
+        uiconf,
+        "sections[3].content[0].value.value",
+        value
+      );
+      self.configManager.setUIConfigParam(
+        uiconf,
+        "sections[3].content[0].value.label",
+        value
+      );
+
+      // -------- spectrumslist.txt sync read --------
+      try {
+        const listf = fs.readFileSync(
+          "/data/plugins/user_interface/peppyspectrum/spectrumslist.txt",
+          "utf8"
+        );
+        const result = listf.split("\n").filter(Boolean);
+
+        result.forEach((line, i) => {
+          const prepared = line.split(".")[0];
+          self.configManager.pushUIConfigParam(
+            uiconf,
+            "sections[3].content[0].options",
+            {
+              value: prepared,
+              label: `${i + 1} ${prepared}`,
             }
-
-            // Call the function
-            readDirectory()
-                .then(folders => {
-                    //   console.log('Folders in the directory:', folders);
-
-                    let allfolder = '320x240,480x320,800x480,1280x400,' + folders;
-                    //   self.logger.info('list is ' + allfilter)
-                    var litems = allfolder.split(',');
-
-                    for (let a in litems) {
-                        //    console.log('Text between brackets:', litems[a]);
-
-                        self.configManager.pushUIConfigParam(uiconf, 'sections[0].content[0].options', {
-                            value: litems[a],
-                            label: litems[a]
-                        });
-
-                    }
-
-                })
-
-
-                .catch(err => console.error('Error reading directory:', err));
-
-            uiconf.sections[1].content[1].hidden = true;
-            uiconf.sections[1].content[2].hidden = true;
-            uiconf.sections[1].content[3].hidden = true;
-
-            var screenwidth = self.config.get('screenwidth')
-            uiconf.sections[1].content[1].value = screenwidth;
-            uiconf.sections[1].content[1].attributes = [
-                {
-                    placeholder: screenwidth,
-                    min: 0,
-                    max: 3500
-                }
-            ];
-
-
-            var screenheight = self.config.get('screenheight')
-            uiconf.sections[1].content[2].value = screenheight;
-            uiconf.sections[1].content[2].attributes = [
-                {
-                    placeholder: screenheight,
-                    min: 0,
-                    max: 3500
-                }
-            ];
-
-
-            var valuespectrum;
-            valuespectrum = self.config.get('spectrum');
-            self.configManager.setUIConfigParam(uiconf, 'sections[1].content[0].value.value', valuespectrum);
-            self.configManager.setUIConfigParam(uiconf, 'sections[1].content[0].value.label', valuespectrum);
-
-            try {
-                if ((valuescreen == '320x240') || (valuescreen == '480x320') || (valuescreen == '800x480') || (valuescreen == '1280x400')) {
-                    spectrumfolder = '/data/plugins/user_interface/peppyspectrum/PeppySpectrum/'
-                } else {
-                    spectrumfolder = '/data/INTERNAL/PeppySpectrum/Templates/'
-                }
-
-                fs.readFile(spectrumfolder + valuescreen + '/spectrum.txt', function (err, idata) {
-                    if (err) {
-                        console.error('Error reading the file:', err);
-                        self.configManager.pushUIConfigParam(uiconf, 'sections[1].content[0].options', {
-                            value: 'no config!',
-                            label: 'no config!'
-                        });
-                        //   return defer.reject(err); // Reject the promise in case of an error
-                    }
-
-                    const regex = /\[(.*?)\]/g;
-                    let match;
-                    const matches = [];
-                    while ((match = regex.exec(idata)) !== null) {
-                        matches.push(match[1]);
-                    }
-                    let allfilter = 'Random,' + matches;
-                    self.logger.info(logPrefix + 'list is ' + allfilter)
-                    var litems = allfilter.split(',');
-
-                    for (let a in litems) {
-                        // console.log('Text between brackets:', litems[a]);
-
-                        self.configManager.pushUIConfigParam(uiconf, 'sections[1].content[0].options', {
-                            value: litems[a],
-                            label: litems[a]
-                        });
-                    }
-                    uiconf.sections[2].content[0].value = self.config.get('debuglog');
-                    uiconf.sections[2].hidden = true;
-
-
-
-                    //-----------section 4---------
-                    var value = self.config.get('zipfile');
-                    self.configManager.setUIConfigParam(uiconf, 'sections[3].content[0].value.value', value);
-                    self.configManager.setUIConfigParam(uiconf, 'sections[3].content[0].value.label', value);
-
-
-                    try {
-                        let listf = fs.readFileSync('/data/plugins/user_interface/peppyspectrum/spectrumslist.txt', "utf8");
-                        var result = (listf.split('\n'));
-                        let i;
-                        for (i = 0; i < result.length; i++) {
-                            var preparedresult = result[i].split(".")[0];
-                            self.logger.info(logPrefix + preparedresult)
-
-                            self.configManager.pushUIConfigParam(uiconf, 'sections[3].content[0].options', {
-                                value: preparedresult,
-                                label: i + 1 + ' ' + preparedresult
-                            });
-                        }
-
-
-                    } catch (err) {
-                        self.logger.error(logPrefix + ' failed to read downloadedlist.txt' + err);
-                    }
-                    //-----------section 5---------
-                    var dvalue = self.config.get('delayspectrum');
-                    uiconf.sections[4].content[0].value =dvalue
-                   // self.configManager.setUIConfigParam(uiconf, 'sections[6].content[0].value.value', dvalue);
-                   // self.configManager.setUIConfigParam(uiconf, 'sections[6].content[0].value.label', dvalue);
-
-                    // Resolve the promise after the file reading and processing are complete
-                    defer.resolve(uiconf);
-                });
-            } catch (e) {
-                self.logger.error(logPrefix + 'Cannot read file: ' + e);
-                defer.reject(e); // Reject the promise in case of an error
-            }
-        })
-        .fail(function () {
-            defer.reject(new Error());
+          );
         });
-    return defer.promise;
+      } catch (err) {
+        self.logger.error("Failed to read spectrumslist.txt: " + err);
+      }
+      // ------------------------------------------------
+
+      // -------- Section 5: delay --------
+      const dvalue = self.config.get("delayspectrum");
+      uiconf.sections[4].content[0].value = dvalue;
+
+      // Done
+      defer.resolve(uiconf);
+    })
+    .fail(function () {
+      defer.reject(new Error());
+    });
+
+  return defer.promise;
 };
 
 

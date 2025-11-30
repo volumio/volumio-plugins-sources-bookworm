@@ -8,36 +8,93 @@ var execSync = require('child_process').execSync;
 var express = require('express');
 var bodyParser = require('body-parser');
 var path = require('path');
+var metadata = require('./lib/metadata');
 
 module.exports = ControllerRtlsdrRadio;
 
 function ControllerRtlsdrRadio(context) {
   var self = this;
   
+  // Core Volumio context
   self.context = context;
   self.commandRouter = self.context.coreCommand;
   self.logger = self.context.logger;
   self.configManager = self.context.configManager;
   
+  // Process references
   self.decoderProcess = null;
   self.scanProcess = null;
   self.soxProcess = null;
   self.aplayProcess = null;
+  self.redseaProcess = null;
+  self.cleanupTimeout = null;
+  
+  // Station database
   self.currentStation = null;
   self.stationsDb = { fm: [], dab: [] };
   self.stationsDbFile = '/data/plugins/music_service/rtlsdr_radio/stations.json';
-  self.dbLoadedAt = null; // Timestamp when database was loaded
+  self.dbLoadedAt = null;
   
   // Device state management
   self.deviceState = 'idle'; // idle, scanning_fm, scanning_dab, playing_fm, playing_dab
-  self.operationQueue = []; // Queue of pending operations
-  self.QUEUE_TIMEOUT = 60000; // 60 seconds
+  self.operationQueue = [];
+  self.intentionalStop = false;
+  
+  // RDS state tracking
+  self.rdsEnabled = true;
+  self.currentRds = null;
+  self.rdsBuffer = '';
+  self.lastRdsState = null;
+  self.lastRdsUpdate = 0;
+  self.lastSignalLevel = undefined;
+  self.lastTmcAlert = null;
+  self.psHistory = [];      // Track PS name stability
+  self.stablePs = null;     // Confirmed stable PS name
+  
+  // DAB DLS metadata state tracking
+  self.currentDls = null;
+  self.lastDlsLabel = '';
+  self.lastDlsUpdate = 0;
+  self.lastDabState = null;
+  self.dlsMonitorInterval = null;
+  self.dabMetadataDir = '/tmp/dab';
+  self.currentDabStation = null;
+  self.currentFmFrequency = null;
+  self.lastValidAlbumart = null;  // Cached artwork URL
+  self.lastValidArtist = null;    // Cached artist for artwork
+  self.lastValidTitle = null;     // Cached title for artwork
+  self.pendingArtworkLookup = null;  // Track key of in-progress lookup
+  self.lastArtworkLogKey = null;     // Prevent duplicate cache log messages
   
   // Express server for station management web interface
   self.expressApp = null;
   self.expressServer = null;
-  self.managementPort = 3456;
-  self.detectedHostname = null; // Actual hostname/IP from HTTP requests
+  self.detectedHostname = null;
+  
+  // Timing constants (milliseconds)
+  self.USB_RESET_DELAY = 600;        // Delay for USB dongle to reset after stopping
+  self.CLEANUP_TIMEOUT = 500;        // Wait for processes to fully terminate
+  self.PKILL_TIMEOUT = 2000;         // Timeout for pkill commands
+  self.RESTART_DELAY = 2000;         // Delay before restarting plugin
+  self.QUEUE_TIMEOUT = 60000;        // Operation queue timeout (60s)
+  self.RDS_UPDATE_INTERVAL = 2000;   // Minimum between RDS state pushes
+  self.DLS_UPDATE_INTERVAL = 2000;   // Minimum between DLS state pushes
+  self.DLS_POLL_INTERVAL = 2000;     // DLS file polling interval
+  self.TMC_THROTTLE = 30000;         // Traffic alert throttle (30s)
+  self.SPINNER_UPDATE = 1000;        // UI spinner update interval
+  self.TOAST_DELAY = 1200;           // Delay before showing toast
+  self.TEST_PLAYBACK_DURATION = 3000; // Manual test playback duration
+  self.SCAN_PROGRESS_DELAY = 5000;   // Delay before showing scan progress toast
+  
+  // Scan timeouts (milliseconds)
+  self.FM_SCAN_TIMEOUT = 30000;      // FM scan timeout (30s)
+  self.DAB_SCAN_TIMEOUT = 300000;    // DAB scan timeout (5 minutes)
+  self.DAB_DETECTION_TIMEOUT = 30000; // DAB ensemble detection timeout
+  
+  // Audio constants
+  self.FM_SAMPLE_RATE = '171k';      // FM sample rate for RDS (multiple of 57kHz)
+  self.OUTPUT_SAMPLE_RATE = 48000;   // Output sample rate for Volumio
+  self.MANAGEMENT_PORT = 3456;       // Web interface port
 }
 
 ControllerRtlsdrRadio.prototype.onVolumioStart = function() {
@@ -66,6 +123,8 @@ ControllerRtlsdrRadio.prototype.onStart = function() {
       return self.loadStations();
     })
     .then(function() {
+      // Load artwork blocklist
+      self.loadBlocklistOnStartup();
       return self.ensureBackupDirectory();
     })
     .then(function() {
@@ -218,6 +277,7 @@ ControllerRtlsdrRadio.prototype.createStationsBackup = function(timestamp) {
     if (fs.existsSync(sourceFile)) {
       fs.copySync(sourceFile, backupFile);
       self.logger.info('[RTL-SDR Radio] Created stations backup: ' + backupFile);
+      
       self.pruneBackups('stations');
       defer.resolve(backupFile);
     } else {
@@ -253,6 +313,40 @@ ControllerRtlsdrRadio.prototype.createConfigBackup = function(timestamp) {
     }
   } catch (e) {
     self.logger.error('[RTL-SDR Radio] Failed to create config backup: ' + e);
+    defer.reject(e);
+  }
+  
+  return defer.promise;
+};
+
+ControllerRtlsdrRadio.prototype.createBlocklistBackup = function(timestamp) {
+  var self = this;
+  var defer = libQ.defer();
+  
+  try {
+    if (!timestamp) {
+      timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    }
+    
+    // Ensure blocklist backup directory exists
+    var backupDir = '/data/rtlsdr_radio_backups/blocklist';
+    fs.ensureDirSync(backupDir);
+    
+    var sourceFile = '/data/plugins/music_service/rtlsdr_radio/blocklist.json';
+    var backupFile = backupDir + '/blocklist-' + timestamp + '.json';
+    
+    if (fs.existsSync(sourceFile)) {
+      fs.copySync(sourceFile, backupFile);
+      self.logger.info('[RTL-SDR Radio] Created blocklist backup: ' + backupFile);
+      self.pruneBackups('blocklist');
+      defer.resolve(backupFile);
+    } else {
+      // No blocklist file exists - this is OK, just resolve with null
+      self.logger.info('[RTL-SDR Radio] No blocklist file to backup');
+      defer.resolve(null);
+    }
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to create blocklist backup: ' + e);
     defer.reject(e);
   }
   
@@ -297,17 +391,19 @@ ControllerRtlsdrRadio.prototype.listAvailableBackups = function() {
   var self = this;
   var backups = {
     stations: [],
-    config: []
+    config: [],
+    blocklist: []
   };
   
   try {
     var stationsDir = '/data/rtlsdr_radio_backups/stations';
     var configDir = '/data/rtlsdr_radio_backups/config';
+    var blocklistDir = '/data/rtlsdr_radio_backups/blocklist';
     
     if (fs.existsSync(stationsDir)) {
       var stationsFiles = fs.readdirSync(stationsDir);
       stationsFiles = stationsFiles.filter(function(f) {
-        return f.endsWith('.json');
+        return f.startsWith('stations-') && f.endsWith('.json');
       });
       stationsFiles.sort().reverse();
       
@@ -327,7 +423,7 @@ ControllerRtlsdrRadio.prototype.listAvailableBackups = function() {
     if (fs.existsSync(configDir)) {
       var configFiles = fs.readdirSync(configDir);
       configFiles = configFiles.filter(function(f) {
-        return f.endsWith('.json');
+        return f.startsWith('config-') && f.endsWith('.json');
       });
       configFiles.sort().reverse();
       
@@ -335,6 +431,26 @@ ControllerRtlsdrRadio.prototype.listAvailableBackups = function() {
         var filePath = configDir + '/' + f;
         var stats = fs.statSync(filePath);
         var timestamp = f.replace('config-', '').replace('.json', '');
+        return {
+          filename: f,
+          timestamp: timestamp,
+          size: stats.size,
+          date: stats.mtime
+        };
+      });
+    }
+    
+    if (fs.existsSync(blocklistDir)) {
+      var blocklistFiles = fs.readdirSync(blocklistDir);
+      blocklistFiles = blocklistFiles.filter(function(f) {
+        return f.startsWith('blocklist-') && f.endsWith('.json');
+      });
+      blocklistFiles.sort().reverse();
+      
+      backups.blocklist = blocklistFiles.map(function(f) {
+        var filePath = blocklistDir + '/' + f;
+        var stats = fs.statSync(filePath);
+        var timestamp = f.replace('blocklist-', '').replace('.json', '');
         return {
           filename: f,
           timestamp: timestamp,
@@ -367,6 +483,31 @@ ControllerRtlsdrRadio.prototype.restoreStationsBackup = function(timestamp) {
     }
   } catch (e) {
     self.logger.error('[RTL-SDR Radio] Failed to restore stations backup: ' + e);
+    defer.reject(e);
+  }
+  
+  return defer.promise;
+};
+
+ControllerRtlsdrRadio.prototype.restoreBlocklistBackup = function(timestamp) {
+  var self = this;
+  var defer = libQ.defer();
+  
+  try {
+    var backupFile = '/data/rtlsdr_radio_backups/blocklist/blocklist-' + timestamp + '.json';
+    var targetFile = '/data/plugins/music_service/rtlsdr_radio/blocklist.json';
+    
+    if (fs.existsSync(backupFile)) {
+      fs.copySync(backupFile, targetFile);
+      self.logger.info('[RTL-SDR Radio] Restored blocklist from: ' + backupFile);
+      // Reload blocklist into metadata module
+      self.loadBlocklistOnStartup();
+      defer.resolve();
+    } else {
+      defer.reject('Backup file not found: ' + timestamp);
+    }
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to restore blocklist backup: ' + e);
     defer.reject(e);
   }
   
@@ -429,8 +570,12 @@ ControllerRtlsdrRadio.prototype.createBackupFromUI = function() {
       return self.createConfigBackup();
     })
     .then(function() {
+      return self.createBlocklistBackup();
+    })
+    .then(function() {
       self.pruneBackups('stations');
       self.pruneBackups('config');
+      self.pruneBackups('blocklist');
       self.commandRouter.pushToastMessage('success', 'FM/DAB Radio', 
         self.getI18nString('TOAST_BACKUP_CREATED'));
       defer.resolve();
@@ -452,7 +597,7 @@ ControllerRtlsdrRadio.prototype.restoreLatestBackupFromUI = function() {
   try {
     var backups = self.listAvailableBackups();
     
-    if (backups.stations.length === 0 && backups.config.length === 0) {
+    if (backups.stations.length === 0 && backups.config.length === 0 && backups.blocklist.length === 0) {
       self.commandRouter.pushToastMessage('warning', 'FM/DAB Radio', 
         self.getI18nString('TOAST_NO_BACKUPS'));
       defer.reject('No backups available');
@@ -471,6 +616,11 @@ ControllerRtlsdrRadio.prototype.restoreLatestBackupFromUI = function() {
       promises.push(self.restoreConfigBackup(latestConfig));
     }
     
+    if (backups.blocklist.length > 0) {
+      var latestBlocklist = backups.blocklist[0].timestamp;
+      promises.push(self.restoreBlocklistBackup(latestBlocklist));
+    }
+    
     libQ.all(promises)
       .then(function() {
         self.commandRouter.pushToastMessage('success', 'FM/DAB Radio', 
@@ -483,7 +633,7 @@ ControllerRtlsdrRadio.prototype.restoreLatestBackupFromUI = function() {
             .then(function() {
               defer.resolve();
             });
-        }, 2000);
+        }, self.RESTART_DELAY);
       })
       .fail(function(e) {
         self.logger.error('[RTL-SDR Radio] UI restore failed: ' + e);
@@ -651,6 +801,13 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
           return res.status(400).json({ error: 'Invalid data format' });
         }
         
+        // Ensure FM frequencies are strings (fix for number input type)
+        data.fm.forEach(function(station) {
+          if (typeof station.frequency === 'number') {
+            station.frequency = station.frequency.toFixed(1);
+          }
+        });
+        
         // Update database
         self.stationsDb.fm = data.fm;
         self.stationsDb.dab = data.dab;
@@ -816,13 +973,32 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
           return !s.deleted; 
         }).length : 0;
         
+        // Get current signal info
+        var signalInfo = null;
+        if (self.deviceState === 'playing_fm' && self.currentRds) {
+          signalInfo = {
+            type: 'fm',
+            level: self.currentRds.signalLevel || 0,
+            percent: self.currentRds.signalPercent || 0,
+            frequency: self.currentFmFrequency || null
+          };
+        } else if (self.deviceState === 'playing_dab' && self.currentDabSignal) {
+          signalInfo = {
+            type: 'dab',
+            level: self.currentDabSignal.level || 0,
+            percent: self.currentDabSignal.percent || 0,
+            station: self.currentDabStation || null
+          };
+        }
+        
         res.json({ 
           deviceState: self.deviceState,
           fmStationsLoaded: fmCount,
           dabStationsLoaded: dabCount,
           dbLoadedAt: self.dbLoadedAt,
           dbVersion: self.stationsDb.version || 0,
-          serverPort: self.managementPort,
+          serverPort: self.MANAGEMENT_PORT,
+          signal: signalInfo,
           timestamp: new Date().toISOString()
         });
       } catch (e) {
@@ -873,9 +1049,14 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
           self.createConfigBackup(timestamp)
             .then(function() { res.json({ success: true }); })
             .fail(function(e) { res.status(500).json({ error: e.toString() }); });
+        } else if (type === 'blocklist') {
+          self.createBlocklistBackup(timestamp)
+            .then(function() { res.json({ success: true }); })
+            .fail(function(e) { res.status(500).json({ error: e.toString() }); });
         } else if (type === 'full') {
           self.createStationsBackup(timestamp)
             .then(function() { return self.createConfigBackup(timestamp); })
+            .then(function() { return self.createBlocklistBackup(timestamp); })
             .then(function() { res.json({ success: true }); })
             .fail(function(e) { res.status(500).json({ error: e.toString() }); });
         } else {
@@ -891,6 +1072,7 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
         var promises = [];
         if (req.body.stationsTimestamp) promises.push(self.restoreStationsBackup(req.body.stationsTimestamp));
         if (req.body.configTimestamp) promises.push(self.restoreConfigBackup(req.body.configTimestamp));
+        if (req.body.blocklistTimestamp) promises.push(self.restoreBlocklistBackup(req.body.blocklistTimestamp));
         
         if (promises.length === 0) {
           res.status(400).json({ error: 'No backups specified' });
@@ -905,7 +1087,7 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
                 .then(function() {
                   return self.onStart();
                 });
-            }, 1000);
+            }, self.SPINNER_UPDATE);
           })
           .fail(function(e) { res.status(500).json({ error: e.toString() }); });
       } catch (e) {
@@ -981,7 +1163,7 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
                 .then(function() {
                   return self.onStart();
                 });
-            }, 1000);
+            }, self.SPINNER_UPDATE);
           })
           .fail(function(e) {
             fs.removeSync(zipPath);
@@ -992,18 +1174,314 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
       }
     });
     
-
+    // Antenna alignment tool - RF spectrum scan
+    self.expressApp.post('/api/antenna/spectrum-scan', function(req, res) {
+      try {
+        // Stop any current playback to free the tuner
+        self.stopDecoder();
+        
+        // Notify Volumio that playback has paused (same pattern as stop())
+        self.setDeviceState('idle');
+        var currentState = self.commandRouter.stateMachine.getState();
+        currentState.status = 'pause';
+        self.commandRouter.servicePushState(currentState, 'rtlsdr_radio');
+        self.commandRouter.stateMachine.setConsumeUpdateService('');
+        
+        var spawn = require('child_process').spawn;
+        
+        // Small delay for device to release
+        setTimeout(function() {
+          var rtlPower = spawn('fn-rtl_power', ['-f', '174M:240M:1M', '-i', '1', '-1']);
+          
+          var csvOutput = '';
+          rtlPower.stdout.on('data', function(data) { 
+            csvOutput += data.toString(); 
+          });
+          
+          rtlPower.stderr.on('data', function(data) {
+            self.logger.info('[RTL-SDR Radio] fn-rtl_power: ' + data.toString());
+          });
+          
+          rtlPower.on('close', function(code) {
+            if (code !== 0) {
+              res.status(500).json({ error: 'fn-rtl_power failed with code ' + code });
+              return;
+            }
+            
+            // Parse CSV output
+            var spectrum = [];
+            var lines = csvOutput.trim().split('\n');
+            
+            lines.forEach(function(line) {
+              var parts = line.split(',');
+              if (parts.length >= 7) {
+                var freqStart = parseInt(parts[2]) / 1000000; // Hz to MHz
+                var power = parseFloat(parts[6]); // dBm
+                spectrum.push({ freq: freqStart, power: power });
+              }
+            });
+            
+            res.json({ 
+              success: true, 
+              spectrum: spectrum, 
+              timestamp: new Date().toISOString() 
+            });
+          });
+          
+          rtlPower.on('error', function(e) {
+            res.status(500).json({ error: 'Failed to start fn-rtl_power: ' + e.toString() });
+          });
+        }, self.USB_RESET_DELAY);
+        
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    // Antenna alignment tool - DAB channel validation
+    self.expressApp.post('/api/antenna/validate-dab', function(req, res) {
+      try {
+        var channels = req.body.channels;
+        if (!channels || !Array.isArray(channels) || channels.length === 0) {
+          res.status(400).json({ error: 'Channels array required' });
+          return;
+        }
+        
+        // Stop any current playback to free the tuner
+        self.stopDecoder();
+        
+        // Notify Volumio that playback has paused (same pattern as stop())
+        self.setDeviceState('idle');
+        var currentState = self.commandRouter.stateMachine.getState();
+        currentState.status = 'pause';
+        self.commandRouter.servicePushState(currentState, 'rtlsdr_radio');
+        self.commandRouter.stateMachine.setConsumeUpdateService('');
+        
+        // Set up Server-Sent Events
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
+        res.flushHeaders();
+        
+        var spawn = require('child_process').spawn;
+        var channelIndex = 0;
+        var totalChannels = channels.length;
+        
+        // Send initial status
+        res.write('data: ' + JSON.stringify({ 
+          status: 'started', 
+          total: totalChannels 
+        }) + '\n\n');
+        
+        // Delay first channel check to allow device to release
+        setTimeout(function() {
+          checkNextChannel();
+        }, self.USB_RESET_DELAY);
+        
+        function checkNextChannel() {
+          if (channelIndex >= totalChannels) {
+            // All channels complete
+            res.write('data: ' + JSON.stringify({ 
+              status: 'complete',
+              timestamp: new Date().toISOString() 
+            }) + '\n\n');
+            res.end();
+            return;
+          }
+          
+          var targetChannel = channels[channelIndex];
+          channelIndex++;
+          
+          self.logger.info('[RTL-SDR Radio] Validating DAB channel ' + targetChannel + ' (' + channelIndex + '/' + totalChannels + ')');
+          
+          // Get DAB settings from config
+          var validationGain = self.config.get('dab_gain', 80);
+          var validationPpm = self.config.get('dab_ppm', 0);
+          
+          // Use script to create pseudo-TTY, forcing line-buffered stdout
+          // This ensures stdout data flushes immediately instead of being block-buffered
+          var scanCommand = 'fn-dab-scanner -C ' + targetChannel + ' -G ' + validationGain +
+                            (validationPpm !== 0 ? ' -p ' + validationPpm : '');
+          var scanner = spawn('script', ['-qec', scanCommand, '/dev/null']);
+          var output = '';
+          var targetChannelFound = false;
+          var targetChannelComplete = false;
+          var processKilled = false;
+          
+          // Timeout safety - kill after 30 seconds (allows high-capacity ensembles to complete)
+          var timeout = setTimeout(function() {
+            if (!processKilled && scanner) {
+              processKilled = true;
+              self.logger.info('[RTL-SDR Radio] Validation timeout for channel ' + targetChannel);
+              scanner.kill('SIGTERM');
+            }
+          }, self.DAB_DETECTION_TIMEOUT);
+          
+          scanner.stdout.on('data', function(data) {
+            var chunk = data.toString();
+            output += chunk;
+            
+            // Log stdout for visibility
+            var lines = chunk.split('\n');
+            lines.forEach(function(line) {
+              if (line.trim()) {
+                self.logger.info('[RTL-SDR Radio] fn-dab-scanner: ' + line);
+              }
+            });
+            
+            // Check for completion marker (summary line) - this appears on stdout
+            var completionPattern = new RegExp('; channel ' + targetChannel + ';');
+            if (completionPattern.test(chunk) && !processKilled) {
+              targetChannelComplete = true;
+              processKilled = true;
+              clearTimeout(timeout);
+              self.logger.info('[RTL-SDR Radio] Channel ' + targetChannel + ' validation complete, terminating scanner');
+              scanner.kill('SIGTERM');
+            }
+          });
+          
+          scanner.stderr.on('data', function(data) {
+            var chunk = data.toString();
+            output += chunk;
+            
+            // Log stderr for visibility
+            var lines = chunk.split('\n');
+            lines.forEach(function(line) {
+              if (line.trim() && !line.includes('No database available')) {
+                self.logger.info('[RTL-SDR Radio] fn-dab-scanner: ' + line);
+              }
+            });
+            
+            // Monitor for channel switching (appears on stderr)
+            var channelMatch = chunk.match(/checking data in channel ([A-Z0-9]+)/);
+            if (channelMatch) {
+              var currentChannel = channelMatch[1];
+              
+              if (currentChannel === targetChannel) {
+                targetChannelFound = true;
+                self.logger.info('[RTL-SDR Radio] Started checking channel ' + targetChannel);
+              } else if (targetChannelFound && currentChannel !== targetChannel) {
+                // Scanner moved away from target channel - kill immediately
+                // This handles both cases: signal found OR no signal (scanner skipped)
+                if (!processKilled) {
+                  processKilled = true;
+                  clearTimeout(timeout);
+                  self.logger.info('[RTL-SDR Radio] Scanner moved to channel ' + currentChannel + ', terminating');
+                  scanner.kill('SIGTERM');
+                }
+              }
+            }
+          });
+          
+          scanner.on('close', function(code) {
+            clearTimeout(timeout);
+            
+            // Check for ensemble recognition (indicates successful sync)
+            var syncDetected = /ensemble.*is \([A-Z0-9]+\) recognized/.test(output);
+            
+            // Count audio services
+            var serviceMatches = output.match(/^audioservice;/gm);
+            var serviceCount = serviceMatches ? serviceMatches.length : 0;
+            
+            var quality = 'none';
+            if (syncDetected) {
+              if (serviceCount >= 10) quality = 'excellent';
+              else if (serviceCount >= 7) quality = 'strong';
+              else if (serviceCount >= 4) quality = 'good';
+              else if (serviceCount >= 2) quality = 'weak';
+              else if (serviceCount >= 1) quality = 'poor';
+            }
+            
+            var result = {
+              channel: targetChannel,
+              sync: syncDetected,
+              services: serviceCount,
+              quality: quality,
+              progress: channelIndex,
+              total: totalChannels
+            };
+            
+            self.logger.info('[RTL-SDR Radio] Channel ' + targetChannel + ' results: ' + 
+                           'sync=' + syncDetected + ', services=' + serviceCount + ', quality=' + quality);
+            
+            // Send result immediately via SSE
+            res.write('data: ' + JSON.stringify(result) + '\n\n');
+            
+            checkNextChannel();
+          });
+          
+          scanner.on('error', function(e) {
+            clearTimeout(timeout);
+            self.logger.error('[RTL-SDR Radio] Channel ' + targetChannel + ' validation error: ' + e.toString());
+            
+            var result = {
+              channel: targetChannel,
+              sync: false,
+              services: 0,
+              quality: 'error',
+              error: e.toString(),
+              progress: channelIndex,
+              total: totalChannels
+            };
+            
+            // Send error result via SSE
+            res.write('data: ' + JSON.stringify(result) + '\n\n');
+            
+            checkNextChannel();
+          });
+        }
+        
+        // Initial call is made in setTimeout above
+        
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    // ===== ARTWORK BLOCK LIST API ENDPOINTS =====
+    
+    // Get blocklist phrases
+    self.expressApp.get('/api/blocklist', function(req, res) {
+      try {
+        var phrases = self.getBlocklistPhrases();
+        res.json({ phrases: phrases });
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    // Save blocklist phrases
+    self.expressApp.post('/api/blocklist', function(req, res) {
+      try {
+        var phrases = req.body.phrases || [];
+        self.saveBlocklistPhrases(phrases);
+        res.json({ success: true, count: phrases.length });
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    // Reset blocklist to defaults
+    self.expressApp.post('/api/blocklist/reset', function(req, res) {
+      try {
+        var phrases = self.resetBlocklistPhrases();
+        res.json({ success: true, phrases: phrases });
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
     
     // Start server
-    self.expressServer = self.expressApp.listen(self.managementPort, function() {
-      self.logger.info('[RTL-SDR Radio] Management server started on port ' + self.managementPort);
+    self.expressServer = self.expressApp.listen(self.MANAGEMENT_PORT, function() {
+      self.logger.info('[RTL-SDR Radio] Management server started on port ' + self.MANAGEMENT_PORT);
       defer.resolve();
     });
     
     // Handle server errors
     self.expressServer.on('error', function(e) {
       if (e.code === 'EADDRINUSE') {
-        self.logger.error('[RTL-SDR Radio] Port ' + self.managementPort + ' already in use');
+        self.logger.error('[RTL-SDR Radio] Port ' + self.MANAGEMENT_PORT + ' already in use');
         defer.reject(new Error('Management server port already in use'));
       } else {
         self.logger.error('[RTL-SDR Radio] Management server error: ' + e);
@@ -1035,7 +1513,7 @@ ControllerRtlsdrRadio.prototype.getManagementUrl = function() {
     hostname = systemName + '.local';
   }
   
-  return 'http://' + hostname + ':' + self.managementPort;
+  return 'http://' + hostname + ':' + self.MANAGEMENT_PORT;
 };
 
 // Manager Integration Methods (v0.2.5 Testing)
@@ -1110,12 +1588,13 @@ ControllerRtlsdrRadio.prototype.stopAllProcesses = function(caller, force) {
     
     // CRITICAL: Always use SIGKILL (-9) because RTL-SDR processes ignore SIGTERM
     // The 'force' parameter only affects cleanup timing, not kill signal
-    execSync('sudo pkill -9 -f "rtl_fm"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "rtl_power"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "dab-rtlsdr-3"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "dab-scanner-3"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "sox"', { timeout: 2000 });
-    execSync('sudo pkill -9 -f "aplay -D volumio"', { timeout: 2000 });
+    execSync('sudo pkill -9 -f "fn-rtl_fm"', { timeout: self.PKILL_TIMEOUT });
+    execSync('sudo pkill -9 -f "fn-rtl_power"', { timeout: self.PKILL_TIMEOUT });
+    execSync('sudo pkill -9 -f "fn-dab"', { timeout: self.PKILL_TIMEOUT });
+    execSync('sudo pkill -9 -f "fn-dab-scanner"', { timeout: self.PKILL_TIMEOUT });
+    execSync('sudo pkill -9 -f "fn-redsea"', { timeout: self.PKILL_TIMEOUT });
+    execSync('sudo pkill -9 -f "sox"', { timeout: self.PKILL_TIMEOUT });
+    execSync('sudo pkill -9 -f "aplay -D volumio"', { timeout: self.PKILL_TIMEOUT });
   } catch (e) {
     // pkill returns error if no processes found - this is OK
   }
@@ -1137,6 +1616,10 @@ ControllerRtlsdrRadio.prototype.stopAllProcesses = function(caller, force) {
     try { self.aplayProcess.kill('SIGKILL'); } catch (e) {}
   }
   
+  if (self.redseaProcess !== null) {
+    try { self.redseaProcess.kill('SIGKILL'); } catch (e) {}
+  }
+  
   self.logger.info('[RTL-SDR Radio] ' + caller + ' - processes ' + (force ? 'terminated' : 'stopped'));
   
   // Handle reference cleanup based on force mode
@@ -1146,6 +1629,14 @@ ControllerRtlsdrRadio.prototype.stopAllProcesses = function(caller, force) {
     self.scanProcess = null;
     self.soxProcess = null;
     self.aplayProcess = null;
+    self.redseaProcess = null;
+    self.currentRds = null;
+    self.rdsBuffer = '';
+    self.lastRdsState = null;
+    self.lastRdsUpdate = 0;
+    self.lastSignalLevel = undefined;
+    self.psHistory = [];
+    self.stablePs = null;
   } else {
     // Graceful cleanup with timeout - allows device to reset
     setTimeout(function() {
@@ -1153,7 +1644,15 @@ ControllerRtlsdrRadio.prototype.stopAllProcesses = function(caller, force) {
       self.scanProcess = null;
       self.soxProcess = null;
       self.aplayProcess = null;
-    }, 500);
+      self.redseaProcess = null;
+      self.currentRds = null;
+      self.rdsBuffer = '';
+      self.lastRdsState = null;
+      self.lastRdsUpdate = 0;
+      self.lastSignalLevel = undefined;
+      self.psHistory = [];
+      self.stablePs = null;
+    }, self.CLEANUP_TIMEOUT);
   }
 };
 
@@ -1166,12 +1665,26 @@ ControllerRtlsdrRadio.prototype.loadI18nStrings = function() {
   var langFile = __dirname + '/i18n/strings_' + lang_code + '.json';
   var defaultFile = __dirname + '/i18n/strings_en.json';
   
+  // Always load English as fallback
   try {
-    self.i18nStrings = fs.readJsonSync(langFile);
-    self.logger.info('[RTL-SDR Radio] Loaded i18n strings for language: ' + lang_code);
+    self.i18nStringsDefault = fs.readJsonSync(defaultFile);
   } catch (e) {
-    self.logger.warn('[RTL-SDR Radio] Failed to load ' + lang_code + ' translations, using English');
-    self.i18nStrings = fs.readJsonSync(defaultFile);
+    self.logger.error('[RTL-SDR Radio] Failed to load English fallback strings');
+    self.i18nStringsDefault = {};
+  }
+  
+  // Load requested language (or English if same)
+  if (lang_code === 'en') {
+    self.i18nStrings = self.i18nStringsDefault;
+    self.logger.info('[RTL-SDR Radio] Loaded i18n strings for language: en');
+  } else {
+    try {
+      self.i18nStrings = fs.readJsonSync(langFile);
+      self.logger.info('[RTL-SDR Radio] Loaded i18n strings for language: ' + lang_code);
+    } catch (e) {
+      self.logger.warn('[RTL-SDR Radio] Failed to load ' + lang_code + ' translations, using English');
+      self.i18nStrings = self.i18nStringsDefault;
+    }
   }
   
   defer.resolve();
@@ -1181,11 +1694,17 @@ ControllerRtlsdrRadio.prototype.loadI18nStrings = function() {
 ControllerRtlsdrRadio.prototype.getI18nString = function(key) {
   var self = this;
   
+  // Try current language first
   if (self.i18nStrings && self.i18nStrings[key]) {
     return self.i18nStrings[key];
   }
   
-  // Fallback to key if translation not found
+  // Fallback to English
+  if (self.i18nStringsDefault && self.i18nStringsDefault[key]) {
+    return self.i18nStringsDefault[key];
+  }
+  
+  // Last resort: return key itself
   self.logger.warn('[RTL-SDR Radio] Missing translation for key: ' + key);
   return key;
 };
@@ -1339,11 +1858,76 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
     if (dabGain) {
       dabGain.value = self.config.get('dab_gain', 80);
     }
+    
+    var dabPpm = findContentItem(dabSection, 'dab_ppm');
+    if (dabPpm) {
+      dabPpm.value = self.config.get('dab_ppm', 0);
+    }
   }
   
-  // SECTION 5: DIAGNOSTICS
+  // SECTION 5: ARTWORK SETTINGS
+  // ============================
+  var artworkSection = uiconf.sections[4];
+  if (artworkSection) {
+    var showArtworkSettings = findContentItem(artworkSection, 'show_artwork_settings');
+    if (showArtworkSettings) {
+      showArtworkSettings.value = self.config.get('show_artwork_settings', false);
+    }
+    
+    var bestEffortArtwork = findContentItem(artworkSection, 'best_effort_artwork');
+    if (bestEffortArtwork) {
+      bestEffortArtwork.value = self.config.get('best_effort_artwork', true);
+    }
+    
+    var artworkThreshold = findContentItem(artworkSection, 'artwork_threshold');
+    if (artworkThreshold) {
+      var thresholdValue = self.config.get('artwork_threshold', 60);
+      artworkThreshold.value = {
+        value: String(thresholdValue),
+        label: thresholdValue + '%' + (thresholdValue === 60 ? ' (Default)' : '')
+      };
+    }
+    
+    var artworkPersistence = findContentItem(artworkSection, 'artwork_persistence');
+    if (artworkPersistence) {
+      var persistValue = self.config.get('artwork_persistence', 'artist');
+      var persistLabels = {
+        'artist': self.getI18nString('ARTWORK_PERSIST_ARTIST') || 'Keep until artist changes',
+        'track': self.getI18nString('ARTWORK_PERSIST_TRACK') || 'Keep until track changes',
+        'always': self.getI18nString('ARTWORK_PERSIST_ALWAYS') || 'Always refresh'
+      };
+      artworkPersistence.value = {
+        value: persistValue,
+        label: persistLabels[persistValue] || persistLabels['artist']
+      };
+    }
+    
+    var artworkTtl = findContentItem(artworkSection, 'artwork_ttl');
+    if (artworkTtl) {
+      var ttlValue = self.config.get('artwork_ttl', 0);
+      var ttlLabels = {
+        0: self.getI18nString('ARTWORK_TTL_DISABLED') || 'Disabled',
+        2: self.getI18nString('ARTWORK_TTL_2MIN') || '2 minutes',
+        5: self.getI18nString('ARTWORK_TTL_5MIN') || '5 minutes',
+        10: self.getI18nString('ARTWORK_TTL_10MIN') || '10 minutes',
+        15: self.getI18nString('ARTWORK_TTL_15MIN') || '15 minutes',
+        30: self.getI18nString('ARTWORK_TTL_30MIN') || '30 minutes'
+      };
+      artworkTtl.value = {
+        value: String(ttlValue),
+        label: ttlLabels[ttlValue] || ttlLabels[0]
+      };
+    }
+    
+    var artworkDebugLogging = findContentItem(artworkSection, 'artwork_debug_logging');
+    if (artworkDebugLogging) {
+      artworkDebugLogging.value = self.config.get('artwork_debug_logging', false);
+    }
+  }
+  
+  // SECTION 6: DIAGNOSTICS
   // =======================
-  var diagnosticsSection = uiconf.sections[4];
+  var diagnosticsSection = uiconf.sections[5];
   if (diagnosticsSection) {
     var showDiagnostics = findContentItem(diagnosticsSection, 'show_diagnostics');
     if (showDiagnostics) {
@@ -1368,6 +1952,11 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
     var manualDabGain = findContentItem(diagnosticsSection, 'manual_dab_gain');
     if (manualDabGain) {
       manualDabGain.value = self.config.get('manual_dab_gain', 20);
+    }
+    
+    var manualDabPpm = findContentItem(diagnosticsSection, 'manual_dab_ppm');
+    if (manualDabPpm) {
+      manualDabPpm.value = self.config.get('manual_dab_ppm', 0);
     }
   }
 };
@@ -1497,6 +2086,14 @@ ControllerRtlsdrRadio.prototype.saveDabSettings = function(data) {
       }
     }
     
+    // Save DAB PPM correction
+    if (data.dab_ppm !== undefined) {
+      var dabPpm = parseInt(data.dab_ppm);
+      if (!isNaN(dabPpm) && dabPpm >= -200 && dabPpm <= 200) {
+        self.config.set('dab_ppm', dabPpm);
+      }
+    }
+    
     self.commandRouter.pushToastMessage('success', 'FM/DAB Radio', 
       self.getI18nString('SAVE_SUCCESS'));
     defer.resolve();
@@ -1533,6 +2130,46 @@ ControllerRtlsdrRadio.prototype.saveWebManagementToggle = function(data) {
   return defer.promise;
 };
 
+ControllerRtlsdrRadio.prototype.saveArtworkSettings = function(data) {
+  var self = this;
+  var defer = libQ.defer();
+  
+  try {
+    if (data.show_artwork_settings !== undefined) {
+      self.config.set('show_artwork_settings', data.show_artwork_settings);
+    }
+    if (data.best_effort_artwork !== undefined) {
+      self.config.set('best_effort_artwork', data.best_effort_artwork);
+    }
+    if (data.artwork_threshold !== undefined) {
+      var threshold = data.artwork_threshold.value || data.artwork_threshold;
+      self.config.set('artwork_threshold', parseInt(threshold, 10));
+    }
+    if (data.artwork_persistence !== undefined) {
+      var persistence = data.artwork_persistence.value || data.artwork_persistence;
+      self.config.set('artwork_persistence', persistence);
+    }
+    if (data.artwork_ttl !== undefined) {
+      var ttl = data.artwork_ttl.value || data.artwork_ttl;
+      self.config.set('artwork_ttl', parseInt(ttl, 10));
+    }
+    if (data.artwork_debug_logging !== undefined) {
+      self.config.set('artwork_debug_logging', data.artwork_debug_logging);
+    }
+    
+    self.commandRouter.pushToastMessage('success', 'FM/DAB Radio', 
+      self.getI18nString('SAVE_SUCCESS'));
+    defer.resolve();
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to save artwork settings: ' + e);
+    self.commandRouter.pushToastMessage('error', 'FM/DAB Radio', 
+      self.getI18nString('SAVE_ERROR'));
+    defer.reject(e);
+  }
+  
+  return defer.promise;
+};
+
 ControllerRtlsdrRadio.prototype.saveDiagnosticsSettings = function(data) {
   var self = this;
   var defer = libQ.defer();
@@ -1555,6 +2192,9 @@ ControllerRtlsdrRadio.prototype.saveDiagnosticsSettings = function(data) {
     }
     if (data.manual_dab_gain !== undefined) {
       self.config.set('manual_dab_gain', data.manual_dab_gain);
+    }
+    if (data.manual_dab_ppm !== undefined) {
+      self.config.set('manual_dab_ppm', data.manual_dab_ppm);
     }
     
     self.commandRouter.pushToastMessage('success', 'FM/DAB Radio', 
@@ -1752,7 +2392,7 @@ ControllerRtlsdrRadio.prototype.handleDeviceConflict = function(data) {
     self.stopCurrentOperation()
       .then(function() {
         // Wait for processes to fully terminate and release USB device
-        // Processes need time for graceful shutdown (rtl_power finishes scan pass)
+        // Processes need time for graceful shutdown (fn-rtl_power finishes scan pass)
         // stopDecoder has 500ms timeout, add extra margin for graceful shutdown
         self.logger.info('[RTL-SDR Radio] Waiting for device cleanup...');
         setTimeout(function() {
@@ -1761,7 +2401,7 @@ ControllerRtlsdrRadio.prototype.handleDeviceConflict = function(data) {
           // Remove from pending operations
           delete self.pendingOperations[operationType];
           defer.resolve();
-        }, 1200);
+        }, self.TOAST_DELAY);
       })
       .fail(function(e) {
         operation.defer.reject(e);
@@ -2303,7 +2943,7 @@ ControllerRtlsdrRadio.prototype.showFmView = function() {
   
   if (self.stationsDb.fm) {
     self.stationsDb.fm.forEach(function(station) {
-      if (!station.deleted) {
+      if (!station.deleted && !station.hidden) {
         var uri = 'rtlsdr://fm/' + station.frequency;
         items.push({
           service: 'rtlsdr_radio',
@@ -2312,9 +2952,9 @@ ControllerRtlsdrRadio.prototype.showFmView = function() {
           artist: station.frequency + ' MHz',
           album: self.getI18nString('FM_RADIO'),
           albumart: '/albumart?sourceicon=music_service/rtlsdr_radio/assets/fm.svg',
-          icon: station.favorite ? 'fa fa-star' : (station.hidden ? 'fa fa-eye-slash' : ''),
+          icon: station.favorite ? 'fa fa-star' : '',
           uri: uri,
-          menu: self.getStationContextMenu(uri, 'fm', false, station.hidden || false)
+          menu: self.getStationContextMenu(uri, 'fm', false, false)
         });
       }
     });
@@ -2452,7 +3092,7 @@ ControllerRtlsdrRadio.prototype.showDabEnsembleStations = function(ensembleName)
   
   if (self.stationsDb.dab) {
     self.stationsDb.dab.forEach(function(station) {
-      if (!station.deleted && station.ensemble === ensembleName) {
+      if (!station.deleted && !station.hidden && station.ensemble === ensembleName) {
         var uri = 'rtlsdr://dab/' + station.channel + '/' + encodeURIComponent(station.exactName);
         items.push({
           service: 'rtlsdr_radio',
@@ -2461,9 +3101,9 @@ ControllerRtlsdrRadio.prototype.showDabEnsembleStations = function(ensembleName)
           artist: station.ensemble,
           album: 'Channel ' + station.channel,
           albumart: '/albumart?sourceicon=music_service/rtlsdr_radio/assets/dab.svg',
-          icon: station.favorite ? 'fa fa-star' : (station.hidden ? 'fa fa-eye-slash' : ''),
+          icon: station.favorite ? 'fa fa-star' : '',
           uri: uri,
-          menu: self.getStationContextMenu(uri, 'dab', false, station.hidden || false)
+          menu: self.getStationContextMenu(uri, 'dab', false, false)
         });
       }
     });
@@ -2489,7 +3129,7 @@ ControllerRtlsdrRadio.prototype.showDabFlatView = function() {
   
   if (self.stationsDb.dab) {
     self.stationsDb.dab.forEach(function(station) {
-      if (!station.deleted) {
+      if (!station.deleted && !station.hidden) {
         var uri = 'rtlsdr://dab/' + station.channel + '/' + encodeURIComponent(station.exactName);
         items.push({
           service: 'rtlsdr_radio',
@@ -2498,9 +3138,9 @@ ControllerRtlsdrRadio.prototype.showDabFlatView = function() {
           artist: station.ensemble,
           album: 'Channel ' + station.channel,
           albumart: '/albumart?sourceicon=music_service/rtlsdr_radio/assets/dab.svg',
-          icon: station.favorite ? 'fa fa-star' : (station.hidden ? 'fa fa-eye-slash' : ''),
+          icon: station.favorite ? 'fa fa-star' : '',
           uri: uri,
-          menu: self.getStationContextMenu(uri, 'dab', false, station.hidden || false)
+          menu: self.getStationContextMenu(uri, 'dab', false, false)
         });
       }
     });
@@ -2780,6 +3420,158 @@ ControllerRtlsdrRadio.prototype.showHiddenView = function() {
   };
 };
 
+// Required by Volumio for favorites/queue system
+ControllerRtlsdrRadio.prototype.explodeUri = function(uri) {
+  var self = this;
+  var defer = libQ.defer();
+  
+  self.logger.info('[RTL-SDR Radio] explodeUri: ' + uri);
+  
+  if (!uri || typeof uri !== 'string') {
+    defer.resolve([]);
+    return defer.promise;
+  }
+  
+  // Parse FM URI: rtlsdr://fm/100.0
+  if (uri.indexOf('rtlsdr://fm/') === 0) {
+    var frequency = uri.replace('rtlsdr://fm/', '');
+    
+    // Normalize frequency format (100 -> 100.0)
+    var freq = parseFloat(frequency);
+    if (!isNaN(freq)) {
+      frequency = freq.toFixed(1);
+    }
+    
+    // Look up station in database
+    var station = null;
+    if (self.stationsDb.fm) {
+      station = self.stationsDb.fm.find(function(s) {
+        return s.frequency === frequency;
+      });
+    }
+    
+    var track = {
+      service: 'rtlsdr_radio',
+      type: 'song',
+      title: station ? (station.customName || station.name) : ('FM ' + frequency),
+      artist: frequency + ' MHz',
+      album: self.getI18nString('FM_RADIO') || 'FM Radio',
+      albumart: '/albumart?sourceicon=music_service/rtlsdr_radio/assets/fm.svg',
+      uri: 'rtlsdr://fm/' + frequency
+    };
+    
+    defer.resolve([track]);
+    return defer.promise;
+  }
+  
+  // Parse DAB URI: rtlsdr://dab/<channel>/<serviceName>
+  if (uri.indexOf('rtlsdr://dab/') === 0) {
+    var dabParts = uri.replace('rtlsdr://dab/', '').split('/');
+    if (dabParts.length >= 2) {
+      var channel = dabParts[0];
+      var serviceName = decodeURIComponent(dabParts[1]);
+      
+      // Look up station in database
+      var station = null;
+      if (self.stationsDb.dab) {
+        station = self.stationsDb.dab.find(function(s) {
+          return s.channel === channel && s.exactName === serviceName;
+        });
+      }
+      
+      var track = {
+        service: 'rtlsdr_radio',
+        type: 'webradio',
+        title: station ? (station.customName || station.name) : serviceName,
+        artist: station ? station.ensemble : channel,
+        album: self.getI18nString('DAB_RADIO') || 'DAB+ Radio',
+        albumart: '/albumart?sourceicon=music_service/rtlsdr_radio/assets/dab.svg',
+        uri: uri
+      };
+      
+      defer.resolve([track]);
+      return defer.promise;
+    }
+  }
+  
+  // Unknown URI format
+  defer.resolve([]);
+  return defer.promise;
+};
+
+// Sync Volumio favorites with Station Manager
+// Called when user clicks heart icon to add to favorites
+ControllerRtlsdrRadio.prototype.addToFavourites = function(data) {
+  var self = this;
+  var defer = libQ.defer();
+  
+  if (!data || !data.uri) {
+    defer.resolve();
+    return defer.promise;
+  }
+  
+  // Normalize FM URI frequency format
+  var uri = data.uri;
+  if (uri.indexOf('rtlsdr://fm/') === 0) {
+    var freq = parseFloat(uri.replace('rtlsdr://fm/', ''));
+    if (!isNaN(freq)) {
+      uri = 'rtlsdr://fm/' + freq.toFixed(1);
+    }
+  }
+  
+  // Check if station exists in our database first
+  var stationInfo = self.getStationByUri(uri);
+  if (!stationInfo) {
+    // Station not in our database - that's fine, Volumio favorites still work
+    defer.resolve();
+    return defer.promise;
+  }
+  
+  // Update station favorite flag in stations.json
+  stationInfo.station.favorite = true;
+  self.saveStations();
+  self.logger.info('[RTL-SDR Radio] Station marked as favorite: ' + uri);
+  defer.resolve();
+  
+  return defer.promise;
+};
+
+// Called when user removes from Volumio favorites
+ControllerRtlsdrRadio.prototype.removeFromFavourites = function(data) {
+  var self = this;
+  var defer = libQ.defer();
+  
+  if (!data || !data.uri) {
+    defer.resolve();
+    return defer.promise;
+  }
+  
+  // Normalize FM URI frequency format
+  var uri = data.uri;
+  if (uri.indexOf('rtlsdr://fm/') === 0) {
+    var freq = parseFloat(uri.replace('rtlsdr://fm/', ''));
+    if (!isNaN(freq)) {
+      uri = 'rtlsdr://fm/' + freq.toFixed(1);
+    }
+  }
+  
+  // Check if station exists in our database first
+  var stationInfo = self.getStationByUri(uri);
+  if (!stationInfo) {
+    // Station not in our database - that's fine, Volumio favorites still work
+    defer.resolve();
+    return defer.promise;
+  }
+  
+  // Update station favorite flag in stations.json
+  stationInfo.station.favorite = false;
+  self.saveStations();
+  self.logger.info('[RTL-SDR Radio] Station removed from favorites: ' + uri);
+  defer.resolve();
+  
+  return defer.promise;
+};
+
 ControllerRtlsdrRadio.prototype.clearAddPlayTrack = function(track) {
   var self = this;
   var defer = libQ.defer();
@@ -2838,6 +3630,12 @@ ControllerRtlsdrRadio.prototype.playFmStation = function(frequency, stationName)
   
   self.logger.info('[RTL-SDR Radio] Playing FM station: ' + frequency + ' MHz');
   
+  // Reset artwork state when changing stations
+  self.lastValidArtwork = null;
+  self.artworkTimestamp = null;
+  self.albumLookupCache = {};
+  self.lastArtworkLogKey = null;
+  
   // Validate frequency (FM band: 88-108 MHz)
   var freq = parseFloat(frequency);
   if (isNaN(freq) || freq < 88 || freq > 108) {
@@ -2848,7 +3646,7 @@ ControllerRtlsdrRadio.prototype.playFmStation = function(frequency, stationName)
   
   // Check if station is deleted
   var station = self.stationsDb.fm ? self.stationsDb.fm.find(function(s) {
-    return s.frequency === frequency;
+    return parseFloat(s.frequency) === freq;
   }) : null;
   
   if (station && station.deleted) {
@@ -2859,21 +3657,22 @@ ControllerRtlsdrRadio.prototype.playFmStation = function(frequency, stationName)
     return defer.promise;
   }
   
+  // Use customName from database if available (overrides track.name)
+  if (station && station.customName) {
+    stationName = station.customName;
+  }
+  
   // Check device availability
   self.checkDeviceAvailable('play_fm', { frequency: freq, stationName: stationName })
     .then(function() {
       // Device is available, proceed with playback
       self.setDeviceState('playing_fm');
       
-      // If decoder is still running, wait for cleanup to complete
-      if (self.decoderProcess !== null) {
-        self.logger.info('[RTL-SDR Radio] Waiting for previous station cleanup...');
-        setTimeout(function() {
-          self.startFmPlayback(freq, stationName, defer);
-        }, 600); // Wait slightly longer than stopDecoder timeout (500ms)
-      } else {
+      // Always delay slightly to allow USB device to reset after stopDecoder
+      // RTL-SDR needs time to release and be ready for next command
+      setTimeout(function() {
         self.startFmPlayback(freq, stationName, defer);
-      }
+      }, self.USB_RESET_DELAY);
     })
     .fail(function(e) {
       self.logger.info('[RTL-SDR Radio] FM playback cancelled or rejected: ' + e);
@@ -2885,9 +3684,19 @@ ControllerRtlsdrRadio.prototype.playFmStation = function(frequency, stationName)
 
 ControllerRtlsdrRadio.prototype.startFmPlayback = function(freq, stationName, defer) {
   var self = this;
+  var spawn = require('child_process').spawn;
+  
+  // CRITICAL: Cancel any pending cleanup timeout from previous stopDecoder call
+  // This prevents the race condition where old timeout nulls our new process references
+  if (self.cleanupTimeout) {
+    clearTimeout(self.cleanupTimeout);
+    self.cleanupTimeout = null;
+  }
   
   // Update play statistics
-  var uri = 'rtlsdr://fm/' + freq;
+  // Ensure frequency has decimal for consistent URI format (100 -> "100.0")
+  var freqStr = freq.toFixed(1);
+  var uri = 'rtlsdr://fm/' + freqStr;
   var stationInfo = self.getStationByUri(uri);
   if (stationInfo) {
     stationInfo.station.playCount = (stationInfo.station.playCount || 0) + 1;
@@ -2898,28 +3707,192 @@ ControllerRtlsdrRadio.prototype.startFmPlayback = function(freq, stationName, de
   // Get gain from config
   var gain = self.config.get('fm_gain', 50);
   
-  // Build rtl_fm command piped to aplay
-  // rtl_fm: -f frequency, -M wfm (wideband FM), -s 180k sample rate, -r 48k resample, -g gain
-  // aplay: -D volumio (Volumio's modular ALSA device), -f S16_LE (format), -r 48000 (rate), -c 1 (mono)
-  var command = 'rtl_fm -f ' + freq + 'M -M wfm -s 180k -r 48k -g ' + gain + 
-                ' | aplay -D volumio -f S16_LE -r 48000 -c 1';
+  // Reset RDS state
+  self.currentRds = null;
+  self.rdsBuffer = '';
+  self.lastRdsState = null;
+  self.lastRdsUpdate = 0;
+  self.lastSignalLevel = undefined;
+  self.psHistory = [];
+  self.stablePs = null;
+  self.currentFmFrequency = freq;
   
-  self.logger.info('[RTL-SDR Radio] Command: ' + command);
+  // Build fn-rtl_fm command for RDS-compatible output
+  // -M fm: FM mode without stereo decode (outputs MPX baseband for RDS)
+  // -s 171k: Sample rate optimal for RDS (multiple of 57kHz subcarrier)
+  // -l 0: Squelch off
+  // -A std: Standard audio
+  // -F 9: FIR filter size
+  var rtlArgs = ['-f', freq + 'M', '-M', 'fm', '-s', self.FM_SAMPLE_RATE, '-l', '0', '-A', 'std', '-g', gain.toString(), '-F', '9'];
   
-  // Start decoder process
-  self.decoderProcess = exec(command, function(error, stdout, stderr) {
-    if (error) {
-      // Only log error if it wasn't an intentional stop
-      if (!self.intentionalStop) {
-        self.logger.error('[RTL-SDR Radio] Decoder error: ' + error);
+  self.logger.info('[RTL-SDR Radio] Starting FM with RDS: fn-rtl_fm ' + rtlArgs.join(' '));
+  
+  // Spawn fn-rtl_fm process
+  var rtlProcess = spawn('fn-rtl_fm', rtlArgs);
+  self.decoderProcess = rtlProcess;
+  
+  // Spawn fn-redsea for RDS decoding
+  // -E flag enables BLER (Block Error Rate) output for signal quality
+  var redseaProcess = spawn('fn-redsea', ['-r', self.FM_SAMPLE_RATE, '--show-partial', '-E']);
+  self.redseaProcess = redseaProcess;
+  
+  // Spawn sox for resampling: FM sample rate mono -> output rate stereo
+  var soxArgs = ['-t', 'raw', '-r', self.FM_SAMPLE_RATE, '-e', 'signed', '-b', '16', '-c', '1', '-',
+                 '-t', 'raw', '-r', self.OUTPUT_SAMPLE_RATE, '-e', 'signed', '-b', '16', '-c', '2', '-'];
+  var soxProcess = spawn('sox', soxArgs);
+  self.soxProcess = soxProcess;
+  
+  // Spawn aplay for audio output
+  var aplayProcess = spawn('aplay', ['-D', 'volumio', '-f', 'S16_LE', '-r', self.OUTPUT_SAMPLE_RATE.toString(), '-c', '2']);
+  self.aplayProcess = aplayProcess;
+  
+  // Pipe sox -> aplay
+  soxProcess.stdout.pipe(aplayProcess.stdin);
+  
+  // Split rtl_fm output to both redsea and sox
+  rtlProcess.stdout.on('data', function(chunk) {
+    // Write to redsea for RDS decoding
+    if (redseaProcess.stdin.writable) {
+      try {
+        redseaProcess.stdin.write(chunk);
+      } catch (e) {
+        // Ignore write errors
       }
-      self.decoderProcess = null;
     }
+    // Write to sox for audio
+    if (soxProcess.stdin.writable) {
+      try {
+        soxProcess.stdin.write(chunk);
+      } catch (e) {
+        // Ignore write errors
+      }
+    }
+  });
+  
+  // Handle rtl_fm end
+  rtlProcess.stdout.on('end', function() {
+    if (redseaProcess.stdin.writable) {
+      try { redseaProcess.stdin.end(); } catch (e) {}
+    }
+    if (soxProcess.stdin.writable) {
+      try { soxProcess.stdin.end(); } catch (e) {}
+    }
+  });
+  
+  // Parse RDS JSON from fn-redsea stdout
+  redseaProcess.stdout.on('data', function(data) {
+    self.rdsBuffer += data.toString();
+    var lines = self.rdsBuffer.split('\n');
+    
+    // Process complete lines, keep incomplete last line in buffer
+    self.rdsBuffer = lines.pop();
+    
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim();
+      if (line) {
+        try {
+          var rds = JSON.parse(line);
+          self.handleRdsUpdate(rds, freqStr, stationName);
+        } catch (e) {
+          // Incomplete or invalid JSON - ignore
+        }
+      }
+    }
+  });
+  
+  // CRITICAL: Handle EPIPE errors to prevent crashes
+  rtlProcess.stdout.on('error', function(err) {
+    if (err.code !== 'EPIPE' && !self.intentionalStop) {
+      self.logger.error('[RTL-SDR Radio] rtl_fm stdout error: ' + err);
+    }
+  });
+  
+  redseaProcess.stdin.on('error', function(err) {
+    if (err.code !== 'EPIPE' && !self.intentionalStop) {
+      self.logger.error('[RTL-SDR Radio] redsea stdin error: ' + err);
+    }
+  });
+  
+  redseaProcess.stdout.on('error', function(err) {
+    if (err.code !== 'EPIPE' && !self.intentionalStop) {
+      self.logger.error('[RTL-SDR Radio] redsea stdout error: ' + err);
+    }
+  });
+  
+  soxProcess.stdin.on('error', function(err) {
+    if (err.code !== 'EPIPE' && !self.intentionalStop) {
+      self.logger.error('[RTL-SDR Radio] sox stdin error: ' + err);
+    }
+  });
+  
+  soxProcess.stdout.on('error', function(err) {
+    if (err.code !== 'EPIPE' && !self.intentionalStop) {
+      self.logger.error('[RTL-SDR Radio] sox stdout error: ' + err);
+    }
+  });
+  
+  aplayProcess.stdin.on('error', function(err) {
+    if (err.code !== 'EPIPE' && !self.intentionalStop) {
+      self.logger.error('[RTL-SDR Radio] aplay stdin error: ' + err);
+    }
+  });
+  
+  // Handle process errors and exits
+  rtlProcess.on('error', function(err) {
+    if (!self.intentionalStop) {
+      self.logger.error('[RTL-SDR Radio] rtl_fm error: ' + err);
+    }
+  });
+  
+  rtlProcess.on('exit', function(code) {
+    if (!self.intentionalStop && code !== null && code !== 0) {
+      self.logger.error('[RTL-SDR Radio] rtl_fm exited with code: ' + code);
+    }
+    self.decoderProcess = null;
+  });
+  
+  redseaProcess.on('error', function(err) {
+    if (!self.intentionalStop) {
+      self.logger.error('[RTL-SDR Radio] redsea error: ' + err);
+    }
+  });
+  
+  redseaProcess.on('exit', function(code) {
+    if (!self.intentionalStop && code !== null && code !== 0) {
+      self.logger.error('[RTL-SDR Radio] redsea exited with code: ' + code);
+    }
+    self.redseaProcess = null;
+  });
+  
+  soxProcess.on('error', function(err) {
+    if (!self.intentionalStop) {
+      self.logger.error('[RTL-SDR Radio] sox error: ' + err);
+    }
+  });
+  
+  soxProcess.on('exit', function(code) {
+    if (!self.intentionalStop && code !== null && code !== 0) {
+      self.logger.error('[RTL-SDR Radio] sox exited with code: ' + code);
+    }
+    self.soxProcess = null;
+  });
+  
+  aplayProcess.on('error', function(err) {
+    if (!self.intentionalStop) {
+      self.logger.error('[RTL-SDR Radio] aplay error: ' + err);
+    }
+  });
+  
+  aplayProcess.on('exit', function(code) {
+    if (!self.intentionalStop && code !== null && code !== 0) {
+      self.logger.error('[RTL-SDR Radio] aplay exited with code: ' + code);
+    }
+    self.aplayProcess = null;
   });
   
   // Store current station for resume
   self.currentStation = {
-    uri: 'rtlsdr://fm/' + freq,
+    uri: 'rtlsdr://fm/' + freqStr,
     name: stationName,
     service: 'rtlsdr_radio'
   };
@@ -2931,14 +3904,14 @@ ControllerRtlsdrRadio.prototype.startFmPlayback = function(freq, stationName, de
     status: 'play',
     service: 'rtlsdr_radio',
     title: stationName,
-    artist: 'FM ' + freq + ' MHz',
+    artist: 'FM ' + freqStr + ' MHz',
     album: self.getI18nString('FM_RADIO'),
     albumart: '/albumart?sourceicon=music_service/rtlsdr_radio/assets/fm.svg',
-    uri: 'rtlsdr://fm/' + freq,
-    trackType: 'fm',
+    uri: 'rtlsdr://fm/' + freqStr,
+    trackType: 'FM ' + self.getSignalBars(0),
     samplerate: '48 KHz',
     bitdepth: '16 bit',
-    channels: 1,
+    channels: 2,
     duration: 0,
     seek: 0
   };
@@ -2960,9 +3933,956 @@ ControllerRtlsdrRadio.prototype.startFmPlayback = function(freq, stationName, de
   // This ensures "Received an update from plugin" event fires
   setTimeout(function() {
     self.commandRouter.stateMachine.pushState(state);
-  }, 500);
+  }, self.CLEANUP_TIMEOUT);
   
   defer.resolve();
+};
+
+// ===============================
+// RDS HANDLING FUNCTIONS
+// ===============================
+
+// Parse RadioText for artist/title information
+// Handles formats like "Now playing: Artist - Title" and "Artist - Title"
+ControllerRtlsdrRadio.prototype.parseRadioText = function(radiotext) {
+  // Use enhanced metadata extraction (LAYER 2)
+  // Priority: NLP > Dash > Pipe > Colon > Slash > Word patterns
+  // Returns { artist, title, confidence, method }
+  var result = metadata.extract(radiotext);
+  
+  // For backward compatibility, return simple object
+  // Confidence and method available for logging/debugging
+  if (result.artist && result.title) {
+    this.logger.info('[RTL-SDR Radio] Parsed: ' + result.artist + ' - ' + result.title + 
+                     ' (' + result.confidence + '% via ' + result.method + ')');
+  }
+  
+  return { 
+    artist: result.artist, 
+    title: result.title,
+    confidence: result.confidence,
+    method: result.method
+  };
+};
+
+// Handle RDS data update from fn-redsea
+ControllerRtlsdrRadio.prototype.handleRdsUpdate = function(rds, freq, stationName) {
+  var self = this;
+  
+  // Merge new RDS data with existing
+  if (!self.currentRds) {
+    self.currentRds = {};
+  }
+  
+  // Extract BLER for signal quality (from -E flag)
+  if (rds.bler !== undefined) {
+    self.currentRds.bler = rds.bler;
+    // Calculate signal level (0-5)
+    var hasStereo = rds.di && rds.di.stereo;
+    var bler = rds.bler;
+    var signalLevel = 0;
+    if (bler < 5 && hasStereo) signalLevel = 5;
+    else if (bler < 15 && hasStereo) signalLevel = 4;
+    else if (bler < 30) signalLevel = 3;
+    else if (bler < 50) signalLevel = 2;
+    else signalLevel = 1;
+    self.currentRds.signalLevel = signalLevel;
+    self.currentRds.signalPercent = Math.max(0, 100 - bler);
+  }
+  
+  // Initialize PS stability tracking
+  if (!self.psHistory) {
+    self.psHistory = [];
+    self.stablePs = null;
+  }
+  
+  // Sanitize and validate PS name before use
+  var sanitizedPs = null;
+  if (rds.ps) {
+    sanitizedPs = self.sanitizeRdsText(rds.ps);
+    
+    // Track PS history for stability (require 3 identical readings)
+    if (sanitizedPs) {
+      self.psHistory.push(sanitizedPs);
+      if (self.psHistory.length > 5) {
+        self.psHistory.shift(); // Keep last 5
+      }
+      
+      // Check if last 3 are identical
+      if (self.psHistory.length >= 3) {
+        var last3 = self.psHistory.slice(-3);
+        if (last3[0] === last3[1] && last3[1] === last3[2]) {
+          self.stablePs = last3[0];
+        }
+      }
+    }
+  }
+  
+  // Sanitize radiotext
+  var sanitizedRt = rds.radiotext ? self.sanitizeRdsText(rds.radiotext) : null;
+  
+  // Track if meaningful data changed (use stable PS, not raw)
+  var psChanged = self.stablePs && self.stablePs !== self.currentRds.stablePs;
+  var rtChanged = sanitizedRt && sanitizedRt !== self.currentRds.radiotext;
+  var rtPlusChanged = rds.radiotext_plus && JSON.stringify(rds.radiotext_plus) !== JSON.stringify(self.currentRds.radiotext_plus);
+  
+  // Copy sanitized fields
+  if (self.stablePs) {
+    self.currentRds.ps = self.stablePs;
+    self.currentRds.stablePs = self.stablePs;
+  }
+  if (sanitizedRt) {
+    self.currentRds.radiotext = sanitizedRt;
+  }
+  if (rds.radiotext_plus) {
+    self.currentRds.radiotext_plus = rds.radiotext_plus;
+  }
+  if (rds.prog_type) {
+    self.currentRds.prog_type = rds.prog_type;
+  }
+  if (rds.di) {
+    self.currentRds.di = rds.di;
+  }
+  if (rds.tmc) {
+    self.currentRds.tmc = rds.tmc;
+  }
+  
+  // Handle TMC traffic alerts (separate from state updates)
+  if (rds.tmc && rds.tmc.message && rds.tmc.message.description) {
+    self.handleTmcAlert(rds.tmc);
+  }
+  
+  // Only push state if meaningful data changed
+  if (psChanged || rtChanged || rtPlusChanged) {
+    // Log significant changes including signal quality
+    var sigInfo = self.currentRds.signalLevel !== undefined ? 
+      ' Signal=' + self.currentRds.signalLevel + '/5 (' + self.currentRds.signalPercent + '%)' : '';
+    self.logger.info('[RTL-SDR Radio] RDS: PS=' + (self.currentRds.ps || '?') + 
+                    ', RT=' + (self.currentRds.radiotext || '?').substring(0, 40) + sigInfo);
+    
+    // Attempt to push updated state (will be throttled internally)
+    self.pushRdsState(freq, stationName);
+  }
+};
+
+// Sanitize RDS text - remove invalid characters and validate
+ControllerRtlsdrRadio.prototype.sanitizeRdsText = function(text) {
+  if (!text || typeof text !== 'string') {
+    return null;
+  }
+  
+  // Remove control characters and non-printable chars (keep ASCII 32-126)
+  var sanitized = '';
+  for (var i = 0; i < text.length; i++) {
+    var code = text.charCodeAt(i);
+    if (code >= 32 && code <= 126) {
+      sanitized += text.charAt(i);
+    }
+  }
+  
+  // Trim whitespace
+  sanitized = sanitized.trim();
+  
+  // Reject if too short or mostly garbage
+  if (sanitized.length < 2) {
+    return null;
+  }
+  
+  // Reject if more than 50% non-alphanumeric (likely corrupted)
+  var alphaNum = sanitized.replace(/[^a-zA-Z0-9 ]/g, '');
+  if (alphaNum.length < sanitized.length * 0.5) {
+    return null;
+  }
+  
+  return sanitized;
+};
+
+// Generate signal strength bars using Unicode block characters
+// Level 0-5 returns centered circle visualization with empty placeholders
+ControllerRtlsdrRadio.prototype.getSignalBars = function(level) {
+  // Centered circles: ◦ (empty U+25E6) and ● (filled U+25CF)
+  var empty = '\u25E6';
+  var filled = '\u25CF';
+  
+  var idx = Math.max(0, Math.min(5, level || 0));
+  var result = '';
+  for (var i = 0; i < 5; i++) {
+    result += (i < idx) ? filled : empty;
+  }
+  return result;
+};
+
+// Lookup album artwork from MusicBrainz/Cover Art Archive
+// Async - updates state when artwork is found
+// Get albumart URL using Volumio's albumart plugin
+// Uses the same method as MPD and other core services
+ControllerRtlsdrRadio.prototype.getAlbumArt = function(data, path, icon) {
+  var self = this;
+  
+  // Initialize albumart plugin reference (cached after first call)
+  if (self.albumArtPlugin === undefined) {
+    self.albumArtPlugin = self.commandRouter.pluginManager.getPlugin('miscellanea', 'albumart');
+  }
+  
+  if (self.albumArtPlugin) {
+    return self.albumArtPlugin.getAlbumArt(data, path, icon);
+  } else {
+    // Fallback if albumart plugin not available
+    return '/albumart';
+  }
+};
+
+// Build artwork URL for artist/album using Volumio's albumart service
+// sourceicon parameter provides fallback to our plugin's SVG if Last.fm lookup fails
+ControllerRtlsdrRadio.prototype.buildArtworkUrl = function(artist, album, fallbackIcon) {
+  var self = this;
+  
+  if (!artist || !album) {
+    return '/albumart?sourceicon=' + fallbackIcon;
+  }
+  
+  var artworkDebugLogging = self.config.get('artwork_debug_logging', false);
+  
+  // Build URL directly - don't use getAlbumArt() as it may add icon parameter
+  // Format: /albumart?web=artist/album/size&sourceicon=fallback
+  var url = '/albumart?web=' + encodeURIComponent(artist) + '/' + 
+            encodeURIComponent(album) + '/extralarge' +
+            '&sourceicon=' + fallbackIcon;
+  
+  if (artworkDebugLogging) {
+    self.logger.info('[RTL-SDR Radio] Built artwork URL: ' + url);
+  }
+  return url;
+};
+
+// Lookup artwork from Last.fm using track.getInfo API (PRIMARY METHOD)
+// This is much more reliable than MusicBrainz because:
+// 1. Last.fm returns album name AND artwork in one call
+// 2. Has autocorrect for misspelled artist/track names
+// 3. Returns the album that Last.fm users most commonly associate with the track
+// 4. No complex compilation filtering needed
+//
+// Returns { artist, title, album, artworkUrl } if found, null otherwise
+ControllerRtlsdrRadio.prototype.lookupAlbum = function(artist, title, callback) {
+  var self = this;
+  
+  if (!artist || !title) {
+    return callback(null, null);
+  }
+  
+  var artworkDebugLogging = self.config.get('artwork_debug_logging', false);
+  
+  // Check cache first
+  var cacheKey = artist.toLowerCase() + '|' + title.toLowerCase();
+  if (self.albumLookupCache && self.albumLookupCache[cacheKey] !== undefined) {
+    return callback(null, self.albumLookupCache[cacheKey]);
+  }
+  
+  // Use Last.fm track.getInfo - returns album AND artwork directly
+  metadata.lastfmLookup(artist, title, function(err, result) {
+    if (err) {
+      if (artworkDebugLogging) {
+        self.logger.warn('[RTL-SDR Radio] Last.fm error: ' + err.message);
+      }
+      return callback(null, null);
+    }
+    
+    if (result && result.found && result.album) {
+      var lookupResult = {
+        artist: result.artist || artist,
+        title: result.title || title,
+        album: result.album,
+        artworkUrl: result.albumArtwork  // Direct artwork URL from Last.fm
+      };
+      
+      // Cache the result
+      if (!self.albumLookupCache) {
+        self.albumLookupCache = {};
+      }
+      self.albumLookupCache[cacheKey] = lookupResult;
+      
+      if (artworkDebugLogging) {
+        self.logger.info('[RTL-SDR Radio] Last.fm: ' + lookupResult.artist + ' - ' + 
+                         lookupResult.title + ' [' + lookupResult.album + ']' +
+                         (lookupResult.artworkUrl ? ' (artwork)' : ''));
+      }
+      callback(null, lookupResult);
+    } else {
+      // Cache negative result too to avoid repeated lookups
+      if (!self.albumLookupCache) {
+        self.albumLookupCache = {};
+      }
+      self.albumLookupCache[cacheKey] = null;
+      callback(null, null);
+    }
+  });
+};
+
+// Push updated state to Volumio with RDS metadata
+// Throttled and only pushes when state actually changes
+ControllerRtlsdrRadio.prototype.pushRdsState = function(freq, stationName) {
+  var self = this;
+  var rds = self.currentRds;
+  
+  if (!rds) return;
+  
+  // Throttle updates - minimum interval between pushes
+  // Exception: Signal level changes bypass throttle for responsive UI
+  var now = Date.now();
+  var sigLevel = rds.signalLevel || 0;
+  var signalChanged = (self.lastSignalLevel !== undefined && self.lastSignalLevel !== sigLevel);
+  
+  if (!signalChanged && (now - self.lastRdsUpdate) < self.RDS_UPDATE_INTERVAL) {
+    return;
+  }
+  
+  // Parse RadioText for artist/title
+  var parsed = self.parseRadioText(rds.radiotext);
+  
+  // Prefer RT+ tags if available
+  var artist = null;
+  var title = null;
+  if (rds.radiotext_plus && rds.radiotext_plus.tags) {
+    for (var i = 0; i < rds.radiotext_plus.tags.length; i++) {
+      var tag = rds.radiotext_plus.tags[i];
+      if (tag['content-type'] === 'item.artist') artist = tag.data;
+      if (tag['content-type'] === 'item.title') title = tag.data;
+    }
+  }
+  if (!artist) artist = parsed.artist;
+  if (!title) title = parsed.title;
+  
+  // Display name priority: customName > RDS PS > stationName (default)
+  var displayName = stationName;
+  var freqNum = parseFloat(freq);
+  var station = self.stationsDb.fm ? self.stationsDb.fm.find(function(s) {
+    return parseFloat(s.frequency) === freqNum;
+  }) : null;
+  
+  if (station && station.customName) {
+    // User set custom name - highest priority
+    displayName = station.customName;
+  } else if (rds.ps) {
+    // RDS PS name - second priority
+    displayName = rds.ps.trim();
+  }
+  
+  // Determine stereo from RDS DI flags
+  var channels = 2; // Default stereo for RDS mode
+  if (rds.di && rds.di.stereo === false) {
+    channels = 1;
+  }
+  
+  // Build state key fields for comparison (include signal level for UI updates)
+  // Must match actual state values to detect changes correctly
+  // Note: sigLevel already defined above for throttle bypass
+  var stateKey = displayName + '|' + (artist || rds.radiotext || '') + '|' + (title || rds.prog_type || '') + '|' + sigLevel;
+  
+  // Skip if state hasn't changed
+  if (self.lastRdsState === stateKey) {
+    return;
+  }
+  
+  // Update tracking
+  self.lastRdsState = stateKey;
+  self.lastRdsUpdate = now;
+  self.lastSignalLevel = sigLevel;
+  
+  // Get artwork settings
+  var bestEffortArtwork = self.config.get('best_effort_artwork', true);
+  var artworkThreshold = self.config.get('artwork_threshold', 60);
+  
+  // Default artwork is always our FM icon - NEVER Volumio placeholder
+  var fallbackIcon = 'music_service/rtlsdr_radio/assets/fm.svg';
+  var albumart = '/albumart?sourceicon=' + fallbackIcon;
+  
+  // If best effort artwork is disabled, skip all parsing and lookups
+  if (!bestEffortArtwork) {
+    artist = null;
+    title = null;
+  }
+  
+  // Artwork persistence: Keep last valid artwork when no metadata is parsed
+  // This prevents flicker when station shows promos between songs
+  var artworkPersistence = self.config.get('artwork_persistence', 'track');
+  var artworkTtl = self.config.get('artwork_ttl', 0);  // 0 = disabled, else minutes
+  var artworkDebugLogging = self.config.get('artwork_debug_logging', false);
+  var usePersistedArtwork = false;
+  
+  // Check TTL expiration (only if TTL is enabled)
+  if (artworkTtl > 0 && self.lastValidArtwork && self.artworkTimestamp) {
+    var ttlMs = artworkTtl * 60 * 1000;  // Convert minutes to ms
+    var age = Date.now() - self.artworkTimestamp;
+    if (age > ttlMs) {
+      // TTL expired - clear artwork
+      if (artworkDebugLogging) {
+        self.logger.info('[RTL-SDR Radio] Artwork TTL expired (' + artworkTtl + ' min) - clearing');
+      }
+      self.lastValidArtwork = null;
+      self.artworkTimestamp = null;
+    }
+  }
+  
+  if (!artist && !title) {
+    // No new metadata - check if we should persist previous artwork
+    if (self.lastValidArtwork && self.lastValidArtwork.url) {
+      if (artworkPersistence === 'artist' || artworkPersistence === 'track') {
+        albumart = self.lastValidArtwork.url;
+        usePersistedArtwork = true;
+        if (artworkDebugLogging) {
+          self.logger.info('[RTL-SDR Radio] Using persisted artwork: ' + self.lastValidArtwork.artist);
+        }
+      }
+    }
+  } else if (artist && self.lastValidArtwork && self.lastValidArtwork.artist) {
+    // New metadata arrived - check if artist changed (resets TTL)
+    if (artist.toLowerCase() !== self.lastValidArtwork.artist.toLowerCase()) {
+      // Artist changed - TTL will be reset when new artwork is saved
+      if (artworkDebugLogging) {
+        self.logger.info('[RTL-SDR Radio] Artist changed: ' + self.lastValidArtwork.artist + ' -> ' + artist);
+      }
+    }
+  }
+  
+  // Helper function to push state
+  var pushFmState = function(artUrl) {
+    var state = {
+      status: 'play',
+      service: 'rtlsdr_radio',
+      title: displayName,
+      artist: artist || rds.radiotext || 'FM ' + freq + ' MHz',
+      album: title || rds.prog_type || self.getI18nString('FM_RADIO'),
+      albumart: artUrl,
+      uri: 'rtlsdr://fm/' + freq,
+      trackType: 'FM ' + self.getSignalBars(rds.signalLevel),
+      samplerate: '48 KHz',
+      bitdepth: '16 bit',
+      channels: channels,
+      seek: 0,
+      duration: 0,
+      isStreaming: true,
+      volatile: true
+    };
+    
+    self.commandRouter.servicePushState(state, 'rtlsdr_radio');
+  };
+  
+  // If we have valid metadata above threshold, do Last.fm lookup for album name
+  if (bestEffortArtwork && artist && title && parsed.confidence >= artworkThreshold) {
+    var lookupKey = artist.toLowerCase() + '|' + title.toLowerCase();
+    
+    if (artworkDebugLogging) {
+      self.logger.info('[RTL-SDR Radio] Artwork lookup: ' + artist + ' - ' + title + 
+                       ' (confidence ' + parsed.confidence + '% >= ' + artworkThreshold + '%)');
+    }
+    
+    // Check if we already have cached album info
+    if (self.albumLookupCache && self.albumLookupCache[lookupKey]) {
+      var cached = self.albumLookupCache[lookupKey];
+      if (artworkDebugLogging) {
+        self.logger.info('[RTL-SDR Radio] Cache HIT: ' + lookupKey);
+      }
+      if (cached && cached.album) {
+        albumart = self.buildArtworkUrl(cached.artist, cached.album, fallbackIcon);
+        // Save as last valid artwork for persistence and reset TTL
+        self.lastValidArtwork = {
+          url: albumart,
+          artist: cached.artist,
+          title: title
+        };
+        self.artworkTimestamp = Date.now();
+      }
+      // Cache hit - push state once with correct artwork
+      pushFmState(albumart);
+    } else {
+      if (artworkDebugLogging) {
+        self.logger.info('[RTL-SDR Radio] Cache MISS: ' + lookupKey);
+      }
+      // No cache - push state with persisted/default icon, then update after lookup
+      pushFmState(albumart);
+      
+      // Async Last.fm lookup for album name
+      self.lookupAlbum(artist, title, function(err, result) {
+        if (result && result.album) {
+          var artUrl = self.buildArtworkUrl(result.artist, result.album, fallbackIcon);
+          // Save as last valid artwork for persistence and reset TTL
+          self.lastValidArtwork = {
+            url: artUrl,
+            artist: result.artist,
+            title: title
+          };
+          self.artworkTimestamp = Date.now();
+          // Push updated state with proper artwork URL
+          pushFmState(artUrl);
+        }
+      });
+    }
+  } else {
+    // No metadata or below threshold - push with persisted or default artwork
+    pushFmState(albumart);
+  }
+};
+
+// Handle TMC traffic alerts with toast notifications
+ControllerRtlsdrRadio.prototype.handleTmcAlert = function(tmc) {
+  var self = this;
+  
+  if (!tmc || !tmc.message || !tmc.message.description) return;
+  
+  // Throttle TMC alerts - max one per configured interval
+  var now = Date.now();
+  if (self.lastTmcAlert && (now - self.lastTmcAlert) < self.TMC_THROTTLE) {
+    return;
+  }
+  self.lastTmcAlert = now;
+  
+  var urgency = tmc.message.urgency || 'none';
+  var type = (urgency === 'U') ? 'warning' : 'info';
+  
+  self.commandRouter.pushToastMessage(
+    type,
+    self.getI18nString('TRAFFIC_ALERT') || 'Traffic Alert',
+    tmc.message.description
+  );
+};
+
+// ============================================
+// DAB DLS METADATA FUNCTIONS
+// ============================================
+
+// Setup metadata directory for fn-dab output
+ControllerRtlsdrRadio.prototype.setupDabMetadataDir = function() {
+  var self = this;
+  
+  try {
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(self.dabMetadataDir)) {
+      fs.mkdirpSync(self.dabMetadataDir);
+      self.logger.info('[RTL-SDR Radio] Created DAB metadata directory: ' + self.dabMetadataDir);
+    }
+    
+    // Clean any existing files
+    self.cleanupDabMetadataDir();
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to setup DAB metadata directory: ' + e);
+  }
+};
+
+// Cleanup metadata directory
+ControllerRtlsdrRadio.prototype.cleanupDabMetadataDir = function() {
+  var self = this;
+  
+  try {
+    if (fs.existsSync(self.dabMetadataDir)) {
+      var files = fs.readdirSync(self.dabMetadataDir);
+      files.forEach(function(file) {
+        try {
+          fs.unlinkSync(path.join(self.dabMetadataDir, file));
+        } catch (e) {
+          // Ignore individual file errors
+        }
+      });
+    }
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to cleanup DAB metadata directory: ' + e);
+  }
+};
+
+// Start DLS file monitor
+ControllerRtlsdrRadio.prototype.startDabDlsMonitor = function() {
+  var self = this;
+  
+  // Clear any existing monitor
+  self.stopDabDlsMonitor();
+  
+  // Reset DLS state
+  self.currentDls = null;
+  self.lastDlsLabel = '';
+  self.lastDlsUpdate = 0;
+  self.lastDabState = null;
+  self.currentDabSignal = null;
+  
+  var dlsPath = path.join(self.dabMetadataDir, 'DABlabel.txt');
+  var dlPlusPath = path.join(self.dabMetadataDir, 'DABdlplus.txt');
+  var signalPath = path.join(self.dabMetadataDir, 'DABsignal.txt');
+  
+  self.logger.info('[RTL-SDR Radio] Starting DLS monitor: ' + dlsPath);
+  
+  self.dlsMonitorInterval = setInterval(function() {
+    try {
+      // Read signal quality file (written by fn-dab every 2 seconds)
+      if (fs.existsSync(signalPath)) {
+        var sigContent = fs.readFileSync(signalPath, 'utf8');
+        var sigLines = sigContent.split('\n');
+        var sigData = {};
+        for (var j = 0; j < sigLines.length; j++) {
+          var sigLine = sigLines[j].trim();
+          var eqPos = sigLine.indexOf('=');
+          if (eqPos > 0) {
+            sigData[sigLine.substring(0, eqPos)] = sigLine.substring(eqPos + 1);
+          }
+        }
+        if (sigData.signal_level !== undefined) {
+          self.currentDabSignal = {
+            level: parseInt(sigData.signal_level) || 0,
+            percent: parseInt(sigData.signal_percent) || 0,
+            fibQuality: parseInt(sigData.fib_quality) || 0,
+            audioOk: parseInt(sigData.audio_ok) || 0,
+            snr: parseInt(sigData.snr) || 0
+          };
+        }
+      }
+      
+      // First check for DL Plus file (has semantic tags)
+      var dlPlusData = null;
+      if (fs.existsSync(dlPlusPath)) {
+        var dlPlusContent = fs.readFileSync(dlPlusPath, 'utf8');
+        dlPlusData = self.parseDlPlusFile(dlPlusContent);
+      }
+      
+      // Also read basic DLS label
+      var label = '';
+      if (fs.existsSync(dlsPath)) {
+        var content = fs.readFileSync(dlsPath, 'utf8');
+        var lines = content.split('\n');
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          if (line.indexOf('label=') === 0) {
+            label = line.substring(6);
+            break;
+          }
+        }
+      }
+      
+      // Build state key for change detection (include signal for UI updates)
+      var sigLevel = self.currentDabSignal ? self.currentDabSignal.level : 0;
+      var stateKey = label + '|' + (dlPlusData ? dlPlusData.artist + '|' + dlPlusData.title : '') + '|' + sigLevel;
+      
+      // Only process if changed
+      if (stateKey !== self.lastDlsLabel) {
+        self.lastDlsLabel = stateKey;
+        self.handleDabDls(label, dlPlusData);
+      }
+    } catch (e) {
+      // File may be mid-write, ignore
+    }
+  }, self.DLS_POLL_INTERVAL);
+};
+
+// Stop DLS file monitor
+ControllerRtlsdrRadio.prototype.stopDabDlsMonitor = function() {
+  var self = this;
+  
+  if (self.dlsMonitorInterval) {
+    clearInterval(self.dlsMonitorInterval);
+    self.dlsMonitorInterval = null;
+  }
+};
+
+// Parse DL Plus file content
+// Returns { artist, title, itemRunning } or null if no music tags
+ControllerRtlsdrRadio.prototype.parseDlPlusFile = function(content) {
+  var self = this;
+  
+  if (!content) return null;
+  
+  var lines = content.split('\n');
+  var data = {};
+  
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].trim();
+    var eqPos = line.indexOf('=');
+    if (eqPos > 0) {
+      var key = line.substring(0, eqPos);
+      var value = line.substring(eqPos + 1);
+      data[key] = value;
+    }
+  }
+  
+  // Check if we have ITEM.ARTIST and ITEM.TITLE
+  var artist = data['ITEM.ARTIST'];
+  var title = data['ITEM.TITLE'];
+  var itemRunning = data['itemRunning'] === '1';
+  
+  if (artist && title) {
+    self.logger.info('[RTL-SDR Radio] DL+ music detected: ' + artist + ' - ' + title);
+    return {
+      artist: artist,
+      title: title,
+      itemRunning: itemRunning
+    };
+  }
+  
+  return null;
+};
+
+// Handle DLS label update
+// TEXT: Always display raw label (could be emergency, song info, promo, anything)
+// ARTWORK: DL Plus first, then text parsing fallback, then MOT
+ControllerRtlsdrRadio.prototype.handleDabDls = function(label, dlPlusData) {
+  var self = this;
+  
+  // Always store raw label for display (never parse, could be emergency broadcast)
+  var rawLabel = label || '';
+  
+  // Check if label changed
+  if (rawLabel === self.lastRawLabel) {
+    return;  // No change
+  }
+  self.lastRawLabel = rawLabel;
+  
+  // Log with signal quality if available
+  var sigInfo = '';
+  if (self.currentDabSignal && self.currentDabSignal.level !== undefined) {
+    sigInfo = ' Signal=' + self.currentDabSignal.level + '/5 (' + self.currentDabSignal.percent + '%)';
+  }
+  self.logger.info('[RTL-SDR Radio] DLS: ' + rawLabel.substring(0, 50) + sigInfo);
+  
+  // Artwork source 1: DL Plus semantic tags (broadcaster-provided, language-agnostic)
+  var artworkArtist = null;
+  var artworkTitle = null;
+  
+  if (dlPlusData && dlPlusData.artist && dlPlusData.title) {
+    artworkArtist = dlPlusData.artist;
+    artworkTitle = dlPlusData.title;
+    self.logger.info('[RTL-SDR Radio] DL+ metadata: ' + artworkArtist + ' - ' + artworkTitle);
+  } else if (rawLabel) {
+    // Artwork source 2: Text parsing fallback (LAYER 2 metadata extraction)
+    // Strip signal info suffix if present (fn-dab appends "Signal=X/5 (Y%)")
+    var labelForParsing = rawLabel.replace(/\s*Signal=\d+\/\d+\s*\(\d+%\)\s*$/, '');
+    var parsed = self.parseRadioText(labelForParsing);
+    if (parsed.artist && parsed.title) {
+      // Always store parsed data - threshold check happens in pushDabState
+      artworkArtist = parsed.artist;
+      artworkTitle = parsed.title;
+      self.logger.info('[RTL-SDR Radio] Parsed: ' + artworkArtist + ' - ' + artworkTitle + 
+                       ' (' + parsed.confidence + '% via ' + parsed.method + ')');
+    }
+  }
+  
+  // Artwork source 3: MOT slideshow image (checked in pushDabState)
+  // No action here - file existence checked when pushing state
+  
+  // Store current state
+  self.currentDls = {
+    rawLabel: rawLabel,           // Always display this
+    artworkArtist: artworkArtist, // For Cover Art Archive
+    artworkTitle: artworkTitle,   // For Cover Art Archive
+    parsedConfidence: (dlPlusData && dlPlusData.artist) ? 100 : (parsed ? parsed.confidence : 0)
+  };
+  
+  // Push updated state
+  self.pushDabState();
+};
+
+// Push DAB state with DLS metadata to Volumio
+// TEXT: Always show raw label (could be emergency broadcast, song info, anything)
+// ARTWORK: Only from DL Plus or MOT, never from text parsing
+ControllerRtlsdrRadio.prototype.pushDabState = function() {
+  var self = this;
+  var fs = require('fs');
+  var path = require('path');
+  
+  if (!self.currentDabStation) {
+    return;
+  }
+  
+  var dls = self.currentDls || {};
+  var dabStation = self.currentDabStation;
+  
+  // Get station from database for customName and ensemble
+  var station = self.stationsDb.dab ? self.stationsDb.dab.find(function(s) {
+    return s.channel === dabStation.channel && s.exactName === dabStation.serviceName;
+  }) : null;
+  
+  // Station name priority: customName > station.name > stationTitle
+  var stationName = dabStation.stationTitle;
+  if (station && station.customName) {
+    stationName = station.customName;
+  } else if (station && station.name) {
+    stationName = station.name;
+  }
+  
+  // Ensemble with channel ID, e.g., "London 1 (12C)"
+  var ensembleName = station && station.ensemble ? station.ensemble : '';
+  var channelId = dabStation.channel || '';
+  var ensembleDisplay = ensembleName ? 
+    ensembleName + ' (' + channelId + ')' : 
+    'DAB Channel ' + channelId;
+  
+  // DLS text - always show raw label, could be emergency broadcast
+  var dlsText = dls.rawLabel || self.getI18nString('DAB_RADIO');
+  
+  // Get artwork settings
+  var bestEffortArtwork = self.config.get('best_effort_artwork', true);
+  var artworkThreshold = self.config.get('artwork_threshold', 60);
+  var artworkPersistence = self.config.get('artwork_persistence', 'track');
+  var artworkTtl = self.config.get('artwork_ttl', 0);  // 0 = disabled, else minutes
+  var artworkDebugLogging = self.config.get('artwork_debug_logging', false);
+  
+  // Default artwork is always our DAB icon - NEVER Volumio placeholder
+  var fallbackIcon = 'music_service/rtlsdr_radio/assets/dab.svg';
+  var albumartUrl = '/albumart?sourceicon=' + fallbackIcon;
+  
+  // If best effort artwork is disabled, skip all parsing and lookups
+  if (!bestEffortArtwork) {
+    dls.artworkArtist = null;
+    dls.artworkTitle = null;
+  }
+  
+  // Check for MOT slideshow first (broadcaster-provided image)
+  var motImage = null;
+  if (!dls.artworkArtist || !dls.artworkTitle) {
+    var dabDir = '/tmp/dab';
+    try {
+      var files = fs.readdirSync(dabDir);
+      motImage = files.find(function(f) {
+        return f.startsWith('slide_') && (f.endsWith('.jpg') || f.endsWith('.png'));
+      });
+      if (motImage) {
+        albumartUrl = 'file://' + path.join(dabDir, motImage);
+        if (artworkDebugLogging) {
+          self.logger.info('[RTL-SDR Radio] Artwork from MOT: ' + motImage);
+        }
+      }
+    } catch (e) {
+      // No MOT images
+    }
+  }
+  
+  // Check TTL expiration (only if TTL is enabled)
+  if (artworkTtl > 0 && self.lastValidArtwork && self.artworkTimestamp) {
+    var ttlMs = artworkTtl * 60 * 1000;  // Convert minutes to ms
+    var age = Date.now() - self.artworkTimestamp;
+    if (age > ttlMs) {
+      // TTL expired - clear artwork
+      if (artworkDebugLogging) {
+        self.logger.info('[RTL-SDR Radio] Artwork TTL expired (' + artworkTtl + ' min) - clearing');
+      }
+      self.lastValidArtwork = null;
+      self.artworkTimestamp = null;
+    }
+  }
+  
+  // Artwork persistence: Keep last valid artwork when no metadata is parsed
+  // This prevents flicker when station shows promos between songs
+  var usePersistedArtwork = false;
+  if (!dls.artworkArtist && !dls.artworkTitle && !motImage) {
+    // No new metadata and no MOT - check if we should persist previous artwork
+    if (self.lastValidArtwork && self.lastValidArtwork.url) {
+      if (artworkPersistence === 'artist') {
+        // Keep artwork until artist changes - always persist when no new data
+        albumartUrl = self.lastValidArtwork.url;
+        usePersistedArtwork = true;
+        if (artworkDebugLogging) {
+          self.logger.info('[RTL-SDR Radio] Using persisted artwork: ' + self.lastValidArtwork.artist);
+        }
+      } else if (artworkPersistence === 'track') {
+        // Keep artwork until track changes - persist when no new data
+        albumartUrl = self.lastValidArtwork.url;
+        usePersistedArtwork = true;
+        if (artworkDebugLogging) {
+          self.logger.info('[RTL-SDR Radio] Using persisted artwork: ' + self.lastValidArtwork.artist);
+        }
+      }
+      // 'none' = don't persist, use default icon
+    }
+  } else if (dls.artworkArtist && self.lastValidArtwork && self.lastValidArtwork.artist) {
+    // New metadata arrived - check if artist changed (resets TTL)
+    if (dls.artworkArtist.toLowerCase() !== self.lastValidArtwork.artist.toLowerCase()) {
+      // Artist changed - TTL will be reset when new artwork is saved
+      if (artworkDebugLogging) {
+        self.logger.info('[RTL-SDR Radio] Artist changed: ' + self.lastValidArtwork.artist + ' -> ' + dls.artworkArtist);
+      }
+    }
+  }
+  
+  // Helper function to push state
+  var pushState = function(artUrl) {
+    var sigLevel = self.currentDabSignal ? self.currentDabSignal.level : 0;
+    var stateKey = stationName + '|' + dlsText + '|' + artUrl + '|' + sigLevel;
+    if (self.lastDabState === stateKey) {
+      return;
+    }
+    self.lastDabState = stateKey;
+    
+    var state = {
+      status: 'play',
+      service: 'rtlsdr_radio',
+      title: stationName,
+      artist: dlsText,
+      album: ensembleDisplay,
+      albumart: artUrl,
+      uri: dabStation.uri,
+      trackType: 'DAB ' + self.getSignalBars(sigLevel),
+      samplerate: '48 kHz',
+      bitdepth: '16 bit',
+      channels: 2,
+      seek: 0,
+      duration: 0,
+      isStreaming: true,
+      volatile: true
+    };
+    
+    self.commandRouter.servicePushState(state, 'rtlsdr_radio');
+  };
+  
+  // If we have parsed metadata above threshold, do Last.fm lookup for album name
+  if (bestEffortArtwork && dls.artworkArtist && dls.artworkTitle && dls.parsedConfidence >= artworkThreshold) {
+    var lookupKey = dls.artworkArtist + '|' + dls.artworkTitle;
+    
+    // Only log and lookup once per track
+    if (self.lastArtworkLogKey !== lookupKey) {
+      if (artworkDebugLogging) {
+        self.logger.info('[RTL-SDR Radio] Artwork lookup: ' + dls.artworkArtist + ' - ' + dls.artworkTitle +
+                         ' (confidence ' + dls.parsedConfidence + '% >= ' + artworkThreshold + '%)');
+      }
+      self.lastArtworkLogKey = lookupKey;
+    }
+    
+    // Check if we already have cached album info
+    if (self.albumLookupCache && self.albumLookupCache[lookupKey]) {
+      var cached = self.albumLookupCache[lookupKey];
+      if (cached && cached.album) {
+        albumartUrl = self.buildArtworkUrl(cached.artist, cached.album, fallbackIcon);
+        // Save as last valid artwork for persistence and reset TTL
+        self.lastValidArtwork = {
+          url: albumartUrl,
+          artist: cached.artist,
+          title: dls.artworkTitle
+        };
+        self.artworkTimestamp = Date.now();
+      }
+      pushState(albumartUrl);
+    } else {
+      // Push state immediately with persisted or default icon, then update after lookup
+      pushState(albumartUrl);
+      
+      // Async Last.fm lookup for album name
+      self.lookupAlbum(dls.artworkArtist, dls.artworkTitle, function(err, result) {
+        if (result && result.album) {
+          var artUrl = self.buildArtworkUrl(result.artist, result.album, fallbackIcon);
+          // Save as last valid artwork for persistence and reset TTL
+          self.lastValidArtwork = {
+            url: artUrl,
+            artist: result.artist,
+            title: dls.artworkTitle
+          };
+          self.artworkTimestamp = Date.now();
+          // Push updated state with proper artwork URL
+          self.lastDabState = null; // Force state update
+          pushState(artUrl);
+        }
+      });
+    }
+  } else if (!usePersistedArtwork) {
+    // No metadata or below threshold, and not using persisted artwork
+    // Push with default/MOT artwork
+    pushState(albumartUrl);
+  } else {
+    // Using persisted artwork - still need to push state with updated DLS text
+    pushState(albumartUrl);
+  }
 };
 
 ControllerRtlsdrRadio.prototype.stop = function() {
@@ -3012,57 +4932,73 @@ ControllerRtlsdrRadio.prototype.stopDecoder = function() {
   self.intentionalStop = true;
   
   try {
-    // Kill FM playback processes
-    exec('sudo pkill -f "rtl_fm -f"');
-    exec('sudo pkill -f "aplay -D volumio"');
+    var execSync = require('child_process').execSync;
     
-    // Kill DAB playback processes
-    exec('sudo pkill -f "dab-rtlsdr-3"');
+    // Use execSync to ensure pkill commands complete before returning
+    // This prevents race condition where async pkill kills newly spawned processes
+    // Use SIGTERM for graceful shutdown (SIGKILL can cause emergency restart)
+    try { execSync('sudo pkill -f "fn-rtl_fm -f"', { timeout: self.PKILL_TIMEOUT }); } catch (e) {}
+    try { execSync('sudo pkill -f "aplay -D volumio"', { timeout: self.PKILL_TIMEOUT }); } catch (e) {}
+    try { execSync('sudo pkill -f "fn-redsea"', { timeout: self.PKILL_TIMEOUT }); } catch (e) {}
+    try { execSync('sudo pkill -f "fn-dab"', { timeout: self.PKILL_TIMEOUT }); } catch (e) {}
+    try { execSync('sudo pkill -f "fn-rtl_power"', { timeout: self.PKILL_TIMEOUT }); } catch (e) {}
+    try { execSync('sudo pkill -f "fn-dab-scanner"', { timeout: self.PKILL_TIMEOUT }); } catch (e) {}
+    try { execSync('sudo pkill -f "sox"', { timeout: self.PKILL_TIMEOUT }); } catch (e) {}
     
-    // Kill FM scan processes
-    exec('sudo pkill -f "rtl_power"');
+    // Stop DLS monitor
+    self.stopDabDlsMonitor();
     
-    // Kill DAB scan processes
-    exec('sudo pkill -f "dab-scanner-3"');
-    
-    // Kill sox resampling process
-    exec('sudo pkill -f "sox"');
-    
-    // Kill stored process reference if exists
+    // Kill stored process references with SIGTERM
     if (self.decoderProcess !== null) {
-      self.decoderProcess.kill('SIGTERM');
+      try { self.decoderProcess.kill('SIGTERM'); } catch (e) {}
     }
     
-    // Kill scan process reference if exists
     if (self.scanProcess !== null) {
-      self.scanProcess.kill('SIGTERM');
+      try { self.scanProcess.kill('SIGTERM'); } catch (e) {}
     }
     
-    // Kill sox process reference if exists
     if (self.soxProcess !== null) {
-      try {
-        self.soxProcess.kill('SIGTERM');
-      } catch (e) {}
+      try { self.soxProcess.kill('SIGTERM'); } catch (e) {}
     }
     
-    // Kill aplay process reference if exists
     if (self.aplayProcess !== null) {
-      try {
-        self.aplayProcess.kill('SIGTERM');
-      } catch (e) {}
+      try { self.aplayProcess.kill('SIGTERM'); } catch (e) {}
+    }
+    
+    if (self.redseaProcess !== null) {
+      try { self.redseaProcess.kill('SIGTERM'); } catch (e) {}
     }
   } catch (e) {
     self.logger.error('[RTL-SDR Radio] Error stopping processes: ' + e);
   }
   
   // Wait for processes to fully terminate
-  setTimeout(function() {
+  // Store timeout ID so it can be cancelled if new playback starts
+  self.cleanupTimeout = setTimeout(function() {
     self.decoderProcess = null;
     self.scanProcess = null;
     self.soxProcess = null;
     self.aplayProcess = null;
+    self.redseaProcess = null;
+    self.currentRds = null;
+    self.rdsBuffer = '';
+    self.lastRdsState = null;
+    self.lastRdsUpdate = 0;
+    self.lastSignalLevel = undefined;
+    self.psHistory = [];
+    self.stablePs = null;
+    self.currentDls = null;
+    self.lastDlsLabel = '';
+    self.lastDabState = null;
+    self.currentDabStation = null;
+    self.lastValidAlbumart = null;
+    self.lastValidArtist = null;
+    self.lastValidTitle = null;
+    // Cleanup metadata directory
+    self.cleanupDabMetadataDir();
+    self.cleanupTimeout = null;
     // DON'T clear currentStation - needed for resume
-  }, 500);
+  }, self.CLEANUP_TIMEOUT);
 };
 
 ControllerRtlsdrRadio.prototype.testManualFm = function(data) {
@@ -3083,10 +5019,13 @@ ControllerRtlsdrRadio.prototype.testManualFm = function(data) {
     return defer.promise;
   }
   
+  // Ensure consistent decimal format
+  var freqStr = freq.toFixed(1);
+  
   // Create track object
   var track = {
-    uri: 'rtlsdr://fm/' + freq,
-    name: 'FM ' + freq + ' (Test)',
+    uri: 'rtlsdr://fm/' + freqStr,
+    name: 'FM ' + freqStr + ' (Test)',
     service: 'rtlsdr_radio'
   };
   
@@ -3094,7 +5033,7 @@ ControllerRtlsdrRadio.prototype.testManualFm = function(data) {
   self.clearAddPlayTrack(track)
     .then(function() {
       self.commandRouter.pushToastMessage('success', self.getI18nString('FM_RADIO'), 
-        self.getI18nString('TESTING_FM').replace('{0}', freq));
+        self.getI18nString('TESTING_FM').replace('{0}', freqStr));
       defer.resolve();
     })
     .fail(function(e) {
@@ -3114,8 +5053,9 @@ ControllerRtlsdrRadio.prototype.testManualDab = function(data) {
   var ensemble = (data && data.manual_dab_ensemble) || self.config.get('manual_dab_ensemble', '12B');
   var serviceName = (data && data.manual_dab_service) || self.config.get('manual_dab_service', '');
   var testGain = parseInt((data && data.manual_dab_gain) || self.config.get('manual_dab_gain', 80));
+  var testPpm = parseInt((data && data.manual_dab_ppm) || self.config.get('manual_dab_ppm', 0));
   
-  self.logger.info('[RTL-SDR Radio] Testing manual DAB: ' + ensemble + '/' + serviceName + ' (gain: ' + testGain + ')');
+  self.logger.info('[RTL-SDR Radio] Testing manual DAB: ' + ensemble + '/' + serviceName + ' (gain: ' + testGain + ', ppm: ' + testPpm + ')');
   
   // Validate inputs
   if (!ensemble || ensemble.trim() === '') {
@@ -3132,11 +5072,13 @@ ControllerRtlsdrRadio.prototype.testManualDab = function(data) {
     return defer.promise;
   }
   
-  // Store current DAB gain
+  // Store current DAB settings
   var originalGain = self.config.get('dab_gain', 80);
+  var originalPpm = self.config.get('dab_ppm', 0);
   
-  // Temporarily set test gain
+  // Temporarily set test values
   self.config.set('dab_gain', testGain);
+  self.config.set('dab_ppm', testPpm);
   
   // Create track object (DAB URI format: rtlsdr://dab/{ensemble}/{serviceName})
   var track = {
@@ -3151,17 +5093,19 @@ ControllerRtlsdrRadio.prototype.testManualDab = function(data) {
       self.commandRouter.pushToastMessage('success', self.getI18nString('DAB_RADIO'), 
         self.getI18nString('TESTING_DAB').replace('{0}', serviceName));
       
-      // Restore original gain after 3 seconds
+      // Restore original settings after test duration
       setTimeout(function() {
         self.config.set('dab_gain', originalGain);
-        self.logger.info('[RTL-SDR Radio] Restored DAB gain to ' + originalGain);
-      }, 3000);
+        self.config.set('dab_ppm', originalPpm);
+        self.logger.info('[RTL-SDR Radio] Restored DAB settings (gain: ' + originalGain + ', ppm: ' + originalPpm + ')');
+      }, self.TEST_PLAYBACK_DURATION);
       
       defer.resolve();
     })
     .fail(function(e) {
-      // Restore original gain on failure
+      // Restore original settings on failure
       self.config.set('dab_gain', originalGain);
+      self.config.set('dab_ppm', originalPpm);
       
       self.commandRouter.pushToastMessage('error', self.getI18nString('DAB_RADIO'), 
         self.getI18nString('TEST_DAB_FAILED').replace('{0}', e.message || e));
@@ -3276,6 +5220,21 @@ ControllerRtlsdrRadio.prototype.loadStations = function() {
   self.dbLoadedAt = new Date().toISOString();
   self.logger.info('[RTL-SDR Radio] Database loaded at: ' + self.dbLoadedAt);
   
+  // Repair FM frequencies that were saved as numbers instead of strings
+  var repaired = 0;
+  if (self.stationsDb && self.stationsDb.fm) {
+    self.stationsDb.fm.forEach(function(station) {
+      if (typeof station.frequency === 'number') {
+        station.frequency = station.frequency.toFixed(1);
+        repaired++;
+      }
+    });
+    if (repaired > 0) {
+      self.logger.info('[RTL-SDR Radio] Repaired ' + repaired + ' FM frequency values (number->string)');
+      self.saveStations();
+    }
+  }
+  
   return libQ.resolve();
 };
 
@@ -3299,6 +5258,99 @@ ControllerRtlsdrRadio.prototype.saveStations = function() {
   } catch (e) {
     self.logger.error('[RTL-SDR Radio] Failed to save stations: ' + e);
   }
+};
+
+// ========== ARTWORK BLOCK LIST FUNCTIONS ==========
+
+ControllerRtlsdrRadio.prototype.getDefaultBlocklistPhrases = function() {
+  // Default phrases that should NOT trigger artwork lookup
+  // These are station slogans, show names, promotional messages
+  return [
+    'We love pop',
+    'We love music',
+    'We love hits',
+    'We love rock',
+    'We play the hits',
+    'We play the best',
+    'The best hits',
+    'The best music',
+    'The home of',
+    'More music',
+    'More hits',
+    'All the hits',
+    'Non-stop music',
+    'Non-stop hits',
+    'Feel good music',
+    'Feel good hits',
+    'at Breakfast with',
+    'at Drivetime with',
+    'at Lunch with',
+    'Greatest Hits Radio',
+    'when you wake up'
+  ];
+};
+
+ControllerRtlsdrRadio.prototype.getBlocklistPhrases = function() {
+  var self = this;
+  var blocklistFile = '/data/plugins/music_service/rtlsdr_radio/blocklist.json';
+  
+  try {
+    if (fs.existsSync(blocklistFile)) {
+      var data = fs.readJsonSync(blocklistFile);
+      return data.phrases || [];
+    }
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Error loading blocklist: ' + e);
+  }
+  
+  // Return defaults if file doesn't exist or error
+  return self.getDefaultBlocklistPhrases();
+};
+
+ControllerRtlsdrRadio.prototype.saveBlocklistPhrases = function(phrases) {
+  var self = this;
+  var blocklistFile = '/data/plugins/music_service/rtlsdr_radio/blocklist.json';
+  
+  try {
+    fs.writeJsonSync(blocklistFile, { 
+      phrases: phrases,
+      updated: new Date().toISOString()
+    });
+    self.logger.info('[RTL-SDR Radio] Saved blocklist with ' + phrases.length + ' phrases');
+    
+    // Update metadata module with new phrases
+    self.updateMetadataBlocklist(phrases);
+    
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to save blocklist: ' + e);
+    throw e;
+  }
+};
+
+ControllerRtlsdrRadio.prototype.resetBlocklistPhrases = function() {
+  var self = this;
+  var phrases = self.getDefaultBlocklistPhrases();
+  self.saveBlocklistPhrases(phrases);
+  return phrases;
+};
+
+ControllerRtlsdrRadio.prototype.updateMetadataBlocklist = function(phrases) {
+  var self = this;
+  
+  // Update the metadata module with user phrases
+  if (typeof metadata !== 'undefined' && metadata.setUserPhrases) {
+    metadata.setUserPhrases(phrases);
+    self.logger.info('[RTL-SDR Radio] Updated metadata blocklist');
+  }
+};
+
+ControllerRtlsdrRadio.prototype.loadBlocklistOnStartup = function() {
+  var self = this;
+  
+  // Load user blocklist and apply to metadata module
+  var phrases = self.getBlocklistPhrases();
+  self.updateMetadataBlocklist(phrases);
+  self.logger.info('[RTL-SDR Radio] Loaded blocklist with ' + phrases.length + ' phrases');
 };
 
 // ========== DATABASE V2 FUNCTIONS ==========
@@ -3578,13 +5630,15 @@ ControllerRtlsdrRadio.prototype.getStationByUri = function(uri) {
   if (uri.indexOf('rtlsdr://fm/') === 0) {
     var frequency = uri.replace('rtlsdr://fm/', '');
     
-    for (var i = 0; i < self.stationsDb.fm.length; i++) {
-      if (self.stationsDb.fm[i].frequency === frequency) {
-        return {
-          type: 'fm',
-          station: self.stationsDb.fm[i],
-          index: i
-        };
+    if (self.stationsDb && self.stationsDb.fm) {
+      for (var i = 0; i < self.stationsDb.fm.length; i++) {
+        if (self.stationsDb.fm[i].frequency === frequency) {
+          return {
+            type: 'fm',
+            station: self.stationsDb.fm[i],
+            index: i
+          };
+        }
       }
     }
   }
@@ -3596,14 +5650,16 @@ ControllerRtlsdrRadio.prototype.getStationByUri = function(uri) {
       var channel = dabParts[0];
       var serviceName = decodeURIComponent(dabParts[1]);
       
-      for (var i = 0; i < self.stationsDb.dab.length; i++) {
-        var station = self.stationsDb.dab[i];
-        if (station.channel === channel && station.exactName === serviceName) {
-          return {
-            type: 'dab',
-            station: station,
-            index: i
-          };
+      if (self.stationsDb && self.stationsDb.dab) {
+        for (var i = 0; i < self.stationsDb.dab.length; i++) {
+          var station = self.stationsDb.dab[i];
+          if (station.channel === channel && station.exactName === serviceName) {
+            return {
+              type: 'dab',
+              station: station,
+              index: i
+            };
+          }
         }
       }
     }
@@ -4083,23 +6139,23 @@ ControllerRtlsdrRadio.prototype.scanFm = function() {
       // Generate unique temp file name
       var scanFile = '/tmp/fm_scan_' + Date.now() + '.csv';
       
-      // rtl_power command:
+      // fn-rtl_power command:
       // -f 88M:108M:125k = Scan 88-108 MHz in 125kHz steps (160 bins)
       // -i 10 = Integrate for 10 seconds
       // -1 = Single-shot mode (exit after one scan)
-      var command = 'rtl_power -f 88M:108M:125k -i 10 -1 ' + scanFile;
+      var command = 'fn-rtl_power -f 88M:108M:125k -i 10 -1 ' + scanFile;
       
       self.logger.info('[RTL-SDR Radio] Scan command: ' + command);
       
-      // Push progress update after 5 seconds
+      // Push progress update after delay
       setTimeout(function() {
         if (self.deviceState === 'scanning_fm') {
           self.commandRouter.pushToastMessage('info', self.getI18nString('FM_RADIO'), 
             self.getI18nString('TOAST_FM_SCANNING_PROGRESS'));
         }
-      }, 5000);
+      }, self.SCAN_PROGRESS_DELAY);
       
-      self.scanProcess = exec(command, { timeout: 30000 }, function(error, stdout, stderr) {
+      self.scanProcess = exec(command, { timeout: self.FM_SCAN_TIMEOUT }, function(error, stdout, stderr) {
         if (error) {
           // Only log and show error if stop was not intentional
           if (!self.intentionalStop) {
@@ -4309,14 +6365,17 @@ ControllerRtlsdrRadio.prototype.scanDab = function() {
       // Generate unique temp file name
       var scanFile = '/tmp/dab_scan_' + Date.now() + '.json';
       
-      // Get DAB gain from config
+      // Get DAB settings from config
       var dabGain = self.config.get('dab_gain', 80);
+      var dabPpm = self.config.get('dab_ppm', 0);
       
-      // dab-scanner-3 command:
+      // fn-dab-scanner command:
       // -B BAND_III = Scan Band III (European DAB standard, 174-240 MHz)
       // -G <gain> = Tuner gain (0-49.6, higher = more sensitive)
+      // -p <ppm> = Frequency correction for cheap dongles
       // -j = JSON output format
-      var command = 'dab-scanner-3 -B BAND_III -G ' + dabGain + ' -j > ' + scanFile;
+      var command = 'fn-dab-scanner -B BAND_III -G ' + dabGain + 
+                    (dabPpm !== 0 ? ' -p ' + dabPpm : '') + ' -j > ' + scanFile;
       
       self.logger.info('[RTL-SDR Radio] DAB scan command: ' + command);
       
@@ -4333,9 +6392,9 @@ ControllerRtlsdrRadio.prototype.scanDab = function() {
         } else {
           clearInterval(dabProgressInterval);
         }
-      }, 30000);
+      }, self.DAB_DETECTION_TIMEOUT);
       
-      self.scanProcess = exec(command, { timeout: 300000 }, function(error, stdout, stderr) {
+      self.scanProcess = exec(command, { timeout: self.DAB_SCAN_TIMEOUT }, function(error, stdout, stderr) {
         // Clear progress interval
         clearInterval(dabProgressInterval);
         
@@ -4414,7 +6473,7 @@ ControllerRtlsdrRadio.prototype.parseDabScanResults = function(scanFile) {
     }
     
     try {
-      // dab-scanner-3 outputs debug text before JSON
+      // fn-dab-scanner outputs debug text before JSON
       // Extract only the JSON portion (starts with '{')
       var jsonStart = data.indexOf('{');
       if (jsonStart === -1) {
@@ -4426,7 +6485,7 @@ ControllerRtlsdrRadio.prototype.parseDabScanResults = function(scanFile) {
       var jsonData = data.substring(jsonStart);
       self.logger.info('[RTL-SDR Radio] Extracted JSON from position ' + jsonStart);
       
-      // Parse JSON output from dab-scanner-3
+      // Parse JSON output from fn-dab-scanner
       var scanData = JSON.parse(jsonData);
       
       // Scanner returns ensembles as object with ensemble IDs as keys
@@ -4508,6 +6567,12 @@ ControllerRtlsdrRadio.prototype.playDabStation = function(channel, serviceName, 
   
   self.logger.info('[RTL-SDR Radio] Playing DAB station: ' + serviceName + ' on channel ' + channel);
   
+  // Reset artwork state when changing stations
+  self.lastValidArtwork = null;
+  self.artworkTimestamp = null;
+  self.albumLookupCache = {};
+  self.lastArtworkLogKey = null;
+  
   // Check if station is deleted
   var station = self.stationsDb.dab ? self.stationsDb.dab.find(function(s) {
     return s.channel === channel && s.exactName === serviceName;
@@ -4521,21 +6586,22 @@ ControllerRtlsdrRadio.prototype.playDabStation = function(channel, serviceName, 
     return defer.promise;
   }
   
+  // Use customName from database if available (overrides track.title)
+  if (station && station.customName) {
+    stationTitle = station.customName;
+  }
+  
   // Check device availability
   self.checkDeviceAvailable('play_dab', { channel: channel, serviceName: serviceName, stationTitle: stationTitle })
     .then(function() {
       // Device is available, proceed with playback
       self.setDeviceState('playing_dab');
       
-      // If decoder is still running, wait for cleanup to complete
-      if (self.decoderProcess !== null) {
-        self.logger.info('[RTL-SDR Radio] Waiting for previous station cleanup...');
-        setTimeout(function() {
-          self.startDabPlayback(channel, serviceName, stationTitle, defer);
-        }, 600); // Wait slightly longer than stopDecoder timeout (500ms)
-      } else {
+      // Always delay slightly to allow USB device to reset after stopDecoder
+      // RTL-SDR needs time to release and be ready for next command
+      setTimeout(function() {
         self.startDabPlayback(channel, serviceName, stationTitle, defer);
-      }
+      }, self.USB_RESET_DELAY);
     })
     .fail(function(e) {
       self.logger.info('[RTL-SDR Radio] DAB playback cancelled or rejected: ' + e);
@@ -4548,6 +6614,12 @@ ControllerRtlsdrRadio.prototype.playDabStation = function(channel, serviceName, 
 ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName, stationTitle, defer) {
   var self = this;
   
+  // CRITICAL: Cancel any pending cleanup timeout from previous stopDecoder call
+  if (self.cleanupTimeout) {
+    clearTimeout(self.cleanupTimeout);
+    self.cleanupTimeout = null;
+  }
+  
   // Update play statistics
   var uri = 'rtlsdr://dab/' + channel + '/' + encodeURIComponent(serviceName);
   var stationInfo = self.getStationByUri(uri);
@@ -4557,33 +6629,49 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
     self.saveStations();
   }
   
-  // Get DAB gain from config
+  // Get DAB settings from config
   var dabGain = self.config.get('dab_gain', 80);
+  var dabPpm = self.config.get('dab_ppm', 0);
   
   // Clear intentional stop flag when starting new playback
   self.intentionalStop = false;
   
-  // Build dab-rtlsdr-3 command piped to aplay
+  // Setup metadata directory for DLS output
+  self.setupDabMetadataDir();
+  
+  // Build fn-dab command piped to aplay
   // -C <channel> = DAB channel (e.g., 12B)
   // -P "<service>" = Service name (must match exactly with spaces)
   // -G <gain> = Tuner gain
+  // -p <ppm> = Frequency correction for cheap dongles
   // -D 30 = Detection timeout (30 seconds to find ensemble)
-  // 2>/dev/null = Discard debug output to stderr
+  // -i <dir> = Metadata output directory (DLS text)
   // Pipe PCM audio to aplay with Volumio device
-  var dabCommand = 'dab-rtlsdr-3 -C ' + channel + 
+  var dabCommand = 'fn-dab -C ' + channel + 
                    ' -P "' + serviceName.replace(/"/g, '\\"') + '"' +
                    ' -G ' + dabGain + 
-                   ' -D 30';
+                   (dabPpm !== 0 ? ' -p ' + dabPpm : '') +
+                   ' -D 30' +
+                   ' -i ' + self.dabMetadataDir + '/';
   
   self.logger.info('[RTL-SDR Radio] Starting DAB decoder: ' + dabCommand);
   
-  // Spawn dab-rtlsdr-3 process
+  // Spawn fn-dab process
   var spawn = require('child_process').spawn;
   var dabProcess = spawn('sh', ['-c', dabCommand]);
   
   var pcmDetected = false;
   var soxProcess = null;
   var aplayProcess = null;
+  
+  // Store station info for DLS updates
+  self.currentDabStation = {
+    channel: channel,
+    serviceName: serviceName,
+    exactName: serviceName,  // For station manager matching
+    stationTitle: stationTitle,
+    uri: uri
+  };
   
   // Capture stderr to detect PCM format
   dabProcess.stderr.on('data', function(data) {
@@ -4601,9 +6689,9 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
       
       self.logger.info('[RTL-SDR Radio] Detected PCM format: ' + sampleRate + ' Hz, ' + channels + ' channels');
       
-      // Build sox command to resample to 48kHz stereo
+      // Build sox command to resample to output rate stereo
       var soxCommand = 'sox -t raw -r ' + sampleRate + ' -c ' + channels + 
-                      ' -e signed-integer -b 16 - -t raw -r 48000 -c 2 -';
+                      ' -e signed-integer -b 16 - -t raw -r ' + self.OUTPUT_SAMPLE_RATE + ' -c 2 -';
       
       // Spawn sox process
       soxProcess = spawn('sh', ['-c', soxCommand]);
@@ -4626,7 +6714,7 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
       });
       
       // Spawn aplay process
-      aplayProcess = spawn('aplay', ['-D', 'volumio', '-f', 'S16_LE', '-r', '48000', '-c', '2']);
+      aplayProcess = spawn('aplay', ['-D', 'volumio', '-f', 'S16_LE', '-r', self.OUTPUT_SAMPLE_RATE.toString(), '-c', '2']);
       
       // Pipe sox stdout to aplay stdin
       soxProcess.stdout.pipe(aplayProcess.stdin);
@@ -4674,6 +6762,9 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
       // Store process references for cleanup
       self.soxProcess = soxProcess;
       self.aplayProcess = aplayProcess;
+      
+      // Start DLS metadata monitor after audio pipeline established
+      self.startDabDlsMonitor();
     }
   });
   
@@ -4711,15 +6802,30 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
   // Update Volumio state machine
   self.commandRouter.stateMachine.setConsumeUpdateService('rtlsdr_radio');
   
+  // Get station from database for customName and ensemble
+  var station = self.stationsDb.dab ? self.stationsDb.dab.find(function(s) {
+    return s.channel === channel && s.exactName === serviceName;
+  }) : null;
+  
+  // Display name priority: customName > station.name > stationTitle
+  var displayName = stationTitle;
+  if (station && station.customName) {
+    displayName = station.customName;
+  } else if (station && station.name) {
+    displayName = station.name;
+  }
+  
+  var ensemble = station ? station.ensemble : ('Channel ' + channel);
+  
   var state = {
     status: 'play',
     service: 'rtlsdr_radio',
-    title: stationTitle,
-    artist: self.getI18nString('DAB_RADIO'),
-    album: 'Channel ' + channel,
+    title: displayName,
+    artist: ensemble,
+    album: self.getI18nString('DAB_RADIO'),
     albumart: '/albumart?sourceicon=music_service/rtlsdr_radio/assets/dab.svg',
     uri: uri,
-    trackType: 'DAB',
+    trackType: 'DAB ' + self.getSignalBars(0),
     samplerate: '48 kHz',
     bitdepth: '16 bit',
     channels: 2,
@@ -4744,7 +6850,7 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(channel, serviceName
   // This ensures "Received an update from plugin" event fires
   setTimeout(function() {
     self.commandRouter.stateMachine.pushState(state);
-  }, 500);
+  }, self.CLEANUP_TIMEOUT);
   
   defer.resolve();
 };

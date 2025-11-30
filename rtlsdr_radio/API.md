@@ -148,26 +148,195 @@ Base URL: `http://<volumio-ip>:3456/api`
 - Scans all DAB Band III channels
 - Results automatically saved to database
 
+## Antenna Positioning API
+
+### RF Spectrum Scan
+
+**Endpoint:** `POST /api/antenna/spectrum-scan`
+
+**Description:** Performs a full-band RF spectrum scan to visualize signal strength across FM and DAB frequencies. Useful for antenna positioning and orientation.
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Spectrum scan started"
+}
+```
+
+**Notes:**
+- Scan duration: Approximately 2 seconds
+- Frequency range: 87.5 MHz to 240 MHz (covers FM and DAB Band III)
+- Uses fn-rtl_power for spectrum analysis
+- Results provide relative signal strength visualization
+- Helps identify optimal antenna orientation for available signals
+- Requires network access to crates.io for fn-rtl_power dependencies
+
+### DAB Channel Validation (SSE Streaming)
+
+**Endpoint:** `POST /api/antenna/validate-channels`
+
+**Description:** Validates DAB channels for signal presence and service count. Returns progressive results via Server-Sent Events (SSE) as each channel completes.
+
+**Request Body:**
+```json
+{
+  "channels": ["11C", "11D", "12A", "12B", "12C", "12D"]
+}
+```
+
+**Response Format:** `text/event-stream`
+
+**SSE Event Stream:**
+```
+data: {"status":"started","total":6}
+
+data: {"channel":"12A","sync":true,"services":17,"quality":"excellent","progress":1,"total":6}
+
+data: {"channel":"12B","sync":true,"services":14,"quality":"excellent","progress":2,"total":6}
+
+data: {"channel":"11C","sync":false,"services":0,"quality":"none","progress":3,"total":6}
+
+data: {"status":"complete","timestamp":"2025-11-21T12:30:45.678Z"}
+```
+
+**Event Types:**
+
+1. **Started Event:**
+```json
+{
+  "status": "started",
+  "total": 6
+}
+```
+
+2. **Channel Result Event:**
+```json
+{
+  "channel": "12A",
+  "sync": true,
+  "services": 17,
+  "quality": "excellent",
+  "progress": 1,
+  "total": 6
+}
+```
+
+3. **Complete Event:**
+```json
+{
+  "status": "complete",
+  "timestamp": "2025-11-21T12:30:45.678Z"
+}
+```
+
+**Quality Levels:**
+- `excellent` - Strong signal, sync achieved, services decoded
+- `none` - No signal detected on this channel
+
+**Notes:**
+- Progressive results: Each channel streams immediately upon completion
+- Validation time per channel:
+  - With signal: 10-15 seconds
+  - No signal: 2-3 seconds
+- Total validation time scales with selected channel count
+- Channels are validated sequentially
+- Results may arrive out of order (frontend handles automatic sorting)
+- Uses custom fn-dab-scanner binaries with filtered debug output
+- Three critical bugs fixed in chat 22:
+  - Service count detection (PTY wrapper filtering)
+  - Completion timeout (immediate kill on completion marker)
+  - No-signal overshoot (immediate kill on channel switch)
+
+**Integration Example (JavaScript):**
+```javascript
+const eventSource = new EventSource('/api/antenna/validate-channels');
+
+eventSource.addEventListener('message', (event) => {
+  const data = JSON.parse(event.data);
+  
+  if (data.status === 'started') {
+    console.log(`Validating ${data.total} channels...`);
+  } else if (data.channel) {
+    console.log(`${data.channel}: ${data.sync ? data.services + ' services' : 'No signal'}`);
+    // Update UI progressively
+  } else if (data.status === 'complete') {
+    console.log('Validation complete');
+    eventSource.close();
+  }
+});
+
+eventSource.addEventListener('error', (error) => {
+  console.error('SSE error:', error);
+  eventSource.close();
+});
+```
+
 ## Status API
 
 ### Get Plugin Status
 
 **Endpoint:** `GET /api/status`
 
-**Description:** Retrieves current plugin status and statistics.
+**Description:** Retrieves current plugin status, statistics, and signal quality information.
 
 **Response:**
 ```json
 {
-  "deviceState": "idle",
+  "deviceState": "playing_fm",
   "fmStationsLoaded": 15,
   "dabStationsLoaded": 23,
   "dbLoadedAt": "2025-01-15T10:30:00.000Z",
   "dbVersion": 1,
   "serverPort": 3456,
+  "signal": {
+    "type": "fm",
+    "level": 3,
+    "percent": 72,
+    "frequency": 94.9
+  },
   "timestamp": "2025-01-15T12:45:30.000Z"
 }
 ```
+
+**Signal Object (FM):**
+```json
+{
+  "type": "fm",
+  "level": 3,
+  "percent": 72,
+  "frequency": 94.9
+}
+```
+
+**Signal Object (DAB):**
+```json
+{
+  "type": "dab",
+  "level": 4,
+  "percent": 87,
+  "station": {
+    "channel": "12C",
+    "serviceName": "Heart London",
+    "exactName": "Heart London",
+    "stationTitle": "Heart London"
+  }
+}
+```
+
+**Signal Levels:**
+- Level 0: No signal / very poor
+- Level 1: Weak signal (red indicator)
+- Level 2: Fair signal (orange indicator)
+- Level 3: Good signal (yellow indicator)
+- Level 4: Strong signal (green indicator)
+- Level 5: Excellent signal (bright green indicator)
+
+**Notes:**
+- `signal` is null when no station is playing
+- FM signal derived from RDS block error rate (BLER)
+- DAB signal derived from FIB quality and AAC decode success rate
+- Signal is polled by station manager every 2 seconds
 
 ## Internationalization API
 
@@ -202,6 +371,76 @@ Base URL: `http://<volumio-ip>:3456/api`
   "language": "en"
 }
 ```
+
+## Artwork Block List API
+
+### Get Block List
+
+**Endpoint:** `GET /api/blocklist`
+
+**Description:** Retrieves current artwork blocklist phrases. These phrases are excluded from artwork lookups to prevent false matches on station slogans, time announcements, etc.
+
+**Response:**
+```json
+{
+  "phrases": [
+    "traffic update",
+    "news update",
+    "weather",
+    "breaking news",
+    "travel news"
+  ]
+}
+```
+
+### Save Block List
+
+**Endpoint:** `POST /api/blocklist`
+
+**Description:** Saves artwork blocklist phrases.
+
+**Request Body:**
+```json
+{
+  "phrases": [
+    "traffic update",
+    "news update",
+    "custom phrase"
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "success": true
+}
+```
+
+### Reset Block List
+
+**Endpoint:** `POST /api/blocklist/reset`
+
+**Description:** Resets blocklist to default phrases.
+
+**Response:**
+```json
+{
+  "success": true,
+  "phrases": [
+    "traffic update",
+    "news update",
+    "weather",
+    "breaking news",
+    "travel news"
+  ]
+}
+```
+
+**Notes:**
+- Blocklist uses fuzzy matching (75% similarity threshold) to handle RDS text corruption
+- Phrases are case-insensitive
+- Blocklist has separate backup/restore from stations and config
 
 ## Backup and Restore API
 
@@ -537,6 +776,10 @@ No authentication is currently required. Access control should be implemented at
     "type": "number",
     "value": 80
   },
+  "dab_ppm": {
+    "type": "number",
+    "value": 0
+  },
   "scan_sensitivity": {
     "type": "number",
     "value": 8
@@ -546,6 +789,14 @@ No authentication is currently required. Access control should be implemented at
     "value": 48000
   },
   "auto_backup_on_uninstall": {
+    "type": "boolean",
+    "value": false
+  },
+  "artwork_ttl": {
+    "type": "number",
+    "value": 0
+  },
+  "artwork_debug_logging": {
     "type": "boolean",
     "value": false
   }
@@ -628,6 +879,69 @@ curl -X POST http://volumio.local:3456/api/maintenance/backup/upload \
 ```
 
 ## Changelog
+
+### API v1.2.9
+- Added Last.fm artwork integration via track.getInfo API
+- New configuration fields:
+  - artwork_confidence_threshold (0, 20, 40, 60, 80, 95 - default 60)
+  - artwork_persistence (boolean, default true)
+  - artwork_ttl (0, 2, 5, 10, 15, 30 minutes)
+  - artwork_debug_logging (boolean, default false)
+- New blocklist API endpoints:
+  - GET /api/blocklist - retrieve current blocklist phrases
+  - POST /api/blocklist - save blocklist phrases
+  - POST /api/blocklist/reset - reset to default blocklist
+- Blocklist backup/restore:
+  - Separate backup folder: /data/rtlsdr_radio_backups/blocklist/
+  - GET /api/maintenance/backups now includes blocklist backups
+  - POST /api/maintenance/backup/create supports type: "blocklist"
+  - POST /api/maintenance/restore supports blocklistTimestamp parameter
+- POST /api/stations now validates FM frequency types, converting numbers to strings
+- Fixes issue where Station Manager frequency edits broke Recently Played tracking
+- Plugin startup auto-repairs existing stations with number frequencies
+
+### API v1.2.6
+- Fixed signal quality not updating in playback screen (throttle bypass for signal changes)
+- Fixed custom station names not displaying at playback start (FM and DAB)
+- Custom names now looked up from database at playback time, not from queued track
+- Fixed hidden stations still appearing in browse views (FM, DAB, ensemble)
+
+### API v1.2.5
+- Added real-time signal quality to `/api/status` endpoint
+- Signal object includes: type, level (0-5), percent, and station info
+- FM signal quality derived from RDS block error rate (BLER)
+- DAB signal quality derived from FIB quality and AAC decode success rate
+- Station manager polls signal every 2 seconds for live display
+- Signal indicator shown in playback screen (Unicode circles)
+- Signal indicator shown in station manager (Font Awesome icon, color-coded)
+
+### API v1.2.2
+- DAB playback now pushes DLS metadata (artist/title) to Volumio state
+- Volumio state fields updated during DAB playback:
+  - `title`: Station display name (customName > station.name)
+  - `artist`: DLS-parsed artist or ensemble name
+  - `album`: DLS-parsed title or "DAB Radio"
+- Internal: Added `-i /tmp/dab/` flag to fn-dab command for metadata output
+- No new configuration fields - DLS metadata is automatically enabled
+
+### API v1.2.1
+- Added dab_ppm configuration field for frequency correction
+- PPM correction resolves DAB reception issues with cheap RTL-SDR dongles
+- Range: -200 to +200 (typical values: 40-60 for cheap dongles, 0 for quality dongles)
+- DAB scanning and playback commands now include -p flag when PPM is non-zero
+
+### API v1.0.9
+- Added Antenna Positioning API
+- RF Spectrum Scan endpoint for full-band signal visualization
+- DAB Channel Validation with Server-Sent Events (SSE) streaming
+- Progressive channel validation results
+- Fixed three critical DAB scanner bugs:
+  - Service count detection (PTY wrapper filtering)
+  - Completion timeout (immediate scanner termination)
+  - No-signal channel overshoot (channel switch detection)
+- Translation concept corrected: "positioning" (antenna orientation) not "alignment" (leveling)
+- All 11 language files validated and aligned (366 keys each)
+- Complete antenna positioning tab translation coverage
 
 ### API v1.0.7
 - Added backup and restore endpoints
