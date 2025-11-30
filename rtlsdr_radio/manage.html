@@ -3257,6 +3257,14 @@
           initMaintenanceTab();
         }, { once: true });
       }
+      
+      // Initialize blocklist tab when clicked
+      const blocklistTab = document.querySelector('[data-tab="blocklist"]');
+      if (blocklistTab) {
+        blocklistTab.addEventListener('click', function() {
+          loadBlocklist();
+        }, { once: true });
+      }
     });
     
     // Touchscreen keyboard support for iframe context
