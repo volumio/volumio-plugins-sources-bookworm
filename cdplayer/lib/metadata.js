@@ -3,6 +3,10 @@ const { detectCdDevice } = require("./utils");
 const { execFile } = require("child_process");
 const { promisify } = require("util");
 const execFileAsync = promisify(execFile);
+const { calculateMusicBrainzDiscId } = require("./discid");
+
+// cd-discid /dev/sr0 is the tool already installed on volumio
+//  cd-discid --musicbrainz /dev/sr0
 
 /**
  * Retrieves the MusicBrainz Disc ID of the currently inserted audio CD.
@@ -11,33 +15,41 @@ const execFileAsync = promisify(execFile);
  * @function getDiscId
  * @returns {Promise<string|null>} Resolves with the MusicBrainz Disc ID string, or `null` if not found.
  * @throws {Error} If the `discid` command fails to execute or times out.
- *
  */
 async function getDiscId() {
   const device = detectCdDevice();
+
   try {
-    const { stdout } = await execFileAsync("/usr/local/bin/discid", [device], {
-      env: { LANG: "C" },
-      timeout: 10000,
-      windowsHide: true,
-    });
+    //
+    // 1. Run cd-discid with the MusicBrainz TOC format
+    //
+    const { stdout } = await execFileAsync(
+      "cd-discid",
+      ["--musicbrainz", device],
+      {
+        env: { LANG: "C" },
+        timeout: 10000,
+        windowsHide: true,
+      }
+    );
 
     if (!stdout) {
       return null;
     }
 
-    const out = stdout.trim();
-    // Common outputs to handle:
-    // DiscID        : eWrWSTdIuUCI95ca00chZOSFHug-
-    // FreeDB DiscID : b10c9c0c
-    // First track   : 1
-    // Last track    : 12
-    // Length        : 242310 sectors (  53:50.80)
-    // Track 1       :      150    20520 (   4:33.60)
-    // Track 2       :    20670    15218 (   3:22.91)
-    const m = /DiscID\s*:\s*([A-Za-z0-9._-]{20,})/i.exec(out);
-    return m ? m[1] : null;
+    //
+    // 2. Clean the TOC line
+    //
+    const tocLine = stdout.trim();
+
+    //
+    // 3. Calculate the MusicBrainz Disc ID using your JS implementation
+    //
+    const discId = calculateMusicBrainzDiscId(tocLine);
+
+    return discId || null;
   } catch (err) {
+    // You may prefer to log and return null instead of throwing
     throw err;
   }
 }
@@ -211,9 +223,7 @@ function parseMusicBrainzResponse(mbJson) {
  */
 async function fetchCdMetadata() {
   try {
-    // TEMPORARY DISABLED FOR TESTING PURPOSES
-    // https://community.volumio.com/t/node-modules-for-volumio-3/54701/2
-    const discid = null; // await getDiscId();
+    const discid = await getDiscId();
     if (!discid) {
       return null;
     }
