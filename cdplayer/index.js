@@ -1,7 +1,12 @@
 /// <reference path="./types.js" />
 "use strict";
 var libQ = require("kew");
-const { listCD, pRetry, detectCdDevice } = require("./lib/utils");
+const {
+  listCD,
+  pRetry,
+  detectCdDevice,
+  applyDiscIdToItems,
+} = require("./lib/utils");
 const {
   fetchCdMetadata,
   decorateItems,
@@ -31,8 +36,8 @@ function cdplayer(context) {
   this._items = null;
   /** @type {TrayWatcher|null} */
   this._trayWatcher = null;
-  /** @type {number|null} */
-  this._discIdentifier = null;
+  /** @type {number} */
+  this._discIdentifier = Date.now();
 }
 
 cdplayer.prototype.log = function (msg) {
@@ -85,6 +90,7 @@ cdplayer.prototype.onStop = function () {
   var defer = libQ.defer();
 
   self._items = null;
+  self._discIdentifier = Date.now();
   self.removeToBrowseSources();
 
   execAsync(`sudo /bin/systemctl disable --now ${SERVICE_FILE}`)
@@ -238,8 +244,12 @@ cdplayer.prototype.handleBrowseUri = function (curUri) {
         void retryFetchMetadata(items, self);
       }
 
-      self._items = decoratedItems;
-      self._discIdentifier = Date.now();
+      const itemsWithDiscUri = applyDiscIdToItems(
+        decoratedItems,
+        self._discIdentifier
+      );
+
+      self._items = itemsWithDiscUri;
 
       return {
         navigation: {
@@ -249,7 +259,7 @@ cdplayer.prototype.handleBrowseUri = function (curUri) {
               title: meta?.album || "CD Tracks",
               icon: "fa fa-music",
               availableListViews: ["list"],
-              items: decoratedItems,
+              items: itemsWithDiscUri,
             },
           ],
         },
@@ -271,20 +281,11 @@ cdplayer.prototype.handleBrowseUri = function (curUri) {
 cdplayer.prototype.explodeUri = function (uri) {
   const self = this;
   const defer = libQ.defer();
+  self.log(`explodeUri called with uri: ${uri}`);
 
-  const match = uri.match(/^cdplayer\/(\d+)$/);
+  const match = uri.match(/^cdplayer\/(\d+)(?:\?.*)?$/);
   if (match) {
     const n = parseInt(match[1], 10);
-
-    // Safety: if for some reason this is the first time we touch this disc
-    // and _discIdentifier wasn't set yet, initialize it now.
-    if (self._discIdentifier == null) {
-      self._discIdentifier = Date.now();
-      self.log(
-        `explodeUri: _discIdentifier was null, initializing to ${self._discIdentifier}`
-      );
-    }
-
     const track = {
       ...self._items[n - 1],
       service: "mpd",
@@ -324,7 +325,6 @@ cdplayer.prototype.search = function (query) {
       },
     ];
 
-    self.log(`Search results: ${JSON.stringify(list)}`);
     defer.resolve(list);
   } catch (err) {
     self.error(`[CDPlayer] Search error: ${err.message}`);
@@ -371,8 +371,7 @@ function retryFetchMetadata(items, self) {
       self.removeToBrowseSources();
       self.addToBrowseSources(albumart || DEFAULT_COVERART_URL);
 
-      self._items = decoratedItems;
-      self._discIdentifier = Date.now();
+      self._items = applyDiscIdToItems(decoratedItems, self._discIdentifier);
     },
     {
       delay: 700,
@@ -425,11 +424,11 @@ function getTrayWatcherConfiguration(self, device) {
       self.log("Eject detected ... ");
       // Drop CD track cache so next browse forces a re-scan
       self._items = null;
-      self._discIdentifier = null;
+      // Bump disc identifier to avoid caching issues
+      self._discIdentifier = Date.now();
 
       try {
         const state = self.commandRouter.volumioGetState();
-        self.log(`Current state: ${JSON.stringify(state)}`);
 
         const isCdStream =
           state &&

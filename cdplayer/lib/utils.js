@@ -255,8 +255,30 @@ async function pRetry(fn, opt = {}) {
   }
 }
 
+/**
+ * Add ?disc=<discId> to each item's URI.
+ * Does NOT change anything else.
+ *
+ * @param {CdTrack[]} items
+ * @param {number} discId
+ * @returns {CdTrack[]}
+ */
+function applyDiscIdToItems(items, discId) {
+  return items.map((item) => {
+    // item.uri is "cdplayer/3" or "cdplayer/3?something"
+    // We always append &disc= if there's already a query param
+    const separator = item.uri.includes("?") ? "&" : "?";
+
+    return {
+      ...item,
+      uri: `${item.uri}${separator}disc=${discId}`,
+    };
+  });
+}
+
 module.exports = {
   pRetry,
   listCD,
   detectCdDevice,
+  applyDiscIdToItems,
 };
