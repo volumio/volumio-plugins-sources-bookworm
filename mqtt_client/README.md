@@ -183,4 +183,4 @@ MIT License
 
 ## Author
 
-Volumio Community
+Just a Nerd
