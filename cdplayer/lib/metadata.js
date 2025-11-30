@@ -251,12 +251,26 @@ function decorateItems(items, meta, albumart) {
 
 /**
  * Constructs the URL for the album art image from MusicBrainz Cover Art Archive.
+ * Validates that the URL actually exists before returning it.
  *
  * @param {string} releaseId - The MusicBrainz release ID.
- * @returns {string} The URL of the album art image.
+ * @returns {Promise<string|null>} The URL if it exists, otherwise null.
  */
-function getAlbumartUrl(releaseId) {
-  return `https://coverartarchive.org/release/${releaseId}/front-500`;
+async function getAlbumartUrl(releaseId) {
+  const url = `https://coverartarchive.org/release/${releaseId}/front-500`;
+
+  try {
+    // HEAD is lighter and sufficient to check existence
+    const response = await fetch(url, { method: "HEAD" });
+
+    if (response.ok) {
+      return url; // cover exists
+    }
+
+    return null;
+  } catch (err) {
+    return null;
+  }
 }
 
 module.exports = {

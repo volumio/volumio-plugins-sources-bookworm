@@ -226,7 +226,7 @@ cdplayer.prototype.handleBrowseUri = function (curUri) {
       let decoratedItems = items;
       if (meta) {
         // eg. https://coverartarchive.org/release/2174675c-2159-4405-a3af-3a4860106b58/front
-        const albumart = getAlbumartUrl(meta.releaseId);
+        const albumart = await getAlbumartUrl(meta.releaseId);
         decoratedItems = decorateItems(items, meta, albumart);
         self.removeToBrowseSources();
         self.addToBrowseSources(albumart);
@@ -353,7 +353,7 @@ function retryFetchMetadata(items, self) {
       }
 
       // If metadata retrieved:
-      const albumart = getAlbumartUrl(meta.releaseId);
+      const albumart = await getAlbumartUrl(meta.releaseId);
       const decoratedItems = decorateItems(items, meta, albumart);
       self.removeToBrowseSources();
       self.addToBrowseSources(albumart);
