@@ -1,6 +1,6 @@
 {
   "name": "mqtt_client",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MQTT client for home automation integration. Publishes Volumio state and receives playback commands via MQTT.",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,7 @@
     ],
     "has_settings_page": true,
     "details": "MQTT client for home automation integration (Home Assistant, OpenHAB, Node-RED, etc.). Publishes Volumio playback state to configurable MQTT topics and receives commands for playback control, volume adjustment, and queue management. Supports TLS/SSL with client certificates.",
-    "changelog": "v1.0.0 - Initial release with full playback control, state publishing, TLS support, and group topics."
+    "changelog": "v1.0.1 - Initial release with full playback control, state publishing, TLS support, and group topics."
   },
   "engines": {
     "node": ">=20",
