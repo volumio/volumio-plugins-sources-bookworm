@@ -364,7 +364,18 @@ Just a Nerd
 
 ## Version History
 
-### v1.2.9 (Current)
+### v1.3.1 (Current)
+- Classical music artwork via Open Opus API fallback
+- When Last.fm has no artwork for classical composers, displays composer portrait
+- Recognizes 150+ classical composers (Bach, Beethoven, Mozart, etc.)
+- Free API, no registration required, public domain portraits
+
+### v1.3.0
+- Fixed FM artwork throttle bug - metadata parsing now happens before throttle check
+- Debug logging for artwork system now controlled by artwork_debug_logging setting
+- Includes all v1.2.9 fixes: blocklist check, signal suffix strip, soundtrack pattern, prefix patterns
+
+### v1.2.9
 - Fixed Signal suffix in DLS breaking metadata parser
 - Added soundtrack pattern for Classic FM format (Album - Track by Artist)
 - Added alternative pattern (Track by Artist from Album)

@@ -880,6 +880,20 @@ curl -X POST http://volumio.local:3456/api/maintenance/backup/upload \
 
 ## Changelog
 
+### API v1.3.1
+- Added Open Opus API integration for classical music composer portraits
+- New metadata.js exports:
+  - openOpusLookup(composer, callback) - queries Open Opus API for composer portrait
+  - isLikelyClassicalComposer(artist) - checks against 150+ known classical composers
+- lookupAlbum() now falls back to Open Opus when Last.fm has no artwork
+- Lookup results may include isComposerPortrait flag indicating direct portrait URL
+- Portrait URLs served directly from assets.openopus.org (no Volumio proxy)
+
+### API v1.3.0
+- Fixed FM artwork throttle bug - metadata parsing now happens before throttle check
+- Debug logging for artwork system now controlled by artwork_debug_logging setting
+- Consolidated all v1.2.9 fixes for production release
+
 ### API v1.2.9
 - Added Last.fm artwork integration via track.getInfo API
 - New configuration fields:

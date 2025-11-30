@@ -40,13 +40,18 @@ var userBlocklistPhrases = [];
 var config = {
   // MusicBrainz API
   musicbrainzEndpoint: 'https://musicbrainz.org/ws/2',
-  musicbrainzUserAgent: 'VolumioRTLSDRRadio/1.2.9 (https://github.com/foonerd/volumio-rtlsdr-radio)',
+  musicbrainzUserAgent: 'VolumioRTLSDRRadio/1.3.1 (https://github.com/foonerd/volumio-rtlsdr-radio)',
   musicbrainzRateLimit: 1000,  // 1 request per second
   
   // Last.fm API - primary source for artwork lookups
   lastfmApiKey: '4cb074e4b8ec4ee9ad3eb37d6f7eb240',  // Volumio's API key
   lastfmEndpoint: 'http://ws.audioscrobbler.com/2.0/',
   lastfmRateLimit: 200,  // Last.fm allows faster requests
+  
+  // Open Opus API - classical music composer portraits
+  // Free, no registration, public domain data
+  openOpusEndpoint: 'https://api.openopus.org',
+  openOpusRateLimit: 200,  // Be respectful to free service
   
   // Cover Art Archive
   coverArtEndpoint: 'https://coverartarchive.org',
@@ -57,6 +62,9 @@ var config = {
   
   // Confidence thresholds
   minConfidence: 30,  // Below this, don't return result
+  
+  // Debug logging (controlled by artwork_debug_logging setting)
+  debugLogging: false,
   
   // NLP
   nlpEnabled: true
@@ -180,6 +188,14 @@ function fuzzyStripPrefix(text) {
     
     // 75% similarity threshold for prefix detection
     if (sim >= 0.75) {
+      // Verify this looks like a broadcast prefix by checking what follows
+      // Must be followed by separator (:.(-) or whitespace+separator, not just any word
+      var afterFirst = text.substring(firstWord.length);
+      // If next non-space char is a letter, this is probably a station name like "Heart FM"
+      if (/^\s*[a-zA-Z]/.test(afterFirst) && !/^\s*[-:(.]/.test(afterFirst)) {
+        continue; // Skip - looks like "Heart FM", not "Hear ..."
+      }
+      
       // Found a fuzzy match - strip up to the next separator or end of prefix pattern
       // Match: fuzzy_prefix + optional punctuation/dots + whitespace
       var stripPattern = new RegExp('^' + firstWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[.(:]*\\s*', 'i');
@@ -330,6 +346,7 @@ var filterPatterns = [
 
 // Prefixes to strip
 var prefixPatterns = [
+  // Full station names first (specific before generic)
   /^Now on [^:]+:\s*/i,
   /^On [^:]+:\s*/i,
   /^Playing on [^:]+:\s*/i,
@@ -337,7 +354,20 @@ var prefixPatterns = [
   /^Playing[:.]+\s*/i,  // "Playing...", "Playing:", "Playing."
   /^On Air[:\s]+/i,
   /^Up Next[:\s]+/i,
-  /^Coming Up[:\s]+/i
+  /^Coming Up[:\s]+/i,
+  /^Classic FM:\s*/i,            // "Classic FM:" (full station name)
+  /^Capital FM:\s*/i,            // "Capital FM:"
+  /^Heart FM:\s*/i,              // "Heart FM:"
+  /^Kiss FM:\s*/i,               // "Kiss FM:"
+  /^Smooth Radio:\s*/i,          // "Smooth Radio:"
+  /^Gold Radio:\s*/i,            // "Gold Radio:"
+  /^Now:\s*/i,                   // "Now:" prefix (Classic FM)
+  // Truncated station prefixes (DLS buffer truncation) - MUST come after specific patterns
+  // "Now on Gold Radio UK:" -> "o UK:", "dio UK:", "adio UK:", "Radio UK:", etc.
+  /^[a-z]?\s?UK:\s*/i,           // "o UK:", "k UK:", " UK:"
+  /^[a-z]{1,5}\s?UK:\s*/i,       // "dio UK:", "adio UK:", "Radio UK:"
+  /^[a-z]{1,6}\s?Radio:\s*/i,    // "d Radio:", "old Radio:", truncated "[X] Radio:"
+  /^[a-z]{1,5}\s?FM:\s*/i        // "c FM:", "sic FM:", "ssic FM:"
 ];
 
 // Genre suffixes to strip
@@ -778,7 +808,9 @@ var lastfmRequestTime = 0;
  * Much more reliable than MusicBrainz for popular music
  */
 function lastfmLookup(artist, title, callback) {
-  console.log('[RTL-SDR Radio] Last.fm lookup: artist=' + artist + ', title=' + title);
+  if (config.debugLogging) {
+    console.log('[RTL-SDR Radio] Last.fm lookup: artist=' + artist + ', title=' + title);
+  }
   
   if (!artist || !title) {
     return callback(null, { found: false });
@@ -788,7 +820,9 @@ function lastfmLookup(artist, title, callback) {
   var cacheKey = 'lastfm|' + artist.toLowerCase() + '|' + title.toLowerCase();
   var cached = cache.get('lookups', cacheKey);
   if (cached) {
-    console.log('[RTL-SDR Radio] Last.fm cache hit');
+    if (config.debugLogging) {
+      console.log('[RTL-SDR Radio] Last.fm cache hit');
+    }
     return callback(null, cached);
   }
   
@@ -810,7 +844,9 @@ function lastfmLookup(artist, title, callback) {
               '&autocorrect=1' +  // Let Last.fm fix misspellings
               '&format=json';
     
-    console.log('[RTL-SDR Radio] Last.fm request: ' + url.substring(0, 100) + '...');
+    if (config.debugLogging) {
+      console.log('[RTL-SDR Radio] Last.fm request: ' + url.substring(0, 100) + '...');
+    }
     
     http.get(url, function(res) {
       var data = '';
@@ -820,14 +856,18 @@ function lastfmLookup(artist, title, callback) {
       });
       
       res.on('end', function() {
-        console.log('[RTL-SDR Radio] Last.fm response: ' + res.statusCode + ', length=' + data.length);
+        if (config.debugLogging) {
+          console.log('[RTL-SDR Radio] Last.fm response: ' + res.statusCode + ', length=' + data.length);
+        }
         
         try {
           var json = JSON.parse(data);
           
           // Check for error
           if (json.error) {
-            console.log('[RTL-SDR Radio] Last.fm error: ' + json.message);
+            if (config.debugLogging) {
+              console.log('[RTL-SDR Radio] Last.fm error: ' + json.message);
+            }
             var noResult = { found: false };
             cache.set('lookups', cacheKey, noResult);
             return callback(null, noResult);
@@ -869,27 +909,245 @@ function lastfmLookup(artist, title, callback) {
             }
           }
           
-          console.log('[RTL-SDR Radio] Last.fm found: ' + result.artist + ' - ' + result.title + 
-                     (result.album ? ' [' + result.album + ']' : '') +
-                     (result.albumArtwork ? ' (artwork available)' : ' (no artwork)'));
+          if (config.debugLogging) {
+            console.log('[RTL-SDR Radio] Last.fm found: ' + result.artist + ' - ' + result.title + 
+                       (result.album ? ' [' + result.album + ']' : '') +
+                       (result.albumArtwork ? ' (artwork available)' : ' (no artwork)'));
+          }
           
           cache.set('lookups', cacheKey, result);
           callback(null, result);
           
         } catch (e) {
-          console.log('[RTL-SDR Radio] Last.fm parse error: ' + e.message);
+          if (config.debugLogging) {
+            console.log('[RTL-SDR Radio] Last.fm parse error: ' + e.message);
+          }
           callback(e, null);
         }
       });
     }).on('error', function(e) {
-      console.log('[RTL-SDR Radio] Last.fm network error: ' + e.message);
+      if (config.debugLogging) {
+        console.log('[RTL-SDR Radio] Last.fm network error: ' + e.message);
+      }
       callback(e, null);
     });
   }, wait);
 }
 
+// ============================================================================
+// OPEN OPUS LOOKUP (Classical Music Composer Portraits)
+// ============================================================================
+
+var openOpusRequestTime = 0;
+
+/**
+ * Look up composer on Open Opus API
+ * Returns composer portrait URL for classical music
+ * Free API, no registration required, public domain data
+ * 
+ * @param {string} composer - Composer name (e.g., "Beethoven", "Mozart")
+ * @param {function} callback - callback(err, result)
+ *   result: { found: true/false, name: string, portrait: url, epoch: string }
+ */
+function openOpusLookup(composer, callback) {
+  if (config.debugLogging) {
+    console.log('[RTL-SDR Radio] Open Opus lookup: composer=' + composer);
+  }
+  
+  if (!composer) {
+    return callback(null, { found: false });
+  }
+  
+  // Normalize composer name for lookup
+  var searchName = composer.trim().toLowerCase();
+  
+  // Check cache
+  var cacheKey = 'openopus|' + searchName;
+  var cached = cache.get('lookups', cacheKey);
+  if (cached) {
+    if (config.debugLogging) {
+      console.log('[RTL-SDR Radio] Open Opus cache hit');
+    }
+    return callback(null, cached);
+  }
+  
+  // Rate limiting
+  var now = Date.now();
+  var wait = Math.max(0, config.openOpusRateLimit - (now - openOpusRequestTime));
+  
+  setTimeout(function() {
+    openOpusRequestTime = Date.now();
+    
+    var https = require('https');
+    var composerEnc = encodeURIComponent(composer.trim());
+    
+    var url = config.openOpusEndpoint + '/composer/list/search/' + composerEnc + '.json';
+    
+    if (config.debugLogging) {
+      console.log('[RTL-SDR Radio] Open Opus request: ' + url);
+    }
+    
+    https.get(url, function(res) {
+      var data = '';
+      
+      res.on('data', function(chunk) {
+        data += chunk;
+      });
+      
+      res.on('end', function() {
+        if (config.debugLogging) {
+          console.log('[RTL-SDR Radio] Open Opus response: ' + res.statusCode + ', length=' + data.length);
+        }
+        
+        try {
+          var json = JSON.parse(data);
+          
+          // Check for error or no results
+          if (!json.status || json.status.success !== 'true' || !json.composers || json.composers.length === 0) {
+            if (config.debugLogging) {
+              console.log('[RTL-SDR Radio] Open Opus: no composers found');
+            }
+            var noResult = { found: false };
+            cache.set('lookups', cacheKey, noResult);
+            return callback(null, noResult);
+          }
+          
+          // Take first (best) match
+          var comp = json.composers[0];
+          var result = {
+            found: true,
+            id: comp.id,
+            name: comp.name,                    // Short name (e.g., "Beethoven")
+            completeName: comp.complete_name,   // Full name (e.g., "Ludwig van Beethoven")
+            portrait: comp.portrait,            // Direct URL to portrait image
+            epoch: comp.epoch,                  // Period (e.g., "Romantic", "Baroque")
+            birth: comp.birth,
+            death: comp.death
+          };
+          
+          if (config.debugLogging) {
+            console.log('[RTL-SDR Radio] Open Opus found: ' + result.completeName + 
+                       ' (' + result.epoch + ') - portrait: ' + (result.portrait ? 'yes' : 'no'));
+          }
+          
+          cache.set('lookups', cacheKey, result);
+          callback(null, result);
+          
+        } catch (e) {
+          if (config.debugLogging) {
+            console.log('[RTL-SDR Radio] Open Opus parse error: ' + e.message);
+          }
+          callback(e, null);
+        }
+      });
+    }).on('error', function(e) {
+      if (config.debugLogging) {
+        console.log('[RTL-SDR Radio] Open Opus network error: ' + e.message);
+      }
+      callback(e, null);
+    });
+  }, wait);
+}
+
+/**
+ * Check if artist name looks like a classical or film composer
+ * Used to decide whether to try Open Opus lookup
+ * 
+ * @param {string} artist - Artist name from metadata
+ * @returns {boolean} - true if likely classical/film composer
+ */
+function isLikelyClassicalComposer(artist) {
+  if (!artist) return false;
+  
+  var name = artist.toLowerCase().trim();
+  
+  // Well-known classical composers (partial list for quick check)
+  var knownComposers = [
+    'bach', 'beethoven', 'mozart', 'chopin', 'brahms', 'tchaikovsky',
+    'vivaldi', 'handel', 'haydn', 'schubert', 'schumann', 'mendelssohn',
+    'liszt', 'wagner', 'verdi', 'puccini', 'debussy', 'ravel',
+    'stravinsky', 'mahler', 'bruckner', 'dvorak', 'grieg', 'sibelius',
+    'rachmaninoff', 'rachmaninov', 'prokofiev', 'shostakovich',
+    'elgar', 'holst', 'vaughan williams', 'britten', 'purcell',
+    'palestrina', 'monteverdi', 'corelli', 'scarlatti', 'telemann',
+    'gluck', 'rossini', 'donizetti', 'bellini', 'berlioz', 'bizet',
+    'offenbach', 'saint-saens', 'faure', 'franck', 'massenet',
+    'rimsky-korsakov', 'mussorgsky', 'borodin', 'glazunov',
+    'smetana', 'janacek', 'bartok', 'kodaly', 'enescu',
+    'nielsen', 'stenhammar', 'alfven',
+    'respighi', 'poulenc', 'milhaud', 'honegger', 'satie',
+    'copland', 'bernstein', 'barber', 'gershwin', 'ives',
+    'messiaen', 'boulez', 'stockhausen', 'ligeti', 'penderecki',
+    'glass', 'reich', 'adams', 'part', 'gorecki', 'tavener',
+    'paganini', 'sarasate', 'kreisler', 'heifetz',
+    'casals', 'rostropovich', 'du pre',
+    'horowitz', 'rubinstein', 'arrau', 'brendel', 'pollini',
+    'gould', 'richter', 'gilels', 'ashkenazy',
+    'karajan', 'bernstein', 'solti', 'abbado', 'rattle',
+    'callas', 'pavarotti', 'domingo', 'carreras',
+    'albinoni', 'pachelbel', 'boccherini', 'clementi', 'czerny',
+    'hummel', 'weber', 'spohr', 'meyerbeer', 'lortzing',
+    'nicolai', 'flotow', 'lalo', 'chabrier', 'dukas',
+    'chausson', 'magnard', 'schmitt', 'roussel', 'ibert',
+    'martinu', 'hindemith', 'weill', 'orff', 'henze',
+    'nono', 'berio', 'xenakis', 'dutilleux', 'lutoslawski',
+    'schnittke', 'gubaidulina', 'kancheli', 'silvestrov',
+    'rautavaara', 'saariaho', 'lindberg', 'ades', 'macmillan',
+    'gounod', 'delibes', 'lehar', 'strauss', 'johann strauss',
+    'suppe', 'waldteufel', 'leoncavallo', 'mascagni', 'giordano',
+    'wolf-ferrari', 'zandonai', 'montemezzi', 'cilea',
+    'catalani', 'ponchielli', 'boito', 'arrigo boito',
+    // Film/TV composers (may not be in Open Opus but worth trying)
+    'john williams', 'williams', 'hans zimmer', 'zimmer',
+    'james horner', 'horner', 'ennio morricone', 'morricone',
+    'howard shore', 'danny elfman', 'elfman', 'james newton howard',
+    'thomas newman', 'randy newman', 'alan silvestri', 'silvestri',
+    'jerry goldsmith', 'goldsmith', 'john barry', 'barry',
+    'bernard herrmann', 'herrmann', 'max steiner', 'steiner',
+    'alfred newman', 'franz waxman', 'waxman', 'miklos rozsa', 'rozsa',
+    'dmitri tiomkin', 'tiomkin', 'elmer bernstein', 'alex north',
+    'henry mancini', 'mancini', 'lalo schifrin', 'schifrin',
+    'maurice jarre', 'jarre', 'nino rota', 'rota',
+    'vangelis', 'tangerine dream', 'giorgio moroder', 'moroder',
+    'basil poledouris', 'poledouris', 'michael kamen', 'kamen',
+    'carter burwell', 'burwell', 'david arnold', 'arnold',
+    'alexandre desplat', 'desplat', 'dario marianelli', 'marianelli',
+    'michael giacchino', 'giacchino', 'ramin djawadi', 'djawadi',
+    'ludwig goransson', 'goransson', 'hildur gudnadottir', 'gudnadottir',
+    'trent reznor', 'atticus ross', 'jonny greenwood', 'greenwood',
+    'nicholas britell', 'britell', 'justin hurwitz', 'hurwitz',
+    'john powell', 'powell', 'harry gregson-williams', 'gregson-williams',
+    'patrick doyle', 'doyle', 'rachel portman', 'portman',
+    'gabriel yared', 'yared', 'elliot goldenthal', 'goldenthal',
+    'joe hisaishi', 'hisaishi', 'ryuichi sakamoto', 'sakamoto',
+    'mica levi', 'cliff martinez', 'martinez', 'johan johansson', 'johansson'
+  ];
+  
+  // Check if name contains any known composer
+  for (var i = 0; i < knownComposers.length; i++) {
+    if (name.indexOf(knownComposers[i]) !== -1) {
+      return true;
+    }
+  }
+  
+  // Check for classical naming patterns
+  // e.g., "J.S. Bach", "W.A. Mozart", "L. van Beethoven"
+  if (/^[a-z]\.\s*[a-z]?\.\s*[a-z]/i.test(artist)) {
+    return true;
+  }
+  
+  // Check for "von", "van", "de" in name (common in classical)
+  if (/\b(von|van|de|di)\b/i.test(artist)) {
+    return true;
+  }
+  
+  return false;
+}
+
 function lookup(artist, title, callback) {
-  console.log('[RTL-SDR Radio] MusicBrainz lookup called: artist=' + artist + ', title=' + title);
+  if (config.debugLogging) {
+    console.log('[RTL-SDR Radio] MusicBrainz lookup called: artist=' + artist + ', title=' + title);
+  }
   
   if (!artist && !title) {
     return callback(null, { verified: false, mbid: null, album: null });
@@ -1148,16 +1406,27 @@ function getUserPhrases() {
   return userBlocklistPhrases.slice();
 }
 
+/**
+ * Set debug logging flag
+ * Called from index.js based on artwork_debug_logging setting
+ */
+function setDebugLogging(enabled) {
+  config.debugLogging = !!enabled;
+}
+
 module.exports = {
   extract: extract,
   extractWithLookup: extractWithLookup,
   lookup: lookup,
   lastfmLookup: lastfmLookup,
+  openOpusLookup: openOpusLookup,
+  isLikelyClassicalComposer: isLikelyClassicalComposer,
   searchRaw: searchRaw,
   cache: cache,
   config: config,
   setUserPhrases: setUserPhrases,
   getUserPhrases: getUserPhrases,
+  setDebugLogging: setDebugLogging,
   // Fuzzy matching utilities (for DAB proximity filtering)
   similarity: similarity,
   levenshteinDistance: levenshteinDistance,
