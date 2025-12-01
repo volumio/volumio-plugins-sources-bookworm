@@ -1,0 +1,33 @@
+{
+  "name": "raspdacminilcd",
+  "version": "2.0.3",
+  "description": "Graphic renderer for Audiophonics Raspdac Mini LCD version",
+  "main": "index.js",
+  "scripts": {
+    "preinstall": "cd ../native/rgb565 && npm run install_rdmlcd",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/audiophonics/RaspDacMinilcd.git"
+  },
+  "keywords": [
+    "raspdac",
+    "raspdacminilcd"
+  ],
+  "author": "Olivier Schwach",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/audiophonics/RaspDacMinilcd/issues"
+  },
+  "homepage": "https://github.com/audiophonics/RaspDacMinilcd#readme",
+  "dependencies": {
+    "@tokenizer/http": "^0.6.1",
+    "bindings": "~1.5.0",
+    "canvas": "^2.11.2",
+    "nan": "^2.14.1",
+    "simple-get": "^4.0.1",
+    "socket.io-client": "^2.3.0",
+    "stackblur-canvas": "^2.5.0"
+  }
+}

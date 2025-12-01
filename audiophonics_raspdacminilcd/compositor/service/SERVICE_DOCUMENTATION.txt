@@ -1,0 +1,230 @@
+SYSTEMD SERVICE CONFIGURATION
+==============================
+
+Service File: rdmlcd.service
+Location: /etc/systemd/system/rdmlcd.service
+Created by: install.sh during plugin installation
+
+SERVICE CONFIGURATION
+---------------------
+
+[Unit]
+Description=RaspDacMini LCD Display Service
+After=volumio.service
+Requires=volumio.service
+
+Explanation:
+* Description: Human-readable service name
+* After: Start after Volumio service is running
+* Requires: Depend on Volumio service (stop if Volumio stops)
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/data/plugins/system_hardware/raspdac_mini_lcd/compositor
+Environment="SLEEP_AFTER=900"
+ExecStart=/usr/bin/node index.js volumio /dev/fb1
+StandardOutput=journal
+StandardError=journal
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=5
+StartLimitInterval=200
+StartLimitBurst=5
+
+Explanation:
+* Type=simple: Service is ready immediately after ExecStart
+* User=root: Required for framebuffer access (/dev/fb1)
+* WorkingDirectory: Compositor directory (required for relative paths)
+* Environment: Default SLEEP_AFTER value (overridden by override.conf)
+* ExecStart: Command to run (node index.js volumio /dev/fb1)
+* StandardOutput/Error=journal: Log to systemd journal
+* KillSignal=SIGINT: Clean shutdown signal
+* Restart=on-failure: Restart only if process exits with error
+* RestartSec=5: Wait 5 seconds before restart
+* StartLimitInterval=200: Track restart rate over 200 seconds
+* StartLimitBurst=5: Max 5 restarts in StartLimitInterval
+
+[Install]
+WantedBy=multi-user.target
+
+Explanation:
+* WantedBy: Enable service when system reaches multi-user target
+
+ENVIRONMENT OVERRIDE
+--------------------
+
+File: /etc/systemd/system/rdmlcd.service.d/override.conf
+Created by: install.sh and updated by plugin controller
+
+Format:
+[Service]
+Environment="SLEEP_AFTER=900"
+
+Purpose:
+* Override default SLEEP_AFTER value from service file
+* Updated when user changes sleep_after in plugin settings
+* Survives service file updates
+* Applied after systemctl daemon-reload
+
+Update Process:
+1. User changes sleep_after in UI
+2. Plugin controller calls updateServiceEnvironment()
+3. Creates/updates override.conf with new value
+4. Calls systemctl daemon-reload
+5. Calls systemctl restart rdmlcd.service
+6. Compositor reads process.env.SLEEP_AFTER
+
+SYSTEMCTL COMMANDS
+------------------
+
+Start Service:
+$ sudo systemctl start rdmlcd.service
+
+Stop Service:
+$ sudo systemctl stop rdmlcd.service
+
+Restart Service:
+$ sudo systemctl restart rdmlcd.service
+
+Enable Service (auto-start on boot):
+$ sudo systemctl enable rdmlcd.service
+
+Disable Service (no auto-start):
+$ sudo systemctl disable rdmlcd.service
+
+Check Status:
+$ sudo systemctl status rdmlcd.service
+
+View Logs (live):
+$ journalctl -u rdmlcd.service -f
+
+View Logs (last 100 lines):
+$ journalctl -u rdmlcd.service -n 100
+
+Reload Daemon (after editing service file):
+$ sudo systemctl daemon-reload
+
+TROUBLESHOOTING
+---------------
+
+Service Won't Start:
+1. Check if /dev/fb1 exists: ls -la /dev/fb1
+2. If not, reboot to load dtoverlay
+3. Check service status: systemctl status rdmlcd.service
+4. View logs: journalctl -u rdmlcd.service -n 50
+
+Service Keeps Restarting:
+1. View logs to identify error: journalctl -u rdmlcd.service -f
+2. Common causes:
+   - Framebuffer not accessible
+   - Node modules not installed
+   - Native module not compiled
+   - Socket.io connection to Volumio failed
+3. Check compositor directory: cd /data/plugins/system_hardware/raspdac_mini_lcd/compositor/
+4. Test manually: sudo node index.js volumio /dev/fb1
+
+Display Not Working:
+1. Check framebuffer: fbset -fb /dev/fb1 -i
+2. Check dtoverlay loaded: dtoverlay -l | grep raspdac
+3. Check service running: systemctl status rdmlcd.service
+4. View compositor logs: journalctl -u rdmlcd.service -f
+
+Configuration Not Applied:
+1. Check override file: cat /etc/systemd/system/rdmlcd.service.d/override.conf
+2. Reload daemon: systemctl daemon-reload
+3. Restart service: systemctl restart rdmlcd.service
+4. Check environment in process: systemctl show rdmlcd.service -p Environment
+
+MANUAL SERVICE MANAGEMENT
+--------------------------
+
+Edit Service File:
+$ sudo nano /etc/systemd/system/rdmlcd.service
+$ sudo systemctl daemon-reload
+$ sudo systemctl restart rdmlcd.service
+
+Edit Environment Override:
+$ sudo nano /etc/systemd/system/rdmlcd.service.d/override.conf
+$ sudo systemctl daemon-reload
+$ sudo systemctl restart rdmlcd.service
+
+Remove Service:
+$ sudo systemctl stop rdmlcd.service
+$ sudo systemctl disable rdmlcd.service
+$ sudo rm /etc/systemd/system/rdmlcd.service
+$ sudo rm -rf /etc/systemd/system/rdmlcd.service.d
+$ sudo systemctl daemon-reload
+
+LOGGING
+-------
+
+Log Locations:
+* systemd journal: journalctl -u rdmlcd.service
+* Volumio logs: /var/log/volumio.log (plugin controller messages)
+
+Log Levels:
+* INFO: Normal operation messages
+* WARNING: Non-critical issues
+* ERROR: Critical failures
+
+Useful Log Filters:
+* Only errors: journalctl -u rdmlcd.service -p err
+* Since boot: journalctl -u rdmlcd.service -b
+* Last hour: journalctl -u rdmlcd.service --since "1 hour ago"
+* Follow live: journalctl -u rdmlcd.service -f
+
+SECURITY NOTES
+--------------
+
+Root User:
+* Service runs as root for framebuffer access
+* Required for writing to /dev/fb1
+* Framebuffer devices require privileged access
+* Alternative: Add volumio user to video group (not tested)
+
+Permissions:
+* Service file: owned by root, mode 644
+* Override file: owned by root, mode 644
+* Compositor files: owned by volumio, readable by root
+* Native module: compiled for current architecture
+
+INTEGRATION WITH VOLUMIO PLUGIN
+--------------------------------
+
+Plugin Controller Integration:
+* onStart(): calls systemctl start rdmlcd.service
+* onStop(): calls systemctl stop rdmlcd.service
+* onRestart(): calls systemctl restart rdmlcd.service
+* updateLCDConfig(): updates override.conf and restarts
+
+Service State Synchronization:
+* Plugin enabled → service started
+* Plugin disabled → service stopped
+* Configuration change → service restarted
+* Plugin uninstall → service removed
+
+Boot Behavior:
+* Service enabled by install.sh
+* Starts automatically after volumio.service
+* Depends on dtoverlay loading (/dev/fb1)
+* May fail on first boot until reboot completes
+
+PERFORMANCE
+-----------
+
+Resource Usage:
+* CPU: ~5-10% on Raspberry Pi 4 (50fps rendering)
+* Memory: ~50-80MB (node + canvas)
+* Disk: Minimal (only logs)
+
+Optimization:
+* Native module reduces CPU load vs pure JavaScript
+* Hardware-accelerated framebuffer write
+* Efficient canvas rendering
+* Configurable sleep timeout to reduce idle CPU
+
+Monitoring:
+* CPU: top -p $(pgrep -f "node index.js volumio")
+* Memory: systemctl status rdmlcd.service
+* Logs: journalctl -u rdmlcd.service --since "10 minutes ago"
