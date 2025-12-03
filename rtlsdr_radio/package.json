@@ -1,6 +1,6 @@
 {
   "name": "rtlsdr_radio",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "has_configuration": true,
     "has_alsa_contribution": true,
     "details": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
-    "changelog": "v1.3.1 - Classical composer portraits via Open Opus API fallback when Last.fm has no artwork. v1.3.0 - Fixed FM artwork throttle bug; Debug logging controlled by settings."
+    "changelog": "v1.3.2 - Configurable FM lower frequency for regional bands (Japan 76MHz, Italy 87MHz)"
   },
   "engines": {
     "node": ">=20",

@@ -11,6 +11,8 @@
   "ENABLE_FM_DOC": "Alternar para mostrar definições de rádio FM",
   "FM_GAIN": "Ganho FM",
   "FM_GAIN_DOC": "Ganho RTL-SDR para receção FM (0-100)",
+  "FM_LOWER_FREQ": "Frequencia FM inferior",
+  "FM_LOWER_FREQ_DOC": "Selecione o limite inferior da banda FM para sua regiao. O Japao usa 76-95 MHz, a Italia comeca em 87 MHz, a Europa em 87,5 MHz, as Americas em 88 MHz.",
   "SCAN_FM": "Procurar estações FM",
   "SCAN_FM_DOC": "Procurar estações de rádio FM disponíveis",
   "SAVE_FM_SETTINGS": "Guardar definições FM",

@@ -11,6 +11,8 @@
   "ENABLE_FM_DOC": "FM ラジオ設定の表示を切り替え",
   "FM_GAIN": "FM ゲイン",
   "FM_GAIN_DOC": "FM 受信用 RTL-SDR ゲイン (0-100)",
+  "FM_LOWER_FREQ": "FM下限周波数",
+  "FM_LOWER_FREQ_DOC": "お住まいの地域のFM帯域の下限を選択してください。日本は76-95MHz、イタリアは87MHz、ヨーロッパは87.5MHz、アメリカは88MHzから始まります。",
   "SCAN_FM": "FM 局をスキャン",
   "SCAN_FM_DOC": "利用可能な FM ラジオ局を検索",
   "SAVE_FM_SETTINGS": "FM 設定を保存",

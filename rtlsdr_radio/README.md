@@ -8,7 +8,7 @@ Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.
 - Compatible with R820T, R820T2, R828D, E4000 tuners
 - Quality dongles recommended: Nooelec NESDR Smart, RTL-SDR Blog V3/V4
 - Cheap generic blue dongles work but may require PPM frequency correction for DAB
-- Antenna suitable for FM (88-108 MHz) and/or DAB Band III (174-240 MHz)
+- Antenna suitable for FM (76-108 MHz depending on region) and/or DAB Band III (174-240 MHz)
 
 ## Supported Platforms
 
@@ -19,7 +19,7 @@ Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.
 ## Features
 
 ### Radio Reception
-- FM radio reception (87.5-108 MHz)
+- FM radio reception (76-108 MHz, configurable lower bound for regional bands)
 - DAB and DAB+ digital radio
 - Automatic station scanning with configurable sensitivity
 - Integrated with Volumio's playback system
@@ -364,7 +364,16 @@ Just a Nerd
 
 ## Version History
 
-### v1.3.1 (Current)
+### v1.3.2 (Current)
+- Configurable FM lower frequency for regional band support
+- Japan: 76.0 MHz lower bound (76-95 MHz band)
+- Italy: 87.0 MHz lower bound (RAI Radio 1 at 87.1 MHz)
+- Europe: 87.5 MHz (default)
+- Americas: 88.0 MHz
+- Setting in FM Radio configuration section
+- FM scan automatically uses configured range
+
+### v1.3.1
 - Classical music artwork via Open Opus API fallback
 - When Last.fm has no artwork for classical composers, displays composer portrait
 - Recognizes 150+ classical composers (Bach, Beethoven, Mozart, etc.)

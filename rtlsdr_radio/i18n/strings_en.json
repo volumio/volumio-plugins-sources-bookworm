@@ -11,6 +11,8 @@
   "ENABLE_FM_DOC": "Toggle to show FM radio settings",
   "FM_GAIN": "FM Gain",
   "FM_GAIN_DOC": "RTL-SDR gain for FM reception (0-100)",
+  "FM_LOWER_FREQ": "FM Lower Frequency",
+  "FM_LOWER_FREQ_DOC": "Select the lower FM band limit for your region. Japan uses 76-95 MHz, Italy starts at 87 MHz, Europe at 87.5 MHz, Americas at 88 MHz.",
   "SCAN_FM": "Scan FM Stations",
   "SCAN_FM_DOC": "Scan for available FM radio stations",
   "SAVE_FM_SETTINGS": "Save FM Settings",

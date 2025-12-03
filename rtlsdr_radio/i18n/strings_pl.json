@@ -11,6 +11,8 @@
   "ENABLE_FM_DOC": "Przełącz, aby pokazać ustawienia radia FM",
   "FM_GAIN": "Wzmocnienie FM",
   "FM_GAIN_DOC": "Wzmocnienie RTL-SDR dla odbioru FM (0-100)",
+  "FM_LOWER_FREQ": "Dolna czestotliwosc FM",
+  "FM_LOWER_FREQ_DOC": "Wybierz dolna granice pasma FM dla swojego regionu. Japonia uzywa 76-95 MHz, Wlochy zaczynaja od 87 MHz, Europa od 87,5 MHz, Ameryki od 88 MHz.",
   "SCAN_FM": "Skanuj stacje FM",
   "SCAN_FM_DOC": "Wyszukaj dostępne stacje radiowe FM",
   "SAVE_FM_SETTINGS": "Zapisz ustawienia FM",

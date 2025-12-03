@@ -2192,7 +2192,7 @@
         
         let frequencyHtml = '';
         if (type === 'fm') {
-          frequencyHtml = '<input type="number" class="frequency-input" value="' + station.frequency + '" min="87.5" max="108.0" step="0.1" data-type="fm" data-index="' + realIdx + '" data-original="' + station.frequency + '" title="' + t('LABEL_FREQUENCY') + '">';
+          frequencyHtml = '<input type="number" class="frequency-input" value="' + station.frequency + '" min="76.0" max="108.0" step="0.1" data-type="fm" data-index="' + realIdx + '" data-original="' + station.frequency + '" title="' + t('LABEL_FREQUENCY') + '">';
         } else {
           frequencyHtml = '<span class="frequency-display">' + (station.channelName || '') + '</span>';
         }
@@ -2331,7 +2331,7 @@
           
           if (newFreq === oldFreq) return;
           
-          if (newFreq < 87.5 || newFreq > 108.0 || isNaN(newFreq)) {
+          if (newFreq < 76.0 || newFreq > 108.0 || isNaN(newFreq)) {
             showToast(t('WARN_FREQ_INVALID'), 'error');
             e.target.value = oldFreq;
             e.target.classList.add('error');

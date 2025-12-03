@@ -11,6 +11,8 @@
   "ENABLE_FM_DOC": "Schakel om FM radio-instellingen te tonen",
   "FM_GAIN": "FM Versterking",
   "FM_GAIN_DOC": "RTL-SDR versterking voor FM-ontvangst (0-100)",
+  "FM_LOWER_FREQ": "FM lagere frequentie",
+  "FM_LOWER_FREQ_DOC": "Selecteer de ondergrens van de FM-band voor uw regio. Japan gebruikt 76-95 MHz, Italie begint bij 87 MHz, Europa bij 87,5 MHz, Amerika bij 88 MHz.",
   "SCAN_FM": "Scan FM-stations",
   "SCAN_FM_DOC": "Zoek naar beschikbare FM-radiostations",
   "SAVE_FM_SETTINGS": "Bewaar FM-instellingen",
