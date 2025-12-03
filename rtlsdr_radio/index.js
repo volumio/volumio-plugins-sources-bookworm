@@ -1836,6 +1836,15 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
       fmGain.value = self.config.get('fm_gain', 50);
     }
     
+    var fmLowerFreq = findContentItem(fmSection, 'fm_lower_freq');
+    if (fmLowerFreq) {
+      var lowerFreqValue = self.config.get('fm_lower_freq', '87.5');
+      fmLowerFreq.value = {
+        value: lowerFreqValue,
+        label: self.getLowerFreqLabel(lowerFreqValue)
+      };
+    }
+    
     var scanSensitivity = findContentItem(fmSection, 'scan_sensitivity');
     if (scanSensitivity) {
       var sensitivityValue = self.config.get('scan_sensitivity', 8);
@@ -1973,6 +1982,16 @@ ControllerRtlsdrRadio.prototype.getSensitivityLabel = function(value) {
   return labels[value] || labels[8];
 };
 
+ControllerRtlsdrRadio.prototype.getLowerFreqLabel = function(value) {
+  var labels = {
+    '76.0': '76.0 MHz (Japan)',
+    '87.0': '87.0 MHz (Italy)',
+    '87.5': '87.5 MHz (Europe/Default)',
+    '88.0': '88.0 MHz (Americas)'
+  };
+  return labels[value] || '87.5 MHz (Europe/Default)';
+};
+
 ControllerRtlsdrRadio.prototype.saveWebManagerSettings = function(data) {
   var self = this;
   var defer = libQ.defer();
@@ -2053,6 +2072,15 @@ ControllerRtlsdrRadio.prototype.saveFmSettings = function(data) {
       var sensitivity = parseInt(sensitivityValue);
       if (!isNaN(sensitivity)) {
         self.config.set('scan_sensitivity', sensitivity);
+      }
+    }
+    
+    // Save FM lower frequency
+    if (data.fm_lower_freq !== undefined) {
+      var lowerFreqValue = data.fm_lower_freq.value || data.fm_lower_freq;
+      var validValues = ['76.0', '87.0', '87.5', '88.0'];
+      if (validValues.indexOf(lowerFreqValue) !== -1) {
+        self.config.set('fm_lower_freq', lowerFreqValue);
       }
     }
     
@@ -3638,9 +3666,10 @@ ControllerRtlsdrRadio.prototype.playFmStation = function(frequency, stationName)
   self.albumLookupCache = {};
   self.lastArtworkLogKey = null;
   
-  // Validate frequency (FM band: 88-108 MHz)
+  // Validate frequency (FM band: configured lower bound to 108 MHz)
   var freq = parseFloat(frequency);
-  if (isNaN(freq) || freq < 88 || freq > 108) {
+  var lowerFreq = parseFloat(self.config.get('fm_lower_freq', '87.5'));
+  if (isNaN(freq) || freq < lowerFreq || freq > 108) {
     self.logger.error('[RTL-SDR Radio] Invalid FM frequency: ' + frequency);
     defer.reject(new Error('Invalid frequency'));
     return defer.promise;
@@ -5173,9 +5202,10 @@ ControllerRtlsdrRadio.prototype.testManualFm = function(data) {
   
   // Validate frequency
   var freq = parseFloat(frequency);
-  if (isNaN(freq) || freq < 88 || freq > 108) {
+  var lowerFreq = parseFloat(self.config.get('fm_lower_freq', '87.5'));
+  if (isNaN(freq) || freq < lowerFreq || freq > 108) {
     self.commandRouter.pushToastMessage('error', self.getI18nString('FM_RADIO'), 
-      self.getI18nString('TEST_FM_FAILED').replace('{0}', 'Invalid frequency. Enter 88.0 - 108.0 MHz'));
+      self.getI18nString('TEST_FM_FAILED').replace('{0}', 'Invalid frequency. Enter ' + lowerFreq + ' - 108.0 MHz'));
     defer.reject(new Error('Invalid frequency'));
     return defer.promise;
   }
@@ -6309,10 +6339,11 @@ ControllerRtlsdrRadio.prototype.scanFm = function() {
       var scanFile = '/tmp/fm_scan_' + Date.now() + '.csv';
       
       // fn-rtl_power command:
-      // -f 88M:108M:125k = Scan 88-108 MHz in 125kHz steps (160 bins)
+      // -f [lower]M:108M:125k = Scan configured range in 125kHz steps
       // -i 10 = Integrate for 10 seconds
       // -1 = Single-shot mode (exit after one scan)
-      var command = 'fn-rtl_power -f 88M:108M:125k -i 10 -1 ' + scanFile;
+      var lowerFreq = self.config.get('fm_lower_freq', '87.5');
+      var command = 'fn-rtl_power -f ' + lowerFreq + 'M:108M:125k -i 10 -1 ' + scanFile;
       
       self.logger.info('[RTL-SDR Radio] Scan command: ' + command);
       

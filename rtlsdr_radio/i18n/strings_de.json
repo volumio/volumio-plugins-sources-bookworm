@@ -11,6 +11,8 @@
   "ENABLE_FM_DOC": "FM Radio-Einstellungen ein-/ausblenden",
   "FM_GAIN": "FM Verstärkung",
   "FM_GAIN_DOC": "RTL-SDR Verstärkung für FM-Empfang (0-100)",
+  "FM_LOWER_FREQ": "FM Unterfrequenz",
+  "FM_LOWER_FREQ_DOC": "Wahlen Sie die untere FM-Bandgrenze fur Ihre Region. Japan verwendet 76-95 MHz, Italien beginnt bei 87 MHz, Europa bei 87,5 MHz, Amerika bei 88 MHz.",
   "SCAN_FM": "FM-Sender suchen",
   "SCAN_FM_DOC": "Nach verfügbaren FM-Radiosendern suchen",
   "SAVE_FM_SETTINGS": "FM-Einstellungen speichern",

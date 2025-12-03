@@ -140,6 +140,7 @@
         "data": [
           "fm_enabled",
           "fm_gain",
+          "fm_lower_freq",
           "scan_sensitivity"
         ]
       },
@@ -157,6 +158,26 @@
           "label": "TRANSLATE.FM_GAIN",
           "value": 50,
           "doc": "TRANSLATE.FM_GAIN_DOC",
+          "visibleIf": {
+            "field": "fm_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "fm_lower_freq",
+          "element": "select",
+          "label": "TRANSLATE.FM_LOWER_FREQ",
+          "doc": "TRANSLATE.FM_LOWER_FREQ_DOC",
+          "value": {
+            "value": "87.5",
+            "label": "87.5 MHz (Europe/Default)"
+          },
+          "options": [
+            {"value": "76.0", "label": "76.0 MHz (Japan)"},
+            {"value": "87.0", "label": "87.0 MHz (Italy)"},
+            {"value": "87.5", "label": "87.5 MHz (Europe/Default)"},
+            {"value": "88.0", "label": "88.0 MHz (Americas)"}
+          ],
           "visibleIf": {
             "field": "fm_enabled",
             "value": true

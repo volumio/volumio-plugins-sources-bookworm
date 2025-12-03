@@ -11,6 +11,8 @@
   "ENABLE_FM_DOC": "切换显示 FM 收音机设置",
   "FM_GAIN": "FM 增益",
   "FM_GAIN_DOC": "FM 接收的 RTL-SDR 增益 (0-100)",
+  "FM_LOWER_FREQ": "FM低频限制",
+  "FM_LOWER_FREQ_DOC": "选择您所在地区的FM频段下限。日本使用76-95 MHz，意大利从87 MHz开始，欧洲从87.5 MHz开始，美洲从88 MHz开始。",
   "SCAN_FM": "扫描 FM 电台",
   "SCAN_FM_DOC": "搜索可用的 FM 广播电台",
   "SAVE_FM_SETTINGS": "保存 FM 设置",

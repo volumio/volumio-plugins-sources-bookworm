@@ -31,6 +31,10 @@
     "type": "number",
     "value": 8
   },
+  "fm_lower_freq": {
+    "type": "string",
+    "value": "87.5"
+  },
   "sample_rate": {
     "type": "number",
     "value": 48000
