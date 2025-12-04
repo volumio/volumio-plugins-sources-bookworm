@@ -35,6 +35,7 @@ Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.
 - Recycle bin for deleted stations (recoverable)
 - Per-row save buttons for quick edits
 - Bulk operations (clear all, rescan)
+- CSV import/export for offline editing
 
 ### Multilingual Support
 The plugin fully supports internationalization with automatic language detection:
@@ -90,6 +91,54 @@ The plugin includes a comprehensive backup and restore system to protect your co
 
 **Auto-Backup:**
 Enable "Automatic backup before uninstall" checkbox to automatically create a full backup when uninstalling the plugin. Backups are preserved even after uninstall.
+
+### CSV Import/Export
+
+Edit your stations offline using standard CSV files. Useful for bulk editing, sharing station lists between systems, or pre-configuring before hardware arrives.
+
+**Features:**
+- Download FM and DAB templates with headers and example data
+- Export existing stations with timestamps
+- Four import operations for flexible station management
+- Validation before import with detailed error reporting
+- Respects regional FM frequency settings
+
+**Import Operations:**
+
+| Operation | Description |
+|-----------|-------------|
+| Replace | Clear all stations of type and import fresh from CSV |
+| Amend | Update existing stations, preserve play history |
+| Extend | Add new stations only, skip duplicates |
+| Remove | Mark matching stations as deleted |
+
+**CSV Format:**
+
+FM stations:
+```csv
+frequency,name,customName,favorite,hidden,notes
+94.9,BBC Radio London,My BBC,true,false,Optional notes
+```
+
+DAB stations:
+```csv
+channel,exactName,name,customName,ensemble,serviceId,favorite,hidden,notes
+12C,BBC Radio 1,BBC Radio 1,,London 1,0,true,false,Optional notes
+```
+
+**Usage:**
+1. Open web station manager
+2. Click "Maintenance" tab
+3. Scroll to "Import / Export Stations" section
+4. Download template or export existing stations
+5. Edit CSV in spreadsheet application
+6. Upload, validate, select operation, and import
+
+**Notes:**
+- DAB `exactName` must match exactly (including trailing spaces)
+- FM frequency range respects your regional setting (Japan 76MHz, Italy 87MHz, etc.)
+- Validation shows line-by-line errors before import
+- AMEND preserves playCount, lastPlayed, and dateAdded fields
 
 ### Best Effort Artwork
 
@@ -364,7 +413,19 @@ Just a Nerd
 
 ## Version History
 
-### v1.3.2 (Current)
+### v1.3.3 (Current)
+- CSV import/export for offline station editing
+- Download FM and DAB station templates
+- Export existing stations to CSV with timestamps
+- Import with four operations:
+  - Replace: Clear all stations and import fresh
+  - Amend: Update existing stations, preserve play history
+  - Extend: Add new stations only, skip duplicates
+  - Remove: Mark matching stations as deleted
+- Validation before import with detailed error reporting
+- Respects regional FM frequency settings (Japan 76MHz, Italy 87MHz, etc.)
+
+### v1.3.2
 - Configurable FM lower frequency for regional band support
 - Japan: 76.0 MHz lower bound (76-95 MHz band)
 - Italy: 87.0 MHz lower bound (RAI Radio 1 at 87.1 MHz)

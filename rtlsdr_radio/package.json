@@ -1,6 +1,6 @@
 {
   "name": "rtlsdr_radio",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "has_configuration": true,
     "has_alsa_contribution": true,
     "details": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
-    "changelog": "v1.3.2 - Configurable FM lower frequency for regional bands (Japan 76MHz, Italy 87MHz)"
+    "changelog": "v1.3.3 - CSV import/export for offline station editing"
   },
   "engines": {
     "node": ">=20",
@@ -36,7 +36,7 @@
     "v-conf": "*",
     "express": "^4.18.2",
     "body-parser": "^1.20.2",
-    "multer": "^1.4.5-lts.1",
+    "multer": "^2.0.2",
     "compromise": "^14.14.3"
   }
 }

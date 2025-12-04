@@ -671,6 +671,177 @@ GET /api/maintenance/backup/download?type=stations&timestamp=2025-01-15T10-30-00
 - Triggers system reboot after restore
 - Cleans up temporary files
 
+## CSV Import/Export
+
+The CSV endpoints allow offline station management through standard CSV files.
+
+### Download FM Template
+
+**Endpoint:** `GET /api/csv/template/fm`
+
+**Description:** Downloads an empty FM stations CSV template with headers and example row.
+
+**Response:** CSV file download
+
+**Template Content:**
+```csv
+frequency,name,customName,favorite,hidden,notes
+94.9,Example FM,My Radio,false,false,Optional notes
+```
+
+### Download DAB Template
+
+**Endpoint:** `GET /api/csv/template/dab`
+
+**Description:** Downloads an empty DAB stations CSV template with headers and example row.
+
+**Response:** CSV file download
+
+**Template Content:**
+```csv
+channel,exactName,name,customName,ensemble,serviceId,favorite,hidden,notes
+12C,BBC Radio 1,BBC Radio 1,,London 1,0,true,false,Optional notes
+```
+
+### Export FM Stations
+
+**Endpoint:** `GET /api/csv/export/fm`
+
+**Description:** Exports all non-deleted FM stations to CSV file.
+
+**Response:** CSV file download with timestamp filename (e.g., `stations_fm_2025-01-15T10-30-00.csv`)
+
+**CSV Headers:**
+- `frequency` - FM frequency (e.g., "94.9")
+- `name` - Station name from scan
+- `customName` - User-defined custom name
+- `favorite` - true/false
+- `hidden` - true/false
+- `notes` - User notes
+
+### Export DAB Stations
+
+**Endpoint:** `GET /api/csv/export/dab`
+
+**Description:** Exports all non-deleted DAB stations to CSV file.
+
+**Response:** CSV file download with timestamp filename (e.g., `stations_dab_2025-01-15T10-30-00.csv`)
+
+**CSV Headers:**
+- `channel` - DAB channel (e.g., "12C")
+- `exactName` - Exact service name (with trailing spaces preserved)
+- `name` - Display name
+- `customName` - User-defined custom name
+- `ensemble` - Ensemble name
+- `serviceId` - DAB service identifier (technical field, use "0" for manual entries)
+- `favorite` - true/false
+- `hidden` - true/false
+- `notes` - User notes
+
+### Validate CSV File
+
+**Endpoint:** `POST /api/csv/validate`
+
+**Description:** Validates a CSV file without importing. Use before import to check for errors.
+
+**Content-Type:** `multipart/form-data`
+
+**Form Data:**
+- `file` - CSV file to validate
+
+**Response:**
+```json
+{
+  "valid": true,
+  "type": "fm",
+  "filename": "my_stations.csv",
+  "totalRows": 25,
+  "validCount": 23,
+  "errors": [
+    { "line": 5, "message": "Invalid frequency \"abc\"" },
+    { "line": 12, "message": "Frequency 110.5 out of range (87.5-108.0)" }
+  ],
+  "stations": [...]
+}
+```
+
+**Validation Rules:**
+
+FM Stations:
+- `frequency` - Required, numeric, must be within configured FM band (default 87.5-108.0)
+- `name` - Optional, defaults to "FM {frequency}"
+- `customName` - Optional
+- `favorite` - Optional, accepts true/false/1/0/yes/no
+- `hidden` - Optional, accepts true/false/1/0/yes/no
+- `notes` - Optional
+
+DAB Stations:
+- `channel` - Required, valid DAB channel (5A-13F)
+- `exactName` - Required, service identifier (spaces preserved)
+- `name` - Optional, defaults to exactName
+- `customName` - Optional
+- `ensemble` - Optional
+- `serviceId` - Optional, defaults to "0" (technical field from DAB scan)
+- `favorite` - Optional
+- `hidden` - Optional
+- `notes` - Optional
+
+### Import CSV File
+
+**Endpoint:** `POST /api/csv/import`
+
+**Description:** Imports stations from CSV file with specified operation.
+
+**Content-Type:** `multipart/form-data`
+
+**Form Data:**
+- `file` - CSV file to import
+- `operation` - Import operation (replace/amend/extend/remove)
+
+**Operations:**
+
+| Operation | Description |
+|-----------|-------------|
+| `replace` | Clear all stations of detected type (FM or DAB), import all from CSV |
+| `amend` | Update existing stations that match, preserve playCount/lastPlayed/dateAdded |
+| `extend` | Add new stations only, skip stations that already exist |
+| `remove` | Mark matching stations as deleted |
+
+**Matching Logic:**
+- FM: Matches by frequency (parseFloat comparison)
+- DAB: Matches by channel AND exactName (exact string match)
+
+**Response:**
+```json
+{
+  "success": true,
+  "type": "fm",
+  "operation": "extend",
+  "imported": 5,
+  "updated": 0,
+  "removed": 0,
+  "skipped": 18
+}
+```
+
+**Error Response:**
+```json
+{
+  "error": "Validation failed",
+  "errors": [
+    { "line": 3, "message": "Invalid frequency" }
+  ]
+}
+```
+
+**Notes:**
+- File is validated before import
+- Maximum file size: 1MB
+- Type (FM/DAB) detected automatically from headers
+- FM frequency range respects `fm_lower_freq` configuration setting
+- Quoted values with commas are handled correctly
+- Import triggers automatic save to stations database
+
 ## Error Responses
 
 All endpoints return standard error responses:

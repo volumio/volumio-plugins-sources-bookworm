@@ -959,6 +959,92 @@
       margin: 0;
     }
     
+    /* CSV Import/Export Section */
+    .csv-section-header {
+      color: #54b948;
+      font-size: 16px;
+      margin: 25px 0 15px 0;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #404040;
+    }
+    
+    .csv-section-header:first-of-type {
+      margin-top: 0;
+    }
+    
+    .csv-operation-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .csv-operation-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px;
+      background: #333;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .csv-operation-item:hover {
+      background: #3a3a3a;
+    }
+    
+    .csv-operation-item input[type="radio"] {
+      margin-top: 3px;
+    }
+    
+    .csv-operation-label {
+      font-size: 13px;
+      color: #e0e0e0;
+    }
+    
+    .csv-operation-desc {
+      font-size: 11px;
+      color: #888;
+      margin-top: 2px;
+    }
+    
+    #csv-validation-results {
+      display: none;
+      background: #333;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+    
+    #csv-validation-results.visible {
+      display: block;
+    }
+    
+    #csv-validation-results.has-errors {
+      border-left: 3px solid #e74c3c;
+    }
+    
+    #csv-validation-results.valid {
+      border-left: 3px solid #54b948;
+    }
+    
+    .csv-error-list {
+      margin: 10px 0 0 0;
+      padding-left: 20px;
+      color: #e74c3c;
+      font-size: 12px;
+    }
+    
+    .csv-error-list li {
+      margin: 5px 0;
+    }
+    
+    @media (max-width: 768px) {
+      .csv-operation-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
     .restore-label {
       display: block;
       margin-bottom: 5px;
@@ -1531,6 +1617,100 @@
         <tbody id="backup-history-body"></tbody>
       </table>
     </div>
+    
+    <!-- CSV Import/Export Section -->
+    <div class="tab-header" style="margin-top: 30px;">
+      <div class="flex-1">
+        <h2 class="maintenance-header" id="csv-section-title">Import / Export Stations</h2>
+      </div>
+    </div>
+    
+    <div class="backup-section">
+      <div class="csv-section-header" id="csv-export-header">Export</div>
+      <p style="color: #888; font-size: 13px; margin-bottom: 15px;" id="csv-export-desc">Download your stations as CSV files for backup or editing.</p>
+      <div class="tab-header tab-header-no-margin" style="margin-bottom: 20px;">
+        <button class="btn btn-secondary" onclick="exportCsv('fm')">
+          <i class="fa fa-download"></i>
+          <span id="btn-export-fm">FM Stations</span>
+        </button>
+        <button class="btn btn-secondary" onclick="exportCsv('dab')">
+          <i class="fa fa-download"></i>
+          <span id="btn-export-dab">DAB Stations</span>
+        </button>
+      </div>
+      
+      <div class="csv-section-header" id="csv-templates-header">Templates</div>
+      <p style="color: #888; font-size: 13px; margin-bottom: 15px;" id="csv-templates-desc">Download empty templates to create new station lists.</p>
+      <div class="tab-header tab-header-no-margin" style="margin-bottom: 20px;">
+        <button class="btn btn-secondary" onclick="downloadCsvTemplate('fm')">
+          <i class="fa fa-file-text-o"></i>
+          <span id="btn-template-fm">FM Template</span>
+        </button>
+        <button class="btn btn-secondary" onclick="downloadCsvTemplate('dab')">
+          <i class="fa fa-file-text-o"></i>
+          <span id="btn-template-dab">DAB Template</span>
+        </button>
+      </div>
+      
+      <div class="csv-section-header" id="csv-import-header">Import</div>
+      <p style="color: #888; font-size: 13px; margin-bottom: 15px;" id="csv-import-desc">Upload a CSV file to add or update stations.</p>
+      
+      <input type="file" id="csv-file-input" accept=".csv" class="file-input-hidden" onchange="csvFileSelected()">
+      <div class="tab-header tab-header-no-margin" style="margin-bottom: 15px;">
+        <button class="btn btn-secondary" onclick="document.getElementById('csv-file-input').click()">
+          <i class="fa fa-folder-open"></i>
+          <span id="btn-csv-choose">Choose File</span>
+        </button>
+        <span id="csv-filename" class="upload-filename" style="color: #888;"></span>
+      </div>
+      
+      <p style="color: #888; font-size: 13px; margin-bottom: 10px;" id="csv-operation-label">Import Operation:</p>
+      <div class="csv-operation-grid">
+        <label class="csv-operation-item">
+          <input type="radio" name="csv-operation" value="replace">
+          <div>
+            <div class="csv-operation-label" id="csv-op-replace">Replace</div>
+            <div class="csv-operation-desc" id="csv-op-replace-desc">Clear existing stations and import all from CSV</div>
+          </div>
+        </label>
+        <label class="csv-operation-item">
+          <input type="radio" name="csv-operation" value="amend">
+          <div>
+            <div class="csv-operation-label" id="csv-op-amend">Amend</div>
+            <div class="csv-operation-desc" id="csv-op-amend-desc">Update matching stations, keep others unchanged</div>
+          </div>
+        </label>
+        <label class="csv-operation-item">
+          <input type="radio" name="csv-operation" value="extend" checked>
+          <div>
+            <div class="csv-operation-label" id="csv-op-extend">Extend</div>
+            <div class="csv-operation-desc" id="csv-op-extend-desc">Add new stations only, skip duplicates</div>
+          </div>
+        </label>
+        <label class="csv-operation-item">
+          <input type="radio" name="csv-operation" value="remove">
+          <div>
+            <div class="csv-operation-label" id="csv-op-remove">Remove</div>
+            <div class="csv-operation-desc" id="csv-op-remove-desc">Delete stations that match CSV entries</div>
+          </div>
+        </label>
+      </div>
+      
+      <div class="tab-header tab-header-no-margin">
+        <button class="btn btn-secondary" id="btn-csv-validate" onclick="validateCsv()" disabled>
+          <i class="fa fa-check-circle"></i>
+          <span id="btn-csv-validate-text">Validate</span>
+        </button>
+        <button class="btn btn-primary" id="btn-csv-import" onclick="importCsv()" disabled>
+          <i class="fa fa-upload"></i>
+          <span id="btn-csv-import-text">Import Stations</span>
+        </button>
+      </div>
+      
+      <div id="csv-validation-results">
+        <div id="csv-validation-content"></div>
+      </div>
+    </div>
   </div>
   
     <div id="antenna-tab" class="tab-content">
@@ -2029,6 +2209,32 @@
       document.getElementById('th-size').textContent = t('TH_SIZE');
       document.getElementById('th-download').textContent = t('TH_DOWNLOAD');
       document.getElementById('th-delete').textContent = t('TH_DELETE');
+      
+      // CSV Import/Export translations
+      document.getElementById('csv-section-title').textContent = t('CSV_IMPORT_EXPORT');
+      document.getElementById('csv-export-header').textContent = t('CSV_EXPORT_TITLE');
+      document.getElementById('csv-export-desc').textContent = t('CSV_EXPORT_DESC');
+      document.getElementById('btn-export-fm').textContent = t('CSV_EXPORT_FM');
+      document.getElementById('btn-export-dab').textContent = t('CSV_EXPORT_DAB');
+      document.getElementById('csv-templates-header').textContent = t('CSV_TEMPLATES_TITLE');
+      document.getElementById('csv-templates-desc').textContent = t('CSV_TEMPLATES_DESC');
+      document.getElementById('btn-template-fm').textContent = t('CSV_TEMPLATE_FM');
+      document.getElementById('btn-template-dab').textContent = t('CSV_TEMPLATE_DAB');
+      document.getElementById('csv-import-header').textContent = t('CSV_IMPORT_TITLE');
+      document.getElementById('csv-import-desc').textContent = t('CSV_IMPORT_DESC');
+      document.getElementById('btn-csv-choose').textContent = t('CSV_CHOOSE_FILE');
+      document.getElementById('csv-filename').textContent = t('CSV_NO_FILE');
+      document.getElementById('csv-operation-label').textContent = t('CSV_OPERATION') + ':';
+      document.getElementById('csv-op-replace').textContent = t('CSV_OP_REPLACE');
+      document.getElementById('csv-op-replace-desc').textContent = t('CSV_OP_REPLACE_DESC');
+      document.getElementById('csv-op-amend').textContent = t('CSV_OP_AMEND');
+      document.getElementById('csv-op-amend-desc').textContent = t('CSV_OP_AMEND_DESC');
+      document.getElementById('csv-op-extend').textContent = t('CSV_OP_EXTEND');
+      document.getElementById('csv-op-extend-desc').textContent = t('CSV_OP_EXTEND_DESC');
+      document.getElementById('csv-op-remove').textContent = t('CSV_OP_REMOVE');
+      document.getElementById('csv-op-remove-desc').textContent = t('CSV_OP_REMOVE_DESC');
+      document.getElementById('btn-csv-validate-text').textContent = t('CSV_VALIDATE');
+      document.getElementById('btn-csv-import-text').textContent = t('CSV_IMPORT_BTN');
       
       // Antenna Alignment tab translations
       document.getElementById('tab-antenna').textContent = t('TAB_ANTENNA');
@@ -3200,6 +3406,175 @@
       .then(res => res.json())
       .then(() => showToast(t('TOAST_RESTORE_SUCCESS'), 'success'))
       .catch(err => showToast(t('TOAST_RESTORE_FAILED_MSG') + ': ' + err.message, 'error'));
+    }
+    
+    // ========== CSV IMPORT/EXPORT FUNCTIONS ==========
+    
+    function downloadCsvTemplate(type) {
+      window.location.href = '/api/csv/template/' + type;
+    }
+    
+    function exportCsv(type) {
+      window.location.href = '/api/csv/export/' + type;
+    }
+    
+    function csvFileSelected() {
+      var fileInput = document.getElementById('csv-file-input');
+      var filenameSpan = document.getElementById('csv-filename');
+      var validateBtn = document.getElementById('btn-csv-validate');
+      var importBtn = document.getElementById('btn-csv-import');
+      
+      if (fileInput.files.length > 0) {
+        filenameSpan.textContent = fileInput.files[0].name;
+        filenameSpan.style.color = '#e0e0e0';
+        validateBtn.disabled = false;
+        importBtn.disabled = true;  // Require validation first
+        hideCsvValidationResults();
+      } else {
+        filenameSpan.textContent = t('CSV_NO_FILE');
+        filenameSpan.style.color = '#888';
+        validateBtn.disabled = true;
+        importBtn.disabled = true;
+      }
+    }
+    
+    async function validateCsv() {
+      var fileInput = document.getElementById('csv-file-input');
+      if (!fileInput.files.length) {
+        showToast(t('CSV_NO_FILE_SELECTED'), 'warning');
+        return;
+      }
+      
+      var formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      
+      try {
+        var response = await fetch('/api/csv/validate', {
+          method: 'POST',
+          body: formData
+        });
+        
+        var result = await response.json();
+        
+        if (response.ok) {
+          displayCsvValidationResults(result);
+          
+          // Enable import button only if validation passed
+          document.getElementById('btn-csv-import').disabled = !result.valid;
+        } else {
+          showCsvValidationError(result.error || 'Validation failed');
+        }
+      } catch (error) {
+        showCsvValidationError(error.message);
+      }
+    }
+    
+    function displayCsvValidationResults(result) {
+      var box = document.getElementById('csv-validation-results');
+      var content = document.getElementById('csv-validation-content');
+      
+      var html = '<p><strong>' + t('CSV_VALIDATION_FILE') + ':</strong> ' + escapeCsvHtml(result.filename) + '</p>';
+      html += '<p><strong>' + t('CSV_VALIDATION_TYPE') + ':</strong> ' + result.type.toUpperCase() + '</p>';
+      html += '<p><strong>' + t('CSV_VALIDATION_VALID') + ':</strong> ' + result.validCount + ' / ' + result.totalRows + '</p>';
+      
+      if (result.errors.length > 0) {
+        html += '<p><strong>' + t('CSV_VALIDATION_ERRORS') + ':</strong> ' + result.errors.length + '</p>';
+        html += '<ul class="csv-error-list">';
+        result.errors.forEach(function(err) {
+          html += '<li>Row ' + err.line + ': ' + escapeCsvHtml(err.message) + '</li>';
+        });
+        html += '</ul>';
+        box.classList.add('has-errors');
+        box.classList.remove('valid');
+      } else {
+        html += '<p style="color: #54b948;">' + t('CSV_VALIDATION_PASSED') + '</p>';
+        box.classList.remove('has-errors');
+        box.classList.add('valid');
+      }
+      
+      content.innerHTML = html;
+      box.classList.add('visible');
+    }
+    
+    function showCsvValidationError(message) {
+      var box = document.getElementById('csv-validation-results');
+      var content = document.getElementById('csv-validation-content');
+      
+      content.innerHTML = '<p style="color: #e74c3c;">' + escapeCsvHtml(message) + '</p>';
+      box.classList.add('visible', 'has-errors');
+      box.classList.remove('valid');
+    }
+    
+    function hideCsvValidationResults() {
+      var box = document.getElementById('csv-validation-results');
+      box.classList.remove('visible', 'has-errors', 'valid');
+    }
+    
+    async function importCsv() {
+      var fileInput = document.getElementById('csv-file-input');
+      if (!fileInput.files.length) {
+        showToast(t('CSV_NO_FILE_SELECTED'), 'warning');
+        return;
+      }
+      
+      var operation = document.querySelector('input[name="csv-operation"]:checked').value;
+      
+      // Confirm destructive operations
+      if (operation === 'replace') {
+        var confirmed = await showConfirmModal(
+          t('CSV_CONFIRM_REPLACE'),
+          t('CSV_OP_REPLACE_DESC'),
+          'warning'
+        );
+        if (!confirmed) return;
+      } else if (operation === 'remove') {
+        var confirmed = await showConfirmModal(
+          t('CSV_CONFIRM_REMOVE'),
+          t('CSV_OP_REMOVE_DESC'),
+          'warning'
+        );
+        if (!confirmed) return;
+      }
+      
+      var formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      formData.append('operation', operation);
+      
+      try {
+        var response = await fetch('/api/csv/import', {
+          method: 'POST',
+          body: formData
+        });
+        
+        var result = await response.json();
+        
+        if (result.success) {
+          var msg = t('CSV_IMPORT_SUCCESS') + ': ';
+          var parts = [];
+          if (result.imported > 0) parts.push(result.imported + ' imported');
+          if (result.updated > 0) parts.push(result.updated + ' updated');
+          if (result.removed > 0) parts.push(result.removed + ' removed');
+          if (result.skipped > 0) parts.push(result.skipped + ' skipped');
+          msg += parts.join(', ');
+          
+          showToast(msg, 'success');
+          loadStations();  // Refresh station list
+          
+          // Reset file input
+          fileInput.value = '';
+          csvFileSelected();
+        } else {
+          showToast(t('CSV_IMPORT_FAILED') + ': ' + (result.error || 'Unknown error'), 'error');
+        }
+      } catch (error) {
+        showToast(t('CSV_IMPORT_FAILED') + ': ' + error.message, 'error');
+      }
+    }
+    
+    function escapeCsvHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
     
     // Signal quality polling
