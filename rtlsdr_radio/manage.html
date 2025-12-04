@@ -1964,11 +1964,14 @@
           </div>
           <div class="snr-config-row" style="margin-top: 10px;">
             <label id="snr-gain-label">Gain range:</label>
-            <input type="number" id="snr-gain-start" value="-10" min="-10" max="49" style="width: 60px;"> 
+            <input type="number" id="snr-gain-start" value="0" min="-10" max="100" style="width: 60px;"> 
             <span>to</span>
-            <input type="number" id="snr-gain-stop" value="49" min="-10" max="49" style="width: 60px;">
+            <input type="number" id="snr-gain-stop" value="50" min="-10" max="100" style="width: 60px;">
             <span id="snr-step-label">step</span>
             <input type="number" id="snr-gain-step" value="5" min="1" max="20" style="width: 50px;">
+          </div>
+          <div style="margin-top: 5px; font-size: 12px; color: #888;">
+            <span id="snr-gain-note">RTL-SDR Blog V4 (R828D): extend range to 70 for optimal results</span>
           </div>
         </div>
         
@@ -1982,6 +1985,9 @@
         
         <div id="snr-results" class="snr-results" style="display: none;">
           <div id="snr-best-gain" class="snr-best-gain"></div>
+          <div id="snr-guidance" style="margin: 10px 0; padding: 10px; background: #2a2a2a; border-radius: 4px; font-size: 13px;">
+            <span id="snr-guidance-text">Apply this value to DAB Gain in the plugin settings for optimal signal reception. The same value may work for FM Gain too.</span>
+          </div>
           <table id="snr-summary-table" class="snr-table">
             <thead>
               <tr>
@@ -2003,11 +2009,11 @@
             <table class="snr-table">
               <thead>
                 <tr>
-                  <th>Gain</th>
-                  <th>Channel</th>
-                  <th>Peak (dB)</th>
-                  <th>Noise (dB)</th>
-                  <th>SNR (dB)</th>
+                  <th id="snr-detail-th-gain">Gain</th>
+                  <th id="snr-detail-th-channel">Channel</th>
+                  <th id="snr-detail-th-peak">Peak (dB)</th>
+                  <th id="snr-detail-th-noise">Noise (dB)</th>
+                  <th id="snr-detail-th-snr">SNR (dB)</th>
                 </tr>
               </thead>
               <tbody id="snr-details-body"></tbody>
@@ -2468,6 +2474,36 @@
       document.getElementById('validation-advantage-desc').textContent = t('VALIDATION_ADVANTAGE_DESC');
       document.getElementById('channels-label').textContent = t('CHANNELS_LABEL');
       document.getElementById('btn-validate-channels').textContent = t('BTN_VALIDATE_CHANNELS');
+      
+      // Tool 3: SNR Measurement
+      document.getElementById('tool-snr-title').textContent = t('TOOL_SNR_TITLE');
+      document.getElementById('snr-what').textContent = t('SNR_WHAT');
+      document.getElementById('snr-what-desc').textContent = t('SNR_WHAT_DESC');
+      document.getElementById('snr-use').textContent = t('SNR_USE');
+      document.getElementById('snr-use-desc').textContent = t('SNR_USE_DESC');
+      document.getElementById('snr-speed').textContent = t('SNR_SPEED');
+      document.getElementById('snr-speed-desc').textContent = t('SNR_SPEED_DESC');
+      document.getElementById('snr-advantage').textContent = t('SNR_ADVANTAGE');
+      document.getElementById('snr-advantage-desc').textContent = t('SNR_ADVANTAGE_DESC');
+      document.getElementById('snr-channels-label').textContent = t('SNR_CHANNELS_LABEL');
+      document.getElementById('snr-source-scanned').textContent = t('SNR_SOURCE_SCANNED');
+      document.getElementById('snr-source-validated').textContent = t('SNR_SOURCE_VALIDATED');
+      document.getElementById('snr-source-manual').textContent = t('SNR_SOURCE_MANUAL');
+      document.getElementById('snr-gain-label').textContent = t('SNR_GAIN_LABEL');
+      document.getElementById('snr-step-label').textContent = t('SNR_STEP_LABEL');
+      document.getElementById('btn-snr-scan').textContent = t('BTN_SNR_SCAN');
+      document.getElementById('snr-th-gain').textContent = t('SNR_TH_GAIN');
+      document.getElementById('snr-th-min').textContent = t('SNR_TH_MIN');
+      document.getElementById('snr-th-max').textContent = t('SNR_TH_MAX');
+      document.getElementById('snr-th-avg').textContent = t('SNR_TH_AVG');
+      document.getElementById('btn-snr-details').textContent = t('SNR_SHOW_DETAILS');
+      document.getElementById('snr-detail-th-gain').textContent = t('SNR_TH_GAIN');
+      document.getElementById('snr-detail-th-channel').textContent = t('SNR_TH_CHANNEL');
+      document.getElementById('snr-detail-th-peak').textContent = t('SNR_TH_PEAK');
+      document.getElementById('snr-detail-th-noise').textContent = t('SNR_TH_NOISE');
+      document.getElementById('snr-detail-th-snr').textContent = t('SNR_TH_SNR');
+      document.getElementById('snr-guidance-text').textContent = t('SNR_GUIDANCE');
+      document.getElementById('snr-gain-note').textContent = t('SNR_GAIN_NOTE');
       
       // Antenna Alignment Workflow
       document.getElementById('workflow-title').textContent = t('WORKFLOW_TITLE');
