@@ -1051,6 +1051,16 @@ curl -X POST http://volumio.local:3456/api/maintenance/backup/upload \
 
 ## Changelog
 
+### API v1.3.4
+- Added SNR measurement endpoint POST /api/antenna/snr-scan
+  - Measures SNR for specified channels across gain range
+  - Returns SSE stream with progress updates and final results
+  - Response includes per-channel measurements and best gain recommendation
+- New lib/snr.js module with DAB channel frequencies and SNR calculation
+- Fixed extractAndValidateZip to recognize blocklist backup format
+- Blocklist backups now validate correctly when uploading via maintenance UI
+- Added phraseCount to validation info response for blocklist uploads
+
 ### API v1.3.1
 - Added Open Opus API integration for classical music composer portraits
 - New metadata.js exports:

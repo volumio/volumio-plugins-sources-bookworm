@@ -411,9 +411,22 @@ GPL-3.0
 
 Just a Nerd
 
+## Credits
+
+- Wheaten - SNR measurement algorithm (snrd-api_V2.sh), adapted for v1.3.4 gain optimizer tool
+
 ## Version History
 
-### v1.3.3 (Current)
+### v1.3.4 (Current)
+- SNR Measurement Tool (Tool 3) in Antenna Positioning tab
+  - Based on snrd-api_V2.sh by Wheaten
+  - Measures Signal-to-Noise Ratio across gain settings
+  - Auto-detects channels from scanned stations or validation results
+  - Recommends optimal gain for best signal quality
+  - Configurable gain range and step size
+- Fixed blocklist backup restore validation (regression from v1.3.3)
+
+### v1.3.3
 - CSV import/export for offline station editing
 - Download FM and DAB station templates
 - Export existing stations to CSV with timestamps
