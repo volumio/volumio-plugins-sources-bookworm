@@ -413,11 +413,20 @@ Just a Nerd
 
 ## Credits
 
-- Wheaten - SNR measurement algorithm (snrd-api_V2.sh), adapted for v1.3.4 gain optimizer tool
+- Wheaten - SNR measurement algorithm (snrd-api_V2.sh), adapted for gain optimizer tool
 
 ## Version History
 
-### v1.3.4 (Current)
+### v1.3.5 (Current)
+- Complete SNR Measurement Tool implementation
+  - Fixed NaN handling for single channel measurements
+  - Added guidance text explaining how to apply recommended gain value
+  - Added note for RTL-SDR Blog V4 (R828D) users to extend range to 70
+  - Updated default gain range to 0-50 (standard dongles max ~49.6 dB)
+  - Full internationalization for all 11 languages
+- Gain range maximum extended to 100 for V4/extended hardware testing
+
+### v1.3.4
 - SNR Measurement Tool (Tool 3) in Antenna Positioning tab
   - Based on snrd-api_V2.sh by Wheaten
   - Measures Signal-to-Noise Ratio across gain settings

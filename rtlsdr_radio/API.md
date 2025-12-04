@@ -1051,6 +1051,15 @@ curl -X POST http://volumio.local:3456/api/maintenance/backup/upload \
 
 ## Changelog
 
+### API v1.3.5
+- SNR measurement tool enhancements
+  - Fixed NaN handling in parseRtlPowerOutput for malformed CSV data
+  - Invalid power values now filtered during noise floor calculation
+  - Single channel measurements now work correctly
+- Default gain range updated to 0-50 (was -10 to 49)
+- Maximum gain range extended to 100 for V4/extended hardware
+- No new API endpoints (internal improvements only)
+
 ### API v1.3.4
 - Added SNR measurement endpoint POST /api/antenna/snr-scan
   - Measures SNR for specified channels across gain range

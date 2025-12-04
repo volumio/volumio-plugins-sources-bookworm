@@ -110,7 +110,13 @@ function parseRtlPowerOutput(csvOutput, channels, gain) {
     // Extract power values (start at index 6)
     var powerValues = [];
     for (var pi = 6; pi < parts.length; pi++) {
-      powerValues.push(parseFloat(parts[pi]));
+      var pv = parseFloat(parts[pi]);
+      // Handle invalid values - replace with -999 marker
+      if (isNaN(pv) || !isFinite(pv)) {
+        powerValues.push(-999);
+      } else {
+        powerValues.push(pv);
+      }
     }
     var numBins = powerValues.length;
     
@@ -131,28 +137,38 @@ function parseRtlPowerOutput(csvOutput, channels, gain) {
       // Find peak power within channel window
       var peak = -999;
       for (var bi = loIdx; bi <= hiIdx; bi++) {
-        if (powerValues[bi] > peak) {
+        if (powerValues[bi] > -900 && powerValues[bi] > peak) {
           peak = powerValues[bi];
         }
       }
       
-      if (peak <= -999) continue;
+      if (peak <= -900) continue;
       
-      // Calculate noise floor from bins outside channel
+      // Calculate noise floor from bins outside channel (skip invalid values)
       var noiseSum = 0;
       var noiseCount = 0;
       
       for (var ni = 0; ni < loIdx; ni++) {
-        noiseSum += powerValues[ni];
-        noiseCount++;
+        if (powerValues[ni] > -900) {
+          noiseSum += powerValues[ni];
+          noiseCount++;
+        }
       }
       for (var ni2 = hiIdx + 1; ni2 < numBins; ni2++) {
-        noiseSum += powerValues[ni2];
-        noiseCount++;
+        if (powerValues[ni2] > -900) {
+          noiseSum += powerValues[ni2];
+          noiseCount++;
+        }
       }
       
-      var noise = (noiseCount > 0) ? noiseSum / noiseCount : peak;
+      // Skip if we couldn't calculate valid noise floor
+      if (noiseCount === 0) continue;
+      
+      var noise = noiseSum / noiseCount;
       var snr = peak - noise;
+      
+      // Skip if SNR is invalid
+      if (isNaN(snr) || !isFinite(snr)) continue;
       
       results.push({
         channel: ch.name,

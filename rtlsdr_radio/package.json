@@ -1,6 +1,6 @@
 {
   "name": "rtlsdr_radio",
-  "version": "1.3.4",
+  "version": "1.3.5",
   "description": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "has_configuration": true,
     "has_alsa_contribution": true,
     "details": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
-    "changelog": "v1.3.4 - SNR measurement tool, blocklist backup fix"
+    "changelog": "v1.3.5 - Complete SNR measurement tool, V4 gain range support"
   },
   "engines": {
     "node": ">=20",
