@@ -95,6 +95,19 @@ function ControllerRtlsdrRadio(context) {
   self.FM_SAMPLE_RATE = '171k';      // FM sample rate for RDS (multiple of 57kHz)
   self.OUTPUT_SAMPLE_RATE = 48000;   // Output sample rate for Volumio
   self.MANAGEMENT_PORT = 3456;       // Web interface port
+  
+  // CSV Import/Export constants
+  self.CSV_FM_HEADERS = ['frequency', 'name', 'customName', 'favorite', 'hidden', 'notes'];
+  self.CSV_DAB_HEADERS = ['channel', 'exactName', 'name', 'customName', 'ensemble', 'serviceId', 'favorite', 'hidden', 'notes'];
+  self.CSV_MAX_FILE_SIZE = 1048576;  // 1MB
+  self.CSV_FM_FREQ_MAX = 108.0;
+  self.DAB_CHANNELS = [
+    '5A', '5B', '5C', '5D', '6A', '6B', '6C', '6D',
+    '7A', '7B', '7C', '7D', '8A', '8B', '8C', '8D',
+    '9A', '9B', '9C', '9D', '10A', '10B', '10C', '10D',
+    '11A', '11B', '11C', '11D', '12A', '12B', '12C', '12D',
+    '13A', '13B', '13C', '13D', '13E', '13F'
+  ];
 }
 
 ControllerRtlsdrRadio.prototype.onVolumioStart = function() {
@@ -738,6 +751,372 @@ ControllerRtlsdrRadio.prototype.extractAndValidateZip = function(zipPath) {
 };
 
 
+// ========== CSV IMPORT/EXPORT HELPER FUNCTIONS ==========
+
+// Parse a single CSV line handling quoted values with commas
+ControllerRtlsdrRadio.prototype.parseCsvLine = function(line) {
+  var result = [];
+  var current = '';
+  var inQuotes = false;
+  
+  for (var i = 0; i < line.length; i++) {
+    var char = line[i];
+    
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        // Escaped quote
+        current += '"';
+        i++;
+      } else {
+        // Toggle quote mode
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current.trim());
+  
+  return result;
+};
+
+// Escape a value for CSV output
+ControllerRtlsdrRadio.prototype.escapeCsvValue = function(value) {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  var str = String(value);
+  if (str.indexOf(',') !== -1 || str.indexOf('"') !== -1 || str.indexOf('\n') !== -1) {
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+  return str;
+};
+
+// Export stations to CSV string
+ControllerRtlsdrRadio.prototype.exportStationsCsv = function(type) {
+  var self = this;
+  var lines = [];
+  
+  if (type === 'fm') {
+    lines.push(self.CSV_FM_HEADERS.join(','));
+    
+    if (self.stationsDb.fm) {
+      self.stationsDb.fm.forEach(function(station) {
+        if (!station.deleted) {
+          var row = [
+            self.escapeCsvValue(station.frequency),
+            self.escapeCsvValue(station.name || ''),
+            self.escapeCsvValue(station.customName || ''),
+            station.favorite ? 'true' : 'false',
+            station.hidden ? 'true' : 'false',
+            self.escapeCsvValue(station.notes || '')
+          ];
+          lines.push(row.join(','));
+        }
+      });
+    }
+  } else if (type === 'dab') {
+    lines.push(self.CSV_DAB_HEADERS.join(','));
+    
+    if (self.stationsDb.dab) {
+      self.stationsDb.dab.forEach(function(station) {
+        if (!station.deleted) {
+          var row = [
+            self.escapeCsvValue(station.channel),
+            self.escapeCsvValue(station.exactName),
+            self.escapeCsvValue(station.name || ''),
+            self.escapeCsvValue(station.customName || ''),
+            self.escapeCsvValue(station.ensemble || ''),
+            self.escapeCsvValue(station.serviceId || '0'),
+            station.favorite ? 'true' : 'false',
+            station.hidden ? 'true' : 'false',
+            self.escapeCsvValue(station.notes || '')
+          ];
+          lines.push(row.join(','));
+        }
+      });
+    }
+  }
+  
+  return lines.join('\n');
+};
+
+// Validate CSV data and return parsed stations
+ControllerRtlsdrRadio.prototype.validateCsvData = function(content, filename) {
+  var self = this;
+  var lines = content.split(/\r?\n/).filter(function(line) {
+    return line.trim().length > 0;
+  });
+  
+  if (lines.length < 1) {
+    return { valid: false, errors: [{ line: 0, message: 'Empty file' }] };
+  }
+  
+  // Detect type from headers
+  var headerLine = lines[0].toLowerCase();
+  var type = null;
+  
+  if (headerLine.indexOf('frequency') !== -1) {
+    type = 'fm';
+  } else if (headerLine.indexOf('channel') !== -1 && headerLine.indexOf('exactname') !== -1) {
+    type = 'dab';
+  } else {
+    return { valid: false, errors: [{ line: 1, message: 'Invalid headers - cannot detect FM or DAB format' }] };
+  }
+  
+  // Parse header to get column indices
+  var headers = self.parseCsvLine(lines[0]).map(function(h) { return h.toLowerCase(); });
+  var errors = [];
+  var stations = [];
+  
+  // Get FM frequency limits
+  var fmFreqMin = parseFloat(self.config.get('fm_lower_freq', '87.5'));
+  var fmFreqMax = self.CSV_FM_FREQ_MAX;
+  
+  // Process data rows
+  for (var i = 1; i < lines.length; i++) {
+    var lineNum = i + 1;
+    var values = self.parseCsvLine(lines[i]);
+    var station = {};
+    
+    // Map values to headers
+    for (var j = 0; j < headers.length; j++) {
+      station[headers[j]] = values[j] || '';
+    }
+    
+    if (type === 'fm') {
+      // Validate FM station
+      var freq = parseFloat(station.frequency);
+      if (isNaN(freq)) {
+        errors.push({ line: lineNum, message: 'Invalid frequency "' + station.frequency + '"' });
+        continue;
+      }
+      if (freq < fmFreqMin || freq > fmFreqMax) {
+        errors.push({ line: lineNum, message: 'Frequency ' + freq + ' out of range (' + fmFreqMin + '-' + fmFreqMax + ')' });
+        continue;
+      }
+      
+      stations.push({
+        frequency: freq.toFixed(1),
+        name: station.name || 'FM ' + freq.toFixed(1),
+        customName: station.customname || '',
+        favorite: self.parseCsvBoolean(station.favorite),
+        hidden: self.parseCsvBoolean(station.hidden),
+        notes: station.notes || ''
+      });
+    } else if (type === 'dab') {
+      // Validate DAB station
+      var channel = station.channel ? station.channel.toUpperCase() : '';
+      if (!channel || self.DAB_CHANNELS.indexOf(channel) === -1) {
+        errors.push({ line: lineNum, message: 'Invalid channel "' + station.channel + '"' });
+        continue;
+      }
+      if (!station.exactname) {
+        errors.push({ line: lineNum, message: 'Missing exactName (required)' });
+        continue;
+      }
+      
+      stations.push({
+        channel: channel,
+        exactName: station.exactname,  // Preserve case and spaces
+        name: station.name || station.exactname,
+        customName: station.customname || '',
+        ensemble: station.ensemble || '',
+        serviceId: station.serviceid || '0',
+        favorite: self.parseCsvBoolean(station.favorite),
+        hidden: self.parseCsvBoolean(station.hidden),
+        notes: station.notes || ''
+      });
+    }
+  }
+  
+  return {
+    valid: errors.length === 0,
+    type: type,
+    filename: filename,
+    totalRows: lines.length - 1,
+    validCount: stations.length,
+    errors: errors,
+    stations: stations
+  };
+};
+
+// Parse boolean from CSV value
+ControllerRtlsdrRadio.prototype.parseCsvBoolean = function(value) {
+  if (!value) return false;
+  var v = value.toString().toLowerCase().trim();
+  return v === 'true' || v === '1' || v === 'yes';
+};
+
+// Import CSV stations with specified operation
+ControllerRtlsdrRadio.prototype.importCsvStations = function(type, stations, operation) {
+  var self = this;
+  var imported = 0;
+  var updated = 0;
+  var removed = 0;
+  var skipped = 0;
+  
+  if (type === 'fm') {
+    if (operation === 'replace') {
+      // Clear all FM stations and import fresh
+      self.stationsDb.fm = stations.map(function(s) {
+        return {
+          frequency: s.frequency,
+          name: s.name,
+          customName: s.customName,
+          favorite: s.favorite,
+          hidden: s.hidden,
+          deleted: false,
+          notes: s.notes,
+          dateAdded: new Date().toISOString(),
+          playCount: 0,
+          lastPlayed: null
+        };
+      });
+      imported = stations.length;
+    } else {
+      stations.forEach(function(csvStation) {
+        var existingIndex = self.stationsDb.fm.findIndex(function(s) {
+          return parseFloat(s.frequency) === parseFloat(csvStation.frequency);
+        });
+        
+        if (operation === 'amend') {
+          if (existingIndex !== -1) {
+            // Update existing - preserve playCount, lastPlayed, dateAdded
+            var existing = self.stationsDb.fm[existingIndex];
+            existing.name = csvStation.name;
+            existing.customName = csvStation.customName;
+            existing.favorite = csvStation.favorite;
+            existing.hidden = csvStation.hidden;
+            existing.notes = csvStation.notes;
+            existing.deleted = false;
+            updated++;
+          } else {
+            skipped++;
+          }
+        } else if (operation === 'extend') {
+          if (existingIndex === -1) {
+            // Add new station
+            self.stationsDb.fm.push({
+              frequency: csvStation.frequency,
+              name: csvStation.name,
+              customName: csvStation.customName,
+              favorite: csvStation.favorite,
+              hidden: csvStation.hidden,
+              deleted: false,
+              notes: csvStation.notes,
+              dateAdded: new Date().toISOString(),
+              playCount: 0,
+              lastPlayed: null
+            });
+            imported++;
+          } else {
+            skipped++;
+          }
+        } else if (operation === 'remove') {
+          if (existingIndex !== -1) {
+            self.stationsDb.fm[existingIndex].deleted = true;
+            removed++;
+          } else {
+            skipped++;
+          }
+        }
+      });
+    }
+  } else if (type === 'dab') {
+    if (operation === 'replace') {
+      // Clear all DAB stations and import fresh
+      self.stationsDb.dab = stations.map(function(s) {
+        return {
+          channel: s.channel,
+          exactName: s.exactName,
+          name: s.name,
+          customName: s.customName,
+          ensemble: s.ensemble,
+          serviceId: s.serviceId,
+          favorite: s.favorite,
+          hidden: s.hidden,
+          deleted: false,
+          notes: s.notes,
+          dateAdded: new Date().toISOString(),
+          playCount: 0,
+          lastPlayed: null
+        };
+      });
+      imported = stations.length;
+    } else {
+      stations.forEach(function(csvStation) {
+        var existingIndex = self.stationsDb.dab.findIndex(function(s) {
+          return s.channel === csvStation.channel && s.exactName === csvStation.exactName;
+        });
+        
+        if (operation === 'amend') {
+          if (existingIndex !== -1) {
+            // Update existing - preserve playCount, lastPlayed, dateAdded, serviceId
+            var existing = self.stationsDb.dab[existingIndex];
+            existing.name = csvStation.name;
+            existing.customName = csvStation.customName;
+            existing.ensemble = csvStation.ensemble;
+            existing.favorite = csvStation.favorite;
+            existing.hidden = csvStation.hidden;
+            existing.notes = csvStation.notes;
+            existing.deleted = false;
+            updated++;
+          } else {
+            skipped++;
+          }
+        } else if (operation === 'extend') {
+          if (existingIndex === -1) {
+            // Add new station
+            self.stationsDb.dab.push({
+              channel: csvStation.channel,
+              exactName: csvStation.exactName,
+              name: csvStation.name,
+              customName: csvStation.customName,
+              ensemble: csvStation.ensemble,
+              serviceId: csvStation.serviceId,
+              favorite: csvStation.favorite,
+              hidden: csvStation.hidden,
+              deleted: false,
+              notes: csvStation.notes,
+              dateAdded: new Date().toISOString(),
+              playCount: 0,
+              lastPlayed: null
+            });
+            imported++;
+          } else {
+            skipped++;
+          }
+        } else if (operation === 'remove') {
+          if (existingIndex !== -1) {
+            self.stationsDb.dab[existingIndex].deleted = true;
+            removed++;
+          } else {
+            skipped++;
+          }
+        }
+      });
+    }
+  }
+  
+  // Save changes
+  self.saveStations();
+  
+  return {
+    success: true,
+    type: type,
+    operation: operation,
+    imported: imported,
+    updated: updated,
+    removed: removed,
+    skipped: skipped
+  };
+};
+
+
 // ===============================
 // STATION MANAGEMENT WEB SERVER
 // ===============================
@@ -1170,6 +1549,104 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
             fs.removeSync(zipPath);
             res.status(400).json({ error: e.toString() });
           });
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    // ========== CSV IMPORT/EXPORT ENDPOINTS ==========
+    
+    // Download FM template
+    self.expressApp.get('/api/csv/template/fm', function(req, res) {
+      var content = self.CSV_FM_HEADERS.join(',') + '\n';
+      content += '94.9,Example FM,My Radio,false,false,Optional notes\n';
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename="fm_template.csv"');
+      res.send(content);
+    });
+    
+    // Download DAB template
+    self.expressApp.get('/api/csv/template/dab', function(req, res) {
+      var content = self.CSV_DAB_HEADERS.join(',') + '\n';
+      content += '12C,BBC Radio 1,BBC Radio 1,,London 1,0,true,false,Optional notes\n';
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename="dab_template.csv"');
+      res.send(content);
+    });
+    
+    // Export FM stations
+    self.expressApp.get('/api/csv/export/fm', function(req, res) {
+      try {
+        var content = self.exportStationsCsv('fm');
+        var timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="stations_fm_' + timestamp + '.csv"');
+        res.send(content);
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    // Export DAB stations
+    self.expressApp.get('/api/csv/export/dab', function(req, res) {
+      try {
+        var content = self.exportStationsCsv('dab');
+        var timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="stations_dab_' + timestamp + '.csv"');
+        res.send(content);
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    // Validate CSV file
+    self.expressApp.post('/api/csv/validate', upload.single('file'), function(req, res) {
+      try {
+        if (!req.file) {
+          res.status(400).json({ error: 'No file uploaded' });
+          return;
+        }
+        
+        var content = fs.readFileSync(req.file.path, 'utf8');
+        fs.removeSync(req.file.path);
+        
+        if (content.length > self.CSV_MAX_FILE_SIZE) {
+          res.status(400).json({ error: 'File too large (max 1MB)' });
+          return;
+        }
+        
+        var result = self.validateCsvData(content, req.file.originalname);
+        res.json(result);
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    // Import CSV file
+    self.expressApp.post('/api/csv/import', upload.single('file'), function(req, res) {
+      try {
+        if (!req.file) {
+          res.status(400).json({ error: 'No file uploaded' });
+          return;
+        }
+        
+        var content = fs.readFileSync(req.file.path, 'utf8');
+        fs.removeSync(req.file.path);
+        
+        var operation = req.body.operation || 'extend';
+        var validation = self.validateCsvData(content, req.file.originalname);
+        
+        if (!validation.valid) {
+          res.status(400).json({ 
+            error: 'Validation failed', 
+            errors: validation.errors 
+          });
+          return;
+        }
+        
+        var result = self.importCsvStations(validation.type, validation.stations, operation);
+        res.json(result);
       } catch (e) {
         res.status(500).json({ error: e.toString() });
       }
