@@ -1319,6 +1319,96 @@
       color: #ccc;
     }
     
+    /* SNR Measurement Tool styles */
+    .snr-config {
+      background: #1c1c1c;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .snr-config-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .snr-config-row label {
+      color: #54b948;
+      font-weight: bold;
+      min-width: 80px;
+    }
+    
+    .snr-config-row select,
+    .snr-config-row input[type="number"] {
+      background: #282828;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      color: #e0e0e0;
+      padding: 6px 10px;
+    }
+    
+    .snr-config-row span {
+      color: #999;
+    }
+    
+    .snr-results {
+      background: #1c1c1c;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+    
+    .snr-best-gain {
+      background: #282828;
+      border: 2px solid #54b948;
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 15px;
+      text-align: center;
+      font-size: 16px;
+    }
+    
+    .snr-best-gain strong {
+      color: #54b948;
+      font-size: 24px;
+    }
+    
+    .snr-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    .snr-table th,
+    .snr-table td {
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid #404040;
+    }
+    
+    .snr-table th {
+      background: #282828;
+      color: #54b948;
+      font-weight: bold;
+    }
+    
+    .snr-table td {
+      color: #e0e0e0;
+    }
+    
+    .snr-table tr:hover td {
+      background: #282828;
+    }
+    
+    .snr-table tr.best-row td {
+      background: rgba(84, 185, 72, 0.2);
+      font-weight: bold;
+    }
+    
     .workflow-guide {
       background: #1c1c1c;
       border: 1px solid #404040;
@@ -1811,6 +1901,119 @@
         </div>
         
         <div id="channel-results" class="channel-results"></div>
+      </div>
+      
+      <!-- Tool 3: SNR Measurement -->
+      <div class="antenna-tool-section">
+        <h4 id="tool-snr-title">Tool 3: SNR Measurement (Gain Optimizer)</h4>
+        <div class="antenna-tool-box">
+          <p><strong id="snr-what">What it shows:</strong> <span id="snr-what-desc">Signal-to-Noise Ratio for each channel across different gain settings</span></p>
+          <p><strong id="snr-use">Use when:</strong> <span id="snr-use-desc">Finding optimal gain setting for your location and antenna setup</span></p>
+          <p><strong id="snr-speed">Speed:</strong> <span id="snr-speed-desc">2-3 seconds per gain step (total time depends on gain range)</span></p>
+          <p><strong id="snr-advantage">Advantage:</strong> <span id="snr-advantage-desc">Automatically determines best gain for maximum signal quality</span></p>
+        </div>
+        
+        <div class="snr-config">
+          <div class="snr-config-row">
+            <label id="snr-channels-label">Channels:</label>
+            <select id="snr-channel-source" onchange="updateSnrChannelSource()">
+              <option value="scanned" id="snr-source-scanned">Use scanned DAB stations</option>
+              <option value="validated" id="snr-source-validated">Use validated channels (from Tool 2)</option>
+              <option value="manual" id="snr-source-manual">Select manually</option>
+            </select>
+          </div>
+          <div id="snr-manual-channels" class="channel-grid" style="display: none; margin-top: 10px;">
+            <label><input type="checkbox" class="snr-channel-checkbox" value="5A"> 5A</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="5B"> 5B</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="5C"> 5C</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="5D"> 5D</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="6A"> 6A</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="6B"> 6B</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="6C"> 6C</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="6D"> 6D</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="7A"> 7A</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="7B"> 7B</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="7C"> 7C</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="7D"> 7D</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="8A"> 8A</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="8B"> 8B</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="8C"> 8C</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="8D"> 8D</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="9A"> 9A</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="9B"> 9B</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="9C"> 9C</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="9D"> 9D</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="10A"> 10A</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="10B"> 10B</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="10C"> 10C</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="10D"> 10D</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="11A"> 11A</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="11B"> 11B</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="11C"> 11C</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="11D"> 11D</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="12A"> 12A</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="12B"> 12B</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="12C"> 12C</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="12D"> 12D</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="13A"> 13A</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="13B"> 13B</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="13C"> 13C</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="13D"> 13D</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="13E"> 13E</label>
+            <label><input type="checkbox" class="snr-channel-checkbox" value="13F"> 13F</label>
+          </div>
+          <div class="snr-config-row" style="margin-top: 10px;">
+            <label id="snr-gain-label">Gain range:</label>
+            <input type="number" id="snr-gain-start" value="-10" min="-10" max="49" style="width: 60px;"> 
+            <span>to</span>
+            <input type="number" id="snr-gain-stop" value="49" min="-10" max="49" style="width: 60px;">
+            <span id="snr-step-label">step</span>
+            <input type="number" id="snr-gain-step" value="5" min="1" max="20" style="width: 50px;">
+          </div>
+        </div>
+        
+        <div class="tab-header tab-header-no-margin">
+          <button class="btn btn-primary" onclick="runSnrScan()">
+            <i class="fa fa-sliders"></i>
+            <span id="btn-snr-scan">Measure SNR</span>
+          </button>
+          <span class="scan-status" id="snr-status"></span>
+        </div>
+        
+        <div id="snr-results" class="snr-results" style="display: none;">
+          <div id="snr-best-gain" class="snr-best-gain"></div>
+          <table id="snr-summary-table" class="snr-table">
+            <thead>
+              <tr>
+                <th id="snr-th-gain">Gain</th>
+                <th id="snr-th-min">Min SNR</th>
+                <th id="snr-th-max">Max SNR</th>
+                <th id="snr-th-avg">Avg SNR</th>
+              </tr>
+            </thead>
+            <tbody id="snr-summary-body"></tbody>
+          </table>
+          <div id="snr-details-toggle" style="margin-top: 10px;">
+            <button class="btn btn-secondary" onclick="toggleSnrDetails()">
+              <i class="fa fa-list"></i>
+              <span id="btn-snr-details">Show Details</span>
+            </button>
+          </div>
+          <div id="snr-details" style="display: none; margin-top: 10px;">
+            <table class="snr-table">
+              <thead>
+                <tr>
+                  <th>Gain</th>
+                  <th>Channel</th>
+                  <th>Peak (dB)</th>
+                  <th>Noise (dB)</th>
+                  <th>SNR (dB)</th>
+                </tr>
+              </thead>
+              <tbody id="snr-details-body"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
       
       <!-- Workflow Guide -->
@@ -4117,6 +4320,262 @@
       
       resultsEl.appendChild(div);
     });
+  }
+  
+  // ===== SNR MEASUREMENT TOOL FUNCTIONS =====
+  
+  // Store validated channels for SNR tool
+  var validatedChannels = [];
+  var snrMeasurements = [];
+  
+  function updateSnrChannelSource() {
+    const source = document.getElementById('snr-channel-source').value;
+    const manualGrid = document.getElementById('snr-manual-channels');
+    
+    if (source === 'manual') {
+      manualGrid.style.display = 'grid';
+    } else {
+      manualGrid.style.display = 'none';
+    }
+  }
+  
+  function getSnrChannels() {
+    const source = document.getElementById('snr-channel-source').value;
+    
+    if (source === 'manual') {
+      const checkboxes = document.querySelectorAll('.snr-channel-checkbox:checked');
+      return Array.from(checkboxes).map(cb => cb.value);
+    } else if (source === 'validated') {
+      // Get channels from validation results
+      const resultsEl = document.getElementById('channel-results');
+      const results = resultsEl.querySelectorAll('.channel-result');
+      const channels = [];
+      results.forEach(r => {
+        const name = r.querySelector('.channel-result-name');
+        const fill = r.querySelector('.channel-result-fill');
+        // Only include channels that were detected (not 'none' or 'error')
+        if (name && fill && !fill.classList.contains('none') && !fill.classList.contains('error')) {
+          channels.push(name.textContent);
+        }
+      });
+      return channels;
+    } else {
+      // Use scanned stations - get unique channels from DAB stations
+      return getScannedDabChannels();
+    }
+  }
+  
+  function getScannedDabChannels() {
+    // Extract unique channels from loaded DAB stations
+    const channels = new Set();
+    if (typeof dabStations !== 'undefined' && dabStations.length > 0) {
+      dabStations.forEach(s => {
+        if (s.channel && !s.deleted) {
+          channels.add(s.channel.toUpperCase());
+        }
+      });
+    }
+    return Array.from(channels).sort();
+  }
+  
+  function runSnrScan() {
+    const channels = getSnrChannels();
+    
+    if (channels.length === 0) {
+      const source = document.getElementById('snr-channel-source').value;
+      if (source === 'scanned') {
+        showToast(t('SNR_NO_SCANNED_CHANNELS') || 'No scanned DAB channels found. Run a DAB scan first.', 'warning');
+      } else if (source === 'validated') {
+        showToast(t('SNR_NO_VALIDATED_CHANNELS') || 'No validated channels found. Run Channel Validation (Tool 2) first.', 'warning');
+      } else {
+        showToast(t('SELECT_CHANNELS') || 'Please select channels', 'warning');
+      }
+      return;
+    }
+    
+    const gainStart = parseInt(document.getElementById('snr-gain-start').value, 10);
+    const gainStop = parseInt(document.getElementById('snr-gain-stop').value, 10);
+    const gainStep = parseInt(document.getElementById('snr-gain-step').value, 10);
+    
+    if (gainStart > gainStop) {
+      showToast(t('SNR_INVALID_RANGE') || 'Invalid gain range', 'warning');
+      return;
+    }
+    
+    const statusEl = document.getElementById('snr-status');
+    const resultsEl = document.getElementById('snr-results');
+    const btn = document.querySelector('button[onclick="runSnrScan()"]');
+    
+    if (btn) btn.disabled = true;
+    resultsEl.style.display = 'none';
+    snrMeasurements = [];
+    
+    const totalSteps = Math.floor((gainStop - gainStart) / gainStep) + 1;
+    const startTime = Date.now();
+    let currentStep = 0;
+    
+    statusEl.textContent = t('SNR_SCANNING') || 'Measuring SNR... (0/' + totalSteps + ')';
+    statusEl.style.color = '#f39c12';
+    
+    const timerInterval = setInterval(function() {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      statusEl.textContent = (t('SNR_SCANNING') || 'Measuring SNR...') + ' (' + currentStep + '/' + totalSteps + ') ' + elapsed + 's';
+    }, 1000);
+    
+    fetch('/api/antenna/snr-scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        channels: channels,
+        gainStart: gainStart,
+        gainStop: gainStop,
+        gainStep: gainStep,
+        integration: 2
+      })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('HTTP ' + response.status);
+      }
+      
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      
+      function processChunk() {
+        reader.read().then(({ done, value }) => {
+          if (done) {
+            clearInterval(timerInterval);
+            if (btn) btn.disabled = false;
+            return;
+          }
+          
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+          
+          lines.forEach(line => {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.substring(6));
+                
+                if (data.status === 'started') {
+                  // Initial message
+                } else if (data.status === 'progress') {
+                  currentStep = data.progress;
+                  // Collect measurements
+                  if (data.results) {
+                    data.results.forEach(r => snrMeasurements.push(r));
+                  }
+                } else if (data.status === 'complete') {
+                  clearInterval(timerInterval);
+                  if (btn) btn.disabled = false;
+                  
+                  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                  statusEl.textContent = (t('SNR_COMPLETE') || 'SNR measurement complete') + ' (' + elapsed + 's)';
+                  statusEl.style.color = '#54b948';
+                  
+                  displaySnrResults(data);
+                  showToast((t('SNR_COMPLETE') || 'SNR measurement complete') + ' (' + elapsed + 's)', 'success');
+                } else if (data.status === 'error') {
+                  clearInterval(timerInterval);
+                  if (btn) btn.disabled = false;
+                  statusEl.textContent = t('SNR_FAILED') || 'SNR measurement failed';
+                  statusEl.style.color = '#e74c3c';
+                  showToast((t('SNR_FAILED') || 'SNR measurement failed') + ': ' + data.error, 'error');
+                }
+              } catch (e) {
+                console.error('Failed to parse SNR SSE data:', e);
+              }
+            }
+          });
+          
+          processChunk();
+        }).catch(err => {
+          clearInterval(timerInterval);
+          if (btn) btn.disabled = false;
+          statusEl.textContent = t('SNR_FAILED') || 'SNR measurement failed';
+          statusEl.style.color = '#e74c3c';
+          showToast((t('SNR_FAILED') || 'SNR measurement failed') + ': ' + err.toString(), 'error');
+        });
+      }
+      
+      processChunk();
+    })
+    .catch(err => {
+      clearInterval(timerInterval);
+      if (btn) btn.disabled = false;
+      statusEl.textContent = t('SNR_FAILED') || 'SNR measurement failed';
+      statusEl.style.color = '#e74c3c';
+      showToast((t('SNR_FAILED') || 'SNR measurement failed') + ': ' + err.toString(), 'error');
+    });
+  }
+  
+  function displaySnrResults(data) {
+    const resultsEl = document.getElementById('snr-results');
+    const bestGainEl = document.getElementById('snr-best-gain');
+    const summaryBody = document.getElementById('snr-summary-body');
+    const detailsBody = document.getElementById('snr-details-body');
+    
+    resultsEl.style.display = 'block';
+    
+    // Display best gain recommendation
+    if (data.summary && data.summary.bestGain !== undefined) {
+      bestGainEl.innerHTML = (t('SNR_BEST_GAIN') || 'Recommended Gain') + ': <strong>' + data.summary.bestGain + '</strong> ' +
+                            '(' + (t('SNR_AVG') || 'Avg SNR') + ': ' + data.summary.bestAvgSnr + ' dB)';
+    }
+    
+    // Display summary table
+    summaryBody.innerHTML = '';
+    if (data.summary && data.summary.byGain) {
+      data.summary.byGain.forEach(g => {
+        const tr = document.createElement('tr');
+        if (g.gain === data.summary.bestGain) {
+          tr.className = 'best-row';
+        }
+        tr.innerHTML = '<td>' + g.gain + '</td>' +
+                      '<td>' + g.minSnr.toFixed(2) + '</td>' +
+                      '<td>' + g.maxSnr.toFixed(2) + '</td>' +
+                      '<td>' + g.avgSnr.toFixed(2) + '</td>';
+        summaryBody.appendChild(tr);
+      });
+    }
+    
+    // Display detailed measurements
+    detailsBody.innerHTML = '';
+    if (data.measurements) {
+      // Sort by gain, then channel
+      const sorted = data.measurements.slice().sort((a, b) => {
+        if (a.gain !== b.gain) return a.gain - b.gain;
+        return a.channel.localeCompare(b.channel);
+      });
+      
+      sorted.forEach(m => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + m.gain + '</td>' +
+                      '<td>' + m.channel + '</td>' +
+                      '<td>' + m.peak.toFixed(2) + '</td>' +
+                      '<td>' + m.noise.toFixed(2) + '</td>' +
+                      '<td>' + m.snr.toFixed(2) + '</td>';
+        detailsBody.appendChild(tr);
+      });
+    }
+    
+    // Hide details by default
+    document.getElementById('snr-details').style.display = 'none';
+  }
+  
+  function toggleSnrDetails() {
+    const details = document.getElementById('snr-details');
+    const btn = document.querySelector('button[onclick="toggleSnrDetails()"]');
+    
+    if (details.style.display === 'none') {
+      details.style.display = 'block';
+      if (btn) btn.innerHTML = '<i class="fa fa-list"></i> ' + (t('SNR_HIDE_DETAILS') || 'Hide Details');
+    } else {
+      details.style.display = 'none';
+      if (btn) btn.innerHTML = '<i class="fa fa-list"></i> ' + (t('SNR_SHOW_DETAILS') || 'Show Details');
+    }
   }
   </script>
 </body>

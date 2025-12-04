@@ -730,6 +730,10 @@ ControllerRtlsdrRadio.prototype.extractAndValidateZip = function(zipPath) {
     } else if (data.fm_gain !== undefined || data.dab_gain !== undefined) {
       isValid = true;
       info.type = 'config';
+    } else if (Array.isArray(data.phrases)) {
+      isValid = true;
+      info.type = 'blocklist';
+      info.phraseCount = data.phrases.length;
     }
     
     if (isValid) {
@@ -1911,6 +1915,89 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
         }
         
         // Initial call is made in setTimeout above
+        
+      } catch (e) {
+        res.status(500).json({ error: e.toString() });
+      }
+    });
+    
+    // Antenna alignment tool - SNR measurement across gain settings
+    self.expressApp.post('/api/antenna/snr-scan', function(req, res) {
+      try {
+        var channels = req.body.channels;
+        if (!channels || !Array.isArray(channels) || channels.length === 0) {
+          res.status(400).json({ error: 'Channels array required' });
+          return;
+        }
+        
+        var gainStart = (req.body.gainStart !== undefined) ? parseInt(req.body.gainStart, 10) : -10;
+        var gainStop = (req.body.gainStop !== undefined) ? parseInt(req.body.gainStop, 10) : 49;
+        var gainStep = (req.body.gainStep !== undefined) ? parseInt(req.body.gainStep, 10) : 5;
+        var integration = req.body.integration || 2;
+        
+        // Stop any current playback to free the tuner
+        self.stopDecoder();
+        
+        // Notify Volumio that playback has paused
+        self.setDeviceState('idle');
+        var currentState = self.commandRouter.stateMachine.getState();
+        currentState.status = 'pause';
+        self.commandRouter.servicePushState(currentState, 'rtlsdr_radio');
+        self.commandRouter.stateMachine.setConsumeUpdateService('');
+        
+        // Set up Server-Sent Events for progress updates
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no');
+        res.flushHeaders();
+        
+        // Send initial status
+        res.write('data: ' + JSON.stringify({ 
+          status: 'started',
+          channels: channels,
+          gainRange: { start: gainStart, stop: gainStop, step: gainStep }
+        }) + '\n\n');
+        
+        var snrModule = require('./lib/snr');
+        
+        // Delay to allow device to release
+        setTimeout(function() {
+          snrModule.runSnrScan({
+            channels: channels,
+            gainStart: gainStart,
+            gainStop: gainStop,
+            gainStep: gainStep,
+            integration: integration,
+            logger: self.logger,
+            onProgress: function(gain, results, current, total) {
+              res.write('data: ' + JSON.stringify({
+                status: 'progress',
+                gain: gain,
+                results: results,
+                progress: current,
+                total: total
+              }) + '\n\n');
+            }
+          })
+          .then(function(data) {
+            res.write('data: ' + JSON.stringify({
+              status: 'complete',
+              measurements: data.measurements,
+              summary: data.summary,
+              channels: data.channels,
+              timestamp: data.timestamp
+            }) + '\n\n');
+            res.end();
+          })
+          .fail(function(err) {
+            res.write('data: ' + JSON.stringify({
+              status: 'error',
+              error: err.toString()
+            }) + '\n\n');
+            res.end();
+          });
+        }, self.USB_RESET_DELAY);
         
       } catch (e) {
         res.status(500).json({ error: e.toString() });
