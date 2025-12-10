@@ -76,11 +76,11 @@ Pin 6  (GND)     ──────── Pin 4 (GND)
 
 1. Manual Plugin Installation
    - download lcd_backlight.zip from download section , or from github
-   - unzip downladed zip file, to the lcd_backlight directory and run following comands from shell 
-      `cd ../lcd_backlight`
-      `sudo sudo chmod +x install.sh`
-      `sudo ./install.sh`
-      `volumio refresh`
+   - unzip downladed zip file, to the lcd_backlight directory and run following comands from shell
+     `cd ../lcd_backlight`
+     `sudo sudo chmod +x install.sh`
+     `sudo ./install.sh`
+     `volumio refresh`
    - The plugin will appear among the installed plugins.
 ![Volumio Plugin install screen](images/volumio_plugins.png)
 
