@@ -28,8 +28,12 @@ if [ -n "$BACKLIGHT_PATH" ]; then
 fi
 
 # Remove config files
-echo "Removing systemd service..."
+echo "Removing config files..."
 sudo rm -rf /etc/lcd_backlight
+
+echo "Removing Volumio plugin data files in /data/plugins/system_hardware/lcd_backlight..."
+sudo rm -rf /data/plugins/system_hardware/lcd_backlight 2>/dev/null || true
+
 
 
 echo "Uninstallation complete!"
