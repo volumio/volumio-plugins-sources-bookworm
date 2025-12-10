@@ -29,7 +29,7 @@ fi
 
 # Remove config files
 echo "Removing systemd service..."
-sudo rm -f /etc/lcd_backlight
+sudo rm -rf /etc/lcd_backlight
 
 
 echo "Uninstallation complete!"
