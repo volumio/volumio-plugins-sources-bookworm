@@ -3370,6 +3370,7 @@
         "data": [
           "enabled",
           "waitTime",
+          "showClock",
           "showLocation",
           "showWeather",
           "mainAlignment",
@@ -3460,6 +3461,12 @@
           "doc": "TRANSLATE.NOW_PLAYING_DOC_IDLE_SCREEN_WAIT_TIME",
           "label": "TRANSLATE.NOW_PLAYING_WAIT_TIME",
           "value": 30
+        },
+        {
+          "id": "showClock",
+          "element": "switch",
+          "label": "TRANSLATE.NOW_PLAYING_SHOW_CLOCK",
+          "value": true
         },
         {
           "id": "showLocation",
