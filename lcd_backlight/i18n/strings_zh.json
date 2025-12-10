@@ -1,0 +1,26 @@
+{
+  "PLUGIN_NAME": "LCD背光控制",
+  "PLUGIN_CONFIGURATION": "LCD背光配置",
+  
+  "GENERAL_SETTINGS": "常规设置",
+  "ENABLED": "启用自动亮度",
+  "ENABLED_DOC": "根据VEML7700环境光传感器启用自动背光控制",
+  "MEASUREMENT_INTERVAL": "测量间隔(秒)",
+  "MEASUREMENT_INTERVAL_DOC": "光传感器读取之间的时间(0.1 - 10秒)",
+  
+  "BACKLIGHT_SETTINGS": "背光设置",
+  "MIN_BACKLIGHT": "最低亮度",
+  "MIN_BACKLIGHT_DOC": "显示器最低亮度级别(0-255)。显示器永远不会比此值更暗。",
+  "MAX_BACKLIGHT": "最高亮度",
+  "MAX_BACKLIGHT_DOC": "显示器最高亮度级别(0-255)。显示器永远不会比此值更亮。",
+  
+  "SENSOR_SETTINGS": "传感器设置",
+  "LUX_MULTIPLIER": "光照度乘数",
+  "LUX_MULTIPLIER_DOC": "VEML7700传感器的校准乘数(0.01 - 10)。增加以获得更亮的响应,减少以获得更暗的响应。",
+  "SMOOTHING_FACTOR": "平滑因子",
+  "SMOOTHING_FACTOR_DOC": "亮度过渡平滑度(0.0 - 1.0)。较低=较慢/较平滑的过渡,较高=较快/响应更快。",
+  
+  "SAVE": "保存配置",
+  "CONFIG_SAVED": "配置已成功保存。服务将自动重新加载设置。",
+  "CONFIG_SAVE_ERROR": "保存配置时出错"
+}

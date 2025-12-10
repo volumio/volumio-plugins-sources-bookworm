@@ -1,0 +1,26 @@
+{
+  "PLUGIN_NAME": "LCD-bakgrundsbelysning kontroll",
+  "PLUGIN_CONFIGURATION": "LCD-bakgrundsbelysning konfiguration",
+  
+  "GENERAL_SETTINGS": "Allmänna inställningar",
+  "ENABLED": "Aktivera automatisk ljusstyrka",
+  "ENABLED_DOC": "Aktivera automatisk bakgrundsbelysningskontroll baserad på VEML7700 omgivningsljussensor",
+  "MEASUREMENT_INTERVAL": "Mätintervall (sekunder)",
+  "MEASUREMENT_INTERVAL_DOC": "Tid mellan ljussensoravläsningar (0,1 - 10 sekunder)",
+  
+  "BACKLIGHT_SETTINGS": "Bakgrundsbelysning inställningar",
+  "MIN_BACKLIGHT": "Minsta ljusstyrka",
+  "MIN_BACKLIGHT_DOC": "Minsta displayljusstyrksnivå (0-255). Displayen blir aldrig mörkare än detta värde.",
+  "MAX_BACKLIGHT": "Högsta ljusstyrka",
+  "MAX_BACKLIGHT_DOC": "Högsta displayljusstyrksnivå (0-255). Displayen blir aldrig ljusare än detta värde.",
+  
+  "SENSOR_SETTINGS": "Sensorinställningar",
+  "LUX_MULTIPLIER": "Lux-multiplikator",
+  "LUX_MULTIPLIER_DOC": "Kalibreringsmultiplikator för VEML7700-sensor (0,01 - 10). Öka för ljusare respons, minska för mörkare respons.",
+  "SMOOTHING_FACTOR": "Utjämningsfaktor",
+  "SMOOTHING_FACTOR_DOC": "Ljusstyrkövergångens jämnhet (0,0 - 1,0). Lägre = långsammare/jämnare övergångar, Högre = snabbare/mer responsiv.",
+  
+  "SAVE": "Spara konfiguration",
+  "CONFIG_SAVED": "Konfigurationen sparades. Tjänsten kommer automatiskt att ladda om inställningarna.",
+  "CONFIG_SAVE_ERROR": "Fel vid sparande av konfiguration"
+}

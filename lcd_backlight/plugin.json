@@ -1,0 +1,13 @@
+{
+  "plugin_type": "system_hardware",
+  "plugin_name": "lcd_backlight",
+  "pretty_name": "LCD Backlight Control",
+  "icon": "fa-sun",
+  "author": "lubomirkarlik",
+  "version": "1.0.0",
+  "rolename": "root",
+  "dependencies": [],
+  "screenshots": [],
+  "homepage": "",
+  "published": false
+}

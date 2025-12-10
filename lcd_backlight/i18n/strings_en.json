@@ -1,0 +1,26 @@
+{
+  "PLUGIN_NAME": "LCD Backlight Control",
+  "PLUGIN_CONFIGURATION": "LCD Backlight Configuration",
+  
+  "GENERAL_SETTINGS": "General Settings",
+  "ENABLED": "Enable Automatic Brightness",
+  "ENABLED_DOC": "Enable automatic backlight control based on VEML7700 ambient light sensor",
+  "MEASUREMENT_INTERVAL": "Measurement Interval (seconds)",
+  "MEASUREMENT_INTERVAL_DOC": "Time between light sensor readings (0.1 - 10 seconds)",
+  
+  "BACKLIGHT_SETTINGS": "Backlight Settings",
+  "MIN_BACKLIGHT": "Minimum Brightness",
+  "MIN_BACKLIGHT_DOC": "Minimum display brightness level (0-255). Display will never go darker than this value.",
+  "MAX_BACKLIGHT": "Maximum Brightness",
+  "MAX_BACKLIGHT_DOC": "Maximum display brightness level (0-255). Display will never go brighter than this value.",
+  
+  "SENSOR_SETTINGS": "Sensor Settings",
+  "LUX_MULTIPLIER": "Lux Multiplier",
+  "LUX_MULTIPLIER_DOC": "Calibration multiplier for VEML7700 sensor (0.01 - 10). Increase for brighter response, decrease for darker response.",
+  "SMOOTHING_FACTOR": "Smoothing Factor",
+  "SMOOTHING_FACTOR_DOC": "Brightness transition smoothness (0.0 - 1.0). Lower = slower/smoother transitions, Higher = faster/more responsive.",
+  
+  "SAVE": "Save Configuration",
+  "CONFIG_SAVED": "Configuration saved successfully. Service will reload settings automatically.",
+  "CONFIG_SAVE_ERROR": "Error saving configuration"
+}

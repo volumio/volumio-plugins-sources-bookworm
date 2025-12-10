@@ -1,0 +1,26 @@
+{
+  "PLUGIN_NAME": "LCDバックライト制御",
+  "PLUGIN_CONFIGURATION": "LCDバックライト設定",
+  
+  "GENERAL_SETTINGS": "一般設定",
+  "ENABLED": "自動明るさを有効にする",
+  "ENABLED_DOC": "VEML7700環境光センサーに基づいた自動バックライト制御を有効にする",
+  "MEASUREMENT_INTERVAL": "測定間隔(秒)",
+  "MEASUREMENT_INTERVAL_DOC": "光センサー読み取り間の時間(0.1〜10秒)",
+  
+  "BACKLIGHT_SETTINGS": "バックライト設定",
+  "MIN_BACKLIGHT": "最小輝度",
+  "MIN_BACKLIGHT_DOC": "ディスプレイの最小輝度レベル(0-255)。ディスプレイはこの値より暗くなりません。",
+  "MAX_BACKLIGHT": "最大輝度",
+  "MAX_BACKLIGHT_DOC": "ディスプレイの最大輝度レベル(0-255)。ディスプレイはこの値より明るくなりません。",
+  
+  "SENSOR_SETTINGS": "センサー設定",
+  "LUX_MULTIPLIER": "ルクス乗数",
+  "LUX_MULTIPLIER_DOC": "VEML7700センサーの校正乗数(0.01〜10)。明るい反応にするには増やし、暗い反応にするには減らします。",
+  "SMOOTHING_FACTOR": "スムージング係数",
+  "SMOOTHING_FACTOR_DOC": "輝度遷移の滑らかさ(0.0〜1.0)。低い=遅い/滑らかな遷移、高い=速い/反応的。",
+  
+  "SAVE": "設定を保存",
+  "CONFIG_SAVED": "設定が正常に保存されました。サービスは自動的に設定を再読み込みします。",
+  "CONFIG_SAVE_ERROR": "設定の保存中にエラーが発生しました"
+}

@@ -1,0 +1,26 @@
+{
+  "PLUGIN_NAME": "Ovládání podsvícení LCD",
+  "PLUGIN_CONFIGURATION": "Konfigurace podsvícení LCD",
+  
+  "GENERAL_SETTINGS": "Obecná nastavení",
+  "ENABLED": "Povolit automatický jas",
+  "ENABLED_DOC": "Povolit automatické ovládání podsvícení na základě senzoru okolního světla VEML7700",
+  "MEASUREMENT_INTERVAL": "Interval měření (sekundy)",
+  "MEASUREMENT_INTERVAL_DOC": "Čas mezi odečty světelného senzoru (0,1 - 10 sekund)",
+  
+  "BACKLIGHT_SETTINGS": "Nastavení podsvícení",
+  "MIN_BACKLIGHT": "Minimální jas",
+  "MIN_BACKLIGHT_DOC": "Minimální úroveň jasu displeje (0-255). Displej nebude nikdy tmavší než tato hodnota.",
+  "MAX_BACKLIGHT": "Maximální jas",
+  "MAX_BACKLIGHT_DOC": "Maximální úroveň jasu displeje (0-255). Displej nebude nikdy jasnější než tato hodnota.",
+  
+  "SENSOR_SETTINGS": "Nastavení senzoru",
+  "LUX_MULTIPLIER": "Násobič luxů",
+  "LUX_MULTIPLIER_DOC": "Kalibrační násobič pro senzor VEML7700 (0,01 - 10). Zvyšte pro jasnější odezvu, snižte pro tmavší odezvu.",
+  "SMOOTHING_FACTOR": "Faktor vyhlazování",
+  "SMOOTHING_FACTOR_DOC": "Plynulost přechodu jasu (0,0 - 1,0). Nižší = pomalejší/plynulejší přechody, Vyšší = rychlejší/responzivnější.",
+  
+  "SAVE": "Uložit konfiguraci",
+  "CONFIG_SAVED": "Konfigurace úspěšně uložena. Služba automaticky znovu načte nastavení.",
+  "CONFIG_SAVE_ERROR": "Chyba při ukládání konfigurace"
+}

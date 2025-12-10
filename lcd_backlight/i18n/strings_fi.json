@@ -1,0 +1,26 @@
+{
+  "PLUGIN_NAME": "LCD-taustavalo ohjaus",
+  "PLUGIN_CONFIGURATION": "LCD-taustavalo asetukset",
+  
+  "GENERAL_SETTINGS": "Yleiset asetukset",
+  "ENABLED": "Ota automaattinen kirkkaus käyttöön",
+  "ENABLED_DOC": "Ota automaattinen taustavalo-ohjaus käyttöön VEML7700 ympäristövaloanturin perusteella",
+  "MEASUREMENT_INTERVAL": "Mittausväli (sekuntia)",
+  "MEASUREMENT_INTERVAL_DOC": "Aika valoanturin lukemien välillä (0,1 - 10 sekuntia)",
+  
+  "BACKLIGHT_SETTINGS": "Taustavalo asetukset",
+  "MIN_BACKLIGHT": "Vähimmäiskirkkaus",
+  "MIN_BACKLIGHT_DOC": "Näytön vähimmäiskirkkaus taso (0-255). Näyttö ei koskaan tule tätä arvoa tummemmaksi.",
+  "MAX_BACKLIGHT": "Enimmäiskirkkaus",
+  "MAX_BACKLIGHT_DOC": "Näytön enimmäiskirkkaus taso (0-255). Näyttö ei koskaan tule tätä arvoa kirkkaammaksi.",
+  
+  "SENSOR_SETTINGS": "Anturin asetukset",
+  "LUX_MULTIPLIER": "Lux-kerroin",
+  "LUX_MULTIPLIER_DOC": "Kalibrointikerroin VEML7700 anturille (0,01 - 10). Suurenna kirkkaamman vasteen saamiseksi, pienennä tummemman vasteen saamiseksi.",
+  "SMOOTHING_FACTOR": "Tasoituskerroin",
+  "SMOOTHING_FACTOR_DOC": "Kirkkaussiirtymän tasaisuus (0,0 - 1,0). Pienempi = hitaammat/tasaisemmat siirtymät, Suurempi = nopeammat/herkemmät.",
+  
+  "SAVE": "Tallenna asetukset",
+  "CONFIG_SAVED": "Asetukset tallennettu onnistuneesti. Palvelu lataa asetukset automaattisesti uudelleen.",
+  "CONFIG_SAVE_ERROR": "Virhe asetusten tallentamisessa"
+}

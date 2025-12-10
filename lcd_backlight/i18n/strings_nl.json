@@ -1,0 +1,26 @@
+{
+  "PLUGIN_NAME": "LCD-achtergrondverlichting besturing",
+  "PLUGIN_CONFIGURATION": "LCD-achtergrondverlichting configuratie",
+  
+  "GENERAL_SETTINGS": "Algemene instellingen",
+  "ENABLED": "Automatische helderheid inschakelen",
+  "ENABLED_DOC": "Automatische besturing van achtergrondverlichting op basis van VEML7700 omgevingslichtsensor inschakelen",
+  "MEASUREMENT_INTERVAL": "Meetinterval (seconden)",
+  "MEASUREMENT_INTERVAL_DOC": "Tijd tussen lichtsensormetingen (0,1 - 10 seconden)",
+  
+  "BACKLIGHT_SETTINGS": "Achtergrondverlichting instellingen",
+  "MIN_BACKLIGHT": "Minimale helderheid",
+  "MIN_BACKLIGHT_DOC": "Minimaal displayhelderheidsniveau (0-255). Display wordt nooit donkerder dan deze waarde.",
+  "MAX_BACKLIGHT": "Maximale helderheid",
+  "MAX_BACKLIGHT_DOC": "Maximaal displayhelderheidsniveau (0-255). Display wordt nooit helderder dan deze waarde.",
+  
+  "SENSOR_SETTINGS": "Sensor instellingen",
+  "LUX_MULTIPLIER": "Lux-vermenigvuldiger",
+  "LUX_MULTIPLIER_DOC": "Kalibratievermenigvuldiger voor VEML7700 sensor (0,01 - 10). Verhogen voor helderder reactie, verlagen voor donkerder reactie.",
+  "SMOOTHING_FACTOR": "Afvlakkingsfactor",
+  "SMOOTHING_FACTOR_DOC": "Vloeiendheid van helderheidsovergang (0,0 - 1,0). Lager = langzamer/vloeiender overgangen, Hoger = sneller/responsiever.",
+  
+  "SAVE": "Configuratie opslaan",
+  "CONFIG_SAVED": "Configuratie succesvol opgeslagen. De service zal de instellingen automatisch herladen.",
+  "CONFIG_SAVE_ERROR": "Fout bij opslaan van configuratie"
+}

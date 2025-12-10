@@ -1,0 +1,26 @@
+{
+  "PLUGIN_NAME": "Controllo retroilluminazione LCD",
+  "PLUGIN_CONFIGURATION": "Configurazione retroilluminazione LCD",
+  
+  "GENERAL_SETTINGS": "Impostazioni generali",
+  "ENABLED": "Abilita luminosità automatica",
+  "ENABLED_DOC": "Abilita il controllo automatico della retroilluminazione basato sul sensore di luce ambientale VEML7700",
+  "MEASUREMENT_INTERVAL": "Intervallo di misurazione (secondi)",
+  "MEASUREMENT_INTERVAL_DOC": "Tempo tra le letture del sensore di luce (0,1 - 10 secondi)",
+  
+  "BACKLIGHT_SETTINGS": "Impostazioni retroilluminazione",
+  "MIN_BACKLIGHT": "Luminosità minima",
+  "MIN_BACKLIGHT_DOC": "Livello di luminosità minima del display (0-255). Il display non sarà mai più scuro di questo valore.",
+  "MAX_BACKLIGHT": "Luminosità massima",
+  "MAX_BACKLIGHT_DOC": "Livello di luminosità massima del display (0-255). Il display non sarà mai più luminoso di questo valore.",
+  
+  "SENSOR_SETTINGS": "Impostazioni sensore",
+  "LUX_MULTIPLIER": "Moltiplicatore Lux",
+  "LUX_MULTIPLIER_DOC": "Moltiplicatore di calibrazione per il sensore VEML7700 (0,01 - 10). Aumentare per una risposta più luminosa, diminuire per una risposta più scura.",
+  "SMOOTHING_FACTOR": "Fattore di smoothing",
+  "SMOOTHING_FACTOR_DOC": "Fluidità della transizione di luminosità (0,0 - 1,0). Più basso = transizioni più lente/fluide, Più alto = più veloce/reattivo.",
+  
+  "SAVE": "Salva configurazione",
+  "CONFIG_SAVED": "Configurazione salvata con successo. Il servizio ricaricherà automaticamente le impostazioni.",
+  "CONFIG_SAVE_ERROR": "Errore nel salvataggio della configurazione"
+}

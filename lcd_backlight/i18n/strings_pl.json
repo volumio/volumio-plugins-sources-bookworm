@@ -1,0 +1,26 @@
+{
+  "PLUGIN_NAME": "Sterowanie podświetleniem LCD",
+  "PLUGIN_CONFIGURATION": "Konfiguracja podświetlenia LCD",
+  
+  "GENERAL_SETTINGS": "Ustawienia ogólne",
+  "ENABLED": "Włącz automatyczną jasność",
+  "ENABLED_DOC": "Włącz automatyczne sterowanie podświetleniem na podstawie czujnika światła otoczenia VEML7700",
+  "MEASUREMENT_INTERVAL": "Interwał pomiarowy (sekundy)",
+  "MEASUREMENT_INTERVAL_DOC": "Czas między odczytami czujnika światła (0,1 - 10 sekund)",
+  
+  "BACKLIGHT_SETTINGS": "Ustawienia podświetlenia",
+  "MIN_BACKLIGHT": "Minimalna jasność",
+  "MIN_BACKLIGHT_DOC": "Minimalny poziom jasności wyświetlacza (0-255). Wyświetlacz nigdy nie będzie ciemniejszy niż ta wartość.",
+  "MAX_BACKLIGHT": "Maksymalna jasność",
+  "MAX_BACKLIGHT_DOC": "Maksymalny poziom jasności wyświetlacza (0-255). Wyświetlacz nigdy nie będzie jaśniejszy niż ta wartość.",
+  
+  "SENSOR_SETTINGS": "Ustawienia czujnika",
+  "LUX_MULTIPLIER": "Mnożnik Lux",
+  "LUX_MULTIPLIER_DOC": "Mnożnik kalibracyjny dla czujnika VEML7700 (0,01 - 10). Zwiększ dla jaśniejszej reakcji, zmniejsz dla ciemniejszej reakcji.",
+  "SMOOTHING_FACTOR": "Współczynnik wygładzania",
+  "SMOOTHING_FACTOR_DOC": "Płynność przejścia jasności (0,0 - 1,0). Niższy = wolniejsze/płynniejsze przejścia, Wyższy = szybsze/bardziej responsywne.",
+  
+  "SAVE": "Zapisz konfigurację",
+  "CONFIG_SAVED": "Konfiguracja zapisana pomyślnie. Usługa automatycznie przeładuje ustawienia.",
+  "CONFIG_SAVE_ERROR": "Błąd podczas zapisywania konfiguracji"
+}

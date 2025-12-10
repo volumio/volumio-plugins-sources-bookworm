@@ -1,0 +1,26 @@
+{
+  "PLUGIN_NAME": "LCD háttérvilágítás vezérlés",
+  "PLUGIN_CONFIGURATION": "LCD háttérvilágítás konfiguráció",
+  
+  "GENERAL_SETTINGS": "Általános beállítások",
+  "ENABLED": "Automatikus fényerő engedélyezése",
+  "ENABLED_DOC": "Automatikus háttérvilágítás vezérlés engedélyezése a VEML7700 környezeti fényérzékelő alapján",
+  "MEASUREMENT_INTERVAL": "Mérési intervallum (másodperc)",
+  "MEASUREMENT_INTERVAL_DOC": "Idő a fényérzékelő leolvasások között (0,1 - 10 másodperc)",
+  
+  "BACKLIGHT_SETTINGS": "Háttérvilágítás beállítások",
+  "MIN_BACKLIGHT": "Minimális fényerő",
+  "MIN_BACKLIGHT_DOC": "Kijelző minimális fényerőszintje (0-255). A kijelző soha nem lesz sötétebb ennél az értéknél.",
+  "MAX_BACKLIGHT": "Maximális fényerő",
+  "MAX_BACKLIGHT_DOC": "Kijelző maximális fényerőszintje (0-255). A kijelző soha nem lesz világosabb ennél az értéknél.",
+  
+  "SENSOR_SETTINGS": "Érzékelő beállítások",
+  "LUX_MULTIPLIER": "Lux szorzó",
+  "LUX_MULTIPLIER_DOC": "Kalibrációs szorzó a VEML7700 érzékelőhöz (0,01 - 10). Növelje világosabb válaszhoz, csökkentse sötétebb válaszhoz.",
+  "SMOOTHING_FACTOR": "Simítási tényező",
+  "SMOOTHING_FACTOR_DOC": "Fényerő átmenet simítása (0,0 - 1,0). Alacsonyabb = lassabb/simább átmenetek, Magasabb = gyorsabb/érzékenyebb.",
+  
+  "SAVE": "Konfiguráció mentése",
+  "CONFIG_SAVED": "Konfiguráció sikeresen mentve. A szolgáltatás automatikusan újratölti a beállításokat.",
+  "CONFIG_SAVE_ERROR": "Hiba a konfiguráció mentése során"
+}

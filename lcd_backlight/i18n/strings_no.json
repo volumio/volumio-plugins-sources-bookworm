@@ -1,0 +1,26 @@
+{
+  "PLUGIN_NAME": "LCD-bakgrunnslys kontroll",
+  "PLUGIN_CONFIGURATION": "LCD-bakgrunnslys konfigurasjon",
+  
+  "GENERAL_SETTINGS": "Generelle innstillinger",
+  "ENABLED": "Aktiver automatisk lysstyrke",
+  "ENABLED_DOC": "Aktiver automatisk bakgrunnslys kontroll basert på VEML7700 omgivelses lyssensor",
+  "MEASUREMENT_INTERVAL": "Måleintervall (sekunder)",
+  "MEASUREMENT_INTERVAL_DOC": "Tid mellom lyssensoravlesninger (0,1 - 10 sekunder)",
+  
+  "BACKLIGHT_SETTINGS": "Bakgrunnslys innstillinger",
+  "MIN_BACKLIGHT": "Minimum lysstyrke",
+  "MIN_BACKLIGHT_DOC": "Minimum display lysstyrkennivå (0-255). Displayet vil aldri være mørkere enn denne verdien.",
+  "MAX_BACKLIGHT": "Maksimum lysstyrke",
+  "MAX_BACKLIGHT_DOC": "Maksimum display lysstyrkennivå (0-255). Displayet vil aldri være lysere enn denne verdien.",
+  
+  "SENSOR_SETTINGS": "Sensor innstillinger",
+  "LUX_MULTIPLIER": "Lux-multiplikator",
+  "LUX_MULTIPLIER_DOC": "Kalibreringsmultiplikator for VEML7700 sensor (0,01 - 10). Øk for lysere respons, reduser for mørkere respons.",
+  "SMOOTHING_FACTOR": "Utjevningsfaktor",
+  "SMOOTHING_FACTOR_DOC": "Lysstyrkens overgangs jevnhet (0,0 - 1,0). Lavere = tregere/jevnere overganger, Høyere = raskere/mer responsiv.",
+  
+  "SAVE": "Lagre konfigurasjon",
+  "CONFIG_SAVED": "Konfigurasjon lagret vellykket. Tjenesten vil automatisk laste inn innstillingene på nytt.",
+  "CONFIG_SAVE_ERROR": "Feil ved lagring av konfigurasjon"
+}

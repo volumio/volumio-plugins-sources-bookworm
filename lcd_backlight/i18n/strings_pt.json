@@ -1,0 +1,26 @@
+{
+  "PLUGIN_NAME": "Controle de retroiluminação LCD",
+  "PLUGIN_CONFIGURATION": "Configuração de retroiluminação LCD",
+  
+  "GENERAL_SETTINGS": "Configurações gerais",
+  "ENABLED": "Ativar brilho automático",
+  "ENABLED_DOC": "Ativar controle automático de retroiluminação baseado no sensor de luz ambiente VEML7700",
+  "MEASUREMENT_INTERVAL": "Intervalo de medição (segundos)",
+  "MEASUREMENT_INTERVAL_DOC": "Tempo entre leituras do sensor de luz (0,1 - 10 segundos)",
+  
+  "BACKLIGHT_SETTINGS": "Configurações de retroiluminação",
+  "MIN_BACKLIGHT": "Brilho mínimo",
+  "MIN_BACKLIGHT_DOC": "Nível mínimo de brilho do display (0-255). O display nunca ficará mais escuro que este valor.",
+  "MAX_BACKLIGHT": "Brilho máximo",
+  "MAX_BACKLIGHT_DOC": "Nível máximo de brilho do display (0-255). O display nunca ficará mais brilhante que este valor.",
+  
+  "SENSOR_SETTINGS": "Configurações do sensor",
+  "LUX_MULTIPLIER": "Multiplicador de Lux",
+  "LUX_MULTIPLIER_DOC": "Multiplicador de calibração para o sensor VEML7700 (0,01 - 10). Aumentar para resposta mais brilhante, diminuir para resposta mais escura.",
+  "SMOOTHING_FACTOR": "Fator de suavização",
+  "SMOOTHING_FACTOR_DOC": "Suavidade da transição de brilho (0,0 - 1,0). Menor = transições mais lentas/suaves, Maior = mais rápido/responsivo.",
+  
+  "SAVE": "Salvar configuração",
+  "CONFIG_SAVED": "Configuração salva com sucesso. O serviço recarregará as configurações automaticamente.",
+  "CONFIG_SAVE_ERROR": "Erro ao salvar configuração"
+}

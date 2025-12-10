@@ -1,0 +1,26 @@
+{
+  "PLUGIN_NAME": "LCD 백라이트 제어",
+  "PLUGIN_CONFIGURATION": "LCD 백라이트 구성",
+  
+  "GENERAL_SETTINGS": "일반 설정",
+  "ENABLED": "자동 밝기 활성화",
+  "ENABLED_DOC": "VEML7700 주변광 센서를 기반으로 자동 백라이트 제어 활성화",
+  "MEASUREMENT_INTERVAL": "측정 간격(초)",
+  "MEASUREMENT_INTERVAL_DOC": "광 센서 판독 사이의 시간(0.1 - 10초)",
+  
+  "BACKLIGHT_SETTINGS": "백라이트 설정",
+  "MIN_BACKLIGHT": "최소 밝기",
+  "MIN_BACKLIGHT_DOC": "디스플레이의 최소 밝기 수준(0-255). 디스플레이는 이 값보다 어두워지지 않습니다.",
+  "MAX_BACKLIGHT": "최대 밝기",
+  "MAX_BACKLIGHT_DOC": "디스플레이의 최대 밝기 수준(0-255). 디스플레이는 이 값보다 밝아지지 않습니다.",
+  
+  "SENSOR_SETTINGS": "센서 설정",
+  "LUX_MULTIPLIER": "룩스 승수",
+  "LUX_MULTIPLIER_DOC": "VEML7700 센서용 보정 승수(0.01 - 10). 밝은 반응을 위해 증가, 어두운 반응을 위해 감소.",
+  "SMOOTHING_FACTOR": "스무딩 계수",
+  "SMOOTHING_FACTOR_DOC": "밝기 전환 부드러움(0.0 - 1.0). 낮음 = 느리고/부드러운 전환, 높음 = 빠르고/반응적.",
+  
+  "SAVE": "구성 저장",
+  "CONFIG_SAVED": "구성이 성공적으로 저장되었습니다. 서비스가 자동으로 설정을 다시 로드합니다.",
+  "CONFIG_SAVE_ERROR": "구성 저장 중 오류 발생"
+}

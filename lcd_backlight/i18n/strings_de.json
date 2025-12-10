@@ -1,0 +1,26 @@
+{
+  "PLUGIN_NAME": "LCD-Hintergrundbeleuchtung Steuerung",
+  "PLUGIN_CONFIGURATION": "LCD-Hintergrundbeleuchtung Konfiguration",
+  
+  "GENERAL_SETTINGS": "Allgemeine Einstellungen",
+  "ENABLED": "Automatische Helligkeit aktivieren",
+  "ENABLED_DOC": "Automatische Hintergrundbeleuchtungssteuerung basierend auf VEML7700 Umgebungslichtsensor aktivieren",
+  "MEASUREMENT_INTERVAL": "Messintervall (Sekunden)",
+  "MEASUREMENT_INTERVAL_DOC": "Zeit zwischen Lichtmessungen (0,1 - 10 Sekunden)",
+  
+  "BACKLIGHT_SETTINGS": "Hintergrundbeleuchtung Einstellungen",
+  "MIN_BACKLIGHT": "Minimale Helligkeit",
+  "MIN_BACKLIGHT_DOC": "Minimale Display-Helligkeit (0-255). Display wird nie dunkler als dieser Wert.",
+  "MAX_BACKLIGHT": "Maximale Helligkeit",
+  "MAX_BACKLIGHT_DOC": "Maximale Display-Helligkeit (0-255). Display wird nie heller als dieser Wert.",
+  
+  "SENSOR_SETTINGS": "Sensor Einstellungen",
+  "LUX_MULTIPLIER": "Lux-Multiplikator",
+  "LUX_MULTIPLIER_DOC": "Kalibrierungsmultiplikator für VEML7700 Sensor (0,01 - 10). Erhöhen für hellere Reaktion, verringern für dunklere Reaktion.",
+  "SMOOTHING_FACTOR": "Glättungsfaktor",
+  "SMOOTHING_FACTOR_DOC": "Helligkeitsübergang Glätte (0,0 - 1,0). Niedriger = langsamer/glatter Übergang, Höher = schneller/reaktionsfreudiger.",
+  
+  "SAVE": "Konfiguration speichern",
+  "CONFIG_SAVED": "Konfiguration erfolgreich gespeichert. Der Dienst lädt die Einstellungen automatisch neu.",
+  "CONFIG_SAVE_ERROR": "Fehler beim Speichern der Konfiguration"
+}
