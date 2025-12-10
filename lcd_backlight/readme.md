@@ -80,8 +80,7 @@ Pin 6  (GND)     ──────── Pin 4 (GND)
       cd ../lcd_backlight
       sudo install.sh
       volumio refresh
-   The plugin will appear among the installed plugins.
-volumio_plugins
+   - The plugin will appear among the installed plugins.
 ![Volumio Plugin install screen](images/volumio_plugins.png)
 
 If it does not, it is necessary to delete the file /data/configuration/plugins.json and restart Volumio using the command  volumio vrestart
