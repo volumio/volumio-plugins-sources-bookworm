@@ -74,11 +74,24 @@ Pin 6  (GND)     ──────── Pin 4 (GND)
 
 ## Installation
 
-1. Install the plugin through the Volumio web interface:
+1.Manual Plugin Installation
+   - download lcd_backlight.zip from download section , or from github
+   - unzip downladed zip file, to the lcd_backlight directory and run following comands from shell 
+      cd ../lcd_backlight
+      sudo install.sh
+      volumio refresh
+   The plugin will appear among the installed plugins.
+volumio_plugins
+![Volumio Plugin install screen](images/volumio plugins.png)
+
+If it does not, it is necessary to delete the file /data/configuration/plugins.json and restart Volumio using the command  volumio vrestart
+
+
+2. Install the plugin through the Volumio web interface:
    - Navigate to **Plugins** → **Install Plugins**
    - Search for "LCD Backlight Control" or upload the plugin package
    
-2. The installation script will:
+2.1 The installation script will:
    - Install Python dependencies (`python3-smbus`)
    - Copy the Python control script to `/usr/local/bin/`
    - Create configuration directory at `/etc/lcd_backlight/`
