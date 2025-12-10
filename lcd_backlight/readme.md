@@ -80,7 +80,7 @@ Pin 6  (GND)     ──────── Pin 4 (GND)
      `cd ../lcd_backlight` <br>
      `sudo sudo chmod +x install.sh`<br>
      `sudo ./install.sh`<br>
-     `volumio refresh`<br>
+     `volumio plugin refresh`<br>
    - The plugin will appear among the installed plugins.
 ![Volumio Plugin install screen](images/volumio_plugins.png)
 
