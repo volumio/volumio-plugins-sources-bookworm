@@ -26,6 +26,9 @@ The [Jellyfin SDK]((https://github.com/patrickkfkan/jellyfin-sdk-typescript/)) u
   
 #### Changelog
 
+2.0.1
+- [Fixed] Playlist songs get added to play queue in wrong order ([#11](https://github.com/patrickkfkan/volumio-jellyfin/issues/11))
+
 2.0.0
 - Preliminary release for Bookworm-based, alpha-stage Volumio
 - [Added] Option to test connection first before adding server
