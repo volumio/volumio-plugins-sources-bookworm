@@ -93,6 +93,11 @@ Starting from v0.7.0, the Now Playing plugin can query the relevant music servic
 
 ## Changelog
 
+1.0.3
+- Add 'Idle Screen -> Show Clock' setting ([@phts](https://github.com/phts) - [#18](https://github.com/patrickkfkan/volumio-now-playing/pull/18))
+- Fix wrong ownership of Node modules installed in `install.sh`, which prevents plugin from being uninstalled due to insufficient permissions to delete plugin directory.
+- Update web client v0.7.5
+
 1.0.2
 - Rebase on master branch (v0.7.6)
 

@@ -206,6 +206,7 @@
   "NOW_PLAYING_ALL_CLIENTS": "Todos los clientes",
   "NOW_PLAYING_DISABLED": "Desactivado",
   "NOW_PLAYING_WAIT_TIME": "Tiempo de espera (Segundos)",
+  "NOW_PLAYING_SHOW_CLOCK": "Show Clock",
   "NOW_PLAYING_SHOW_LOCATION": "Mostrar Ubicación (Usa Información del Clima)",
   "NOW_PLAYING_SHOW_WEATHER": "Mostrar Clima",
   "NOW_PLAYING_IDLE_SCREEN_MAIN_ALIGNMENT": "Alineación Principal",
