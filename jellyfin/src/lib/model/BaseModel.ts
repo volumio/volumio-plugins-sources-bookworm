@@ -88,6 +88,10 @@ export default class BaseModel {
       response = await itemsApi.getItems(apiParams);
     }
 
+    if (response.config?.url) {
+      jellyfin.getLogger().verbose(`[jellyfin] getItemsFromAPI(): ${response.config.url}`);
+    }
+
     const responseItems = response.data?.Items || [];
     const filtered = await this.parseItemDtos(responseItems, parser);
     const itemsResult: GetItemsResult<T> = {

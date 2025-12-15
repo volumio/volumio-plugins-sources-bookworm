@@ -41,6 +41,9 @@ class BaseModel {
             const itemsApi = (0, items_api_1.getItemsApi)(__classPrivateFieldGet(this, _BaseModel_connection, "f").api);
             response = await itemsApi.getItems(apiParams);
         }
+        if (response.config?.url) {
+            JellyfinContext_1.default.getLogger().verbose(`[jellyfin] getItemsFromAPI(): ${response.config.url}`);
+        }
         const responseItems = response.data?.Items || [];
         const filtered = await this.parseItemDtos(responseItems, parser);
         const itemsResult = {
