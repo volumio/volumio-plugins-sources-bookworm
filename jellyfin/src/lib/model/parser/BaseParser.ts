@@ -1,6 +1,7 @@
 import { Api } from '@jellyfin/sdk';
 import { BaseItemDto } from '@jellyfin/sdk/lib/generated-client/models/base-item-dto';
 import { ImageType } from '@jellyfin/sdk/lib/generated-client/models/image-type';
+import { getImageApi } from '@jellyfin/sdk/lib/utils/api/image-api';
 import Parser from './Parser';
 import BaseEntity from '../../entities/BaseEntity';
 import { EntityType } from '../../entities';
@@ -27,11 +28,14 @@ export default abstract class BaseParser<T extends BaseEntity> implements Parser
       return null;
     }
 
-    return api.getItemImageUrl(data.Id, ImageType.Primary, {
-      maxWidth: 500,
-      maxHeight: 500,
-      quality: 90
-    }) || null;
+    return getImageApi(api)
+      .getItemImageUrlById(
+        data.Id,
+        ImageType.Primary, {
+          maxWidth: 500,
+          maxHeight: 500,
+          quality: 90
+        }) || null;
   }
 
   protected ticksToSeconds(ticks: number) {
