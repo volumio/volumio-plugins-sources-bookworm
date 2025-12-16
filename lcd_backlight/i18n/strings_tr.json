@@ -1,26 +1,21 @@
 {
-  "PLUGIN_NAME": "LCD Arka Işık Kontrolü",
-  "PLUGIN_CONFIGURATION": "LCD Arka Işık Yapılandırması",
-  
+  "PLUGIN_NAME": "LCD Arka Aydınlatma Kontrolü",
   "GENERAL_SETTINGS": "Genel Ayarlar",
-  "ENABLED": "Otomatik Parlaklığı Etkinleştir",
-  "ENABLED_DOC": "VEML7700 ortam ışığı sensörüne dayalı otomatik arka ışık kontrolünü etkinleştir",
   "MEASUREMENT_INTERVAL": "Ölçüm Aralığı (saniye)",
-  "MEASUREMENT_INTERVAL_DOC": "Işık sensörü okumaları arasındaki süre (0,1 - 10 saniye)",
-  
-  "BACKLIGHT_SETTINGS": "Arka Işık Ayarları",
+  "MEASUREMENT_INTERVAL_DOC": "Işık sensörü okumaları arasındaki süre. Daha düşük değerler daha hızlı parlaklık değişiklikleri sağlar ancak CPU kullanımını artırabilir.",
   "MIN_BACKLIGHT": "Minimum Parlaklık",
-  "MIN_BACKLIGHT_DOC": "Minimum ekran parlaklık seviyesi (0-255). Ekran bu değerden daha karanlık olmayacaktır.",
+  "MIN_BACKLIGHT_DOC": "Ekranın ulaşacağı en düşük parlaklık seviyesi (0-255). Ekranın çok karanlık olmasını önler.",
   "MAX_BACKLIGHT": "Maksimum Parlaklık",
-  "MAX_BACKLIGHT_DOC": "Maksimum ekran parlaklık seviyesi (0-255). Ekran bu değerden daha parlak olmayacaktır.",
-  
-  "SENSOR_SETTINGS": "Sensör Ayarları",
+  "MAX_BACKLIGHT_DOC": "Ekranın ulaşacağı en yüksek parlaklık seviyesi (0-255). Güç tasarrufu için azaltılabilir.",
   "LUX_MULTIPLIER": "Lüks Çarpanı",
-  "LUX_MULTIPLIER_DOC": "VEML7700 sensörü için kalibrasyon çarpanı (0,01 - 10). Daha parlak tepki için artırın, daha karanlık tepki için azaltın.",
+  "LUX_MULTIPLIER_DOC": "VEML7700 sensörü için kalibrasyon çarpanı. Daha parlak yanıt için artırın, daha karanlık yanıt için azaltın.",
   "SMOOTHING_FACTOR": "Yumuşatma Faktörü",
-  "SMOOTHING_FACTOR_DOC": "Parlaklık geçiş yumuşaklığı (0,0 - 1,0). Düşük = daha yavaş/daha yumuşak geçişler, Yüksek = daha hızlı/daha duyarlı.",
-  
-  "SAVE": "Yapılandırmayı Kaydet",
-  "CONFIG_SAVED": "Yapılandırma başarıyla kaydedildi. Servis ayarları otomatik olarak yeniden yükleyecektir.",
-  "CONFIG_SAVE_ERROR": "Yapılandırma kaydedilirken hata"
+  "SMOOTHING_FACTOR_DOC": "Parlaklık geçişlerinin ne kadar hızlı gerçekleşeceğini kontrol eder (0,0-1,0). Daha düşük değerler daha yavaş, daha yumuşak geçişler oluşturur.",
+  "PLAYBACK_BOOST": "Oynatma Parlaklık Artışı",
+  "PLAYBACK_BOOST_DOC": "Müzik çalma sırasında eklenen ekstra parlaklık (0-255). Bu özelliği devre dışı bırakmak için 0 olarak ayarlayın.",
+  "PLAYBACK_BOOST_DURATION": "Oynatma Sonrası Artış Süresi (saniye)",
+  "PLAYBACK_BOOST_DURATION_DOC": "Oynatma durduktan sonra parlaklık artışının ne kadar süre korunacağı (0-300 saniye). Önerilen: 30 saniye.",
+  "SAVE": "Ayarları Kaydet",
+  "SAVE_SUCCESS": "Yapılandırma başarıyla kaydedildi",
+  "SAVE_ERROR": "Yapılandırma kaydedilirken hata oluştu"
 }

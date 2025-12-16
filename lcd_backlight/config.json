@@ -22,5 +22,13 @@
   "smoothing_factor": {
     "value": 0.3,
     "type": "number"
+  },
+  "playback_boost": {
+    "value": 0,
+    "type": "number"
+  },
+  "playback_boost_duration": {
+    "value": 30,
+    "type": "number"
   }
 }

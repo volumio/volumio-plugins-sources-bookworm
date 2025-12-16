@@ -1,26 +1,21 @@
 {
   "PLUGIN_NAME": "Contrôle du rétroéclairage LCD",
-  "PLUGIN_CONFIGURATION": "Configuration du rétroéclairage LCD",
-  
   "GENERAL_SETTINGS": "Paramètres généraux",
-  "ENABLED": "Activer la luminosité automatique",
-  "ENABLED_DOC": "Activer le contrôle automatique du rétroéclairage basé sur le capteur de lumière ambiante VEML7700",
   "MEASUREMENT_INTERVAL": "Intervalle de mesure (secondes)",
-  "MEASUREMENT_INTERVAL_DOC": "Temps entre les lectures du capteur de lumière (0,1 - 10 secondes)",
-  
-  "BACKLIGHT_SETTINGS": "Paramètres du rétroéclairage",
+  "MEASUREMENT_INTERVAL_DOC": "Temps entre les lectures du capteur de lumière. Des valeurs plus faibles offrent des changements de luminosité plus réactifs mais peuvent augmenter l'utilisation du processeur.",
   "MIN_BACKLIGHT": "Luminosité minimale",
-  "MIN_BACKLIGHT_DOC": "Niveau de luminosité minimale de l'écran (0-255). L'écran ne sera jamais plus sombre que cette valeur.",
+  "MIN_BACKLIGHT_DOC": "Le niveau de luminosité le plus bas que l'écran atteindra (0-255). Empêche l'écran de devenir trop sombre.",
   "MAX_BACKLIGHT": "Luminosité maximale",
-  "MAX_BACKLIGHT_DOC": "Niveau de luminosité maximale de l'écran (0-255). L'écran ne sera jamais plus lumineux que cette valeur.",
-  
-  "SENSOR_SETTINGS": "Paramètres du capteur",
-  "LUX_MULTIPLIER": "Multiplicateur de Lux",
-  "LUX_MULTIPLIER_DOC": "Multiplicateur d'étalonnage pour le capteur VEML7700 (0,01 - 10). Augmenter pour une réponse plus lumineuse, diminuer pour une réponse plus sombre.",
+  "MAX_BACKLIGHT_DOC": "Le niveau de luminosité le plus élevé que l'écran atteindra (0-255). Peut être réduit pour économiser de l'énergie.",
+  "LUX_MULTIPLIER": "Multiplicateur de lux",
+  "LUX_MULTIPLIER_DOC": "Multiplicateur d'étalonnage pour le capteur VEML7700. Augmenter pour une réponse plus lumineuse, diminuer pour une réponse plus sombre.",
   "SMOOTHING_FACTOR": "Facteur de lissage",
-  "SMOOTHING_FACTOR_DOC": "Douceur de la transition de luminosité (0,0 - 1,0). Plus bas = transitions plus lentes/douces, Plus élevé = plus rapide/réactif.",
-  
-  "SAVE": "Enregistrer la configuration",
-  "CONFIG_SAVED": "Configuration enregistrée avec succès. Le service rechargera automatiquement les paramètres.",
-  "CONFIG_SAVE_ERROR": "Erreur lors de l'enregistrement de la configuration"
+  "SMOOTHING_FACTOR_DOC": "Contrôle la rapidité des transitions de luminosité (0,0-1,0). Des valeurs plus faibles créent des transitions plus lentes et plus douces.",
+  "PLAYBACK_BOOST": "Augmentation de luminosité en lecture",
+  "PLAYBACK_BOOST_DOC": "Luminosité supplémentaire ajoutée pendant la lecture musicale (0-255). Définir à 0 pour désactiver cette fonctionnalité.",
+  "PLAYBACK_BOOST_DURATION": "Durée du boost après la lecture (secondes)",
+  "PLAYBACK_BOOST_DURATION_DOC": "Combien de temps maintenir l'augmentation de luminosité après l'arrêt de la lecture (0-300 secondes). Recommandé : 30 secondes.",
+  "SAVE": "Enregistrer les paramètres",
+  "SAVE_SUCCESS": "Configuration enregistrée avec succès",
+  "SAVE_ERROR": "Erreur lors de l'enregistrement de la configuration"
 }

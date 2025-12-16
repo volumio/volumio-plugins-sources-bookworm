@@ -1,26 +1,21 @@
 {
   "PLUGIN_NAME": "Controllo retroilluminazione LCD",
-  "PLUGIN_CONFIGURATION": "Configurazione retroilluminazione LCD",
-  
   "GENERAL_SETTINGS": "Impostazioni generali",
-  "ENABLED": "Abilita luminosità automatica",
-  "ENABLED_DOC": "Abilita il controllo automatico della retroilluminazione basato sul sensore di luce ambientale VEML7700",
   "MEASUREMENT_INTERVAL": "Intervallo di misurazione (secondi)",
-  "MEASUREMENT_INTERVAL_DOC": "Tempo tra le letture del sensore di luce (0,1 - 10 secondi)",
-  
-  "BACKLIGHT_SETTINGS": "Impostazioni retroilluminazione",
+  "MEASUREMENT_INTERVAL_DOC": "Tempo tra le letture del sensore di luce. Valori più bassi forniscono cambiamenti di luminosità più reattivi ma possono aumentare l'utilizzo della CPU.",
   "MIN_BACKLIGHT": "Luminosità minima",
-  "MIN_BACKLIGHT_DOC": "Livello di luminosità minima del display (0-255). Il display non sarà mai più scuro di questo valore.",
+  "MIN_BACKLIGHT_DOC": "Il livello di luminosità più basso che raggiungerà il display (0-255). Impedisce allo schermo di diventare troppo scuro.",
   "MAX_BACKLIGHT": "Luminosità massima",
-  "MAX_BACKLIGHT_DOC": "Livello di luminosità massima del display (0-255). Il display non sarà mai più luminoso di questo valore.",
-  
-  "SENSOR_SETTINGS": "Impostazioni sensore",
-  "LUX_MULTIPLIER": "Moltiplicatore Lux",
-  "LUX_MULTIPLIER_DOC": "Moltiplicatore di calibrazione per il sensore VEML7700 (0,01 - 10). Aumentare per una risposta più luminosa, diminuire per una risposta più scura.",
-  "SMOOTHING_FACTOR": "Fattore di smoothing",
-  "SMOOTHING_FACTOR_DOC": "Fluidità della transizione di luminosità (0,0 - 1,0). Più basso = transizioni più lente/fluide, Più alto = più veloce/reattivo.",
-  
-  "SAVE": "Salva configurazione",
-  "CONFIG_SAVED": "Configurazione salvata con successo. Il servizio ricaricherà automaticamente le impostazioni.",
-  "CONFIG_SAVE_ERROR": "Errore nel salvataggio della configurazione"
+  "MAX_BACKLIGHT_DOC": "Il livello di luminosità più alto che raggiungerà il display (0-255). Può essere ridotto per risparmiare energia.",
+  "LUX_MULTIPLIER": "Moltiplicatore lux",
+  "LUX_MULTIPLIER_DOC": "Moltiplicatore di calibrazione per il sensore VEML7700. Aumentare per una risposta più luminosa, diminuire per una risposta più scura.",
+  "SMOOTHING_FACTOR": "Fattore di livellamento",
+  "SMOOTHING_FACTOR_DOC": "Controlla la velocità delle transizioni di luminosità (0,0-1,0). Valori più bassi creano transizioni più lente e fluide.",
+  "PLAYBACK_BOOST": "Aumento luminosità in riproduzione",
+  "PLAYBACK_BOOST_DOC": "Luminosità aggiuntiva aggiunta durante la riproduzione musicale (0-255). Impostare a 0 per disabilitare questa funzione.",
+  "PLAYBACK_BOOST_DURATION": "Durata boost dopo riproduzione (secondi)",
+  "PLAYBACK_BOOST_DURATION_DOC": "Per quanto tempo mantenere l'aumento di luminosità dopo l'arresto della riproduzione (0-300 secondi). Consigliato: 30 secondi.",
+  "SAVE": "Salva impostazioni",
+  "SAVE_SUCCESS": "Configurazione salvata con successo",
+  "SAVE_ERROR": "Errore nel salvataggio della configurazione"
 }

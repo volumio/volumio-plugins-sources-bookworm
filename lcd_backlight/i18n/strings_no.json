@@ -1,26 +1,21 @@
 {
-  "PLUGIN_NAME": "LCD-bakgrunnslys kontroll",
-  "PLUGIN_CONFIGURATION": "LCD-bakgrunnslys konfigurasjon",
-  
+  "PLUGIN_NAME": "LCD-bakgrunnsbelysning kontroll",
   "GENERAL_SETTINGS": "Generelle innstillinger",
-  "ENABLED": "Aktiver automatisk lysstyrke",
-  "ENABLED_DOC": "Aktiver automatisk bakgrunnslys kontroll basert på VEML7700 omgivelses lyssensor",
   "MEASUREMENT_INTERVAL": "Måleintervall (sekunder)",
-  "MEASUREMENT_INTERVAL_DOC": "Tid mellom lyssensoravlesninger (0,1 - 10 sekunder)",
-  
-  "BACKLIGHT_SETTINGS": "Bakgrunnslys innstillinger",
+  "MEASUREMENT_INTERVAL_DOC": "Tid mellom lyssensoravlesninger. Lavere verdier gir mer responsive lysstyrkendringer, men kan øke CPU-bruken.",
   "MIN_BACKLIGHT": "Minimum lysstyrke",
-  "MIN_BACKLIGHT_DOC": "Minimum display lysstyrkennivå (0-255). Displayet vil aldri være mørkere enn denne verdien.",
+  "MIN_BACKLIGHT_DOC": "Det laveste lysstyrkennivået skjermen vil nå (0-255). Forhindrer at skjermen blir for mørk.",
   "MAX_BACKLIGHT": "Maksimum lysstyrke",
-  "MAX_BACKLIGHT_DOC": "Maksimum display lysstyrkennivå (0-255). Displayet vil aldri være lysere enn denne verdien.",
-  
-  "SENSOR_SETTINGS": "Sensor innstillinger",
+  "MAX_BACKLIGHT_DOC": "Det høyeste lysstyrkennivået skjermen vil nå (0-255). Kan reduseres for å spare strøm.",
   "LUX_MULTIPLIER": "Lux-multiplikator",
-  "LUX_MULTIPLIER_DOC": "Kalibreringsmultiplikator for VEML7700 sensor (0,01 - 10). Øk for lysere respons, reduser for mørkere respons.",
+  "LUX_MULTIPLIER_DOC": "Kalibreringsmultiplikator for VEML7700-sensoren. Øk for lysere respons, reduser for mørkere respons.",
   "SMOOTHING_FACTOR": "Utjevningsfaktor",
-  "SMOOTHING_FACTOR_DOC": "Lysstyrkens overgangs jevnhet (0,0 - 1,0). Lavere = tregere/jevnere overganger, Høyere = raskere/mer responsiv.",
-  
-  "SAVE": "Lagre konfigurasjon",
-  "CONFIG_SAVED": "Konfigurasjon lagret vellykket. Tjenesten vil automatisk laste inn innstillingene på nytt.",
-  "CONFIG_SAVE_ERROR": "Feil ved lagring av konfigurasjon"
+  "SMOOTHING_FACTOR_DOC": "Kontrollerer hvor raskt lysstyrkenoverganger skjer (0,0-1,0). Lavere verdier skaper tregere, mykere overganger.",
+  "PLAYBACK_BOOST": "Avspilling lysstyrkeforbedring",
+  "PLAYBACK_BOOST_DOC": "Ekstra lysstyrke lagt til under musikkavspilling (0-255). Sett til 0 for å deaktivere denne funksjonen.",
+  "PLAYBACK_BOOST_DURATION": "Boost-varighet etter avspilling (sekunder)",
+  "PLAYBACK_BOOST_DURATION_DOC": "Hvor lenge lysstyrkeforbedringen skal opprettholdes etter at avspillingen stopper (0-300 sekunder). Anbefalt: 30 sekunder.",
+  "SAVE": "Lagre innstillinger",
+  "SAVE_SUCCESS": "Konfigurasjon lagret",
+  "SAVE_ERROR": "Feil ved lagring av konfigurasjon"
 }

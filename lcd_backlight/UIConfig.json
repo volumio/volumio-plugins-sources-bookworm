@@ -20,7 +20,9 @@
           "min_backlight",
           "max_backlight",
           "lux_multiplier",
-          "smoothing_factor"
+          "smoothing_factor",
+          "playback_boost",
+          "playback_boost_duration"
         ]
       },
       "content": [
@@ -96,6 +98,36 @@
               "min": 0.0,
               "max": 1.0,
               "step": 0.05
+            }
+          ]
+        },
+        {
+          "id": "playback_boost",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.PLAYBACK_BOOST",
+          "doc": "TRANSLATE.PLAYBACK_BOOST_DOC",
+          "value": 0,
+          "attributes": [
+            {
+              "min": 0,
+              "max": 255,
+              "step": 5
+            }
+          ]
+        },
+        {
+          "id": "playback_boost_duration",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.PLAYBACK_BOOST_DURATION",
+          "doc": "TRANSLATE.PLAYBACK_BOOST_DURATION_DOC",
+          "value": 30,
+          "attributes": [
+            {
+              "min": 0,
+              "max": 300,
+              "step": 5
             }
           ]
         }

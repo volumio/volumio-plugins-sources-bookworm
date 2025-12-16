@@ -24,6 +24,14 @@ lcdBacklight.prototype.onVolumioStart = function() {
     this.config = new (require('v-conf'))();
     this.config.loadFile(configFile);
     
+    // Set default values if not present
+    if (self.config.get('playback_boost') === undefined) {
+        self.config.set('playback_boost', 0);
+    }
+    if (self.config.get('playback_boost_duration') === undefined) {
+        self.config.set('playback_boost_duration', 30);
+    }
+    
     // Find backlight path
     self.findBacklightPath();
     
@@ -54,6 +62,11 @@ lcdBacklight.prototype.onStart = function() {
     // Set enabled to true when plugin starts
     self.config.set('enabled', true);
     self.logger.info('[LCD Backlight] Setting enabled to true');
+    
+    // Log current config values to verify they're loaded
+    self.logger.info('[LCD Backlight] Current config at start:');
+    self.logger.info('[LCD Backlight]   playback_boost = ' + self.config.get('playback_boost'));
+    self.logger.info('[LCD Backlight]   playback_boost_duration = ' + self.config.get('playback_boost_duration'));
     
     // Load i18n strings
     self.loadI18nStrings();
@@ -178,15 +191,19 @@ lcdBacklight.prototype.getUIConfig = function() {
         var content = uiconf.sections[0].content;
         
         // General Settings 
-        content[0].value = self.config.get('int_time');       // int_time (new index 0)
+        content[0].value = self.config.get('int_time');       // int_time (index 0)
         
         // Backlight Settings
-        content[1].value = self.config.get('min_backlight');   // min_backlight (new index 1)
-        content[2].value = self.config.get('max_backlight');   // max_backlight (new index 2)
+        content[1].value = self.config.get('min_backlight');   // min_backlight (index 1)
+        content[2].value = self.config.get('max_backlight');   // max_backlight (index 2)
         
         // Sensor Settings 
-        content[3].value = self.config.get('lux_multiplier');  // lux_multiplier (new index 3)
-        content[4].value = self.config.get('smoothing_factor'); // smoothing_factor (new index 4)
+        content[3].value = self.config.get('lux_multiplier');  // lux_multiplier (index 3)
+        content[4].value = self.config.get('smoothing_factor'); // smoothing_factor (index 4)
+        
+        // Playback Boost Settings
+        content[5].value = self.config.get('playback_boost');  // playback_boost (index 5)
+        content[6].value = self.config.get('playback_boost_duration'); // playback_boost_duration (index 6)
         
         defer.resolve(uiconf);
     })
@@ -215,21 +232,36 @@ lcdBacklight.prototype.saveConfig = function(data) {
         
         if (data.int_time !== undefined) {
             self.config.set('int_time', parseFloat(data.int_time));
+            self.logger.info('[LCD Backlight] Set int_time: ' + data.int_time);
         }
         if (data.min_backlight !== undefined) {
             self.config.set('min_backlight', parseInt(data.min_backlight));
+            self.logger.info('[LCD Backlight] Set min_backlight: ' + data.min_backlight);
         }
         if (data.max_backlight !== undefined) {
             self.config.set('max_backlight', parseInt(data.max_backlight));
+            self.logger.info('[LCD Backlight] Set max_backlight: ' + data.max_backlight);
         }
         if (data.lux_multiplier !== undefined) {
             self.config.set('lux_multiplier', parseFloat(data.lux_multiplier));
+            self.logger.info('[LCD Backlight] Set lux_multiplier: ' + data.lux_multiplier);
         }
         if (data.smoothing_factor !== undefined) {
             self.config.set('smoothing_factor', parseFloat(data.smoothing_factor));
+            self.logger.info('[LCD Backlight] Set smoothing_factor: ' + data.smoothing_factor);
+        }
+        if (data.playback_boost !== undefined) {
+            self.config.set('playback_boost', parseInt(data.playback_boost));
+            self.logger.info('[LCD Backlight] Set playback_boost: ' + data.playback_boost);
+        }
+        if (data.playback_boost_duration !== undefined) {
+            self.config.set('playback_boost_duration', parseInt(data.playback_boost_duration));
+            self.logger.info('[LCD Backlight] Set playback_boost_duration: ' + data.playback_boost_duration);
         }
         
         self.logger.info('[LCD Backlight] Configuration saved to config.json.');
+        self.logger.info('[LCD Backlight] Current config values: playback_boost=' + self.config.get('playback_boost') + 
+                         ', playback_boost_duration=' + self.config.get('playback_boost_duration'));
         
         // Step 2: Write data to /etc/lcd_backlight (calling an existing function)
         self.writeConfigToSysfs()
@@ -297,45 +329,95 @@ lcdBacklight.prototype.writeConfigToSysfs = function() {
     var defer = libQ.defer();
     var configDir = '/etc/lcd_backlight';
     
-    var configs = {
-        'lcd_enabled': self.config.get('enabled') ? '1' : '0',
-        'lcd_int_time': self.config.get('int_time').toString(),
-        'lcd_min_backlight': self.config.get('min_backlight').toString(),
-        'lcd_max_backlight': self.config.get('max_backlight').toString(),
-        'lcd_lux_multiplier': self.config.get('lux_multiplier').toString(),
-        'lcd_smoothing_factor': self.config.get('smoothing_factor').toString()
-    };
-    
-    var promises = [];
-    
-    for (var key in configs) {
-        var filePath = configDir + '/' + key;
-        var value = configs[key];
+    try {
+        // Get all config values with defaults
+        var enabled = self.config.get('enabled');
+        var int_time = self.config.get('int_time') || 1;
+        var min_backlight = self.config.get('min_backlight') || 12;
+        var max_backlight = self.config.get('max_backlight') || 255;
+        var lux_multiplier = self.config.get('lux_multiplier') || 0.75;
+        var smoothing_factor = self.config.get('smoothing_factor') || 0.3;
         
-        (function(path, val) {
-            var p = libQ.defer();
+        // Get boost values - check what we're actually getting
+        var playback_boost = self.config.get('playback_boost');
+        var playback_boost_duration = self.config.get('playback_boost_duration');
+        
+        self.logger.info('[LCD Backlight] RAW config values from config.get():');
+        self.logger.info('[LCD Backlight]   playback_boost (raw) = ' + playback_boost + ' (type: ' + typeof playback_boost + ')');
+        self.logger.info('[LCD Backlight]   playback_boost_duration (raw) = ' + playback_boost_duration + ' (type: ' + typeof playback_boost_duration + ')');
+        
+        // Handle undefined/null values for boost settings
+        if (playback_boost === undefined || playback_boost === null) {
+            self.logger.info('[LCD Backlight]   playback_boost was undefined/null, setting to 0');
+            playback_boost = 0;
+        }
+        if (playback_boost_duration === undefined || playback_boost_duration === null) {
+            self.logger.info('[LCD Backlight]   playback_boost_duration was undefined/null, setting to 30');
+            playback_boost_duration = 30;
+        }
+        
+        self.logger.info('[LCD Backlight] Preparing to write config files:');
+        self.logger.info('[LCD Backlight]   enabled = ' + enabled);
+        self.logger.info('[LCD Backlight]   int_time = ' + int_time);
+        self.logger.info('[LCD Backlight]   min_backlight = ' + min_backlight);
+        self.logger.info('[LCD Backlight]   max_backlight = ' + max_backlight);
+        self.logger.info('[LCD Backlight]   lux_multiplier = ' + lux_multiplier);
+        self.logger.info('[LCD Backlight]   smoothing_factor = ' + smoothing_factor);
+        self.logger.info('[LCD Backlight]   playback_boost = ' + playback_boost);
+        self.logger.info('[LCD Backlight]   playback_boost_duration = ' + playback_boost_duration);
+        
+        var configs = {
+            'lcd_enabled': enabled ? '1' : '0',
+            'lcd_int_time': int_time.toString(),
+            'lcd_min_backlight': min_backlight.toString(),
+            'lcd_max_backlight': max_backlight.toString(),
+            'lcd_lux_multiplier': lux_multiplier.toString(),
+            'lcd_smoothing_factor': smoothing_factor.toString(),
+            'lcd_playback_boost': playback_boost.toString(),
+            'lcd_playback_boost_duration': playback_boost_duration.toString()
+        };
+        
+        // Write all config files using shell commands for reliability
+        var writeCount = 0;
+        var errors = [];
+        
+        for (var key in configs) {
+            var filePath = configDir + '/' + key;
+            var value = configs[key];
             
-            // Direct write using fs (directory exists from install.sh, volumio has write permissions)
-            fs.writeFile(path, val, function(err) {
-                if (err) {
-                    self.logger.warn('[LCD Backlight] Could not write ' + path + ': ' + err);
-                } else {
-                    self.logger.info('[LCD Backlight] Wrote ' + path + ' = ' + val);
-                }
-                p.resolve();
-            });
-            
-            promises.push(p.promise);
-        })(filePath, value);
+            try {
+                // Use shell command to write - more reliable
+                var cmd = 'echo "' + value + '" > ' + filePath;
+                execSync(cmd);
+                self.logger.info('[LCD Backlight] Wrote ' + filePath + ' = ' + value);
+                writeCount++;
+            } catch (err) {
+                self.logger.error('[LCD Backlight] Failed to write ' + key + ': ' + err);
+                errors.push(key + ': ' + err);
+            }
+        }
+        
+        if (errors.length > 0) {
+            self.logger.error('[LCD Backlight] Errors during write: ' + errors.join(', '));
+        }
+        
+        self.logger.info('[LCD Backlight] Successfully wrote ' + writeCount + '/' + Object.keys(configs).length + ' config files');
+        
+        // Verify the files were actually written
+        try {
+            var verifyBoost = execSync('cat ' + configDir + '/lcd_playback_boost').toString().trim();
+            var verifyDuration = execSync('cat ' + configDir + '/lcd_playback_boost_duration').toString().trim();
+            self.logger.info('[LCD Backlight] VERIFY: playback_boost=' + verifyBoost + ', duration=' + verifyDuration);
+        } catch (e) {
+            self.logger.error('[LCD Backlight] Could not verify written values: ' + e);
+        }
+        
+        defer.resolve();
+        
+    } catch (e) {
+        self.logger.error('[LCD Backlight] Exception in writeConfigToSysfs: ' + e);
+        defer.reject(e);
     }
-    
-    libQ.all(promises)
-        .then(function() {
-            defer.resolve();
-        })
-        .fail(function(error) {
-            defer.reject(error);
-        });
     
     return defer.promise;
 };

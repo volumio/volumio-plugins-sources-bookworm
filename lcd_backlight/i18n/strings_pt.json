@@ -1,26 +1,21 @@
 {
   "PLUGIN_NAME": "Controle de retroiluminação LCD",
-  "PLUGIN_CONFIGURATION": "Configuração de retroiluminação LCD",
-  
   "GENERAL_SETTINGS": "Configurações gerais",
-  "ENABLED": "Ativar brilho automático",
-  "ENABLED_DOC": "Ativar controle automático de retroiluminação baseado no sensor de luz ambiente VEML7700",
   "MEASUREMENT_INTERVAL": "Intervalo de medição (segundos)",
-  "MEASUREMENT_INTERVAL_DOC": "Tempo entre leituras do sensor de luz (0,1 - 10 segundos)",
-  
-  "BACKLIGHT_SETTINGS": "Configurações de retroiluminação",
+  "MEASUREMENT_INTERVAL_DOC": "Tempo entre as leituras do sensor de luz. Valores mais baixos fornecem alterações de brilho mais responsivas, mas podem aumentar o uso da CPU.",
   "MIN_BACKLIGHT": "Brilho mínimo",
-  "MIN_BACKLIGHT_DOC": "Nível mínimo de brilho do display (0-255). O display nunca ficará mais escuro que este valor.",
+  "MIN_BACKLIGHT_DOC": "O nível de brilho mais baixo que o display alcançará (0-255). Evita que a tela fique muito escura.",
   "MAX_BACKLIGHT": "Brilho máximo",
-  "MAX_BACKLIGHT_DOC": "Nível máximo de brilho do display (0-255). O display nunca ficará mais brilhante que este valor.",
-  
-  "SENSOR_SETTINGS": "Configurações do sensor",
-  "LUX_MULTIPLIER": "Multiplicador de Lux",
-  "LUX_MULTIPLIER_DOC": "Multiplicador de calibração para o sensor VEML7700 (0,01 - 10). Aumentar para resposta mais brilhante, diminuir para resposta mais escura.",
+  "MAX_BACKLIGHT_DOC": "O nível de brilho mais alto que o display alcançará (0-255). Pode ser reduzido para economizar energia.",
+  "LUX_MULTIPLIER": "Multiplicador de lux",
+  "LUX_MULTIPLIER_DOC": "Multiplicador de calibração para o sensor VEML7700. Aumentar para resposta mais brilhante, diminuir para resposta mais escura.",
   "SMOOTHING_FACTOR": "Fator de suavização",
-  "SMOOTHING_FACTOR_DOC": "Suavidade da transição de brilho (0,0 - 1,0). Menor = transições mais lentas/suaves, Maior = mais rápido/responsivo.",
-  
-  "SAVE": "Salvar configuração",
-  "CONFIG_SAVED": "Configuração salva com sucesso. O serviço recarregará as configurações automaticamente.",
-  "CONFIG_SAVE_ERROR": "Erro ao salvar configuração"
+  "SMOOTHING_FACTOR_DOC": "Controla a rapidez das transições de brilho (0,0-1,0). Valores mais baixos criam transições mais lentas e suaves.",
+  "PLAYBACK_BOOST": "Aumento de brilho na reprodução",
+  "PLAYBACK_BOOST_DOC": "Brilho adicional adicionado durante a reprodução de música (0-255). Defina como 0 para desativar este recurso.",
+  "PLAYBACK_BOOST_DURATION": "Duração do aumento após reprodução (segundos)",
+  "PLAYBACK_BOOST_DURATION_DOC": "Quanto tempo manter o aumento de brilho após a reprodução parar (0-300 segundos). Recomendado: 30 segundos.",
+  "SAVE": "Salvar configurações",
+  "SAVE_SUCCESS": "Configuração salva com sucesso",
+  "SAVE_ERROR": "Erro ao salvar configuração"
 }

@@ -1,26 +1,21 @@
 {
   "PLUGIN_NAME": "Ovládání podsvícení LCD",
-  "PLUGIN_CONFIGURATION": "Konfigurace podsvícení LCD",
-  
-  "GENERAL_SETTINGS": "Obecná nastavení",
-  "ENABLED": "Povolit automatický jas",
-  "ENABLED_DOC": "Povolit automatické ovládání podsvícení na základě senzoru okolního světla VEML7700",
+  "GENERAL_SETTINGS": "Obecné nastavení",
   "MEASUREMENT_INTERVAL": "Interval měření (sekundy)",
-  "MEASUREMENT_INTERVAL_DOC": "Čas mezi odečty světelného senzoru (0,1 - 10 sekund)",
-  
-  "BACKLIGHT_SETTINGS": "Nastavení podsvícení",
+  "MEASUREMENT_INTERVAL_DOC": "Čas mezi odečty světelného senzoru. Nižší hodnoty poskytují rychlejší změny jasu, ale mohou zvýšit zatížení procesoru.",
   "MIN_BACKLIGHT": "Minimální jas",
-  "MIN_BACKLIGHT_DOC": "Minimální úroveň jasu displeje (0-255). Displej nebude nikdy tmavší než tato hodnota.",
+  "MIN_BACKLIGHT_DOC": "Nejnižší úroveň jasu, které displej dosáhne (0-255). Zabraňuje tomu, aby se obrazovka stala příliš tmavou.",
   "MAX_BACKLIGHT": "Maximální jas",
-  "MAX_BACKLIGHT_DOC": "Maximální úroveň jasu displeje (0-255). Displej nebude nikdy jasnější než tato hodnota.",
-  
-  "SENSOR_SETTINGS": "Nastavení senzoru",
+  "MAX_BACKLIGHT_DOC": "Nejvyšší úroveň jasu, které displej dosáhne (0-255). Může být snížena pro úsporu energie.",
   "LUX_MULTIPLIER": "Násobič luxů",
-  "LUX_MULTIPLIER_DOC": "Kalibrační násobič pro senzor VEML7700 (0,01 - 10). Zvyšte pro jasnější odezvu, snižte pro tmavší odezvu.",
-  "SMOOTHING_FACTOR": "Faktor vyhlazování",
-  "SMOOTHING_FACTOR_DOC": "Plynulost přechodu jasu (0,0 - 1,0). Nižší = pomalejší/plynulejší přechody, Vyšší = rychlejší/responzivnější.",
-  
-  "SAVE": "Uložit konfiguraci",
-  "CONFIG_SAVED": "Konfigurace úspěšně uložena. Služba automaticky znovu načte nastavení.",
-  "CONFIG_SAVE_ERROR": "Chyba při ukládání konfigurace"
+  "LUX_MULTIPLIER_DOC": "Kalibrační násobič pro senzor VEML7700. Zvyšte pro světlejší odezvu, snižte pro tmavší odezvu.",
+  "SMOOTHING_FACTOR": "Faktor vyhlazení",
+  "SMOOTHING_FACTOR_DOC": "Ovládá rychlost přechodů jasu (0,0-1,0). Nižší hodnoty vytvářejí pomalejší, plynulejší přechody.",
+  "PLAYBACK_BOOST": "Zvýšení jasu při přehrávání",
+  "PLAYBACK_BOOST_DOC": "Dodatečný jas přidaný během přehrávání hudby (0-255). Nastavte na 0 pro vypnutí této funkce.",
+  "PLAYBACK_BOOST_DURATION": "Trvání zvýšení po přehrávání (sekundy)",
+  "PLAYBACK_BOOST_DURATION_DOC": "Jak dlouho udržet zvýšený jas po zastavení přehrávání (0-300 sekund). Doporučeno: 30 sekund.",
+  "SAVE": "Uložit nastavení",
+  "SAVE_SUCCESS": "Konfigurace úspěšně uložena",
+  "SAVE_ERROR": "Chyba při ukládání konfigurace"
 }

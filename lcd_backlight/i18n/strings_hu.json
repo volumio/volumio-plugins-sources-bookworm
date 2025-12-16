@@ -1,26 +1,21 @@
 {
   "PLUGIN_NAME": "LCD háttérvilágítás vezérlés",
-  "PLUGIN_CONFIGURATION": "LCD háttérvilágítás konfiguráció",
-  
   "GENERAL_SETTINGS": "Általános beállítások",
-  "ENABLED": "Automatikus fényerő engedélyezése",
-  "ENABLED_DOC": "Automatikus háttérvilágítás vezérlés engedélyezése a VEML7700 környezeti fényérzékelő alapján",
-  "MEASUREMENT_INTERVAL": "Mérési intervallum (másodperc)",
-  "MEASUREMENT_INTERVAL_DOC": "Idő a fényérzékelő leolvasások között (0,1 - 10 másodperc)",
-  
-  "BACKLIGHT_SETTINGS": "Háttérvilágítás beállítások",
+  "MEASUREMENT_INTERVAL": "Mérési időköz (másodperc)",
+  "MEASUREMENT_INTERVAL_DOC": "Időtartam a fényérzékelő leolvasások között. Az alacsonyabb értékek gyorsabb fényerő-változásokat eredményeznek, de növelhetik a processzor használatát.",
   "MIN_BACKLIGHT": "Minimális fényerő",
-  "MIN_BACKLIGHT_DOC": "Kijelző minimális fényerőszintje (0-255). A kijelző soha nem lesz sötétebb ennél az értéknél.",
+  "MIN_BACKLIGHT_DOC": "A legalacsonyabb fényerő szint, amelyet a kijelző elér (0-255). Megakadályozza, hogy a képernyő túl sötét legyen.",
   "MAX_BACKLIGHT": "Maximális fényerő",
-  "MAX_BACKLIGHT_DOC": "Kijelző maximális fényerőszintje (0-255). A kijelző soha nem lesz világosabb ennél az értéknél.",
-  
-  "SENSOR_SETTINGS": "Érzékelő beállítások",
+  "MAX_BACKLIGHT_DOC": "A legmagasabb fényerő szint, amelyet a kijelző elér (0-255). Csökkenthető az energiatakarékosság érdekében.",
   "LUX_MULTIPLIER": "Lux szorzó",
-  "LUX_MULTIPLIER_DOC": "Kalibrációs szorzó a VEML7700 érzékelőhöz (0,01 - 10). Növelje világosabb válaszhoz, csökkentse sötétebb válaszhoz.",
+  "LUX_MULTIPLIER_DOC": "Kalibrációs szorzó a VEML7700 érzékelőhöz. Növelje világosabb válaszhoz, csökkentse sötétebb válaszhoz.",
   "SMOOTHING_FACTOR": "Simítási tényező",
-  "SMOOTHING_FACTOR_DOC": "Fényerő átmenet simítása (0,0 - 1,0). Alacsonyabb = lassabb/simább átmenetek, Magasabb = gyorsabb/érzékenyebb.",
-  
-  "SAVE": "Konfiguráció mentése",
-  "CONFIG_SAVED": "Konfiguráció sikeresen mentve. A szolgáltatás automatikusan újratölti a beállításokat.",
-  "CONFIG_SAVE_ERROR": "Hiba a konfiguráció mentése során"
+  "SMOOTHING_FACTOR_DOC": "Szabályozza a fényerő átmenetek sebességét (0,0-1,0). Az alacsonyabb értékek lassabb, simább átmeneteket eredményeznek.",
+  "PLAYBACK_BOOST": "Lejátszás fényerő növelés",
+  "PLAYBACK_BOOST_DOC": "További fényerő a zenelejátszás alatt (0-255). Állítsa 0-ra a funkció kikapcsolásához.",
+  "PLAYBACK_BOOST_DURATION": "Növelés időtartama lejátszás után (másodperc)",
+  "PLAYBACK_BOOST_DURATION_DOC": "Mennyi ideig tartsa fenn a fényerő növelést a lejátszás leállítása után (0-300 másodperc). Ajánlott: 30 másodperc.",
+  "SAVE": "Beállítások mentése",
+  "SAVE_SUCCESS": "Konfiguráció sikeresen mentve",
+  "SAVE_ERROR": "Hiba a konfiguráció mentése során"
 }

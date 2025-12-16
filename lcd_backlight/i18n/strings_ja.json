@@ -1,26 +1,21 @@
 {
   "PLUGIN_NAME": "LCDバックライト制御",
-  "PLUGIN_CONFIGURATION": "LCDバックライト設定",
-  
   "GENERAL_SETTINGS": "一般設定",
-  "ENABLED": "自動明るさを有効にする",
-  "ENABLED_DOC": "VEML7700環境光センサーに基づいた自動バックライト制御を有効にする",
-  "MEASUREMENT_INTERVAL": "測定間隔(秒)",
-  "MEASUREMENT_INTERVAL_DOC": "光センサー読み取り間の時間(0.1〜10秒)",
-  
-  "BACKLIGHT_SETTINGS": "バックライト設定",
+  "MEASUREMENT_INTERVAL": "測定間隔（秒）",
+  "MEASUREMENT_INTERVAL_DOC": "光センサー読み取りの間隔。値を低くすると明るさの変化がより速くなりますが、CPU使用率が増加する可能性があります。",
   "MIN_BACKLIGHT": "最小輝度",
-  "MIN_BACKLIGHT_DOC": "ディスプレイの最小輝度レベル(0-255)。ディスプレイはこの値より暗くなりません。",
+  "MIN_BACKLIGHT_DOC": "ディスプレイが到達する最低輝度レベル（0-255）。画面が暗くなりすぎるのを防ぎます。",
   "MAX_BACKLIGHT": "最大輝度",
-  "MAX_BACKLIGHT_DOC": "ディスプレイの最大輝度レベル(0-255)。ディスプレイはこの値より明るくなりません。",
-  
-  "SENSOR_SETTINGS": "センサー設定",
-  "LUX_MULTIPLIER": "ルクス乗数",
-  "LUX_MULTIPLIER_DOC": "VEML7700センサーの校正乗数(0.01〜10)。明るい反応にするには増やし、暗い反応にするには減らします。",
+  "MAX_BACKLIGHT_DOC": "ディスプレイが到達する最高輝度レベル（0-255）。電力を節約するために削減できます。",
+  "LUX_MULTIPLIER": "ルクス倍率",
+  "LUX_MULTIPLIER_DOC": "VEML7700センサーの較正倍率。明るい応答を得るには増やし、暗い応答を得るには減らします。",
   "SMOOTHING_FACTOR": "スムージング係数",
-  "SMOOTHING_FACTOR_DOC": "輝度遷移の滑らかさ(0.0〜1.0)。低い=遅い/滑らかな遷移、高い=速い/反応的。",
-  
+  "SMOOTHING_FACTOR_DOC": "輝度遷移の速さを制御します（0.0-1.0）。値を低くすると、より遅く滑らかな遷移が作成されます。",
+  "PLAYBACK_BOOST": "再生時の輝度ブースト",
+  "PLAYBACK_BOOST_DOC": "音楽再生中に追加される追加輝度（0-255）。この機能を無効にするには0に設定します。",
+  "PLAYBACK_BOOST_DURATION": "再生後のブースト持続時間（秒）",
+  "PLAYBACK_BOOST_DURATION_DOC": "再生停止後に輝度ブーストを維持する時間（0-300秒）。推奨：30秒。",
   "SAVE": "設定を保存",
-  "CONFIG_SAVED": "設定が正常に保存されました。サービスは自動的に設定を再読み込みします。",
-  "CONFIG_SAVE_ERROR": "設定の保存中にエラーが発生しました"
+  "SAVE_SUCCESS": "設定が正常に保存されました",
+  "SAVE_ERROR": "設定の保存中にエラーが発生しました"
 }

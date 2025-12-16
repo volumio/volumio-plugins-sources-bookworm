@@ -5,7 +5,7 @@ echo "Installing LCD Backlight Control plugin..."
 # Install Python dependencies
 echo "Installing Python dependencies..."
 apt-get update
-apt-get install -y python3-smbus
+apt-get install -y python3-smbus python3-requests
 
 # Install pip package for smbus if needed
 pip3 install smbus 2>/dev/null || true
@@ -28,6 +28,21 @@ chmod 755 /etc/lcd_backlight
 chmod 775 /etc/lcd_backlight/*
 chown -R volumio:volumio /etc/lcd_backlight
 
+
+# Create default config files with initial values
+echo "Creating default configuration files..."
+echo "1" > /etc/lcd_backlight/lcd_enabled
+echo "1" > /etc/lcd_backlight/lcd_int_time
+echo "12" > /etc/lcd_backlight/lcd_min_backlight
+echo "255" > /etc/lcd_backlight/lcd_max_backlight
+echo "0.75" > /etc/lcd_backlight/lcd_lux_multiplier
+echo "0.3" > /etc/lcd_backlight/lcd_smoothing_factor
+echo "0" > /etc/lcd_backlight/lcd_playback_boost
+echo "30" > /etc/lcd_backlight/lcd_playback_boost_duration
+
+# Set proper permissions
+chmod 664 /etc/lcd_backlight/lcd_*
+chown volumio:volumio /etc/lcd_backlight/lcd_*
 
 # Check content
 ls -la /etc/lcd_backlight/
