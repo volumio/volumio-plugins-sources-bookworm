@@ -71,6 +71,7 @@ fi
 chmod 755 /data/plugins/system_hardware/lcd_backlight
 chown -R volumio:volumio /data/plugins/system_hardware/lcd_backlight
 
+volumio plugin refresh
 
 echo "Installation complete!"
 echo "Configure the plugin via Volumio web interface and enable it."

@@ -399,6 +399,10 @@ class BacklightController:
 
         success = self._write_brightness(self.current_brightness)
 
+        #Uncomment for debugging:
+        #if success:
+        #    print(f"[{time.strftime('%H:%M:%S')}] Lux: {lux:6.1f} | Brightness: {self.current_brightness:3d}/{self.max_backlight}")
+
 
     def run(self):
         """Main control loop"""
