@@ -254,6 +254,7 @@ export type UIConfigSectionContentKeyOf<K extends UIConfigSectionKey> =
   K extends 'section_idle_view' ?
     'enabled' | 
     'waitTime' | 
+    'showClock' | 
     'showLocation' | 
     'showWeather' | 
     'mainAlignment' | 
@@ -596,6 +597,7 @@ export type UIConfigElementOf<K extends UIConfigSectionKey, C extends UIConfigSe
   K extends 'section_idle_view' ? (
     C extends 'enabled' ? UIConfigSelect<K> :
     C extends 'waitTime' ? UIConfigInput<K, 'number'> :
+    C extends 'showClock' ? UIConfigSwitch<K> :
     C extends 'showLocation' ? UIConfigSwitch<K> :
     C extends 'showWeather' ? UIConfigSwitch<K> :
     C extends 'mainAlignment' ? UIConfigSelect<K> :

@@ -103,7 +103,7 @@ export default class LibraryViewHandler extends BaseViewHandler<LibraryView> {
         service: 'jellyfin',
         type: 'streaming-category',
         title: jellyfin.getI18n('JELLYFIN_PLAYLISTS'),
-        uri: `${baseUri}/${ViewHelper.constructUriSegmentFromView<PlaylistView>({ name: 'playlists', parentId: libraryId })}`,
+        uri: `${baseUri}/${ViewHelper.constructUriSegmentFromView<PlaylistView>({ name: 'playlists' })}`,
         albumart: `/albumart?sourceicon=${baseImgPath}playlist.png`
       },
       {

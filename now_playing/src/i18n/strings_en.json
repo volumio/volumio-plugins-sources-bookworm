@@ -228,6 +228,7 @@
   "NOW_PLAYING_ALL_CLIENTS": "All clients",
   "NOW_PLAYING_DISABLED": "Disabled",
   "NOW_PLAYING_WAIT_TIME": "Wait Time (Seconds)",
+  "NOW_PLAYING_SHOW_CLOCK": "Show Clock",
   "NOW_PLAYING_SHOW_LOCATION": "Show Location (Uses Weather Info)",
   "NOW_PLAYING_SHOW_WEATHER": "Show Weather",
   "NOW_PLAYING_IDLE_SCREEN_MAIN_ALIGNMENT": "Main Alignment",

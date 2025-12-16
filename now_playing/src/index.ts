@@ -1085,6 +1085,7 @@ class ControllerNowPlaying {
         break;
     }
     idleScreenUIConf.content.waitTime.value = idleScreen.waitTime;
+    idleScreenUIConf.content.showClock.value = idleScreen.showClock;
     idleScreenUIConf.content.showLocation.value = idleScreen.showLocation;
     idleScreenUIConf.content.showWeather.value = idleScreen.showWeather;
     idleScreenUIConf.content.mainAlignment.value = {

@@ -107,7 +107,7 @@ _LibraryViewHandler_instances = new WeakSet(), _LibraryViewHandler_getTopItemLis
             service: 'jellyfin',
             type: 'streaming-category',
             title: JellyfinContext_1.default.getI18n('JELLYFIN_PLAYLISTS'),
-            uri: `${baseUri}/${ViewHelper_1.default.constructUriSegmentFromView({ name: 'playlists', parentId: libraryId })}`,
+            uri: `${baseUri}/${ViewHelper_1.default.constructUriSegmentFromView({ name: 'playlists' })}`,
             albumart: `/albumart?sourceicon=${baseImgPath}playlist.png`
         },
         {

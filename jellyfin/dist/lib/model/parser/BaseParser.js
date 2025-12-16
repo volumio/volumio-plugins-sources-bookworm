@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const image_type_1 = require("@jellyfin/sdk/lib/generated-client/models/image-type");
+const image_api_1 = require("@jellyfin/sdk/lib/utils/api/image-api");
 const entities_1 = require("../../entities");
 class BaseParser {
     async parseDto(data, api) {
@@ -19,7 +20,8 @@ class BaseParser {
         if (!data.Id || !data.ImageTags?.Primary) {
             return null;
         }
-        return api.getItemImageUrl(data.Id, image_type_1.ImageType.Primary, {
+        return (0, image_api_1.getImageApi)(api)
+            .getItemImageUrlById(data.Id, image_type_1.ImageType.Primary, {
             maxWidth: 500,
             maxHeight: 500,
             quality: 90
