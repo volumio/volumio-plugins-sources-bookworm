@@ -36,27 +36,27 @@ This plugin automatically adjusts the brightness of LCD displays with backlight 
 ### I2C Bus (VEML7700 Sensor)
 
 ![Wiring diagram for raspberrypi 3b+](images/veml7700_schema.png)
-```
-Raspberry Pi 3B+          VEML7700 (WL7700)
-âââââââââââââââââ         ââââââââââââââââââ
-Pin 1  (3.3V)    ââââââââ Pin 5 (+3.3V)
-Pin 3  (GPIO 2)  ââââââââ Pin 2 (SDA)
-Pin 5  (GPIO 3)  ââââââââ Pin 1 (SCL)
-Pin 6  (GND)     ââââââââ Pin 4 (GND)
-```
 
-### GPIO Pinout Reference
+| Raspberry Pi 3B+   |     VEML7700 (WL7700) |
+|--------------------|----------------------|
+| Pin 1  (3.3V)    |  Pin 5 (+3.3V) |
+| Pin 3  (GPIO 2)  |  Pin 2 (SDA) |
+| Pin 5  (GPIO 3)  |  Pin 1 (SCL) |
+| Pin 6  (GND)     |  Pin 4 (GND) |
 
-```
-+-----+-----+---------+------+---+---Pi 3B+-+---+------+---------+-----+-----+
-| BCM | wPi |   Name  | Mode | V | Physical | V | Mode | Name    | wPi | BCM |
-+-----+-----+---------+------+---+----++----+---+------+---------+-----+-----+
-|     |     |    3.3v |      |   |  1 || 2  |   |      | 5v      |     |     |
-|   2 |   8 |   SDA.1 | ALT0 | 1 |  3 || 4  |   |      | 5v      |     |     |
-|   3 |   9 |   SCL.1 | ALT0 | 1 |  5 || 6  |   |      | 0v      |     |     |
-|   4 |   7 | GPIO. 7 |   IN | 1 |  7 || 8  | 1 | IN   | TxD     |  15 |  14 |
-+-----+-----+---------+------+---+----++----+---+------+---------+-----+-----+
-```
+
+### GPIO Pinout Reference PI3B
+
+|Pin| BCM | wPi | Name   | Mode | V |
+|----|----|-----|--------|------|---|
+| 1  |    |     | 3.3V   |      |   |
+| 2  |    |     | 5V     |      |   |
+| 3  | 2  | 8 | SDA.1  | ALT0 | 1 |
+| 4  |    |     | 5V     |     |   |
+| 5  | 3  | 9 | SCL.1  | ALT0 | 1 |
+| 6  |    |   | GND    |  |   |
+| 7  | 4  | 7 | GPIO. 7 | IN   | 1 |
+| 8  | 14 | 15 | TxD    | IN   | 0 |
 
 ### Rotary Encoder (KY-040)
 
