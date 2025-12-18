@@ -167,23 +167,30 @@ Final Brightness = min(MAX_BACKLIGHT, Ambient_Brightness + Playback_Boost)
 ## Technical Details
 
 ### File Structure
-
-```
+```text
 lcd_backlight/
-âââ index.js                    # Main plugin controller
-âââ backlight_control.py        # Python script for hardware control
-âââ lcd_backlight.service       # Systemd service file
-âââ install.sh                  # Installation script
-âââ uninstall.sh               # Uninstallation script
-âââ UIConfig.json              # Web UI configuration
-âââ package.json               # Plugin metadata
-âââ i18n/                      # Translations
-    âââ strings_en.json        # English strings
-    âââ strings_sk.json        # Slovak strings
-/usr/local/bin/
-âââ backlight_control.py        # Main Python skript
-```
+   ├── index.js # Main plugin controller
+   ├── backlight_control.py # Python script for hardware control
+   ├── lcd_backlight.service # Systemd service file
+   ├── install.sh # Installation script
+   ├── uninstall.sh # Uninstallation script
+   ├── UIConfig.json # Web UI configuration
+   ├── package.json # Plugin metadata
+   ├── i18n/ # Translations
+        ├── strings_en.json # English strings
+        ├── strings_sk.json # Slovak strings
+        └── strings_...json # Other language strings DE, FR, ...
 
+   └── images/ # Images
+         ├── logo.png # Logo image
+         ├── plugin_settings.png # Settings image
+         ├── veml7700_schema.png # Schematics drawings
+         └── volumio_plugins.png # Plugins screenshot
+
+/usr/local/bin/
+   └── backlight_control.py # Main Python script (installed version)
+
+```
 ### Configuration Files
 
 The plugin stores configuration in two locations:
