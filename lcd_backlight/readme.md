@@ -22,7 +22,7 @@ This plugin automatically adjusts the brightness of LCD displays with backlight 
 - **Real-time Playback Detection**: Monitors Volumio's playback state via API
 - **Multi-language Support**: Includes English and Slovak translations (extensible to all Volumio-supported languages)
 
-## ß Hardware Components
+## √∞¬ß Hardware Components
 
 | Component | Model/Type | Description |
 |-----------|------------|-------------|
@@ -31,18 +31,18 @@ This plugin automatically adjusts the brightness of LCD displays with backlight 
 | **Encoder** | KY-040 | Rotary encoder for volume control |
 | **Light Sensor** | VEML7700 (BH-014PA) | 16-bit I2C ambient light sensor |
 
-##  Wiring Diagram
+## √∞ Wiring Diagram
 
 ### I2C Bus (VEML7700 Sensor)
 
 ![Wiring diagram for raspberrypi 3b+](images/veml7700_schema.png)
 ```
 Raspberry Pi 3B+          VEML7700 (WL7700)
-‚‚‚‚‚‚‚‚‚‚‚‚‚‚‚‚‚         ‚‚‚‚‚‚‚‚‚‚‚‚‚‚‚‚‚‚
-Pin 1  (3.3V)    ‚‚‚‚‚‚‚‚ Pin 5 (+3.3V)
-Pin 3  (GPIO 2)  ‚‚‚‚‚‚‚‚ Pin 2 (SDA)
-Pin 5  (GPIO 3)  ‚‚‚‚‚‚‚‚ Pin 1 (SCL)
-Pin 6  (GND)     ‚‚‚‚‚‚‚‚ Pin 4 (GND)
+√¢√¢√¢√¢√¢√¢√¢√¢√¢√¢√¢√¢√¢√¢√¢√¢√¢         √¢√¢√¢√¢√¢√¢√¢√¢√¢√¢√¢√¢√¢√¢√¢√¢√¢√¢
+Pin 1  (3.3V)    √¢√¢√¢√¢√¢√¢√¢√¢ Pin 5 (+3.3V)
+Pin 3  (GPIO 2)  √¢√¢√¢√¢√¢√¢√¢√¢ Pin 2 (SDA)
+Pin 5  (GPIO 3)  √¢√¢√¢√¢√¢√¢√¢√¢ Pin 1 (SCL)
+Pin 6  (GND)     √¢√¢√¢√¢√¢√¢√¢√¢ Pin 4 (GND)
 ```
 
 ### GPIO Pinout Reference
@@ -89,7 +89,7 @@ Pin 6  (GND)     ‚‚‚‚‚‚‚‚ Pin 4 (GND)
 If it does not, it is necessary to delete the file /data/configuration/plugins.json and restart Volumio using the command  volumio vrestart
 
 2. Install the plugin through the Volumio web interface:
-   - Navigate to **Plugins** ‚ **Install Plugins**
+   - Navigate to **Plugins** √¢ **Install Plugins**
    - Search for "LCD Backlight Control" or upload the plugin package
    
 2.1 The installation script will:
@@ -101,7 +101,7 @@ If it does not, it is necessary to delete the file /data/configuration/plugins.j
 
 ## Configuration
 
-Access the plugin settings through the Volumio web interface under **Plugins** ‚ **LCD Backlight Control** button **Settings** .
+Access the plugin settings through the Volumio web interface under **Plugins** √¢ **LCD Backlight Control** button **Settings** .
 ![plugin settings](images/plugin_settings.png)
 
 ### Available Settings
@@ -170,18 +170,18 @@ Final Brightness = min(MAX_BACKLIGHT, Ambient_Brightness + Playback_Boost)
 
 ```
 lcd_backlight/
-‚‚‚ index.js                    # Main plugin controller
-‚‚‚ backlight_control.py        # Python script for hardware control
-‚‚‚ lcd_backlight.service       # Systemd service file
-‚‚‚ install.sh                  # Installation script
-‚‚‚ uninstall.sh               # Uninstallation script
-‚‚‚ UIConfig.json              # Web UI configuration
-‚‚‚ package.json               # Plugin metadata
-‚‚‚ i18n/                      # Translations
-    ‚‚‚ strings_en.json        # English strings
-    ‚‚‚ strings_sk.json        # Slovak strings
+√¢√¢√¢ index.js                    # Main plugin controller
+√¢√¢√¢ backlight_control.py        # Python script for hardware control
+√¢√¢√¢ lcd_backlight.service       # Systemd service file
+√¢√¢√¢ install.sh                  # Installation script
+√¢√¢√¢ uninstall.sh               # Uninstallation script
+√¢√¢√¢ UIConfig.json              # Web UI configuration
+√¢√¢√¢ package.json               # Plugin metadata
+√¢√¢√¢ i18n/                      # Translations
+    √¢√¢√¢ strings_en.json        # English strings
+    √¢√¢√¢ strings_sk.json        # Slovak strings
 /usr/local/bin/
-‚‚‚ backlight_control.py        # Main Python skript
+√¢√¢√¢ backlight_control.py        # Main Python skript
 ```
 
 ### Configuration Files
@@ -247,8 +247,8 @@ Response format:
 ## Troubleshooting
 
 ### Plugin doesn't start
-- Check if the VEML7700 sensor is properly connected via I¬≤C
-- Verify I¬≤C is enabled on your system (`sudo i2cdetect -y 1`)
+- Check if the VEML7700 sensor is properly connected via I√Ç¬≤C
+- Verify I√Ç¬≤C is enabled on your system (`sudo i2cdetect -y 1`)
 - Check systemd service status: `systemctl status lcd_backlight.service`
 - Review logs: `journalctl -u lcd_backlight.service -f`
 
@@ -285,7 +285,10 @@ The plugin can be uninstalled through the Volumio web interface. The uninstallat
 
 ## Version
 
-**Current Version**: 1.0.0
+**Current Version**: 1.1.0
+ - added boost brightness durring playback
+ - instal/uninstall script fix
+
 
 ## License
 
@@ -301,4 +304,4 @@ For issues, questions, or contributions, please visit the plugin's repository or
 
 ---
 
-**Note**: This plugin requires appropriate hardware (VEML7700 sensor and compatible LCD display) and may need system-level permissions to access I¬≤C, backlight control interfaces, and Volumio API.
+**Note**: This plugin requires appropriate hardware (VEML7700 sensor and compatible LCD display) and may need system-level permissions to access I√Ç¬≤C, backlight control interfaces, and Volumio API.
