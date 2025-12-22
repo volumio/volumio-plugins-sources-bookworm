@@ -68,11 +68,11 @@ FusionDsp.prototype.onStart = function () {
 
 
   if (!self.checkCamillaBinary()) {
-     const error = new Error("CamillaDSP binary check failed. Plugin startup aborted.");
-     self.logger.error(logPrefix + error.message);
-     
-     defer.reject(error);
-     return defer.promise;
+    const error = new Error("CamillaDSP binary check failed. Plugin startup aborted.");
+    self.logger.error(logPrefix + error.message);
+
+    defer.reject(error);
+    return defer.promise;
   }
 
   self.commandRouter.loadI18nStrings();
@@ -166,13 +166,13 @@ FusionDsp.prototype.checkCamillaBinary = function () {
     }, 2200);
     // self.onStop();  
     //    self.commandRouter.disableAndStopPlugin('audio_interface', 'fusiondsp');
-   // self.refreshUI()
+    // self.refreshUI()
 
     return false;
   } else {
 
-  this.logger.info(logPrefix + "CamillaDSP binary found.");
-  return true;
+    this.logger.info(logPrefix + "CamillaDSP binary found.");
+    return true;
   }
 };
 
@@ -888,23 +888,23 @@ function configurePresetSelection(self, uiconf, selectedsp) {
 
   self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.value', value);
   self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.label', plabel);
+  if (selectedsp != 'EQ3') {
+    try {
+      const items = fs.readdirSync(pFolder);
+      const itemsf = items.map(item => item.replace(/^\./, '').replace(/\.json$/, ''));
 
-  try {
-    const items = fs.readdirSync(pFolder);
-    const itemsf = items.map(item => item.replace(/^\./, '').replace(/\.json$/, ''));
-
-    if (items.length === 0) {
-      // Default to 'No preset' if no items are found
-      self.configManager.pushUIConfigParam(uiconf, 'sections[2].content[0].options', { value: 'No preset', label: 'No preset' });
-    } else {
-      items.forEach((item, i) => {
-        self.configManager.pushUIConfigParam(uiconf, 'sections[2].content[0].options', { value: item, label: itemsf[i] });
-      });
+      if (items.length === 0) {
+        // Default to 'No preset' if no items are found
+        self.configManager.pushUIConfigParam(uiconf, 'sections[2].content[0].options', { value: 'No preset', label: 'No preset' });
+      } else {
+        items.forEach((item, i) => {
+          self.configManager.pushUIConfigParam(uiconf, 'sections[2].content[0].options', { value: item, label: itemsf[i] });
+        });
+      }
+    } catch (e) {
+      self.logger.error(`${logPrefix} failed to read local file: ${e}`);
     }
-  } catch (e) {
-    self.logger.error(`${logPrefix} failed to read local file: ${e}`);
   }
-
 }
 
 function configureImportEq(self, uiconf) {
@@ -959,7 +959,7 @@ function configureResampling(self, uiconf) {
   const resamplingQ = self.config.get('resamplingq');
   self.configManager.setUIConfigParam(uiconf, 'sections[6].content[2].value.value', resamplingQ);
   self.configManager.setUIConfigParam(uiconf, 'sections[6].content[2].value.label', resamplingQ);
-  ['+', '++', '+++'].forEach(q => {
+  ['+', '++', '+++', '++++'].forEach(q => {
     self.configManager.pushUIConfigParam(uiconf, 'sections[6].content[2].options', { value: q, label: q });
   });
 }
@@ -1896,22 +1896,26 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
   let capturesamplerate = hcurrentsamplerate;
   let outputsamplerate = capturesamplerate;
   if (enableresampling) {
-    let type
+    let profile
     switch (resamplingq) {
       case ("+"):
-        type = 'FastAsync'
+        profile = 'VeryFast'
         break;
       case ("++"):
-        type = 'BalancedAsync'
+        profile = 'Fast'
         break;
       case ("+++"):
-        type = 'AccurateAsync'
+        profile = 'Balanced'
         break;
-      default: "++"
+      case ("++++"):
+        profile = 'Accurate'
+        break;
+      default: "+++"
     }
 
-    composeddevice += '  enable_resampling: true\n';
-    composeddevice += '  resampler_type: ' + type + '\n';
+    composeddevice += '  resampler:\n';
+    composeddevice += '    type: ' + 'AsyncSinc' + '\n';
+    composeddevice += '    profile: ' + profile + '\n';
     composeddevice += '  capture_samplerate: ' + capturesamplerate;
     outputsamplerate = resamplingset;
   } else if (enableresampling == false) {

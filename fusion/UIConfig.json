@@ -338,8 +338,8 @@
           "doc": "TRANSLATE.RESAMPLINGQ_DOC",
           "label": "TRANSLATE.RESAMPLINGQ",
           "value": {
-            "value": "Meduim",
-            "label": "Medium"
+            "value": "+++",
+            "label": "+++"
           },
           "options": [],
           "visibleIf": {
