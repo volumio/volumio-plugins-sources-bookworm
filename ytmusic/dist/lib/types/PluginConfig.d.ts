@@ -5,6 +5,7 @@ export interface PluginConfigSchemaEntry<T, U = false> {
     json: U;
 }
 export interface PluginConfigSchema {
+    hasAcceptedDisclaimer: PluginConfigSchemaEntry<boolean>;
     region: PluginConfigSchemaEntry<string>;
     language: PluginConfigSchemaEntry<string>;
     loadFullPlaylists: PluginConfigSchemaEntry<boolean>;
