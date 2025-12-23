@@ -16,6 +16,8 @@ import PairingHelper from './lib/PairingHelper.js';
 import ReceiverDataStore from './lib/ReceiverDataStore.js';
 import { type NowPlayingPluginSupport } from 'now-playing-common';
 import YTCRNowPlayingMetadataProvider from './lib/YTCRNowPlayingMetadataProvider';
+import InnertubeLoader from './lib/InnertubeLoader';
+import { existsSync, readFileSync } from 'fs';
 
 const IDLE_STATE = {
   status: 'stop',
@@ -44,9 +46,9 @@ class ControllerYTCR implements NowPlayingPluginSupport {
   #previousTrackTimer: NodeJS.Timeout | null;
 
   #logger: Logger;
-  #player: MPDPlayer;
-  #volumeControl: VolumeControl;
-  #receiver: YouTubeCastReceiver;
+  #player: MPDPlayer | null;
+  #volumeControl: VolumeControl | null;
+  #receiver: YouTubeCastReceiver | null;
   #dataStore: ReceiverDataStore;
 
   #nowPlayingMetadataProvider: YTCRNowPlayingMetadataProvider | null;
@@ -57,30 +59,44 @@ class ControllerYTCR implements NowPlayingPluginSupport {
     this.#dataStore = new ReceiverDataStore();
     this.#logger = new Logger(context.logger);
     this.#previousTrackTimer = null;
+    this.#player = null;
+    this.#volumeControl = null;
+    this.#receiver = null;
     this.#serviceName = 'ytcr';
   }
 
   getUIConfig() {
     const defer = libQ.defer();
 
-    const lang_code = this.#commandRouter.sharedVars.get('language_code');
+    const hasAcceptedDisclaimer = ytcr.getConfigValue('hasAcceptedDisclaimer');
+    const langCode = this.#commandRouter.sharedVars.get('language_code');
 
-    const configPrepTasks = [
-      this.#commandRouter.i18nJson(`${__dirname}/i18n/strings_${lang_code}.json`,
+    const loadConfigPromises = [
+      utils.kewToJSPromise(this.#commandRouter.i18nJson(`${__dirname}/i18n/strings_${langCode}.json`,
         `${__dirname}/i18n/strings_en.json`,
-        `${__dirname}/UIConfig.json`),
+        `${__dirname}/UIConfig.json`)),
+      hasAcceptedDisclaimer && this.#receiver ? PairingHelper.getManualPairingCode(this.#receiver, this.#logger) : Promise.resolve(null)
+    ] as const;
 
-      utils.jsPromiseToKew(PairingHelper.getManualPairingCode(this.#receiver, this.#logger))
-    ];
-
-    libQ.all(configPrepTasks)
-      .then((configParams: [any, string]) => {
-        const [ uiconf, pairingCode ] = configParams;
-        const [ connectionUIConf,
+    Promise.all(loadConfigPromises)
+      .then(([ uiconf, pairingCode ]) => {
+        const [
+          disclaimerUIConf,
+          connectionUIConf,
           manualPairingUIConf,
           i18nUIConf,
           otherUIConf ] = uiconf.sections;
-        const receiverRunning = this.#receiver.status === Constants.STATUSES.RUNNING;
+
+        // Disclaimer
+        disclaimerUIConf.content[1].value = hasAcceptedDisclaimer;
+
+        if (!hasAcceptedDisclaimer) {
+          // hasAcceptedDisclaimer is false
+          uiconf.sections = [ disclaimerUIConf ];
+          return defer.resolve(uiconf);
+        }
+
+        const receiverRunning = this.#receiver?.status === Constants.STATUSES.RUNNING;
 
         const port = ytcr.getConfigValue('port');
         const enableAutoplayOnConnect = ytcr.getConfigValue('enableAutoplayOnConnect');
@@ -150,7 +166,7 @@ class ControllerYTCR implements NowPlayingPluginSupport {
           connectionStatus = ytcr.getI18n('YTCR_IDLE_NOT_RUNNING');
         }
         else if (this.#hasConnectedSenders()) {
-          const senders = this.#receiver.getConnectedSenders();
+          const senders = this.#receiver?.getConnectedSenders() || [];
           if (senders.length > 1) {
             connectionStatus = ytcr.getI18n('YTCR_CONNECTED_MULTIPLE', senders[0].name, senders.length - 1);
           }
@@ -165,9 +181,9 @@ class ControllerYTCR implements NowPlayingPluginSupport {
 
         defer.resolve(uiconf);
       })
-      .fail((error: any) => {
-        this.#logger.error('[ytcr] Failed to retrieve YouTube Cast Receiver plugin configuration: ', error);
-        defer.reject(error);
+      .catch((error: unknown) => {
+        this.#logger.error('[ytmusic] getUIConfig(): Cannot populate YouTube Cast Receiver configuration:', error);
+        defer.reject(Error());
       });
 
     return defer.promise;
@@ -181,16 +197,22 @@ class ControllerYTCR implements NowPlayingPluginSupport {
   }
 
   onStart() {
-    const defer = libQ.defer();
-
+    
     ytcr.init(this.#context, this.#config);
+    
+    if (!ytcr.getConfigValue('hasAcceptedDisclaimer')) {
+      ytcr.toast('warning', ytcr.getI18n('YTCR_ACCEPT_DISCLAIMER_MSG'));
+      return libQ.resolve();
+    }
+    
+    const defer = libQ.defer();
 
     if (this.#dataStore.isExpired()) {
       this.#logger.info('[ytcr] Data store TTL expired - clearing it...');
       this.#dataStore.clear();
     }
 
-    this.#volumeControl = new VolumeControl(this.#commandRouter, this.#logger);
+    const volumeControl = this.#volumeControl = new VolumeControl(this.#commandRouter, this.#logger);
 
     const playerConfig = {
       mpd: this.#getMpdConfig(),
@@ -198,7 +220,7 @@ class ControllerYTCR implements NowPlayingPluginSupport {
       videoLoader: new VideoLoader(this.#logger),
       prefetch: ytcr.getConfigValue('prefetch')
     };
-    this.#player = new MPDPlayer(playerConfig);
+    const player = this.#player = new MPDPlayer(playerConfig);
 
     const bindToIf = ytcr.getConfigValue('bindToIf');
     const receiverOptions: YouTubeCastReceiverOptions = {
@@ -225,18 +247,16 @@ class ControllerYTCR implements NowPlayingPluginSupport {
     receiver.on('senderConnect', (sender: Sender) => {
       this.#logger.info('[ytcr] ***** Sender connected *****');
       ytcr.toast('success', ytcr.getI18n('YTCR_CONNECTED', sender.name));
-      playerConfig.videoLoader.notifySendersChanged(receiver.getConnectedSenders());
       this.refreshUIConfig();
     });
 
     receiver.on('senderDisconnect', (sender: Sender) => {
       this.#logger.info('[ytcr] ***** Sender disconnected *****');
       ytcr.toast('warning', ytcr.getI18n('YTCR_DISCONNECTED', sender.name));
-      playerConfig.videoLoader.notifySendersChanged(receiver.getConnectedSenders());
       this.refreshUIConfig();
     });
 
-    this.#player.on('action', (action: ActionEvent) => {
+    player.on('action', (action: ActionEvent) => {
       void (async () => {
         if (action.name === 'play' && !this.isCurrentService()) {
           this.#logger.debug('[ytcr] \'play\' command received while not being the current service.');
@@ -258,17 +278,17 @@ class ControllerYTCR implements NowPlayingPluginSupport {
           this.setVolatile();
           this.pushIdleState();
           // Update volume on sender apps
-          await this.#player.notifyExternalStateChange();
+          await player.notifyExternalStateChange();
         }
         else if (action.name === 'setVolume' && !this.isCurrentService()) {
           this.#logger.debug('[ytcr] setVolume command received, but we are not the current service. Putting player to sleep...');
-          this.#player.sleep();
+          player.sleep();
         }
       })();
     });
 
     // Listen for changes in volume on Volumio's end
-    this.#volumeControl.registerVolumioVolumeChangeListener(async (volumioVol: VolumioVolume) => {
+    volumeControl.registerVolumioVolumeChangeListener(async (volumioVol: VolumioVolume) => {
       const volume = {
         level: volumioVol.vol,
         muted: volumioVol.mute
@@ -279,24 +299,24 @@ class ControllerYTCR implements NowPlayingPluginSupport {
         // So we push the latest state here to refresh the old volatile state.
         this.#logger.debug('[ytcr] Captured change in Volumio\'s volume:', volumioVol);
         await this.pushState();
-        this.#volumeControl.setVolume(volume, true);
+        volumeControl.setVolume(volume, true);
         await this.pushState(); // Do it once more
-        await this.#player.notifyExternalStateChange();
+        await player.notifyExternalStateChange();
       }
       else {
         // Even if not current service, we keep track of the updated volume
-        this.#volumeControl.setVolume(volume, true);
+        volumeControl.setVolume(volume, true);
       }
     });
 
-    this.#player.on('state', (states: { current: PlayerState, previous: PlayerState }) => {
+    player.on('state', (states: { current: PlayerState, previous: PlayerState }) => {
       void (async () => {
         if (this.isCurrentService()) {
           const state = states.current;
           this.#logger.debug('[ytcr] Received state change event from MPDPlayer:', state);
           if (state.status === Constants.PLAYER_STATUSES.STOPPED || state.status === Constants.PLAYER_STATUSES.IDLE) {
-            this.#player.sleep();
-            if (state.status === Constants.PLAYER_STATUSES.STOPPED && this.#player.queue.videoIds.length > 0) {
+            player.sleep();
+            if (state.status === Constants.PLAYER_STATUSES.STOPPED && player.queue.videoIds.length > 0) {
               // If queue is not empty, it is possible that we are just moving to another song. In this case, we don't push
               // Idle state to avoid ugly flickering of the screen caused by the temporary Idle state.
               const currentVolumioState = ytcr.getStateMachine().getState() as VolumioState;
@@ -314,15 +334,16 @@ class ControllerYTCR implements NowPlayingPluginSupport {
       })();
     });
 
-    this.#player.on('error', (error: MPDPlayerError) => {
+    player.on('error', (error: MPDPlayerError) => {
       ytcr.toast('error', error.message);
     });
 
     receiver.start().then(async () => {
-      await this.#volumeControl.init();
-      await this.#player.init();
+      await volumeControl.init();
+      await player.init();
       this.#logger.debug('[ytcr] Receiver started with options:', receiverOptions);
-      this.#nowPlayingMetadataProvider = new YTCRNowPlayingMetadataProvider(this.#player, this.#logger);
+      this.#nowPlayingMetadataProvider = new YTCRNowPlayingMetadataProvider(player, this.#logger);
+      ytcr.toast('success', ytcr.getI18n('YTCR_RECEIVER_STARTED'));
       defer.resolve();
     })
       .catch((error: unknown) => {
@@ -348,7 +369,61 @@ class ControllerYTCR implements NowPlayingPluginSupport {
   }
 
   #hasConnectedSenders(): boolean {
-    return this.#receiver?.getConnectedSenders().length > 0 || false;
+    return this.#receiver ? this.#receiver.getConnectedSenders().length > 0 : false;
+  }
+
+  showDisclaimer() {
+    const langCode = this.#commandRouter.sharedVars.get('language_code');
+    let disclaimerFile = `${__dirname}/i18n/disclaimer_${langCode}.html`;
+    if (!existsSync(disclaimerFile)) {
+      disclaimerFile = `${__dirname}/i18n/disclaimer_en.html`;
+    }
+    try {
+      const contents = readFileSync(disclaimerFile, { encoding: 'utf8' });
+      const modalData = {
+        title: ytcr.getI18n('YTCR_DISCLAIMER_HEADING'),
+        message: contents,
+        size: 'lg',
+        buttons: [
+          {
+            name: ytcr.getI18n('YTCR_CLOSE'),
+            class: 'btn btn-warning'
+          },
+          {
+            name: ytcr.getI18n('YTCR_ACCEPT'),
+            class: 'btn btn-info',
+            emit: 'callMethod',
+            payload: {
+              type: 'controller',
+              endpoint: 'music_service/ytcr',
+              method:'acceptDisclaimer',
+              data: ''
+            } 
+          }
+        ]
+      };
+      ytcr.volumioCoreCommand.broadcastMessage("openModal", modalData);
+    }
+    catch (error) {
+      this.#logger.error(`[ytcr] Error reading "${disclaimerFile}":`, error);
+      ytcr.toast('error', 'Error loading disclaimer contents');
+    }
+  }
+
+  acceptDisclaimer() {
+    this.configSaveDisclaimer({
+      hasAcceptedDisclaimer: true
+    });
+  }
+
+  async configSaveDisclaimer(data: any) {
+    const changed = ytcr.getConfigValue('hasAcceptedDisclaimer') !== data.hasAcceptedDisclaimer;
+    ytcr.setConfigValue('hasAcceptedDisclaimer', data.hasAcceptedDisclaimer);
+    ytcr.toast('success', ytcr.getI18n('YTCR_SETTINGS_SAVED'));
+    if (changed) {
+      await utils.kewToJSPromise(this.restart());
+      ytcr.refreshUIConfig();
+    }
   }
 
   configSaveConnection(data: any) {
@@ -385,7 +460,7 @@ class ControllerYTCR implements NowPlayingPluginSupport {
     });
   }
 
-  configSaveI18n(data: any) {
+  async configSaveI18n(data: any) {
     const oldRegion = ytcr.getConfigValue('region');
     const oldLanguage = ytcr.getConfigValue('language');
     const region = data.region.value;
@@ -396,7 +471,7 @@ class ControllerYTCR implements NowPlayingPluginSupport {
       ytcr.setConfigValue('language', language);
 
       if (this.#player) {
-        this.#player.videoLoader.refreshI18nConfig();
+        await this.#player.videoLoader.refreshI18nConfig();
       }
     }
 
@@ -460,7 +535,7 @@ class ControllerYTCR implements NowPlayingPluginSupport {
           }
         ]
       };
-      const senders = this.#receiver.getConnectedSenders();
+      const senders = this.#receiver?.getConnectedSenders() || [];
       if (senders.length > 1) {
         modalData.message = ytcr.getI18n('YTCR_CONF_RESTART_CONFIRM_M', senders[0].name, senders.length - 1);
       }
@@ -483,21 +558,34 @@ class ControllerYTCR implements NowPlayingPluginSupport {
   onStop() {
     const defer = libQ.defer();
 
-    this.#receiver.removeAllListeners();
-    this.#receiver.stop().then(async () => {
-      this.#logger.debug('[ytcr] Receiver stopped');
-      this.unsetVolatile();
-      this.#volumeControl.unregisterVolumioVolumeChangeListener();
-      await this.#player.destroy();
-      ytcr.reset();
-      this.#nowPlayingMetadataProvider = null;
-      defer.resolve();
-    })
-      .catch((error: unknown) => {
+    void (async() => {
+      try {
+        if (this.#receiver) {
+          this.#receiver.removeAllListeners();    
+          await this.#receiver.stop();
+          this.#logger.debug('[ytcr] Receiver stopped');
+        }
+        this.unsetVolatile();
+        if (this.#volumeControl) {
+          this.#volumeControl.unregisterVolumioVolumeChangeListener();
+        }
+        if (this.#player) {
+          await this.#player.destroy();
+        }
+        await InnertubeLoader.reset();
+        if (this.#receiver) {
+          ytcr.toast('success', ytcr.getI18n('YTCR_RECEIVER_STOPPED'));
+        }
+        ytcr.reset();
+        this.#nowPlayingMetadataProvider = null;
+        defer.resolve();
+      }
+      catch (error: unknown) {
         this.#logger.error('[ytcr] Failed to stop receiver:', error);
         defer.reject(error);
-      });
-
+      }
+    })();
+    
     return defer.promise;
   }
 
@@ -532,7 +620,10 @@ class ControllerYTCR implements NowPlayingPluginSupport {
   async onUnsetVolatile() {
     this.pushIdleState();
     ytcr.getMpdPlugin().ignoreUpdate(false);
-    return this.#player.stop();
+    if (this.#player) {
+      return this.#player.stop();
+    }
+    return true;
   }
 
   pushIdleState() {
@@ -545,7 +636,7 @@ class ControllerYTCR implements NowPlayingPluginSupport {
   }
 
   async pushState(state?: VolumioState) {
-    const volumioState = state || await this.#player.getVolumioState();
+    const volumioState = state || await this.#player?.getVolumioState();
     if (volumioState) {
       this.#logger.debug('[ytcr] pushState(): ', volumioState);
       this.#commandRouter.servicePushState(volumioState, this.#serviceName);
@@ -562,30 +653,33 @@ class ControllerYTCR implements NowPlayingPluginSupport {
   }
 
   stop() {
-    return utils.jsPromiseToKew(this.#player.stop());
+    return this.#player ? utils.jsPromiseToKew(this.#player.stop()) : libQ.resolve(false);
   }
 
   play() {
-    return utils.jsPromiseToKew(this.#player.resume());
+    return this.#player ? utils.jsPromiseToKew(this.#player.resume()) : libQ.resolve(false);
   }
 
   pause() {
-    return utils.jsPromiseToKew(this.#player.pause());
+    return this.#player ? utils.jsPromiseToKew(this.#player.pause()) : libQ.resolve(false);
   }
 
   resume() {
-    return utils.jsPromiseToKew(this.#player.resume());
+    return this.#player ? utils.jsPromiseToKew(this.#player.resume()) : libQ.resolve(false);
   }
 
   seek(position: number) {
-    return utils.jsPromiseToKew(this.#player.seek(Math.round(position / 1000)));
+    return this.#player ? utils.jsPromiseToKew(this.#player.seek(Math.round(position / 1000))) : libQ.resolve(false);
   }
 
   next() {
-    return utils.jsPromiseToKew(this.#player.next());
+    return this.#player ? utils.jsPromiseToKew(this.#player.next()) : libQ.resolve(false);
   }
 
   previous() {
+    if (!this.#player) {
+      return libQ.resolve(false);
+    }
     if (this.#previousTrackTimer) {
       clearTimeout(this.#previousTrackTimer);
       this.#previousTrackTimer = null;
