@@ -1,5 +1,5 @@
 /*--------------------
-// FusionDsp plugin for volumio 3. By balbuze April 2025
+// FusionDsp plugin for volumio 3. By balbuze December 2025
 contribution : Paolo Sabatino
 Multi Dsp features
 Based on CamillaDsp
@@ -1098,6 +1098,7 @@ FusionDsp.prototype.choosedsp = function (data) {
   setTimeout(function () {
     self.createCamilladspfile()
   }, 100);
+  self.logger.info(logPrefix + 'Selected DSP type is : ' + selectedsp);
 
   self.refreshUI();
 };
@@ -1929,7 +1930,7 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
   if ((crossconfig != 'None') && (!is_natural))/* && (effect))*/ {
     var composedeq = '';
 
-    self.logger.info(logPrefix + ' crossfeed  ' + (self.config.get('crossfeed')))
+    self.logger.info(logPrefix + 'Crossfeed selected : ' + (self.config.get('crossfeed')))
     switch (crossconfig) {
       case ("bauer"):
         crossfreq = 700
@@ -2132,6 +2133,9 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
     var composedeq = '';
     composedeq += '  nulleq:' + '\n';
     composedeq += '    type: Conv' + '\n';
+    composedeq += '    parameters:' + '\n';
+    composedeq += '      type: Values' + '\n';
+    composedeq += '      values: [1]' + '\n';
     pipeliner = '      - nulleq';
     result += composedeq
     pipelinelr = pipeliner.slice(8)
@@ -2446,11 +2450,11 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
         if (loudness == false) {
 
           if (pipelinelr == '') {
-            pipelinelr = 'nulleq2'
+            pipelinelr = 'nulleq'
           }
 
           if (pipelinerr == '') {
-            pipelinerr = 'nulleq2'
+            pipelinerr = 'nulleq'
           }
         }
         gainmaxused += gainmax
@@ -2500,7 +2504,7 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
   if (effect) {
 
     if (+gainresult == 0 && !withNegativeValues) {
-      gainclipfree = -0.05
+      gainclipfree = -0.005
     } else if (+gainresult == 0 && withNegativeValues) {
       gainclipfree = -2.5
       self.logger.info(logPrefix + ' else 1  ' + gainclipfree)
@@ -2827,7 +2831,7 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
     composedmixer += '            mute: false'
     composedmixer += '\n'
 
-    pipeliner = '      - nulleq2';
+    pipeliner = '      - nulleq';
     pipelinelr = pipeliner.slice(8)
     pipelinerr = pipeliner.slice(8)
 
@@ -3379,7 +3383,7 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
       self.socket.emit('volume', '+')
       setTimeout(function () {
 
-        //  self.sendvolumelevel()
+        self.sendvolumelevel()
       }, 900);
 
       self.socket.emit('volume', '-')
