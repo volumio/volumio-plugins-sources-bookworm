@@ -1,0 +1,52 @@
+# LIRC button configuration for Allo Relay Attenuator
+# Volume controls are handled internally by the daemon
+# Other buttons execute Volumio commands
+
+# Volume Up - handled by daemon (hardware_control)
+begin
+    button = KEY_VOLUMEUP
+    prog = fn-rattenu
+    config = hardware_control
+end
+
+# Volume Down - handled by daemon (hardware_control)
+begin
+    button = KEY_VOLUMEDOWN
+    prog = fn-rattenu
+    config = hardware_control
+end
+
+# Mute - handled by daemon (hardware_control)
+begin
+    button = KEY_MUTE
+    prog = fn-rattenu
+    config = hardware_control
+end
+
+# Play/Pause - Volumio command
+begin
+    button = KEY_PAUSE
+    prog = fn-rattenu
+    config = /usr/local/bin/volumio toggle
+end
+
+# Previous track - Volumio command
+begin
+    button = KEY_PREVIOUS
+    prog = fn-rattenu
+    config = /usr/local/bin/volumio previous
+end
+
+# Next track - Volumio command
+begin
+    button = KEY_NEXT
+    prog = fn-rattenu
+    config = /usr/local/bin/volumio next
+end
+
+# Power - Volumio shutdown
+begin
+    button = KEY_POWER
+    prog = fn-rattenu
+    config = /usr/local/bin/volumio shutdown
+end

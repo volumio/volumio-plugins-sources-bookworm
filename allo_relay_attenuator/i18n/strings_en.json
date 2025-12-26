@@ -1,0 +1,45 @@
+{
+  "ALLO_RELAY_ATTENUATOR": {
+    "PLUGIN_CONFIGURATION": "Allo Relay Attenuator Configuration",
+    
+    "VOLUME_SETTINGS": "Volume Settings",
+    "VOLUME_SETTINGS_DOC": "Configure volume behavior and startup options",
+    "MAP_TO_100": "Map Volume to 100",
+    "MAP_TO_100_DOC": "If enabled, the Volume will range from 0 to 100. If disabled it will reflect the Allo Relay Attenuator range of 0 to 63.",
+    "STARTUP_VOLUME": "Startup Volume",
+    "STARTUP_VOLUME_DOC": "Volume level when plugin starts. Remember Last will restore previous volume.",
+    "MUTE_ON_STARTUP": "Mute on Startup",
+    "MUTE_ON_STARTUP_DOC": "Start muted for safety with high-power amplifiers. Unmute manually after startup.",
+    
+    "IR_REMOTE": "IR Remote Control",
+    "IR_REMOTE_DOC": "Configure infrared remote control settings",
+    "IR_ENABLED": "Enable IR Remote",
+    "IR_ENABLED_DOC": "Enable IR remote control for volume and playback functions.",
+    "IR_SOURCE": "IR Input Source",
+    "IR_SOURCE_DOC": "Select IR receiver input source.",
+    "IR_GPIO_PIN": "IR GPIO Pin",
+    "IR_GPIO_PIN_DOC": "GPIO pin for IR receiver. Default is GPIO17 when using Piano DAC (J7 Pin 8 = GPIOB15 = Pi GPIO17). Use GPIO5 only for direct Pi wiring without DAC.",
+    "IR_WIRING_WARNING": "Wiring Note",
+    
+    "HARDWARE_BUTTONS": "Hardware Buttons",
+    "HARDWARE_BUTTONS_DOC": "J10 header button configuration",
+    "BUTTON_FUNCTIONS": "Button Functions",
+    "BUTTON_NOTE": "Note",
+    
+    "RESOURCES": "Resources",
+    "RESOURCES_DOC": "Documentation and manuals",
+    "LOCAL_DOCS": "Local Documentation",
+    "USER_MANUAL": "User Manual (Online)",
+    "TECH_MANUAL": "Technical Manual (Online)",
+    
+    "SAVE": "Save",
+    "SETTINGS_SAVED": "Settings saved successfully",
+    "SETTINGS_FAILED": "Failed to apply settings",
+    "SERVICE_RESTART": "Restarting attenuator service...",
+    
+    "REBOOT_REQUIRED": "Reboot Required",
+    "REBOOT_MESSAGE": "IR settings changed. Rebooting in",
+    "SECONDS": "seconds",
+    "REBOOT_CANCELLED": "Reboot cancelled. Please reboot manually for IR changes to take effect."
+  }
+}
