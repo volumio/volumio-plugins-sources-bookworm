@@ -1,0 +1,26 @@
+{
+  "map_to_100": {
+    "value": false,
+    "type": "boolean"
+  },
+  "startup_volume": {
+    "value": "remember",
+    "type": "string"
+  },
+  "mute_on_startup": {
+    "value": false,
+    "type": "boolean"
+  },
+  "ir_enabled": {
+    "value": false,
+    "type": "boolean"
+  },
+  "ir_source": {
+    "value": "gpio",
+    "type": "string"
+  },
+  "ir_gpio_pin": {
+    "value": 17,
+    "type": "number"
+  }
+}

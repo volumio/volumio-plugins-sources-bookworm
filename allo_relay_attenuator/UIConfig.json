@@ -1,0 +1,204 @@
+{
+  "page": {
+    "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.PLUGIN_CONFIGURATION"
+  },
+  "sections": [
+    {
+      "id": "section_volume",
+      "element": "section",
+      "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.VOLUME_SETTINGS",
+      "description": "TRANSLATE.ALLO_RELAY_ATTENUATOR.VOLUME_SETTINGS_DOC",
+      "icon": "fa-sliders",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/allo_relay_attenuator",
+        "method": "saveVolumeSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.SAVE",
+        "data": [
+          "map_to_100",
+          "startup_volume",
+          "mute_on_startup"
+        ]
+      },
+      "content": [
+        {
+          "id": "map_to_100",
+          "element": "switch",
+          "doc": "TRANSLATE.ALLO_RELAY_ATTENUATOR.MAP_TO_100_DOC",
+          "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.MAP_TO_100",
+          "value": false
+        },
+        {
+          "id": "startup_volume",
+          "element": "select",
+          "doc": "TRANSLATE.ALLO_RELAY_ATTENUATOR.STARTUP_VOLUME_DOC",
+          "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.STARTUP_VOLUME",
+          "value": {
+            "value": "remember",
+            "label": "Remember Last"
+          },
+          "options": [
+            { "value": "remember", "label": "Remember Last" },
+            { "value": "0", "label": "0 (Quietest)" },
+            { "value": "16", "label": "16 (Low)" },
+            { "value": "31", "label": "31 (Medium)" },
+            { "value": "48", "label": "48 (High)" },
+            { "value": "63", "label": "63 (Maximum)" }
+          ]
+        },
+        {
+          "id": "mute_on_startup",
+          "element": "switch",
+          "doc": "TRANSLATE.ALLO_RELAY_ATTENUATOR.MUTE_ON_STARTUP_DOC",
+          "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.MUTE_ON_STARTUP",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": "section_ir",
+      "element": "section",
+      "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.IR_REMOTE",
+      "description": "TRANSLATE.ALLO_RELAY_ATTENUATOR.IR_REMOTE_DOC",
+      "icon": "fa-wifi",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/allo_relay_attenuator",
+        "method": "saveIRSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.SAVE",
+        "data": [
+          "ir_enabled",
+          "ir_source",
+          "ir_gpio_pin"
+        ]
+      },
+      "content": [
+        {
+          "id": "ir_enabled",
+          "element": "switch",
+          "doc": "TRANSLATE.ALLO_RELAY_ATTENUATOR.IR_ENABLED_DOC",
+          "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.IR_ENABLED",
+          "value": false
+        },
+        {
+          "id": "ir_source",
+          "element": "select",
+          "doc": "TRANSLATE.ALLO_RELAY_ATTENUATOR.IR_SOURCE_DOC",
+          "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.IR_SOURCE",
+          "value": {
+            "value": "gpio",
+            "label": "GPIO (Onboard/DAC)"
+          },
+          "options": [
+            { "value": "gpio", "label": "GPIO (Onboard/DAC)" },
+            { "value": "usb", "label": "USB IR Dongle" },
+            { "value": "disabled", "label": "Disabled" }
+          ],
+          "visibleIf": {
+            "field": "ir_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "ir_gpio_pin",
+          "element": "select",
+          "doc": "TRANSLATE.ALLO_RELAY_ATTENUATOR.IR_GPIO_PIN_DOC",
+          "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.IR_GPIO_PIN",
+          "value": {
+            "value": "17",
+            "label": "GPIO 17 (Default - via Piano DAC)"
+          },
+          "options": [
+            { "value": "17", "label": "GPIO 17 (Default - via Piano DAC)" },
+            { "value": "5", "label": "GPIO 5 (Direct wiring)" },
+            { "value": "18", "label": "GPIO 18" },
+            { "value": "22", "label": "GPIO 22" },
+            { "value": "23", "label": "GPIO 23" },
+            { "value": "24", "label": "GPIO 24" },
+            { "value": "25", "label": "GPIO 25" }
+          ],
+          "visibleIf": {
+            "field": "ir_source",
+            "value": "gpio"
+          }
+        },
+        {
+          "id": "ir_wiring_warning",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.IR_WIRING_WARNING",
+          "value": "WARNING: Allo documentation drawing is incorrect. Connect IR sensor VOUT to J7 Pin 8 (not Pin 10). Pin 8 = GPIOB15 = Pi GPIO17.",
+          "readonly": true,
+          "visibleIf": {
+            "field": "ir_source",
+            "value": "gpio"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_buttons",
+      "element": "section",
+      "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.HARDWARE_BUTTONS",
+      "description": "TRANSLATE.ALLO_RELAY_ATTENUATOR.HARDWARE_BUTTONS_DOC",
+      "icon": "fa-hand-pointer-o",
+      "content": [
+        {
+          "id": "button_functions",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.BUTTON_FUNCTIONS",
+          "value": "Pin 1: Volume Up | Pin 2: Volume Down | Pin 3: Play/Pause | Pin 4: Mute | Pin 5: GND",
+          "readonly": true
+        },
+        {
+          "id": "button_note",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.BUTTON_NOTE",
+          "value": "This version uses I2C polling for button detection. The GPIO 5 interrupt line is no longer required. No wiring to the 40-pin header is needed - buttons connect directly to the J10 header on the Relay Attenuator board.",
+          "readonly": true
+        }
+      ]
+    },
+    {
+      "id": "section_resources",
+      "element": "section",
+      "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.RESOURCES",
+      "description": "TRANSLATE.ALLO_RELAY_ATTENUATOR.RESOURCES_DOC",
+      "icon": "fa-book",
+      "content": [
+        {
+          "id": "local_docs",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.LOCAL_DOCS",
+          "value": "/data/plugins/system_hardware/allo_relay_attenuator/docs/",
+          "readonly": true
+        },
+        {
+          "id": "user_manual",
+          "element": "button",
+          "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.USER_MANUAL",
+          "onClick": {
+            "type": "openUrl",
+            "url": "https://volumio.com/wp-content/uploads/2017/08/Relay-Attenuator-User-Manual.pdf"
+          }
+        },
+        {
+          "id": "tech_manual",
+          "element": "button",
+          "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.TECH_MANUAL",
+          "onClick": {
+            "type": "openUrl",
+            "url": "https://volumio.com/wp-content/uploads/2017/08/Relay-Attenuator-Tech-Manual.pdf"
+          }
+        }
+      ]
+    }
+  ]
+}
