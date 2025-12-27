@@ -417,7 +417,27 @@ Just a Nerd
 
 ## Version History
 
-### v1.3.5 (Current)
+### v1.3.6 (Current)
+- FM Oversampling option to reduce audio distortion
+  - Enable 4x oversampling for regions with strong FM signals
+  - May reduce RDS data quality (trade-off for cleaner audio)
+  - Default: Off (preserves RDS quality)
+- FM Sample Rate selection
+  - 171 kHz: Optimal for RDS decoding (default, recommended for Europe/UK)
+  - 200 kHz: Improved audio quality, reduced RDS reliability
+  - 240 kHz: Best audio quality, minimal RDS support
+- FM De-emphasis filter
+  - Applies 50us de-emphasis to reduce high-frequency harshness
+  - Standard for FM broadcast in Europe, Asia, and Australia
+  - Americas use 75us (not currently supported)
+  - Default: Off
+- Settings guidance:
+  - Europe/UK with weak signals: Use defaults (171k, no oversampling, no de-emphasis)
+  - Strong signal regions (Asia, urban areas): Try oversampling + de-emphasis
+  - Best audio quality (no RDS needed): 240k + oversampling + de-emphasis
+- All settings in FM Radio configuration section
+
+### v1.3.5
 - Complete SNR Measurement Tool implementation
   - Fixed NaN handling for single channel measurements
   - Added guidance text explaining how to apply recommended gain value

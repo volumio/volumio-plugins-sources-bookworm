@@ -35,6 +35,18 @@
     "type": "string",
     "value": "87.5"
   },
+  "fm_oversampling": {
+    "type": "boolean",
+    "value": false
+  },
+  "fm_sample_rate": {
+    "type": "string",
+    "value": "171k"
+  },
+  "fm_deemphasis": {
+    "type": "boolean",
+    "value": false
+  },
   "sample_rate": {
     "type": "number",
     "value": 48000
