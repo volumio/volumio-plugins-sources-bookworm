@@ -1051,6 +1051,18 @@ curl -X POST http://volumio.local:3456/api/maintenance/backup/upload \
 
 ## Changelog
 
+### API v1.3.6
+- New FM configuration options for regional signal optimization
+  - fm_oversampling (boolean): Enable 4x oversampling for strong signal regions
+  - fm_sample_rate (string): "171k", "200k", or "240k" sample rate selection
+  - fm_deemphasis (boolean): Enable 50us de-emphasis filter
+- startFmPlayback now uses configurable sample rate, optional oversampling, and de-emphasis
+- Trade-offs documented:
+  - Higher sample rates improve audio but reduce RDS reliability
+  - Oversampling reduces distortion but degrades RDS decoding
+  - De-emphasis reduces harshness, standard in Europe/Asia/Australia
+- No new API endpoints (configuration changes only)
+
 ### API v1.3.5
 - SNR measurement tool enhancements
   - Fixed NaN handling in parseRtlPowerOutput for malformed CSV data

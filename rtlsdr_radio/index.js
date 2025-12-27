@@ -2417,6 +2417,25 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
         label: self.getSensitivityLabel(sensitivityValue)
       };
     }
+    
+    var fmOversampling = findContentItem(fmSection, 'fm_oversampling');
+    if (fmOversampling) {
+      fmOversampling.value = self.config.get('fm_oversampling', false);
+    }
+    
+    var fmSampleRate = findContentItem(fmSection, 'fm_sample_rate');
+    if (fmSampleRate) {
+      var sampleRateValue = self.config.get('fm_sample_rate', '171k');
+      fmSampleRate.value = {
+        value: sampleRateValue,
+        label: self.getFmSampleRateLabel(sampleRateValue)
+      };
+    }
+    
+    var fmDeemphasis = findContentItem(fmSection, 'fm_deemphasis');
+    if (fmDeemphasis) {
+      fmDeemphasis.value = self.config.get('fm_deemphasis', false);
+    }
   }
   
   // SECTION 4: DAB/DAB+ RADIO
@@ -2556,6 +2575,16 @@ ControllerRtlsdrRadio.prototype.getLowerFreqLabel = function(value) {
   return labels[value] || '87.5 MHz (Europe/Default)';
 };
 
+ControllerRtlsdrRadio.prototype.getFmSampleRateLabel = function(value) {
+  var self = this;
+  var labels = {
+    '171k': self.getI18nString('FM_SAMPLE_RATE_171K') || '171 kHz (RDS Optimal)',
+    '200k': self.getI18nString('FM_SAMPLE_RATE_200K') || '200 kHz (Audio Quality)',
+    '240k': self.getI18nString('FM_SAMPLE_RATE_240K') || '240 kHz (Audio Quality+)'
+  };
+  return labels[value] || '171 kHz (RDS Optimal)';
+};
+
 ControllerRtlsdrRadio.prototype.saveWebManagerSettings = function(data) {
   var self = this;
   var defer = libQ.defer();
@@ -2646,6 +2675,25 @@ ControllerRtlsdrRadio.prototype.saveFmSettings = function(data) {
       if (validValues.indexOf(lowerFreqValue) !== -1) {
         self.config.set('fm_lower_freq', lowerFreqValue);
       }
+    }
+    
+    // Save FM oversampling
+    if (data.fm_oversampling !== undefined) {
+      self.config.set('fm_oversampling', data.fm_oversampling);
+    }
+    
+    // Save FM sample rate
+    if (data.fm_sample_rate !== undefined) {
+      var sampleRateValue = data.fm_sample_rate.value || data.fm_sample_rate;
+      var validRates = ['171k', '200k', '240k'];
+      if (validRates.indexOf(sampleRateValue) !== -1) {
+        self.config.set('fm_sample_rate', sampleRateValue);
+      }
+    }
+    
+    // Save FM de-emphasis
+    if (data.fm_deemphasis !== undefined) {
+      self.config.set('fm_deemphasis', data.fm_deemphasis);
     }
     
     self.commandRouter.pushToastMessage('success', 'FM/DAB Radio', 
@@ -4299,8 +4347,11 @@ ControllerRtlsdrRadio.prototype.startFmPlayback = function(freq, stationName, de
     self.saveStations();
   }
   
-  // Get gain from config
+  // Get settings from config
   var gain = self.config.get('fm_gain', 50);
+  var fmOversampling = self.config.get('fm_oversampling', false);
+  var fmSampleRate = self.config.get('fm_sample_rate', '171k');
+  var fmDeemphasis = self.config.get('fm_deemphasis', false);
   
   // Reset RDS state
   self.currentRds = null;
@@ -4314,11 +4365,22 @@ ControllerRtlsdrRadio.prototype.startFmPlayback = function(freq, stationName, de
   
   // Build fn-rtl_fm command for RDS-compatible output
   // -M fm: FM mode without stereo decode (outputs MPX baseband for RDS)
-  // -s 171k: Sample rate optimal for RDS (multiple of 57kHz subcarrier)
+  // -s: Sample rate (171k optimal for RDS, 200k for audio quality)
+  // -o 4: Oversampling (reduces distortion in strong signal areas, may reduce RDS quality)
   // -l 0: Squelch off
   // -A std: Standard audio
   // -F 9: FIR filter size
-  var rtlArgs = ['-f', freq + 'M', '-M', 'fm', '-s', self.FM_SAMPLE_RATE, '-l', '0', '-A', 'std', '-g', gain.toString(), '-F', '9'];
+  var rtlArgs = ['-f', freq + 'M', '-M', 'fm', '-s', fmSampleRate, '-l', '0', '-A', 'std', '-g', gain.toString(), '-F', '9'];
+  
+  // Add oversampling if enabled (helps with strong signals, may reduce RDS quality)
+  if (fmOversampling) {
+    rtlArgs.splice(6, 0, '-o', '4');
+  }
+  
+  // Add de-emphasis if enabled (reduces high-frequency noise, standard in Europe/Asia/Australia)
+  if (fmDeemphasis) {
+    rtlArgs.push('-E', 'deemp');
+  }
   
   self.logger.info('[RTL-SDR Radio] Starting FM with RDS: fn-rtl_fm ' + rtlArgs.join(' '));
   
@@ -4328,11 +4390,11 @@ ControllerRtlsdrRadio.prototype.startFmPlayback = function(freq, stationName, de
   
   // Spawn fn-redsea for RDS decoding
   // -E flag enables BLER (Block Error Rate) output for signal quality
-  var redseaProcess = spawn('fn-redsea', ['-r', self.FM_SAMPLE_RATE, '--show-partial', '-E']);
+  var redseaProcess = spawn('fn-redsea', ['-r', fmSampleRate, '--show-partial', '-E']);
   self.redseaProcess = redseaProcess;
   
   // Spawn sox for resampling: FM sample rate mono -> output rate stereo
-  var soxArgs = ['-t', 'raw', '-r', self.FM_SAMPLE_RATE, '-e', 'signed', '-b', '16', '-c', '1', '-',
+  var soxArgs = ['-t', 'raw', '-r', fmSampleRate, '-e', 'signed', '-b', '16', '-c', '1', '-',
                  '-t', 'raw', '-r', self.OUTPUT_SAMPLE_RATE, '-e', 'signed', '-b', '16', '-c', '2', '-'];
   var soxProcess = spawn('sox', soxArgs);
   self.soxProcess = soxProcess;

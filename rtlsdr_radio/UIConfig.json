@@ -141,6 +141,9 @@
           "fm_enabled",
           "fm_gain",
           "fm_lower_freq",
+          "fm_oversampling",
+          "fm_sample_rate",
+          "fm_deemphasis",
           "scan_sensitivity"
         ]
       },
@@ -214,6 +217,47 @@
             }
           ],
           "doc": "TRANSLATE.SCAN_SENSITIVITY_DOC",
+          "visibleIf": {
+            "field": "fm_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "fm_oversampling",
+          "element": "switch",
+          "label": "TRANSLATE.FM_OVERSAMPLING",
+          "value": false,
+          "doc": "TRANSLATE.FM_OVERSAMPLING_DOC",
+          "visibleIf": {
+            "field": "fm_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "fm_sample_rate",
+          "element": "select",
+          "label": "TRANSLATE.FM_SAMPLE_RATE",
+          "doc": "TRANSLATE.FM_SAMPLE_RATE_DOC",
+          "value": {
+            "value": "171k",
+            "label": "171 kHz (RDS Optimal)"
+          },
+          "options": [
+            {"value": "171k", "label": "TRANSLATE.FM_SAMPLE_RATE_171K"},
+            {"value": "200k", "label": "TRANSLATE.FM_SAMPLE_RATE_200K"},
+            {"value": "240k", "label": "TRANSLATE.FM_SAMPLE_RATE_240K"}
+          ],
+          "visibleIf": {
+            "field": "fm_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "fm_deemphasis",
+          "element": "switch",
+          "label": "TRANSLATE.FM_DEEMPHASIS",
+          "value": false,
+          "doc": "TRANSLATE.FM_DEEMPHASIS_DOC",
           "visibleIf": {
             "field": "fm_enabled",
             "value": true
