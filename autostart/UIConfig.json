@@ -4,10 +4,10 @@
   },
   "sections": [
     {
-      "id": "section_settings",
+      "id": "section_playback",
       "element": "section",
       "label": "TRANSLATE.AUTOSTART_SETTINGS",
-      "icon": "fa-plug",
+      "icon": "fa-play",
       "description": "TRANSLATE.AUTOSTART_SETTINGS_DESC",
       "onSave": {
         "type": "controller",
@@ -17,7 +17,8 @@
       "saveButton": {
         "label": "TRANSLATE.SAVE",
         "data": [
-          "playFromLastPosition", "autostartDelay"
+          "playFromLastPosition",
+          "autostartDelay"
         ]
       },
       "content": [
@@ -34,10 +35,102 @@
           "element": "input",
           "doc": "TRANSLATE.AUTOSTART_DELAY_DOC",
           "label": "TRANSLATE.AUTOSTART_DELAY",
-          "value": 20000
+          "value": 5000
+        }
+      ]
+    },
+    {
+      "id": "section_volume",
+      "element": "section",
+      "label": "TRANSLATE.VOLUME_SETTINGS",
+      "icon": "fa-volume-up",
+      "description": "TRANSLATE.VOLUME_SETTINGS_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/autostart",
+        "method": "saveVolumeOptions"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "autostartVolumeEnabled",
+          "autostartVolumeLevel"
+        ]
+      },
+      "content": [
+        {
+          "id": "autostartVolumeEnabled",
+          "element": "switch",
+          "doc": "TRANSLATE.VOLUME_ENABLED_DOC",
+          "label": "TRANSLATE.VOLUME_ENABLED",
+          "value": false
+        },
+        {
+          "id": "autostartVolumeLevel",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.VOLUME_LEVEL_DOC",
+          "label": "TRANSLATE.VOLUME_LEVEL",
+          "value": 50,
+          "visibleIf": {
+            "field": "autostartVolumeEnabled",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_polling",
+      "element": "section",
+      "label": "TRANSLATE.POLLING_SETTINGS",
+      "icon": "fa-cog",
+      "description": "TRANSLATE.POLLING_SETTINGS_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/autostart",
+        "method": "savePollingOptions"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "showPollingSettings",
+          "pollingInterval",
+          "maxPollingAttempts"
+        ]
+      },
+      "content": [
+        {
+          "id": "showPollingSettings",
+          "element": "switch",
+          "doc": "TRANSLATE.SHOW_POLLING_SETTINGS_DOC",
+          "label": "TRANSLATE.SHOW_POLLING_SETTINGS",
+          "value": false
+        },
+        {
+          "id": "pollingInterval",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.POLLING_INTERVAL_DOC",
+          "label": "TRANSLATE.POLLING_INTERVAL",
+          "value": 5000,
+          "visibleIf": {
+            "field": "showPollingSettings",
+            "value": true
+          }
+        },
+        {
+          "id": "maxPollingAttempts",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.MAX_POLLING_ATTEMPTS_DOC",
+          "label": "TRANSLATE.MAX_POLLING_ATTEMPTS",
+          "value": 60,
+          "visibleIf": {
+            "field": "showPollingSettings",
+            "value": true
+          }
         }
       ]
     }
   ]
-
 }

@@ -1,0 +1,28 @@
+{
+  "PLUGIN_CONFIGURATION": "Configuracion del plugin AutoStart",
+  "HEADING": "Active este plugin para reproducir musica cuando Volumio se inicie",
+  "SAVE": "Guardar",
+
+  "AUTOSTART_SETTINGS": "Ajustes de reproduccion",
+  "AUTOSTART_SETTINGS_DESC": "Configure la reproduccion automatica cuando Volumio se inicie.",
+  "AUTOSTART_SAVEFROMLASTPOS_DOC": "Reproducir desde la ultima posicion en la cola antes de que Volumio se apagara. De lo contrario, la reproduccion comienza desde el principio de la cola.",
+  "AUTOSTART_SAVEFROMLASTPOS": "Reproducir desde la ultima posicion",
+  "AUTOSTART_DELAY_DOC": "Retraso adicional despues de que el sistema esta listo y el volumen esta configurado. Aumente este valor si su hardware de audio necesita tiempo adicional para inicializarse.",
+  "AUTOSTART_DELAY": "Retraso adicional (milisegundos)",
+
+  "VOLUME_SETTINGS": "Volumen de inicio",
+  "VOLUME_SETTINGS_DESC": "Establecer un nivel de volumen especifico cuando comienza la reproduccion. El volumen se aplica despues de que el sistema esta listo, antes del retraso adicional.",
+  "VOLUME_ENABLED": "Activar volumen de inicio",
+  "VOLUME_ENABLED_DOC": "Cuando esta activado, el volumen se establecera en el nivel especificado antes de que comience la reproduccion.",
+  "VOLUME_LEVEL": "Nivel de volumen (0-100)",
+  "VOLUME_LEVEL_DOC": "Nivel de volumen a establecer al inicio. El valor debe estar entre 0 y 100. Nota: Esto puede no funcionar si el mezclador esta configurado en Ninguno.",
+
+  "POLLING_SETTINGS": "Avanzado: Deteccion de sistema listo",
+  "POLLING_SETTINGS_DESC": "Controla como el plugin espera a que Volumio se inicialice completamente antes de iniciar la reproduccion. Hardware mas lento como Raspberry Pi Zero puede necesitar tiempos de espera mas largos.",
+  "SHOW_POLLING_SETTINGS": "Mostrar ajustes avanzados",
+  "SHOW_POLLING_SETTINGS_DOC": "Alternar para mostrar la configuracion de tiempo. El tiempo de espera predeterminado es de 5 minutos (5000ms x 60 intentos).",
+  "POLLING_INTERVAL": "Intervalo de verificacion (milisegundos)",
+  "POLLING_INTERVAL_DOC": "Con que frecuencia verificar si el sistema esta listo. Por defecto: 5000ms (5 segundos).",
+  "MAX_POLLING_ATTEMPTS": "Intentos maximos de verificacion",
+  "MAX_POLLING_ATTEMPTS_DOC": "Numero maximo de verificaciones antes del tiempo de espera. Por defecto: 60 intentos."
+}
