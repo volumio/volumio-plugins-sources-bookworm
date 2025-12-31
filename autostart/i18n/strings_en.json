@@ -1,11 +1,28 @@
 {
-  "PLUGIN_CONFIGURATION":"AutoStart Plugin Configuration",
-  "HEADING": "Enable this plugin in order to play music when volumio starts",
-  "SAVE":"Save",
-  "AUTOSTART_SETTINGS":"Autostart Settings",
-  "AUTOSTART_SETTINGS_DESC":"",
-  "AUTOSTART_SAVEFROMLASTPOS_DOC":"Play from the last position in the queue before Volumio was shutdown, otherwise Autostart will play from the start of the queue",
+  "PLUGIN_CONFIGURATION": "AutoStart Plugin Configuration",
+  "HEADING": "Enable this plugin in order to play music when Volumio starts",
+  "SAVE": "Save",
+
+  "AUTOSTART_SETTINGS": "Playback Settings",
+  "AUTOSTART_SETTINGS_DESC": "Configure automatic playback when Volumio starts.",
+  "AUTOSTART_SAVEFROMLASTPOS_DOC": "Play from the last position in the queue before Volumio was shutdown. Otherwise playback starts from the beginning of the queue.",
   "AUTOSTART_SAVEFROMLASTPOS": "Play From Last Position",
-  "AUTOSTART_DELAY_DOC":"You may need to adjust this depending on how long your device takes to reach a state where music can be played",
-  "AUTOSTART_DELAY":"Delay Before Music Starts (milliseconds)"
+  "AUTOSTART_DELAY_DOC": "Additional delay after system ready and volume is set. Increase if your audio hardware needs extra time to initialize.",
+  "AUTOSTART_DELAY": "Additional Delay (milliseconds)",
+
+  "VOLUME_SETTINGS": "Startup Volume",
+  "VOLUME_SETTINGS_DESC": "Set a specific volume level when playback starts. Volume is applied after system ready, before the additional delay.",
+  "VOLUME_ENABLED": "Enable Startup Volume",
+  "VOLUME_ENABLED_DOC": "When enabled, volume will be set to the specified level before playback starts.",
+  "VOLUME_LEVEL": "Volume Level (0-100)",
+  "VOLUME_LEVEL_DOC": "Volume level to set at startup. Value must be between 0 and 100. Note: This may not work if mixer is set to None.",
+
+  "POLLING_SETTINGS": "Advanced: System Ready Detection",
+  "POLLING_SETTINGS_DESC": "Controls how the plugin waits for Volumio to fully initialize before starting playback. Slower hardware like Raspberry Pi Zero may need longer timeouts.",
+  "SHOW_POLLING_SETTINGS": "Show Advanced Settings",
+  "SHOW_POLLING_SETTINGS_DOC": "Toggle to reveal timing configuration. Default wait time is 5 minutes (5000ms x 60 attempts).",
+  "POLLING_INTERVAL": "Check Interval (milliseconds)",
+  "POLLING_INTERVAL_DOC": "How often to check if system is ready. Default: 5000ms (5 seconds).",
+  "MAX_POLLING_ATTEMPTS": "Maximum Check Attempts",
+  "MAX_POLLING_ATTEMPTS_DOC": "Maximum number of checks before timeout. Default: 60 attempts."
 }

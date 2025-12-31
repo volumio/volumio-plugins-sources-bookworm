@@ -1,0 +1,28 @@
+{
+  "PLUGIN_CONFIGURATION": "Configuration du plugin AutoStart",
+  "HEADING": "Activez ce plugin pour lire de la musique au demarrage de Volumio",
+  "SAVE": "Enregistrer",
+
+  "AUTOSTART_SETTINGS": "Parametres de lecture",
+  "AUTOSTART_SETTINGS_DESC": "Configurez la lecture automatique au demarrage de Volumio.",
+  "AUTOSTART_SAVEFROMLASTPOS_DOC": "Reprendre la lecture depuis la derniere position dans la file d'attente avant l'arret de Volumio. Sinon, la lecture commence au debut de la file d'attente.",
+  "AUTOSTART_SAVEFROMLASTPOS": "Reprendre depuis la derniere position",
+  "AUTOSTART_DELAY_DOC": "Delai supplementaire apres que le systeme est pret et le volume est regle. Augmentez cette valeur si votre materiel audio necessite plus de temps pour s'initialiser.",
+  "AUTOSTART_DELAY": "Delai supplementaire (millisecondes)",
+
+  "VOLUME_SETTINGS": "Volume de demarrage",
+  "VOLUME_SETTINGS_DESC": "Definir un niveau de volume specifique au demarrage de la lecture. Le volume est applique apres que le systeme est pret, avant le delai supplementaire.",
+  "VOLUME_ENABLED": "Activer le volume de demarrage",
+  "VOLUME_ENABLED_DOC": "Lorsque cette option est activee, le volume sera regle au niveau specifie avant le debut de la lecture.",
+  "VOLUME_LEVEL": "Niveau de volume (0-100)",
+  "VOLUME_LEVEL_DOC": "Niveau de volume a definir au demarrage. La valeur doit etre comprise entre 0 et 100. Remarque: Cela peut ne pas fonctionner si le mixeur est regle sur Aucun.",
+
+  "POLLING_SETTINGS": "Avance: Detection du systeme pret",
+  "POLLING_SETTINGS_DESC": "Controle comment le plugin attend que Volumio soit completement initialise avant de demarrer la lecture. Les materiels plus lents comme le Raspberry Pi Zero peuvent necessiter des delais plus longs.",
+  "SHOW_POLLING_SETTINGS": "Afficher les parametres avances",
+  "SHOW_POLLING_SETTINGS_DOC": "Basculer pour afficher la configuration de timing. Le temps d'attente par defaut est de 5 minutes (5000ms x 60 tentatives).",
+  "POLLING_INTERVAL": "Intervalle de verification (millisecondes)",
+  "POLLING_INTERVAL_DOC": "Frequence de verification de l'etat du systeme. Par defaut: 5000ms (5 secondes).",
+  "MAX_POLLING_ATTEMPTS": "Nombre maximum de tentatives",
+  "MAX_POLLING_ATTEMPTS_DOC": "Nombre maximum de verifications avant expiration. Par defaut: 60 tentatives."
+}
