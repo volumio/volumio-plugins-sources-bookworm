@@ -11,6 +11,10 @@
     "value": false,
     "type": "boolean"
   },
+  "last_volume": {
+    "value": 31,
+    "type": "number"
+  },
   "ir_enabled": {
     "value": false,
     "type": "boolean"

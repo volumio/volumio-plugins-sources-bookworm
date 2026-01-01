@@ -60,6 +60,9 @@ alloRelayAttenuator.prototype.onStop = function() {
 
     self.logger.info('Allo Relay Attenuator: Stopping plugin');
 
+    // Save current volume for "Remember Last" feature
+    self.saveCurrentVolume();
+
     self.removeVolumeScripts();
     self.stopDaemon()
         .then(function() {
@@ -486,23 +489,46 @@ alloRelayAttenuator.prototype.removeVolumeScripts = function() {
 // Startup Settings
 // ============================================================================
 
+alloRelayAttenuator.prototype.saveCurrentVolume = function() {
+    var self = this;
+
+    try {
+        var output = execSync('/usr/bin/sudo /usr/bin/fn-rattenuc -c GET_VOLUME', { encoding: 'utf8' });
+        var vol = parseInt(output.trim());
+        if (!isNaN(vol) && vol >= 0 && vol <= 63) {
+            self.config.set('last_volume', vol);
+            self.logger.info('Allo Relay Attenuator: Saved volume ' + vol + ' for Remember Last');
+        }
+    } catch (e) {
+        self.logger.error('Allo Relay Attenuator: Failed to save current volume - ' + e);
+    }
+};
+
 alloRelayAttenuator.prototype.applyStartupSettings = function() {
     var self = this;
     var startupVol = self.config.get('startup_volume', 'remember');
     var muteOnStartup = self.config.get('mute_on_startup', false);
 
     setTimeout(function() {
-        // Set startup volume if not "remember"
+        var vol;
+
         if (startupVol !== 'remember') {
-            var vol = parseInt(startupVol);
-            exec('/usr/bin/sudo /usr/bin/fn-rattenuc -c SET_VOLUME=' + vol, function(error, stdout, stderr) {
-                if (error) {
-                    self.logger.error('Allo Relay Attenuator: Failed to set startup volume - ' + error);
-                } else {
-                    self.logger.info('Allo Relay Attenuator: Startup volume set to ' + vol);
-                }
-            });
+            // Use preset value
+            vol = parseInt(startupVol);
+        } else {
+            // Remember Last - restore saved volume
+            vol = self.config.get('last_volume', 31);
         }
+
+        exec('/usr/bin/sudo /usr/bin/fn-rattenuc -c SET_VOLUME=' + vol, function(error, stdout, stderr) {
+            if (error) {
+                self.logger.error('Allo Relay Attenuator: Failed to set startup volume - ' + error);
+            } else {
+                self.logger.info('Allo Relay Attenuator: Startup volume set to ' + vol);
+                // Sync Volumio UI with hardware volume
+                self.commandRouter.volumioretrievevolume();
+            }
+        });
 
         // Apply mute on startup if enabled
         if (muteOnStartup) {
