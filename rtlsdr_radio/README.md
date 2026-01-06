@@ -417,24 +417,31 @@ Just a Nerd
 
 ## Version History
 
-### v1.3.6 (Current)
+### v1.3.7 (Current)
+- Added 300 kHz sample rate option (2,400,000 S/s - matches SDR# default)
+- Corrected FM settings guidance based on community testing
+- IMPORTANT: Oversampling should only be used with 171kHz sample rate
+  - Higher sample rates + oversampling causes noise or audio artifacts
+- Updated documentation with S/s mapping for each sample rate
+- Settings guidance based on community testing:
+  - Europe/UK (weak signals): 171k, oversampling off, de-emphasis off
+  - Europe/UK (noisy at 171k): 171k, oversampling ON, de-emphasis off
+  - Strong signal regions (Asia, urban): 300k, oversampling OFF, de-emphasis on
+  - Best audio quality: 300k, oversampling OFF, de-emphasis on
+
+### v1.3.6
 - FM Oversampling option to reduce audio distortion
-  - Enable 4x oversampling for regions with strong FM signals
-  - May reduce RDS data quality (trade-off for cleaner audio)
-  - Default: Off (preserves RDS quality)
+  - Enable 4x oversampling for 171kHz sample rate only
+  - WARNING: Do NOT combine with higher sample rates (causes noise/artifacts)
+  - Default: Off
 - FM Sample Rate selection
-  - 171 kHz: Optimal for RDS decoding (default, recommended for Europe/UK)
-  - 200 kHz: Improved audio quality, reduced RDS reliability
-  - 240 kHz: Best audio quality, minimal RDS support
+  - 171 kHz: Optimal for RDS decoding (default, Europe/UK)
+  - 200 kHz: Better audio, reduced RDS (1,600,000 S/s)
+  - 240 kHz: Good audio quality (1,920,000 S/s)
 - FM De-emphasis filter
   - Applies 50us de-emphasis to reduce high-frequency harshness
   - Standard for FM broadcast in Europe, Asia, and Australia
-  - Americas use 75us (not currently supported)
   - Default: Off
-- Settings guidance:
-  - Europe/UK with weak signals: Use defaults (171k, no oversampling, no de-emphasis)
-  - Strong signal regions (Asia, urban areas): Try oversampling + de-emphasis
-  - Best audio quality (no RDS needed): 240k + oversampling + de-emphasis
 - All settings in FM Radio configuration section
 
 ### v1.3.5

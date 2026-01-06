@@ -2580,7 +2580,8 @@ ControllerRtlsdrRadio.prototype.getFmSampleRateLabel = function(value) {
   var labels = {
     '171k': self.getI18nString('FM_SAMPLE_RATE_171K') || '171 kHz (RDS Optimal)',
     '200k': self.getI18nString('FM_SAMPLE_RATE_200K') || '200 kHz (Audio Quality)',
-    '240k': self.getI18nString('FM_SAMPLE_RATE_240K') || '240 kHz (Audio Quality+)'
+    '240k': self.getI18nString('FM_SAMPLE_RATE_240K') || '240 kHz (Audio Quality+)',
+    '300k': self.getI18nString('FM_SAMPLE_RATE_300K') || '300 kHz (Best Audio)'
   };
   return labels[value] || '171 kHz (RDS Optimal)';
 };
@@ -2685,7 +2686,7 @@ ControllerRtlsdrRadio.prototype.saveFmSettings = function(data) {
     // Save FM sample rate
     if (data.fm_sample_rate !== undefined) {
       var sampleRateValue = data.fm_sample_rate.value || data.fm_sample_rate;
-      var validRates = ['171k', '200k', '240k'];
+      var validRates = ['171k', '200k', '240k', '300k'];
       if (validRates.indexOf(sampleRateValue) !== -1) {
         self.config.set('fm_sample_rate', sampleRateValue);
       }

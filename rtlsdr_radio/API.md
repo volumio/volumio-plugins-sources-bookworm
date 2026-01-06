@@ -1051,16 +1051,27 @@ curl -X POST http://volumio.local:3456/api/maintenance/backup/upload \
 
 ## Changelog
 
+### API v1.3.7
+- Added 300kHz sample rate option (2,400,000 S/s - matches SDR# default)
+- Corrected FM settings guidance based on community testing
+- fm_sample_rate now accepts: "171k", "200k", "240k", or "300k"
+- Sample rate to internal S/s mapping:
+  - 171k = 1,368,000 S/s (RDS optimal)
+  - 200k = 1,600,000 S/s
+  - 240k = 1,920,000 S/s
+  - 300k = 2,400,000 S/s (matches SDR# default, best audio)
+- IMPORTANT: Oversampling should only be used with 171k
+  - 200k + oversampling = noise
+  - 240k + oversampling = audio artifacts
+  - 300k + oversampling = no audio
+- No new API endpoints (configuration changes only)
+
 ### API v1.3.6
 - New FM configuration options for regional signal optimization
-  - fm_oversampling (boolean): Enable 4x oversampling for strong signal regions
-  - fm_sample_rate (string): "171k", "200k", or "240k" sample rate selection
+  - fm_oversampling (boolean): Enable 4x oversampling (use with 171k only)
+  - fm_sample_rate (string): "171k", "200k", or "240k" sample rate
   - fm_deemphasis (boolean): Enable 50us de-emphasis filter
-- startFmPlayback now uses configurable sample rate, optional oversampling, and de-emphasis
-- Trade-offs documented:
-  - Higher sample rates improve audio but reduce RDS reliability
-  - Oversampling reduces distortion but degrades RDS decoding
-  - De-emphasis reduces harshness, standard in Europe/Asia/Australia
+- startFmPlayback uses configurable sample rate, optional oversampling, and de-emphasis
 - No new API endpoints (configuration changes only)
 
 ### API v1.3.5
