@@ -245,7 +245,8 @@
           "options": [
             {"value": "171k", "label": "TRANSLATE.FM_SAMPLE_RATE_171K"},
             {"value": "200k", "label": "TRANSLATE.FM_SAMPLE_RATE_200K"},
-            {"value": "240k", "label": "TRANSLATE.FM_SAMPLE_RATE_240K"}
+            {"value": "240k", "label": "TRANSLATE.FM_SAMPLE_RATE_240K"},
+            {"value": "300k", "label": "TRANSLATE.FM_SAMPLE_RATE_300K"}
           ],
           "visibleIf": {
             "field": "fm_enabled",
