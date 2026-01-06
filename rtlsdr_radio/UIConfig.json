@@ -126,43 +126,55 @@
       ]
     },
     {
-      "id": "fm_radio",
+      "id": "fm_region",
       "element": "section",
-      "label": "TRANSLATE.SECTION_FM_RADIO",
-      "icon": "fa-signal",
+      "label": "TRANSLATE.SECTION_FM_REGION",
+      "icon": "fa-globe",
       "onSave": {
         "type": "controller",
         "endpoint": "music_service/rtlsdr_radio",
-        "method": "saveFmSettings"
+        "method": "saveFmRegion"
       },
       "saveButton": {
-        "label": "TRANSLATE.SAVE_FM_SETTINGS",
+        "label": "TRANSLATE.SAVE_FM_REGION",
         "data": [
-          "fm_enabled",
-          "fm_gain",
+          "show_fm_region",
+          "fm_region",
           "fm_lower_freq",
-          "fm_oversampling",
-          "fm_sample_rate",
-          "fm_deemphasis",
-          "scan_sensitivity"
+          "fm_upper_freq",
+          "fm_channel_spacing",
+          "fm_deemphasis"
         ]
       },
       "content": [
         {
-          "id": "fm_enabled",
+          "id": "show_fm_region",
           "element": "switch",
-          "label": "TRANSLATE.ENABLE_FM",
+          "label": "TRANSLATE.SHOW_FM_REGION",
           "value": false,
-          "doc": "TRANSLATE.ENABLE_FM_DOC"
+          "doc": "TRANSLATE.SHOW_FM_REGION_DOC"
         },
         {
-          "id": "fm_gain",
-          "element": "input",
-          "label": "TRANSLATE.FM_GAIN",
-          "value": 50,
-          "doc": "TRANSLATE.FM_GAIN_DOC",
+          "id": "fm_region",
+          "element": "select",
+          "label": "TRANSLATE.FM_REGION",
+          "doc": "TRANSLATE.FM_REGION_DOC",
+          "value": {
+            "value": "europe",
+            "label": "TRANSLATE.FM_REGION_EUROPE"
+          },
+          "options": [
+            {"value": "europe", "label": "TRANSLATE.FM_REGION_EUROPE"},
+            {"value": "americas", "label": "TRANSLATE.FM_REGION_AMERICAS"},
+            {"value": "japan", "label": "TRANSLATE.FM_REGION_JAPAN"},
+            {"value": "east_asia", "label": "TRANSLATE.FM_REGION_EAST_ASIA"},
+            {"value": "australia", "label": "TRANSLATE.FM_REGION_AUSTRALIA"},
+            {"value": "italy", "label": "TRANSLATE.FM_REGION_ITALY"},
+            {"value": "oirt", "label": "TRANSLATE.FM_REGION_OIRT"},
+            {"value": "custom", "label": "TRANSLATE.FM_REGION_CUSTOM"}
+          ],
           "visibleIf": {
-            "field": "fm_enabled",
+            "field": "show_fm_region",
             "value": true
           }
         },
@@ -181,6 +193,97 @@
             {"value": "87.5", "label": "87.5 MHz (Europe/Default)"},
             {"value": "88.0", "label": "88.0 MHz (Americas)"}
           ],
+          "visibleIf": {
+            "field": "show_fm_region",
+            "value": true
+          }
+        },
+        {
+          "id": "fm_upper_freq",
+          "element": "select",
+          "label": "TRANSLATE.FM_UPPER_FREQ",
+          "doc": "TRANSLATE.FM_UPPER_FREQ_DOC",
+          "value": {
+            "value": "108.0",
+            "label": "108.0 MHz (Default)"
+          },
+          "options": [
+            {"value": "74.0", "label": "74.0 MHz (OIRT)"},
+            {"value": "95.0", "label": "95.0 MHz (Japan)"},
+            {"value": "108.0", "label": "108.0 MHz (Default)"}
+          ],
+          "visibleIf": {
+            "field": "show_fm_region",
+            "value": true
+          }
+        },
+        {
+          "id": "fm_channel_spacing",
+          "element": "select",
+          "label": "TRANSLATE.FM_CHANNEL_SPACING",
+          "doc": "TRANSLATE.FM_CHANNEL_SPACING_DOC",
+          "value": {
+            "value": "100k",
+            "label": "TRANSLATE.FM_CHANNEL_SPACING_100K"
+          },
+          "options": [
+            {"value": "30k", "label": "TRANSLATE.FM_CHANNEL_SPACING_30K"},
+            {"value": "50k", "label": "TRANSLATE.FM_CHANNEL_SPACING_50K"},
+            {"value": "100k", "label": "TRANSLATE.FM_CHANNEL_SPACING_100K"},
+            {"value": "200k", "label": "TRANSLATE.FM_CHANNEL_SPACING_200K"}
+          ],
+          "visibleIf": {
+            "field": "show_fm_region",
+            "value": true
+          }
+        },
+        {
+          "id": "fm_deemphasis",
+          "element": "switch",
+          "label": "TRANSLATE.FM_DEEMPHASIS",
+          "value": false,
+          "doc": "TRANSLATE.FM_DEEMPHASIS_DOC",
+          "visibleIf": {
+            "field": "show_fm_region",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fm_radio",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_FM_SETTINGS",
+      "icon": "fa-signal",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/rtlsdr_radio",
+        "method": "saveFmSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE_FM_SETTINGS",
+        "data": [
+          "fm_enabled",
+          "fm_gain",
+          "fm_oversampling",
+          "fm_sample_rate",
+          "scan_sensitivity"
+        ]
+      },
+      "content": [
+        {
+          "id": "fm_enabled",
+          "element": "switch",
+          "label": "TRANSLATE.ENABLE_FM",
+          "value": false,
+          "doc": "TRANSLATE.ENABLE_FM_DOC"
+        },
+        {
+          "id": "fm_gain",
+          "element": "input",
+          "label": "TRANSLATE.FM_GAIN",
+          "value": 50,
+          "doc": "TRANSLATE.FM_GAIN_DOC",
           "visibleIf": {
             "field": "fm_enabled",
             "value": true
@@ -248,17 +351,6 @@
             {"value": "240k", "label": "TRANSLATE.FM_SAMPLE_RATE_240K"},
             {"value": "300k", "label": "TRANSLATE.FM_SAMPLE_RATE_300K"}
           ],
-          "visibleIf": {
-            "field": "fm_enabled",
-            "value": true
-          }
-        },
-        {
-          "id": "fm_deemphasis",
-          "element": "switch",
-          "label": "TRANSLATE.FM_DEEMPHASIS",
-          "value": false,
-          "doc": "TRANSLATE.FM_DEEMPHASIS_DOC",
           "visibleIf": {
             "field": "fm_enabled",
             "value": true

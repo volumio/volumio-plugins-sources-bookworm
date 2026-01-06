@@ -1,6 +1,6 @@
 {
   "name": "rtlsdr_radio",
-  "version": "1.3.7",
+  "version": "1.3.8",
   "description": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "has_configuration": true,
     "has_alsa_contribution": true,
     "details": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
-    "changelog": "v1.3.7 - Added 300kHz sample rate, corrected FM settings guidance"
+    "changelog": "v1.3.8 - FM Regional Standards with automatic channel spacing"
   },
   "engines": {
     "node": ">=20",

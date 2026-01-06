@@ -174,7 +174,7 @@ Base URL: `http://<volumio-ip>:3456/api`
 
 ### DAB Channel Validation (SSE Streaming)
 
-**Endpoint:** `POST /api/antenna/validate-channels`
+**Endpoint:** `POST /api/antenna/validate-dab`
 
 **Description:** Validates DAB channels for signal presence and service count. Returns progressive results via Server-Sent Events (SSE) as each channel completes.
 
@@ -271,6 +271,47 @@ eventSource.addEventListener('error', (error) => {
   eventSource.close();
 });
 ```
+
+### DAB SNR Measurement (SSE Streaming)
+
+**Endpoint:** `POST /api/antenna/snr-scan`
+
+**Description:** Measures Signal-to-Noise Ratio across DAB channels at multiple gain levels to find optimal tuner gain settings. Returns progressive results via Server-Sent Events (SSE).
+
+**Request Body:**
+```json
+{
+  "channels": ["11C", "11D", "12A", "12B"],
+  "gainStart": -10,
+  "gainStop": 49,
+  "gainStep": 5,
+  "integration": 2
+}
+```
+
+**Parameters:**
+- `channels` (required): Array of DAB channel IDs to measure
+- `gainStart` (optional): Starting gain value in dB (default: -10)
+- `gainStop` (optional): Ending gain value in dB (default: 49)
+- `gainStep` (optional): Gain increment in dB (default: 5)
+- `integration` (optional): Measurement integration time in seconds (default: 2)
+
+**Response Format:** `text/event-stream`
+
+**SSE Event Stream:**
+```
+data: {"status":"started","channels":["12A","12B"],"gainRange":{"start":-10,"stop":49,"step":5}}
+
+data: {"status":"progress","gain":-10,"results":{"12A":{"snr":8.5,"fic_quality":75},"12B":{"snr":6.2,"fic_quality":60}},"progress":1,"total":13}
+
+data: {"status":"progress","gain":-5,"results":{"12A":{"snr":12.3,"fic_quality":85},"12B":{"snr":10.1,"fic_quality":78}},"progress":2,"total":13}
+
+data: {"status":"complete","measurements":[...],"summary":{"12A":{"optimalGain":15,"peakSnr":22.5},"12B":{"optimalGain":20,"peakSnr":18.3}},"channels":["12A","12B"],"timestamp":"2025-01-06T12:30:45.678Z"}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Missing or invalid channels array
+- `500 Internal Server Error`: Scan execution failed
 
 ## Status API
 
@@ -951,9 +992,41 @@ No authentication is currently required. Access control should be implemented at
     "type": "number",
     "value": 0
   },
+  "manual_dab_ppm": {
+    "type": "number",
+    "value": 0
+  },
   "scan_sensitivity": {
     "type": "number",
     "value": 8
+  },
+  "fm_lower_freq": {
+    "type": "string",
+    "value": "87.5"
+  },
+  "fm_region": {
+    "type": "string",
+    "value": "europe"
+  },
+  "fm_upper_freq": {
+    "type": "string",
+    "value": "108.0"
+  },
+  "fm_channel_spacing": {
+    "type": "string",
+    "value": "100k"
+  },
+  "fm_oversampling": {
+    "type": "boolean",
+    "value": false
+  },
+  "fm_sample_rate": {
+    "type": "string",
+    "value": "171k"
+  },
+  "fm_deemphasis": {
+    "type": "boolean",
+    "value": false
   },
   "sample_rate": {
     "type": "number",
@@ -961,15 +1034,23 @@ No authentication is currently required. Access control should be implemented at
   },
   "auto_backup_on_uninstall": {
     "type": "boolean",
-    "value": false
+    "value": true
   },
-  "artwork_ttl": {
-    "type": "number",
-    "value": 0
-  },
-  "artwork_debug_logging": {
+  "show_artwork_settings": {
     "type": "boolean",
     "value": false
+  },
+  "best_effort_artwork": {
+    "type": "boolean",
+    "value": true
+  },
+  "artwork_threshold": {
+    "type": "number",
+    "value": 60
+  },
+  "artwork_persistence": {
+    "type": "string",
+    "value": "artist"
   }
 }
 ```
@@ -1050,6 +1131,23 @@ curl -X POST http://volumio.local:3456/api/maintenance/backup/upload \
 ```
 
 ## Changelog
+
+### API v1.3.8
+- FM Regional Standards support with data-driven configuration
+- New configuration options:
+  - fm_region (string): Region preset key - "europe", "americas", "japan", "east_asia", "australia", "italy", "oirt", or "custom"
+  - fm_upper_freq (string): Upper FM band limit for custom region - "74.0", "95.0", or "108.0"
+  - fm_channel_spacing (string): Channel spacing for custom region - "30k", "50k", "100k", or "200k"
+- New region.json data file with FM broadcast parameters per region:
+  - band_start, band_end, spacing_khz, deemphasis_us
+- Scan behavior changes:
+  - Uses regional spacing instead of hardcoded 125kHz
+  - Respects upper frequency limit from region
+  - Frequency rounding matches channel grid
+- Playback behavior changes:
+  - De-emphasis automatically applied based on region (except custom mode)
+  - Custom mode uses manual fm_deemphasis toggle
+- No new API endpoints (configuration and scan logic changes)
 
 ### API v1.3.7
 - Added 300kHz sample rate option (2,400,000 S/s - matches SDR# default)
