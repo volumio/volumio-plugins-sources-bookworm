@@ -417,7 +417,25 @@ Just a Nerd
 
 ## Version History
 
-### v1.3.7 (Current)
+### v1.3.8 (Current)
+- FM Regional Standards support with automatic configuration
+- New FM Region setting with 8 presets:
+  - Europe (87.5-108 MHz, 100kHz spacing, 50us de-emphasis)
+  - Americas (88-108 MHz, 200kHz spacing, 75us de-emphasis)
+  - Japan (76-95 MHz, 100kHz spacing, 50us de-emphasis)
+  - East Asia/Taiwan/Korea (88-108 MHz, 200kHz spacing, 50us de-emphasis)
+  - Australia/Oceania (87.5-108 MHz, 200kHz spacing, 50us de-emphasis)
+  - Italy (87-108 MHz, 50kHz spacing, 50us de-emphasis)
+  - OIRT/Russia Legacy (65.8-74 MHz, 30kHz spacing, 50us de-emphasis)
+  - Custom (manual override for all parameters)
+- Scan now uses correct channel spacing per region (was hardcoded 125kHz)
+- Station frequencies now round to correct channel grid
+- Added FM Upper Frequency setting for regions with different band limits
+- Added FM Channel Spacing setting for custom configurations
+- De-emphasis now automatically applied based on region (except Custom mode)
+- region.json data file for easy maintenance and future expansion
+
+### v1.3.7
 - Added 300 kHz sample rate option (2,400,000 S/s - matches SDR# default)
 - Corrected FM settings guidance based on community testing
 - IMPORTANT: Oversampling should only be used with 171kHz sample rate

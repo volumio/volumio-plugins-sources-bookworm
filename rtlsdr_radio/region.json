@@ -1,0 +1,61 @@
+{
+  "default": "europe",
+  "regions": {
+    "europe": {
+      "name_key": "FM_REGION_EUROPE",
+      "band_start": 87.5,
+      "band_end": 108.0,
+      "spacing_khz": 100,
+      "deemphasis_us": 50
+    },
+    "americas": {
+      "name_key": "FM_REGION_AMERICAS",
+      "band_start": 88.0,
+      "band_end": 108.0,
+      "spacing_khz": 200,
+      "deemphasis_us": 75
+    },
+    "japan": {
+      "name_key": "FM_REGION_JAPAN",
+      "band_start": 76.0,
+      "band_end": 95.0,
+      "spacing_khz": 100,
+      "deemphasis_us": 50
+    },
+    "east_asia": {
+      "name_key": "FM_REGION_EAST_ASIA",
+      "band_start": 88.0,
+      "band_end": 108.0,
+      "spacing_khz": 200,
+      "deemphasis_us": 50
+    },
+    "australia": {
+      "name_key": "FM_REGION_AUSTRALIA",
+      "band_start": 87.5,
+      "band_end": 108.0,
+      "spacing_khz": 200,
+      "deemphasis_us": 50
+    },
+    "italy": {
+      "name_key": "FM_REGION_ITALY",
+      "band_start": 87.0,
+      "band_end": 108.0,
+      "spacing_khz": 50,
+      "deemphasis_us": 50
+    },
+    "oirt": {
+      "name_key": "FM_REGION_OIRT",
+      "band_start": 65.8,
+      "band_end": 74.0,
+      "spacing_khz": 30,
+      "deemphasis_us": 50
+    },
+    "custom": {
+      "name_key": "FM_REGION_CUSTOM",
+      "band_start": null,
+      "band_end": null,
+      "spacing_khz": null,
+      "deemphasis_us": null
+    }
+  }
+}

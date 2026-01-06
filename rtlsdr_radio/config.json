@@ -31,9 +31,25 @@
     "type": "number",
     "value": 8
   },
+  "show_fm_region": {
+    "type": "boolean",
+    "value": false
+  },
   "fm_lower_freq": {
     "type": "string",
     "value": "87.5"
+  },
+  "fm_region": {
+    "type": "string",
+    "value": "europe"
+  },
+  "fm_upper_freq": {
+    "type": "string",
+    "value": "108.0"
+  },
+  "fm_channel_spacing": {
+    "type": "string",
+    "value": "100k"
   },
   "fm_oversampling": {
     "type": "boolean",

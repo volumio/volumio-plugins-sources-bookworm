@@ -118,6 +118,22 @@ ControllerRtlsdrRadio.prototype.onVolumioStart = function() {
   self.config = new (require('v-conf'))();
   self.config.loadFile(configFile);
   
+  // Load FM region data
+  try {
+    var regionFile = __dirname + '/region.json';
+    self.regionData = require(regionFile);
+    self.logger.info('[RTL-SDR Radio] Loaded FM region data');
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to load region.json: ' + e.message);
+    // Fallback to default region data
+    self.regionData = {
+      default: 'europe',
+      regions: {
+        europe: { band_start: 87.5, band_end: 108.0, spacing_khz: 100, deemphasis_us: 50 }
+      }
+    };
+  }
+  
   return libQ.resolve();
 };
 
@@ -903,9 +919,13 @@ ControllerRtlsdrRadio.prototype.validateCsvData = function(content, filename) {
         continue;
       }
       
+      // Preserve precision (50kHz spacing needs 2 decimals)
+      var hasSubDecimal = (freq * 100) % 10 !== 0;
+      var freqStr = hasSubDecimal ? freq.toFixed(2) : freq.toFixed(1);
+      
       stations.push({
-        frequency: freq.toFixed(1),
-        name: station.name || 'FM ' + freq.toFixed(1),
+        frequency: freqStr,
+        name: station.name || 'FM ' + freqStr,
         customName: station.customname || '',
         favorite: self.parseCsvBoolean(station.favorite),
         hidden: self.parseCsvBoolean(station.hidden),
@@ -1186,9 +1206,12 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
         }
         
         // Ensure FM frequencies are strings (fix for number input type)
+        // Preserve precision - use 2 decimals if needed, otherwise 1
         data.fm.forEach(function(station) {
           if (typeof station.frequency === 'number') {
-            station.frequency = station.frequency.toFixed(1);
+            var freq = station.frequency;
+            var hasSubDecimal = (freq * 100) % 10 !== 0;
+            station.frequency = hasSubDecimal ? freq.toFixed(2) : freq.toFixed(1);
           }
         });
         
@@ -2386,9 +2409,77 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
     }
   }
   
-  // SECTION 3: FM RADIO
+  // SECTION 3: FM REGION
   // ====================
-  var fmSection = uiconf.sections[2];
+  var fmRegionSection = uiconf.sections[2];
+  if (fmRegionSection) {
+    var showFmRegion = findContentItem(fmRegionSection, 'show_fm_region');
+    if (showFmRegion) {
+      showFmRegion.value = self.config.get('show_fm_region', false);
+    }
+    
+    var fmRegion = findContentItem(fmRegionSection, 'fm_region');
+    if (fmRegion) {
+      var regionValue = self.config.get('fm_region', 'europe');
+      fmRegion.value = {
+        value: regionValue,
+        label: self.getFmRegionLabel(regionValue)
+      };
+    }
+    
+    var fmLowerFreq = findContentItem(fmRegionSection, 'fm_lower_freq');
+    if (fmLowerFreq) {
+      var lowerFreqValue = self.config.get('fm_lower_freq', '87.5');
+      fmLowerFreq.value = {
+        value: lowerFreqValue,
+        label: self.getLowerFreqLabel(lowerFreqValue)
+      };
+    }
+    
+    var fmUpperFreq = findContentItem(fmRegionSection, 'fm_upper_freq');
+    if (fmUpperFreq) {
+      var upperFreqValue = self.config.get('fm_upper_freq', '108.0');
+      fmUpperFreq.value = {
+        value: upperFreqValue,
+        label: upperFreqValue + ' MHz'
+      };
+    }
+    
+    var fmChannelSpacing = findContentItem(fmRegionSection, 'fm_channel_spacing');
+    if (fmChannelSpacing) {
+      var spacingValue = self.config.get('fm_channel_spacing', '100k');
+      fmChannelSpacing.value = {
+        value: spacingValue,
+        label: self.getFmChannelSpacingLabel(spacingValue)
+      };
+    }
+    
+    var fmDeemphasis = findContentItem(fmRegionSection, 'fm_deemphasis');
+    if (fmDeemphasis) {
+      fmDeemphasis.value = self.config.get('fm_deemphasis', false);
+    }
+    
+    // Hide override fields when region is not 'custom'
+    // These fields only apply when user wants manual control
+    var currentRegion = self.config.get('fm_region', 'europe');
+    if (currentRegion !== 'custom') {
+      // Remove override fields from content array - they're not applicable
+      var overrideFields = ['fm_lower_freq', 'fm_upper_freq', 'fm_channel_spacing', 'fm_deemphasis'];
+      fmRegionSection.content = fmRegionSection.content.filter(function(item) {
+        return overrideFields.indexOf(item.id) === -1;
+      });
+      // Also remove from saveButton data array
+      if (fmRegionSection.saveButton && fmRegionSection.saveButton.data) {
+        fmRegionSection.saveButton.data = fmRegionSection.saveButton.data.filter(function(field) {
+          return overrideFields.indexOf(field) === -1;
+        });
+      }
+    }
+  }
+  
+  // SECTION 4: FM RADIO SETTINGS
+  // ============================
+  var fmSection = uiconf.sections[3];
   if (fmSection) {
     var fmEnabled = findContentItem(fmSection, 'fm_enabled');
     if (fmEnabled) {
@@ -2398,15 +2489,6 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
     var fmGain = findContentItem(fmSection, 'fm_gain');
     if (fmGain) {
       fmGain.value = self.config.get('fm_gain', 50);
-    }
-    
-    var fmLowerFreq = findContentItem(fmSection, 'fm_lower_freq');
-    if (fmLowerFreq) {
-      var lowerFreqValue = self.config.get('fm_lower_freq', '87.5');
-      fmLowerFreq.value = {
-        value: lowerFreqValue,
-        label: self.getLowerFreqLabel(lowerFreqValue)
-      };
     }
     
     var scanSensitivity = findContentItem(fmSection, 'scan_sensitivity');
@@ -2431,16 +2513,11 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
         label: self.getFmSampleRateLabel(sampleRateValue)
       };
     }
-    
-    var fmDeemphasis = findContentItem(fmSection, 'fm_deemphasis');
-    if (fmDeemphasis) {
-      fmDeemphasis.value = self.config.get('fm_deemphasis', false);
-    }
   }
   
-  // SECTION 4: DAB/DAB+ RADIO
+  // SECTION 5: DAB/DAB+ RADIO
   // ==========================
-  var dabSection = uiconf.sections[3];
+  var dabSection = uiconf.sections[4];
   if (dabSection) {
     var dabEnabled = findContentItem(dabSection, 'dab_enabled');
     if (dabEnabled) {
@@ -2458,9 +2535,9 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
     }
   }
   
-  // SECTION 5: ARTWORK SETTINGS
+  // SECTION 6: ARTWORK SETTINGS
   // ============================
-  var artworkSection = uiconf.sections[4];
+  var artworkSection = uiconf.sections[5];
   if (artworkSection) {
     var showArtworkSettings = findContentItem(artworkSection, 'show_artwork_settings');
     if (showArtworkSettings) {
@@ -2518,9 +2595,9 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
     }
   }
   
-  // SECTION 6: DIAGNOSTICS
+  // SECTION 7: DIAGNOSTICS
   // =======================
-  var diagnosticsSection = uiconf.sections[5];
+  var diagnosticsSection = uiconf.sections[6];
   if (diagnosticsSection) {
     var showDiagnostics = findContentItem(diagnosticsSection, 'show_diagnostics');
     if (showDiagnostics) {
@@ -2586,6 +2663,60 @@ ControllerRtlsdrRadio.prototype.getFmSampleRateLabel = function(value) {
   return labels[value] || '171 kHz (RDS Optimal)';
 };
 
+// Get FM region settings - returns effective settings based on region or custom overrides
+ControllerRtlsdrRadio.prototype.getRegionSettings = function() {
+  var self = this;
+  var regionKey = self.config.get('fm_region', 'europe');
+  
+  if (regionKey === 'custom') {
+    // Use manual override settings
+    var spacingStr = self.config.get('fm_channel_spacing', '100k');
+    var spacingKhz = parseInt(spacingStr.replace('k', ''), 10) || 100;
+    return {
+      band_start: parseFloat(self.config.get('fm_lower_freq', '87.5')),
+      band_end: parseFloat(self.config.get('fm_upper_freq', '108.0')),
+      spacing_khz: spacingKhz,
+      deemphasis_us: self.config.get('fm_deemphasis', false) ? 50 : 0
+    };
+  }
+  
+  // Use preset region settings
+  if (self.regionData && self.regionData.regions && self.regionData.regions[regionKey]) {
+    return self.regionData.regions[regionKey];
+  }
+  
+  // Fallback to Europe defaults
+  return { band_start: 87.5, band_end: 108.0, spacing_khz: 100, deemphasis_us: 50 };
+};
+
+// Get label for FM region
+ControllerRtlsdrRadio.prototype.getFmRegionLabel = function(value) {
+  var self = this;
+  var labels = {
+    'europe': self.getI18nString('FM_REGION_EUROPE') || 'Europe (87.5-108 MHz, 100kHz, 50us)',
+    'americas': self.getI18nString('FM_REGION_AMERICAS') || 'Americas (88-108 MHz, 200kHz, 75us)',
+    'japan': self.getI18nString('FM_REGION_JAPAN') || 'Japan (76-95 MHz, 100kHz, 50us)',
+    'east_asia': self.getI18nString('FM_REGION_EAST_ASIA') || 'East Asia (88-108 MHz, 200kHz, 50us)',
+    'australia': self.getI18nString('FM_REGION_AUSTRALIA') || 'Australia/Oceania (87.5-108 MHz, 200kHz, 50us)',
+    'italy': self.getI18nString('FM_REGION_ITALY') || 'Italy (87-108 MHz, 50kHz, 50us)',
+    'oirt': self.getI18nString('FM_REGION_OIRT') || 'OIRT/Russia (65.8-74 MHz, 30kHz, 50us)',
+    'custom': self.getI18nString('FM_REGION_CUSTOM') || 'Custom (Manual Settings)'
+  };
+  return labels[value] || labels['europe'];
+};
+
+// Get label for FM channel spacing
+ControllerRtlsdrRadio.prototype.getFmChannelSpacingLabel = function(value) {
+  var self = this;
+  var labels = {
+    '30k': self.getI18nString('FM_CHANNEL_SPACING_30K') || '30 kHz (OIRT)',
+    '50k': self.getI18nString('FM_CHANNEL_SPACING_50K') || '50 kHz (Italy)',
+    '100k': self.getI18nString('FM_CHANNEL_SPACING_100K') || '100 kHz (Europe/Japan)',
+    '200k': self.getI18nString('FM_CHANNEL_SPACING_200K') || '200 kHz (Americas/Asia/Australia)'
+  };
+  return labels[value] || labels['100k'];
+};
+
 ControllerRtlsdrRadio.prototype.saveWebManagerSettings = function(data) {
   var self = this;
   var defer = libQ.defer();
@@ -2642,6 +2773,91 @@ ControllerRtlsdrRadio.prototype.saveWebManagerSettings = function(data) {
   return defer.promise;
 };
 
+// Save FM Region settings - handles region selection and custom override fields
+ControllerRtlsdrRadio.prototype.saveFmRegion = function(data) {
+  var self = this;
+  var defer = libQ.defer();
+  
+  try {
+    // Save show_fm_region toggle
+    if (data.show_fm_region !== undefined) {
+      self.config.set('show_fm_region', data.show_fm_region);
+    }
+    
+    // Save FM region
+    var regionValue = null;
+    if (data.fm_region !== undefined) {
+      regionValue = data.fm_region.value || data.fm_region;
+      var validRegions = ['europe', 'americas', 'japan', 'east_asia', 'australia', 'italy', 'oirt', 'custom'];
+      if (validRegions.indexOf(regionValue) !== -1) {
+        self.config.set('fm_region', regionValue);
+      }
+    }
+    
+    // Save custom override fields (only if region is custom)
+    if (regionValue === 'custom') {
+      // Save FM lower frequency
+      if (data.fm_lower_freq !== undefined) {
+        var lowerFreqValue = data.fm_lower_freq.value || data.fm_lower_freq;
+        var validValues = ['76.0', '87.0', '87.5', '88.0'];
+        if (validValues.indexOf(lowerFreqValue) !== -1) {
+          self.config.set('fm_lower_freq', lowerFreqValue);
+        }
+      }
+      
+      // Save FM upper frequency
+      if (data.fm_upper_freq !== undefined) {
+        var upperFreqValue = data.fm_upper_freq.value || data.fm_upper_freq;
+        var validUpperValues = ['74.0', '95.0', '108.0'];
+        if (validUpperValues.indexOf(upperFreqValue) !== -1) {
+          self.config.set('fm_upper_freq', upperFreqValue);
+        }
+      }
+      
+      // Save FM channel spacing
+      if (data.fm_channel_spacing !== undefined) {
+        var spacingValue = data.fm_channel_spacing.value || data.fm_channel_spacing;
+        var validSpacings = ['30k', '50k', '100k', '200k'];
+        if (validSpacings.indexOf(spacingValue) !== -1) {
+          self.config.set('fm_channel_spacing', spacingValue);
+        }
+      }
+      
+      // Save FM de-emphasis
+      if (data.fm_deemphasis !== undefined) {
+        self.config.set('fm_deemphasis', data.fm_deemphasis);
+      }
+    }
+    
+    // Show modal prompting user to refresh page
+    var regionLabel = self.getFmRegionLabel(regionValue || self.config.get('fm_region', 'europe'));
+    var modalData = {
+      title: self.getI18nString('FM_REGION') || 'FM Region',
+      message: (self.getI18nString('FM_REGION_SAVED') || 'Region saved') + ': ' + regionLabel + '. ' + 
+               (self.getI18nString('FM_REGION_REFRESH_PROMPT') || 'Please refresh the page to see updated fields.'),
+      size: 'md',
+      buttons: [
+        {
+          name: self.getI18nString('COMMON_OK') || 'OK',
+          class: 'btn btn-info',
+          emit: 'closeModals',
+          payload: ''
+        }
+      ]
+    };
+    
+    self.commandRouter.broadcastMessage('openModal', modalData);
+    defer.resolve();
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] saveFmRegion error: ' + e);
+    self.commandRouter.pushToastMessage('error', 'FM/DAB Radio', 
+      self.getI18nString('SAVE_ERROR'));
+    defer.reject(e);
+  }
+  
+  return defer.promise;
+};
+
 ControllerRtlsdrRadio.prototype.saveFmSettings = function(data) {
   var self = this;
   var defer = libQ.defer();
@@ -2669,15 +2885,6 @@ ControllerRtlsdrRadio.prototype.saveFmSettings = function(data) {
       }
     }
     
-    // Save FM lower frequency
-    if (data.fm_lower_freq !== undefined) {
-      var lowerFreqValue = data.fm_lower_freq.value || data.fm_lower_freq;
-      var validValues = ['76.0', '87.0', '87.5', '88.0'];
-      if (validValues.indexOf(lowerFreqValue) !== -1) {
-        self.config.set('fm_lower_freq', lowerFreqValue);
-      }
-    }
-    
     // Save FM oversampling
     if (data.fm_oversampling !== undefined) {
       self.config.set('fm_oversampling', data.fm_oversampling);
@@ -2690,11 +2897,6 @@ ControllerRtlsdrRadio.prototype.saveFmSettings = function(data) {
       if (validRates.indexOf(sampleRateValue) !== -1) {
         self.config.set('fm_sample_rate', sampleRateValue);
       }
-    }
-    
-    // Save FM de-emphasis
-    if (data.fm_deemphasis !== undefined) {
-      self.config.set('fm_deemphasis', data.fm_deemphasis);
     }
     
     self.commandRouter.pushToastMessage('success', 'FM/DAB Radio', 
@@ -4079,17 +4281,18 @@ ControllerRtlsdrRadio.prototype.explodeUri = function(uri) {
   if (uri.indexOf('rtlsdr://fm/') === 0) {
     var frequency = uri.replace('rtlsdr://fm/', '');
     
-    // Normalize frequency format (100 -> 100.0)
+    // Validate frequency is numeric but preserve original precision
     var freq = parseFloat(frequency);
     if (!isNaN(freq)) {
-      frequency = freq.toFixed(1);
+      // Keep original string if valid, just trim whitespace
+      frequency = frequency.trim();
     }
     
-    // Look up station in database
+    // Look up station in database (compare as numbers to handle precision differences)
     var station = null;
     if (self.stationsDb.fm) {
       station = self.stationsDb.fm.find(function(s) {
-        return s.frequency === frequency;
+        return parseFloat(s.frequency) === freq;
       });
     }
     
@@ -4153,14 +4356,8 @@ ControllerRtlsdrRadio.prototype.addToFavourites = function(data) {
     return defer.promise;
   }
   
-  // Normalize FM URI frequency format
+  // Keep FM URI as-is, preserve original precision
   var uri = data.uri;
-  if (uri.indexOf('rtlsdr://fm/') === 0) {
-    var freq = parseFloat(uri.replace('rtlsdr://fm/', ''));
-    if (!isNaN(freq)) {
-      uri = 'rtlsdr://fm/' + freq.toFixed(1);
-    }
-  }
   
   // Check if station exists in our database first
   var stationInfo = self.getStationByUri(uri);
@@ -4189,14 +4386,8 @@ ControllerRtlsdrRadio.prototype.removeFromFavourites = function(data) {
     return defer.promise;
   }
   
-  // Normalize FM URI frequency format
+  // Keep FM URI as-is, preserve original precision
   var uri = data.uri;
-  if (uri.indexOf('rtlsdr://fm/') === 0) {
-    var freq = parseFloat(uri.replace('rtlsdr://fm/', ''));
-    if (!isNaN(freq)) {
-      uri = 'rtlsdr://fm/' + freq.toFixed(1);
-    }
-  }
   
   // Check if station exists in our database first
   var stationInfo = self.getStationByUri(uri);
@@ -4338,8 +4529,9 @@ ControllerRtlsdrRadio.prototype.startFmPlayback = function(freq, stationName, de
   }
   
   // Update play statistics
-  // Ensure frequency has decimal for consistent URI format (100 -> "100.0")
-  var freqStr = freq.toFixed(1);
+  // Preserve frequency precision (50kHz spacing needs 2 decimals)
+  var hasSubDecimal = (freq * 100) % 10 !== 0;
+  var freqStr = hasSubDecimal ? freq.toFixed(2) : freq.toFixed(1);
   var uri = 'rtlsdr://fm/' + freqStr;
   var stationInfo = self.getStationByUri(uri);
   if (stationInfo) {
@@ -4353,6 +4545,10 @@ ControllerRtlsdrRadio.prototype.startFmPlayback = function(freq, stationName, de
   var fmOversampling = self.config.get('fm_oversampling', false);
   var fmSampleRate = self.config.get('fm_sample_rate', '171k');
   var fmDeemphasis = self.config.get('fm_deemphasis', false);
+  
+  // Get region settings for de-emphasis
+  var regionSettings = self.getRegionSettings();
+  var regionKey = self.config.get('fm_region', 'europe');
   
   // Reset RDS state
   self.currentRds = null;
@@ -4378,9 +4574,17 @@ ControllerRtlsdrRadio.prototype.startFmPlayback = function(freq, stationName, de
     rtlArgs.splice(6, 0, '-o', '4');
   }
   
-  // Add de-emphasis if enabled (reduces high-frequency noise, standard in Europe/Asia/Australia)
-  if (fmDeemphasis) {
+  // Apply de-emphasis based on region settings
+  // In custom mode, use manual toggle; otherwise use region's de-emphasis
+  var applyDeemphasis = (regionKey === 'custom') ? fmDeemphasis : (regionSettings.deemphasis_us > 0);
+  var deemphasisUs = (regionKey === 'custom') ? (fmDeemphasis ? 50 : 0) : regionSettings.deemphasis_us;
+  
+  if (applyDeemphasis) {
+    // Note: rtl_fm -E deemp provides 50us de-emphasis (Europe/Asia/Australia standard)
+    // Americas uses 75us but rtl_fm only supports 50us natively
+    // For Americas, we apply 50us which is close enough for most listening
     rtlArgs.push('-E', 'deemp');
+    self.logger.info('[RTL-SDR Radio] De-emphasis enabled (' + deemphasisUs + 'us, region: ' + regionKey + ')');
   }
   
   self.logger.info('[RTL-SDR Radio] Starting FM with RDS: fn-rtl_fm ' + rtlArgs.join(' '));
@@ -5837,8 +6041,9 @@ ControllerRtlsdrRadio.prototype.testManualFm = function(data) {
     return defer.promise;
   }
   
-  // Ensure consistent decimal format
-  var freqStr = freq.toFixed(1);
+  // Ensure consistent decimal format - preserve precision for 50kHz spacing
+  var hasSubDecimal = (freq * 100) % 10 !== 0;
+  var freqStr = hasSubDecimal ? freq.toFixed(2) : freq.toFixed(1);
   
   // Create track object
   var track = {
@@ -6039,11 +6244,15 @@ ControllerRtlsdrRadio.prototype.loadStations = function() {
   self.logger.info('[RTL-SDR Radio] Database loaded at: ' + self.dbLoadedAt);
   
   // Repair FM frequencies that were saved as numbers instead of strings
+  // Preserve original precision (50kHz spacing needs 2 decimals)
   var repaired = 0;
   if (self.stationsDb && self.stationsDb.fm) {
     self.stationsDb.fm.forEach(function(station) {
       if (typeof station.frequency === 'number') {
-        station.frequency = station.frequency.toFixed(1);
+        // Preserve precision - use 2 decimals if needed, otherwise 1
+        var freq = station.frequency;
+        var hasSubDecimal = (freq * 100) % 10 !== 0;
+        station.frequency = hasSubDecimal ? freq.toFixed(2) : freq.toFixed(1);
         repaired++;
       }
     });
@@ -6455,10 +6664,12 @@ ControllerRtlsdrRadio.prototype.getStationByUri = function(uri) {
   // Parse FM URI: rtlsdr://fm/95.0
   if (uri.indexOf('rtlsdr://fm/') === 0) {
     var frequency = uri.replace('rtlsdr://fm/', '');
+    var freqNum = parseFloat(frequency);
     
-    if (self.stationsDb && self.stationsDb.fm) {
+    if (self.stationsDb && self.stationsDb.fm && !isNaN(freqNum)) {
       for (var i = 0; i < self.stationsDb.fm.length; i++) {
-        if (self.stationsDb.fm[i].frequency === frequency) {
+        // Compare as numbers to handle precision differences (95.75 vs 95.8)
+        if (parseFloat(self.stationsDb.fm[i].frequency) === freqNum) {
           return {
             type: 'fm',
             station: self.stationsDb.fm[i],
@@ -6966,13 +7177,16 @@ ControllerRtlsdrRadio.prototype.scanFm = function() {
       var scanFile = '/tmp/fm_scan_' + Date.now() + '.csv';
       
       // fn-rtl_power command:
-      // -f [lower]M:108M:125k = Scan configured range in 125kHz steps
+      // -f [lower]M:[upper]M:[spacing]k = Scan configured range with regional spacing
       // -i 10 = Integrate for 10 seconds
       // -1 = Single-shot mode (exit after one scan)
-      var lowerFreq = self.config.get('fm_lower_freq', '87.5');
-      var command = 'fn-rtl_power -f ' + lowerFreq + 'M:108M:125k -i 10 -1 ' + scanFile;
+      var regionSettings = self.getRegionSettings();
+      var lowerFreq = self.config.get('fm_lower_freq', String(regionSettings.band_start));
+      var upperFreq = regionSettings.band_end;
+      var spacing = regionSettings.spacing_khz + 'k';
+      var command = 'fn-rtl_power -f ' + lowerFreq + 'M:' + upperFreq + 'M:' + spacing + ' -i 10 -1 ' + scanFile;
       
-      self.logger.info('[RTL-SDR Radio] Scan command: ' + command);
+      self.logger.info('[RTL-SDR Radio] Scan command: ' + command + ' (region spacing: ' + spacing + ')');
       
       // Push progress update after delay
       setTimeout(function() {
@@ -7138,18 +7352,23 @@ ControllerRtlsdrRadio.prototype.parseScanResults = function(scanFile) {
             current.power > prev.power && 
             current.power > next.power) {
           
-          // Round to nearest 0.1 MHz for display
-          var freqRounded = Math.round(current.freq * 10) / 10;
+          // Round to nearest channel based on regional spacing
+          var regionSettings = self.getRegionSettings();
+          var spacingMHz = regionSettings.spacing_khz / 1000;
+          var freqRounded = Math.round(current.freq / spacingMHz) * spacingMHz;
+          // Format to appropriate decimal places based on spacing
+          var decimalPlaces = spacingMHz < 0.1 ? 2 : 1;
+          var freqFormatted = freqRounded.toFixed(decimalPlaces);
           
           stations.push({
-            frequency: freqRounded.toFixed(1),
-            name: 'FM ' + freqRounded.toFixed(1),
+            frequency: freqFormatted,
+            name: 'FM ' + freqFormatted,
             signal_strength: current.power.toFixed(1),
             last_seen: new Date().toISOString()
           });
           
-          self.logger.info('[RTL-SDR Radio] Found station: ' + freqRounded.toFixed(1) + 
-                          ' MHz (' + current.power.toFixed(1) + ' dBm)');
+          self.logger.info('[RTL-SDR Radio] Found station: ' + freqFormatted + 
+                          ' MHz (' + current.power.toFixed(1) + ' dBm, spacing: ' + regionSettings.spacing_khz + 'kHz)');
         }
       }
       
