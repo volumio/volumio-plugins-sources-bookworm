@@ -1,0 +1,21 @@
+{
+  "PLUGIN_NAME": "LCD-achtergrondverlichting regeling",
+  "GENERAL_SETTINGS": "Algemene instellingen",
+  "MEASUREMENT_INTERVAL": "Meetinterval (seconden)",
+  "MEASUREMENT_INTERVAL_DOC": "Tijd tussen lichtsensormetingen. Lagere waarden bieden responsievere helderheidsveranderingen maar kunnen het CPU-gebruik verhogen.",
+  "MIN_BACKLIGHT": "Minimale helderheid",
+  "MIN_BACKLIGHT_DOC": "Het laagste helderheidsniveau dat het display zal bereiken (0-255). Voorkomt dat het scherm te donker wordt.",
+  "MAX_BACKLIGHT": "Maximale helderheid",
+  "MAX_BACKLIGHT_DOC": "Het hoogste helderheidsniveau dat het display zal bereiken (0-255). Kan worden verlaagd om energie te besparen.",
+  "LUX_MULTIPLIER": "Lux-vermenigvuldiger",
+  "LUX_MULTIPLIER_DOC": "Kalibratievermenigvuldiger voor de VEML7700-sensor. Verhogen voor lichtere respons, verlagen voor donkere respons.",
+  "SMOOTHING_FACTOR": "Afvlakkingsfactor",
+  "SMOOTHING_FACTOR_DOC": "Regelt hoe snel helderheidsovergangen plaatsvinden (0,0-1,0). Lagere waarden creëren langzamere, vloeiendere overgangen.",
+  "PLAYBACK_BOOST": "Afspelen helderheidsverhoging",
+  "PLAYBACK_BOOST_DOC": "Extra helderheid toegevoegd tijdens het afspelen van muziek (0-255). Stel in op 0 om deze functie uit te schakelen.",
+  "PLAYBACK_BOOST_DURATION": "Boost-duur na afspelen (seconden)",
+  "PLAYBACK_BOOST_DURATION_DOC": "Hoe lang de helderheidsverhoging behouden moet blijven nadat het afspelen stopt (0-300 seconden). Aanbevolen: 30 seconden.",
+  "SAVE": "Instellingen opslaan",
+  "SAVE_SUCCESS": "Configuratie succesvol opgeslagen",
+  "SAVE_ERROR": "Fout bij opslaan van configuratie"
+}
