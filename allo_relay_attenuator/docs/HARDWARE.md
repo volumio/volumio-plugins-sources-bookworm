@@ -124,11 +124,12 @@ Pin   Function
 
 J10 - PUSH BUTTON SWITCHES (directly on PCB)
 --------------------------------------------
-4 push-button switches can be connected:
-- BUTTON1: Mute
-- BUTTON2: Play/Pause
-- BUTTON3: Volume Down
-- BUTTON4: Volume Up
+5-pin header for push-button switches:
+- Pin 1: Volume Up
+- Pin 2: Volume Down
+- Pin 3: Play/Pause
+- Pin 4: Mute
+- Pin 5: GND
 
 
 IR SENSOR CONNECTOR (on J7)
@@ -141,6 +142,21 @@ For HS0038 or VS1838B IR sensor:
 ** WARNING: The Allo documentation drawing is INCORRECT! **
 The drawing shows IR VOUT connected to Pin 10, but this is wrong.
 Correct connection is J7 Pin 8 (GPIOB15 = Pi GPIO17).
+
+
+IR GPIO OPTIONS
+---------------
+Different DAC boards route IR to different GPIO pins:
+
+GPIO17: Allo Piano DAC (via J7 Pin 8 -> GPIOB15 -> Pi GPIO17)
+        Config: dtoverlay=gpio-ir,gpio_pin=17
+
+GPIO26: Audiophonics ES9023, PiFi Digi+, InnoMaker DAC HAT/PRO,
+        and most generic Chinese DAC HATs with onboard IR receiver
+        Config: dtoverlay=gpio-ir,gpio_pin=26
+
+GPIO5:  Direct wiring to Pi (no DAC pass-through)
+        Config: dtoverlay=gpio-ir,gpio_pin=5
 
 
 ================================================================================
@@ -209,10 +225,10 @@ BLOCK DIAGRAM
 
 
 ================================================================================
-SOFTWARE COMMANDS (r_attenuc client)
+SOFTWARE COMMANDS (fn-rattenuc client)
 ================================================================================
 
-Usage: r_attenuc [options]
+Usage: fn-rattenuc [options]
   -h              Display usage summary
   -c              Command to execute
 
@@ -223,17 +239,17 @@ Commands:
   SET_MUTE=[value]        Set mute (value = 0=unmute, 1=mute)
 
 Examples:
-  r_attenuc -c SET_VOLUME=50
-  r_attenuc -c GET_VOLUME
-  r_attenuc -c SET_MUTE=1
-  r_attenuc -c GET_MUTE
+  fn-rattenuc -c SET_VOLUME=50
+  fn-rattenuc -c GET_VOLUME
+  fn-rattenuc -c SET_MUTE=1
+  fn-rattenuc -c GET_MUTE
 
 
 ================================================================================
-DAEMON OPTIONS (r_attenu / fn-rattenu)
+DAEMON OPTIONS (fn-rattenu)
 ================================================================================
 
-Usage: r_attenu [options] [config_file]
+Usage: fn-rattenu [options] [config_file]
   -d --daemon         Run in background
   -h --help           Display usage summary
   -v --version        Display version
@@ -310,10 +326,11 @@ I2C ADDRESSES:
 
 PUSH BUTTONS (J10):
 -------------------
-BUTTON1: Mute
-BUTTON2: Play/Pause
-BUTTON3: Volume Down
-BUTTON4: Volume Up
+Pin 1: Volume Up
+Pin 2: Volume Down
+Pin 3: Play/Pause
+Pin 4: Mute
+Pin 5: GND
 
 ATTENUATION:
 ------------

@@ -1,6 +1,6 @@
 {
   "name": "allo_relay_attenuator",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Hardware volume control using Allo Relay Attenuator",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     ],
     "has_configuration": true,
     "details": "Hardware volume control using Allo Relay Attenuator with 64-step relay-switched attenuation. Supports hardware buttons and IR remote.",
-    "changelog": "4.0.1 - Fixed Remember Last volume persistence across plugin and system lifecycle."
+    "changelog": "4.0.2 - Add Hardware Volume Mode (default) to fix UI desync with I2S-only DACs."
   },
   "engines": {
     "node": ">=20",
