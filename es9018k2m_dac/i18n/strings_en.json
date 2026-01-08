@@ -1,0 +1,83 @@
+{
+  "PLUGIN_NAME": "ES9018K2M DAC Control",
+
+  "PREREQUISITES": "Setup Requirements",
+  "PREREQUISITES_DESC": "Go to Volumio Settings > Playback Options. Enable I2S DAC and select R-PI DAC as DAC Model. For plugin volume control, set Mixer Type to None. Save and Reboot.",
+
+  "DEVICE_DETECTION": "Device Detection",
+  "CHECK_DEVICE": "Check Device",
+  "RESET_DEVICE": "Reset to Defaults",
+  "RESET_DEVICE_DOC": "Reset all DAC settings to factory defaults",
+  "DEVICE_FOUND": "ES9018K2M detected and ready",
+  "DEVICE_NOT_FOUND": "ES9018K2M not detected. Check I2C connection and address. Ensure R-PI DAC is selected in Volumio Playback Options and system has been rebooted.",
+  "DEVICE_RESET": "Device reset to factory defaults",
+
+  "I2C_BUS": "I2C Bus",
+  "I2C_BUS_DOC": "I2C bus number (usually 1 for Raspberry Pi)",
+  "I2C_ADDRESS": "I2C Address",
+  "I2C_ADDRESS_DOC": "Device address in hex (default: 0x48). Common addresses: 0x48, 0x49, 0x4A, 0x4B",
+  "DEBUG_LOGGING": "Debug Logging",
+  "DEBUG_LOGGING_DOC": "Enable verbose logging for troubleshooting. Check journalctl for output. Default: off.",
+
+  "EXTERNAL_VOLUME": "External Volume Device",
+  "EXTERNAL_VOLUME_DESC": "Enable if volume is controlled by external hardware such as Allo Relay Attenuator, pre-amplifier, or AV receiver. When enabled, plugin manages DAC features only (filters, DPLL, balance). Seek mute and graceful transitions still work.",
+  "EXTERNAL_VOLUME_ENABLED": "Use External Volume Device",
+  "EXTERNAL_VOLUME_ENABLED_DOC": "Plugin will not register volume control. Volume slider controlled by external device or other plugin.",
+  "EXTERNAL_VOLUME_CHANGED_ON": "External volume enabled. Plugin manages DAC features only.",
+  "EXTERNAL_VOLUME_CHANGED_OFF": "External volume disabled. Configure volume control below.",
+
+  "VOLUME_CONTROL": "Volume Control",
+  "VOLUME_MODE": "Volume Mode",
+  "VOLUME_MODE_DOC": "Hardware: Plugin controls volume via DAC registers, enables slider with Mixer Type None (recommended). Software: Volumio mixer controls volume, plugin mirrors to DAC.",
+  "VOLUME_MODE_SOFTWARE": "Software (Callback)",
+  "VOLUME_MODE_HARDWARE": "Hardware (Override)",
+  "VOLUME_MODE_CHANGED_HW": "Switched to Hardware volume mode. Volume slider should now appear.",
+  "VOLUME_MODE_CHANGED_SW": "Switched to Software volume mode.",
+
+  "CARD_NUMBER": "ALSA Card Number",
+  "CARD_NUMBER_DOC": "ALSA card number for hardware mode. Enter 'auto' to detect from Volumio output device, or specify a number (0, 1, etc.) to override.",
+
+  "SAFE_STARTUP_ENABLED": "Safe Startup Volume",
+  "SAFE_STARTUP_ENABLED_DOC": "Cap volume to safe level on plugin start if system volume exceeds it. Protects speakers/ears from unexpectedly loud playback.",
+  "SAFE_STARTUP_VOLUME": "Safe Startup Level (%)",
+  "SAFE_STARTUP_VOLUME_DOC": "Maximum volume level on startup (0-100). System volume will be reduced to this level if it exceeds it.",
+  "REMEMBER_LAST_VOLUME": "Remember Last Volume",
+  "REMEMBER_LAST_VOLUME_DOC": "Restore the last volume level when plugin starts. Overrides safe startup if enabled.",
+
+  "MUTE_TRANSITIONS": "Mute & Transitions",
+  "START_MUTED": "Start Muted",
+  "START_MUTED_DOC": "Start DAC in muted state on plugin load. Use volume slider to unmute. Useful for protecting speakers during system startup.",
+  "SEEK_MUTE_MS": "Seek Mute Duration (ms)",
+  "SEEK_MUTE_MS_DOC": "Duration to mute audio during seek operations to prevent pops. Set to 0 to disable. Default: 150ms.",
+  "GRACEFUL_STEPS": "Graceful Ramp Steps",
+  "GRACEFUL_STEPS_DOC": "Number of volume steps for fade in/out during transitions. More steps = smoother but slower. Range: 1-5. Default: 3.",
+  "GRACEFUL_TRANSITIONS": "Graceful Play/Pause/Stop",
+  "GRACEFUL_TRANSITIONS_DOC": "Apply graceful volume ramping to play, pause, and stop transitions. Seek operations always use graceful mute. Default: on.",
+  "GRACEFUL_VOLUME": "Graceful Volume Changes",
+  "GRACEFUL_VOLUME_DOC": "Apply ramping when volume changes by more than 5%. Prevents sudden loud jumps. Default: on.",
+
+  "BALANCE": "Channel Balance",
+  "BALANCE_ADJUST": "Balance",
+  "BALANCE_DOC": "Adjust left/right channel balance. Negative values reduce right channel, positive values reduce left channel. Range: -40 to +40 (0.5dB steps).",
+  "RESET_BALANCE": "Reset Balance",
+  "BALANCE_RESET": "Balance reset to center",
+
+  "DIGITAL_FILTERS": "Digital Filters",
+  "FIR_FILTER": "FIR Filter",
+  "FIR_DOC": "Finite Impulse Response filter shape. Fast roll-off is default. Minimum phase may reduce pre-ringing.",
+  "IIR_FILTER": "IIR Bandwidth",
+  "IIR_DOC": "Infinite Impulse Response filter bandwidth. Use 47K for PCM audio, higher values for DSD content.",
+  "DEEMPHASIS": "De-emphasis",
+  "DEEMPHASIS_DOC": "De-emphasis filter for pre-emphasized recordings. Usually leave Off unless playing vintage CDs.",
+
+  "DPLL": "DPLL Jitter Reduction",
+  "I2S_DPLL": "I2S/PCM DPLL",
+  "I2S_DPLL_DOC": "DPLL bandwidth for I2S/PCM sources. Higher values provide more jitter reduction but may cause issues with some sources. Level 5 is a good starting point.",
+  "DSD_DPLL": "DSD DPLL",
+  "DSD_DPLL_DOC": "DPLL bandwidth for DSD sources.",
+
+  "SAVE": "Save",
+  "CONFIRM": "Confirm",
+  "CONFIRM_RESET": "Reset all DAC settings to factory defaults?",
+  "SETTINGS_SAVED": "Settings saved"
+}
