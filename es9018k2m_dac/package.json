@@ -1,0 +1,35 @@
+{
+  "name": "es9018k2m",
+  "version": "1.2.5",
+  "description": "Hardware control for ES9018K2M DAC via I2C with automatic volume synchronization",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Just a Nerd",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/foonerd/es9018k2m-plugin"
+  },
+  "volumio_info": {
+    "prettyName": "ES9018K2M DAC Control",
+    "icon": "fa-sliders",
+    "plugin_type": "system_hardware",
+    "architectures": ["armhf"],
+    "os": ["bookworm"],
+    "has_configuration": true,
+    "details": "Hardware control for ES9018K2M DAC via I2C. Hardware, Software, or Pass-through volume modes. Hardware enables volume slider with Mixer Type: None. Pass-through for use with Allo Relay Attenuator or external pre-amp. Safe startup volume, start muted, remember last volume, graceful volume ramping, digital filters (FIR/IIR), DPLL jitter reduction, and balance control.",
+    "changelog": "v1.2.5 - Added Pass-through volume mode for external attenuators/pre-amps, extended prerequisites documentation"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "fs-extra": "*",
+    "kew": "*",
+    "socket.io-client": "^2.3.0",
+    "v-conf": "*"
+  }
+}

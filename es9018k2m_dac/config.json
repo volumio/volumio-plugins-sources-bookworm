@@ -1,0 +1,86 @@
+{
+  "i2cBus": {
+    "type": "number",
+    "value": 1
+  },
+  "i2cAddress": {
+    "type": "number",
+    "value": 72
+  },
+  "externalVolume": {
+    "type": "boolean",
+    "value": false
+  },
+  "volumeMode": {
+    "type": "string",
+    "value": "hardware"
+  },
+  "cardNumber": {
+    "type": "number",
+    "value": -1
+  },
+  "startMuted": {
+    "type": "boolean",
+    "value": false
+  },
+  "safeStartupEnabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "safeStartupVolume": {
+    "type": "number",
+    "value": 25
+  },
+  "rememberLastVolume": {
+    "type": "boolean",
+    "value": false
+  },
+  "lastSavedVolume": {
+    "type": "number",
+    "value": -1
+  },
+  "balance": {
+    "type": "number",
+    "value": 0
+  },
+  "fir": {
+    "type": "number",
+    "value": 1
+  },
+  "iir": {
+    "type": "number",
+    "value": 0
+  },
+  "deemphasis": {
+    "type": "number",
+    "value": 74
+  },
+  "i2sDpll": {
+    "type": "number",
+    "value": 80
+  },
+  "dsdDpll": {
+    "type": "number",
+    "value": 10
+  },
+  "seekMuteMs": {
+    "type": "number",
+    "value": 150
+  },
+  "gracefulSteps": {
+    "type": "number",
+    "value": 3
+  },
+  "gracefulTransitions": {
+    "type": "boolean",
+    "value": true
+  },
+  "gracefulVolume": {
+    "type": "boolean",
+    "value": true
+  },
+  "debugLogging": {
+    "type": "boolean",
+    "value": false
+  }
+}
