@@ -1,4 +1,12 @@
 {
+  "volume_mode": {
+    "value": "hardware",
+    "type": "string"
+  },
+  "card_number": {
+    "value": -1,
+    "type": "number"
+  },
   "map_to_100": {
     "value": false,
     "type": "boolean"

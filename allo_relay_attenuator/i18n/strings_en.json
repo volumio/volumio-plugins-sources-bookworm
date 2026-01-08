@@ -4,6 +4,12 @@
     
     "VOLUME_SETTINGS": "Volume Settings",
     "VOLUME_SETTINGS_DOC": "Configure volume behavior and startup options",
+    "VOLUME_MODE": "Volume Control Mode",
+    "VOLUME_MODE_DOC": "Hardware mode (recommended) provides direct volume control and proper UI sync. Software mode uses Volumio's volume scripts but may have sync issues with I2S-only DACs.",
+    "VOLUME_MODE_HARDWARE": "Hardware (Recommended)",
+    "VOLUME_MODE_SOFTWARE": "Software (Legacy)",
+    "VOLUME_MODE_CHANGED_HW": "Switched to Hardware volume mode",
+    "VOLUME_MODE_CHANGED_SW": "Switched to Software volume mode",
     "MAP_TO_100": "Map Volume to 100",
     "MAP_TO_100_DOC": "If enabled, the Volume will range from 0 to 100. If disabled it will reflect the Allo Relay Attenuator range of 0 to 63.",
     "STARTUP_VOLUME": "Startup Volume",

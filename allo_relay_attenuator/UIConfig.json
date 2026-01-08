@@ -17,12 +17,27 @@
       "saveButton": {
         "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.SAVE",
         "data": [
+          "volume_mode",
           "map_to_100",
           "startup_volume",
           "mute_on_startup"
         ]
       },
       "content": [
+        {
+          "id": "volume_mode",
+          "element": "select",
+          "doc": "TRANSLATE.ALLO_RELAY_ATTENUATOR.VOLUME_MODE_DOC",
+          "label": "TRANSLATE.ALLO_RELAY_ATTENUATOR.VOLUME_MODE",
+          "value": {
+            "value": "hardware",
+            "label": "Hardware (Recommended)"
+          },
+          "options": [
+            { "value": "hardware", "label": "Hardware (Recommended)" },
+            { "value": "software", "label": "Software (Legacy)" }
+          ]
+        },
         {
           "id": "map_to_100",
           "element": "switch",
@@ -114,6 +129,7 @@
           },
           "options": [
             { "value": "17", "label": "GPIO 17 (Default - via Piano DAC)" },
+            { "value": "26", "label": "GPIO 26 (Audiophonics/Generic DAC HAT)" },
             { "value": "5", "label": "GPIO 5 (Direct wiring)" },
             { "value": "18", "label": "GPIO 18" },
             { "value": "22", "label": "GPIO 22" },

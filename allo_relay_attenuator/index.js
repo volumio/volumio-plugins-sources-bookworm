@@ -13,6 +13,11 @@ function alloRelayAttenuator(context) {
     this.commandRouter = this.context.coreCommand;
     this.logger = this.context.logger;
     this.configManager = this.context.configManager;
+
+    // Volume override state
+    this.volumeMode = 'hardware';
+    this.cardNumber = -1;  // -1 = auto-detect
+    this.volumeOverrideRegistered = false;
 }
 
 alloRelayAttenuator.prototype.onVolumioStart = function() {
@@ -32,14 +37,22 @@ alloRelayAttenuator.prototype.onStart = function() {
     // Load i18n strings
     self.loadI18n();
 
+    // Load volume mode config
+    self.volumeMode = self.config.get('volume_mode', 'hardware');
+    self.cardNumber = self.config.get('card_number', -1);
+
     // Update service file based on IR config, then start daemon
     self.updateServiceFile()
         .then(function() {
             return self.startDaemon();
         })
         .then(function() {
-            // Register volume scripts with Volumio
-            self.addVolumeScripts();
+            // Register volume control based on mode
+            if (self.volumeMode === 'hardware') {
+                self.registerVolumeOverride();
+            } else {
+                self.addVolumeScripts();
+            }
 
             // Apply startup settings
             self.applyStartupSettings();
@@ -63,7 +76,13 @@ alloRelayAttenuator.prototype.onStop = function() {
     // Save current volume for "Remember Last" feature
     self.saveCurrentVolume();
 
-    self.removeVolumeScripts();
+    // Unregister volume control
+    if (self.volumeOverrideRegistered) {
+        self.unregisterVolumeOverride();
+    } else {
+        self.removeVolumeScripts();
+    }
+
     self.stopDaemon()
         .then(function() {
             defer.resolve();
@@ -82,6 +101,24 @@ alloRelayAttenuator.prototype.onRestart = function() {
     setTimeout(function() {
         self.startDaemon();
     }, 1000);
+};
+
+alloRelayAttenuator.prototype.onVolumioReboot = function() {
+    var self = this;
+    self.saveCurrentVolume();
+    if (self.volumeOverrideRegistered) {
+        self.unregisterVolumeOverride();
+    }
+    return libQ.resolve();
+};
+
+alloRelayAttenuator.prototype.onVolumioShutdown = function() {
+    var self = this;
+    self.saveCurrentVolume();
+    if (self.volumeOverrideRegistered) {
+        self.unregisterVolumeOverride();
+    }
+    return libQ.resolve();
 };
 
 alloRelayAttenuator.prototype.rebootSystem = function() {
@@ -185,16 +222,22 @@ alloRelayAttenuator.prototype.getUIConfig = function() {
         __dirname + '/UIConfig.json'
     )
     .then(function(uiconf) {
-        // Volume settings
-        uiconf.sections[0].content[0].value = self.config.get('map_to_100', false);
+        // Volume settings - Section 0
+        // [0] volume_mode, [1] map_to_100, [2] startup_volume, [3] mute_on_startup
+
+        var volumeMode = self.config.get('volume_mode', 'hardware');
+        uiconf.sections[0].content[0].value.value = volumeMode;
+        uiconf.sections[0].content[0].value.label = self.getVolumeModeLabel(volumeMode);
+
+        uiconf.sections[0].content[1].value = self.config.get('map_to_100', false);
 
         var startupVol = self.config.get('startup_volume', 'remember');
-        uiconf.sections[0].content[1].value.value = startupVol;
-        uiconf.sections[0].content[1].value.label = self.getStartupVolumeLabel(startupVol);
+        uiconf.sections[0].content[2].value.value = startupVol;
+        uiconf.sections[0].content[2].value.label = self.getStartupVolumeLabel(startupVol);
 
-        uiconf.sections[0].content[2].value = self.config.get('mute_on_startup', false);
+        uiconf.sections[0].content[3].value = self.config.get('mute_on_startup', false);
 
-        // IR settings
+        // IR settings - Section 1
         uiconf.sections[1].content[0].value = self.config.get('ir_enabled', false);
 
         var irSource = self.config.get('ir_source', 'gpio');
@@ -215,6 +258,14 @@ alloRelayAttenuator.prototype.getUIConfig = function() {
     });
 
     return defer.promise;
+};
+
+alloRelayAttenuator.prototype.getVolumeModeLabel = function(value) {
+    var self = this;
+    if (value === 'hardware') {
+        return self.getI18n('VOLUME_MODE_HARDWARE');
+    }
+    return self.getI18n('VOLUME_MODE_SOFTWARE');
 };
 
 alloRelayAttenuator.prototype.getStartupVolumeLabel = function(value) {
@@ -242,6 +293,9 @@ alloRelayAttenuator.prototype.getGPIOPinLabel = function(value) {
     if (value === '17') {
         return 'GPIO 17 (Default - via Piano DAC)';
     }
+    if (value === '26') {
+        return 'GPIO 26 (Audiophonics/Generic DAC HAT)';
+    }
     if (value === '5') {
         return 'GPIO 5 (Direct wiring)';
     }
@@ -252,15 +306,40 @@ alloRelayAttenuator.prototype.saveVolumeSettings = function(data) {
     var self = this;
     var defer = libQ.defer();
 
+    // Check if volume mode changed
+    var newVolumeMode = data['volume_mode'] ? data['volume_mode'].value : 'hardware';
+    var volumeModeChanged = (newVolumeMode !== self.volumeMode);
+
+    // Save all settings
+    self.config.set('volume_mode', newVolumeMode);
     self.config.set('map_to_100', data['map_to_100']);
     self.config.set('startup_volume', data['startup_volume'].value);
     self.config.set('mute_on_startup', data['mute_on_startup']);
 
-    self.addVolumeScripts();
+    // Handle volume mode change
+    if (volumeModeChanged) {
+        self.volumeMode = newVolumeMode;
 
-    self.commandRouter.pushToastMessage('success', 'Allo Relay Attenuator', self.commandRouter.getI18nString('COMMON.SETTINGS_SAVED_SUCCESSFULLY'));
+        if (newVolumeMode === 'hardware') {
+            // Switch from software to hardware
+            self.removeVolumeScripts();
+            self.registerVolumeOverride();
+            self.commandRouter.pushToastMessage('info', 'Allo Relay Attenuator', self.getI18n('VOLUME_MODE_CHANGED_HW'));
+        } else {
+            // Switch from hardware to software
+            self.unregisterVolumeOverride();
+            self.addVolumeScripts();
+            self.commandRouter.pushToastMessage('info', 'Allo Relay Attenuator', self.getI18n('VOLUME_MODE_CHANGED_SW'));
+        }
+    } else {
+        // Just update volume scripts if in software mode
+        if (self.volumeMode === 'software') {
+            self.addVolumeScripts();
+        }
+        self.commandRouter.pushToastMessage('success', 'Allo Relay Attenuator', self.commandRouter.getI18nString('COMMON.SETTINGS_SAVED_SUCCESSFULLY'));
+    }
+
     defer.resolve({});
-
     return defer.promise;
 };
 
@@ -314,6 +393,179 @@ alloRelayAttenuator.prototype.saveIRSettings = function(data) {
 };
 
 // ============================================================================
+// Hardware Volume Override (for I2S-only DACs)
+// ============================================================================
+
+alloRelayAttenuator.prototype.getAutoDetectedCard = function() {
+    var self = this;
+
+    try {
+        var outputDevice = self.commandRouter.executeOnPlugin(
+            'audio_interface',
+            'alsa_controller',
+            'getConfigParam',
+            'outputdevice'
+        );
+        return outputDevice !== undefined ? outputDevice : 0;
+    } catch (err) {
+        self.logger.warn('Allo Relay Attenuator: Could not auto-detect card: ' + err.message);
+        return 0;
+    }
+};
+
+alloRelayAttenuator.prototype.getEffectiveCardNumber = function() {
+    var self = this;
+
+    if (self.cardNumber >= 0) {
+        return self.cardNumber;
+    }
+    return self.getAutoDetectedCard();
+};
+
+alloRelayAttenuator.prototype.registerVolumeOverride = function() {
+    var self = this;
+
+    var effectiveCard = self.getEffectiveCardNumber();
+
+    self.logger.info('Allo Relay Attenuator: Registering volume override for card ' + effectiveCard);
+
+    try {
+        self.commandRouter.executeOnPlugin(
+            'audio_interface',
+            'alsa_controller',
+            'setDeviceVolumeOverride',
+            {
+                card: effectiveCard,
+                pluginType: 'system_hardware',
+                pluginName: 'allo_relay_attenuator',
+                overrideMixerType: 'Hardware',
+                overrideAvoidSoftwareMixer: true
+            }
+        );
+        self.volumeOverrideRegistered = true;
+        self.logger.info('Allo Relay Attenuator: Volume override registered successfully');
+    } catch (err) {
+        self.logger.error('Allo Relay Attenuator: Failed to register volume override: ' + err.message);
+        self.volumeOverrideRegistered = false;
+    }
+};
+
+alloRelayAttenuator.prototype.unregisterVolumeOverride = function() {
+    var self = this;
+
+    self.logger.info('Allo Relay Attenuator: Unregistering volume override');
+
+    try {
+        self.commandRouter.executeOnPlugin(
+            'audio_interface',
+            'alsa_controller',
+            'setDeviceVolumeOverride',
+            {}
+        );
+        self.volumeOverrideRegistered = false;
+        self.logger.info('Allo Relay Attenuator: Volume override unregistered');
+    } catch (err) {
+        self.logger.error('Allo Relay Attenuator: Failed to unregister volume override: ' + err.message);
+    }
+};
+
+// Called by Volumio's volumecontrol.js when user changes volume (hardware mode)
+alloRelayAttenuator.prototype.alsavolume = function(VolumeInteger) {
+    var self = this;
+    var defer = libQ.defer();
+
+    self.logger.info('Allo Relay Attenuator: alsavolume called with ' + VolumeInteger);
+
+    var volume = parseInt(VolumeInteger, 10);
+    if (isNaN(volume)) {
+        volume = 31;
+    }
+    volume = Math.max(0, Math.min(100, volume));
+
+    // Convert 0-100 to 0-63 if map_to_100 is enabled, otherwise use directly
+    var mapTo100 = self.config.get('map_to_100', false);
+    var hardwareVol;
+    if (mapTo100) {
+        hardwareVol = Math.round(volume * 63 / 100);
+    } else {
+        hardwareVol = Math.min(volume, 63);
+    }
+
+    // Set hardware volume via daemon
+    exec('/usr/bin/sudo /usr/bin/fn-rattenuc -c SET_VOLUME=' + hardwareVol, function(error, stdout, stderr) {
+        if (error) {
+            self.logger.error('Allo Relay Attenuator: Failed to set volume - ' + error);
+            defer.reject(error);
+        } else {
+            self.logger.info('Allo Relay Attenuator: Hardware volume set to ' + hardwareVol);
+
+            // Save for Remember Last feature
+            self.config.set('last_volume', hardwareVol);
+            self.config.save();
+
+            // Push state back to Volumio so UI reflects the change
+            var uiVolume = mapTo100 ? volume : hardwareVol;
+            self.commandRouter.volumioupdatevolume({
+                vol: uiVolume,
+                mute: false
+            });
+
+            defer.resolve();
+        }
+    });
+
+    return defer.promise;
+};
+
+// Called by Volumio's volumecontrol.js to retrieve current volume (hardware mode)
+alloRelayAttenuator.prototype.retrievevolume = function() {
+    var self = this;
+    var defer = libQ.defer();
+
+    // Read ACTUAL hardware state - hardware is source of truth (physical buttons may have changed it)
+    try {
+        var output = execSync('/usr/bin/sudo /usr/bin/fn-rattenuc -c GET_VOLUME', { encoding: 'utf8' });
+        var hardwareVol = parseInt(output.trim(), 10);
+
+        if (isNaN(hardwareVol) || hardwareVol < 0 || hardwareVol > 63) {
+            hardwareVol = 31;
+        }
+
+        // Convert hardware 0-63 to UI value
+        var mapTo100 = self.config.get('map_to_100', false);
+        var uiVolume = mapTo100 ? Math.round(hardwareVol * 100 / 63) : hardwareVol;
+
+        // Get mute state
+        var muteOutput = execSync('/usr/bin/sudo /usr/bin/fn-rattenuc -c GET_MUTE', { encoding: 'utf8' });
+        var muted = (muteOutput.trim() === '1');
+
+        self.logger.info('Allo Relay Attenuator: retrievevolume - hardware=' + hardwareVol + ', ui=' + uiVolume + ', muted=' + muted);
+
+        defer.resolve({
+            vol: uiVolume,
+            mute: muted
+        });
+    } catch (err) {
+        self.logger.error('Allo Relay Attenuator: retrievevolume failed - ' + err);
+        defer.resolve({
+            vol: 31,
+            mute: false
+        });
+    }
+
+    return defer.promise;
+};
+
+// Called by Volumio when volume settings change (required for volume override)
+alloRelayAttenuator.prototype.updateVolumeSettings = function(data) {
+    var self = this;
+    // Stub - Volumio calls this after registerVolumeOverride
+    // No action needed for relay attenuator
+    self.logger.info('Allo Relay Attenuator: updateVolumeSettings called');
+    return libQ.resolve();
+};
+
+// ============================================================================
 // Daemon Control
 // ============================================================================
 
@@ -339,7 +591,6 @@ alloRelayAttenuator.prototype.startDaemon = function() {
 alloRelayAttenuator.prototype.updateServiceFile = function() {
     var self = this;
     var defer = libQ.defer();
-    var fs = require('fs');
 
     var irEnabled = self.config.get('ir_enabled', false);
     // When IR enabled: full LIRC support with lircrc
@@ -446,7 +697,7 @@ alloRelayAttenuator.prototype.restartDaemon = function() {
 };
 
 // ============================================================================
-// Volume Scripts
+// Volume Scripts (Software Mode)
 // ============================================================================
 
 alloRelayAttenuator.prototype.addVolumeScripts = function() {
@@ -497,6 +748,7 @@ alloRelayAttenuator.prototype.saveCurrentVolume = function() {
         var vol = parseInt(output.trim());
         if (!isNaN(vol) && vol >= 0 && vol <= 63) {
             self.config.set('last_volume', vol);
+            self.config.save();
             self.logger.info('Allo Relay Attenuator: Saved volume ' + vol + ' for Remember Last');
         }
     } catch (e) {
@@ -525,8 +777,20 @@ alloRelayAttenuator.prototype.applyStartupSettings = function() {
                 self.logger.error('Allo Relay Attenuator: Failed to set startup volume - ' + error);
             } else {
                 self.logger.info('Allo Relay Attenuator: Startup volume set to ' + vol);
+
                 // Sync Volumio UI with hardware volume
-                self.commandRouter.volumioretrievevolume();
+                if (self.volumeMode === 'hardware') {
+                    // In hardware mode, push state directly
+                    var mapTo100 = self.config.get('map_to_100', false);
+                    var uiVolume = mapTo100 ? Math.round(vol * 100 / 63) : vol;
+                    self.commandRouter.volumioupdatevolume({
+                        vol: uiVolume,
+                        mute: muteOnStartup
+                    });
+                } else {
+                    // In software mode, let Volumio retrieve it
+                    self.commandRouter.volumioretrievevolume();
+                }
             }
         });
 
