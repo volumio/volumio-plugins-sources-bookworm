@@ -653,6 +653,28 @@ ControllerMqttClient.prototype.handleSetCommand = function(command, value) {
       break;
 
     case 'stop':
+      // Workaround for streaming services (Tidal, Qobuz, webradio)
+      // Volumio's state machine stop() clears consume mode context before
+      // calling service stop, which breaks subsequent UI control.
+      // For streaming services in play state, use pause instead to avoid
+      // state desynchronization. This is a known Volumio core issue.
+      var currentState = self.commandRouter.volumioGetState();
+      if (currentState && currentState.status === 'play') {
+        var trackType = (currentState.trackType || '').toLowerCase();
+        var service = (currentState.service || '').toLowerCase();
+        var isStreamingService = (
+          trackType === 'tidal' ||
+          trackType === 'qobuz' ||
+          service === 'tidal' ||
+          service === 'qobuz' ||
+          service === 'webradio'
+        );
+        if (isStreamingService) {
+          self.debugLog('Using pause for streaming service stop (workaround for consume mode issue)');
+          self.commandRouter.volumioPause();
+          break;
+        }
+      }
       self.commandRouter.volumioStop();
       break;
 
