@@ -1,0 +1,36 @@
+{
+    "name": "gpio_button_led",
+    "version": "1.0.0",
+    "description": "GPIO power button and LED control for Volumio 4",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Just a Nerd",
+    "license": "GPL-3.0",
+    "repository": "https://github.com/volumio/volumio-plugins-sources-bookworm",
+    "volumio_info": {
+        "prettyName": "GPIO Button and LED",
+        "icon": "fa-power-off",
+        "plugin_type": "system_hardware",
+        "boot_priority": 10,
+        "os": [
+            "bookworm"
+        ],
+        "architectures": [
+            "armhf"
+        ],
+        "details": "Power button with LED indicator via GPIO. Mimics Audiophonics on/off behavior without MCU. Button triggers shutdown when running. For wake-from-halt, GPIO3 with diode circuit required (see README).",
+        "changelog": "1.0.0: Initial release - kernel gpio-shutdown overlay, dual-pin LED with software blink, configurable polarity"
+    },
+    "engines": {
+        "node": ">=20",
+        "volumio": ">=4"
+    },
+    "dependencies": {
+        "@iiot2k/gpiox": "^2.1.4",
+        "fs-extra": "^11.2.0",
+        "kew": "^0.7.0",
+        "v-conf": "^1.4.3"
+    }
+}
