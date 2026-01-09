@@ -40,6 +40,22 @@
       ]
     },
     {
+      "id": "section_volume_info1",
+      "element": "section",
+      "label": "TRANSLATE.VOLUME_INFO",
+      "icon": "fa-info-circle",
+      "description": "TRANSLATE.VOLUME_INFO_DESC1",
+      "content": []
+    },
+    {
+      "id": "section_volume_info2",
+      "element": "section",
+      "label": "TRANSLATE.VOLUME_INFO2",
+      "icon": "fa-exclamation-triangle",
+      "description": "TRANSLATE.VOLUME_INFO_DESC2",
+      "content": []
+    },
+    {
       "id": "section_volume",
       "element": "section",
       "label": "TRANSLATE.VOLUME_SETTINGS",

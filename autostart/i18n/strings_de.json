@@ -10,10 +10,15 @@
   "AUTOSTART_DELAY_DOC": "Zusaetzliche Verzoegerung nach Systembereitschaft und Lautstaerkeeinstellung. Erhoehen Sie diesen Wert, wenn Ihre Audio-Hardware zusaetzliche Zeit zur Initialisierung benoetigt.",
   "AUTOSTART_DELAY": "Zusaetzliche Verzoegerung (Millisekunden)",
 
-  "VOLUME_SETTINGS": "Start-Lautstaerke",
-  "VOLUME_SETTINGS_DESC": "Einen bestimmten Lautstaerkepegel beim Start der Wiedergabe festlegen. Die Lautstaerke wird nach Systembereitschaft und vor der zusaetzlichen Verzoegerung eingestellt.",
-  "VOLUME_ENABLED": "Start-Lautstaerke aktivieren",
-  "VOLUME_ENABLED_DOC": "Wenn aktiviert, wird die Lautstaerke vor Beginn der Wiedergabe auf den angegebenen Pegel eingestellt.",
+  "VOLUME_INFO": "Informationen zur Startlautstaerke",
+  "VOLUME_INFO_DESC1": "Die Startlautstaerke kann an mehreren Stellen konfiguriert werden: Volumio-Wiedergabeoptionen, Hardware- oder DAC-Plugins und dieses Plugin. Jede Einstellung wird zu einem anderen Zeitpunkt waehrend des Startvorgangs angewendet. Wenn mehrere Einstellungen aktiviert sind, ueberschreiben spaeter angewendete die frueheren - dies kann zu Konflikten oder unerwarteten Lautstaerkepegeln fuehren. Ueberpruefen Sie Ihre Einstellungen an jeder Stelle, um ein konsistentes Verhalten sicherzustellen.",
+  "VOLUME_INFO2": "AutoStart Lautstaerke-Timing",
+  "VOLUME_INFO_DESC2": "AutoStart wendet seine Lautstaerkeeinstellung an, nachdem das System vollstaendig bereit ist, unmittelbar vor Beginn der Wiedergabe. Dies macht es zur letzten Einstellung in der Startsequenz und ueberschreibt alle frueheren Lautstaerkeeinstellungen.",
+
+  "VOLUME_SETTINGS": "Startlautstaerke",
+  "VOLUME_SETTINGS_DESC": "Einen bestimmten Lautstaerkepegel unmittelbar vor Beginn der Wiedergabe festlegen.",
+  "VOLUME_ENABLED": "Startlautstaerke aktivieren",
+  "VOLUME_ENABLED_DOC": "Wenn aktiviert, wird die Lautstaerke auf den angegebenen Pegel eingestellt, nachdem das System vollstaendig bereit ist, vor Beginn der Wiedergabe.",
   "VOLUME_LEVEL": "Lautstaerkepegel (0-100)",
   "VOLUME_LEVEL_DOC": "Lautstaerkepegel beim Start. Der Wert muss zwischen 0 und 100 liegen. Hinweis: Dies funktioniert moeglicherweise nicht, wenn der Mixer auf Keine gesetzt ist.",
 

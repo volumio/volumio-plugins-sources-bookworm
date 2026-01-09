@@ -10,10 +10,15 @@
   "AUTOSTART_DELAY_DOC": "Additional delay after system ready and volume is set. Increase if your audio hardware needs extra time to initialize.",
   "AUTOSTART_DELAY": "Additional Delay (milliseconds)",
 
+  "VOLUME_INFO": "Startup Volume Information",
+  "VOLUME_INFO_DESC1": "Startup volume can be configured in multiple locations: Volumio Playback Options, hardware or DAC plugins, and this plugin. Each applies at a different point during the boot sequence. When multiple settings are enabled, those applied later will override earlier ones - this can cause conflicts or unexpected volume levels. Review your settings in each location to ensure consistent behavior.",
+  "VOLUME_INFO2": "AutoStart Volume Timing",
+  "VOLUME_INFO_DESC2": "AutoStart applies its volume setting after the system is fully ready, immediately before playback begins. This makes it the last in the startup sequence, overriding any earlier volume settings.",
+
   "VOLUME_SETTINGS": "Startup Volume",
-  "VOLUME_SETTINGS_DESC": "Set a specific volume level when playback starts. Volume is applied after system ready, before the additional delay.",
+  "VOLUME_SETTINGS_DESC": "Set a specific volume level immediately before playback starts.",
   "VOLUME_ENABLED": "Enable Startup Volume",
-  "VOLUME_ENABLED_DOC": "When enabled, volume will be set to the specified level before playback starts.",
+  "VOLUME_ENABLED_DOC": "When enabled, volume will be set to the specified level after the system is fully ready, before playback starts.",
   "VOLUME_LEVEL": "Volume Level (0-100)",
   "VOLUME_LEVEL_DOC": "Volume level to set at startup. Value must be between 0 and 100. Note: This may not work if mixer is set to None.",
 

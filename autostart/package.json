@@ -1,6 +1,6 @@
 {
 	"name": "autostart",
-	"version": "4.1.0",
+	"version": "4.1.1",
 	"description": "Automatically starts playing the last active entry in the play queue.",
 	"main": "index.js",
 	"scripts": {
