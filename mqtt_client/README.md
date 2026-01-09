@@ -177,6 +177,16 @@ Thing mqtt:topic:volumio "Volumio" (mqtt:broker:mosquitto) {
 3. Verify broker connectivity with mosquitto_sub/pub tools
 4. Ensure firewall allows MQTT port (1883 or 8883)
 
+## Known Issues
+
+### Stop command for streaming services (Tidal, Qobuz, webradio)
+
+There is a known issue in Volumio core where the stop command clears the "consume mode" context before the streaming service plugin processes the stop. This causes the UI to become unresponsive after an external stop command.
+
+**Workaround implemented:** For streaming services (Tidal, Qobuz, webradio) that are currently playing, this plugin uses pause instead of stop to preserve UI responsiveness. This means "stop" will behave like "pause" for these services. For local files and non-streaming content, stop works normally.
+
+This has been reported to Volumio for a proper fix in the core state machine.
+
 ## License
 
 MIT License
