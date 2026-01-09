@@ -1,49 +1,35 @@
 {
-	"name": "audiophonicsonoff",
-	"version": "2.0.5",
-	"description": "Minimized Audiophonics plugin for button management, copied from RaspDac by Jedail",
-	"main": "index.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"author": "Saiyato",
-	"license": "GPL-3.0",
-	"volumio_info": {
-		"prettyName": "Audiophonics ON/OFF",
-		"icon": "fa fa-cogs",
-		"plugin_type": "system_hardware",
-		"os": [
-			"bookworm"
-		],
-		"details": "Minimized Audiophonics plugin for button management, copied from RaspDac by Jedail",
-		"changelog": "",
-		"architectures": [
-			"armhf"
-		]
-	},
-	"dependencies": {
-		"fs-extra": "^10.0.0",
-		"kew": "^0.7.0",
-		"net": "^1.0.2",
-		"onoff": "^6.0.3",
-		"v-conf": "^1.4.3"
-	},
-	"engines": {
-		"node": ">=20",
-		"volumio": ">=0"
-	},
-	"devDependencies": {},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/Saiyato/volumio-audiophonicsonoff-plugin.git"
-	},
-	"keywords": [
-		"Audiophonics",
-		"button",
-		"volumio"
-	],
-	"bugs": {
-		"url": "https://github.com/Saiyato/volumio-audiophonicsonoff-plugin/issues"
-	},
-	"homepage": "https://github.com/Saiyato/volumio-audiophonicsonoff-plugin#readme"
+    "name": "audiophonicsonoff",
+    "version": "2.1.0",
+    "description": "Audiophonics power button management for Volumio 4 (Bookworm)",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Just a Nerd (based on original work by Saiyato and Jedail)",
+    "license": "GPL-3.0",
+    "volumio_info": {
+        "prettyName": "Audiophonics On/Off",
+        "icon": "fa-power-off",
+        "plugin_type": "system_hardware",
+        "boot_priority": 10,
+        "os": [
+            "bookworm"
+        ],
+        "architectures": [
+            "armhf"
+        ],
+        "details": "Power button management for Audiophonics soundcards",
+        "changelog": "2.1.0: Rewritten for Volumio 4/Bookworm - replaced deprecated onoff (sysfs) with @iiot2k/gpiox (chardev), fixed button polarity for Audiophonics hardware, fixed shutdown pulse timing"
+    },
+    "engines": {
+        "node": ">=20",
+        "volumio": ">=4"
+    },
+    "dependencies": {
+        "@iiot2k/gpiox": "^2.1.4",
+        "fs-extra": "^11.2.0",
+        "kew": "^0.7.0",
+        "v-conf": "^1.4.3"
+    }
 }
