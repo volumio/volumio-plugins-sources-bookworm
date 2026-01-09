@@ -184,34 +184,34 @@ AutoStart.prototype.getUIConfig = function () {
             uiconf.sections[0].content[0].value = self.config.get('playFromLastPosition');
             uiconf.sections[0].content[1].value = self.config.get('autostartDelay') || 5000;
 
-            // Section 1 - Startup volume settings
-            uiconf.sections[1].content[0].value = self.config.get('autostartVolumeEnabled') || false;
+            // Section 3 - Startup volume settings
+            uiconf.sections[3].content[0].value = self.config.get('autostartVolumeEnabled') || false;
 
             // For volume level: use stored value, or read current system volume
             var storedVolumeLevel = self.config.get('autostartVolumeLevel');
             if (storedVolumeLevel !== undefined) {
-                uiconf.sections[1].content[1].value = storedVolumeLevel;
+                uiconf.sections[3].content[1].value = storedVolumeLevel;
             } else {
                 // Read current system volume as default
                 try {
                     var currentState = self.commandRouter.volumioGetState();
                     if (currentState && currentState.volume !== undefined) {
-                        uiconf.sections[1].content[1].value = currentState.volume;
+                        uiconf.sections[3].content[1].value = currentState.volume;
                         self.logger.info('AutoStart - Using current system volume as default: ' + currentState.volume);
                     } else {
-                        uiconf.sections[1].content[1].value = 50;
+                        uiconf.sections[3].content[1].value = 50;
                         self.logger.info('AutoStart - Could not read system volume, using default: 50');
                     }
                 } catch (error) {
-                    uiconf.sections[1].content[1].value = 50;
+                    uiconf.sections[3].content[1].value = 50;
                     self.logger.warn('AutoStart - Error reading system volume: ' + error.message);
                 }
             }
 
-            // Section 2 - Polling settings (advanced)
-            uiconf.sections[2].content[0].value = self.config.get('showPollingSettings') || false;
-            uiconf.sections[2].content[1].value = self.config.get('pollingInterval') || 5000;
-            uiconf.sections[2].content[2].value = self.config.get('maxPollingAttempts') || 60;
+            // Section 4 - Polling settings (advanced)
+            uiconf.sections[4].content[0].value = self.config.get('showPollingSettings') || false;
+            uiconf.sections[4].content[1].value = self.config.get('pollingInterval') || 5000;
+            uiconf.sections[4].content[2].value = self.config.get('maxPollingAttempts') || 60;
 
             defer.resolve(uiconf);
         })
