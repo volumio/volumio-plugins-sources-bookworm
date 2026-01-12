@@ -1,5 +1,5 @@
 /*--------------------
-// FusionDsp plugin for volumio 3. By balbuze December 2025
+// FusionDsp plugin for volumio 3. By balbuze January 2026
 contribution : Paolo Sabatino
 Multi Dsp features
 Based on CamillaDsp
@@ -462,7 +462,8 @@ function getPeqLabel(typeinui) {
     'Notch2': 'Notch Hz,bandwidth Octave',
     'LinkwitzTransform': 'LinkwitzTransform Fa Hz,Qa,FT Hz,Qt',
     'ButterworthHighpass': 'ButterworthHighpass Hz, order',
-    'ButterworthLowpass': 'ButterworthLowpass Hz, order'
+    'ButterworthLowpass': 'ButterworthLowpass Hz, order',
+    'Tilt': 'Tilt dB'
   };
   return labelMap[typeinui] || 'None';
 }
@@ -487,6 +488,7 @@ function getPeqOptions(self) {
     { value: 'LinkwitzTransform', label: 'Linkwitz Transform Fa Hz,Qa,FT Hz,Qt' },
     { value: 'ButterworthHighpass', label: 'ButterworthHighpass Hz, order' },
     { value: 'ButterworthLowpass', label: 'ButterworthLowpass Hz, order' },
+    { value: 'Tilt', label: 'Tilt dB' },
     { value: 'Remove', label: 'Remove' }
   ];
 }
@@ -2431,6 +2433,29 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
 
           }
 
+        } else if (typer == 'Tilt') {
+
+          composedeq += '  ' + eqc + ':\n';
+          composedeq += '    type: BiquadCombo' + '\n';
+          composedeq += '    parameters:' + '\n';
+          composedeq += '      type: Tilt' + '\n';
+          composedeq += '      gain: ' + eqv[0] + '\n';
+          composedeq += '' + '\n';
+          gainmax = ',' + (Math.abs(Number(eqv[0])) / 2);
+
+          //gainmax = ',' + eqv[0];
+          if (scoper == 'L') {
+            pipelineL = '      - ' + eqc + '\n';
+
+          } else if (scoper == 'R') {
+            pipelineR = '      - ' + eqc + '\n';
+
+          } else if (scoper == 'L+R') {
+            pipelineL = '      - ' + eqc + '\n';
+            pipelineR = '      - ' + eqc + '\n';
+
+          }
+
         } else if (typer == 'None') {
 
           composedeq = ''
@@ -2993,7 +3018,7 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
       var eqr = (data[eqc]).split(',')
       var veq = Number(eqr[0]);
 
-      if (typer !== 'None' && typer !== 'Remove') {
+      if (typer !== 'None' && typer !== 'Remove'&& typer !=='Tilt') {
         //  self.logger.info(logPrefix + ' Type is ' + typer)
 
         if (Number.parseFloat(veq) && (veq > 0 && veq < 22050)) {
@@ -3071,6 +3096,22 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
 
         }
 
+      }
+
+      if (typer == 'Tilt') {
+        var g = Number(eqr[0]);
+        if ((Number.parseFloat(g)) && (g > -100.1 && g < 100.1)) {
+          // valid tilt gain
+        } else {
+          self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('TILT_GAIN_RANGE') + eqc)
+          return;
+        }
+       var secondParam = eqr[1];
+        if (secondParam != undefined) {
+          self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('TILT_ONLY_GAIN') + eqc)
+          return;
+        }
+        
       }
 
       if (typer == 'Highpass2' || typer == 'Lowpass2' || typer == 'Notch2') {
