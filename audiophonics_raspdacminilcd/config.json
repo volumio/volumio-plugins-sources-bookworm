@@ -1,0 +1,10 @@
+{
+  "lcd_active": {
+    "type": "boolean",
+    "value": true
+  },
+  "sleep_after": {
+    "type": "number",
+    "value": 900
+  }
+}

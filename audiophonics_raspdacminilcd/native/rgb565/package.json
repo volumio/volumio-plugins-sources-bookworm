@@ -1,0 +1,15 @@
+{
+  "name": "rgb565_rdmlcd",
+  "version": "1.0.0",
+  "description": "convert display buffer for rdmlcd",
+  "main": "index.js",
+  "scripts": {
+    "install_rdmlcd" : "sh ./build_rdmlcd.sh",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "O",
+  "license": "ISC",
+  "dependencies":{
+    "node-addon-api": "^7.1.0"
+  }
+}
