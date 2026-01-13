@@ -331,6 +331,58 @@ EOF
 
 echo "Service environment configured: SLEEP_AFTER=$SLEEP_AFTER"
 
+echo "Creating helper script for runtime configuration..."
+
+# Create helper script for updating service environment at runtime
+cat > /usr/local/bin/rdmlcd-update-env.sh << 'HELPER'
+#!/bin/sh
+# RaspDacMini LCD - Service environment update helper
+# Called by plugin to update SLEEP_AFTER setting
+
+SLEEP_AFTER="$1"
+
+if [ -z "$SLEEP_AFTER" ]; then
+    echo "Usage: rdmlcd-update-env.sh <sleep_after_seconds>"
+    exit 1
+fi
+
+# Validate numeric input
+case "$SLEEP_AFTER" in
+    ''|*[!0-9]*) echo "Error: SLEEP_AFTER must be numeric"; exit 1 ;;
+esac
+
+# Create override directory and file
+mkdir -p /etc/systemd/system/rdmlcd.service.d
+cat > /etc/systemd/system/rdmlcd.service.d/override.conf << EOF
+[Service]
+Environment="SLEEP_AFTER=$SLEEP_AFTER"
+EOF
+
+# Reload systemd
+/bin/systemctl daemon-reload
+
+echo "Service environment updated: SLEEP_AFTER=$SLEEP_AFTER"
+HELPER
+
+chmod 755 /usr/local/bin/rdmlcd-update-env.sh
+
+echo "Creating sudoers entry for runtime configuration..."
+
+# Create sudoers entry for volumio user to run helper script
+cat > /etc/sudoers.d/volumio-user-raspdac-mini-lcd << 'SUDOERS'
+# RaspDacMini LCD plugin - allow volumio user to update service environment
+volumio ALL=(ALL) NOPASSWD: /usr/local/bin/rdmlcd-update-env.sh
+SUDOERS
+
+chmod 0440 /etc/sudoers.d/volumio-user-raspdac-mini-lcd
+visudo -c -f /etc/sudoers.d/volumio-user-raspdac-mini-lcd
+if [ $? -ne 0 ]; then
+    echo "Warning: Invalid sudoers syntax, runtime config updates may fail"
+    rm -f /etc/sudoers.d/volumio-user-raspdac-mini-lcd
+else
+    echo "Sudoers configuration complete"
+fi
+
 echo "Enabling and starting service..."
 
 # Reload systemd to pick up new service

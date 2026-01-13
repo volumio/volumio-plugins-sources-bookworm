@@ -1,6 +1,6 @@
 {
   "name": "raspdac_mini_lcd",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Hardware configuration & display drivers for Audiophonics RaspDacMini LCD",
   "main": "index.js",
   "scripts": {
@@ -20,7 +20,7 @@
       "bookworm"
     ],
     "details": "Display driver for Audiophonics RaspDacMini 2.4 inch LCD (ILI9341). Provides real-time playback information, album art, volume control, repeat/shuffle indicators, DAC input switching, and metadata display with configurable screen timeout.",
-    "changelog": "1.1.0: DAC control (I2S/SPDIF, filters), repeat/shuffle icons, debounced remote, mute feedback, Docker builds"
+    "changelog": "1.1.1: Fix architecture detection, reduce package bloat, add sudoers for runtime config"
   },
   "engines": {
     "node": ">=20",
