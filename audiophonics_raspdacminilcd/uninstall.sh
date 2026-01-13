@@ -99,6 +99,18 @@ fi
 rm -f /tmp/volumio_source_index /tmp/volumio_sources_list 2>/dev/null
 rm -f /tmp/option_press.lock /tmp/option_long_press 2>/dev/null
 
+# Remove helper script
+if [ -f /usr/local/bin/rdmlcd-update-env.sh ]; then
+    rm -f /usr/local/bin/rdmlcd-update-env.sh
+    echo "Helper script removed"
+fi
+
+# Remove sudoers entry
+if [ -f /etc/sudoers.d/volumio-user-raspdac-mini-lcd ]; then
+    rm -f /etc/sudoers.d/volumio-user-raspdac-mini-lcd
+    echo "Sudoers entry removed"
+fi
+
 systemctl daemon-reload
 
 echo "Removing boot configuration..."
@@ -151,4 +163,3 @@ echo "  - rm -rf $PLUGIN_DIR/compositor/node_modules"
 echo ""
 
 echo "pluginuninstallend"
-

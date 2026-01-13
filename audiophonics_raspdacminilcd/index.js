@@ -229,30 +229,17 @@ raspdacMiniLCD.prototype.updateServiceEnvironment = function() {
     var defer = libQ.defer();
 
     var sleep_after = self.config.get('sleep_after') || 900;
-    var envContent = 'SLEEP_AFTER=' + sleep_after + '\n';
-    var envFile = '/etc/systemd/system/rdmlcd.service.d/override.conf';
-    var envDir = '/etc/systemd/system/rdmlcd.service.d';
 
     self.logger.info('[RaspDacMini LCD] Updating service environment: SLEEP_AFTER=' + sleep_after);
 
-    // Create override directory and file
-    var command = 'mkdir -p ' + envDir + ' && echo "[Service]" > ' + envFile + ' && echo "Environment=\\"SLEEP_AFTER=' + sleep_after + '\\"" >> ' + envFile;
-    
-    exec('/usr/bin/sudo /bin/sh -c \'' + command + '\'', {uid: 1000, gid: 1000}, function(error, stdout, stderr) {
+    // Use helper script to update service environment (handles mkdir, write, daemon-reload)
+    exec('/usr/bin/sudo /usr/local/bin/rdmlcd-update-env.sh ' + sleep_after, {uid: 1000, gid: 1000}, function(error, stdout, stderr) {
         if (error) {
             self.logger.error('[RaspDacMini LCD] Failed to update service environment: ' + error);
             defer.reject(error);
         } else {
             self.logger.info('[RaspDacMini LCD] Service environment updated');
-            // Reload systemd to pick up changes
-            exec('/usr/bin/sudo /bin/systemctl daemon-reload', {uid: 1000, gid: 1000}, function(error, stdout, stderr) {
-                if (error) {
-                    self.logger.error('[RaspDacMini LCD] Failed to reload systemd: ' + error);
-                    defer.reject(error);
-                } else {
-                    defer.resolve();
-                }
-            });
+            defer.resolve();
         }
     });
 
