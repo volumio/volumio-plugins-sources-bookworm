@@ -1,0 +1,21 @@
+[Unit]
+Description=RaspDacMini LCD Display Service
+After=volumio.service
+Requires=volumio.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/data/plugins/system_hardware/raspdac_mini_lcd/compositor
+Environment="SLEEP_AFTER=900"
+ExecStart=/usr/bin/node index.js volumio /dev/fb1
+StandardOutput=journal
+StandardError=journal
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=5
+StartLimitInterval=200
+StartLimitBurst=5
+
+[Install]
+WantedBy=multi-user.target
