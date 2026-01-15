@@ -110,6 +110,24 @@ rotaryencoder2.prototype.onStart = function() {
 	if (self.JSONLogging) self.logger.info('[ROTARYENCODER2]' + JSON.stringify(self.config));
 
 	self.socket = io.connect('http://localhost:3000');
+	
+	// Socket connection event handlers
+	self.socket.on('connect', function() {
+		self.logger.info('[ROTARYENCODER2] Socket connected to Volumio');
+	});
+	
+	self.socket.on('connect_error', function(err) {
+		self.logger.error('[ROTARYENCODER2] Socket connection error: ' + err.message);
+	});
+	
+	self.socket.on('disconnect', function(reason) {
+		self.logger.warn('[ROTARYENCODER2] Socket disconnected: ' + reason);
+	});
+	
+	self.socket.on('reconnect', function(attemptNumber) {
+		self.logger.info('[ROTARYENCODER2] Socket reconnected after ' + attemptNumber + ' attempts');
+	});
+	
 	self.socket.emit('getState');
 	self.socket.on('pushState',function(data){
 		self.status = data;
