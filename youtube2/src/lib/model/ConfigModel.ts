@@ -1,4 +1,4 @@
-import { Parser, type RawNode, YTNodes, Misc as YTMisc } from 'volumio-youtubei.js';
+import { Parser, type RawNode, YTNodes, Misc as YTMisc } from 'volumio-yt-support/dist/innertube';
 import yt2 from '../YouTube2Context';
 import { findInObject } from '../util';
 import { BaseModel } from './BaseModel';
@@ -7,6 +7,7 @@ import { type PluginConfig } from '../types';
 import { type I18nOptions, type PluginConfigSchema } from '../types/PluginConfig';
 
 export const PLUGIN_CONFIG_SCHEMA: PluginConfigSchema = {
+  hasAcceptedDisclaimer: { defaultValue: false, json: false },
   region: { defaultValue: 'US', json: false },
   language: { defaultValue: 'en', json: false },
   rootContentType: { defaultValue: 'full', json: false },
