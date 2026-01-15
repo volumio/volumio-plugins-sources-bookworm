@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Removing gpio-buttons"
+echo "Removing GPIO Buttons plugin"
 rm -rf /data/configuration/system_hardware/gpio-buttons
 echo "Done"
 
