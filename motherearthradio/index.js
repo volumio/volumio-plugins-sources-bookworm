@@ -1,526 +1,732 @@
 'use strict';
 
-var libQ = require('kew');
-var fs = require('fs-extra');
-var config = new (require('v-conf'))();
-var NanoTimer = require('nanotimer');
+/**
+ * Mother Earth Radio Plugin v1.4
+ */
+
+const libQ = require('kew');
+const fs = require('fs-extra');
 const https = require('https');
-var flacUri;
-var channelMix;
-var metadataUrl;
-var audioFormat = "flac";
+const { URL } = require('url');
 
-module.exports = motherearthradio;
+const SSE_RECONNECT_DELAY_MS = 3000;
+const SSE_MAX_RECONNECT_ATTEMPTS = 10;
+const HIGH_LATENCY_BUFFER_KB = 32768;
+const HIGH_LATENCY_DELAY_MS = 2000;
+const NORMAL_BUFFER_KB = 4096;
+const SERVICE_NAME = 'motherearthradio';
 
-function motherearthradio(context) {
-    var self = this;
+class MotherEarthRadio {
+    constructor(context) {
+        this.context = context;
+        this.commandRouter = context.coreCommand;
+        this.logger = context.logger;
+        this.configManager = context.configManager;
+        
+        this.serviceName = SERVICE_NAME;
+        
+        this.state = {
+            title: '',
+            artist: ''
+        };
+        this.currentUri = null;
+        this.currentChannel = null;
+        this.currentQuality = null;
+        this.isPlaying = false;
+        
+        this.sseRequest = null;
+        this.sseReconnectAttempts = 0;
+        this.sseReconnectTimer = null;
+        
+        this.metadataDelay = 0;
+        this.highLatencyMode = false;
+        
+        this.apiHost = 'motherearth.streamserver24.com';
+        
+        this.channels = {
+            'radio': {
+                name: 'Radio',
+                shortcode: 'motherearth',
+                streams: {
+                    flac192: 'https://motherearth.streamserver24.com/listen/motherearth/motherearth',
+                    flac96: 'https://motherearth.streamserver24.com/listen/motherearth/motherearth.flac-lo',
+                    aac: 'https://motherearth.streamserver24.com/listen/motherearth/motherearth.aac'
+                }
+            },
+            'klassik': {
+                name: 'Klassik',
+                shortcode: 'motherearth_klassik',
+                streams: {
+                    flac192: 'https://motherearth.streamserver24.com/listen/motherearth_klassik/motherearth.klassik',
+                    flac96: 'https://motherearth.streamserver24.com/listen/motherearth_klassik/motherearth.klassik.flac-lo',
+                    aac: 'https://motherearth.streamserver24.com/listen/motherearth_klassik/motherearth.klassik.aac'
+                }
+            },
+            'instrumental': {
+                name: 'Instrumental',
+                shortcode: 'motherearth_instrumental',
+                streams: {
+                    flac192: 'https://motherearth.streamserver24.com/listen/motherearth_instrumental/motherearth.instrumental',
+                    flac96: 'https://motherearth.streamserver24.com/listen/motherearth_instrumental/motherearth.instrumental.flac-lo',
+                    aac: 'https://motherearth.streamserver24.com/listen/motherearth_instrumental/motherearth.instrumental.aac'
+                }
+            },
+            'jazz': {
+                name: 'Jazz',
+                shortcode: 'motherearth_jazz',
+                streams: {
+                    flac192: 'https://motherearth.streamserver24.com/listen/motherearth_jazz/motherearth.jazz',
+                    flac96: 'https://motherearth.streamserver24.com/listen/motherearth_jazz/motherearth.jazz.flac-lo',
+                    aac: 'https://motherearth.streamserver24.com/listen/motherearth_jazz/motherearth.jazz.aac'
+                }
+            }
+        };
+    }
 
-    self.context = context;
-    self.commandRouter = this.context.coreCommand;
-    self.logger = this.context.logger;
-    self.configManager = this.context.configManager;
+    // ═══════════════════════════════════════════════════════════════════════════
+    // VOLUMIO LIFECYCLE
+    // ═══════════════════════════════════════════════════════════════════════════
 
-    self.state = {};
-    self.timer = null;
-};
+    onVolumioStart() {
+        const configFile = this.commandRouter.pluginManager.getConfigurationFile(this.context, 'config.json');
+        this.config = new (require('v-conf'))();
+        this.config.loadFile(configFile);
+        return libQ.resolve();
+    }
 
-motherearthradio.prototype.onVolumioStart = function () {
-    var self = this;
-    self.configFile = this.commandRouter.pluginManager.getConfigurationFile(this.context, 'config.json');
-    self.getConf(self.configFile);
-    self.apiDelay = self.config.get('apiDelay');
-    self.logger.info('[' + Date.now() + '] ' + '[MotherEarth] API delay: ' + self.apiDelay);
+    onStart() {
+        this.mpdPlugin = this.commandRouter.pluginManager.getPlugin('music_service', 'mpd');
+        this.addToBrowseSources();
+        
+        this.metadataDelay = this.config.get('apiDelay') || 0;
+        this.highLatencyMode = this.config.get('highLatencyMode') || false;
+        
+        if (this.highLatencyMode) {
+            this.applyHighLatencyBuffer();
+        }
+        
+        this.log('info', 'Plugin started (SSE mode)');
+        return libQ.resolve();
+    }
 
-    return libQ.resolve();
-};
+    onStop() {
+        this.stopSSE();
+        this.removeFromBrowseSources();
+        return libQ.resolve();
+    }
 
-motherearthradio.prototype.getConfigurationFiles = function () {
-    return ['config.json'];
-};
+    onRestart() {
+        return libQ.resolve();
+    }
 
-motherearthradio.prototype.onStart = function () {
-    var self = this;
+    getConfigurationFiles() {
+        return ['config.json'];
+    }
 
-    self.mpdPlugin = this.commandRouter.pluginManager.getPlugin('music_service', 'mpd');
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SSE (SERVER-SENT EVENTS)
+    // ═══════════════════════════════════════════════════════════════════════════
 
-    self.loadRadioI18nStrings();
-    self.addRadioResource();
-    self.addToBrowseSources();
+    startSSE(channelKey) {
+        this.stopSSE();
+        
+        const channel = this.channels[channelKey];
+        if (!channel) {
+            this.log('error', 'Unknown channel: ' + channelKey);
+            return;
+        }
+        
+        const subs = { subs: { ['station:' + channel.shortcode]: {} } };
+        const sseUrl = 'https://' + this.apiHost + '/api/live/nowplaying/sse?cf_connect=' + encodeURIComponent(JSON.stringify(subs));
+        
+        this.log('info', '🔌 Starting SSE for ' + channel.name);
+        this.connectSSE(sseUrl, channelKey);
+    }
 
-    self.serviceName = "motherearthradio";
+    connectSSE(sseUrl, channelKey) {
+        const self = this;
+        const url = new URL(sseUrl);
+        
+        const options = {
+            hostname: url.hostname,
+            port: 443,
+            path: url.pathname + url.search,
+            method: 'GET',
+            headers: {
+                'Accept': 'text/event-stream',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive'
+            }
+        };
 
-    // Once the Plugin has successfull started resolve the promise
-    return libQ.resolve();
-};
+        this.sseRequest = https.request(options, function(response) {
+            if (response.statusCode !== 200) {
+                self.log('error', 'SSE connection failed: ' + response.statusCode);
+                self.scheduleSSEReconnect(sseUrl, channelKey);
+                return;
+            }
 
-motherearthradio.prototype.onStop = function () {
-    var self = this;
+            self.log('info', '✅ SSE connected');
+            self.sseReconnectAttempts = 0;
 
-    self.removeFromBrowseSources();
-    return libQ.resolve();
-};
+            let buffer = '';
 
-motherearthradio.prototype.onRestart = function () {
-    var self = this;
-    // Optional, use if you need it
-    return libQ.resolve();
-};
+            response.on('data', function(chunk) {
+                buffer += chunk.toString();
+                
+                const messages = buffer.split('\n\n');
+                buffer = messages.pop();
+                
+                for (let i = 0; i < messages.length; i++) {
+                    self.handleSSEMessage(messages[i], channelKey);
+                }
+            });
 
+            response.on('end', function() {
+                self.log('warn', 'SSE connection closed');
+                self.scheduleSSEReconnect(sseUrl, channelKey);
+            });
 
-// Configuration Methods -----------------------------------------------------------------------------
-motherearthradio.prototype.getUIConfig = function () {
-    var defer = libQ.defer();
-    var self = this;
+            response.on('error', function(err) {
+                self.log('error', 'SSE error: ' + err.message);
+                self.scheduleSSEReconnect(sseUrl, channelKey);
+            });
+        });
 
-    var lang_code = this.commandRouter.sharedVars.get('language_code');
+        this.sseRequest.on('error', function(err) {
+            self.log('error', 'SSE request error: ' + err.message);
+            self.scheduleSSEReconnect(sseUrl, channelKey);
+        });
 
-    self.getConf(this.configFile);
-    self.commandRouter.i18nJson(__dirname + '/i18n/strings_' + lang_code + '.json',
-        __dirname + '/i18n/strings_en.json',
-        __dirname + '/UIConfig.json')
-        .then(function (uiconf) {
-            uiconf.sections[0].content[0].value = self.config.get('apiDelay');
+        this.sseRequest.end();
+    }
+
+    handleSSEMessage(message, channelKey) {
+        const lines = message.split('\n');
+        let data = null;
+        let rawData = null;
+        
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].indexOf('data: ') === 0) {
+                rawData = lines[i].substring(6).trim();
+                
+                // 🔥 IGNORE EMPTY PINGS (like Android app)
+                if (rawData === '' || rawData === '{}') {
+                    return;
+                }
+                
+                try {
+                    data = JSON.parse(rawData);
+                } catch (e) {
+                    // Ignore parse errors
+                }
+            }
+        }
+        
+        if (!data) return;
+        
+        // 🔥 IGNORE EMPTY JSON OBJECTS
+        if (Object.keys(data).length === 0) {
+            return;
+        }
+        
+        if (data.connect) {
+            if (data.connect.data && Array.isArray(data.connect.data)) {
+                for (let i = 0; i < data.connect.data.length; i++) {
+                    this.processNowPlayingData(data.connect.data[i], channelKey);
+                }
+            }
+            return;
+        }
+        
+        this.processNowPlayingData(data, channelKey);
+    }
+
+    processNowPlayingData(data, channelKey) {
+        if (!this.isPlaying) {
+            return;
+        }
+        
+        const np = (data && data.pub && data.pub.data && data.pub.data.np) || (data && data.np);
+        
+        if (!np || !np.now_playing) return;
+
+        const song = np.now_playing.song;
+        const duration = np.now_playing.duration || np.now_playing.remaining || 0;
+        const elapsed = np.now_playing.elapsed || 0;
+        
+        // 🔥 IGNORE EMPTY SSE PINGS - must have valid song with title AND artist
+        if (!song || !song.title || !song.artist) {
+            return;
+        }
+
+        // 🔥 ONLY UPDATE ON SONG CHANGE (like v1.3 timer approach)
+        // Check if this is a different song than currently playing
+        if (this.state.title === song.title && this.state.artist === song.artist) {
+            return; // Same song still playing, don't update
+        }
+
+        this.log('info', '🎵 ' + song.artist + ' - ' + song.title);
+        
+        const delay = this.getEffectiveDelay();
+        const self = this;
+        
+        if (delay > 0) {
+            setTimeout(function() {
+                self.pushMetadata(song, duration, elapsed);
+            }, delay);
+        } else {
+            this.pushMetadata(song, duration, elapsed);
+        }
+    }
+
+    pushMetadata(song, duration, elapsed) {
+        if (!this.isPlaying) {
+            this.log('info', '⏸️ pushMetadata ignored - not playing');
+            return;
+        }
+        
+        const self = this;
+        const channel = this.channels[this.currentChannel];
+        if (!channel) return;
+
+        const samplerate = this.getSampleRate(this.currentQuality);
+        const bitdepth = this.getBitDepth(this.currentQuality);
+        const albumart = song.art || '/albumart?sourceicon=music_service/motherearthradio/mer-logo-cube-bold-1x 512.png';
+
+        const merState = {
+            status: 'play',
+            service: SERVICE_NAME,
+            type: 'webradio',
+            trackType: (this.currentQuality === 'aac') ? 'aac' : 'flac',
+            radioType: 'mer',
+            albumart: albumart,
+            uri: this.currentUri,
+            name: song.title || 'Unknown',
+            title: song.title || 'Unknown',
+            artist: song.artist || 'Mother Earth Radio',
+            album: song.album || channel.name,
+            streaming: true,
+            disableUiControls: true,
+            duration: duration,  // Real song duration (like v1.3: remaining)
+            seek: 0,  // 🔥 ALWAYS 0 - let Volumio count up (like v1.3)
+            samplerate: samplerate,
+            bitdepth: bitdepth,
+            channels: 2
+        };
+        
+        this.state = merState;
+        
+        // WORKAROUND: Directly modify queue item to allow state update for webradio
+        try {
+            const vState = this.commandRouter.stateMachine.getState();
+            const queueItem = this.commandRouter.stateMachine.playQueue.arrayQueue[vState.position];
+            
+            if (queueItem) {
+                queueItem.name = song.title || 'Unknown';
+                queueItem.title = song.title || 'Unknown';
+                queueItem.artist = song.artist || 'Mother Earth Radio';
+                queueItem.album = song.album || channel.name;
+                queueItem.albumart = albumart;
+                queueItem.trackType = 'Mother Earth ' + channel.name;
+                queueItem.duration = duration;
+                queueItem.samplerate = samplerate;
+                queueItem.bitdepth = bitdepth;
+                queueItem.channels = 2;
+            }
+            
+            // 🔥 Reset Volumio internal timer (like v1.3)
+            // ALWAYS start from 0, let Volumio count up to duration
+            this.commandRouter.stateMachine.currentSeek = 0;
+            this.commandRouter.stateMachine.playbackStart = Date.now();
+            this.commandRouter.stateMachine.currentSongDuration = duration;
+            this.commandRouter.stateMachine.askedForPrefetch = false;
+            this.commandRouter.stateMachine.prefetchDone = false;
+            this.commandRouter.stateMachine.simulateStopStartDone = false;
+        } catch (e) {
+            this.log('error', 'Queue update failed: ' + e.message);
+        }
+
+        this.log('info', '📤 ' + song.artist + ' - ' + song.title);
+        
+        this.commandRouter.servicePushState(merState, SERVICE_NAME);
+    }
+
+    scheduleSSEReconnect(sseUrl, channelKey) {
+        const self = this;
+        
+        if (!this.isPlaying) {
+            return;
+        }
+        
+        if (this.sseReconnectAttempts >= SSE_MAX_RECONNECT_ATTEMPTS) {
+            this.log('error', 'SSE: Max reconnect attempts reached');
+            return;
+        }
+
+        this.sseReconnectAttempts++;
+        const delay = SSE_RECONNECT_DELAY_MS * this.sseReconnectAttempts;
+        
+        this.log('info', 'SSE: Reconnecting in ' + delay + 'ms');
+        
+        this.sseReconnectTimer = setTimeout(function() {
+            self.connectSSE(sseUrl, channelKey);
+        }, delay);
+    }
+
+    stopSSE() {
+        if (this.sseReconnectTimer) {
+            clearTimeout(this.sseReconnectTimer);
+            this.sseReconnectTimer = null;
+        }
+        
+        if (this.sseRequest) {
+            this.sseRequest.destroy();
+            this.sseRequest = null;
+        }
+        
+        this.sseReconnectAttempts = 0;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // PLAYBACK CONTROL
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    clearAddPlayTrack(track) {
+        const self = this;
+        const defer = libQ.defer();
+        
+        this.stopSSE();
+        
+        this.currentChannel = this.getChannelFromUri(track.uri);
+        this.currentQuality = this.getQualityFromUri(track.uri);
+        this.currentUri = track.uri;
+        this.isPlaying = true;
+        
+        const streamUrl = this.getStreamUrl(this.currentChannel, this.currentQuality);
+        
+        if (!streamUrl) {
+            defer.reject('Unknown channel');
+            return defer.promise;
+        }
+        
+        this.log('info', '▶️ Playing: ' + streamUrl);
+        
+        this.startSSE(this.currentChannel);
+        
+        this.mpdPlugin.sendMpdCommand('stop', [])
+            .then(function() { return self.mpdPlugin.sendMpdCommand('clear', []); })
+            .then(function() { return self.mpdPlugin.sendMpdCommand('add "' + streamUrl + '"', []); })
+            .then(function() {
+                // 🔥 Toast message like v1.3 - hardcoded English
+                self.commandRouter.pushToastMessage('info', 'Mother Earth Radio', 'Connecting to stream...');
+                return self.mpdPlugin.sendMpdCommand('play', []);
+            })
+            .then(function() {
+                const channel = self.channels[self.currentChannel];
+                const qualityLabel = self.getQualityLabel(self.currentQuality);
+                
+                self.commandRouter.servicePushState({
+                    status: 'play',
+                    service: SERVICE_NAME,
+                    type: 'webradio',
+                    trackType: (self.currentQuality === 'aac') ? 'aac' : 'flac',
+                    radioType: 'mer',
+                    title: 'Connecting...',
+                    artist: 'Mother Earth Radio',
+                    album: channel.name + ' · ' + qualityLabel,
+                    albumart: '/albumart?sourceicon=music_service/motherearthradio/mer-logo-cube-bold-1x 512.png',
+                    uri: track.uri,
+                    streaming: true,
+                    disableUiControls: true,
+                    samplerate: self.getSampleRate(self.currentQuality),
+                    bitdepth: self.getBitDepth(self.currentQuality),
+                    duration: 0,
+                    seek: 0
+                }, SERVICE_NAME);
+                
+                defer.resolve();
+            })
+            .fail(function(err) {
+                self.log('error', 'Play failed: ' + err);
+                self.isPlaying = false;
+                defer.reject(err);
+            });
+        
+        return defer.promise;
+    }
+
+    stop() {
+        this.isPlaying = false;
+        this.stopSSE();
+        
+        // 🔥 Toast message like v1.3 - hardcoded English
+        this.commandRouter.pushToastMessage('info', 'Mother Earth Radio', 'Stopped playback');
+        
+        this.commandRouter.servicePushState({
+            status: 'stop',
+            service: SERVICE_NAME
+        }, SERVICE_NAME);
+        
+        return this.mpdPlugin.stop();
+    }
+
+    pause() {
+        return this.stop();
+    }
+
+    resume() {
+        if (this.currentUri) {
+            return this.clearAddPlayTrack({ uri: this.currentUri });
+        }
+        return libQ.resolve();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // BROWSE / NAVIGATION
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    addToBrowseSources() {
+        this.commandRouter.volumioAddToBrowseSources({
+            name: 'Mother Earth Radio',
+            uri: 'motherearthradio',
+            plugin_type: 'music_service',
+            plugin_name: SERVICE_NAME,
+            albumart: '/albumart?sourceicon=music_service/motherearthradio/motherearthlogo.svg'
+        });
+    }
+
+    removeFromBrowseSources() {
+        this.commandRouter.volumioRemoveToBrowseSources('Mother Earth Radio');
+    }
+
+    handleBrowseUri(uri) {
+        if (uri.indexOf('motherearthradio') === 0) {
+            return this.browseRoot();
+        }
+        return libQ.resolve({ navigation: { lists: [] } });
+    }
+
+    browseRoot() {
+        const defer = libQ.defer();
+        const items = [];
+        const keys = Object.keys(this.channels);
+        
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            const channel = this.channels[key];
+            
+            items.push({
+                service: SERVICE_NAME,
+                type: 'mywebradio',
+                title: channel.name + ' (FLAC 192kHz/24bit)',
+                icon: 'fa fa-music',
+                uri: 'motherearthradio/' + key + '/flac192',
+                albumart: '/albumart?sourceicon=music_service/motherearthradio/motherearthlogo.svg'
+            });
+            
+            items.push({
+                service: SERVICE_NAME,
+                type: 'mywebradio',
+                title: channel.name + ' (FLAC 96kHz/24bit)',
+                icon: 'fa fa-music',
+                uri: 'motherearthradio/' + key + '/flac96',
+                albumart: '/albumart?sourceicon=music_service/motherearthradio/motherearthlogo.svg'
+            });
+            
+            items.push({
+                service: SERVICE_NAME,
+                type: 'mywebradio',
+                title: channel.name + ' (AAC 96kHz)',
+                icon: 'fa fa-music',
+                uri: 'motherearthradio/' + key + '/aac',
+                albumart: '/albumart?sourceicon=music_service/motherearthradio/motherearthlogo.svg'
+            });
+        }
+
+        defer.resolve({
+            navigation: {
+                lists: [{
+                    availableListViews: ['list', 'grid'],
+                    items: items
+                }],
+                prev: { uri: '/' }
+            }
+        });
+        
+        return defer.promise;
+    }
+
+    explodeUri(uri) {
+        const defer = libQ.defer();
+        
+        const channelKey = this.getChannelFromUri(uri);
+        const quality = this.getQualityFromUri(uri);
+        const channel = this.channels[channelKey];
+        
+        if (!channel) {
+            defer.reject('Unknown channel');
+            return defer.promise;
+        }
+
+        const qualityLabel = this.getQualityLabel(quality);
+        
+        defer.resolve([{
+            service: SERVICE_NAME,
+            type: 'track',
+            trackType: (quality === 'aac') ? 'aac' : 'flac',
+            radioType: SERVICE_NAME,
+            title: channel.name + ' (' + qualityLabel + ')',
+            name: channel.name,
+            uri: uri,
+            albumart: '/albumart?sourceicon=music_service/motherearthradio/motherearthlogo.svg',
+            duration: 0,
+            samplerate: this.getSampleRate(quality),
+            bitdepth: this.getBitDepth(quality)
+        }]);
+        
+        return defer.promise;
+    }
+
+    search(query) {
+        return libQ.resolve([]);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CONFIGURATION UI
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    getUIConfig() {
+        const self = this;
+        const defer = libQ.defer();
+        const lang_code = this.commandRouter.sharedVars.get('language_code');
+        
+        this.commandRouter.i18nJson(
+            __dirname + '/i18n/strings_' + lang_code + '.json',
+            __dirname + '/i18n/strings_en.json',
+            __dirname + '/UIConfig.json'
+        )
+        .then(function(uiconf) {
+            uiconf.sections[0].content[0].value = self.config.get('highLatencyMode') || false;
+            uiconf.sections[0].content[1].value = self.config.get('apiDelay') || 0;
             defer.resolve(uiconf);
         })
-        .fail(function () {
-            defer.reject(new Error());
+        .fail(function(err) {
+            defer.reject(err);
         });
-
-    return defer.promise;
-};
-
-
-motherearthradio.prototype.setUIConfig = function (data) {
-    var self = this;
-    var uiconf = fs.readJsonSync(__dirname + '/UIConfig.json');
-
-    return libQ.resolve();
-};
-
-motherearthradio.prototype.getConf = function (configFile) {
-    var self = this;
-
-    self.config = new (require('v-conf'))();
-    self.config.loadFile(configFile);
-};
-
-motherearthradio.prototype.setConf = function (varName, varValue) {
-    var self = this;
-    fs.writeJsonSync(self.configFile, JSON.stringify(conf));
-};
-
-motherearthradio.prototype.updateConfig = function (data) {
-    var self = this;
-    var defer = libQ.defer();
-    var configUpdated = false;
-  
-    if (self.config.get('apiDelay') != data['apiDelay']) {
-      self.config.set('apiDelay', data['apiDelay']);
-      self.apiDelay = data['apiDelay'];
-      configUpdated = true;
-    }
-  
-    if(configUpdated) {
-      var responseData = {
-        title: self.getRadioI18nString('PLUGIN_NAME'),
-        message: self.getRadioI18nString('SAVE_CONFIG_MESSAGE'),
-        size: 'md',
-        buttons: [{
-          name: 'Close',
-          class: 'btn btn-info'
-        }]
-      };
-  
-      self.commandRouter.broadcastMessage("openModal", responseData);
-    }
-  
-    return defer.promise;
-};
-
-// Playback Controls ---------------------------------------------------------------------------------------
-motherearthradio.prototype.addToBrowseSources = function () {
-    // Use this function to add your music service plugin to music sources
-    var self = this;
-
-    self.commandRouter.volumioAddToBrowseSources({
-        name: self.getRadioI18nString('PLUGIN_NAME'),
-        uri: 'mer',
-        plugin_type: 'music_service',
-        plugin_name: "motherearthradio",
-        albumart: '/albumart?sourceicon=music_service/motherearthradio/motherearthlogo.svg'
-    });
-};
-
-motherearthradio.prototype.removeFromBrowseSources = function () {
-    // Use this function to add your music service plugin to music sources
-    var self = this;
-
-    self.commandRouter.volumioRemoveToBrowseSources(self.getRadioI18nString('PLUGIN_NAME'));
-};
-
-motherearthradio.prototype.handleBrowseUri = function (curUri) {
-   var self = this;
-    var response;
-    if (curUri.startsWith('mer')) {
-        response = self.getRadioContent('mer');
-    }
-    return response
-        .fail(function (e) {
-            self.logger.info('[' + Date.now() + '] ' + '[MotherEarth] handleBrowseUri failed');
-            libQ.reject(new Error());
-        });
-};
-
-motherearthradio.prototype.getRadioContent = function (station) {
-    var self = this;
-    var response;
-    var radioStation;
-    var defer = libQ.defer();
-
-    radioStation = self.radioStations.mer;
-
-    response = self.radioNavigation;
-    response.navigation.lists[0].items = [];
-    for (var i in radioStation) {
-        var channel = {
-            service: self.serviceName,
-            type: 'mywebradio',
-            title: radioStation[i].title,
-            artist: '',
-            album: '',
-            icon: 'fa fa-music',
-            uri: radioStation[i].uri
-        };
-        response.navigation.lists[0].items.push(channel);
-    }
-    defer.resolve(response);
-
-    return defer.promise;
-};
-
-// Define a method to clear, add, and play an array of tracks
-motherearthradio.prototype.clearAddPlayTrack = function (track) {
-    var self = this;
-    if (self.timer) {
-        self.timer.clear();
+        
+        return defer.promise;
     }
 
-        flacUri = track.uri;
-
-        channelMix = "Radio";
-        metadataUrl = "https://motherearth.streamserver24.com/api/nowplaying/motherearth";
-        if (track.uri.includes("klassik")) {
-            channelMix = "Klassik";
-            metadataUrl = "https://motherearth.streamserver24.com/api/nowplaying/motherearth_klassik";
-        } else if (track.uri.includes("instrumental")) {
-            channelMix = "Instrumental";
-            metadataUrl = "https://motherearth.streamserver24.com/api/nowplaying/motherearth_instrumental";
-        } else if (track.uri.includes("jazz")) {
-            channelMix = "Jazz";
-            metadataUrl = "https://motherearth.streamserver24.com/api/nowplaying/motherearth_jazz";
-        }
-
-        var songs;
-        return self.mpdPlugin.sendMpdCommand('stop', [])
-            .then(function () {
-                return self.mpdPlugin.sendMpdCommand('clear', []);
-            })
-            .then(function () {
-                return self.mpdPlugin.sendMpdCommand('consume 1', []);
-            })
-            .then(function () {
-                self.logger.info('[' + Date.now() + '] ' + '[MotherEarth] set to consume mode, adding url: ' + flacUri);
-                return self.mpdPlugin.sendMpdCommand('add "' + flacUri + '"', []);
-            })
-            .then(function () {
-                self.commandRouter.pushToastMessage('info',
-                    self.getRadioI18nString('PLUGIN_NAME'),
-                    self.getRadioI18nString('WAIT_FOR_RADIO_CHANNEL'));
-
-                return self.mpdPlugin.sendMpdCommand('play', []);
-            }).then(function () {
-                return self.setMetadata(metadataUrl);
-            })
-            .fail(function (e) {
-                return libQ.reject(new Error());
-            });
-//    }
-};
-
-motherearthradio.prototype.seek = function (position) {
-    var self = this;
-    this.commandRouter.pushConsoleMessage('[' + Date.now() + '] ' + '[MotherEarth] seek to ' + position);
-    return libQ.resolve();
-    //return self.mpdPlugin.seek(position);
-};
-
-// Stop
-motherearthradio.prototype.stop = function () {
-    var self = this;
-    if (self.timer) {
-        self.timer.clear();
-    }
-    self.commandRouter.pushToastMessage(
-        'info',
-        self.getRadioI18nString('PLUGIN_NAME'),
-        self.getRadioI18nString('STOP_RADIO_CHANNEL')
-    );
-
-    return self.mpdPlugin.stop()
-        .then(function () {
-            self.state.status = 'stop';
-            self.commandRouter.servicePushState(self.state, self.serviceName);
-        });
-};
-
-// Pause
-motherearthradio.prototype.pause = function () {
-    var self = this;
-
-    // stop timer
-    if (self.timer) {
-        self.timer.clear();
-    }
-
-    // pause the song
-    return self.mpdPlugin.sendMpdCommand('pause', [1])
-    .then(function () {
-        var vState = self.commandRouter.stateMachine.getState();
-        self.state.status = 'pause';
-        self.state.seek = vState.seek;
-        self.commandRouter.servicePushState(self.state, self.serviceName);
-    });
-};
-
-// Resume
-motherearthradio.prototype.resume = function () {
-    var self = this;
-
-    return self.mpdPlugin.sendMpdCommand('play', [])
-        .then(function () {
-            // adapt play status and update state machine
-            self.state.status = 'play';
-            self.commandRouter.servicePushState(self.state, self.serviceName);
-            return self.setMetadata(metadataUrl);
-    });
-};
-
-motherearthradio.prototype.explodeUri = function (uri) {
-    var self = this;
-    var defer = libQ.defer();
-    var response = [];
-
-    var uris = uri.split("/");
-    var channel = parseInt(uris[1]);
-    var query;
-    var station;
-
-    station = uris[0].substring(3);
-
-    switch (uris[0]) {
-        case 'webmer':
-            if (self.timer) {
-                self.timer.clear();
-            }
-            if (channel <= 3) {
-                // FLAC option chosen
-                response.push({
-                    service: self.serviceName,
-                    type: 'track',
-                    trackType: audioFormat,
-                    radioType: station,
-                    albumart: '/albumart?sourceicon=music_service/motherearthradio/motherearthlogo.svg',
-                    uri: self.radioStations.mer[channel].url,
-                    name: self.radioStations.mer[channel].title,
-                    duration: 1000,
-		    samplerate: '192kHz'
-                });
-                defer.resolve(response);
-            } else {
-                // non flac webradio chosen
-                response.push({
-                    service: self.serviceName,
-                    type: 'track',
-                    trackType: self.getRadioI18nString('PLUGIN_NAME'),
-                    radioType: station,
-                    albumart: '/albumart?sourceicon=music_service/motherearthradio/motherearthlogo.svg',
-                    uri: self.radioStations.mer[channel].url,
-                    name: self.radioStations.mer[channel].title,
-		    samplerate: '96kHz'
-                });
-                defer.resolve(response);
-            }
-            break;
-        default:
-            defer.resolve();
-    }
-    return defer.promise;
-};
-
-motherearthradio.prototype.addRadioResource = function () {
-    var self = this;
-
-    var radioResource = fs.readJsonSync(__dirname + '/radio_stations.json');
-    var baseNavigation = radioResource.baseNavigation;
-
-    self.radioStations = radioResource.stations;
-    self.rootNavigation = JSON.parse(JSON.stringify(baseNavigation));
-    self.radioNavigation = JSON.parse(JSON.stringify(baseNavigation));
-};
-
-motherearthradio.prototype.getMetadata = function (url) {
-    var self = this;
-    var defer = libQ.defer();
-    https.get(url, (resp) => {
-      if (resp.statusCode < 200 || resp.statusCode > 500) {
-            self.logger.info('[' + Date.now() + '] ' + '[MotherEarth] Failed to query azuracast api, status code: ' + resp.statusCode);
-            defer.resolve(null);
-            self.errorToast(url, 'ERROR_STREAM_SERVER');
+    saveConfig(data) {
+        const oldHighLatencyMode = this.config.get('highLatencyMode') || false;
+        const newHighLatencyMode = data.highLatencyMode || false;
+        
+        this.config.set('highLatencyMode', newHighLatencyMode);
+        this.config.set('apiDelay', data.apiDelay || 0);
+        
+        this.highLatencyMode = newHighLatencyMode;
+        this.metadataDelay = data.apiDelay || 0;
+        
+        if (newHighLatencyMode && !oldHighLatencyMode) {
+            this.applyHighLatencyBuffer();
+            this.commandRouter.pushToastMessage('success', 'Mother Earth Radio', 'High Latency Mode enabled');
+        } else if (!newHighLatencyMode && oldHighLatencyMode) {
+            this.restoreNormalBuffer();
+            this.commandRouter.pushToastMessage('success', 'Mother Earth Radio', 'High Latency Mode disabled');
         } else {
-        let data = '';
-        // A chunk of data has been recieved.
-        resp.on('data', (chunk) => {
-            data += chunk;
-        });
-
-        // The whole response has been received.
-        resp.on('end', () => {
-            defer.resolve(data);
-        });
+            this.commandRouter.pushToastMessage('success', 'Mother Earth Radio', 'Settings saved');
         }
+        
+        return libQ.resolve();
+    }
 
-    }).on("error", (err) => {
-        self.logger.info('[' + Date.now() + '] ' + '[MotherEarth] Error: ' + err.message);
-          defer.resolve(null);
-        self.errorToast(url, 'ERROR_STREAM_SERVER');
-    });
-    return defer.promise;
+    // ═══════════════════════════════════════════════════════════════════════════
+    // HIGH LATENCY MODE
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    applyHighLatencyBuffer() {
+        if (!this.mpdPlugin || !this.mpdPlugin.config) return false;
+        try {
+            this.mpdPlugin.config.set('audio_buffer_size', HIGH_LATENCY_BUFFER_KB);
+            this.log('info', 'High Latency buffer applied');
+            return true;
+        } catch (err) {
+            return false;
+        }
+    }
+
+    restoreNormalBuffer() {
+        if (!this.mpdPlugin || !this.mpdPlugin.config) return false;
+        try {
+            this.mpdPlugin.config.set('audio_buffer_size', NORMAL_BUFFER_KB);
+            return true;
+        } catch (err) {
+            return false;
+        }
+    }
+
+    getEffectiveDelay() {
+        let delay = this.metadataDelay || 0;
+        if (this.highLatencyMode) {
+            delay += HIGH_LATENCY_DELAY_MS;
+        }
+        return Math.max(0, delay);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // HELPERS
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    getChannelFromUri(uri) {
+        if (!uri) return 'radio';
+        const parts = uri.split('/');
+        if (parts[0] === 'motherearthradio' && parts.length >= 2) {
+            if (this.channels[parts[1]]) return parts[1];
+        }
+        return 'radio';
+    }
+
+    getQualityFromUri(uri) {
+        if (!uri) return 'flac192';
+        const parts = uri.split('/');
+        if (parts[0] === 'motherearthradio' && parts.length >= 3) {
+            if (['flac192', 'flac96', 'aac'].indexOf(parts[2]) >= 0) {
+                return parts[2];
+            }
+        }
+        return 'flac192';
+    }
+
+    getStreamUrl(channelKey, quality) {
+        const channel = this.channels[channelKey];
+        if (!channel) return null;
+        return channel.streams[quality] || channel.streams.flac192;
+    }
+
+    getQualityLabel(quality) {
+        if (quality === 'flac192') return 'FLAC 192kHz/24bit';
+        if (quality === 'flac96') return 'FLAC 96kHz/24bit';
+        if (quality === 'aac') return 'AAC 96kHz';
+        return quality;
+    }
+
+    getSampleRate(quality) {
+        if (quality === 'flac192') return '192 kHz';
+        if (quality === 'flac96') return '96 kHz';
+        if (quality === 'aac') return '96 kHz';
+        return '';
+    }
+
+    getBitDepth(quality) {
+        if (quality === 'flac192') return '24 bit';
+        if (quality === 'flac96') return '24 bit';
+        return '';
+    }
+
+    log(level, message) {
+        this.logger.info('[MER] ' + message);
+    }
 }
 
-motherearthradio.prototype.loadRadioI18nStrings = function () {
-    var self = this;
-    self.i18nStrings = fs.readJsonSync(__dirname + '/i18n/strings_en.json');
-    self.i18nStringsDefaults = fs.readJsonSync(__dirname + '/i18n/strings_en.json');
-};
-
-motherearthradio.prototype.getRadioI18nString = function (key) {
-    var self = this;
-
-    if (self.i18nStrings[key] !== undefined)
-        return self.i18nStrings[key];
-    else
-        return self.i18nStringsDefaults[key];
-};
-
-motherearthradio.prototype.search = function (query) {
-    return libQ.resolve();
-};
-
-motherearthradio.prototype.errorToast = function (station, msg) {
-    var self = this;
-
-    var errorMessage = self.getRadioI18nString(msg);
-    errorMessage.replace('{0}', station.toUpperCase());
-    self.commandRouter.pushToastMessage('error',
-        self.getRadioI18nString('PLUGIN_NAME'), errorMessage);
-};
-
-motherearthradio.prototype.pushSongState = function (metadata) {
-    var self = this;
-    var merState = {
-        status: 'play',
-        service: self.serviceName,
-        type: 'webradio',
-        trackType: audioFormat,
-        radioType: 'mer',
-        albumart: metadata.now_playing.song.art,
-        uri: flacUri,
-        name: metadata.now_playing.song.text,
-        title: metadata.now_playing.song.title,
-        artist: metadata.now_playing.song.artist,
-        album: metadata.now_playing.song.album,
-	streaming: true,
-        disableUiControls: true,
-        duration: metadata.now_playing.remaining,
-        seek: 0,
-        bitdepth: '24 bit',
-        channels: 2
-    };
-
-    self.state = merState;
-
-    //workaround to allow state to be pushed when not in a volatile state
-    var vState = self.commandRouter.stateMachine.getState();
-    var queueItem = self.commandRouter.stateMachine.playQueue.arrayQueue[vState.position];
-
-    queueItem.name =  metadata.now_playing.song.title;
-    queueItem.artist =  metadata.now_playing.song.artist;
-    queueItem.album = metadata.now_playing.song.album;
-    queueItem.albumart = metadata.now_playing.song.art;
-    queueItem.trackType = 'Mother Earth ' + channelMix;
-    queueItem.duration = metadata.now_playing.remaining;
-//    queueItem.samplerate = '96 KHz';
-//    queueItem.bitdepth = '24 bit';
-    queueItem.channels = 2;
-    
-    //reset volumio internal timer
-    self.commandRouter.stateMachine.currentSeek = 0;
-    self.commandRouter.stateMachine.playbackStart=Date.now();
-    self.commandRouter.stateMachine.currentSongDuration=metadata.now_playing.remaining;
-    self.commandRouter.stateMachine.askedForPrefetch=false;
-    self.commandRouter.stateMachine.prefetchDone=false;
-    self.commandRouter.stateMachine.simulateStopStartDone=false;
-
-    //volumio push state
-    self.commandRouter.servicePushState(merState, self.serviceName);
-};
-
-motherearthradio.prototype.setMetadata = function (metadataUrl) {
-    var self = this;
-    return self.getMetadata(metadataUrl)
-    .then(function (eventResponse) {
-        if (eventResponse !== null) {
-            var result = JSON.parse(eventResponse);
-            if (result.now_playing.remaining === undefined) {
-                self.errorToast('web', 'INCORRECT_RESPONSE');
-            }
-//	    self.commandRouter.pushToastMessage('info', "[MotherEarth] received new metadata: ' + JSON.stringify(result)'");
-            return result;
-      }
-    }).then(function(metadata) {
-        // show metadata and adjust time of playback and timer
-        if(self.apiDelay) {
-            metadata.now_playing.remaining = parseInt(metadata.now_playing.remaining) + parseInt(self.apiDelay);
-        }
-        var duration = metadata.now_playing.remaining * 1000;
-        return libQ.resolve(self.pushSongState(metadata))
-        .then(function () {
-            self.logger.info('[' + Date.now() + '] ' + '[MotherEarth] setting new timer with duration of ' + duration + ' seconds.');
-            self.timer = new merTimer(self.setMetadata.bind(self), [metadataUrl], duration);
-        });
-    });
-};
-
-function merTimer(callback, args, delay) {
-    var start, remaining = delay;
-
-    var nanoTimer = new NanoTimer();
-
-    merTimer.prototype.pause = function () {
-        nanoTimer.clearTimeout();
-        remaining -= new Date() - start;
-    };
-
-    merTimer.prototype.resume = function () {
-        start = new Date();
-        nanoTimer.clearTimeout();
-        nanoTimer.setTimeout(callback, args, remaining + 'm');
-    };
-
-    merTimer.prototype.clear = function () {
-        nanoTimer.clearTimeout();
-    };
-
-    this.resume();
-};
-
+module.exports = MotherEarthRadio;

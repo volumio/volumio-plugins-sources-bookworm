@@ -1,37 +1,36 @@
 {
-	"name": "motherearthradio",
-	"version": "1.3.0",
-	"description": "Hi Res Audio and Vinyl streaming",
-	"main": "index.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"author": "Florian Reiterer",
-	"license": "ISC",
-	"repository": "https://github.com/FlorianReiterer/",
-	"volumio_info": {
-		"prettyName": "MotherEarthRadio",
-		"icon": "fa-lightbulb-o",
-		"plugin_type": "music_service",
-		"architectures": [
-			"amd64",
-			"armhf",
-			"i386"
-		],
-		"os": [
-			"bookworm"
-		],
-		"details": "Mother Earth Radio is a free HD music station without advertising. Best audio quality, selected tracks, audiophile only. Stream now!",
-		"changelog": "1.3.0 Volumio3 bookworm compat update"
-	},
-	"engines": {
-		"node": ">=20",
-		"volumio": ">=0"
-	},
-	"dependencies": {
-		"fs-extra": "*",
-		"kew": "*",
-		"nanotimer": "*",
-		"v-conf": "*"
-	}
+  "name": "motherearthradio",
+  "version": "1.4.0",
+  "description": "Hi Res Audio and Vinyl streaming",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Florian Reiterer",
+  "license": "ISC",
+  "repository": "https://github.com/FlorianReiterer/",
+  "volumio_info": {
+    "prettyName": "MotherEarthRadio",
+    "icon": "fa-lightbulb-o",
+    "plugin_type": "music_service",
+    "architectures": [
+      "amd64",
+      "armhf",
+      "i386"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "details": "Mother Earth Radio is a free HD music station without advertising. Best audio quality, selected tracks, audiophile only. Stream now!",
+    "changelog": "1.4.0 SSE real-time metadata, High Latency Mode, 3 quality levels (192k/96k FLAC, AAC)"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=0"
+  },
+  "dependencies": {
+    "fs-extra": "*",
+    "kew": "*",
+    "v-conf": "*"
+  }
 }

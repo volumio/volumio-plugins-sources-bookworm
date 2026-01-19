@@ -1,6 +1,4 @@
 {
-	"apiDelay": {
-      		"type": "number",
-      		"value": 5
-  	} 
+  "highLatencyMode": false,
+  "apiDelay": 0
 }

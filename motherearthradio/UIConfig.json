@@ -1,34 +1,37 @@
 {
-    "page": {
-      "label": "Mother Earth Radio Configuration"
+  "page": {
+    "label": "Mother Earth Radio"
+  },
+  "sections": [
+    {
+      "id": "timing_settings",
+      "element": "section",
+      "label": "Network & Timing",
+      "icon": "fa-clock-o",
+      "content": [
+        {
+          "id": "highLatencyMode",
+          "element": "switch",
+          "label": "High Latency Mode",
+          "doc": "Enable for unstable networks. Increases buffer to 32 MB and adds 2 second metadata delay.",
+          "value": false
+        },
+        {
+          "id": "apiDelay",
+          "element": "input",
+          "type": "number",
+          "label": "Additional Metadata Delay (ms)",
+          "doc": "Extra delay before displaying metadata. Usually 0 is fine.",
+          "value": 0
+        }
+      ]
     },
-    "sections": [
-      {
-        "id": "delay",
-        "element": "section",
-        "label": "delay",
-        "icon": "fa-cogs",
-        "description": "The API delay for metadata (artist, title) in seconds.",
-        "onSave": {
-          "type": "controller",
-          "endpoint":"music_service/motherearthradio",
-          "method":"updateConfig"
-        },
-        "saveButton": {
-          "label": "Save",
-          "data": [
-            "apiDelay"
-          ]
-        },
-        "content": [
-          {
-            "id": "apiDelay",
-            "type":"text",
-            "element": "input",
-            "label": "API Delay (in seconds)",
-            "value": 5
-          }
-        ]
-      }
-    ]
+    {
+      "id": "about",
+      "element": "section", 
+      "label": "About",
+      "icon": "fa-info-circle",
+      "description": "Mother Earth Radio Plugin v1.4 - SSE real-time metadata. Three qualities: FLAC 192kHz, FLAC 96kHZ, AAC 96kHz. Higher Network Buffer if needed."
+    }
+  ]
 }
