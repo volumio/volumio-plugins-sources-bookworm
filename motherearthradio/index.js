@@ -35,6 +35,7 @@ class MotherEarthRadio {
         this.isPlaying = false;
         
         this.sseRequest = null;
+        this.sseResponse = null;
         this.sseReconnectAttempts = 0;
         this.sseReconnectTimer = null;
         
@@ -172,6 +173,9 @@ class MotherEarthRadio {
 
             self.log('info', '✅ SSE connected');
             self.sseReconnectAttempts = 0;
+            
+            // 🔥 Store response for proper cleanup
+            self.sseResponse = response;
 
             let buffer = '';
 
@@ -248,6 +252,13 @@ class MotherEarthRadio {
 
     processNowPlayingData(data, channelKey) {
         if (!this.isPlaying) {
+            return;
+        }
+        
+        // 🔥 VALIDATE CHANNEL: Only accept data from CURRENT channel
+        // Prevents cross-channel metadata when SSE connections leak
+        if (channelKey !== this.currentChannel) {
+            this.log('info', '⏭️ Ignoring metadata from ' + channelKey + ' (playing: ' + this.currentChannel + ')');
             return;
         }
         
@@ -384,8 +395,25 @@ class MotherEarthRadio {
             this.sseReconnectTimer = null;
         }
         
+        // 🔥 Clean up response object first (has the 'data' listeners!)
+        if (this.sseResponse) {
+            try {
+                this.sseResponse.removeAllListeners();
+                this.sseResponse.destroy();
+            } catch (e) {
+                this.log('error', 'Error destroying SSE response: ' + e.message);
+            }
+            this.sseResponse = null;
+        }
+        
+        // 🔥 Then clean up request object
         if (this.sseRequest) {
-            this.sseRequest.destroy();
+            try {
+                this.sseRequest.removeAllListeners();
+                this.sseRequest.destroy();
+            } catch (e) {
+                this.log('error', 'Error destroying SSE request: ' + e.message);
+            }
             this.sseRequest = null;
         }
         
