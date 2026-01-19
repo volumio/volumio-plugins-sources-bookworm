@@ -1,6 +1,6 @@
 {
   "name": "motherearthradio",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Mother Earth Radio - High Resolution Radio",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
       "bookworm"
     ],
     "details": "Mother Earth Radio is a free HD music station without advertising. Best audio quality, selected tracks, audiophile only. Stream now!",
-    "changelog": "1.4.0 SSE real-time metadata, High Latency Mode, 3 quality levels (192k/96k FLAC, AAC)"
+    "changelog": "1.5.0 Added FLAC 192kHz Mono streams (server-side -3dB professional mix) for reduced listening effort. Fixed SSE connection leak."
   },
   "engines": {
     "node": ">=20",

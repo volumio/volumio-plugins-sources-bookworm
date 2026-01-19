@@ -50,7 +50,8 @@ class MotherEarthRadio {
                 streams: {
                     flac192: 'https://motherearth.streamserver24.com/listen/motherearth/motherearth',
                     flac96: 'https://motherearth.streamserver24.com/listen/motherearth/motherearth.flac-lo',
-                    aac: 'https://motherearth.streamserver24.com/listen/motherearth/motherearth.aac'
+                    aac: 'https://motherearth.streamserver24.com/listen/motherearth/motherearth.aac',
+                    mono192: 'https://motherearth.streamserver24.com/listen/motherearth/motherearth.mono'
                 }
             },
             'klassik': {
@@ -59,7 +60,8 @@ class MotherEarthRadio {
                 streams: {
                     flac192: 'https://motherearth.streamserver24.com/listen/motherearth_klassik/motherearth.klassik',
                     flac96: 'https://motherearth.streamserver24.com/listen/motherearth_klassik/motherearth.klassik.flac-lo',
-                    aac: 'https://motherearth.streamserver24.com/listen/motherearth_klassik/motherearth.klassik.aac'
+                    aac: 'https://motherearth.streamserver24.com/listen/motherearth_klassik/motherearth.klassik.aac',
+                    mono192: 'https://motherearth.streamserver24.com/listen/motherearth_klassik/motherearth.klassik.mono'
                 }
             },
             'instrumental': {
@@ -68,7 +70,8 @@ class MotherEarthRadio {
                 streams: {
                     flac192: 'https://motherearth.streamserver24.com/listen/motherearth_instrumental/motherearth.instrumental',
                     flac96: 'https://motherearth.streamserver24.com/listen/motherearth_instrumental/motherearth.instrumental.flac-lo',
-                    aac: 'https://motherearth.streamserver24.com/listen/motherearth_instrumental/motherearth.instrumental.aac'
+                    aac: 'https://motherearth.streamserver24.com/listen/motherearth_instrumental/motherearth.instrumental.aac',
+                    mono192: 'https://motherearth.streamserver24.com/listen/motherearth_instrumental/motherearth.instrumental.mono'
                 }
             },
             'jazz': {
@@ -77,7 +80,8 @@ class MotherEarthRadio {
                 streams: {
                     flac192: 'https://motherearth.streamserver24.com/listen/motherearth_jazz/motherearth.jazz',
                     flac96: 'https://motherearth.streamserver24.com/listen/motherearth_jazz/motherearth.jazz.flac-lo',
-                    aac: 'https://motherearth.streamserver24.com/listen/motherearth_jazz/motherearth.jazz.aac'
+                    aac: 'https://motherearth.streamserver24.com/listen/motherearth_jazz/motherearth.jazz.aac',
+                    mono192: 'https://motherearth.streamserver24.com/listen/motherearth_jazz/motherearth.jazz.mono'
                 }
             }
         };
@@ -246,9 +250,7 @@ class MotherEarthRadio {
         if (!this.isPlaying) {
             return;
         }
-        if (channelKey !== this.currentChannel) {
-           return;
-        }
+        
         const np = (data && data.pub && data.pub.data && data.pub.data.np) || (data && data.np);
         
         if (!np || !np.now_playing) return;
@@ -262,7 +264,7 @@ class MotherEarthRadio {
             return;
         }
 
-        // 🔥 ONLY UPDATE ON SONG CHANGE
+        // 🔥 ONLY UPDATE ON SONG CHANGE (like v1.3 timer approach)
         // Check if this is a different song than currently playing
         if (this.state.title === song.title && this.state.artist === song.artist) {
             return; // Same song still playing, don't update
@@ -310,11 +312,11 @@ class MotherEarthRadio {
             album: song.album || channel.name,
             streaming: true,
             disableUiControls: true,
-            duration: duration,
-            seek: 0,
+            duration: duration,  // Real song duration (like v1.3: remaining)
+            seek: 0,  // 🔥 ALWAYS 0 - let Volumio count up (like v1.3)
             samplerate: samplerate,
             bitdepth: bitdepth,
-            channels: 2
+            channels: (this.currentQuality === 'mono192') ? 1 : 2  // 🎧 Mono or Stereo
         };
         
         this.state = merState;
@@ -334,10 +336,10 @@ class MotherEarthRadio {
                 queueItem.duration = duration;
                 queueItem.samplerate = samplerate;
                 queueItem.bitdepth = bitdepth;
-                queueItem.channels = 2;
+                queueItem.channels = (self.currentQuality === 'mono192') ? 1 : 2;  // 🎧 Mono or Stereo
             }
             
-            // 🔥 Reset Volumio internal timer
+            // 🔥 Reset Volumio internal timer (like v1.3)
             // ALWAYS start from 0, let Volumio count up to duration
             this.commandRouter.stateMachine.currentSeek = 0;
             this.commandRouter.stateMachine.playbackStart = Date.now();
@@ -381,20 +383,15 @@ class MotherEarthRadio {
             clearTimeout(this.sseReconnectTimer);
             this.sseReconnectTimer = null;
         }
-    
+        
         if (this.sseRequest) {
-            try {
-                // 🔥 Remove all listeners BEFORE destroying
-                this.sseRequest.removeAllListeners();
-                this.sseRequest.destroy();
-            } catch (e) {
-                this.log('error', 'Error destroying SSE: ' + e.message);
-            }
+            this.sseRequest.destroy();
             this.sseRequest = null;
         }
-    
+        
         this.sseReconnectAttempts = 0;
-     }
+    }
+
     // ═══════════════════════════════════════════════════════════════════════════
     // PLAYBACK CONTROL
     // ═══════════════════════════════════════════════════════════════════════════
@@ -544,6 +541,15 @@ class MotherEarthRadio {
             items.push({
                 service: SERVICE_NAME,
                 type: 'mywebradio',
+                title: channel.name + ' (FLAC 192kHz/24bit Mono - Reduced Listening Effort)',
+                icon: 'fa fa-music',
+                uri: 'motherearthradio/' + key + '/mono192',
+                albumart: '/albumart?sourceicon=music_service/motherearthradio/motherearthlogo.svg'
+            });
+            
+            items.push({
+                service: SERVICE_NAME,
+                type: 'mywebradio',
                 title: channel.name + ' (AAC 96kHz)',
                 icon: 'fa fa-music',
                 uri: 'motherearthradio/' + key + '/aac',
@@ -606,21 +612,16 @@ class MotherEarthRadio {
     getUIConfig() {
         const self = this;
         const defer = libQ.defer();
-        const lang_code = this.commandRouter.sharedVars.get('language_code');
         
-        this.commandRouter.i18nJson(
-            __dirname + '/i18n/strings_' + lang_code + '.json',
-            __dirname + '/i18n/strings_en.json',
-            __dirname + '/UIConfig.json'
-        )
-        .then(function(uiconf) {
+        try {
+            const uiconf = fs.readJsonSync(__dirname + '/UIConfig.json');
             uiconf.sections[0].content[0].value = self.config.get('highLatencyMode') || false;
             uiconf.sections[0].content[1].value = self.config.get('apiDelay') || 0;
             defer.resolve(uiconf);
-        })
-        .fail(function(err) {
+        } catch (err) {
+            self.log('error', 'Failed to load UIConfig: ' + err.message);
             defer.reject(err);
-        });
+        }
         
         return defer.promise;
     }
@@ -698,7 +699,7 @@ class MotherEarthRadio {
         if (!uri) return 'flac192';
         const parts = uri.split('/');
         if (parts[0] === 'motherearthradio' && parts.length >= 3) {
-            if (['flac192', 'flac96', 'aac'].indexOf(parts[2]) >= 0) {
+            if (['flac192', 'flac96', 'aac', 'mono192'].indexOf(parts[2]) >= 0) {
                 return parts[2];
             }
         }
@@ -712,8 +713,9 @@ class MotherEarthRadio {
     }
 
     getQualityLabel(quality) {
-        if (quality === 'flac192') return 'FLAC 192kHz/24bit';
-        if (quality === 'flac96') return 'FLAC 96kHz/24bit';
+        if (quality === 'flac192') return 'FLAC 192kHz/24bit Stereo';
+        if (quality === 'flac96') return 'FLAC 96kHz/24bit Stereo';
+        if (quality === 'mono192') return 'FLAC 192kHz/24bit Mono';
         if (quality === 'aac') return 'AAC 96kHz';
         return quality;
     }
@@ -721,6 +723,7 @@ class MotherEarthRadio {
     getSampleRate(quality) {
         if (quality === 'flac192') return '192 kHz';
         if (quality === 'flac96') return '96 kHz';
+        if (quality === 'mono192') return '192 kHz';
         if (quality === 'aac') return '96 kHz';
         return '';
     }
@@ -728,6 +731,7 @@ class MotherEarthRadio {
     getBitDepth(quality) {
         if (quality === 'flac192') return '24 bit';
         if (quality === 'flac96') return '24 bit';
+        if (quality === 'mono192') return '24 bit';
         return '';
     }
 
