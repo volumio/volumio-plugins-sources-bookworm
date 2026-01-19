@@ -1,7 +1,7 @@
 {
   "name": "motherearthradio",
   "version": "1.4.0",
-  "description": "Hi Res Audio and Vinyl streaming",
+  "description": "Mother Earth Radio - High Resolution Radio",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -15,8 +15,7 @@
     "plugin_type": "music_service",
     "architectures": [
       "amd64",
-      "armhf",
-      "i386"
+      "armhf"
     ],
     "os": [
       "bookworm"
@@ -26,7 +25,7 @@
   },
   "engines": {
     "node": ">=20",
-    "volumio": ">=0"
+    "volumio": ">=4"
   },
   "dependencies": {
     "fs-extra": "*",

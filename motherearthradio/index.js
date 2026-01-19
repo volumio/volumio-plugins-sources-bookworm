@@ -246,7 +246,9 @@ class MotherEarthRadio {
         if (!this.isPlaying) {
             return;
         }
-        
+        if (channelKey !== this.currentChannel) {
+           return;
+        }
         const np = (data && data.pub && data.pub.data && data.pub.data.np) || (data && data.np);
         
         if (!np || !np.now_playing) return;
@@ -260,7 +262,7 @@ class MotherEarthRadio {
             return;
         }
 
-        // 🔥 ONLY UPDATE ON SONG CHANGE (like v1.3 timer approach)
+        // 🔥 ONLY UPDATE ON SONG CHANGE
         // Check if this is a different song than currently playing
         if (this.state.title === song.title && this.state.artist === song.artist) {
             return; // Same song still playing, don't update
@@ -308,8 +310,8 @@ class MotherEarthRadio {
             album: song.album || channel.name,
             streaming: true,
             disableUiControls: true,
-            duration: duration,  // Real song duration (like v1.3: remaining)
-            seek: 0,  // 🔥 ALWAYS 0 - let Volumio count up (like v1.3)
+            duration: duration,
+            seek: 0,
             samplerate: samplerate,
             bitdepth: bitdepth,
             channels: 2
@@ -335,7 +337,7 @@ class MotherEarthRadio {
                 queueItem.channels = 2;
             }
             
-            // 🔥 Reset Volumio internal timer (like v1.3)
+            // 🔥 Reset Volumio internal timer
             // ALWAYS start from 0, let Volumio count up to duration
             this.commandRouter.stateMachine.currentSeek = 0;
             this.commandRouter.stateMachine.playbackStart = Date.now();
@@ -379,15 +381,20 @@ class MotherEarthRadio {
             clearTimeout(this.sseReconnectTimer);
             this.sseReconnectTimer = null;
         }
-        
+    
         if (this.sseRequest) {
-            this.sseRequest.destroy();
+            try {
+                // 🔥 Remove all listeners BEFORE destroying
+                this.sseRequest.removeAllListeners();
+                this.sseRequest.destroy();
+            } catch (e) {
+                this.log('error', 'Error destroying SSE: ' + e.message);
+            }
             this.sseRequest = null;
         }
-        
+    
         this.sseReconnectAttempts = 0;
-    }
-
+     }
     // ═══════════════════════════════════════════════════════════════════════════
     // PLAYBACK CONTROL
     // ═══════════════════════════════════════════════════════════════════════════
