@@ -1,0 +1,42 @@
+{
+  "name": "pi_screen_setup",
+  "version": "0.7.3",
+  "description": "Comprehensive display configuration for Raspberry Pi including HDMI, DSI, DPI, and Composite outputs with KMS/DRM support.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Just a Nerd",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/foonerd/pi_screen_setup.git"
+  },
+    "volumio_info": {
+    "prettyName": "Pi Screen Setup",
+    "icon": "fa-desktop",
+    "plugin_type": "system_hardware",
+    "architectures": [
+      "armhf"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "has_configuration": true,
+    "boot_priority": 5,
+    "has_alsa_contribution": false,
+    "details": "Configure display outputs on Raspberry Pi devices. Supports HDMI (single and dual), DSI displays (official 7-inch and third-party), DPI/GPIO displays, and Composite output. Features include display presets for popular screens (Waveshare, Elecrow), rotation, KMS/CMA configuration, and automatic migration from existing display settings.",
+    "changelog": "0.7.3: Preset Manager i18n - full internationalization support (134 translation keys), language detection via Volumio sharedVars, all 6 languages (EN/DE/FR/ES/IT/NL)"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.18.2",
+    "fs-extra": "^11.2.0",
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.2"
+  }
+}
