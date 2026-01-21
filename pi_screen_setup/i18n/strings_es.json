@@ -432,6 +432,23 @@
     "PM_TOAST_JSON_OBJECT_REQUIRED": "Los parametros adicionales deben ser un objeto JSON",
     "PM_TOAST_SAVE_FAILED": "Error al guardar: {0}",
     "PM_TOAST_ADD_FAILED": "Error al anadir: {0}",
-    "PM_TOAST_DELETE_FAILED": "Error al eliminar: {0}"
+    "PM_TOAST_DELETE_FAILED": "Error al eliminar: {0}",
+
+    "OTA_DRIFT_TITLE": "Discrepancia de configuracion detectada",
+    "OTA_DRIFT_DESC": "Su configuracion de pantalla difiere de los ajustes guardados. Esto suele ocurrir despues de una actualizacion del sistema.",
+    "DRIFT_STATUS": "Estado",
+    "DRIFT_STATUS_DETECTED": "La configuracion de arranque no coincide con los ajustes guardados",
+    "DRIFT_ERRORS": "Detalles",
+    "RESTORE_CONFIG": "Restaurar configuracion",
+    "RESTORE_CONFIG_DOC": "Restaurar la configuracion de pantalla y reiniciar para aplicar los cambios",
+    "RESTORE_AND_REBOOT": "Restaurar y reiniciar",
+    "OTA_REBOOT_MESSAGE": "La configuracion de pantalla ha sido restaurada. Se requiere un reinicio para aplicar los cambios.",
+    "CONFIG_RESTORED_REBOOTING": "Configuracion restaurada. Reiniciando...",
+
+    "ERR_VIDEOCONFIG_MISSING": "videoconfig.txt no existe",
+    "ERR_VIDEOCONFIG_MODIFIED": "videoconfig.txt fue modificado externamente",
+    "ERR_INCLUDE_MISSING": "Linea include falta en config.txt",
+    "ERR_CONFIG_MISMATCH": "config.txt difiere de la configuracion guardada",
+    "ERR_VOLUMIOCONFIG_MISMATCH": "volumioconfig.txt difiere de la configuracion guardada (probablemente actualizacion OTA)"
   }
 }

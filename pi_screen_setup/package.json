@@ -1,6 +1,6 @@
 {
   "name": "pi_screen_setup",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "Comprehensive display configuration for Raspberry Pi including HDMI, DSI, DPI, and Composite outputs with KMS/DRM support.",
   "main": "index.js",
   "scripts": {
@@ -26,7 +26,7 @@
     "boot_priority": 5,
     "has_alsa_contribution": false,
     "details": "Configure display outputs on Raspberry Pi devices. Supports HDMI (single and dual), DSI displays (official 7-inch and third-party), DPI/GPIO displays, and Composite output. Features include display presets for popular screens (Waveshare, Elecrow), rotation, KMS/CMA configuration, and automatic migration from existing display settings.",
-    "changelog": "0.7.3: Preset Manager i18n - full internationalization support (134 translation keys), language detection via Volumio sharedVars, all 6 languages (EN/DE/FR/ES/IT/NL)"
+    "changelog": "0.7.4: OTA restore - detects config drift after system updates, restores from saved backup files, strips duplicate KMS overlays from volumioconfig.txt, reboot modal for user control"
   },
   "engines": {
     "node": ">=20",

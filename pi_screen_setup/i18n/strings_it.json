@@ -432,6 +432,23 @@
     "PM_TOAST_JSON_OBJECT_REQUIRED": "I parametri aggiuntivi devono essere un oggetto JSON",
     "PM_TOAST_SAVE_FAILED": "Salvataggio fallito: {0}",
     "PM_TOAST_ADD_FAILED": "Aggiunta fallita: {0}",
-    "PM_TOAST_DELETE_FAILED": "Eliminazione fallita: {0}"
+    "PM_TOAST_DELETE_FAILED": "Eliminazione fallita: {0}",
+
+    "OTA_DRIFT_TITLE": "Discrepanza configurazione rilevata",
+    "OTA_DRIFT_DESC": "La configurazione del display differisce dalle impostazioni salvate. Questo accade solitamente dopo un aggiornamento di sistema.",
+    "DRIFT_STATUS": "Stato",
+    "DRIFT_STATUS_DETECTED": "La configurazione di avvio non corrisponde alle impostazioni salvate",
+    "DRIFT_ERRORS": "Dettagli",
+    "RESTORE_CONFIG": "Ripristina configurazione",
+    "RESTORE_CONFIG_DOC": "Ripristina la configurazione del display e riavvia per applicare le modifiche",
+    "RESTORE_AND_REBOOT": "Ripristina e riavvia",
+    "OTA_REBOOT_MESSAGE": "La configurazione del display e stata ripristinata. E necessario un riavvio per applicare le modifiche.",
+    "CONFIG_RESTORED_REBOOTING": "Configurazione ripristinata. Riavvio in corso...",
+
+    "ERR_VIDEOCONFIG_MISSING": "videoconfig.txt mancante",
+    "ERR_VIDEOCONFIG_MODIFIED": "videoconfig.txt e stato modificato esternamente",
+    "ERR_INCLUDE_MISSING": "Riga include mancante in config.txt",
+    "ERR_CONFIG_MISMATCH": "config.txt differisce dalla configurazione salvata",
+    "ERR_VOLUMIOCONFIG_MISMATCH": "volumioconfig.txt differisce dalla configurazione salvata (probabile aggiornamento OTA)"
   }
 }

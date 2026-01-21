@@ -432,6 +432,23 @@
     "PM_TOAST_JSON_OBJECT_REQUIRED": "Les parametres supplementaires doivent etre un objet JSON",
     "PM_TOAST_SAVE_FAILED": "Echec de l'enregistrement: {0}",
     "PM_TOAST_ADD_FAILED": "Echec de l'ajout: {0}",
-    "PM_TOAST_DELETE_FAILED": "Echec de la suppression: {0}"
+    "PM_TOAST_DELETE_FAILED": "Echec de la suppression: {0}",
+
+    "OTA_DRIFT_TITLE": "Ecart de configuration detecte",
+    "OTA_DRIFT_DESC": "Votre configuration d'affichage differe des parametres enregistres. Cela se produit generalement apres une mise a jour systeme.",
+    "DRIFT_STATUS": "Statut",
+    "DRIFT_STATUS_DETECTED": "La configuration de demarrage ne correspond pas aux parametres enregistres",
+    "DRIFT_ERRORS": "Details",
+    "RESTORE_CONFIG": "Restaurer la configuration",
+    "RESTORE_CONFIG_DOC": "Restaurer la configuration d'affichage et redemarrer pour appliquer les modifications",
+    "RESTORE_AND_REBOOT": "Restaurer et redemarrer",
+    "OTA_REBOOT_MESSAGE": "La configuration d'affichage a ete restauree. Un redemarrage est necessaire pour appliquer les modifications.",
+    "CONFIG_RESTORED_REBOOTING": "Configuration restauree. Redemarrage...",
+
+    "ERR_VIDEOCONFIG_MISSING": "videoconfig.txt est manquant",
+    "ERR_VIDEOCONFIG_MODIFIED": "videoconfig.txt a ete modifie exterieurement",
+    "ERR_INCLUDE_MISSING": "Ligne include manquante dans config.txt",
+    "ERR_CONFIG_MISMATCH": "config.txt differe de la configuration enregistree",
+    "ERR_VOLUMIOCONFIG_MISMATCH": "volumioconfig.txt differe de la configuration enregistree (probablement mise a jour OTA)"
   }
 }

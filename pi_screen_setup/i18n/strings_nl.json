@@ -432,6 +432,23 @@
     "PM_TOAST_JSON_OBJECT_REQUIRED": "Extra parameters moeten een JSON object zijn",
     "PM_TOAST_SAVE_FAILED": "Opslaan mislukt: {0}",
     "PM_TOAST_ADD_FAILED": "Toevoegen mislukt: {0}",
-    "PM_TOAST_DELETE_FAILED": "Verwijderen mislukt: {0}"
+    "PM_TOAST_DELETE_FAILED": "Verwijderen mislukt: {0}",
+
+    "OTA_DRIFT_TITLE": "Configuratie verschil gedetecteerd",
+    "OTA_DRIFT_DESC": "Uw beeldscherminstellingen wijken af van de opgeslagen instellingen. Dit gebeurt meestal na een systeemupdate.",
+    "DRIFT_STATUS": "Status",
+    "DRIFT_STATUS_DETECTED": "Opstartconfiguratie komt niet overeen met opgeslagen instellingen",
+    "DRIFT_ERRORS": "Details",
+    "RESTORE_CONFIG": "Configuratie herstellen",
+    "RESTORE_CONFIG_DOC": "Beeldschermconfiguratie herstellen en herstarten om wijzigingen toe te passen",
+    "RESTORE_AND_REBOOT": "Herstellen en herstarten",
+    "OTA_REBOOT_MESSAGE": "Beeldschermconfiguratie is hersteld. Een herstart is nodig om de wijzigingen toe te passen.",
+    "CONFIG_RESTORED_REBOOTING": "Configuratie hersteld. Herstarten...",
+
+    "ERR_VIDEOCONFIG_MISSING": "videoconfig.txt ontbreekt",
+    "ERR_VIDEOCONFIG_MODIFIED": "videoconfig.txt is extern gewijzigd",
+    "ERR_INCLUDE_MISSING": "Include regel ontbreekt in config.txt",
+    "ERR_CONFIG_MISMATCH": "config.txt verschilt van opgeslagen configuratie",
+    "ERR_VOLUMIOCONFIG_MISMATCH": "volumioconfig.txt verschilt van opgeslagen configuratie (waarschijnlijk OTA-update)"
   }
 }

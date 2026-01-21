@@ -465,6 +465,23 @@
     "PM_TOAST_JSON_OBJECT_REQUIRED": "Additional parameters must be a JSON object",
     "PM_TOAST_SAVE_FAILED": "Failed to save: {0}",
     "PM_TOAST_ADD_FAILED": "Failed to add: {0}",
-    "PM_TOAST_DELETE_FAILED": "Failed to delete: {0}"
+    "PM_TOAST_DELETE_FAILED": "Failed to delete: {0}",
+
+    "OTA_DRIFT_TITLE": "Configuration Mismatch Detected",
+    "OTA_DRIFT_DESC": "Your display configuration differs from the saved settings. This usually happens after a system update.",
+    "DRIFT_STATUS": "Status",
+    "DRIFT_STATUS_DETECTED": "Boot configuration does not match saved settings",
+    "DRIFT_ERRORS": "Details",
+    "RESTORE_CONFIG": "Restore Configuration",
+    "RESTORE_CONFIG_DOC": "Restore display configuration and reboot to apply changes",
+    "RESTORE_AND_REBOOT": "Restore and Reboot",
+    "OTA_REBOOT_MESSAGE": "Display configuration has been restored. A reboot is required for changes to take effect.",
+    "CONFIG_RESTORED_REBOOTING": "Configuration restored. Rebooting...",
+
+    "ERR_VIDEOCONFIG_MISSING": "videoconfig.txt is missing",
+    "ERR_VIDEOCONFIG_MODIFIED": "videoconfig.txt was modified externally",
+    "ERR_INCLUDE_MISSING": "Include line missing from config.txt",
+    "ERR_CONFIG_MISMATCH": "config.txt differs from saved configuration",
+    "ERR_VOLUMIOCONFIG_MISMATCH": "volumioconfig.txt differs from saved configuration (likely OTA update)"
   }
 }

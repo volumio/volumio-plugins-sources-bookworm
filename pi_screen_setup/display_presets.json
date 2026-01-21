@@ -1,5 +1,5 @@
 {
-  "version": "1.5.0",
+  "version": "1.5.5",
   "last_updated": "2026-01-19",
   "presets": {
     "auto": {
@@ -748,6 +748,45 @@
       "recommended_rotation": 0,
       "notes": "Use 1360 instead of 1366 for Pi4 compatibility (even pixel requirement)"
     },
+    "geeekpi-10.1-hdmi-1024": {
+      "name": "GeeekPi/52Pi 10.1\" HDMI (1024x600)",
+      "type": "hdmi",
+      "description": "52Pi EP-0184, Z-0113 IPS capacitive touch display with speakers",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 6 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB, built-in speakers on some models"
+    },
+    "geeekpi-10.1-hdmi-1280": {
+      "name": "GeeekPi/52Pi 10.1\" HDMI (1280x800)",
+      "type": "hdmi",
+      "description": "52Pi EP-0188 WXGA IPS capacitive touch display",
+      "native_resolution": "1280x800",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1280 800 60 6 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB, built-in speakers, supports HDMI and USB-C input"
+    },
+    "geeekpi-7-hdmi-1280": {
+      "name": "GeeekPi/52Pi 7\" HDMI (1280x800)",
+      "type": "hdmi",
+      "description": "52Pi EP-0186 wide color gamut IPS capacitive touch display",
+      "native_resolution": "1280x800",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1280 800 60 6 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB, OSD controls for brightness/contrast"
+    },
     "uctronics-3.5-hdmi": {
       "name": "UCTRONICS 3.5\" HDMI (480x320)",
       "type": "hdmi",
@@ -1002,6 +1041,230 @@
       "recommended_rotation": 0,
       "notes": "Touch via USB"
     },
+    "_comment_hdmi_freenove": "--- Freenove Displays ---",
+    "freenove-7-hdmi": {
+      "name": "Freenove 7\" HDMI (1024x600)",
+      "type": "hdmi",
+      "description": "Freenove FNK0055 series 7 inch IPS touchscreen",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 6 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB. Speaker variant available (FNK0055C)"
+    },
+    "_comment_hdmi_seeed": "--- Seeed Studio Displays ---",
+    "seeed-5-720x1280": {
+      "name": "Seeed Studio 5\" HDMI (720x1280)",
+      "type": "hdmi",
+      "description": "Seeed 5 inch portrait IPS display with wide viewing angle",
+      "native_resolution": "720x1280",
+      "rotated_resolution": "1280x720",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_timings": "720 0 100 33 100 1280 0 20 2 30 0 0 0 60 0 79000000 0",
+        "max_framebuffer_width": 1280,
+        "max_framebuffer_height": 1280
+      },
+      "video_mode": "720x1280M@60",
+      "recommended_rotation": 90,
+      "notes": "Portrait native. May need hdmi_pixel_freq_limit=400000000 on older Pi models"
+    },
+    "seeed-7-720x1280": {
+      "name": "Seeed Studio 7\" HDMI (720x1280)",
+      "type": "hdmi",
+      "description": "Seeed 7 inch portrait IPS display with wide viewing angle",
+      "native_resolution": "720x1280",
+      "rotated_resolution": "1280x720",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_timings": "720 0 100 24 52 1280 0 10 4 4 0 0 0 60 0 70000000 0",
+        "max_framebuffer_width": 1280,
+        "max_framebuffer_height": 1280
+      },
+      "video_mode": "720x1280M@60",
+      "recommended_rotation": 90,
+      "notes": "Portrait native. Backlight adjustable via buttons on back"
+    },
+    "seeed-7-1024x600": {
+      "name": "Seeed Studio 7\" HDMI (1024x600)",
+      "type": "hdmi",
+      "description": "Seeed 7 inch capacitive touch HDMI display",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 3 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB. Driver-free plug and play"
+    },
+    "seeed-7-1280x800": {
+      "name": "Seeed Studio 7\" HDMI IPS (1280x800)",
+      "type": "hdmi",
+      "description": "Seeed 7 inch high-resolution IPS display",
+      "native_resolution": "1280x800",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 28
+      },
+      "recommended_rotation": 0,
+      "notes": "Uses standard DMT mode 28 for 1280x800@60Hz"
+    },
+    "seeed-10.1-1280x800": {
+      "name": "Seeed Studio 10.1\" HDMI IPS (1280x800)",
+      "type": "hdmi",
+      "description": "Seeed 10.1 inch IPS capacitive touch display",
+      "native_resolution": "1280x800",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 28
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB. Multi-touch support"
+    },
+    "seeed-10.1-1200x1920": {
+      "name": "Seeed Studio 10.1\" HDMI IPS (1200x1920)",
+      "type": "hdmi",
+      "description": "Seeed 10.1 inch high-resolution portrait IPS display",
+      "native_resolution": "1200x1920",
+      "rotated_resolution": "1920x1200",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1200 1920 60 6 0 0 0",
+        "max_framebuffer_height": 1920
+      },
+      "recommended_rotation": 90,
+      "notes": "Portrait native. Backlight adjustable via buttons"
+    },
+    "seeed-10.1-1366x768": {
+      "name": "Seeed Studio 10.1\" HDMI (1366x768)",
+      "type": "hdmi",
+      "description": "Seeed 10.1 inch multi-input display (HDMI/VGA/NTSC/PAL)",
+      "native_resolution": "1366x768",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1360 768 60 3 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "Use 1360 instead of 1366 for Pi4 compatibility. Supports multiple inputs"
+    },
+    "_comment_hdmi_spotpear": "--- Spotpear Displays ---",
+    "spotpear-4-hdmi": {
+      "name": "Spotpear 4\" HDMI (480x800)",
+      "type": "hdmi",
+      "description": "Portrait native 4 inch display with resistive touch",
+      "native_resolution": "480x800",
+      "rotated_resolution": "800x480",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "480 800 60 6 0 0 0"
+      },
+      "recommended_rotation": 90,
+      "notes": "Portrait native. Requires ads7846 overlay for touch"
+    },
+    "spotpear-5-hdmi": {
+      "name": "Spotpear 5\" HDMI (1024x600)",
+      "type": "hdmi",
+      "description": "5 inch IPS capacitive touch display, 800cd/m2 brightness",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 6 0 0 0",
+        "config_hdmi_boost": 10
+      },
+      "recommended_rotation": 0,
+      "notes": "Models 5DP-CAPLCD-B, 5DP-CAPLCD-G, 5DP-CAPLCD-H. Touch via USB"
+    },
+    "spotpear-7-hdmi": {
+      "name": "Spotpear 7\" HDMI (1024x600)",
+      "type": "hdmi",
+      "description": "7 inch capacitive touch display with OSD controls",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 6 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB. OSD for brightness/contrast adjustment"
+    },
+    "spotpear-7-hdmi-1280": {
+      "name": "Spotpear 7\" HDMI (1280x800)",
+      "type": "hdmi",
+      "description": "7 inch wide color gamut IPS capacitive touch display",
+      "native_resolution": "1280x800",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1280 800 60 6 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "Supports HDMI and USB-C input. Touch via USB"
+    },
+    "spotpear-10.1-hdmi": {
+      "name": "Spotpear 10.1\" HDMI (1024x600)",
+      "type": "hdmi",
+      "description": "10.1 inch capacitive touch display",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 6 0 0 0",
+        "max_usb_current": 1
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB. May require display_rotate=2 for correct orientation"
+    },
+    "spotpear-5-round-hdmi": {
+      "name": "Spotpear 5\" Round HDMI (1080x1080)",
+      "type": "hdmi",
+      "description": "5 inch round IPS capacitive touch display",
+      "native_resolution": "1080x1080",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_timings": "1080 0 68 32 100 1080 0 12 4 16 0 0 0 60 0 85500000 0",
+        "hdmi_pixel_freq_limit": 356000000
+      },
+      "recommended_rotation": 0,
+      "notes": "10-point capacitive touch via USB. Compatible with Waveshare 5\" Round timings"
+    },
+    "_comment_hdmi_longruner": "--- Longruner Displays ---",
+    "longruner-5-hdmi": {
+      "name": "Longruner 5\" HDMI (800x480)",
+      "type": "hdmi",
+      "description": "5 inch resistive touch display with case",
+      "native_resolution": "800x480",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "800 480 60 6 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "Uses goodtft/LCD-show drivers for touch. Power via GPIO, display via HDMI"
+    },
+    "longruner-7-hdmi": {
+      "name": "Longruner 7\" HDMI (1024x600)",
+      "type": "hdmi",
+      "description": "7 inch capacitive touch display with case",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 6 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB, driver-free. Compatible with LCDwiki displays"
+    },
     "_comment_hdmi_generic": "--- Generic Resolutions ---",
     "generic-480x320": {
       "name": "Generic 480x320 HDMI",
@@ -1117,6 +1380,178 @@
       "description": "Enter manual hdmi_timings or hdmi_cvt",
       "config": {}
     },
+    "_comment_hdmi_bigtreetech": "--- BIGTREETECH/BIQU HDMI Displays ---",
+    "btt-hdmi5-v1.0": {
+      "name": "BIGTREETECH HDMI5 V1.0 (800x480)",
+      "type": "hdmi",
+      "description": "5 inch IPS capacitive touch, 5-point touch via USB",
+      "native_resolution": "800x480",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "800 480 60 6 0 0 0",
+        "hdmi_drive": 1
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB, supports 3.5mm audio output, hardware brightness buttons"
+    },
+    "btt-hdmi7-v1.0": {
+      "name": "BIGTREETECH HDMI7 V1.0 (1024x600)",
+      "type": "hdmi",
+      "description": "7 inch IPS capacitive touch, 5-point touch via USB",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 6 0 0 0",
+        "hdmi_drive": 1
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB, supports 3.5mm audio output, hardware brightness buttons"
+    },
+    "btt-hdmi7-v1.2": {
+      "name": "BIGTREETECH HDMI7 V1.2 (1024x600)",
+      "type": "hdmi",
+      "description": "7 inch IPS capacitive touch, 5-point touch via USB",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 6 0 0 0",
+        "hdmi_drive": 1
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB, supports 3.5mm audio output, hardware brightness buttons"
+    },
+    "_comment_hdmi_hosyond": "--- Hosyond HDMI Displays ---",
+    "hosyond-5-hdmi-b": {
+      "name": "Hosyond 5\" HDMI Display-B (800x480)",
+      "type": "hdmi",
+      "description": "MPI5001 capacitive touch display with OSD menu",
+      "native_resolution": "800x480",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "800 480 60 6 0 0 0",
+        "config_hdmi_boost": 7
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB. OSD for brightness/contrast. 3.5mm audio output"
+    },
+    "hosyond-7-hdmi-c": {
+      "name": "Hosyond 7\" HDMI Display-C (1024x600)",
+      "type": "hdmi",
+      "description": "MPI7002 capacitive touch display",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 6 0 0 0",
+        "config_hdmi_boost": 7
+      },
+      "recommended_rotation": 0,
+      "notes": "5-point capacitive touch via USB. Backlight power switch"
+    },
+    "hosyond-7-hdmi-h": {
+      "name": "Hosyond 7\" HDMI Display-H (1024x600)",
+      "type": "hdmi",
+      "description": "MPI7002 variant with case and OSD controls",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 6 0 0 0",
+        "config_hdmi_boost": 7
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB. OSD menu. Includes protective case"
+    },
+    "hosyond-8.8-hdmi": {
+      "name": "Hosyond 8.8\" HDMI Bar (480x1920)",
+      "type": "hdmi",
+      "description": "MPC8801 portrait IPS bar display",
+      "native_resolution": "480x1920",
+      "rotated_resolution": "1920x480",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1920 480 60 6 0 0 0",
+        "config_hdmi_boost": 7,
+        "max_framebuffer_height": 1920
+      },
+      "video_mode": "480x1920M@60",
+      "recommended_rotation": 90,
+      "notes": "Portrait native IPS. Touch via USB Type-C. MPC8802 is non-touch variant"
+    },
+    "hosyond-10.1-hdmi-h": {
+      "name": "Hosyond 10.1\" HDMI Display-H (1024x600)",
+      "type": "hdmi",
+      "description": "10.1 inch capacitive touch display",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 6 0 0 0",
+        "config_hdmi_boost": 7
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB. OSD controls. External 12V power recommended"
+    },
+    "hosyond-10.1-hdmi-y": {
+      "name": "Hosyond 10.1\" HDMI Display-Y (1024x600)",
+      "type": "hdmi",
+      "description": "10.1 inch capacitive touch display Y variant",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 6 0 0 0",
+        "config_hdmi_boost": 7
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB. Y model variant"
+    },
+    "hosyond-10.1-hdmi-s": {
+      "name": "Hosyond 10.1\" HDMI Display-S (1024x600)",
+      "type": "hdmi",
+      "description": "10.1 inch capacitive touch display S variant",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 6 0 0 0",
+        "config_hdmi_boost": 7
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB. S model variant"
+    },
+    "_comment_hdmi_hmtech": "--- HMTECH HDMI Displays ---",
+    "hmtech-7-hdmi": {
+      "name": "HMTECH 7\" HDMI Monitor (800x480)",
+      "type": "hdmi",
+      "description": "IPS display, non-touch, plug and play",
+      "native_resolution": "800x480",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "800 480 60 6 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "USB powered. No touch. Use with Pi 4 requires Micro-HDMI adapter"
+    },
+    "hmtech-10.1-hdmi": {
+      "name": "HMTECH 10.1\" HDMI Touchscreen (1024x600)",
+      "type": "hdmi",
+      "description": "IPS capacitive touch display",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 6 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "Touch via USB. Built-in stand. Use with Pi 4 requires Micro-HDMI adapter"
+    },
     "_comment_dsi_official": "=== OFFICIAL RASPBERRY PI DSI DISPLAYS ===",
     "rpi-touch-7inch": {
       "name": "Raspberry Pi Touch Display 7\" (Original)",
@@ -1153,6 +1588,31 @@
       "recommended_rotation": 0,
       "notes": "ILI9881 based panel, portrait native",
       "overlay_rotation_param": true
+    },
+    "_comment_dsi_hosyond": "--- Hosyond DSI Displays ---",
+    "hosyond-5-dsi": {
+      "name": "Hosyond 5\" DSI Display (800x480)",
+      "type": "dsi",
+      "description": "5-inch DSI capacitive touchscreen",
+      "native_resolution": "800x480",
+      "config": {
+        "dtoverlay": "vc4-kms-dsi-7inch"
+      },
+      "recommended_rotation": 0,
+      "notes": "Uses official 7-inch overlay. Compatible with Pi 4/5",
+      "overlay_rotation_param": false
+    },
+    "hosyond-7-dsi": {
+      "name": "Hosyond 7\" DSI Display (800x480)",
+      "type": "dsi",
+      "description": "7-inch DSI capacitive touchscreen",
+      "native_resolution": "800x480",
+      "config": {
+        "dtoverlay": "vc4-kms-dsi-7inch"
+      },
+      "recommended_rotation": 0,
+      "notes": "Uses official 7-inch overlay. Compatible with Pi 4/5. Case variant available",
+      "overlay_rotation_param": false
     },
     "_comment_dsi_waveshare": "=== WAVESHARE DSI DISPLAYS (vc4-kms-dsi-waveshare-panel) ===",
     "_comment_dsi_waveshare_special": "--- Waveshare 3.5\" DSI (custom overlays) ---",
@@ -1709,6 +2169,116 @@
       "notes": "Requires Compute Module or Pi 5 (4-lane DSI)",
       "overlay_rotation_param": false
     },
+    "_comment_dsi_freenove": "=== FREENOVE DSI DISPLAYS ===",
+    "freenove-4.3-dsi": {
+      "name": "Freenove 4.3\" DSI (800x480)",
+      "type": "dsi",
+      "description": "Freenove FNK0078D 4.3 inch IPS touchscreen",
+      "native_resolution": "800x480",
+      "config": {
+        "dtoverlay": "vc4-kms-dsi-7inch"
+      },
+      "recommended_rotation": 0,
+      "notes": "Pi display compatible, uses official 7-inch overlay, driver-free",
+      "overlay_rotation_param": false
+    },
+    "freenove-5-dsi": {
+      "name": "Freenove 5\" DSI (800x480)",
+      "type": "dsi",
+      "description": "Freenove FNK0078 5 inch IPS/TN touchscreen",
+      "native_resolution": "800x480",
+      "config": {
+        "dtoverlay": "vc4-kms-dsi-7inch"
+      },
+      "recommended_rotation": 0,
+      "notes": "Pi display compatible, uses official 7-inch overlay, driver-free",
+      "overlay_rotation_param": false
+    },
+    "freenove-7-dsi": {
+      "name": "Freenove 7\" DSI (800x480)",
+      "type": "dsi",
+      "description": "Freenove FNK0078H 7 inch IPS touchscreen",
+      "native_resolution": "800x480",
+      "config": {
+        "dtoverlay": "vc4-kms-dsi-7inch"
+      },
+      "recommended_rotation": 0,
+      "notes": "Pi display compatible, uses official 7-inch overlay, driver-free",
+      "overlay_rotation_param": false
+    },
+    "_comment_dsi_bigtreetech": "--- BIGTREETECH/BIQU DSI Displays ---",
+    "btt-pitft43-v2.0": {
+      "name": "BIGTREETECH PI TFT43 V2.0 (800x480)",
+      "type": "dsi",
+      "description": "4.3 inch DSI capacitive touchscreen for Raspberry Pi",
+      "native_resolution": "800x480",
+      "config": {
+        "dtoverlay": "vc4-kms-dsi-7inch"
+      },
+      "recommended_rotation": 0,
+      "notes": "Pi display compatible, powered via DSI ribbon, adjustable backlight via encoder",
+      "overlay_rotation_param": false
+    },
+    "btt-pitft43-v2.1": {
+      "name": "BIGTREETECH PI TFT43 V2.1 (800x480)",
+      "type": "dsi",
+      "description": "4.3 inch DSI capacitive touchscreen for Raspberry Pi",
+      "native_resolution": "800x480",
+      "config": {
+        "dtoverlay": "vc4-kms-dsi-7inch"
+      },
+      "recommended_rotation": 0,
+      "notes": "Pi display compatible, powered via DSI ribbon, adjustable backlight via encoder",
+      "overlay_rotation_param": false
+    },
+    "btt-pitft50-v2.0": {
+      "name": "BIGTREETECH PI TFT50 V2.0 (800x480)",
+      "type": "dsi",
+      "description": "5 inch DSI capacitive touchscreen for Raspberry Pi",
+      "native_resolution": "800x480",
+      "config": {
+        "dtoverlay": "vc4-kms-dsi-7inch"
+      },
+      "recommended_rotation": 0,
+      "notes": "Pi display compatible, powered via DSI ribbon, adjustable backlight via encoder",
+      "overlay_rotation_param": false
+    },
+    "btt-pitft50-v2.1": {
+      "name": "BIGTREETECH PI TFT50 V2.1 (800x480)",
+      "type": "dsi",
+      "description": "5 inch DSI capacitive touchscreen for Raspberry Pi",
+      "native_resolution": "800x480",
+      "config": {
+        "dtoverlay": "vc4-kms-dsi-7inch"
+      },
+      "recommended_rotation": 0,
+      "notes": "Pi display compatible, powered via DSI ribbon, adjustable backlight via encoder",
+      "overlay_rotation_param": false
+    },
+    "btt-pitft70-v2.0": {
+      "name": "BIGTREETECH PI TFT70 V2.0 (800x480)",
+      "type": "dsi",
+      "description": "7 inch DSI capacitive touchscreen for Raspberry Pi",
+      "native_resolution": "800x480",
+      "config": {
+        "dtoverlay": "vc4-kms-dsi-7inch"
+      },
+      "recommended_rotation": 0,
+      "notes": "Pi display compatible, powered via DSI ribbon, adjustable backlight via encoder",
+      "overlay_rotation_param": false
+    },
+    "btt-pitft70-v2.1": {
+      "name": "BIGTREETECH PI TFT70 V2.1 (800x480)",
+      "type": "dsi",
+      "description": "7 inch DSI capacitive touchscreen for Raspberry Pi",
+      "native_resolution": "800x480",
+      "config": {
+        "dtoverlay": "vc4-kms-dsi-7inch"
+      },
+      "recommended_rotation": 0,
+      "notes": "Pi display compatible, powered via DSI ribbon, adjustable backlight via encoder",
+      "overlay_rotation_param": false
+    },
     "_comment_dsi_other": "=== OTHER DSI DISPLAYS ===",
     "jdi-lt070me05000": {
       "name": "JDI LT070ME05000 DSI (1920x1200)",
@@ -1876,6 +2446,22 @@
       },
       "recommended_rotation": 0,
       "notes": "Converts DPI output to VGA signal"
+    },
+    "_comment_dpi_bigtreetech": "--- BIGTREETECH/BIQU DPI Displays ---",
+    "btt-tft43-dip": {
+      "name": "BIGTREETECH TFT43-DIP (800x480)",
+      "type": "dpi",
+      "description": "4.3 inch DPI display with GT911 capacitive touch",
+      "native_resolution": "800x480",
+      "config": {
+        "dtoverlay": "vc4-kms-dpi-generic",
+        "dtparam": "rgb666-padhi,clock-frequency=32000000",
+        "dtparam_2": "hactive=800,hfp=16,hsync=1,hbp=46",
+        "dtparam_3": "vactive=480,vfp=7,vsync=3,vbp=23",
+        "dtparam_4": "backlight-gpio=19"
+      },
+      "recommended_rotation": 0,
+      "notes": "Requires gt911_btt_tft43_dip overlay for touch from BIGTREETECH GitHub"
     },
     "_comment_dpi_other": "--- Other DPI Displays ---",
     "owootecc-dpi-4.3": {
