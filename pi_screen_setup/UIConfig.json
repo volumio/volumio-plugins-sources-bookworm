@@ -62,6 +62,43 @@
       ]
     },
     {
+      "id": "section_ota_drift",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.OTA_DRIFT_TITLE",
+      "icon": "fa-exclamation-triangle",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.OTA_DRIFT_DESC",
+      "hidden": true,
+      "content": [
+        {
+          "id": "drift_status",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DRIFT_STATUS",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "drift_errors",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DRIFT_ERRORS",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "drift_restore_btn",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.RESTORE_CONFIG",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.RESTORE_CONFIG_DOC",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "restoreAndReboot"
+          }
+        }
+      ]
+    },
+    {
       "id": "section_migration_detected",
       "element": "section",
       "label": "TRANSLATE.PI_SCREEN_SETUP.MIGRATION_DETECTED_TITLE",
@@ -986,7 +1023,12 @@
             "value": "",
             "label": ""
           },
-          "options": []
+          "options": [],
+          "onChange": {
+            "type": "controller",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "saveRestorePointSelection"
+          }
         },
         {
           "id": "restore_point_btn",

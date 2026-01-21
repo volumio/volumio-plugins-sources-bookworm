@@ -5,7 +5,7 @@ A comprehensive display configuration plugin for Volumio 4.x (Bookworm) on Raspb
 ## Features
 
 - **Guided Setup Wizard**: 7-step wizard walks through complete display configuration
-- **Display Presets Database**: 144 pre-configured settings for popular displays (Waveshare, Adafruit, Elecrow, GeeekPi, UCTRONICS, LCDwiki, Sunfounder, Kuman, Pimoroni, Raspberry Pi Official)
+- **Display Presets Database**: Over 200 pre-configured settings for popular displays (Waveshare, Adafruit, Elecrow, GeeekPi, UCTRONICS, LCDwiki, Sunfounder, Kuman, Pimoroni, Raspberry Pi Official, Joy-IT, Freenove, Seeed Studio, Spotpear, Longruner, Hosyond, HMTECH, BIGTREETECH/BIQU)
 - **Multiple Output Types**: HDMI, DSI (ribbon), DPI (GPIO), Composite, Custom overlays
 - **Dual HDMI Support**: Full configuration for Pi 4/5 dual HDMI ports
 - **Rotation Support**: 0/90/180/270 degree rotation with proper KMS, fbcon, and plymouth integration
@@ -47,15 +47,54 @@ The Preset Manager is useful for:
 ## Supported Display Types
 
 ### HDMI Displays (with presets)
-- Waveshare 4", 4.3", 5", 7", 7.9", 8.8", 9.3", 10.1", 11.9" HDMI LCD
-- Waveshare Round (5" 1080x1080) and Square (4" 720x720)
-- Adafruit 5", 7", 10.1" (including IPS and Backpack models)
-- Elecrow 5", 7"
-- GeeekPi/52Pi 5", 7", 11.6"
-- UCTRONICS 3.5", 5", 7"
-- LCDwiki/Goodtft 3.5", 4", 5", 7" (Miuzei/Kuman rebrands)
-- Sunfounder 7", 10.1"
-- Kuman 7"
+
+**Waveshare:**
+- 2.8", 3.5", 4", 4.3", 5", 7", 7.9", 8.8", 9.3", 10.1", 11.9" HDMI LCD
+- Round (5" 1080x1080) and Square (4" 720x720)
+
+**Adafruit:**
+- 5", 7", 10.1" (including IPS and Backpack models)
+
+**Elecrow:**
+- 5", 7"
+
+**GeeekPi/52Pi:**
+- 5", 7", 11.6"
+
+**UCTRONICS:**
+- 3.5", 5", 7"
+
+**LCDwiki/Goodtft:**
+- 3.5", 4", 5", 7" (Miuzei/Kuman rebrands)
+
+**Sunfounder:**
+- 7", 10.1"
+
+**Kuman:**
+- 7"
+
+**Joy-IT:**
+- 5", 7", 10", 10.1" HDMI LCD
+
+**Freenove:**
+- 7" HDMI
+
+**Seeed Studio:**
+- 5" (720x1280), 7" (720x1280, 1024x600, 1280x800), 10.1" (1280x800, 1200x1920, 1366x768)
+
+**Spotpear:**
+- 4", 5", 7", 10.1", 5" Round (1080x1080)
+
+**Longruner:**
+- 5", 7" HDMI
+
+**Hosyond:**
+- 5", 7", 8.8" bar, 10.1" HDMI
+
+**HMTECH:**
+- 7", 10.1" HDMI
+
+**Generic/Standard:**
 - Generic resolutions (480x320, 800x480, 1024x600, 1280x800, 1366x768)
 - Standard resolutions (720p, 1080p, 4K 30Hz, 4K 60Hz)
 - Custom timing support (hdmi_timings and hdmi_cvt)
@@ -91,13 +130,44 @@ The Preset Manager is useful for:
 - 10.1" A/B (2-lane/4-lane)
 - 12.3" A (4-lane)
 
+**BIGTREETECH/BIQU DSI:**
+- PI TFT43 V2.0 (4.3", 800x480)
+- PI TFT50 V1.0/V2.0 (5", 800x480)
+- PI TFT70 V2.1 (7", 800x480)
+- HDMI5/HDMI7 V1.0/V1.1/V1.2 (DSI-compatible models)
+
+**Freenove DSI:**
+- 4.3" (800x480)
+- 5" (800x480)
+- 7" (800x480)
+
+**Hosyond DSI:**
+- 5" (800x480)
+- 7" (800x480)
+
 **Other DSI:**
 - JDI LT070ME05000 / V2 (Compute Module only)
 - Generic DSI panel (custom timings)
 
 ### DPI Displays
-- Pimoroni HyperPixel 4.0
-- Pimoroni HyperPixel 4.0 Square
+
+**Pimoroni:**
+- HyperPixel 4.0 (800x480)
+- HyperPixel 4.0 Square (720x720)
+- HyperPixel 2.1 Round (480x480)
+
+**Waveshare DPI:**
+- 2.8" (480x640)
+- 3.5" (640x480)
+- 4" B (480x800)
+- 4" C (720x720)
+- 5" (800x480)
+- 7" (1024x600)
+
+**BIGTREETECH DPI:**
+- TFT43-DIP (4.3", 800x480)
+
+**Other DPI:**
 - VGA666 adapter
 - Waveshare 3.5" DPI (640x480)
 - Waveshare 4" DPI-C (720x720)

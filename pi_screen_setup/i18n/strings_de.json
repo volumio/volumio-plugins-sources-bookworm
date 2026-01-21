@@ -432,6 +432,23 @@
     "PM_TOAST_JSON_OBJECT_REQUIRED": "Zusaetzliche Parameter muessen ein JSON-Objekt sein",
     "PM_TOAST_SAVE_FAILED": "Speichern fehlgeschlagen: {0}",
     "PM_TOAST_ADD_FAILED": "Hinzufuegen fehlgeschlagen: {0}",
-    "PM_TOAST_DELETE_FAILED": "Loeschen fehlgeschlagen: {0}"
+    "PM_TOAST_DELETE_FAILED": "Loeschen fehlgeschlagen: {0}",
+
+    "OTA_DRIFT_TITLE": "Konfigurationsabweichung erkannt",
+    "OTA_DRIFT_DESC": "Ihre Anzeigeeinstellungen weichen von den gespeicherten Einstellungen ab. Dies passiert normalerweise nach einem Systemupdate.",
+    "DRIFT_STATUS": "Status",
+    "DRIFT_STATUS_DETECTED": "Boot-Konfiguration stimmt nicht mit gespeicherten Einstellungen ueberein",
+    "DRIFT_ERRORS": "Details",
+    "RESTORE_CONFIG": "Konfiguration wiederherstellen",
+    "RESTORE_CONFIG_DOC": "Anzeigeeinstellungen wiederherstellen und neu starten",
+    "RESTORE_AND_REBOOT": "Wiederherstellen und neu starten",
+    "OTA_REBOOT_MESSAGE": "Anzeigeeinstellungen wurden wiederhergestellt. Ein Neustart ist erforderlich.",
+    "CONFIG_RESTORED_REBOOTING": "Konfiguration wiederhergestellt. Neustart...",
+
+    "ERR_VIDEOCONFIG_MISSING": "videoconfig.txt fehlt",
+    "ERR_VIDEOCONFIG_MODIFIED": "videoconfig.txt wurde extern geaendert",
+    "ERR_INCLUDE_MISSING": "Include-Zeile fehlt in config.txt",
+    "ERR_CONFIG_MISMATCH": "config.txt weicht von gespeicherter Konfiguration ab",
+    "ERR_VOLUMIOCONFIG_MISMATCH": "volumioconfig.txt weicht von gespeicherter Konfiguration ab (wahrscheinlich OTA-Update)"
   }
 }

@@ -25,6 +25,9 @@ var CMDLINE_TXT = BOOT_PATH + '/cmdline.txt';
 var OVERLAYS_PATH = BOOT_PATH + '/overlays';
 var OVERLAYS_README = OVERLAYS_PATH + '/README';
 
+// Current config directory for OTA comparison
+var CURRENT_CONFIG_DIR = '/data/plugins/system_hardware/pi_screen_setup/backups/current';
+
 // Presets cache paths
 var PRESETS_CACHE_DIR = '/data/plugins/system_hardware/pi_screen_setup/presets_cache';
 var PRESETS_REMOTE_CACHE = PRESETS_CACHE_DIR + '/remote.json';
@@ -221,6 +224,13 @@ function PiScreenSetup(context) {
   
   // Backups directory
   self.presetsBackupDir = path.join(self.presetsCacheDir, 'backups');
+  
+  // Drift detection state (for OTA recovery)
+  self.driftDetected = false;
+  self.driftErrors = [];
+  
+  // Restore point selection (for UI)
+  self.selectedRestorePoint = null;
 }
 
 // Helper to get config value - checks cache first, then v-conf, then default
@@ -2837,6 +2847,49 @@ PiScreenSetup.prototype.createRestorePoint = function() {
   return defer.promise;
 };
 
+// Save current configuration files for OTA comparison
+PiScreenSetup.prototype.saveCurrentConfig = function() {
+  var self = this;
+  var defer = libQ.defer();
+
+  try {
+    fs.ensureDirSync(CURRENT_CONFIG_DIR);
+    
+    // Save copies of all managed boot files
+    if (fs.existsSync(VIDEOCONFIG_TXT)) {
+      fs.copySync(VIDEOCONFIG_TXT, path.join(CURRENT_CONFIG_DIR, 'videoconfig.txt'));
+    }
+    
+    if (fs.existsSync(CONFIG_TXT)) {
+      fs.copySync(CONFIG_TXT, path.join(CURRENT_CONFIG_DIR, 'config.txt'));
+    }
+    
+    if (fs.existsSync(VOLUMIOCONFIG_TXT)) {
+      fs.copySync(VOLUMIOCONFIG_TXT, path.join(CURRENT_CONFIG_DIR, 'volumioconfig.txt'));
+    }
+    
+    if (fs.existsSync(CMDLINE_TXT)) {
+      fs.copySync(CMDLINE_TXT, path.join(CURRENT_CONFIG_DIR, 'cmdline.txt'));
+    }
+    
+    // Save metadata
+    var metadata = {
+      saved: new Date().toISOString(),
+      primary_output: self.primaryOutputCache || self.getConfigValue('primary_output', 'hdmi0'),
+      description: self.generateConfigSummary()
+    };
+    fs.writeJsonSync(path.join(CURRENT_CONFIG_DIR, 'metadata.json'), metadata);
+    
+    self.logger.info('pi_screen_setup: Saved current config to ' + CURRENT_CONFIG_DIR);
+    defer.resolve();
+  } catch (err) {
+    self.logger.error('pi_screen_setup: Failed to save current config - ' + err);
+    defer.reject(err);
+  }
+
+  return defer.promise;
+};
+
 // Clean old restore points (keep last 10)
 PiScreenSetup.prototype.cleanOldRestorePoints = function() {
   var self = this;
@@ -4717,13 +4770,54 @@ PiScreenSetup.prototype.validateBootConfig = function() {
     drift_detected: false,
     missing_videoconfig: false,
     missing_include: false,
+    config_mismatch: false,
+    volumioconfig_mismatch: false,
     errors: []
   };
 
   try {
-    // Check if wizard has been completed
-    if (!self.config.get('wizard_complete', false)) {
-      result.valid = true; // Not configured yet, that's OK
+    var wizardComplete = self.config.get('wizard_complete', false);
+    
+    // Check for evidence of prior configuration even if wizard_complete is false
+    // This handles cases where config.json was reset but backups/boot files remain
+    if (!wizardComplete) {
+      var hasCurrentBackup = fs.existsSync(path.join(CURRENT_CONFIG_DIR, 'metadata.json'));
+      var hasVideoconfig = fs.existsSync(VIDEOCONFIG_TXT);
+      var hasOurBanner = false;
+      
+      if (hasVideoconfig) {
+        try {
+          var vcContent = fs.readFileSync(VIDEOCONFIG_TXT, 'utf8');
+          hasOurBanner = vcContent.indexOf(VIDEOCONFIG_BANNER) !== -1;
+        } catch (e) {
+          // Ignore read errors
+        }
+      }
+      
+      if (hasCurrentBackup || hasOurBanner) {
+        // Evidence of prior configuration found - restore wizard_complete
+        self.logger.info('pi_screen_setup: Detected prior configuration (backup=' + hasCurrentBackup + ', banner=' + hasOurBanner + ') - restoring wizard_complete');
+        self.config.set('wizard_complete', true);
+        self.wizardCompleteCache = true;
+        wizardComplete = true;
+        
+        // Try to restore applied_date from metadata if available
+        if (hasCurrentBackup) {
+          try {
+            var metadata = fs.readJsonSync(path.join(CURRENT_CONFIG_DIR, 'metadata.json'));
+            if (metadata.saved && !self.config.get('applied_date')) {
+              self.config.set('applied_date', metadata.saved);
+            }
+          } catch (e) {
+            // Ignore metadata read errors
+          }
+        }
+      }
+    }
+    
+    // If still not configured, nothing to validate
+    if (!wizardComplete) {
+      result.valid = true;
       defer.resolve(result);
       return defer.promise;
     }
@@ -4732,13 +4826,13 @@ PiScreenSetup.prototype.validateBootConfig = function() {
     if (!fs.existsSync(VIDEOCONFIG_TXT)) {
       result.drift_detected = true;
       result.missing_videoconfig = true;
-      result.errors.push('videoconfig.txt is missing');
+      result.errors.push('ERR_VIDEOCONFIG_MISSING');
     } else {
       // Check if it has our banner
       var content = fs.readFileSync(VIDEOCONFIG_TXT, 'utf8');
       if (content.indexOf(VIDEOCONFIG_BANNER) === -1) {
         result.drift_detected = true;
-        result.errors.push('videoconfig.txt was modified externally');
+        result.errors.push('ERR_VIDEOCONFIG_MODIFIED');
       }
     }
 
@@ -4748,13 +4842,42 @@ PiScreenSetup.prototype.validateBootConfig = function() {
       if (configContent.indexOf(INCLUDE_LINE) === -1) {
         result.drift_detected = true;
         result.missing_include = true;
-        result.errors.push('Include line missing from config.txt');
+        result.errors.push('ERR_INCLUDE_MISSING');
+      }
+      
+      // Compare against saved current config
+      var savedConfigPath = path.join(CURRENT_CONFIG_DIR, 'config.txt');
+      if (fs.existsSync(savedConfigPath)) {
+        var savedConfig = fs.readFileSync(savedConfigPath, 'utf8');
+        if (configContent !== savedConfig) {
+          result.drift_detected = true;
+          result.config_mismatch = true;
+          result.errors.push('ERR_CONFIG_MISMATCH');
+        }
+      }
+    }
+
+    // Check volumioconfig.txt against saved version
+    if (fs.existsSync(VOLUMIOCONFIG_TXT)) {
+      var savedVolumioPath = path.join(CURRENT_CONFIG_DIR, 'volumioconfig.txt');
+      if (fs.existsSync(savedVolumioPath)) {
+        var volumioContent = fs.readFileSync(VOLUMIOCONFIG_TXT, 'utf8');
+        var savedVolumio = fs.readFileSync(savedVolumioPath, 'utf8');
+        if (volumioContent !== savedVolumio) {
+          result.drift_detected = true;
+          result.volumioconfig_mismatch = true;
+          result.errors.push('ERR_VOLUMIOCONFIG_MISMATCH');
+        }
       }
     }
 
     if (result.errors.length > 0) {
       result.valid = false;
     }
+    
+    // Store drift state for UI
+    self.driftDetected = result.drift_detected;
+    self.driftErrors = result.errors;
 
     self.logger.info('pi_screen_setup: Boot validation - ' + JSON.stringify(result));
     defer.resolve(result);
@@ -4775,28 +4898,34 @@ PiScreenSetup.prototype.handleConfigDrift = function(validationResult) {
   var otaBehavior = self.config.get('ota_behavior', 'notify');
 
   if (otaBehavior === 'silent') {
-    // Silently restore
-    self.restoreConfiguration();
+    // Silently restore then show reboot modal
+    self.restoreConfiguration()
+      .then(function() {
+        self.showRebootRequiredModal();
+      });
   } else if (otaBehavior === 'notify') {
     // Notify and restore
     self.commandRouter.pushToastMessage('warning',
       self.getI18n('PLUGIN_NAME'),
       self.getI18n('CONFIG_DRIFT_DETECTED'));
-    self.restoreConfiguration();
+    self.restoreConfiguration()
+      .then(function() {
+        self.showRebootRequiredModal();
+      });
   } else if (otaBehavior === 'ask') {
-    // Show modal asking user
+    // Show modal asking user - reboot handled after user confirms
     var modalData = {
       title: self.getI18n('CONFIG_DRIFT_TITLE'),
       message: self.getI18n('CONFIG_DRIFT_MESSAGE'),
       size: 'lg',
       buttons: [
         {
-          name: self.getI18n('RESTORE'),
+          name: self.getI18n('RESTORE_AND_REBOOT'),
           class: 'btn btn-warning',
           emit: 'callMethod',
           payload: {
             'endpoint': 'system_hardware/pi_screen_setup',
-            'method': 'restoreConfiguration',
+            'method': 'restoreAndReboot',
             'data': ''
           }
         },
@@ -4812,18 +4941,193 @@ PiScreenSetup.prototype.handleConfigDrift = function(validationResult) {
   }
 };
 
+// Helper to show reboot required modal after OTA restore
+PiScreenSetup.prototype.showRebootRequiredModal = function() {
+  var self = this;
+  
+  var modalData = {
+    title: self.getI18n('REBOOT_REQUIRED'),
+    message: self.getI18n('OTA_REBOOT_MESSAGE'),
+    size: 'lg',
+    buttons: [
+      {
+        name: self.getI18n('REBOOT_NOW'),
+        class: 'btn btn-warning',
+        emit: 'reboot',
+        payload: ''
+      },
+      {
+        name: self.getI18n('REBOOT_LATER'),
+        class: 'btn btn-default',
+        emit: 'closeModals',
+        payload: ''
+      }
+    ]
+  };
+  self.commandRouter.broadcastMessage('openModal', modalData);
+};
+
+// Restore and reboot (for 'ask' mode and UI button)
+// Restore and show reboot modal (for 'ask' mode and UI button)
+PiScreenSetup.prototype.restoreAndReboot = function() {
+  var self = this;
+  
+  self.restoreConfiguration()
+    .then(function() {
+      // Clear drift state
+      self.driftDetected = false;
+      self.driftErrors = [];
+      
+      // Show reboot modal - let user choose when to reboot
+      self.showRebootRequiredModal();
+      
+      // Refresh UI to hide drift section
+      self.refreshUIConfig();
+    })
+    .fail(function(err) {
+      self.commandRouter.pushToastMessage('error',
+        self.getI18n('PLUGIN_NAME'),
+        self.getI18n('RESTORE_FAILED') + ': ' + err);
+    });
+};
+
+// Clean KMS overlays from volumioconfig.txt (for OTA restore)
+// Clean display-related lines from volumioconfig.txt (for OTA restore)
+// Uses same MIGRATION_PATTERNS as import/wizard for consistency
+PiScreenSetup.prototype.cleanVolumioConfig = function() {
+  var self = this;
+  var defer = libQ.defer();
+
+  try {
+    if (!fs.existsSync(VOLUMIOCONFIG_TXT)) {
+      defer.resolve();
+      return defer.promise;
+    }
+
+    var content = fs.readFileSync(VOLUMIOCONFIG_TXT, 'utf8');
+    var lines = content.split('\n');
+    var newLines = [];
+    var removed = [];
+    var currentSection = '[all]';
+
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      var trimmed = line.trim();
+
+      // Track section headers
+      if (trimmed.match(/^\[pi[0-9]*\]$/) || trimmed.match(/^\[cm[0-9]*\]$/) || trimmed === '[all]') {
+        currentSection = trimmed;
+        newLines.push(line);
+        continue;
+      }
+
+      // Check against all migration patterns (same as import/wizard)
+      var shouldRemove = false;
+      for (var p = 0; p < MIGRATION_PATTERNS.length; p++) {
+        if (MIGRATION_PATTERNS[p].test(trimmed)) {
+          shouldRemove = true;
+          break;
+        }
+      }
+      
+      if (shouldRemove) {
+        removed.push(currentSection + ': ' + trimmed);
+        continue;
+      }
+
+      newLines.push(line);
+    }
+
+    if (removed.length > 0) {
+      // Create backup before modifying
+      self.createBackup(VOLUMIOCONFIG_TXT)
+        .then(function() {
+          var newContent = newLines.join('\n');
+          if (self.writeBootFile(VOLUMIOCONFIG_TXT, newContent)) {
+            self.logger.info('pi_screen_setup: Cleaned display lines from volumioconfig.txt: ' + removed.join(', '));
+            defer.resolve();
+          } else {
+            defer.reject(new Error('Failed to write volumioconfig.txt'));
+          }
+        })
+        .fail(function(err) {
+          defer.reject(err);
+        });
+    } else {
+      self.logger.info('pi_screen_setup: No display lines to clean from volumioconfig.txt');
+      defer.resolve();
+    }
+
+  } catch (err) {
+    self.logger.error('pi_screen_setup: Error cleaning volumioconfig.txt - ' + err);
+    defer.reject(err);
+  }
+
+  return defer.promise;
+};
+
+// Restore boot files from current/ backup (for OTA restore)
+PiScreenSetup.prototype.restoreFromCurrentBackup = function() {
+  var self = this;
+  var defer = libQ.defer();
+
+  try {
+    var restored = [];
+    
+    // Copy videoconfig.txt from backup
+    var savedVideoconfig = path.join(CURRENT_CONFIG_DIR, 'videoconfig.txt');
+    if (fs.existsSync(savedVideoconfig)) {
+      var content = fs.readFileSync(savedVideoconfig, 'utf8');
+      if (self.writeBootFile(VIDEOCONFIG_TXT, content)) {
+        restored.push('videoconfig.txt');
+      } else {
+        defer.reject(new Error('Failed to restore videoconfig.txt'));
+        return defer.promise;
+      }
+    } else {
+      defer.reject(new Error('No videoconfig.txt backup found'));
+      return defer.promise;
+    }
+    
+    // Copy cmdline.txt from backup
+    var savedCmdline = path.join(CURRENT_CONFIG_DIR, 'cmdline.txt');
+    if (fs.existsSync(savedCmdline)) {
+      var cmdlineContent = fs.readFileSync(savedCmdline, 'utf8');
+      if (self.writeBootFile(CMDLINE_TXT, cmdlineContent)) {
+        restored.push('cmdline.txt');
+      } else {
+        self.logger.warn('pi_screen_setup: Failed to restore cmdline.txt');
+      }
+    }
+    
+    self.logger.info('pi_screen_setup: Restored from backup: ' + restored.join(', '));
+    defer.resolve(restored);
+    
+  } catch (err) {
+    self.logger.error('pi_screen_setup: Error restoring from backup - ' + err);
+    defer.reject(err);
+  }
+
+  return defer.promise;
+};
+
 PiScreenSetup.prototype.restoreConfiguration = function() {
   var self = this;
   var defer = libQ.defer();
 
-  self.logger.info('pi_screen_setup: Restoring configuration');
+  self.logger.info('pi_screen_setup: Restoring configuration from backup');
 
-  self.writeVideoConfig()
+  // Copy files from current/ backup (not regenerate)
+  self.restoreFromCurrentBackup()
     .then(function() {
       return self.ensureConfigInclude();
     })
     .then(function() {
-      return self.updateCmdline();
+      return self.cleanVolumioConfig();
+    })
+    .then(function() {
+      // Save cleaned state for future OTA comparison
+      return self.saveCurrentConfig();
     })
     .then(function() {
       self.commandRouter.pushToastMessage('success',
@@ -5019,9 +5323,35 @@ PiScreenSetup.prototype.getUIConfig = function() {
     }
 
     // ========================================
-    // SECTION 1: Migration Detected
+    // SECTION 1: OTA Drift Warning
     // ========================================
-    var migrationDetectedSection = uiconf.sections[1];
+    var driftSection = uiconf.sections[1];
+    if (driftSection) {
+      // Show only when drift is detected and wizard is complete
+      var showDrift = self.driftDetected && wizardComplete;
+      driftSection.hidden = !showDrift;
+      self.logger.info('pi_screen_setup: OTA drift section hidden=' + driftSection.hidden + ' (driftDetected=' + self.driftDetected + ', wizardComplete=' + wizardComplete + ')');
+      
+      if (showDrift) {
+        var driftStatusItem = self.findContentItem(driftSection, 'drift_status');
+        if (driftStatusItem) {
+          driftStatusItem.value = self.getI18n('DRIFT_STATUS_DETECTED');
+        }
+        
+        var driftErrorsItem = self.findContentItem(driftSection, 'drift_errors');
+        if (driftErrorsItem && self.driftErrors) {
+          var translatedErrors = self.driftErrors.map(function(code) {
+            return self.getI18n(code) || code;
+          });
+          driftErrorsItem.value = translatedErrors.join(' | ');
+        }
+      }
+    }
+
+    // ========================================
+    // SECTION 2: Migration Detected
+    // ========================================
+    var migrationDetectedSection = uiconf.sections[2];
     if (migrationDetectedSection) {
       migrationDetectedSection.hidden = true; // Default hidden
       self.logger.info('pi_screen_setup: Section 1 - default hidden, checkMigration=' + checkMigration + ', migrationState=' + migrationState);
@@ -5051,7 +5381,7 @@ PiScreenSetup.prototype.getUIConfig = function() {
               }
               
               // Hide wizard sections when migration detected
-              for (var i = 3; i <= 14; i++) {
+              for (var i = 4; i <= 15; i++) {
                 if (uiconf.sections[i]) {
                   uiconf.sections[i].hidden = true;
                 }
@@ -5101,7 +5431,7 @@ PiScreenSetup.prototype.getUIConfig = function() {
     // ========================================
     // SECTION 2: Migration Review
     // ========================================
-    var migrationReviewSection = uiconf.sections[2];
+    var migrationReviewSection = uiconf.sections[3];
     if (migrationReviewSection) {
       migrationReviewSection.hidden = (migrationState !== 'review');
       
@@ -5145,7 +5475,7 @@ PiScreenSetup.prototype.getUIConfig = function() {
         }
         
         // Hide all wizard sections during review
-        for (var i = 3; i <= 14; i++) {
+        for (var i = 4; i <= 15; i++) {
           if (uiconf.sections[i]) {
             uiconf.sections[i].hidden = true;
           }
@@ -5183,9 +5513,9 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
     self.logger.info('pi_screen_setup: populateWizardSections - primaryOutput=' + primaryOutput + ' (cache=' + self.primaryOutputCache + ')');
 
     // ========================================
-    // SECTION 3: Step 0 - Detection Choice
+    // SECTION 4: Step 0 - Detection Choice
     // ========================================
-    var step0Section = uiconf.sections[3];
+    var step0Section = uiconf.sections[4];
     if (step0Section) {
       // Show only when wizard_step=0 and no migration state
       var migrationState = self.migrationStateCache || self.config.get('migration_state');
@@ -5207,9 +5537,9 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
     }
 
     // ========================================
-    // SECTION 4: Step 1 - Output Selection
+    // SECTION 5: Step 1 - Output Selection
     // ========================================
-    var step1Section = uiconf.sections[4];
+    var step1Section = uiconf.sections[5];
     if (step1Section) {
       // Show Step 1 when wizard_step=1
       step1Section.hidden = wizardComplete || wizardStep !== 1;
@@ -5229,9 +5559,9 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
     }
 
     // ========================================
-    // SECTION 5: Step 2 - HDMI Configuration
+    // SECTION 6: Step 2 - HDMI Configuration
     // ========================================
-    var step2Section = uiconf.sections[5];
+    var step2Section = uiconf.sections[6];
     if (step2Section) {
       // Show only when on step 2 AND output is HDMI
       var showHdmi = (wizardStep === 2) && (primaryOutput === 'hdmi0' || primaryOutput === 'hdmi1');
@@ -5399,9 +5729,9 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
     }
 
     // ========================================
-    // SECTION 6: Step 2 - DSI Configuration
+    // SECTION 7: Step 2 - DSI Configuration
     // ========================================
-    var step3Section = uiconf.sections[6];
+    var step3Section = uiconf.sections[7];
     if (step3Section) {
       // Show only when on step 2 AND output is DSI AND not showing audio section
       var showDsi = (wizardStep === 2) && (primaryOutput === 'dsi0' || primaryOutput === 'dsi1') && !self.step2ShowAudioCache;
@@ -5447,9 +5777,9 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
     }
 
     // ========================================
-    // SECTION 7: Step 2 - DPI Configuration
+    // SECTION 8: Step 2 - DPI Configuration
     // ========================================
-    var step4Section = uiconf.sections[7];
+    var step4Section = uiconf.sections[8];
     if (step4Section) {
       var showDpi = (wizardStep === 2) && (primaryOutput === 'dpi') && !self.step2ShowAudioCache;
       step4Section.hidden = wizardComplete || !showDpi;
@@ -5492,9 +5822,9 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
     }
 
     // ========================================
-    // SECTION 8: Step 2 - Composite Configuration
+    // SECTION 9: Step 2 - Composite Configuration
     // ========================================
-    var step5Section = uiconf.sections[8];
+    var step5Section = uiconf.sections[9];
     if (step5Section) {
       var showComposite = (wizardStep === 2) && (primaryOutput === 'composite') && !self.step2ShowAudioCache;
       step5Section.hidden = wizardComplete || !showComposite;
@@ -5527,9 +5857,9 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
     }
 
     // ========================================
-    // SECTION 9: Step 2 - Custom Overlay
+    // SECTION 10: Step 2 - Custom Overlay
     // ========================================
-    var step6Section = uiconf.sections[9];
+    var step6Section = uiconf.sections[10];
     if (step6Section) {
       var showCustom = (wizardStep === 2) && (primaryOutput === 'custom') && !self.step2ShowAudioCache;
       step6Section.hidden = wizardComplete || !showCustom;
@@ -5543,9 +5873,9 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
     }
 
     // ========================================
-    // SECTION 10: Step 2 - Audio Output (HDMI for non-HDMI primary)
+    // SECTION 11: Step 2 - Audio Output (HDMI for non-HDMI primary)
     // ========================================
-    var audioSection = uiconf.sections[10];
+    var audioSection = uiconf.sections[11];
     if (audioSection) {
       // Show when primary is non-HDMI, we have HDMI ports, AND audio flag is set
       var isNonHdmiPrimary = (primaryOutput === 'dsi0' || primaryOutput === 'dsi1' || 
@@ -5596,9 +5926,9 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
     }
 
     // ========================================
-    // SECTION 11: Step 3 - Rotation
+    // SECTION 12: Step 3 - Rotation
     // ========================================
-    var step7Section = uiconf.sections[11];
+    var step7Section = uiconf.sections[12];
     if (step7Section) {
       var showRotation = (wizardStep === 3) && (primaryOutput !== 'headless');
       step7Section.hidden = wizardComplete || !showRotation;
@@ -5669,9 +5999,9 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
     }
 
     // ========================================
-    // SECTION 12: Step 4 - KMS/CMA
+    // SECTION 13: Step 4 - KMS/CMA
     // ========================================
-    var step8Section = uiconf.sections[12];
+    var step8Section = uiconf.sections[13];
     if (step8Section) {
       var showKms = (wizardStep === 4) && capabilities.kms_supported;
       step8Section.hidden = wizardComplete || !showKms;
@@ -5704,9 +6034,9 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
     }
 
     // ========================================
-    // SECTION 13: Step 5 - OTA Behavior
+    // SECTION 14: Step 5 - OTA Behavior
     // ========================================
-    var step9Section = uiconf.sections[13];
+    var step9Section = uiconf.sections[14];
     if (step9Section) {
       var showOta = (wizardStep === 5);
       step9Section.hidden = wizardComplete || !showOta;
@@ -5727,9 +6057,9 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
     }
 
     // ========================================
-    // SECTION 14: Step 6 - Preview
+    // SECTION 15: Step 6 - Preview
     // ========================================
-    var step10Section = uiconf.sections[14];
+    var step10Section = uiconf.sections[15];
     if (step10Section) {
       var showPreview = (wizardStep === 6);
       step10Section.hidden = wizardComplete || !showPreview;
@@ -5750,9 +6080,9 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
     }
 
     // ========================================
-    // SECTION 15: Current Configuration (shown when wizard complete)
+    // SECTION 16: Current Configuration (shown when wizard complete)
     // ========================================
-    var configSection = uiconf.sections[15];
+    var configSection = uiconf.sections[16];
     if (configSection) {
       configSection.hidden = !wizardComplete;
 
@@ -5773,7 +6103,7 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
         // Applied date
         var appliedDateItem = self.findContentItem(configSection, 'applied_date');
         if (appliedDateItem) {
-          var dateStr = self.config.get('applied_date', '');
+          var dateStr = self.getConfigValue('applied_date', '');
           if (dateStr) {
             try {
               var d = new Date(dateStr);
@@ -5825,6 +6155,11 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
           }
           restorePointSelect.options = restoreOptions;
           restorePointSelect.value = restoreOptions[0] || { value: '', label: '' };
+          
+          // Initialize stored selection to first option
+          if (restoreOptions.length > 0 && restoreOptions[0].value) {
+            self.selectedRestorePoint = restoreOptions[0].value;
+          }
         }
 
         // Hide factory restore if no factory backup exists
@@ -5836,9 +6171,9 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
     }
 
     // ========================================
-    // SECTION 16: Old Migration (deprecated - hidden)
+    // SECTION 17: Old Migration (deprecated - hidden)
     // ========================================
-    var migrationSection = uiconf.sections[16];
+    var migrationSection = uiconf.sections[17];
     if (migrationSection) {
       // This old migration section is now replaced by sections 1 and 2
       // Keep it hidden always
@@ -6354,12 +6689,20 @@ PiScreenSetup.prototype.applyConfiguration = function(data) {
       return self.executeMigration();
     })
     .then(function() {
+      // Save current config for OTA comparison
+      return self.saveCurrentConfig();
+    })
+    .then(function() {
       // Mark wizard complete
       self.config.set('wizard_complete', true);
       self.wizardCompleteCache = true;
       self.config.set('wizard_step', 7);
       self.wizardStepCache = 7;
       self.config.set('applied_date', new Date().toISOString());
+      
+      // Clear any drift state
+      self.driftDetected = false;
+      self.driftErrors = [];
 
       // Get kernel version
       try {
@@ -6470,10 +6813,24 @@ PiScreenSetup.prototype.performMigration = function(data) {
 };
 
 // UI Handler: Restore from selected restore point
+// UI Handler: Save restore point selection when dropdown changes
+PiScreenSetup.prototype.saveRestorePointSelection = function(data) {
+  var self = this;
+  
+  // data contains the selected value directly
+  var pointId = data && data.value ? data.value : '';
+  self.selectedRestorePoint = pointId;
+  self.logger.info('pi_screen_setup: Saved restore point selection: ' + pointId);
+};
+
+// UI Handler: Restore from selected restore point
 PiScreenSetup.prototype.restoreSelectedPoint = function(data) {
   var self = this;
 
-  var pointId = data && data.restore_point ? data.restore_point.value : null;
+  // Use stored selection instead of unreliable data parameter
+  var pointId = self.selectedRestorePoint || null;
+  
+  self.logger.info('pi_screen_setup: restoreSelectedPoint pointId=' + pointId);
   
   if (!pointId) {
     self.commandRouter.pushToastMessage('warning',
@@ -6484,6 +6841,8 @@ PiScreenSetup.prototype.restoreSelectedPoint = function(data) {
   
   self.restoreFromPoint(pointId)
     .then(function() {
+      // Show reboot modal
+      self.showRebootRequiredModal();
       self.refreshUIConfig();
     })
     .fail(function(err) {
