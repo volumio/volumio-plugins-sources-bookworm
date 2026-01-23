@@ -8,9 +8,9 @@
   },
   "author": "Florian Reiterer",
   "license": "ISC",
-  "repository": "https://github.com/FlorianReiterer/",
+  "repository": "https://github.com/FlorianReiterer/volumio-plugins-sources-bookworm",
   "volumio_info": {
-    "prettyName": "MotherEarthRadio",
+    "prettyName": "Mother Earth Radio",
     "icon": "fa-lightbulb-o",
     "plugin_type": "music_service",
     "architectures": [
@@ -21,15 +21,15 @@
       "bookworm"
     ],
     "details": "Mother Earth Radio is a free HD music station without advertising. Best audio quality, selected tracks, audiophile only. Stream now!",
-    "changelog": "1.5.0 Added FLAC 192kHz Mono streams (server-side -3dB professional mix) for reduced listening effort. Fixed SSE connection leak."
+    "changelog": "1.5.0 Added FLAC 192kHz Mono streams (server-side -3dB professional mix) for reduced listening effort. Fixed SSE connection leak. Fixed settings persistence."
   },
   "engines": {
     "node": ">=20",
     "volumio": ">=4"
   },
   "dependencies": {
-    "fs-extra": "*",
-    "kew": "*",
-    "v-conf": "*"
+    "fs-extra": "11.2.0",
+    "kew": "0.7.0",
+    "v-conf": "1.0.1"
   }
 }
