@@ -4,41 +4,11 @@
   },
   "sections": [
     {
-      "id": "timing_settings",
-      "element": "section",
-      "label": "Network & Timing",
-      "icon": "fa-clock-o",
-      "content": [
-        {
-          "id": "highLatencyMode",
-          "element": "switch",
-          "label": "High Latency Mode",
-          "doc": "Enable for unstable networks. Increases buffer to 32 MB and adds 2 second metadata delay.",
-          "value": false
-        },
-        {
-          "id": "apiDelay",
-          "element": "input",
-          "type": "number",
-          "label": "Additional Metadata Delay (ms)",
-          "doc": "Extra delay before displaying metadata. Usually 0 is fine.",
-          "value": 0
-        }
-      ],
-      "saveButton": {
-        "label": "Save",
-        "data": [
-          "highLatencyMode",
-          "apiDelay"
-        ]
-      }
-    },
-    {
       "id": "about",
       "element": "section", 
       "label": "About",
       "icon": "fa-info-circle",
-      "description": "Mother Earth Radio Plugin v1.5.0 - SSE real-time metadata. Four qualities: FLAC 192kHz Stereo, FLAC 96kHZ Stereo, FLAC 192kHz Mono, AAC 96kHz. Enable High Latency Mode for unstable networks."
+      "description": "Mother Earth Radio Plugin v1.5.0 - High Resolution Internet Radio with real-time metadata. Four channels (Radio, Klassik, Instrumental, Jazz) each with four quality options: FLAC 192kHz/24bit Stereo, FLAC 96kHz/24bit Stereo, FLAC 192kHz/24bit Mono, and AAC 96kHz."
     }
   ]
 }

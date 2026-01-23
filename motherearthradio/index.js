@@ -5,15 +5,11 @@
  */
 
 const libQ = require('kew');
-const fs = require('fs-extra');
 const https = require('https');
 const { URL } = require('url');
 
 const SSE_RECONNECT_DELAY_MS = 3000;
 const SSE_MAX_RECONNECT_ATTEMPTS = 10;
-const HIGH_LATENCY_BUFFER_KB = 32768;
-const HIGH_LATENCY_DELAY_MS = 2000;
-const NORMAL_BUFFER_KB = 4096;
 const SERVICE_NAME = 'motherearthradio';
 
 class MotherEarthRadio {
@@ -38,9 +34,6 @@ class MotherEarthRadio {
         this.sseResponse = null;
         this.sseReconnectAttempts = 0;
         this.sseReconnectTimer = null;
-        
-        this.metadataDelay = 0;
-        this.highLatencyMode = false;
         
         this.apiHost = 'motherearth.streamserver24.com';
         
@@ -81,7 +74,7 @@ class MotherEarthRadio {
                 streams: {
                     flac192: 'https://motherearth.streamserver24.com/listen/motherearth_jazz/motherearth.jazz',
                     flac96: 'https://motherearth.streamserver24.com/listen/motherearth_jazz/motherearth.jazz.flac-lo',
-                    aac: 'https://motherearth.streamserver24.com/listen/motherearth_jazz/motherearth.jazz.aac',
+                    aac: 'https://motherearth.streamserver24.com/listen/motherearth_jazz/motherearth.jazz.mp4',
                     mono192: 'https://motherearth.streamserver24.com/listen/motherearth_jazz/motherearth.jazz.mono'
                 }
             }
@@ -93,23 +86,12 @@ class MotherEarthRadio {
     // ═══════════════════════════════════════════════════════════════════════════
 
     onVolumioStart() {
-        const configFile = this.commandRouter.pluginManager.getConfigurationFile(this.context, 'config.json');
-        this.config = new (require('v-conf'))();
-        this.config.loadFile(configFile);
         return libQ.resolve();
     }
 
     onStart() {
         this.mpdPlugin = this.commandRouter.pluginManager.getPlugin('music_service', 'mpd');
         this.addToBrowseSources();
-        
-        this.metadataDelay = this.config.get('apiDelay') || 0;
-        this.highLatencyMode = this.config.get('highLatencyMode') || false;
-        
-        if (this.highLatencyMode) {
-            this.applyHighLatencyBuffer();
-        }
-        
         this.log('info', 'Plugin started (SSE mode)');
         return libQ.resolve();
     }
@@ -125,7 +107,7 @@ class MotherEarthRadio {
     }
 
     getConfigurationFiles() {
-        return ['config.json'];
+        return [];
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -174,7 +156,6 @@ class MotherEarthRadio {
             self.log('info', '✅ SSE connected');
             self.sseReconnectAttempts = 0;
             
-            // 🔥 Store response for proper cleanup
             self.sseResponse = response;
 
             let buffer = '';
@@ -218,7 +199,6 @@ class MotherEarthRadio {
             if (lines[i].indexOf('data: ') === 0) {
                 rawData = lines[i].substring(6).trim();
                 
-                // 🔥 IGNORE EMPTY PINGS (like Android app)
                 if (rawData === '' || rawData === '{}') {
                     return;
                 }
@@ -233,7 +213,6 @@ class MotherEarthRadio {
         
         if (!data) return;
         
-        // 🔥 IGNORE EMPTY JSON OBJECTS
         if (Object.keys(data).length === 0) {
             return;
         }
@@ -255,8 +234,6 @@ class MotherEarthRadio {
             return;
         }
         
-        // 🔥 VALIDATE CHANNEL: Only accept data from CURRENT channel
-        // Prevents cross-channel metadata when SSE connections leak
         if (channelKey !== this.currentChannel) {
             this.log('info', '⏭️ Ignoring metadata from ' + channelKey + ' (playing: ' + this.currentChannel + ')');
             return;
@@ -270,29 +247,16 @@ class MotherEarthRadio {
         const duration = np.now_playing.duration || np.now_playing.remaining || 0;
         const elapsed = np.now_playing.elapsed || 0;
         
-        // 🔥 IGNORE EMPTY SSE PINGS - must have valid song with title AND artist
         if (!song || !song.title || !song.artist) {
             return;
         }
 
-        // 🔥 ONLY UPDATE ON SONG CHANGE (like v1.3 timer approach)
-        // Check if this is a different song than currently playing
         if (this.state.title === song.title && this.state.artist === song.artist) {
-            return; // Same song still playing, don't update
+            return;
         }
 
         this.log('info', '🎵 ' + song.artist + ' - ' + song.title);
-        
-        const delay = this.getEffectiveDelay();
-        const self = this;
-        
-        if (delay > 0) {
-            setTimeout(function() {
-                self.pushMetadata(song, duration, elapsed);
-            }, delay);
-        } else {
-            this.pushMetadata(song, duration, elapsed);
-        }
+        this.pushMetadata(song, duration, elapsed);
     }
 
     pushMetadata(song, duration, elapsed) {
@@ -323,16 +287,15 @@ class MotherEarthRadio {
             album: song.album || channel.name,
             streaming: true,
             disableUiControls: true,
-            duration: duration,  // Real song duration (like v1.3: remaining)
-            seek: 0,  // 🔥 ALWAYS 0 - let Volumio count up (like v1.3)
+            duration: duration,
+            seek: 0,
             samplerate: samplerate,
             bitdepth: bitdepth,
-            channels: (this.currentQuality === 'mono192') ? 1 : 2  // 🎧 Mono or Stereo
+            channels: (this.currentQuality === 'mono192') ? 1 : 2
         };
         
         this.state = merState;
         
-        // WORKAROUND: Directly modify queue item to allow state update for webradio
         try {
             const vState = this.commandRouter.stateMachine.getState();
             const queueItem = this.commandRouter.stateMachine.playQueue.arrayQueue[vState.position];
@@ -347,11 +310,9 @@ class MotherEarthRadio {
                 queueItem.duration = duration;
                 queueItem.samplerate = samplerate;
                 queueItem.bitdepth = bitdepth;
-                queueItem.channels = (self.currentQuality === 'mono192') ? 1 : 2;  // 🎧 Mono or Stereo
+                queueItem.channels = (self.currentQuality === 'mono192') ? 1 : 2;
             }
             
-            // 🔥 Reset Volumio internal timer (like v1.3)
-            // ALWAYS start from 0, let Volumio count up to duration
             this.commandRouter.stateMachine.currentSeek = 0;
             this.commandRouter.stateMachine.playbackStart = Date.now();
             this.commandRouter.stateMachine.currentSongDuration = duration;
@@ -395,7 +356,6 @@ class MotherEarthRadio {
             this.sseReconnectTimer = null;
         }
         
-        // 🔥 Clean up response object first (has the 'data' listeners!)
         if (this.sseResponse) {
             try {
                 this.sseResponse.removeAllListeners();
@@ -406,7 +366,6 @@ class MotherEarthRadio {
             this.sseResponse = null;
         }
         
-        // 🔥 Then clean up request object
         if (this.sseRequest) {
             try {
                 this.sseRequest.removeAllListeners();
@@ -450,7 +409,6 @@ class MotherEarthRadio {
             .then(function() { return self.mpdPlugin.sendMpdCommand('clear', []); })
             .then(function() { return self.mpdPlugin.sendMpdCommand('add "' + streamUrl + '"', []); })
             .then(function() {
-                // 🔥 Toast message like v1.3 - hardcoded English
                 self.commandRouter.pushToastMessage('info', 'Mother Earth Radio', 'Connecting to stream...');
                 return self.mpdPlugin.sendMpdCommand('play', []);
             })
@@ -492,7 +450,6 @@ class MotherEarthRadio {
         this.isPlaying = false;
         this.stopSSE();
         
-        // 🔥 Toast message like v1.3 - hardcoded English
         this.commandRouter.pushToastMessage('info', 'Mother Earth Radio', 'Stopped playback');
         
         this.commandRouter.servicePushState({
@@ -634,83 +591,6 @@ class MotherEarthRadio {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // CONFIGURATION UI
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    getUIConfig() {
-        const self = this;
-        const defer = libQ.defer();
-        
-        try {
-            const uiconf = fs.readJsonSync(__dirname + '/UIConfig.json');
-            uiconf.sections[0].content[0].value = self.config.get('highLatencyMode') || false;
-            uiconf.sections[0].content[1].value = self.config.get('apiDelay') || 0;
-            defer.resolve(uiconf);
-        } catch (err) {
-            self.log('error', 'Failed to load UIConfig: ' + err.message);
-            defer.reject(err);
-        }
-        
-        return defer.promise;
-    }
-
-    saveConfig(data) {
-        const oldHighLatencyMode = this.config.get('highLatencyMode') || false;
-        const newHighLatencyMode = data.highLatencyMode || false;
-        
-        this.config.set('highLatencyMode', newHighLatencyMode);
-        this.config.set('apiDelay', data.apiDelay || 0);
-        
-        this.highLatencyMode = newHighLatencyMode;
-        this.metadataDelay = data.apiDelay || 0;
-        
-        if (newHighLatencyMode && !oldHighLatencyMode) {
-            this.applyHighLatencyBuffer();
-            this.commandRouter.pushToastMessage('success', 'Mother Earth Radio', 'High Latency Mode enabled');
-        } else if (!newHighLatencyMode && oldHighLatencyMode) {
-            this.restoreNormalBuffer();
-            this.commandRouter.pushToastMessage('success', 'Mother Earth Radio', 'High Latency Mode disabled');
-        } else {
-            this.commandRouter.pushToastMessage('success', 'Mother Earth Radio', 'Settings saved');
-        }
-        
-        return libQ.resolve();
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // HIGH LATENCY MODE
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    applyHighLatencyBuffer() {
-        if (!this.mpdPlugin || !this.mpdPlugin.config) return false;
-        try {
-            this.mpdPlugin.config.set('audio_buffer_size', HIGH_LATENCY_BUFFER_KB);
-            this.log('info', 'High Latency buffer applied');
-            return true;
-        } catch (err) {
-            return false;
-        }
-    }
-
-    restoreNormalBuffer() {
-        if (!this.mpdPlugin || !this.mpdPlugin.config) return false;
-        try {
-            this.mpdPlugin.config.set('audio_buffer_size', NORMAL_BUFFER_KB);
-            return true;
-        } catch (err) {
-            return false;
-        }
-    }
-
-    getEffectiveDelay() {
-        let delay = this.metadataDelay || 0;
-        if (this.highLatencyMode) {
-            delay += HIGH_LATENCY_DELAY_MS;
-        }
-        return Math.max(0, delay);
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════
     // HELPERS
     // ═══════════════════════════════════════════════════════════════════════════
 
@@ -751,7 +631,7 @@ class MotherEarthRadio {
     getSampleRate(quality) {
         if (quality === 'flac192') return '192 kHz';
         if (quality === 'flac96') return '96 kHz';
-        if (quality === 'mono192') return '192 kHz';
+        if (quality === 'mono192') return 'MONO/192 kHz';
         if (quality === 'aac') return '96 kHz';
         return '';
     }

@@ -21,15 +21,13 @@
       "bookworm"
     ],
     "details": "Mother Earth Radio is a free HD music station without advertising. Best audio quality, selected tracks, audiophile only. Stream now!",
-    "changelog": "1.5.0 Added FLAC 192kHz Mono streams (server-side -3dB professional mix) for reduced listening effort. Fixed SSE connection leak. Fixed settings persistence."
+    "changelog": "1.5.0 Added FLAC 192kHz Mono streams. Fixed SSE connection leak. Fixed Jazz AAC stream URL. Removed High Latency Mode (use Volumio's built-in audio buffer settings instead)."
   },
   "engines": {
     "node": ">=20",
     "volumio": ">=4"
   },
   "dependencies": {
-    "fs-extra": "11.2.0",
-    "kew": "0.7.0",
-    "v-conf": "1.0.1"
+    "kew": "0.7.0"
   }
 }
