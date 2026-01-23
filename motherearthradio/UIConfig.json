@@ -24,14 +24,21 @@
           "doc": "Extra delay before displaying metadata. Usually 0 is fine.",
           "value": 0
         }
-      ]
+      ],
+      "saveButton": {
+        "label": "Save",
+        "data": [
+          "highLatencyMode",
+          "apiDelay"
+        ]
+      }
     },
     {
       "id": "about",
       "element": "section", 
       "label": "About",
       "icon": "fa-info-circle",
-      "description": "Mother Earth Radio Plugin v1.4 - SSE real-time metadata. Three qualities: FLAC 192kHz, FLAC 96kHZ, AAC 96kHz. Higher Network Buffer if needed."
+      "description": "Mother Earth Radio Plugin v1.5.0 - SSE real-time metadata. Four qualities: FLAC 192kHz Stereo, FLAC 96kHZ Stereo, FLAC 192kHz Mono, AAC 96kHz. Enable High Latency Mode for unstable networks."
     }
   ]
 }
