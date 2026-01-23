@@ -1,0 +1,21 @@
+{
+  "PLUGIN_NAME": "LCD-Hintergrundbeleuchtung",
+  "GENERAL_SETTINGS": "Allgemeine Einstellungen",
+  "MEASUREMENT_INTERVAL": "Messintervall (Sekunden)",
+  "MEASUREMENT_INTERVAL_DOC": "Zeit zwischen den Ablesungen des Lichtsensors. Niedrigere Werte sorgen für reaktionsschnellere Helligkeitsänderungen, können aber die CPU-Last erhöhen.",
+  "MIN_BACKLIGHT": "Minimale Helligkeit",
+  "MIN_BACKLIGHT_DOC": "Die niedrigste Helligkeitsstufe, die das Display erreichen wird (0-255). Verhindert, dass der Bildschirm zu dunkel wird.",
+  "MAX_BACKLIGHT": "Maximale Helligkeit",
+  "MAX_BACKLIGHT_DOC": "Die höchste Helligkeitsstufe, die das Display erreichen wird (0-255). Kann reduziert werden, um Energie zu sparen.",
+  "LUX_MULTIPLIER": "Lux-Multiplikator",
+  "LUX_MULTIPLIER_DOC": "Kalibrierungsmultiplikator für den VEML7700-Sensor. Erhöhen für hellere Reaktion, verringern für dunklere Reaktion.",
+  "SMOOTHING_FACTOR": "Glättungsfaktor",
+  "SMOOTHING_FACTOR_DOC": "Steuert, wie schnell Helligkeitsübergänge erfolgen (0,0-1,0). Niedrigere Werte erzeugen langsamere, sanftere Übergänge.",
+  "PLAYBACK_BOOST": "Wiedergabe-Helligkeitserhöhung",
+  "PLAYBACK_BOOST_DOC": "Zusätzliche Helligkeit während der Musikwiedergabe (0-255). Auf 0 setzen, um diese Funktion zu deaktivieren.",
+  "PLAYBACK_BOOST_DURATION": "Boost-Dauer nach Wiedergabe (Sekunden)",
+  "PLAYBACK_BOOST_DURATION_DOC": "Wie lange die Helligkeitserhöhung nach dem Stoppen der Wiedergabe beibehalten werden soll (0-300 Sekunden). Empfohlen: 30 Sekunden.",
+  "SAVE": "Einstellungen speichern",
+  "SAVE_SUCCESS": "Konfiguration erfolgreich gespeichert",
+  "SAVE_ERROR": "Fehler beim Speichern der Konfiguration"
+}

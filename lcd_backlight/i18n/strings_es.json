@@ -1,0 +1,21 @@
+{
+  "PLUGIN_NAME": "Control de retroiluminación LCD",
+  "GENERAL_SETTINGS": "Configuración general",
+  "MEASUREMENT_INTERVAL": "Intervalo de medición (segundos)",
+  "MEASUREMENT_INTERVAL_DOC": "Tiempo entre lecturas del sensor de luz. Valores más bajos proporcionan cambios de brillo más receptivos pero pueden aumentar el uso de CPU.",
+  "MIN_BACKLIGHT": "Brillo mínimo",
+  "MIN_BACKLIGHT_DOC": "El nivel de brillo más bajo que alcanzará la pantalla (0-255). Evita que la pantalla se vuelva demasiado oscura.",
+  "MAX_BACKLIGHT": "Brillo máximo",
+  "MAX_BACKLIGHT_DOC": "El nivel de brillo más alto que alcanzará la pantalla (0-255). Se puede reducir para ahorrar energía.",
+  "LUX_MULTIPLIER": "Multiplicador de lux",
+  "LUX_MULTIPLIER_DOC": "Multiplicador de calibración para el sensor VEML7700. Aumentar para una respuesta más brillante, disminuir para una respuesta más oscura.",
+  "SMOOTHING_FACTOR": "Factor de suavizado",
+  "SMOOTHING_FACTOR_DOC": "Controla la rapidez de las transiciones de brillo (0,0-1,0). Valores más bajos crean transiciones más lentas y suaves.",
+  "PLAYBACK_BOOST": "Aumento de brillo en reproducción",
+  "PLAYBACK_BOOST_DOC": "Brillo adicional agregado durante la reproducción de música (0-255). Establecer en 0 para deshabilitar esta función.",
+  "PLAYBACK_BOOST_DURATION": "Duración del aumento después de reproducción (segundos)",
+  "PLAYBACK_BOOST_DURATION_DOC": "Cuánto tiempo mantener el aumento de brillo después de que se detenga la reproducción (0-300 segundos). Recomendado: 30 segundos.",
+  "SAVE": "Guardar configuración",
+  "SAVE_SUCCESS": "Configuración guardada con éxito",
+  "SAVE_ERROR": "Error al guardar la configuración"
+}
