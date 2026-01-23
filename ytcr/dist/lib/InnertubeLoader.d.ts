@@ -1,14 +1,11 @@
-import Innertube, { ClientType } from 'volumio-youtubei.js';
-import { type Logger } from 'yt-cast-receiver';
-export interface InnertubeLoaderGetInstanceResult {
-    innertube: Innertube;
-}
+import type Logger from './Logger.js';
+import { type InnertubeWrapper, type PotFnResult } from 'volumio-yt-support';
 export default class InnertubeLoader {
     #private;
-    constructor(logger: Logger, clientType?: ClientType);
-    getInstance(): Promise<InnertubeLoaderGetInstanceResult>;
-    reset(): void;
-    hasInstance(): boolean;
-    applyI18nConfig(): void;
+    static setLogger(logger: Logger): void;
+    static getInstance(): Promise<InnertubeWrapper>;
+    static generatePoToken(identifier: string): Promise<PotFnResult>;
+    static reset(): Promise<void>;
+    static applyI18nConfig(): Promise<void>;
 }
 //# sourceMappingURL=InnertubeLoader.d.ts.map
