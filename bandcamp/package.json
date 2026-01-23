@@ -1,0 +1,56 @@
+{
+	"name": "bandcamp",
+	"version": "2.1.0",
+	"description": "Discover Bandcamp music",
+	"main": "./dist/index.js",
+	"scripts": {
+		"build": "rm -rf dist && npx tsc --build src && bash fixup.sh",
+		"lint": "npx eslint ./src",
+		"lint:fix": "npx eslint ./src --fix"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/patrickkfkan/volumio-bandcamp.git"
+	},
+	"author": "Patrick Kan",
+	"license": "MIT",
+	"volumio_info": {
+		"prettyName": "Bandcamp Discover",
+		"plugin_type": "music_service",
+		"os": [
+			"bookworm"
+		],
+		"icon": "fa-bandcamp",
+		"boot_priority": 10,
+		"details": "Discover Bandcamp music",
+		"changelog": "",
+		"architectures": [
+			"amd64",
+			"armhf"
+		]
+	},
+	"engines": {
+		"node": ">=20",
+		"volumio": ">=0"
+	},
+	"devDependencies": {
+		"@types/fs-extra": "^8.1.2",
+		"@types/md5": "^2.3.2",
+		"@types/node": "^20.5.1",
+		"@types/string-format": "^2.0.0",
+		"@typescript-eslint/eslint-plugin": "^8.6.0",
+		"@typescript-eslint/parser": "^8.6.0",
+		"eslint": "^9.10.0",
+		"typescript": "^5.5.4",
+		"typescript-eslint": "^8.6.0",
+		"winston": "^3.8.2"
+	},
+	"dependencies": {
+		"bandcamp-fetch": "^3.0.0",
+		"kew": "^0.7.0",
+		"md5": "^2.3.0",
+		"node-cache": "^5.1.2",
+		"string-format": "^2.0.0",
+		"v-conf": "^1.4.2"
+	}
+}

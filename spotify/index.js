@@ -15,8 +15,8 @@ var NodeCache = require('node-cache');
 var os = require('os');
 var { fetchPagedData, rateLimitedCall } = require('./utils/extendedSpotifyApi');
 
-var configFileDestinationPath = '/tmp/go-librespot-config.yml';
-var credentialsPath = '/data/configuration/music_service/spop/spotifycredentials.json';
+var configFileDestinationPath = '/data/go-librespot/config.yml';
+var credentialsPath = '/data/go-librespot/state.json';
 var spotifyDaemonPort = '9879';
 var spotifyLocalApiEndpointBase = 'http://127.0.0.1:' + spotifyDaemonPort;
 var stateSocket = undefined;
@@ -126,6 +126,15 @@ ControllerSpotify.prototype.getUIConfig = function () {
             var icon = self.config.get('icon', 'avr');
             uiconf.sections[2].content[3].value.value = icon;
             uiconf.sections[2].content[3].value.label =  self.getLabelForSelect(uiconf.sections[2].content[3].options, icon);
+
+            var enableAutoplayValue = self.config.get('enable_autoplay', false);
+            uiconf.sections[2].content[4].value = enableAutoplayValue;
+
+            var audioBufferTime = self.config.get('audio_buffer_time', 500_000);
+            uiconf.sections[2].content[5].value = audioBufferTime;
+
+            var audioPeriodCount = self.config.get('audio_period_count', 4);
+            uiconf.sections[2].content[6].value = audioPeriodCount;
 
             defer.resolve(uiconf);
         })
@@ -739,12 +748,18 @@ ControllerSpotify.prototype.createConfigFile = function () {
         externalVolume = false;
     }
     var normalisationPregain = self.config.get('normalisation_pregain', '1.0');
+    var enableAutoplay = self.config.get('enable_autoplay', false);
+    var audioBufferTime = self.config.get('audio_buffer_time', 500_000);
+    var audioPeriodCount = self.config.get('audio_period_count', 4);
 
     var conf = template.replace('${device_name}', devicename)
         .replace('${bitrate_number}', selectedBitrate)
         .replace('${device_type}', icon)
         .replace('${external_volume}', externalVolume)
-        .replace('${normalisation_pregain}', normalisationPregain);
+        .replace('${normalisation_pregain}', normalisationPregain)
+        .replace('${disable_autoplay}', !enableAutoplay)
+        .replace('${audio_buffer_time}', audioBufferTime)
+        .replace('${audio_period_count}', audioPeriodCount);
 
     var credentials_type = self.config.get('credentials_type', 'zeroconf');
     var logged_user_id = self.config.get('logged_user_id', '');
@@ -815,6 +830,17 @@ ControllerSpotify.prototype.saveGoLibrespotSettings = function (data, avoidBroad
         self.config.set('normalisation_pregain', data.normalisation_pregain.value);
     }
 
+    var audioBufferTime = parseInt(data.audio_buffer_time);
+    if (audioBufferTime) {
+        self.config.set('audio_buffer_time', audioBufferTime.toString());
+    }
+
+    var audioPeriodCount = parseInt(data.audio_period_count);
+    if (audioPeriodCount) {
+        self.config.set('audio_period_count', audioPeriodCount.toString());
+    }
+
+    self.config.set('enable_autoplay', data.enable_autoplay);
 
     self.selectedBitrate = self.config.get('bitrate_number', '320').toString();
     self.initializeLibrespotDaemon();
@@ -859,13 +885,10 @@ ControllerSpotify.prototype.spotifyClientCredentialsGrant = function () {
         self.refreshAccessToken()
             .then(function (data) {
                 self.spotifyAccessToken = data.body['accessToken'];
-                self.debugLog('------------------------------------------------------ ACCESS TOKEN ------------------------------------------------------');
-                self.debugLog(self.spotifyAccessToken);
-                self.debugLog('------------------------------------------------------ ACCESS TOKEN ------------------------------------------------------');
                 self.config.set('access_token', self.spotifyAccessToken);
                 self.spotifyApi.setAccessToken(self.spotifyAccessToken);
                 self.spotifyAccessTokenExpiration = data.body['expiresInSeconds'] * 1000 + now;
-                self.logger.info('New Spotify access token = ' + self.spotifyAccessToken);
+		self.logger.info('New Spotify access token' + self.spotifyAccessToken.substring(0, 10) + '...');
                 defer.resolve();
             }, function (err) {
                 self.logger.info('Spotify credentials grant failed with ' + err);

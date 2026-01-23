@@ -1,16 +1,13 @@
 {
 	"name": "spop",
-	"version": "4.1.1",
+	"version": "4.3.4",
 	"description": "Spotify plugin for Volumio3",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
-	"author": "Ashthespy, Balbuze, Skirkwood",
+	"author": "Ashthespy, Balbuze, Skirkwood, Devgianlu",
 	"license": "ISC",
-	"vollibrespot": {
-		"version": "0.2.5"
-	},
 	"volumio_info": {
 		"prettyName": "Spotify",
 		"icon": "fa-spotify",
@@ -19,12 +16,11 @@
 		"os": [
 			"bookworm"
 		],
-		"details": "Spotify plugin for Volumio3",
-		"changelog": "",
+		"details": "Spotify plugin for Volumio4",
+		"changelog": "go-librespot 0.5.3",
 		"architectures": [
 			"amd64",
-			"armhf",
-			"i386"
+			"armhf"
 		]
 	},
 	"dependencies": {
@@ -33,12 +29,12 @@
 		"node-cache": "^4.1.1",
 		"socket.io-client": "2.1.1",
 		"spotify-web-api-node": "^5.0.2",
-		"superagent": "^8.1.2",
+		"superagent": "^8.1.0",
 		"v-conf": "^1.4.2",
 		"ws": "^8.13.0"
 	},
 	"engines": {
-		"volumio": ">=0",
+		"volumio": ">=4",
 		"node": ">=14.15.4"
 	},
 	"repository": "https://github.com/volumio/volumio-plugins-sources-bookworm"

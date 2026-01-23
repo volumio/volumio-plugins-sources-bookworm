@@ -1,0 +1,44 @@
+{
+  "Raspberry Pi 4 Model B": {
+    "id": "pi4",
+    "boot_modes": ["sd", "usb"],
+    "default_boot_order": "0xf41",
+    "factory_boot_order": "0xf41"
+  },
+  "Raspberry Pi 400": {
+    "id": "pi400",
+    "boot_modes": ["sd", "usb"],
+    "default_boot_order": "0xf41",
+    "factory_boot_order": "0xf41"
+  },
+  "Raspberry Pi 500": {
+    "id": "pi500",
+    "boot_modes": ["sd", "usb"],
+    "default_boot_order": "0xf41",
+    "factory_boot_order": "0xf41"
+  },
+  "Compute Module 4": {
+    "id": "cm4",
+    "boot_modes": ["sd", "usb", "nvme"],
+    "default_boot_order": "0xf641",
+    "factory_boot_order": "0xf641"
+  },
+  "Raspberry Pi 5": {
+    "id": "pi5",
+    "boot_modes": ["sd", "usb", "nvme"],
+    "default_boot_order": "0xf641",
+    "factory_boot_order": "0xf641"
+  },
+  "Raspberry Pi 500+": {
+    "id": "pi500plus",
+    "boot_modes": ["sd", "usb", "nvme"],
+    "default_boot_order": "0xf641",
+    "factory_boot_order": "0xf641"
+  },
+  "Compute Module 5": {
+    "id": "cm5",
+    "boot_modes": ["sd", "usb", "nvme"],
+    "default_boot_order": "0xf641",
+    "factory_boot_order": "0xf641"
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "version": "0.6.2",
+  "wizard_step": 0,
+  "wizard_complete": false,
+  "applied_date": "",
+  "kernel_version": "",
+  "migration_state": "none",
+  "migration_raw_lines": [],
+  "migration_parsed": {},
+  "migration_validation": [],
+  "hardware": {
+    "model": "",
+    "soc": "",
+    "ram_mb": 0,
+    "detected": false
+  },
+  "primary_output": "hdmi0",
+  "hdmi0": {
+    "enabled": true,
+    "mode": "screen_audio",
+    "display_preset": "auto",
+    "custom_timings": "",
+    "custom_params": "",
+    "rotation": 0,
+    "force_hotplug": false,
+    "ignore_edid": false,
+    "boost": 0
+  },
+  "hdmi1": {
+    "enabled": false,
+    "mode": "none",
+    "display_preset": "auto",
+    "custom_timings": "",
+    "custom_params": "",
+    "rotation": 0,
+    "force_hotplug": false,
+    "ignore_edid": false,
+    "boost": 0
+  },
+  "dsi0": {
+    "enabled": false,
+    "overlay": "rpi-touch-7inch",
+    "rotation": 0,
+    "custom_params": "",
+    "cmdline_video": true,
+    "cmdline_fbcon": true,
+    "cmdline_plymouth": true
+  },
+  "dsi1": {
+    "enabled": false,
+    "overlay": "rpi-touch-7inch",
+    "rotation": 0,
+    "custom_params": "",
+    "cmdline_video": true,
+    "cmdline_fbcon": true,
+    "cmdline_plymouth": true
+  },
+  "dpi": {
+    "enabled": false,
+    "overlay": "",
+    "custom_timing": "",
+    "rotation": 0
+  },
+  "composite": {
+    "enabled": false,
+    "mode": "pal",
+    "aspect": "4:3"
+  },
+  "custom_overlay": {
+    "enabled": false,
+    "line": ""
+  },
+  "kms": {
+    "enabled": true,
+    "cma_option": "default",
+    "cma_custom_mb": 256
+  },
+  "cmdline_rotation": {
+    "video": true,
+    "fbcon": true,
+    "plymouth": true
+  },
+  "ota_behavior": "notify",
+  "database": {
+    "remote_url": "https://raw.githubusercontent.com/foonerd/pi_screen_setup/refs/heads/main/display_presets.json",
+    "auto_check": true,
+    "check_interval_hours": 24,
+    "last_check": "",
+    "last_update": "",
+    "active_source": "bundled",
+    "cached_version": "",
+    "bundled_version": "",
+    "hostname_override": ""
+  },
+  "admin": {
+    "enabled": false,
+    "draft_dirty": false,
+    "draft_version": ""
+  }
+}

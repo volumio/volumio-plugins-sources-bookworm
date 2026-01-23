@@ -1,0 +1,36 @@
+{
+	"name": "autostart",
+	"version": "4.1.1",
+	"description": "Automatically starts playing the last active entry in the play queue.",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "thomasdoerr, Just a Nerd",
+	"license": "ISC",
+	"repository": "https://github.com/volumio/volumio-plugins-sources-bookworm",
+	"volumio_info": {
+		"prettyName": "AutoStart",
+		"icon": "fa-lightbulb-o",
+		"plugin_type": "system_controller",
+		"boot_priority": 10,
+		"architectures": [
+			"amd64",
+			"armhf"
+		],
+		"os": [
+			"bookworm"
+		],
+		"details": "This plugin allows you to restart the play list after a reboot of volumio. This is important for webradios without a userinterface.",
+		"changelog": "Aligning with modern requirements."
+	},
+	"engines": {
+		"node": ">=20",
+		"volumio": ">=4"
+	},
+	"dependencies": {
+		"fs-extra": "*",
+		"kew": "*",
+		"v-conf": "*"
+	}
+}

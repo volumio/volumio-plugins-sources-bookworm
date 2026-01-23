@@ -1,0 +1,734 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_NAME"
+  },
+  "sections": [
+    {
+      "id": "web_management",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_WEB_MANAGEMENT",
+      "icon": "fa-edit",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/rtlsdr_radio",
+        "method": "saveWebManagementToggle"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE_WEB_MANAGEMENT",
+        "data": [
+          "show_web_management"
+        ]
+      },
+      "content": [
+        {
+          "id": "show_web_management",
+          "element": "switch",
+          "label": "TRANSLATE.SHOW_WEB_MANAGEMENT",
+          "value": true,
+          "doc": "TRANSLATE.SHOW_WEB_MANAGEMENT_DOC"
+        },
+        {
+          "id": "open_current_button",
+          "element": "button",
+          "label": "TRANSLATE.OPEN_CURRENT_WINDOW",
+          "onClick": {
+            "type": "openUrl",
+            "url": ""
+          },
+          "doc": "TRANSLATE.OPEN_CURRENT_WINDOW_DOC",
+          "visibleIf": {
+            "field": "show_web_management",
+            "value": true
+          }
+        },
+        {
+          "id": "open_tab_button",
+          "element": "button",
+          "label": "TRANSLATE.OPEN_NEW_TAB",
+          "onClick": {
+            "type": "openUrl",
+            "url": ""
+          },
+          "doc": "TRANSLATE.OPEN_NEW_TAB_DOC",
+          "visibleIf": {
+            "field": "show_web_management",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "management_config",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_WEB_MANAGEMENT_CONFIG",
+      "icon": "fa-cog",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/rtlsdr_radio",
+        "method": "saveWebManagerSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE_MANAGEMENT_CONFIG",
+        "data": [
+          "show_management_config",
+          "hostname_override"
+        ]
+      },
+      "content": [
+        {
+          "id": "show_management_config",
+          "element": "switch",
+          "label": "TRANSLATE.SHOW_MANAGEMENT_CONFIG",
+          "value": false,
+          "doc": "TRANSLATE.SHOW_MANAGEMENT_CONFIG_DOC"
+        },
+        {
+          "id": "hostname_override",
+          "element": "input",
+          "label": "TRANSLATE.HOSTNAME_OVERRIDE",
+          "value": "",
+          "doc": "TRANSLATE.HOSTNAME_OVERRIDE_DOC",
+          "visibleIf": {
+            "field": "show_management_config",
+            "value": true
+          }
+        },
+        {
+          "id": "create_backup_button",
+          "element": "button",
+          "label": "TRANSLATE.CREATE_BACKUP",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "music_service/rtlsdr_radio",
+            "method": "createBackupFromUI"
+          },
+          "doc": "TRANSLATE.CREATE_BACKUP_DOC",
+          "visibleIf": {
+            "field": "show_management_config",
+            "value": true
+          }
+        },
+        {
+          "id": "restore_backup_button",
+          "element": "button",
+          "label": "TRANSLATE.RESTORE_LATEST_BACKUP",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "music_service/rtlsdr_radio",
+            "method": "restoreLatestBackupFromUI"
+          },
+          "doc": "TRANSLATE.RESTORE_LATEST_BACKUP_DOC",
+          "visibleIf": {
+            "field": "show_management_config",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fm_region",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_FM_REGION",
+      "icon": "fa-globe",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/rtlsdr_radio",
+        "method": "saveFmRegion"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE_FM_REGION",
+        "data": [
+          "show_fm_region",
+          "fm_region",
+          "fm_lower_freq",
+          "fm_upper_freq",
+          "fm_channel_spacing",
+          "fm_deemphasis"
+        ]
+      },
+      "content": [
+        {
+          "id": "show_fm_region",
+          "element": "switch",
+          "label": "TRANSLATE.SHOW_FM_REGION",
+          "value": false,
+          "doc": "TRANSLATE.SHOW_FM_REGION_DOC"
+        },
+        {
+          "id": "fm_region",
+          "element": "select",
+          "label": "TRANSLATE.FM_REGION",
+          "doc": "TRANSLATE.FM_REGION_DOC",
+          "value": {
+            "value": "europe",
+            "label": "TRANSLATE.FM_REGION_EUROPE"
+          },
+          "options": [
+            {"value": "europe", "label": "TRANSLATE.FM_REGION_EUROPE"},
+            {"value": "americas", "label": "TRANSLATE.FM_REGION_AMERICAS"},
+            {"value": "japan", "label": "TRANSLATE.FM_REGION_JAPAN"},
+            {"value": "east_asia", "label": "TRANSLATE.FM_REGION_EAST_ASIA"},
+            {"value": "australia", "label": "TRANSLATE.FM_REGION_AUSTRALIA"},
+            {"value": "italy", "label": "TRANSLATE.FM_REGION_ITALY"},
+            {"value": "oirt", "label": "TRANSLATE.FM_REGION_OIRT"},
+            {"value": "custom", "label": "TRANSLATE.FM_REGION_CUSTOM"}
+          ],
+          "visibleIf": {
+            "field": "show_fm_region",
+            "value": true
+          }
+        },
+        {
+          "id": "fm_lower_freq",
+          "element": "select",
+          "label": "TRANSLATE.FM_LOWER_FREQ",
+          "doc": "TRANSLATE.FM_LOWER_FREQ_DOC",
+          "value": {
+            "value": "87.5",
+            "label": "87.5 MHz (Europe/Default)"
+          },
+          "options": [
+            {"value": "76.0", "label": "76.0 MHz (Japan)"},
+            {"value": "87.0", "label": "87.0 MHz (Italy)"},
+            {"value": "87.5", "label": "87.5 MHz (Europe/Default)"},
+            {"value": "88.0", "label": "88.0 MHz (Americas)"}
+          ],
+          "visibleIf": {
+            "field": "show_fm_region",
+            "value": true
+          }
+        },
+        {
+          "id": "fm_upper_freq",
+          "element": "select",
+          "label": "TRANSLATE.FM_UPPER_FREQ",
+          "doc": "TRANSLATE.FM_UPPER_FREQ_DOC",
+          "value": {
+            "value": "108.0",
+            "label": "108.0 MHz (Default)"
+          },
+          "options": [
+            {"value": "74.0", "label": "74.0 MHz (OIRT)"},
+            {"value": "95.0", "label": "95.0 MHz (Japan)"},
+            {"value": "108.0", "label": "108.0 MHz (Default)"}
+          ],
+          "visibleIf": {
+            "field": "show_fm_region",
+            "value": true
+          }
+        },
+        {
+          "id": "fm_channel_spacing",
+          "element": "select",
+          "label": "TRANSLATE.FM_CHANNEL_SPACING",
+          "doc": "TRANSLATE.FM_CHANNEL_SPACING_DOC",
+          "value": {
+            "value": "100k",
+            "label": "TRANSLATE.FM_CHANNEL_SPACING_100K"
+          },
+          "options": [
+            {"value": "30k", "label": "TRANSLATE.FM_CHANNEL_SPACING_30K"},
+            {"value": "50k", "label": "TRANSLATE.FM_CHANNEL_SPACING_50K"},
+            {"value": "100k", "label": "TRANSLATE.FM_CHANNEL_SPACING_100K"},
+            {"value": "200k", "label": "TRANSLATE.FM_CHANNEL_SPACING_200K"}
+          ],
+          "visibleIf": {
+            "field": "show_fm_region",
+            "value": true
+          }
+        },
+        {
+          "id": "fm_deemphasis",
+          "element": "switch",
+          "label": "TRANSLATE.FM_DEEMPHASIS",
+          "value": false,
+          "doc": "TRANSLATE.FM_DEEMPHASIS_DOC",
+          "visibleIf": {
+            "field": "show_fm_region",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fm_radio",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_FM_SETTINGS",
+      "icon": "fa-signal",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/rtlsdr_radio",
+        "method": "saveFmSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE_FM_SETTINGS",
+        "data": [
+          "fm_enabled",
+          "fm_gain",
+          "fm_oversampling",
+          "fm_sample_rate",
+          "scan_sensitivity"
+        ]
+      },
+      "content": [
+        {
+          "id": "fm_enabled",
+          "element": "switch",
+          "label": "TRANSLATE.ENABLE_FM",
+          "value": false,
+          "doc": "TRANSLATE.ENABLE_FM_DOC"
+        },
+        {
+          "id": "fm_gain",
+          "element": "input",
+          "label": "TRANSLATE.FM_GAIN",
+          "value": 50,
+          "doc": "TRANSLATE.FM_GAIN_DOC",
+          "visibleIf": {
+            "field": "fm_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "scan_sensitivity",
+          "element": "select",
+          "label": "TRANSLATE.SCAN_SENSITIVITY",
+          "value": {
+            "value": 8,
+            "label": ""
+          },
+          "options": [
+            {
+              "value": 15,
+              "label": "TRANSLATE.SENSITIVITY_CONSERVATIVE"
+            },
+            {
+              "value": 10,
+              "label": "TRANSLATE.SENSITIVITY_MODERATE"
+            },
+            {
+              "value": 8,
+              "label": "TRANSLATE.SENSITIVITY_BALANCED"
+            },
+            {
+              "value": 5,
+              "label": "TRANSLATE.SENSITIVITY_SENSITIVE"
+            },
+            {
+              "value": 3,
+              "label": "TRANSLATE.SENSITIVITY_VERY_SENSITIVE"
+            }
+          ],
+          "doc": "TRANSLATE.SCAN_SENSITIVITY_DOC",
+          "visibleIf": {
+            "field": "fm_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "fm_oversampling",
+          "element": "switch",
+          "label": "TRANSLATE.FM_OVERSAMPLING",
+          "value": false,
+          "doc": "TRANSLATE.FM_OVERSAMPLING_DOC",
+          "visibleIf": {
+            "field": "fm_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "fm_sample_rate",
+          "element": "select",
+          "label": "TRANSLATE.FM_SAMPLE_RATE",
+          "doc": "TRANSLATE.FM_SAMPLE_RATE_DOC",
+          "value": {
+            "value": "171k",
+            "label": "171 kHz (RDS Optimal)"
+          },
+          "options": [
+            {"value": "171k", "label": "TRANSLATE.FM_SAMPLE_RATE_171K"},
+            {"value": "200k", "label": "TRANSLATE.FM_SAMPLE_RATE_200K"},
+            {"value": "240k", "label": "TRANSLATE.FM_SAMPLE_RATE_240K"},
+            {"value": "300k", "label": "TRANSLATE.FM_SAMPLE_RATE_300K"}
+          ],
+          "visibleIf": {
+            "field": "fm_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "scan_fm",
+          "element": "button",
+          "label": "TRANSLATE.SCAN_FM",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "music_service/rtlsdr_radio",
+            "method": "scanFm"
+          },
+          "doc": "TRANSLATE.SCAN_FM_DOC",
+          "visibleIf": {
+            "field": "fm_enabled",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "dab_radio",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_DAB_RADIO",
+      "icon": "fa-rss",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/rtlsdr_radio",
+        "method": "saveDabSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE_DAB_SETTINGS",
+        "data": [
+          "dab_enabled",
+          "dab_gain",
+          "dab_ppm"
+        ]
+      },
+      "content": [
+        {
+          "id": "dab_enabled",
+          "element": "switch",
+          "label": "TRANSLATE.ENABLE_DAB",
+          "value": false,
+          "doc": "TRANSLATE.ENABLE_DAB_DOC"
+        },
+        {
+          "id": "dab_gain",
+          "element": "input",
+          "label": "TRANSLATE.DAB_GAIN",
+          "value": 80,
+          "doc": "TRANSLATE.DAB_GAIN_DOC",
+          "visibleIf": {
+            "field": "dab_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "dab_ppm",
+          "element": "input",
+          "label": "TRANSLATE.DAB_PPM",
+          "value": 0,
+          "doc": "TRANSLATE.DAB_PPM_DOC",
+          "visibleIf": {
+            "field": "dab_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "scan_dab",
+          "element": "button",
+          "label": "TRANSLATE.SCAN_DAB",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "music_service/rtlsdr_radio",
+            "method": "scanDab"
+          },
+          "doc": "TRANSLATE.SCAN_DAB_DOC",
+          "visibleIf": {
+            "field": "dab_enabled",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "artwork_settings",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_ARTWORK",
+      "icon": "fa-image",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/rtlsdr_radio",
+        "method": "saveArtworkSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE_ARTWORK_SETTINGS",
+        "data": [
+          "show_artwork_settings",
+          "best_effort_artwork",
+          "artwork_threshold",
+          "artwork_persistence",
+          "artwork_ttl",
+          "artwork_debug_logging"
+        ]
+      },
+      "content": [
+        {
+          "id": "show_artwork_settings",
+          "element": "switch",
+          "label": "TRANSLATE.SHOW_ARTWORK_SETTINGS",
+          "value": false,
+          "doc": "TRANSLATE.SHOW_ARTWORK_SETTINGS_DOC"
+        },
+        {
+          "id": "best_effort_artwork",
+          "element": "switch",
+          "label": "TRANSLATE.BEST_EFFORT_ARTWORK",
+          "value": true,
+          "doc": "TRANSLATE.BEST_EFFORT_ARTWORK_DOC",
+          "visibleIf": {
+            "field": "show_artwork_settings",
+            "value": true
+          }
+        },
+        {
+          "id": "artwork_threshold",
+          "element": "select",
+          "label": "TRANSLATE.ARTWORK_THRESHOLD",
+          "value": {
+            "value": "60",
+            "label": "60% (Default)"
+          },
+          "options": [
+            { "value": "0", "label": "0% (Always lookup)" },
+            { "value": "20", "label": "20% (Very low)" },
+            { "value": "40", "label": "40% (Low)" },
+            { "value": "60", "label": "60% (Default)" },
+            { "value": "80", "label": "80% (High)" },
+            { "value": "95", "label": "95% (Very high)" }
+          ],
+          "doc": "TRANSLATE.ARTWORK_THRESHOLD_DOC",
+          "visibleIf": {
+            "field": "show_artwork_settings",
+            "value": true
+          }
+        },
+        {
+          "id": "artwork_persistence",
+          "element": "select",
+          "label": "TRANSLATE.ARTWORK_PERSISTENCE",
+          "value": {
+            "value": "artist",
+            "label": "Keep until artist changes"
+          },
+          "options": [
+            { "value": "artist", "label": "TRANSLATE.ARTWORK_PERSIST_ARTIST" },
+            { "value": "track", "label": "TRANSLATE.ARTWORK_PERSIST_TRACK" },
+            { "value": "always", "label": "TRANSLATE.ARTWORK_PERSIST_ALWAYS" }
+          ],
+          "doc": "TRANSLATE.ARTWORK_PERSISTENCE_DOC",
+          "visibleIf": {
+            "field": "show_artwork_settings",
+            "value": true
+          }
+        },
+        {
+          "id": "artwork_ttl",
+          "element": "select",
+          "label": "TRANSLATE.ARTWORK_TTL",
+          "value": {
+            "value": "0",
+            "label": "Disabled"
+          },
+          "options": [
+            { "value": "0", "label": "TRANSLATE.ARTWORK_TTL_DISABLED" },
+            { "value": "2", "label": "TRANSLATE.ARTWORK_TTL_2MIN" },
+            { "value": "5", "label": "TRANSLATE.ARTWORK_TTL_5MIN" },
+            { "value": "10", "label": "TRANSLATE.ARTWORK_TTL_10MIN" },
+            { "value": "15", "label": "TRANSLATE.ARTWORK_TTL_15MIN" },
+            { "value": "30", "label": "TRANSLATE.ARTWORK_TTL_30MIN" }
+          ],
+          "doc": "TRANSLATE.ARTWORK_TTL_DOC",
+          "visibleIf": {
+            "field": "show_artwork_settings",
+            "value": true
+          }
+        },
+        {
+          "id": "artwork_debug_logging",
+          "element": "switch",
+          "label": "TRANSLATE.ARTWORK_DEBUG_LOGGING",
+          "value": false,
+          "doc": "TRANSLATE.ARTWORK_DEBUG_LOGGING_DOC",
+          "visibleIf": {
+            "field": "show_artwork_settings",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "diagnostics",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_DIAGNOSTICS",
+      "icon": "fa-wrench",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/rtlsdr_radio",
+        "method": "saveDiagnosticsSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.DIAGNOSTICS_SAVE_BUTTON",
+        "data": [
+          "show_diagnostics",
+          "manual_fm_frequency",
+          "manual_dab_ensemble",
+          "manual_dab_service",
+          "manual_dab_gain",
+          "manual_dab_ppm"
+        ]
+      },
+      "content": [
+        {
+          "id": "show_diagnostics",
+          "element": "switch",
+          "label": "TRANSLATE.SHOW_DIAGNOSTICS",
+          "value": false,
+          "doc": "TRANSLATE.SHOW_DIAGNOSTICS_DOC"
+        },
+        {
+          "id": "diagnostics_purpose",
+          "element": "section",
+          "description": "TRANSLATE.DIAGNOSTICS_PURPOSE",
+          "visibleIf": {
+            "field": "show_diagnostics",
+            "value": true
+          }
+        },
+        {
+          "id": "manual_fm_divider",
+          "element": "message",
+          "label": "TRANSLATE.MANUAL_FM_LABEL",
+          "value": "",
+          "visibleIf": {
+            "field": "show_diagnostics",
+            "value": true
+          }
+        },
+        {
+          "id": "manual_fm_frequency",
+          "element": "input",
+          "label": "TRANSLATE.MANUAL_FM_FREQUENCY",
+          "value": "94.9",
+          "doc": "TRANSLATE.MANUAL_FM_FREQUENCY_DOC",
+          "visibleIf": {
+            "field": "show_diagnostics",
+            "value": true
+          }
+        },
+        {
+          "id": "test_fm_save_required",
+          "element": "section",
+          "description": "TRANSLATE.TEST_FM_SAVE_REQUIRED",
+          "visibleIf": {
+            "field": "show_diagnostics",
+            "value": true
+          }
+        },
+        {
+          "id": "test_fm_button",
+          "element": "button",
+          "label": "TRANSLATE.TEST_FM_STATION",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/rtlsdr_radio",
+              "method": "testManualFm"
+            }
+          },
+          "visibleIf": {
+            "field": "show_diagnostics",
+            "value": true
+          }
+        },
+        {
+          "id": "manual_dab_divider",
+          "element": "message",
+          "label": "TRANSLATE.MANUAL_DAB_LABEL",
+          "value": "",
+          "visibleIf": {
+            "field": "show_diagnostics",
+            "value": true
+          }
+        },
+        {
+          "id": "manual_dab_ensemble",
+          "element": "input",
+          "label": "TRANSLATE.MANUAL_DAB_ENSEMBLE",
+          "value": "12B",
+          "doc": "TRANSLATE.MANUAL_DAB_ENSEMBLE_DOC",
+          "visibleIf": {
+            "field": "show_diagnostics",
+            "value": true
+          }
+        },
+        {
+          "id": "manual_dab_service",
+          "element": "input",
+          "label": "TRANSLATE.MANUAL_DAB_SERVICE",
+          "value": "BBC Radio1",
+          "doc": "TRANSLATE.MANUAL_DAB_SERVICE_DOC",
+          "visibleIf": {
+            "field": "show_diagnostics",
+            "value": true
+          }
+        },
+        {
+          "id": "manual_dab_gain",
+          "element": "input",
+          "label": "TRANSLATE.MANUAL_DAB_GAIN",
+          "value": 20,
+          "doc": "TRANSLATE.MANUAL_DAB_GAIN_DOC",
+          "visibleIf": {
+            "field": "show_diagnostics",
+            "value": true
+          }
+        },
+        {
+          "id": "manual_dab_ppm",
+          "element": "input",
+          "label": "TRANSLATE.MANUAL_DAB_PPM",
+          "value": 0,
+          "doc": "TRANSLATE.MANUAL_DAB_PPM_DOC",
+          "visibleIf": {
+            "field": "show_diagnostics",
+            "value": true
+          }
+        },
+        {
+          "id": "test_dab_save_required",
+          "element": "section",
+          "description": "TRANSLATE.TEST_DAB_SAVE_REQUIRED",
+          "visibleIf": {
+            "field": "show_diagnostics",
+            "value": true
+          }
+        },
+        {
+          "id": "test_dab_button",
+          "element": "button",
+          "label": "TRANSLATE.TEST_DAB_STATION",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/rtlsdr_radio",
+              "method": "testManualDab"
+            }
+          },
+          "visibleIf": {
+            "field": "show_diagnostics",
+            "value": true
+          }
+        },
+        {
+          "id": "diagnostics_save_explanation",
+          "element": "section",
+          "description": "TRANSLATE.DIAGNOSTICS_SAVE_EXPLANATION",
+          "visibleIf": {
+            "field": "show_diagnostics",
+            "value": true
+          }
+        }
+      ]
+    }
+  ]
+}

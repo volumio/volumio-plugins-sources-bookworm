@@ -1,0 +1,12 @@
+800x480-test.zip
+800x480-balbuze.zip
+1024x600-Gelo5-BASIC_121.zip
+1280x400-Gelo5-BASIC_221.zip
+1280x800-Gelo5-BASIC_421.zip
+1480x320-Gelo5-BASIC_521.zip
+1600x720-balbuze.zip
+1920x480-Gelo5-BASIC_521.zip
+1920x515-Gelo5-BASIC_921.zip
+1920x1080-Gelo5-BASIC_721.zip
+1920x1080-balbuze.zip
+2560x720-Gelo5-BASIC_921.zip

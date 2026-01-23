@@ -1,0 +1,50 @@
+{
+    "rotatescreen": {
+        "value": "normal",
+        "label": "Default"
+    },
+    "show_advanced": {
+        "type": "boolean",
+        "value": false
+    },
+    "touch_offset": {
+        "value": "0",
+        "label": "System default"
+    },
+    "pointer_offset": {
+        "value": "0",
+        "label": "System default"
+    },
+    "fbcon_offset": {
+        "value": "same",
+        "label": "Same as Screen"
+    },
+    "plymouth_offset": {
+        "value": "same",
+        "label": "Same as Screen"
+    },
+    "hidecursor": {
+        "type": "boolean",
+        "value": false
+    },
+    "timeout": {
+        "type": "number",
+        "value": 120
+    },
+    "noifplay": {
+        "type": "boolean",
+        "value": true
+    },
+    "screensavertype": {
+        "value": "dpms",
+        "label": "Turn the screen off"
+    },
+    "brightness": {
+        "type": "number",
+        "value": 1
+    },
+    "debug_logging": {
+        "type": "boolean",
+        "value": true
+    }
+}

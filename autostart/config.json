@@ -1,0 +1,38 @@
+{
+  "enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "playFromLastPosition": {
+    "type": "boolean",
+    "value": false
+  },
+  "lastPosition": {
+    "type": "number",
+    "value": -1
+  },
+  "autostartDelay": {
+    "type": "number",
+    "value": 5000
+  },
+  "autostartVolumeEnabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "autostartVolumeLevel": {
+    "type": "number",
+    "value": 50
+  },
+  "showPollingSettings": {
+    "type": "boolean",
+    "value": false
+  },
+  "pollingInterval": {
+    "type": "number",
+    "value": 5000
+  },
+  "maxPollingAttempts": {
+    "type": "number",
+    "value": 60
+  }
+}

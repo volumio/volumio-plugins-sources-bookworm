@@ -1,0 +1,35 @@
+{
+  "name": "allo_relay_attenuator",
+  "version": "4.0.2",
+  "description": "Hardware volume control using Allo Relay Attenuator",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Just a Nerd",
+  "license": "GPL-3.0",
+  "repository": "https://github.com/volumio/volumio-plugins-sources-bookworm",
+  "volumio_info": {
+    "prettyName": "Allo Relay Attenuator",
+    "icon": "fa-volume-up",
+    "plugin_type": "system_hardware",
+    "architectures": [
+      "armhf"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "has_configuration": true,
+    "details": "Hardware volume control using Allo Relay Attenuator with 64-step relay-switched attenuation. Supports hardware buttons and IR remote.",
+    "changelog": "4.0.2 - Add Hardware Volume Mode (default) to fix UI desync with I2S-only DACs."
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "fs-extra": "*",
+    "kew": "*",
+    "v-conf": "*"
+  }
+}

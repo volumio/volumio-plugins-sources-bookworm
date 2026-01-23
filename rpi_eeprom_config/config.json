@@ -1,0 +1,10 @@
+{
+  "risk_acknowledged": {
+    "type": "boolean",
+    "value": false
+  },
+  "backup_exists": {
+    "type": "boolean",
+    "value": false
+  }
+}

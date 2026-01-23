@@ -1,0 +1,35 @@
+{
+    "name": "audiophonicsonoff",
+    "version": "2.1.0",
+    "description": "Audiophonics power button management for Volumio 4 (Bookworm)",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Just a Nerd (based on original work by Saiyato and Jedail)",
+    "license": "GPL-3.0",
+    "volumio_info": {
+        "prettyName": "Audiophonics On/Off",
+        "icon": "fa-power-off",
+        "plugin_type": "system_hardware",
+        "boot_priority": 10,
+        "os": [
+            "bookworm"
+        ],
+        "architectures": [
+            "armhf"
+        ],
+        "details": "Power button management for Audiophonics soundcards",
+        "changelog": "2.1.0: Rewritten for Volumio 4/Bookworm - replaced deprecated onoff (sysfs) with @iiot2k/gpiox (chardev), fixed button polarity for Audiophonics hardware, fixed shutdown pulse timing"
+    },
+    "engines": {
+        "node": ">=20",
+        "volumio": ">=4"
+    },
+    "dependencies": {
+        "@iiot2k/gpiox": "^2.1.4",
+        "fs-extra": "^11.2.0",
+        "kew": "^0.7.0",
+        "v-conf": "^1.4.3"
+    }
+}

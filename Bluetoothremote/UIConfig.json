@@ -1,0 +1,84 @@
+{
+	"page": {
+		"label": "PLUGIN_CONFIGURATION"
+	},
+	"sections": [
+		{
+			"id": "section_account",
+			"element": "section",
+			"label": "BT device Remote",
+			"icon": "fa-gamepad",
+			"onSave": {
+				"type": "controller",
+				"endpoint": "system_hardware/Bluetoothremote",
+				"method": "saveBT"
+			},
+			"saveButton": {
+				"label": "APPLY",
+				"data": [
+					"BT_device"
+				]
+			},
+			"content": [
+				{
+					"id": "BT_device",
+					"element": "select",
+					"doc": "Select device",
+					"label": "Select a device to connect",
+					"value": {
+						"value": "",
+						"label": ""
+					},
+					"options": []
+				},
+				{
+				"id": "scanBT",
+				"element": "button",
+				"label": "Scan BT",
+				"description": "Scan to discover new devices",
+				"onClick": {
+					"type": "plugin",
+					"endpoint": "system_hardware/Bluetoothremote",
+					"method": "scanBT",
+					"data": []
+				}
+				}
+				
+			]
+		},
+	{
+		"id": "Advanced",
+		"element": "section",
+		"label": "Tools",
+		"icon": "fa-wrench",
+		"content":[
+			{
+				"id": "refreshUI",
+				"element": "button",
+				"label": "Refresh UI",
+				"doc": "If your devices is connected but not appears in the list, trry to refresh this page with this button",
+				"onClick": {
+					"type": "plugin",
+					"endpoint": "system_hardware/Bluetoothremote",
+					"method": "refreshUI",
+					"data": []
+					
+				}
+			},
+			{
+				"id": "restarttrigger",
+				"element": "button",
+				"label": "Restart Triggerhappy",
+				"doc": "If you modified /INTERNAL/Bluetooth_Remote/triggerhappy.conf, press the button to use your new config",
+				"onClick": {
+					"type": "plugin",
+					"endpoint": "system_hardware/Bluetoothremote",
+					"method": "restartTriggerhappy",
+					"data": []
+					
+				}
+			}
+		]
+	}
+]
+}

@@ -1,0 +1,62 @@
+{
+	"name": "mixcloud",
+	"version": "2.0.0",
+	"description": "Listen to Mixcloud shows",
+	"main": "./dist/index.js",
+	"scripts": {
+		"build": "rm -rf dist && npx tsc --build src && bash fixup.sh",
+		"lint": "npx eslint ./src",
+		"lint:fix": "npx eslint ./src --fix"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/patrickkfkan/volumio-mixcloud.git"
+	},
+	"author": "Patrick Kan",
+	"license": "MIT",
+	"volumio_info": {
+		"prettyName": "Mixcloud",
+		"plugin_type": "music_service",
+		"os": [
+			"bookworm"
+		],
+		"icon": "fa-mixcloud",
+		"boot_priority": 10,
+		"details": "Listen to Mixcloud shows",
+		"changelog": "",
+		"architectures": [
+			"amd64",
+			"armhf"
+		]
+	},
+	"engines": {
+		"node": ">=20",
+		"volumio": ">=0"
+	},
+	"devDependencies": {
+		"@types/fs-extra": "^8.1.2",
+		"@types/md5": "^2.3.2",
+		"@types/node": "^20.5.1",
+		"@types/string-format": "^2.0.0",
+		"@typescript-eslint/eslint-plugin": "^8.6.0",
+		"@typescript-eslint/parser": "^8.6.0",
+		"eslint": "^9.10.0",
+		"typescript": "^5.5.4",
+		"typescript-eslint": "^8.6.0",
+		"winston": "^3.8.2"
+	},
+	"dependencies": {
+		"array-shuffle": "^2.0.0",
+		"get-port": "^5.1.1",
+		"kew": "^0.7.0",
+		"m3u8-parser": "^7.1.0",
+		"md5": "^2.3.0",
+		"miniget": "^4.2.3",
+		"mixcloud-fetch": "^1.0.3",
+		"node-cache": "^5.1.2",
+		"pidtree": "^0.6.0",
+		"slugify": "^1.6.6",
+		"string-format": "^2.0.0",
+		"v-conf": "^1.4.3"
+	}
+}

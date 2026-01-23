@@ -1,0 +1,90 @@
+{
+  "enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "fm_enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "dab_enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "fm_gain": {
+    "type": "number",
+    "value": 50
+  },
+  "dab_gain": {
+    "type": "number",
+    "value": 80
+  },
+  "dab_ppm": {
+    "type": "number",
+    "value": 0
+  },
+  "manual_dab_ppm": {
+    "type": "number",
+    "value": 0
+  },
+  "scan_sensitivity": {
+    "type": "number",
+    "value": 8
+  },
+  "show_fm_region": {
+    "type": "boolean",
+    "value": false
+  },
+  "fm_lower_freq": {
+    "type": "string",
+    "value": "87.5"
+  },
+  "fm_region": {
+    "type": "string",
+    "value": "europe"
+  },
+  "fm_upper_freq": {
+    "type": "string",
+    "value": "108.0"
+  },
+  "fm_channel_spacing": {
+    "type": "string",
+    "value": "100k"
+  },
+  "fm_oversampling": {
+    "type": "boolean",
+    "value": false
+  },
+  "fm_sample_rate": {
+    "type": "string",
+    "value": "171k"
+  },
+  "fm_deemphasis": {
+    "type": "boolean",
+    "value": false
+  },
+  "sample_rate": {
+    "type": "number",
+    "value": 48000
+  },
+  "auto_backup_on_uninstall": {
+    "type": "boolean",
+    "value": true
+  },
+  "show_artwork_settings": {
+    "type": "boolean",
+    "value": false
+  },
+  "best_effort_artwork": {
+    "type": "boolean",
+    "value": true
+  },
+  "artwork_threshold": {
+    "type": "number",
+    "value": 60
+  },
+  "artwork_persistence": {
+    "type": "string",
+    "value": "artist"
+  }
+}

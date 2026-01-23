@@ -1,0 +1,152 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_CONFIGURATION"
+  },
+  "sections": [
+    {
+      "id": "section_playback",
+      "element": "section",
+      "label": "TRANSLATE.AUTOSTART_SETTINGS",
+      "icon": "fa-play",
+      "description": "TRANSLATE.AUTOSTART_SETTINGS_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/autostart",
+        "method": "saveOptions"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "playFromLastPosition",
+          "autostartDelay"
+        ]
+      },
+      "content": [
+        {
+          "id": "playFromLastPosition",
+          "element": "switch",
+          "doc": "TRANSLATE.AUTOSTART_SAVEFROMLASTPOS_DOC",
+          "label": "TRANSLATE.AUTOSTART_SAVEFROMLASTPOS",
+          "value": false
+        },
+        {
+          "id": "autostartDelay",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.AUTOSTART_DELAY_DOC",
+          "label": "TRANSLATE.AUTOSTART_DELAY",
+          "value": 5000
+        }
+      ]
+    },
+    {
+      "id": "section_volume_info1",
+      "element": "section",
+      "label": "TRANSLATE.VOLUME_INFO",
+      "icon": "fa-info-circle",
+      "description": "TRANSLATE.VOLUME_INFO_DESC1",
+      "content": []
+    },
+    {
+      "id": "section_volume_info2",
+      "element": "section",
+      "label": "TRANSLATE.VOLUME_INFO2",
+      "icon": "fa-exclamation-triangle",
+      "description": "TRANSLATE.VOLUME_INFO_DESC2",
+      "content": []
+    },
+    {
+      "id": "section_volume",
+      "element": "section",
+      "label": "TRANSLATE.VOLUME_SETTINGS",
+      "icon": "fa-volume-up",
+      "description": "TRANSLATE.VOLUME_SETTINGS_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/autostart",
+        "method": "saveVolumeOptions"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "autostartVolumeEnabled",
+          "autostartVolumeLevel"
+        ]
+      },
+      "content": [
+        {
+          "id": "autostartVolumeEnabled",
+          "element": "switch",
+          "doc": "TRANSLATE.VOLUME_ENABLED_DOC",
+          "label": "TRANSLATE.VOLUME_ENABLED",
+          "value": false
+        },
+        {
+          "id": "autostartVolumeLevel",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.VOLUME_LEVEL_DOC",
+          "label": "TRANSLATE.VOLUME_LEVEL",
+          "value": 50,
+          "visibleIf": {
+            "field": "autostartVolumeEnabled",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_polling",
+      "element": "section",
+      "label": "TRANSLATE.POLLING_SETTINGS",
+      "icon": "fa-cog",
+      "description": "TRANSLATE.POLLING_SETTINGS_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/autostart",
+        "method": "savePollingOptions"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "showPollingSettings",
+          "pollingInterval",
+          "maxPollingAttempts"
+        ]
+      },
+      "content": [
+        {
+          "id": "showPollingSettings",
+          "element": "switch",
+          "doc": "TRANSLATE.SHOW_POLLING_SETTINGS_DOC",
+          "label": "TRANSLATE.SHOW_POLLING_SETTINGS",
+          "value": false
+        },
+        {
+          "id": "pollingInterval",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.POLLING_INTERVAL_DOC",
+          "label": "TRANSLATE.POLLING_INTERVAL",
+          "value": 5000,
+          "visibleIf": {
+            "field": "showPollingSettings",
+            "value": true
+          }
+        },
+        {
+          "id": "maxPollingAttempts",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.MAX_POLLING_ATTEMPTS_DOC",
+          "label": "TRANSLATE.MAX_POLLING_ATTEMPTS",
+          "value": 60,
+          "visibleIf": {
+            "field": "showPollingSettings",
+            "value": true
+          }
+        }
+      ]
+    }
+  ]
+}

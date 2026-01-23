@@ -1,0 +1,77 @@
+{
+	"name": "now_playing",
+	"version": "1.0.3",
+	"description": "Provides a 'Now Playing' screen for your Volumio device.",
+	"main": "./dist/index.js",
+	"scripts": {
+		"build": "rm -rf dist && npm run build:uiconf && npx tsc --build src && bash fixup.sh",
+		"build:uiconf": "node ./scripts/buildUIConfigSchema.js > ./src/lib/config/UIConfigSchema.ts",
+		"lint": "npx eslint ./src",
+		"lint:fix": "npx eslint ./src --fix"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/patrickkfkan/volumio-now-playing.git"
+	},
+	"author": "Patrick Kan",
+	"license": "MIT",
+	"volumio_info": {
+		"prettyName": "Now Playing",
+		"plugin_type": "user_interface",
+		"os": [
+			"bookworm"
+		],
+		"icon": "fa-play-circle",
+		"boot_priority": 10,
+		"details": "Provides a 'Now Playing' screen for your Volumio device.",
+		"changelog": "",
+		"architectures": [
+			"amd64",
+			"armhf"
+		]
+	},
+	"engines": {
+		"node": ">=20",
+		"volumio": ">=0"
+	},
+	"devDependencies": {
+		"@types/cors": "^2.8.13",
+		"@types/ejs": "^3.1.2",
+		"@types/escape-html": "^1.0.4",
+		"@types/express": "^4.17.17",
+		"@types/fs-extra": "^8.1.2",
+		"@types/lodash": "^4.14.195",
+		"@types/md5": "^2.3.2",
+		"@types/node": "^20.5.1",
+		"@types/semver": "^7.5.8",
+		"@types/string-format": "^2.0.0",
+		"@typescript-eslint/eslint-plugin": "^8.6.0",
+		"@typescript-eslint/parser": "^8.6.0",
+		"eslint": "^9.10.0",
+		"geo-tz": "^8.0.2",
+		"typescript": "^5.5.4",
+		"typescript-eslint": "^8.6.0",
+		"winston": "^3.8.2"
+	},
+	"dependencies": {
+		"chokidar": "^3.5.3",
+		"cors": "^2.8.5",
+		"countries-and-timezones": "^3.5.1",
+		"ejs": "^3.1.9",
+		"escape-html": "^1.0.3",
+		"express": "^4.21.1",
+		"genius-fetch": "^1.0.0",
+		"install": "^0.13.0",
+		"jsonfile": "^6.1.0",
+		"kew": "^0.7.0",
+		"lodash": "^4.17.21",
+		"md5": "^2.3.0",
+		"node-cache": "^5.1.2",
+		"now-playing-common": "github:patrickkfkan/volumio-now-playing-common#v0.3.4",
+		"semver": "^7.5.4",
+		"string-format": "^2.0.0",
+		"v-conf": "^1.4.3",
+		"valid-filename": "^3.1.0",
+		"windows-locale": "^1.1.3"
+	}
+}

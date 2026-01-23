@@ -1,0 +1,16 @@
+{
+  "LYRION_CONFIGURATION": "Lyrion Music Server Configuration",
+  "LYRION_URL": "URL (read-only)",
+  "LYRION_OPEN_URL": "Open URL",
+  "LYRION_STARTING": "Starting server...",
+  "LYRION_STARTED": "Server started. Depending on hardware, you might have to wait before it becomes responsive.",
+  "LYRION_STOPPING": "Stopping server...",
+  "LYRION_STOPPED": "Server stopped",
+  "LYRION_INFO": "Server Info",
+  "LYRION_INFO_DESC_ACTIVE": "Server is active.",
+  "LYRION_INFO_DESC_ACTIVATING": "Server is starting up. Come back later!",
+  "LYRION_INFO_DESC_INACTIVE": "Server is not runinng. This is not normal when the plugin is enabled.",
+  "LYRION_VIEW_README": "View Readme",
+  "LYRION_ERR_START": "Could not start server: {}",
+  "LYRION_ERR_STOP": "Could not stop server: {}"
+}

@@ -1,0 +1,33 @@
+{
+  "PLUGIN_CONFIGURATION": "AutoStart Plugin Konfiguration",
+  "HEADING": "Aktivieren Sie dieses Plugin, um Musik beim Start von Volumio abzuspielen",
+  "SAVE": "Speichern",
+
+  "AUTOSTART_SETTINGS": "Wiedergabe-Einstellungen",
+  "AUTOSTART_SETTINGS_DESC": "Konfigurieren Sie die automatische Wiedergabe beim Start von Volumio.",
+  "AUTOSTART_SAVEFROMLASTPOS_DOC": "Wiedergabe von der letzten Position in der Warteschlange vor dem Herunterfahren von Volumio. Andernfalls beginnt die Wiedergabe am Anfang der Warteschlange.",
+  "AUTOSTART_SAVEFROMLASTPOS": "Von letzter Position abspielen",
+  "AUTOSTART_DELAY_DOC": "Zusaetzliche Verzoegerung nach Systembereitschaft und Lautstaerkeeinstellung. Erhoehen Sie diesen Wert, wenn Ihre Audio-Hardware zusaetzliche Zeit zur Initialisierung benoetigt.",
+  "AUTOSTART_DELAY": "Zusaetzliche Verzoegerung (Millisekunden)",
+
+  "VOLUME_INFO": "Informationen zur Startlautstaerke",
+  "VOLUME_INFO_DESC1": "Die Startlautstaerke kann an mehreren Stellen konfiguriert werden: Volumio-Wiedergabeoptionen, Hardware- oder DAC-Plugins und dieses Plugin. Jede Einstellung wird zu einem anderen Zeitpunkt waehrend des Startvorgangs angewendet. Wenn mehrere Einstellungen aktiviert sind, ueberschreiben spaeter angewendete die frueheren - dies kann zu Konflikten oder unerwarteten Lautstaerkepegeln fuehren. Ueberpruefen Sie Ihre Einstellungen an jeder Stelle, um ein konsistentes Verhalten sicherzustellen.",
+  "VOLUME_INFO2": "AutoStart Lautstaerke-Timing",
+  "VOLUME_INFO_DESC2": "AutoStart wendet seine Lautstaerkeeinstellung an, nachdem das System vollstaendig bereit ist, unmittelbar vor Beginn der Wiedergabe. Dies macht es zur letzten Einstellung in der Startsequenz und ueberschreibt alle frueheren Lautstaerkeeinstellungen.",
+
+  "VOLUME_SETTINGS": "Startlautstaerke",
+  "VOLUME_SETTINGS_DESC": "Einen bestimmten Lautstaerkepegel unmittelbar vor Beginn der Wiedergabe festlegen.",
+  "VOLUME_ENABLED": "Startlautstaerke aktivieren",
+  "VOLUME_ENABLED_DOC": "Wenn aktiviert, wird die Lautstaerke auf den angegebenen Pegel eingestellt, nachdem das System vollstaendig bereit ist, vor Beginn der Wiedergabe.",
+  "VOLUME_LEVEL": "Lautstaerkepegel (0-100)",
+  "VOLUME_LEVEL_DOC": "Lautstaerkepegel beim Start. Der Wert muss zwischen 0 und 100 liegen. Hinweis: Dies funktioniert moeglicherweise nicht, wenn der Mixer auf Keine gesetzt ist.",
+
+  "POLLING_SETTINGS": "Erweitert: Systemerkennung",
+  "POLLING_SETTINGS_DESC": "Steuert, wie das Plugin auf die vollstaendige Initialisierung von Volumio wartet, bevor die Wiedergabe startet. Langsamere Hardware wie Raspberry Pi Zero benoetigt moeglicherweise laengere Timeouts.",
+  "SHOW_POLLING_SETTINGS": "Erweiterte Einstellungen anzeigen",
+  "SHOW_POLLING_SETTINGS_DOC": "Umschalten, um Timing-Konfiguration anzuzeigen. Standard-Wartezeit ist 5 Minuten (5000ms x 60 Versuche).",
+  "POLLING_INTERVAL": "Pruefintervall (Millisekunden)",
+  "POLLING_INTERVAL_DOC": "Wie oft geprueft wird, ob das System bereit ist. Standard: 5000ms (5 Sekunden).",
+  "MAX_POLLING_ATTEMPTS": "Maximale Pruefversuche",
+  "MAX_POLLING_ATTEMPTS_DOC": "Maximale Anzahl von Pruefungen vor Timeout. Standard: 60 Versuche."
+}

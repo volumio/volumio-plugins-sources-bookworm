@@ -1,0 +1,16 @@
+{
+  "PLUGIN_CONFIGURATION": "RaspDacMini LCD Configuration",
+  "LCD_DISPLAY": "LCD Display",
+  "ENABLE_LCD": "Enable LCD Display",
+  "ENABLE_LCD_DOC": "Enable or disable the LCD display output",
+  "SLEEP_AFTER": "Screen Timeout (seconds)",
+  "SLEEP_AFTER_DOC": "Number of seconds before the screen goes to sleep when idle (0 = never sleep)",
+  "LCD_ACTIONS": "LCD Actions",
+  "RESTART_LCD": "Restart LCD Service",
+  "RESTART_LCD_DOC": "Restart the LCD display service to apply changes",
+  "SAVE": "Save",
+  "SETTINGS_SAVED": "Settings successfully saved",
+  "SETTINGS_SAVE_ERROR": "Failed to save settings",
+  "LCD_RESTARTED": "LCD service restarted successfully",
+  "LCD_RESTART_ERROR": "Failed to restart LCD service"
+}

@@ -1,0 +1,21 @@
+{
+  "PLUGIN_NAME": "GPIO Buttons",
+  "BUTTON": "Button",
+  "ENABLE": "Enable",
+  "GPIO_PIN": "GPIO Pin",
+  "ACTION": "Action",
+  "PLAY_PAUSE": "Play/Pause",
+  "VOLUME_UP": "Volume Up",
+  "VOLUME_DOWN": "Volume Down",
+  "PREVIOUS": "Previous Track",
+  "NEXT": "Next Track",
+  "SHUTDOWN": "Shutdown",
+  "CUSTOM_EMIT": "Custom Emit",
+  "SOCKET_COMMAND": "Socket Command",
+  "PLUGIN_ENDPOINT": "Plugin Endpoint",
+  "METHOD_NAME": "Method Name",
+  "DATA_JSON": "Data (JSON)",
+  "CONFIG_SAVED": "Configuration saved",
+  "EMIT_REQUIRES_ENDPOINT": "Custom emit requires endpoint and method",
+  "INVALID_JSON": "Invalid JSON in emit data"
+}

@@ -1,0 +1,82 @@
+{
+  "baseNavigation": {
+    "navigation": {
+      "lists": [
+        {
+          "availableListViews": ["list"],
+          "items": []
+        }
+      ]
+    }
+  },
+  "stations": {
+    "rparadise": [
+      {
+        "title": "Radio Paradise Main Mix (FLAC)",
+        "uri": "webrp/0",
+        "url": "https://stream.radioparadise.com/flacm",
+        "chan": 0
+      },
+      {
+        "title": "Radio Paradise Mellow Mix (FLAC)",
+        "uri": "webrp/1",
+        "url": "https://stream.radioparadise.com/mellow-flacm",
+        "chan": 1
+      },
+      {
+        "title": "Radio Paradise Rock Mix (FLAC)",
+        "uri": "webrp/2",
+        "url": "https://stream.radioparadise.com/rock-flacm",
+        "chan": 2
+      },
+      {
+        "title": "Radio Paradise Global Mix (FLAC)",
+        "uri": "webrp/3",
+        "url": "http://stream.radioparadise.com/global-flacm",
+        "chan": 3
+      },
+      {
+        "title": "Radio Paradise Beyond...(FLAC)",
+        "uri": "webrp/13",
+        "url": "http://stream.radioparadise.com/beyond-flacm",
+        "chan": 5
+      },
+      {
+        "title": "Radio Paradise Serenity (AAC 64k)",
+        "uri": "webrp/12",
+        "url": "http://stream.radioparadise.com/serenity"
+      },
+        {
+        "title": "Radio Paradise Radio 2050 (FLAC)",
+        "uri": "webrp/9",
+        "url": "http://stream.radioparadise.com/radio2050-flacm",
+        "chan": 9
+      },
+      {
+        "title": "Radio Paradise Main Mix (AAC 320k)",
+        "uri": "webrp/4",
+        "url": "http://stream-uk1.radioparadise.com/aac-320"
+      },
+      {
+        "title": "Radio Paradise Main Mix (AAC 128k)",
+        "uri": "webrp/5",
+        "url": "http://stream-uk1.radioparadise.com/aac-128"
+      },
+      {
+        "title": "Radio Paradise Main Mix (AAC 64k)",
+        "uri": "webrp/6",
+        "url": "http://stream-uk1.radioparadise.com/aac-64"
+      },
+      {
+        "title": "Radio Paradise Main Mix (MP3 192k)",
+        "uri": "webrp/7",
+        "url": "http://stream-uk1.radioparadise.com/mp3-192"
+      },
+      {
+        "title": "Radio Paradise Main Mix (MP3 128k)",
+        "uri": "webrp/8",
+        "url": "http://stream-uk1.radioparadise.com/mp3-128"
+      }
+    ]
+  }
+}

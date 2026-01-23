@@ -1,0 +1,38 @@
+{
+  "name": "Bluetoothremote",
+  "version": "0.0.13",
+  "description": "Bluetooth Remote",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "balbuze",
+  "license": "ISC",
+  "repository": "https://github.com/yourname/yourrepo",
+  "volumio_info": {
+    "prettyName": "Bluetooth_Remote",
+    "icon": "fa-bluetooth",
+    "plugin_type": "system_hardware",
+    "architectures": [
+      "amd64",
+      "armhf"
+    ],
+    "has_alsa_contribution": false,
+    "os": [
+      "bookworm"
+    ],
+    "details": "Easy connexion for Bluetooth Remote devices",
+    "changelog": "improved version"
+  },
+  "dependencies": {
+    "dbus-native": "^0.4.0",
+    "fs-extra": "*",
+    "kew": "*",
+    "v-conf": "*",
+    "socket.io-client": "2.3.0"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  }
+}

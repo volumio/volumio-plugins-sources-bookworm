@@ -1,0 +1,33 @@
+{
+  "PLUGIN_CONFIGURATION": "AutoStart Plugin Configuration",
+  "HEADING": "Enable this plugin in order to play music when Volumio starts",
+  "SAVE": "Save",
+
+  "AUTOSTART_SETTINGS": "Playback Settings",
+  "AUTOSTART_SETTINGS_DESC": "Configure automatic playback when Volumio starts.",
+  "AUTOSTART_SAVEFROMLASTPOS_DOC": "Play from the last position in the queue before Volumio was shutdown. Otherwise playback starts from the beginning of the queue.",
+  "AUTOSTART_SAVEFROMLASTPOS": "Play From Last Position",
+  "AUTOSTART_DELAY_DOC": "Additional delay after system ready and volume is set. Increase if your audio hardware needs extra time to initialize.",
+  "AUTOSTART_DELAY": "Additional Delay (milliseconds)",
+
+  "VOLUME_INFO": "Startup Volume Information",
+  "VOLUME_INFO_DESC1": "Startup volume can be configured in multiple locations: Volumio Playback Options, hardware or DAC plugins, and this plugin. Each applies at a different point during the boot sequence. When multiple settings are enabled, those applied later will override earlier ones - this can cause conflicts or unexpected volume levels. Review your settings in each location to ensure consistent behavior.",
+  "VOLUME_INFO2": "AutoStart Volume Timing",
+  "VOLUME_INFO_DESC2": "AutoStart applies its volume setting after the system is fully ready, immediately before playback begins. This makes it the last in the startup sequence, overriding any earlier volume settings.",
+
+  "VOLUME_SETTINGS": "Startup Volume",
+  "VOLUME_SETTINGS_DESC": "Set a specific volume level immediately before playback starts.",
+  "VOLUME_ENABLED": "Enable Startup Volume",
+  "VOLUME_ENABLED_DOC": "When enabled, volume will be set to the specified level after the system is fully ready, before playback starts.",
+  "VOLUME_LEVEL": "Volume Level (0-100)",
+  "VOLUME_LEVEL_DOC": "Volume level to set at startup. Value must be between 0 and 100. Note: This may not work if mixer is set to None.",
+
+  "POLLING_SETTINGS": "Advanced: System Ready Detection",
+  "POLLING_SETTINGS_DESC": "Controls how the plugin waits for Volumio to fully initialize before starting playback. Slower hardware like Raspberry Pi Zero may need longer timeouts.",
+  "SHOW_POLLING_SETTINGS": "Show Advanced Settings",
+  "SHOW_POLLING_SETTINGS_DOC": "Toggle to reveal timing configuration. Default wait time is 5 minutes (5000ms x 60 attempts).",
+  "POLLING_INTERVAL": "Check Interval (milliseconds)",
+  "POLLING_INTERVAL_DOC": "How often to check if system is ready. Default: 5000ms (5 seconds).",
+  "MAX_POLLING_ATTEMPTS": "Maximum Check Attempts",
+  "MAX_POLLING_ATTEMPTS_DOC": "Maximum number of checks before timeout. Default: 60 attempts."
+}

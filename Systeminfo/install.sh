@@ -3,6 +3,8 @@ echo "Installing systeminfo"
 
 configpath=/data/configuration/user_interface/Systeminfo
 
+sudo apt update
+sudo apt install -y sysbench
 ## Removing previous config
 if [ ! -f "${configpath}/config.json" ];
 then
@@ -21,12 +23,10 @@ if [ $cpu = "armv7l" ] || [ $cpu = "aarch64" ] || [ $cpu = "armv6l" ]
 then
 sudo cp /data/plugins/user_interface/Systeminfo/c/hw_params_arm /data/plugins/user_interface/Systeminfo/hw_params
 sudo chmod +x /data/plugins/user_interface/Systeminfo/hw_params
-sudo chmod +x /data/plugins/user_interface/Systeminfo/firmware.sh
 elif [ $cpu = "x86_64" ]
 then
 sudo cp /data/plugins/user_interface/Systeminfo/c/hw_params_amd64 /data/plugins/user_interface/Systeminfo/hw_params
 sudo chmod +x /data/plugins/user_interface/Systeminfo/hw_params
-sudo chmod +x /data/plugins/user_interface/Systeminfo/firmware.sh
 else
         echo "Sorry, cpu is $cpu and your device is not yet supported !"
 	echo "exit now..."

@@ -1,0 +1,1191 @@
+{
+  "page": {
+    "label": "TRANSLATE.PI_SCREEN_SETUP.PLUGIN_NAME"
+  },
+  "sections": [
+    {
+      "id": "section_hardware_info",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.SECTION_HARDWARE",
+      "icon": "fa-microchip",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.SECTION_HARDWARE_DESC",
+      "content": [
+        {
+          "id": "hw_model",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HW_MODEL",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "hw_soc",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HW_SOC",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "hw_ram",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HW_RAM",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "hw_outputs",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HW_OUTPUTS",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "hw_kms",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HW_KMS",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "hw_warnings",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HW_WARNINGS",
+          "value": "",
+          "readonly": true,
+          "hidden": true
+        }
+      ]
+    },
+    {
+      "id": "section_ota_drift",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.OTA_DRIFT_TITLE",
+      "icon": "fa-exclamation-triangle",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.OTA_DRIFT_DESC",
+      "hidden": true,
+      "content": [
+        {
+          "id": "drift_status",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DRIFT_STATUS",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "drift_errors",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DRIFT_ERRORS",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "drift_restore_btn",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.RESTORE_CONFIG",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.RESTORE_CONFIG_DOC",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "restoreAndReboot"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_migration_detected",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.MIGRATION_DETECTED_TITLE",
+      "icon": "fa-download",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.MIGRATION_DETECTED_DESC",
+      "hidden": true,
+      "content": [
+        {
+          "id": "migration_raw_display",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DETECTED_SETTINGS",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "migration_validate_btn",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.VALIDATE_IMPORT",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.VALIDATE_IMPORT_DOC",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "migrateValidate"
+          }
+        },
+        {
+          "id": "migration_asis_btn",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.IMPORT_ASIS",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.IMPORT_ASIS_DOC",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "migrateAsIs"
+          }
+        },
+        {
+          "id": "migration_skip_btn",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.SKIP_FRESH",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.SKIP_FRESH_DOC",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "migrateSkip"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_migration_review",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.MIGRATION_REVIEW_TITLE",
+      "icon": "fa-check-circle",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.MIGRATION_REVIEW_DESC",
+      "hidden": true,
+      "content": [
+        {
+          "id": "review_raw_lines",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.RAW_CONFIG",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "review_interpreted",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.INTERPRETED_SETTINGS",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "review_validation",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.VALIDATION_STATUS",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "review_accept_btn",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.ACCEPT_APPLY",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.ACCEPT_APPLY_DOC",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "migrateAccept"
+          }
+        },
+        {
+          "id": "review_reconfigure_btn",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.RECONFIGURE_FULL",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.RECONFIGURE_FULL_DOC",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "migrateReconfigure"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_step0_detect",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.STEP0_TITLE",
+      "icon": "fa-search",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.STEP0_DESC",
+      "hidden": true,
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/pi_screen_setup",
+        "method": "saveStep0"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.PI_SCREEN_SETUP.CONTINUE",
+        "data": [
+          "detect_mode"
+        ]
+      },
+      "content": [
+        {
+          "id": "detect_mode",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DETECT_MODE",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.DETECT_MODE_DOC",
+          "value": {
+            "value": "auto",
+            "label": ""
+          },
+          "options": []
+        }
+      ]
+    },
+    {
+      "id": "section_step1_output",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.STEP1_TITLE",
+      "icon": "fa-tv",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.STEP1_DESC",
+      "hidden": false,
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/pi_screen_setup",
+        "method": "saveStep1"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.PI_SCREEN_SETUP.CONTINUE",
+        "data": [
+          "primary_output"
+        ]
+      },
+      "content": [
+        {
+          "id": "primary_output",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.PRIMARY_OUTPUT",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.PRIMARY_OUTPUT_DOC",
+          "value": {
+            "value": "hdmi0",
+            "label": "HDMI"
+          },
+          "options": []
+        }
+      ]
+    },
+    {
+      "id": "section_step2_hdmi",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.STEP2_HDMI_TITLE",
+      "icon": "fa-plug",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.STEP2_HDMI_DESC",
+      "hidden": true,
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/pi_screen_setup",
+        "method": "saveStep2Hdmi"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.PI_SCREEN_SETUP.CONTINUE",
+        "data": [
+          "hdmi_mode",
+          "hdmi_display_preset",
+          "hdmi_custom_timings",
+          "hdmi_custom_params",
+          "hdmi_force_hotplug",
+          "hdmi_ignore_edid",
+          "hdmi_boost",
+          "hdmi_secondary_mode",
+          "hdmi_secondary_display_preset",
+          "hdmi_secondary_force_hotplug",
+          "hdmi_secondary_ignore_edid",
+          "hdmi_secondary_boost"
+        ]
+      },
+      "content": [
+        {
+          "id": "hdmi_primary_label",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.PRIMARY_OUTPUT",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "hdmi_mode",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HDMI_MODE",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.HDMI_MODE_DOC",
+          "value": {
+            "value": "screen_audio",
+            "label": ""
+          },
+          "options": []
+        },
+        {
+          "id": "hdmi_display_preset",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DISPLAY_PRESET",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.DISPLAY_PRESET_DOC",
+          "value": {
+            "value": "auto",
+            "label": "Auto Detect (EDID)"
+          },
+          "options": []
+        },
+        {
+          "id": "hdmi_custom_timings",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HDMI_CUSTOM_TIMINGS",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.HDMI_CUSTOM_TIMINGS_DOC",
+          "value": "",
+          "hidden": true
+        },
+        {
+          "id": "hdmi_custom_params",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HDMI_CUSTOM_PARAMS",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.HDMI_CUSTOM_PARAMS_DOC",
+          "value": "",
+          "hidden": true
+        },
+        {
+          "id": "hdmi_force_hotplug",
+          "element": "switch",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HDMI_FORCE_HOTPLUG",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.HDMI_FORCE_HOTPLUG_DOC",
+          "value": false
+        },
+        {
+          "id": "hdmi_ignore_edid",
+          "element": "switch",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HDMI_IGNORE_EDID",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.HDMI_IGNORE_EDID_DOC",
+          "value": false
+        },
+        {
+          "id": "hdmi_boost",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HDMI_BOOST",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.HDMI_BOOST_DOC",
+          "value": {
+            "value": 0,
+            "label": ""
+          },
+          "options": []
+        },
+        {
+          "id": "hdmi_secondary_label",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.SECONDARY_OUTPUT",
+          "value": "",
+          "readonly": true,
+          "hidden": true
+        },
+        {
+          "id": "hdmi_secondary_mode",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HDMI_MODE",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.HDMI_SECONDARY_MODE_DOC",
+          "value": {
+            "value": "none",
+            "label": ""
+          },
+          "options": [],
+          "hidden": true
+        },
+        {
+          "id": "hdmi_secondary_display_preset",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DISPLAY_PRESET",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.DISPLAY_PRESET_DOC",
+          "value": {
+            "value": "auto",
+            "label": "Auto Detect (EDID)"
+          },
+          "options": [],
+          "hidden": true
+        },
+        {
+          "id": "hdmi_secondary_force_hotplug",
+          "element": "switch",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HDMI_FORCE_HOTPLUG",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.HDMI_FORCE_HOTPLUG_DOC",
+          "value": false,
+          "hidden": true
+        },
+        {
+          "id": "hdmi_secondary_ignore_edid",
+          "element": "switch",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HDMI_IGNORE_EDID",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.HDMI_IGNORE_EDID_DOC",
+          "value": false,
+          "hidden": true
+        },
+        {
+          "id": "hdmi_secondary_boost",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HDMI_BOOST",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.HDMI_BOOST_DOC",
+          "value": {
+            "value": 0,
+            "label": ""
+          },
+          "options": [],
+          "hidden": true
+        },
+        {
+          "id": "step2_hdmi_back",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.BACK",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "goBack"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_step2_dsi",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.STEP2_DSI_TITLE",
+      "icon": "fa-desktop",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.STEP2_DSI_DESC",
+      "hidden": true,
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/pi_screen_setup",
+        "method": "saveStep2Dsi"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.PI_SCREEN_SETUP.CONTINUE",
+        "data": [
+          "dsi_overlay",
+          "dsi_custom_params"
+        ]
+      },
+      "content": [
+        {
+          "id": "dsi_overlay",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DSI_OVERLAY",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.DSI_OVERLAY_DOC",
+          "value": {
+            "value": "vc4-kms-dsi-7inch",
+            "label": ""
+          },
+          "options": []
+        },
+        {
+          "id": "dsi_custom_params",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DSI_CUSTOM_PARAMS",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.DSI_CUSTOM_PARAMS_DOC",
+          "value": ""
+        },
+        {
+          "id": "step2_dsi_back",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.BACK",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "goBack"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_step2_dpi",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.STEP2_DPI_TITLE",
+      "icon": "fa-th",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.STEP2_DPI_DESC",
+      "hidden": true,
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/pi_screen_setup",
+        "method": "saveStep2Dpi"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.PI_SCREEN_SETUP.CONTINUE",
+        "data": [
+          "dpi_overlay",
+          "dpi_custom_timing"
+        ]
+      },
+      "content": [
+        {
+          "id": "dpi_overlay",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DPI_OVERLAY",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.DPI_OVERLAY_DOC",
+          "value": {
+            "value": "",
+            "label": ""
+          },
+          "options": []
+        },
+        {
+          "id": "dpi_custom_timing",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DPI_CUSTOM_TIMING",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.DPI_CUSTOM_TIMING_DOC",
+          "value": ""
+        },
+        {
+          "id": "step2_dpi_back",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.BACK",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "goBack"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_step2_composite",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.STEP2_COMPOSITE_TITLE",
+      "icon": "fa-video-camera",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.STEP2_COMPOSITE_DESC",
+      "hidden": true,
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/pi_screen_setup",
+        "method": "saveStep2Composite"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.PI_SCREEN_SETUP.CONTINUE",
+        "data": [
+          "composite_mode",
+          "composite_aspect"
+        ]
+      },
+      "content": [
+        {
+          "id": "composite_mode",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.COMPOSITE_MODE",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.COMPOSITE_MODE_DOC",
+          "value": {
+            "value": "pal",
+            "label": "PAL"
+          },
+          "options": []
+        },
+        {
+          "id": "composite_aspect",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.COMPOSITE_ASPECT",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.COMPOSITE_ASPECT_DOC",
+          "value": {
+            "value": "4:3",
+            "label": "4:3"
+          },
+          "options": []
+        },
+        {
+          "id": "step2_composite_back",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.BACK",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "goBack"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_step2_custom",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.STEP2_CUSTOM_TITLE",
+      "icon": "fa-code",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.STEP2_CUSTOM_DESC",
+      "hidden": true,
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/pi_screen_setup",
+        "method": "saveStep2Custom"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.PI_SCREEN_SETUP.CONTINUE",
+        "data": [
+          "custom_overlay_line"
+        ]
+      },
+      "content": [
+        {
+          "id": "custom_overlay_line",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.CUSTOM_OVERLAY_LINE",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.CUSTOM_OVERLAY_LINE_DOC",
+          "value": ""
+        },
+        {
+          "id": "step2_custom_back",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.BACK",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "goBack"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_step2_audio",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.STEP2_AUDIO_TITLE",
+      "icon": "fa-volume-up",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.STEP2_AUDIO_DESC",
+      "hidden": true,
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/pi_screen_setup",
+        "method": "saveStep2Audio"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.PI_SCREEN_SETUP.CONTINUE",
+        "data": [
+          "audio_hdmi0_mode",
+          "audio_hdmi1_mode"
+        ]
+      },
+      "content": [
+        {
+          "id": "audio_hdmi0_label",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.OUTPUT_HDMI0",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "audio_hdmi0_mode",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HDMI_MODE",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.HDMI_AUDIO_MODE_DOC",
+          "value": {
+            "value": "none",
+            "label": ""
+          },
+          "options": []
+        },
+        {
+          "id": "audio_hdmi1_label",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.OUTPUT_HDMI1",
+          "value": "",
+          "readonly": true,
+          "hidden": true
+        },
+        {
+          "id": "audio_hdmi1_mode",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HDMI_MODE",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.HDMI_AUDIO_MODE_DOC",
+          "value": {
+            "value": "none",
+            "label": ""
+          },
+          "options": [],
+          "hidden": true
+        },
+        {
+          "id": "step2_audio_back",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.BACK",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "goBack"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_step3_rotation",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.STEP3_TITLE",
+      "icon": "fa-rotate-right",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.STEP3_DESC",
+      "hidden": true,
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/pi_screen_setup",
+        "method": "saveStep3"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.PI_SCREEN_SETUP.CONTINUE",
+        "data": [
+          "rotation",
+          "cmdline_video",
+          "cmdline_fbcon",
+          "cmdline_plymouth"
+        ]
+      },
+      "content": [
+        {
+          "id": "rotation",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.ROTATION",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.ROTATION_DOC",
+          "value": {
+            "value": 0,
+            "label": "0"
+          },
+          "options": []
+        },
+        {
+          "id": "cmdline_rotation_header",
+          "element": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.CMDLINE_ROTATION_HEADER",
+          "hidden": true
+        },
+        {
+          "id": "cmdline_video",
+          "element": "switch",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.CMDLINE_VIDEO",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.CMDLINE_VIDEO_DOC",
+          "value": true,
+          "hidden": true
+        },
+        {
+          "id": "cmdline_fbcon",
+          "element": "switch",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.CMDLINE_FBCON",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.CMDLINE_FBCON_DOC",
+          "value": true,
+          "hidden": true
+        },
+        {
+          "id": "cmdline_plymouth",
+          "element": "switch",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.CMDLINE_PLYMOUTH",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.CMDLINE_PLYMOUTH_DOC",
+          "value": true,
+          "hidden": true
+        },
+        {
+          "id": "step3_back",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.BACK",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "goBack"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_step4_kms",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.STEP4_TITLE",
+      "icon": "fa-memory",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.STEP4_DESC",
+      "hidden": true,
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/pi_screen_setup",
+        "method": "saveStep4"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.PI_SCREEN_SETUP.CONTINUE",
+        "data": [
+          "cma_option",
+          "cma_custom_mb"
+        ]
+      },
+      "content": [
+        {
+          "id": "cma_option",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.CMA_OPTION",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.CMA_OPTION_DOC",
+          "value": {
+            "value": "default",
+            "label": ""
+          },
+          "options": []
+        },
+        {
+          "id": "cma_custom_mb",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.CMA_CUSTOM_MB",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.CMA_CUSTOM_MB_DOC",
+          "value": 256,
+          "visibleIf": {
+            "field": "cma_option",
+            "value": "custom"
+          },
+          "attributes": [
+            {
+              "placeholder": 256
+            },
+            {
+              "min": 16
+            },
+            {
+              "max": 512
+            }
+          ]
+        },
+        {
+          "id": "step4_back",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.BACK",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "goBack"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_step5_ota",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.STEP5_TITLE",
+      "icon": "fa-refresh",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.STEP5_DESC",
+      "hidden": true,
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/pi_screen_setup",
+        "method": "saveStep5"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.PI_SCREEN_SETUP.CONTINUE",
+        "data": [
+          "ota_behavior"
+        ]
+      },
+      "content": [
+        {
+          "id": "ota_behavior",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.OTA_BEHAVIOR",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.OTA_BEHAVIOR_DOC",
+          "value": {
+            "value": "notify",
+            "label": ""
+          },
+          "options": []
+        },
+        {
+          "id": "step5_back",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.BACK",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "goBack"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_step6_preview",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.STEP6_TITLE",
+      "icon": "fa-eye",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.STEP6_DESC",
+      "hidden": true,
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/pi_screen_setup",
+        "method": "applyConfiguration"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.PI_SCREEN_SETUP.APPLY",
+        "data": []
+      },
+      "content": [
+        {
+          "id": "preview_summary",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.CONFIG_SUMMARY",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "preview_file",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.CONFIG_FILE",
+          "value": "/boot/videoconfig.txt",
+          "readonly": true
+        },
+        {
+          "id": "step6_back",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.BACK",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "goBack"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_current_config",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.SECTION_CURRENT_CONFIG",
+      "icon": "fa-file-text-o",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.SECTION_CURRENT_CONFIG_DESC",
+      "hidden": true,
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/pi_screen_setup",
+        "method": "saveOtaBehavior"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.PI_SCREEN_SETUP.SAVE",
+        "data": [
+          "ota_behavior_edit"
+        ]
+      },
+      "content": [
+        {
+          "id": "current_summary",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.CONFIG_SUMMARY",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "current_file",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.CONFIG_FILE",
+          "value": "/boot/videoconfig.txt",
+          "readonly": true
+        },
+        {
+          "id": "applied_date",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.APPLIED_DATE",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "ota_behavior_edit",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.OTA_BEHAVIOR",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.OTA_BEHAVIOR_DOC",
+          "value": {
+            "value": "notify",
+            "label": ""
+          },
+          "options": []
+        },
+        {
+          "id": "reconfigure_btn",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.RECONFIGURE",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.RECONFIGURE_DOC",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "resetWizard"
+          }
+        },
+        {
+          "id": "restore_section_label",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.RESTORE_OPTIONS",
+          "value": "",
+          "readonly": true,
+          "hidden": true
+        },
+        {
+          "id": "restore_point",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.RESTORE_POINT",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.RESTORE_POINT_DOC",
+          "value": {
+            "value": "",
+            "label": ""
+          },
+          "options": [],
+          "onChange": {
+            "type": "controller",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "saveRestorePointSelection"
+          }
+        },
+        {
+          "id": "restore_point_btn",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.RESTORE_SELECTED",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.RESTORE_SELECTED_DOC",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "restoreSelectedPoint",
+            "data": [
+              "restore_point"
+            ]
+          }
+        },
+        {
+          "id": "restore_factory_btn",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.RESTORE_FACTORY",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.RESTORE_FACTORY_DOC",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "restoreFactory"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_migration",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.SECTION_MIGRATION",
+      "icon": "fa-exchange",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.SECTION_MIGRATION_DESC",
+      "hidden": true,
+      "content": [
+        {
+          "id": "migration_detected",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.MIGRATION_DETECTED_LINES",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "migrate_btn",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.MIGRATE_NOW",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.MIGRATE_NOW_DOC",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "performMigration"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_database",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.SECTION_DATABASE",
+      "icon": "fa-database",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.SECTION_DATABASE_DESC",
+      "content": [
+        {
+          "id": "db_active_version",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DB_ACTIVE_VERSION",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "db_preset_count",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DB_PRESET_COUNT",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "db_check_update_btn",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DB_CHECK_UPDATE",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.DB_CHECK_UPDATE_DOC",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "checkForDatabaseUpdate"
+          }
+        },
+        {
+          "id": "db_revert_btn",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DB_REVERT",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.DB_REVERT_DOC",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "revertDatabase"
+          },
+          "hidden": true
+        }
+      ]
+    },
+    {
+      "id": "section_preset_manager",
+      "element": "section",
+      "label": "TRANSLATE.PI_SCREEN_SETUP.SECTION_PRESET_MANAGER",
+      "icon": "fa-cogs",
+      "description": "TRANSLATE.PI_SCREEN_SETUP.SECTION_PRESET_MANAGER_DESC",
+      "content": [
+        {
+          "id": "db_open_manager_btn",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DB_OPEN_MANAGER",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.DB_OPEN_MANAGER_DOC",
+          "onClick": {
+            "type": "openUrl",
+            "url": ""
+          }
+        },
+        {
+          "id": "pm_show_advanced",
+          "element": "switch",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.PM_SHOW_ADVANCED",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.PM_SHOW_ADVANCED_DOC",
+          "value": false
+        },
+        {
+          "id": "db_hostname_override",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DB_HOSTNAME_OVERRIDE",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.DB_HOSTNAME_OVERRIDE_DOC",
+          "value": "",
+          "visibleIf": {
+            "field": "pm_show_advanced",
+            "value": true
+          }
+        },
+        {
+          "id": "db_hostname_save_btn",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.SAVE",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "saveHostnameOverride",
+            "data": ["db_hostname_override"]
+          },
+          "visibleIf": {
+            "field": "pm_show_advanced",
+            "value": true
+          }
+        }
+      ]
+    }
+  ]
+}
