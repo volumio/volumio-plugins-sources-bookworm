@@ -1,11 +1,18 @@
 {
-  "PLUGIN_CONFIGURATION":"Mother Earth Radio Configuration",
-  "NO_CONFIGURATION_AVAILABLE":"No configuration available",	
   "PLUGIN_NAME": "Mother Earth Radio",
-  "WAIT_FOR_RADIO_CHANNEL":"Please Wait for radio channel....",
-  "STOP_RADIO_CHANNEL": "Stopped Mother Earth Radio",
-  "ERROR_STREAM_SERVER":  "There is a problem in {0} radio streaming server.",
-  "INCORRECT_RESPONSE":  "There is incorrect response from {0} radio streaming server.",
-  "SAVE":"Save",
-  "SAVE_CONFIG_MESSAGE":"Configuration saved successfully."
+  "WAIT_FOR_RADIO_CHANNEL": "Connecting to Mother Earth Radio...",
+  "ERROR_STREAM_SERVER": "Could not connect to stream server",
+  "SAVE_CONFIG_MESSAGE": "Configuration saved successfully",
+  
+  "DELAY_SETTINGS": "Network & Timing",
+  "HIGH_LATENCY_MODE": "High Latency Mode (for unstable networks)",
+  "HIGH_LATENCY_DOC": "Enable this if you experience dropouts or buffering issues. Increases the network buffer to 32 MB (~48 seconds of Hi-Res audio) and adds a 2 second metadata delay. Recommended for WiFi connections, long-distance listening, or unstable internet.",
+  "HIGH_LATENCY_ENABLED": "High Latency Mode enabled. Buffer increased to 32 MB. Restart playback for changes to take effect.",
+  "HIGH_LATENCY_DISABLED": "High Latency Mode disabled. Buffer restored to normal. Restart playback for changes to take effect.",
+  
+  "API_DELAY": "Additional Metadata Delay (ms)",
+  "DELAY_DOC": "Extra delay in milliseconds before displaying metadata. Use if metadata still appears before you hear the song change. Usually 0 is fine.",
+  
+  "ABOUT": "About",
+  "ABOUT_DESC": "Mother Earth Radio Plugin v1.4 - Uses Server-Sent Events (SSE) for real-time metadata. No polling needed - the server pushes track changes instantly."
 }

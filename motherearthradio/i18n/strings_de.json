@@ -1,0 +1,18 @@
+{
+  "PLUGIN_NAME": "Mother Earth Radio",
+  "WAIT_FOR_RADIO_CHANNEL": "Verbinde mit Mother Earth Radio...",
+  "ERROR_STREAM_SERVER": "Verbindung zum Stream-Server fehlgeschlagen",
+  "SAVE_CONFIG_MESSAGE": "Einstellungen gespeichert",
+  
+  "DELAY_SETTINGS": "Netzwerk & Timing",
+  "HIGH_LATENCY_MODE": "High Latency Modus (für instabile Netzwerke)",
+  "HIGH_LATENCY_DOC": "Aktivieren bei Aussetzern oder Puffer-Problemen. Erhöht den Netzwerk-Puffer auf 32 MB (~48 Sekunden Hi-Res Audio) und fügt 2 Sekunden Metadaten-Verzögerung hinzu. Empfohlen für WiFi, große Entfernungen oder instabiles Internet.",
+  "HIGH_LATENCY_ENABLED": "High Latency Modus aktiviert. Puffer auf 32 MB erhöht. Wiedergabe neu starten für Änderungen.",
+  "HIGH_LATENCY_DISABLED": "High Latency Modus deaktiviert. Puffer auf Normal zurückgesetzt. Wiedergabe neu starten für Änderungen.",
+  
+  "API_DELAY": "Zusätzliche Metadaten-Verzögerung (ms)",
+  "DELAY_DOC": "Extra Verzögerung in Millisekunden bevor Metadaten angezeigt werden. Verwenden wenn Metadaten immer noch vor dem Songwechsel erscheinen. Normalerweise ist 0 in Ordnung.",
+  
+  "ABOUT": "Über",
+  "ABOUT_DESC": "Mother Earth Radio Plugin v1.4 - Nutzt Server-Sent Events (SSE) für Echtzeit-Metadaten. Kein Polling nötig - der Server sendet Track-Änderungen sofort."
+}
