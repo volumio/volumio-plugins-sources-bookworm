@@ -1,0 +1,22 @@
+{
+  "PLUGIN_CONFIGURATION": "MetaRoon Configuration",
+  
+  "ROON_VITALS_SECTION": "Roon Connection Status",
+  "CORE_NAME": "Roon Core Name",
+  "CORE_HOST": "Roon Core Address",
+  "CURRENT_ZONE": "Active Zone",
+  "BROWSE_STATUS": "Library Browse",
+  
+  "ZONE_SELECTION_SECTION": "Zone Selection",
+  "ZONE_SELECTION_DESC": "Select which Roon zone this Volumio device should monitor and control. This allows you to use multiple Roon zones without conflicts.",
+  "SELECT_ZONE": "Select Zone",
+  "SELECT_ZONE_LABEL": "Roon Zone",
+  "SELECT_ZONE_DESC": "Choose the zone you want to control from this Volumio device",
+  
+  "ROON_RADIO_SECTION": "Roon Radio",
+  "ROON_RADIO_DESC": "Roon Radio automatically continues playback with similar tracks when your queue ends. Enable this to let Roon create an endless stream of music based on your listening.",
+  "AUTO_RADIO_LABEL": "Enable Roon Radio",
+  "AUTO_RADIO_DESC": "Automatically play similar music when your queue ends",
+  
+  "SAVE": "Save"
+}
