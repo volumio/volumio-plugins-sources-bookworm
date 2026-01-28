@@ -1,5 +1,5 @@
 import ytmusic, { type I18nKey } from '../YTMusicContext';
-import { type IBrowseResponse, type INextResponse, type ISearchResponse, YTNodes, Misc as YTMisc, type Helpers as YTHelpers, type IParsedResponse, PlaylistPanelContinuation, GridContinuation, MusicShelfContinuation, MusicPlaylistShelfContinuation, SectionListContinuation } from 'volumio-youtubei.js';
+import { type IBrowseResponse, type INextResponse, type ISearchResponse, YTNodes, Misc as YTMisc, type Helpers as YTHelpers, type IParsedResponse, PlaylistPanelContinuation, GridContinuation, MusicShelfContinuation, MusicPlaylistShelfContinuation, SectionListContinuation } from 'volumio-yt-support/dist/innertube';
 import {type BrowseContinuationEndpoint, type BrowseEndpoint, type EndpointOf, type SearchEndpoint, type WatchContinuationEndpoint, type WatchEndpoint} from '../types/Endpoint';
 import type Endpoint from '../types/Endpoint';
 import { EndpointType } from '../types/Endpoint';
@@ -7,7 +7,6 @@ import { type PageElement, type ContentItem } from '../types';
 import { type SectionItem } from '../types/PageElement';
 import EndpointHelper from '../util/EndpointHelper';
 import { type ContentOf, type PageContent, type WatchContent, type WatchContinuationContent } from '../types/Content';
-import { type TextRun } from 'volumio-youtubei.js/dist/src/parser/misc';
 import { type MetadataLyrics, type MetadataSyncedLyrics } from 'now-playing-common';
 
 type ParseableInnertubeResponse = INextResponse | ISearchResponse | IBrowseResponse | IParsedResponse;
@@ -417,9 +416,9 @@ export default class InnertubeResultParser {
       const textOneEndpoint = textOne.endpoint;
       if (textOneEndpoint && textOneStr) {
         const authorTextRun = textOne.runs?.find((run) => {
-          const runEndpoint = this.parseEndpoint((run as TextRun).endpoint, EndpointType.Browse);
+          const runEndpoint = this.parseEndpoint((run as YTMisc.TextRun).endpoint, EndpointType.Browse);
           return EndpointHelper.isChannelEndpoint(runEndpoint);
-        }) as TextRun;
+        }) as YTMisc.TextRun;
         const authorEndpoint = authorTextRun.endpoint;
         const channelId = this.parseEndpoint(authorEndpoint, EndpointType.Browse)?.payload.browseId;
         if (channelId) {
