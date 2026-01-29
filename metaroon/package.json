@@ -1,0 +1,40 @@
+{
+	"name": "metaroon",
+	"version": "1.0.0",
+	"description": "MetaRoon - Roon integration plugin with metadata support for Volumio",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Suyash Saluja",
+	"repository": "https://github.com/suyash691/volumio-plugins-sources-bookworm",
+	"volumio_info": {
+		"prettyName": "MetaRoon",
+		"icon": "fa-music",
+		"plugin_type": "music_service",
+		"os": [
+			"bookworm"
+		],
+		"details": "MetaRoon - Roon integration plugin with metadata support for Volumio",
+		"changelog": "",
+		"architectures": [
+			"amd64",
+			"armhf",
+			"i386"
+		]
+	},
+	"engines": {
+		"node": ">=14",
+		"volumio": ">=3"
+	},
+	"dependencies": {
+		"kew": "^0.7.0",
+		"v-conf": "^1.4.2",
+		"fs-extra": "^8.1.0",
+		"node-roon-api": "github:RoonLabs/node-roon-api",
+		"node-roon-api-transport": "github:RoonLabs/node-roon-api-transport",
+		"node-roon-api-image": "github:RoonLabs/node-roon-api-image",
+		"node-roon-api-browse": "github:RoonLabs/node-roon-api-browse"
+	},
+	"license": "ISC"
+}
