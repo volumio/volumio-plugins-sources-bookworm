@@ -578,7 +578,146 @@ metaroon.prototype.findBestPlayAction = function(items) {
 };
 
 metaroon.prototype.search = function(query) {
-	return libQ.resolve([]);
+	const self = this;
+	const defer = libQ.defer();
+
+	// Extract search string from query object
+	const searchString = query.value || query;
+	
+	if (!searchString || !self.roonBrowse || !self.roonCore) {
+		defer.resolve([]);
+		return defer.promise;
+	}
+
+	self.logger.info('metaroon: Searching for: ' + searchString);
+
+	// Use Roon's search hierarchy
+	const searchOpts = {
+		hierarchy: 'search',
+		input: searchString,
+		pop_all: true
+	};
+	if (self.zoneId) {
+		searchOpts.zone_or_output_id = self.zoneId;
+	}
+
+	self.roonBrowse.browse(searchOpts, (error, result) => {
+		if (error) {
+			self.logger.warn('metaroon: Search error: ' + error);
+			defer.resolve([]);
+			return;
+		}
+
+		// Load search results
+		self.roonBrowse.load({ hierarchy: 'search', offset: 0, count: 50 }, (loadErr, loadResult) => {
+			if (loadErr || !loadResult.items || loadResult.items.length === 0) {
+				defer.resolve([]);
+				return;
+			}
+
+			// Convert Roon results to Volumio search format
+			const searchResults = self.convertRoonSearchResults(loadResult.items, searchString);
+			defer.resolve(searchResults);
+		});
+	});
+
+	return defer.promise;
+};
+
+metaroon.prototype.convertRoonSearchResults = function(items, searchQuery) {
+	const self = this;
+	const results = [];
+
+	// Group items by type (Artists, Albums, Tracks, etc.)
+	const artists = [];
+	const albums = [];
+	const tracks = [];
+	const playlists = [];
+	const other = [];
+
+	for (const item of items) {
+		if (item.hint === 'header') continue;
+
+		const volumioItem = {
+			service: 'metaroon',
+			type: 'folder',
+			title: item.title || 'Unknown',
+			artist: item.subtitle || '',
+			album: '',
+			uri: item.item_key ? 'roon/' + item.item_key : 'roon',
+			albumart: item.image_key ? self.getRoonImageUrl(item.image_key, 200, 200) : '/albumart'
+		};
+
+		// Categorize based on title/subtitle patterns
+		const titleLower = (item.title || '').toLowerCase();
+		const subtitleLower = (item.subtitle || '').toLowerCase();
+
+		if (titleLower === 'artists' || subtitleLower.includes('artist')) {
+			// This is an artist category or artist item
+			volumioItem.type = 'folder';
+			artists.push(volumioItem);
+		} else if (titleLower === 'albums' || subtitleLower.includes('album')) {
+			volumioItem.type = 'folder';
+			albums.push(volumioItem);
+		} else if (titleLower === 'tracks' || item.hint === 'action_list') {
+			volumioItem.type = 'song';
+			tracks.push(volumioItem);
+		} else if (titleLower === 'playlists' || subtitleLower.includes('playlist')) {
+			volumioItem.type = 'folder';
+			playlists.push(volumioItem);
+		} else {
+			other.push(volumioItem);
+		}
+	}
+
+	// Build search result sections
+	if (artists.length > 0) {
+		results.push({
+			title: 'Roon Artists',
+			icon: 'fa fa-user',
+			availableListViews: ['list', 'grid'],
+			items: artists.slice(0, 10)
+		});
+	}
+
+	if (albums.length > 0) {
+		results.push({
+			title: 'Roon Albums',
+			icon: 'fa fa-album',
+			availableListViews: ['list', 'grid'],
+			items: albums.slice(0, 10)
+		});
+	}
+
+	if (tracks.length > 0) {
+		results.push({
+			title: 'Roon Tracks',
+			icon: 'fa fa-music',
+			availableListViews: ['list'],
+			items: tracks.slice(0, 20)
+		});
+	}
+
+	if (playlists.length > 0) {
+		results.push({
+			title: 'Roon Playlists',
+			icon: 'fa fa-list',
+			availableListViews: ['list'],
+			items: playlists.slice(0, 10)
+		});
+	}
+
+	// Add all other items as a general "Roon" section if we have them
+	if (other.length > 0 && results.length === 0) {
+		results.push({
+			title: 'Roon',
+			icon: 'fa fa-music',
+			availableListViews: ['list', 'grid'],
+			items: other.slice(0, 20)
+		});
+	}
+
+	return results;
 };
 
 metaroon.prototype.clearAddPlayTrack = function(track) {
