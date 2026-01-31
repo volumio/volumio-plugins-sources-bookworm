@@ -370,6 +370,14 @@ class ControllerNowPlaying {
         __classPrivateFieldGet(this, _ControllerNowPlaying_instances, "m", _ControllerNowPlaying_configureWeatherApi).call(this);
         __classPrivateFieldGet(this, _ControllerNowPlaying_instances, "m", _ControllerNowPlaying_notifyCommonSettingsUpdated).call(this, now_playing_common_1.CommonSettingsCategory.Localization);
     }
+    configSaveWeatherServiceSettings(data) {
+        const settings = {
+            openWeatherMapApiKey: (data['openWeatherMapApiKey'] ?? '').trim()
+        };
+        NowPlayingContext_1.default.setConfigValue('weather', settings);
+        __classPrivateFieldGet(this, _ControllerNowPlaying_instances, "m", _ControllerNowPlaying_configureWeatherApi).call(this);
+        NowPlayingContext_1.default.toast('success', NowPlayingContext_1.default.getI18n('NOW_PLAYING_SETTINGS_SAVED'));
+    }
     configSaveMetadataServiceSettings(data) {
         const token = data['geniusAccessToken'].trim();
         const settings = {
@@ -553,6 +561,7 @@ _ControllerNowPlaying_context = new WeakMap(), _ControllerNowPlaying_config = ne
     const daemonUIConf = uiconf.section_daemon;
     const localizationUIConf = uiconf.section_localization;
     const metadataServiceUIConf = uiconf.section_metadata_service;
+    const weatherServiceUIConf = uiconf.section_weather_service;
     const startupOptionsUIConf = uiconf.section_startup_options;
     const contentRegionUIConf = uiconf.section_content_region;
     const layoutsUIConf = uiconf.section_layouts;
@@ -644,6 +653,11 @@ _ControllerNowPlaying_context = new WeakMap(), _ControllerNowPlaying_config = ne
     const metadataServiceOptions = NowPlayingContext_1.default.getConfigValue('metadataService');
     metadataServiceUIConf.content.geniusAccessToken.value = metadataServiceOptions.geniusAccessToken;
     metadataServiceUIConf.content.excludeParenthesized.value = metadataServiceOptions.excludeParenthesized;
+    /**
+     * Weather Service conf
+     */
+    const weatherOptions = NowPlayingContext_1.default.getConfigValue('weather');
+    weatherServiceUIConf.content.openWeatherMapApiKey.value = weatherOptions?.openWeatherMapApiKey ?? '';
     metadataServiceUIConf.content.parenthesisType.value = {
         value: metadataServiceOptions.parenthesisType,
         label: ''
@@ -1972,9 +1986,11 @@ _ControllerNowPlaying_context = new WeakMap(), _ControllerNowPlaying_config = ne
     }
 }, _ControllerNowPlaying_configureWeatherApi = function _ControllerNowPlaying_configureWeatherApi() {
     const localization = CommonSettingsLoader_1.default.get(now_playing_common_1.CommonSettingsCategory.Localization);
+    const weather = NowPlayingContext_1.default.getConfigValue('weather');
     WeatherAPI_1.default.setConfig({
         coordinates: localization.geoCoordinates,
-        units: localization.unitSystem
+        units: localization.unitSystem,
+        apiKey: weather?.openWeatherMapApiKey ?? ''
     });
 }, _ControllerNowPlaying_broadcastPluginInfo = function _ControllerNowPlaying_broadcastPluginInfo() {
     const { message, payload } = this.getPluginInfo();

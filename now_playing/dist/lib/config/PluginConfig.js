@@ -3,11 +3,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PLUGIN_CONFIG_SCHEMA = exports.DefaultMetadataServiceOptions = void 0;
+exports.PLUGIN_CONFIG_SCHEMA = exports.DefaultMetadataServiceOptions = exports.DefaultWeatherOptions = void 0;
 const lodash_1 = __importDefault(require("lodash"));
 const now_playing_common_1 = require("now-playing-common");
 const ContentRegionSettings_1 = require("now-playing-common/dist/config/ContentRegionSettings");
 const StartupOptions_1 = require("now-playing-common/dist/config/StartupOptions");
+exports.DefaultWeatherOptions = {
+    openWeatherMapApiKey: ''
+};
 exports.DefaultMetadataServiceOptions = {
     geniusAccessToken: '',
     excludeParenthesized: false,
@@ -27,6 +30,7 @@ exports.PLUGIN_CONFIG_SCHEMA = {
     theme: { defaultValue: lodash_1.default.cloneDeep(now_playing_common_1.DefaultThemeSettings), json: true },
     performance: { defaultValue: lodash_1.default.cloneDeep(now_playing_common_1.DefaultPerformanceSettings), json: true },
     localization: { defaultValue: lodash_1.default.cloneDeep(now_playing_common_1.DefaultLocalizationSettings), json: true },
+    weather: { defaultValue: lodash_1.default.cloneDeep(exports.DefaultWeatherOptions), json: true },
     kioskDisplay: { defaultValue: 'default', json: false },
     configVersion: { defaultValue: null, json: false }
 };
