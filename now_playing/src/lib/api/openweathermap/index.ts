@@ -2,7 +2,8 @@ import np from '../../NowPlayingContext';
 
 const BASE_URL = 'https://openweathermap.org';
 const API_URL = 'https://api.openweathermap.org';
-const ONECALL_PATH = '/data/2.5/onecall';
+/** One Call API 3.0 (2.5 was retired June 2024; 2.5 returns 401) */
+const ONECALL_PATH = '/data/3.0/onecall';
 const WEATHER_PATH = '/data/2.5/weather';
 
 async function fetchPage(url: string, json = false) {
@@ -63,6 +64,7 @@ export interface OpenWeatherMapAPIGetWeatherResult {
 export default class OpenWeatherMapAPI {
 
   #apiKey: string | null;
+  #configuredApiKey: string | null;
   #apiKeyPromise: Promise<any> | null;
   #coordinates: { lat: number, lon: number } | null;
   #lang: string | null;
@@ -70,6 +72,7 @@ export default class OpenWeatherMapAPI {
 
   constructor(args?: OpenWeatherMapAPIConstructorOptions) {
     this.#apiKey = null;
+    this.#configuredApiKey = null;
     this.#apiKeyPromise = null;
     this.#coordinates = null;
     this.#lang = null;
@@ -103,7 +106,17 @@ export default class OpenWeatherMapAPI {
     this.#units = units;
   }
 
+  setApiKey(apiKey: string | null) {
+    this.#configuredApiKey = (apiKey && apiKey.trim()) ? apiKey.trim() : null;
+    if (this.#configuredApiKey) {
+      this.#apiKey = this.#configuredApiKey;
+    }
+  }
+
   async #getApiKey() {
+    if (this.#configuredApiKey) {
+      return this.#configuredApiKey;
+    }
     if (this.#apiKey) {
       return this.#apiKey;
     }

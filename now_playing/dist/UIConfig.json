@@ -234,7 +234,26 @@
       "label": "TRANSLATE.NOW_PLAYING_WEATHER_SERVICE",
       "description": "TRANSLATE.NOW_PLAYING_WEATHER_SERVICE_DESC",
       "icon": "fa-sun-o",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "user_interface/now_playing",
+        "method": "configSaveWeatherServiceSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.NOW_PLAYING_SAVE",
+        "data": [
+          "openWeatherMapApiKey"
+        ]
+      },
       "content": [
+        {
+          "id": "openWeatherMapApiKey",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.NOW_PLAYING_OPENWEATHERMAP_API_KEY",
+          "doc": "TRANSLATE.NOW_PLAYING_OPENWEATHERMAP_API_KEY_DESC",
+          "value": ""
+        },
         {
           "id": "clearWeatherCache",
           "element": "button",

@@ -34,6 +34,7 @@ const ICON_CODE_MAPPINGS: Record<string, string> = {
 export interface WeatherAPIConfig {
   coordinates: string;
   units: 'imperial' | 'metric' | 'standard';
+  apiKey?: string | null;
 }
 
 export interface WeatherAPIParsedConfig {
@@ -65,7 +66,8 @@ class WeatherAPI {
   }
 
   setConfig(opts: WeatherAPIConfig) {
-    const { coordinates, units } = opts;
+    const { coordinates, units, apiKey } = opts;
+    this.#api.setApiKey(apiKey ?? null);
     const coord = ConfigHelper.parseCoordinates(coordinates);
     let configChanged = false;
     const {coordinates: currentCoordinates, units: currentUnits} = this.#config;

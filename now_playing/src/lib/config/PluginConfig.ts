@@ -23,12 +23,21 @@ export interface PluginConfigSchema {
   theme: PluginConfigSchemaEntry<ThemeSettings, true>;
   performance: PluginConfigSchemaEntry<PerformanceSettings, true>;
   localization: PluginConfigSchemaEntry<LocalizationSettings, true>;
+  weather: PluginConfigSchemaEntry<WeatherOptions, true>;
   // What is being displayed on the kiosk screen (i.e. the one attached to Volumio device)?
   // - 'default' - Default Volumio interface
   // - 'nowPlaying' - Now Playing page served by the plugin
   kioskDisplay: PluginConfigSchemaEntry<'default' | 'nowPlaying'>;
   configVersion: PluginConfigSchemaEntry<string | null>;
 }
+
+export interface WeatherOptions {
+  openWeatherMapApiKey: string;
+}
+
+export const DefaultWeatherOptions: WeatherOptions = {
+  openWeatherMapApiKey: ''
+};
 
 export interface MetadataServiceOptions {
   geniusAccessToken: string;
@@ -74,6 +83,7 @@ export const PLUGIN_CONFIG_SCHEMA: PluginConfigSchema = {
   theme: { defaultValue: lodash.cloneDeep(DefaultThemeSettings), json: true },
   performance: { defaultValue: lodash.cloneDeep(DefaultPerformanceSettings), json: true },
   localization: { defaultValue: lodash.cloneDeep(DefaultLocalizationSettings), json: true },
+  weather: { defaultValue: lodash.cloneDeep(DefaultWeatherOptions), json: true },
   kioskDisplay: { defaultValue: 'default', json: false },
   configVersion: { defaultValue: null, json: false }
 };

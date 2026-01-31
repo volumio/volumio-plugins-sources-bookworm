@@ -60,7 +60,8 @@ class WeatherAPI {
         __classPrivateFieldGet(this, _WeatherAPI_cache, "f").clear();
     }
     setConfig(opts) {
-        const { coordinates, units } = opts;
+        const { coordinates, units, apiKey } = opts;
+        __classPrivateFieldGet(this, _WeatherAPI_api, "f").setApiKey(apiKey ?? null);
         const coord = ConfigHelper_1.default.parseCoordinates(coordinates);
         let configChanged = false;
         const { coordinates: currentCoordinates, units: currentUnits } = __classPrivateFieldGet(this, _WeatherAPI_config, "f");

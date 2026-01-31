@@ -57,6 +57,7 @@ class ControllerNowPlaying {
     const daemonUIConf = uiconf.section_daemon;
     const localizationUIConf = uiconf.section_localization;
     const metadataServiceUIConf = uiconf.section_metadata_service;
+    const weatherServiceUIConf = uiconf.section_weather_service;
     const startupOptionsUIConf = uiconf.section_startup_options;
     const contentRegionUIConf = uiconf.section_content_region;
     const layoutsUIConf = uiconf.section_layouts;
@@ -157,6 +158,12 @@ class ControllerNowPlaying {
     const metadataServiceOptions = np.getConfigValue('metadataService');
     metadataServiceUIConf.content.geniusAccessToken.value = metadataServiceOptions.geniusAccessToken;
     metadataServiceUIConf.content.excludeParenthesized.value = metadataServiceOptions.excludeParenthesized;
+
+    /**
+     * Weather Service conf
+     */
+    const weatherOptions = np.getConfigValue('weather');
+    weatherServiceUIConf.content.openWeatherMapApiKey.value = weatherOptions?.openWeatherMapApiKey ?? '';
     metadataServiceUIConf.content.parenthesisType.value = {
       value: metadataServiceOptions.parenthesisType,
       label: ''
@@ -1878,10 +1885,21 @@ class ControllerNowPlaying {
 
   #configureWeatherApi() {
     const localization = CommonSettingsLoader.get(CommonSettingsCategory.Localization);
+    const weather = np.getConfigValue('weather');
     weatherAPI.setConfig({
       coordinates: localization.geoCoordinates,
-      units: localization.unitSystem
+      units: localization.unitSystem,
+      apiKey: weather?.openWeatherMapApiKey ?? ''
     });
+  }
+
+  configSaveWeatherServiceSettings(data: Record<string, any>) {
+    const settings = {
+      openWeatherMapApiKey: (data['openWeatherMapApiKey'] ?? '').trim()
+    };
+    np.setConfigValue('weather', settings);
+    this.#configureWeatherApi();
+    np.toast('success', np.getI18n('NOW_PLAYING_SETTINGS_SAVED'));
   }
 
   configSaveMetadataServiceSettings(data: Record<string, any>) {

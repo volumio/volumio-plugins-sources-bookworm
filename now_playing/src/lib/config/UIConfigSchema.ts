@@ -51,6 +51,7 @@ export type UIConfigSectionContentKeyOf<K extends UIConfigSectionKey> =
     'enableSyncedLyrics' :
 
   K extends 'section_weather_service' ?
+    'openWeatherMapApiKey' | 
     'clearWeatherCache' :
 
   K extends 'section_startup_options' ?
@@ -364,6 +365,7 @@ export type UIConfigElementOf<K extends UIConfigSectionKey, C extends UIConfigSe
   ) : 
 
   K extends 'section_weather_service' ? (
+    C extends 'openWeatherMapApiKey' ? UIConfigInput<K, 'text'> :
     C extends 'clearWeatherCache' ? UIConfigButton<K> :
     never
   ) : 
