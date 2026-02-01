@@ -93,6 +93,10 @@ Starting from v0.7.0, the Now Playing plugin can query the relevant music servic
 
 ## Changelog
 
+1.0.4
+- The plugin now uses **One Call API 3.0** (`/data/3.0/onecall`).  
+- Config supports a `weather.openWeatherMapApiKey` value; the UI exposes it in the Weather Service section.
+
 1.0.3
 - Add 'Idle Screen -> Show Clock' setting ([@phts](https://github.com/phts) - [#18](https://github.com/patrickkfkan/volumio-now-playing/pull/18))
 - Fix wrong ownership of Node modules installed in `install.sh`, which prevents plugin from being uninstalled due to insufficient permissions to delete plugin directory.
