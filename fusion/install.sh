@@ -50,10 +50,13 @@ echo "creating sysytemd service"
 cat > /etc/systemd/system/fusiondsp.service <<EOC
 [Unit]
 Description=FusionDsp Daemon
-After=syslog.target
+After=syslog.target volumio.service
+Wants=volumio.service
 
 [Service]
 Type=simple
+# Delay startup to allow Volumio/CamillaDSP to start first
+ExecStartPre=/bin/sleep 5
 ExecStart=/data/plugins/audio_interface/fusiondsp/startcgui.sh
 Restart=always
 RestartSec=2
