@@ -1,6 +1,6 @@
 {
 	"name": "now_playing",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"description": "Provides a 'Now Playing' screen for your Volumio device.",
 	"main": "./dist/index.js",
 	"scripts": {
@@ -24,7 +24,7 @@
 		"icon": "fa-play-circle",
 		"boot_priority": 10,
 		"details": "Provides a 'Now Playing' screen for your Volumio device.",
-		"changelog": "",
+		"changelog": "Update Weather API Key handling, Fix issue with geo-tz installation",
 		"architectures": [
 			"amd64",
 			"armhf"
@@ -48,7 +48,7 @@
 		"@typescript-eslint/eslint-plugin": "^8.6.0",
 		"@typescript-eslint/parser": "^8.6.0",
 		"eslint": "^9.10.0",
-		"geo-tz": "^8.0.4",
+		"geo-tz": "^8.1.4",
 		"typescript": "^5.5.4",
 		"typescript-eslint": "^8.6.0",
 		"winston": "^3.8.2"

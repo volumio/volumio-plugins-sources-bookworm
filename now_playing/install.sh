@@ -10,7 +10,7 @@ cd /data/plugins/user_interface/now_playing
 # Remove geo-tz from devDependencies
 sed -i '/"geo-tz"/d' package.json
 # Run npm as volumio user to avoid root being set as owner of geo-tz files
-su volumio -c "npm i --production --save geo-tz@\"^8.0.4\""
+su volumio -c "npm i --production --save geo-tz@\"^8.1.4\""
 
 echo "Creating user directories (if not exist)"
 mkdir -p "${CONFIG_BAK_DIR}"
