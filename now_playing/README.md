@@ -93,6 +93,10 @@ Starting from v0.7.0, the Now Playing plugin can query the relevant music servic
 
 ## Changelog
 
+1.0.6
+- Weather cache duration is now a dropdown with preset options (10 min–24 h).
+- Improved weather error handling: clearer “not configured” messages and `WEATHER_NOT_CONFIGURED` code for client UI.
+
 1.0.4
 - The plugin now uses **One Call API 3.0** (`/data/3.0/onecall`).  
 - Config supports a `weather.openWeatherMapApiKey` value; the UI exposes it in the Weather Service section.
