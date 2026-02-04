@@ -7,7 +7,7 @@ To clafiry the version you are currently using, run ```lsb_release -a``` into a 
 <hr>
 
 
-## Evo Sabre as a Volumio 3 Plugin VERSION 2.
+## Evo Sabre as a Volumio 4 Plugin VERSION 2.
 
 This plugin has two main purposes : 
 * Installing the EVO-Sabre secondary OLED display (rightmost display) to work with Volumio playback system.
