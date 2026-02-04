@@ -1,0 +1,662 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_NAME"
+  },
+  "sections": [
+    {
+      "id": "section_status",
+      "element": "section",
+      "label": "TRANSLATE.DEVICE_STATUS",
+      "icon": "fa-info-circle",
+      "description": "TRANSLATE.DEVICE_STATUS_DOC",
+      "content": [
+        {
+          "id": "device_detected",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.DEVICE_STATUS",
+          "value": "",
+          "attributes": [
+            {"readonly": true}
+          ]
+        },
+        {
+          "id": "battery_level",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.BATTERY_LEVEL",
+          "value": "",
+          "attributes": [
+            {"readonly": true}
+          ]
+        },
+        {
+          "id": "battery_status",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.BATTERY_STATUS",
+          "value": "",
+          "attributes": [
+            {"readonly": true}
+          ]
+        },
+        {
+          "id": "cpu_temperature",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.CPU_TEMPERATURE",
+          "value": "",
+          "attributes": [
+            {"readonly": true}
+          ]
+        },
+        {
+          "id": "fan_speed",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.FAN_SPEED",
+          "value": "",
+          "attributes": [
+            {"readonly": true}
+          ]
+        },
+        {
+          "id": "lid_status",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.LID_STATUS",
+          "value": "",
+          "attributes": [
+            {"readonly": true}
+          ]
+        },
+        {
+          "id": "refresh_status",
+          "element": "button",
+          "label": "TRANSLATE.REFRESH_STATUS",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/argon_one_up",
+            "method": "refreshStatus"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_fan",
+      "element": "section",
+      "label": "TRANSLATE.FAN_SETTINGS",
+      "icon": "fa-fan",
+      "description": "TRANSLATE.FAN_SETTINGS_DOC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/argon_one_up",
+        "method": "saveFanSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "fan_mode",
+          "fan_manual_speed",
+          "fan_temp_low",
+          "fan_speed_low",
+          "fan_temp_med",
+          "fan_speed_med",
+          "fan_temp_high",
+          "fan_speed_high"
+        ]
+      },
+      "content": [
+        {
+          "id": "fan_mode",
+          "element": "select",
+          "label": "TRANSLATE.FAN_MODE",
+          "doc": "TRANSLATE.FAN_MODE_DOC",
+          "value": {
+            "value": "auto",
+            "label": "TRANSLATE.FAN_MODE_AUTO"
+          },
+          "options": [
+            {
+              "value": "auto",
+              "label": "TRANSLATE.FAN_MODE_AUTO"
+            },
+            {
+              "value": "manual",
+              "label": "TRANSLATE.FAN_MODE_MANUAL"
+            }
+          ]
+        },
+        {
+          "id": "fan_manual_speed",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.FAN_MANUAL_SPEED",
+          "doc": "TRANSLATE.FAN_MANUAL_SPEED_DOC",
+          "value": 50,
+          "attributes": [
+            {
+              "min": 0,
+              "max": 100,
+              "step": 5
+            }
+          ],
+          "visibleIf": {
+            "field": "fan_mode",
+            "value": "manual"
+          }
+        },
+        {
+          "id": "fan_temp_low",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.FAN_TEMP_LOW",
+          "doc": "TRANSLATE.FAN_TEMP_LOW_DOC",
+          "value": 45,
+          "attributes": [
+            {
+              "min": 30,
+              "max": 70,
+              "step": 1
+            }
+          ],
+          "visibleIf": {
+            "field": "fan_mode",
+            "value": "auto"
+          }
+        },
+        {
+          "id": "fan_speed_low",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.FAN_SPEED_LOW",
+          "doc": "TRANSLATE.FAN_SPEED_LOW_DOC",
+          "value": 25,
+          "attributes": [
+            {
+              "min": 0,
+              "max": 100,
+              "step": 5
+            }
+          ],
+          "visibleIf": {
+            "field": "fan_mode",
+            "value": "auto"
+          }
+        },
+        {
+          "id": "fan_temp_med",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.FAN_TEMP_MED",
+          "doc": "TRANSLATE.FAN_TEMP_MED_DOC",
+          "value": 55,
+          "attributes": [
+            {
+              "min": 30,
+              "max": 80,
+              "step": 1
+            }
+          ],
+          "visibleIf": {
+            "field": "fan_mode",
+            "value": "auto"
+          }
+        },
+        {
+          "id": "fan_speed_med",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.FAN_SPEED_MED",
+          "doc": "TRANSLATE.FAN_SPEED_MED_DOC",
+          "value": 50,
+          "attributes": [
+            {
+              "min": 0,
+              "max": 100,
+              "step": 5
+            }
+          ],
+          "visibleIf": {
+            "field": "fan_mode",
+            "value": "auto"
+          }
+        },
+        {
+          "id": "fan_temp_high",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.FAN_TEMP_HIGH",
+          "doc": "TRANSLATE.FAN_TEMP_HIGH_DOC",
+          "value": 65,
+          "attributes": [
+            {
+              "min": 40,
+              "max": 85,
+              "step": 1
+            }
+          ],
+          "visibleIf": {
+            "field": "fan_mode",
+            "value": "auto"
+          }
+        },
+        {
+          "id": "fan_speed_high",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.FAN_SPEED_HIGH",
+          "doc": "TRANSLATE.FAN_SPEED_HIGH_DOC",
+          "value": 100,
+          "attributes": [
+            {
+              "min": 0,
+              "max": 100,
+              "step": 5
+            }
+          ],
+          "visibleIf": {
+            "field": "fan_mode",
+            "value": "auto"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_lid",
+      "element": "section",
+      "label": "TRANSLATE.LID_SETTINGS",
+      "icon": "fa-box",
+      "description": "TRANSLATE.LID_SETTINGS_DOC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/argon_one_up",
+        "method": "saveLidSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "lid_action",
+          "lid_shutdown_delay"
+        ]
+      },
+      "content": [
+        {
+          "id": "lid_action",
+          "element": "select",
+          "label": "TRANSLATE.LID_ACTION",
+          "doc": "TRANSLATE.LID_ACTION_DOC",
+          "value": {
+            "value": "nothing",
+            "label": "TRANSLATE.LID_ACTION_NOTHING"
+          },
+          "options": [
+            {
+              "value": "nothing",
+              "label": "TRANSLATE.LID_ACTION_NOTHING"
+            },
+            {
+              "value": "shutdown",
+              "label": "TRANSLATE.LID_ACTION_SHUTDOWN"
+            }
+          ]
+        },
+        {
+          "id": "lid_shutdown_delay",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.LID_SHUTDOWN_DELAY",
+          "doc": "TRANSLATE.LID_SHUTDOWN_DELAY_DOC",
+          "value": 5,
+          "attributes": [
+            {
+              "min": 1,
+              "max": 120,
+              "step": 1
+            }
+          ],
+          "visibleIf": {
+            "field": "lid_action",
+            "value": "shutdown"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_power",
+      "element": "section",
+      "label": "TRANSLATE.POWER_SETTINGS",
+      "icon": "fa-power-off",
+      "description": "TRANSLATE.POWER_SETTINGS_DOC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/argon_one_up",
+        "method": "savePowerSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "power_double_action",
+          "power_long_action"
+        ]
+      },
+      "content": [
+        {
+          "id": "power_double_action",
+          "element": "select",
+          "label": "TRANSLATE.POWER_DOUBLE_ACTION",
+          "doc": "TRANSLATE.POWER_DOUBLE_ACTION_DOC",
+          "value": {
+            "value": "reboot",
+            "label": "TRANSLATE.POWER_ACTION_REBOOT"
+          },
+          "options": [
+            {
+              "value": "nothing",
+              "label": "TRANSLATE.POWER_ACTION_NOTHING"
+            },
+            {
+              "value": "reboot",
+              "label": "TRANSLATE.POWER_ACTION_REBOOT"
+            },
+            {
+              "value": "shutdown",
+              "label": "TRANSLATE.POWER_ACTION_SHUTDOWN"
+            }
+          ]
+        },
+        {
+          "id": "power_long_action",
+          "element": "select",
+          "label": "TRANSLATE.POWER_LONG_ACTION",
+          "doc": "TRANSLATE.POWER_LONG_ACTION_DOC",
+          "value": {
+            "value": "shutdown",
+            "label": "TRANSLATE.POWER_ACTION_SHUTDOWN"
+          },
+          "options": [
+            {
+              "value": "nothing",
+              "label": "TRANSLATE.POWER_ACTION_NOTHING"
+            },
+            {
+              "value": "reboot",
+              "label": "TRANSLATE.POWER_ACTION_REBOOT"
+            },
+            {
+              "value": "shutdown",
+              "label": "TRANSLATE.POWER_ACTION_SHUTDOWN"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section_battery",
+      "element": "section",
+      "label": "TRANSLATE.BATTERY_SETTINGS",
+      "icon": "fa-battery-half",
+      "description": "TRANSLATE.BATTERY_SETTINGS_DOC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/argon_one_up",
+        "method": "saveBatterySettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "battery_warn_level",
+          "battery_critical_level",
+          "battery_critical_action"
+        ]
+      },
+      "content": [
+        {
+          "id": "battery_warn_level",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.BATTERY_WARN_LEVEL",
+          "doc": "TRANSLATE.BATTERY_WARN_LEVEL_DOC",
+          "value": 20,
+          "attributes": [
+            {
+              "min": 5,
+              "max": 50,
+              "step": 5
+            }
+          ]
+        },
+        {
+          "id": "battery_critical_level",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.BATTERY_CRITICAL_LEVEL",
+          "doc": "TRANSLATE.BATTERY_CRITICAL_LEVEL_DOC",
+          "value": 5,
+          "attributes": [
+            {
+              "min": 1,
+              "max": 20,
+              "step": 1
+            }
+          ]
+        },
+        {
+          "id": "battery_critical_action",
+          "element": "select",
+          "label": "TRANSLATE.BATTERY_CRITICAL_ACTION",
+          "doc": "TRANSLATE.BATTERY_CRITICAL_ACTION_DOC",
+          "value": {
+            "value": "shutdown",
+            "label": "TRANSLATE.BATTERY_ACTION_SHUTDOWN"
+          },
+          "options": [
+            {
+              "value": "warn",
+              "label": "TRANSLATE.BATTERY_ACTION_WARN"
+            },
+            {
+              "value": "shutdown",
+              "label": "TRANSLATE.BATTERY_ACTION_SHUTDOWN"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section_keyboard",
+      "element": "section",
+      "label": "TRANSLATE.KEYBOARD_SETTINGS",
+      "icon": "fa-keyboard-o",
+      "description": "TRANSLATE.KEYBOARD_SETTINGS_DOC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/argon_one_up",
+        "method": "saveKeyboardSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "keyboard_handle_volume",
+          "keyboard_custom_script_enabled",
+          "keyboard_custom_script_path",
+          "keyboard_custom_script_name"
+        ]
+      },
+      "content": [
+        {
+          "id": "keyboard_handle_volume",
+          "element": "switch",
+          "label": "TRANSLATE.KEYBOARD_HANDLE_VOLUME",
+          "doc": "TRANSLATE.KEYBOARD_HANDLE_VOLUME_DOC",
+          "value": false
+        },
+        {
+          "id": "keyboard_custom_script_enabled",
+          "element": "switch",
+          "label": "TRANSLATE.KEYBOARD_USE_CUSTOM_SCRIPT",
+          "doc": "TRANSLATE.KEYBOARD_USE_CUSTOM_SCRIPT_DOC",
+          "value": false,
+          "visibleIf": {
+            "field": "keyboard_handle_volume",
+            "value": true
+          }
+        },
+        {
+          "id": "keyboard_custom_script_path",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.KEYBOARD_CUSTOM_SCRIPT_PATH",
+          "doc": "TRANSLATE.KEYBOARD_CUSTOM_SCRIPT_PATH_DOC",
+          "value": "",
+          "visibleIf": {
+            "field": "keyboard_custom_script_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "keyboard_custom_script_name",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.KEYBOARD_CUSTOM_SCRIPT_NAME",
+          "doc": "TRANSLATE.KEYBOARD_CUSTOM_SCRIPT_NAME_DOC",
+          "value": "",
+          "visibleIf": {
+            "field": "keyboard_custom_script_enabled",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_eeprom",
+      "element": "section",
+      "label": "TRANSLATE.EEPROM_SETTINGS",
+      "icon": "fa-microchip",
+      "description": "TRANSLATE.EEPROM_SETTINGS_DOC",
+      "content": [
+        {
+          "id": "psu_current_status",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PSU_CURRENT_STATUS",
+          "value": "",
+          "attributes": [
+            {"readonly": true}
+          ]
+        },
+        {
+          "id": "apply_eeprom",
+          "element": "button",
+          "label": "TRANSLATE.APPLY_EEPROM",
+          "doc": "TRANSLATE.PSU_MAX_CURRENT_DOC",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/argon_one_up",
+            "method": "applyEepromSettings"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_advanced",
+      "element": "section",
+      "label": "TRANSLATE.ADVANCED_SETTINGS",
+      "icon": "fa-cogs",
+      "description": "TRANSLATE.ADVANCED_SETTINGS_DOC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/argon_one_up",
+        "method": "saveAdvancedSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "show_advanced",
+          "debug_logging",
+          "i2c_bus",
+          "battery_address",
+          "fan_address"
+        ]
+      },
+      "content": [
+        {
+          "id": "show_advanced",
+          "element": "switch",
+          "label": "TRANSLATE.SHOW_ADVANCED",
+          "doc": "TRANSLATE.SHOW_ADVANCED_DOC",
+          "value": false
+        },
+        {
+          "id": "debug_logging",
+          "element": "switch",
+          "label": "TRANSLATE.DEBUG_LOGGING",
+          "doc": "TRANSLATE.DEBUG_LOGGING_DOC",
+          "value": false,
+          "visibleIf": {
+            "field": "show_advanced",
+            "value": true
+          }
+        },
+        {
+          "id": "i2c_bus",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.I2C_BUS",
+          "doc": "TRANSLATE.I2C_BUS_DOC",
+          "value": 1,
+          "attributes": [
+            {
+              "min": 0,
+              "max": 10,
+              "step": 1
+            }
+          ],
+          "visibleIf": {
+            "field": "show_advanced",
+            "value": true
+          }
+        },
+        {
+          "id": "battery_address",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.BATTERY_ADDRESS",
+          "doc": "TRANSLATE.BATTERY_ADDRESS_DOC",
+          "value": "0x64",
+          "visibleIf": {
+            "field": "show_advanced",
+            "value": true
+          }
+        },
+        {
+          "id": "fan_address",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.FAN_ADDRESS",
+          "doc": "TRANSLATE.FAN_ADDRESS_DOC",
+          "value": "0x1a",
+          "visibleIf": {
+            "field": "show_advanced",
+            "value": true
+          }
+        },
+        {
+          "id": "reset_defaults",
+          "element": "button",
+          "label": "TRANSLATE.RESET_DEFAULTS",
+          "doc": "TRANSLATE.RESET_DEFAULTS_DOC",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/argon_one_up",
+            "method": "resetDefaults"
+          },
+          "visibleIf": {
+            "field": "show_advanced",
+            "value": true
+          }
+        }
+      ]
+    }
+  ]
+}
