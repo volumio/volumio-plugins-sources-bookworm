@@ -1,10 +1,10 @@
 {
   "gpio_configuration": {
-  "type": "boolean",
-	"value": true
+    "type": "boolean",
+    "value": true
   },
   "enable_gpio17": {
-	"type": "boolean",
-	"value": false
+    "type": "boolean",
+    "value": false
   }
 }
