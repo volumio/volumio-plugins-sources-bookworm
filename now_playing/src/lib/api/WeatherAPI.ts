@@ -35,6 +35,7 @@ export interface WeatherAPIConfig {
   coordinates: string;
   units: 'imperial' | 'metric' | 'standard';
   apiKey?: string | null;
+  cacheMinutes?: number;
 }
 
 export interface WeatherAPIParsedConfig {
@@ -66,8 +67,10 @@ class WeatherAPI {
   }
 
   setConfig(opts: WeatherAPIConfig) {
-    const { coordinates, units, apiKey } = opts;
+    const { coordinates, units, apiKey, cacheMinutes } = opts;
     this.#api.setApiKey(apiKey ?? null);
+    const minutes = Math.min(1440, Math.max(10, cacheMinutes ?? 10));
+    this.#cache.setTTL('weather', minutes * 60);
     const coord = ConfigHelper.parseCoordinates(coordinates);
     let configChanged = false;
     const {coordinates: currentCoordinates, units: currentUnits} = this.#config;
@@ -319,7 +322,9 @@ class WeatherAPI {
   async fetchInfo() {
     const config = this.#config;
     if (!this.#isConfigValid(config)) {
-      throw Error(np.getI18n('NOW_PLAYING_ERR_WEATHER_MISCONFIG'));
+      const err = new Error(np.getI18n('NOW_PLAYING_ERR_WEATHER_MISCONFIG')) as Error & { code?: string };
+      err.code = 'WEATHER_NOT_CONFIGURED';
+      throw err;
     }
     try {
       const cacheKey = md5(JSON.stringify(this.#config));
@@ -327,7 +332,13 @@ class WeatherAPI {
     }
     catch (e: any) {
       const msg = np.getI18n('NOW_PLAYING_ERR_WEATHER_FETCH') + (e.message ? `: ${e.message}` : '');
-      throw Error(msg);
+      const err = new Error(msg) as Error & { code?: string };
+      const notConfigured = e?.code === 'WEATHER_NOT_CONFIGURED' ||
+        (typeof e?.message === 'string' && (e.message.includes('not configured') || e.message.includes('not set up') || e.message.includes('missing geographic')));
+      if (notConfigured) {
+        err.code = 'WEATHER_NOT_CONFIGURED';
+      }
+      throw err;
     }
   }
 
