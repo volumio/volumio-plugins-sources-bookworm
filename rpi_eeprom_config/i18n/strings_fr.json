@@ -65,5 +65,7 @@
   "APPLY_AND_REBOOT": "Appliquer la configuration et redemarrer",
   "RISK_ACKNOWLEDGED": "Je comprends les risques et veux appliquer les modifications",
   "RISK_ACKNOWLEDGED_DOC": "AVERTISSEMENT: La modification des parametres EEPROM peut empecher votre Raspberry Pi de demarrer. Assurez-vous d'avoir examine tous les parametres prepares ci-dessus et d'avoir une carte SD de secours ou une methode de recuperation disponible. Les modifications necessitent un redemarrage pour prendre effet.",
-  "SAVE_CONFIGURATION": "Enregistrer la configuration et redemarrer"
+  "SAVE_CONFIGURATION": "Enregistrer la configuration et redemarrer",
+  "RTC_BATTERY_CHARGING": "Charge de la batterie RTC",
+  "RTC_BATTERY_CHARGING_DOC": "Activer la charge de la batterie de secours RTC lorsque le Pi est alimente (Raspberry Pi 5 / 500+ / CM5 uniquement). Utilise le connecteur de batterie RTC officiel. Note : Certains utilisateurs signalent des problemes RTC lors de l'activation ; si la RTC cesse de fonctionner, desactivez cette option. Le parametre est enregistre dans userconfig.txt (conserve lors des mises a jour OTA)."
 }
