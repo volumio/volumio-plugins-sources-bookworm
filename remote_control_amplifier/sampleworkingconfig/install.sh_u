@@ -1,0 +1,6 @@
+apt-get update
+apt-get install lirc
+systemctl enable lirc
+apt install binutils
+apt install gcc-4.9
+apt install gcc
