@@ -71,6 +71,7 @@ class Mapper {
                 'allowed';
         const transcodings = mediaInfo?.transcodings?.map((t) => ({
             url: t.url,
+            preset: t.preset,
             protocol: t.protocol,
             mimeType: t.mimeType,
             quality: t.quality
@@ -85,6 +86,7 @@ class Mapper {
             playableState,
             duration: data.durations.playback,
             transcodings,
+            trackAuthorization: data.mediaInfo.trackAuthorization,
             user: user ? await this.mapUser(user) : null
         };
         return result;

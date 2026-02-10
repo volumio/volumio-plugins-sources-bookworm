@@ -16,7 +16,9 @@
       "saveButton": {
         "label": "TRANSLATE.SOUNDCLOUD_SAVE",
         "data": [
+          "credentialsType",
           "accessToken",
+          "cookie",
           "locale",
           "itemsPerPage",
           "itemsPerSection",
@@ -26,12 +28,35 @@
       },
       "content": [
         {
+          "id": "credentialsType",
+          "element": "select",
+          "label": "TRANSLATE.SOUNDCLOUD_CREDENTIALS_TYPE",
+          "value": {
+            "label": "TRANSLATE.SOUNDCLOUD_ACCESS_TOKEN",
+            "value": "accessToken"
+          },
+          "options": [
+            {
+              "label": "TRANSLATE.SOUNDCLOUD_ACCESS_TOKEN",
+              "value": "accessToken"
+            },
+            {
+              "label": "TRANSLATE.SOUNDCLOUD_COOKIE",
+              "value": "cookie"
+            }
+          ]
+        },
+        {
           "id": "accessToken",
           "element": "input",
           "type": "text",
           "label": "TRANSLATE.SOUNDCLOUD_ACCESS_TOKEN",
           "doc": "TRANSLATE.SOUNDCLOUD_DOC_ACCESS_TOKEN",
-          "value": ""
+          "value": "",
+          "visibleIf": {
+            "field": "credentialsType",
+            "value": "accessToken"
+          }
         },
         {
           "id": "accessTokenGuide",
@@ -40,6 +65,35 @@
           "onClick": {
             "type": "openUrl",
             "url": "https://github.com/patrickkfkan/soundcloud-fetch/wiki/How-to-obtain-an-access-token"
+          },
+          "visibleIf": {
+            "field": "credentialsType",
+            "value": "accessToken"
+          }
+        },
+        {
+          "id": "cookie",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.SOUNDCLOUD_COOKIE",
+          "doc": "TRANSLATE.SOUNDCLOUD_DOC_COOKIE",
+          "value": "",
+          "visibleIf": {
+            "field": "credentialsType",
+            "value": "cookie"
+          }
+        },
+        {
+          "id": "cookieGuide",
+          "element": "button",
+          "label": "TRANSLATE.SOUNDCLOUD_COOKIE_GUIDE",
+          "onClick": {
+            "type": "openUrl",
+            "url": "https://github.com/patrickkfkan/soundcloud-fetch/wiki/How-to-obtain-a-cookie"
+          },
+          "visibleIf": {
+            "field": "credentialsType",
+            "value": "cookie"
           }
         },
         {
@@ -93,7 +147,6 @@
         "data": [
           "skipPreviewTracks",
           "addPlayedToHistory",
-          "longStreamFormat",
           "logTranscodings"
         ]
       },
@@ -109,14 +162,6 @@
           "element": "switch",
           "label": "TRANSLATE.SOUNDCLOUD_ADD_PLAYED_TO_HISTORY",
           "value": true
-        },
-        {
-          "id": "longStreamFormat",
-          "element": "select",
-          "label": "TRANSLATE.SOUNDCLOUD_LONG_STREAM_FMT",
-          "doc": "TRANSLATE.SOUNDCLOUD_DOC_LONG_STREAM_FMT",
-          "value": {},
-          "options": []
         },
         {
           "id": "logTranscodings",

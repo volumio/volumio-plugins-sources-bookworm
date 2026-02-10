@@ -172,7 +172,7 @@ export default class MeModel extends BaseModel {
   }
 
   async addToPlayHistory(track: TrackEntity, origin?: TrackOrigin) {
-    if (!this.hasAccessToken() || !track.urn) {
+    if (!this.hasCookie() || !track.urn) {
       return;
     }
     const api = this.getSoundCloudAPI();
@@ -189,7 +189,12 @@ export default class MeModel extends BaseModel {
       }
       if (setOrUrn) {
         try {
-          await api.me.addToPlayHistory(track.urn, setOrUrn);
+          await api.me.addToPlayHistory(track.urn, setOrUrn, {
+            onSendPlayTrackEventError: (err) => {
+              sc.getLogger().log('error', sc.getErrorMessage('Error sending play event in addToPlayHistory():', err, false));
+              return false;
+            }
+          });
         }
         catch (error) {
           sc.getLogger().error(
@@ -198,14 +203,16 @@ export default class MeModel extends BaseModel {
               error, true));
 
           await this.addToPlayHistory(track);
+          return;
         }
       }
       else {
         await api.me.addToPlayHistory(track.urn);
       }
+      sc.getLogger().info(`Added "${track.title}" to play history`);
     }
     catch (error) {
-      sc.getLogger().error(sc.getErrorMessage('Failed to add to play history:', error, true));
+      sc.getLogger().error(sc.getErrorMessage(`Failed to add "${track.title}" to play history:`, error, true));
     }
   }
 }

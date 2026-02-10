@@ -18,7 +18,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const string_format_1 = __importDefault(require("string-format"));
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const Cache_1 = __importDefault(require("./util/Cache"));
-const PluginConfig_1 = require("./PluginConfig");
+const PluginConfig_1 = require("./config/PluginConfig");
 class SoundCloudContext {
     constructor() {
         _SoundCloudContext_instances.add(this);
@@ -69,7 +69,7 @@ class SoundCloudContext {
     }
     getErrorMessage(message, error, stack = true) {
         let result = message;
-        if (typeof error == 'object') {
+        if (error && typeof error == 'object') {
             if (error.message) {
                 result += ` ${error.message}`;
             }
@@ -79,6 +79,9 @@ class SoundCloudContext {
         }
         else if (typeof error == 'string') {
             result += ` ${error}`;
+        }
+        else if (error) {
+            result += ` ${String(error)}`;
         }
         return result.trim();
     }
