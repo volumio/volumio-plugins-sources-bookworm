@@ -10,10 +10,12 @@ interface TrackEntity {
     duration?: number;
     transcodings: {
         url?: string | null;
+        preset?: string | null;
         protocol?: string | null;
         mimeType?: string | null;
         quality?: string | null;
     }[];
+    trackAuthorization?: string | null;
     user: UserEntity | null;
 }
 export default TrackEntity;

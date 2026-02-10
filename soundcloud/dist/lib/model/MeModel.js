@@ -58,7 +58,7 @@ class MeModel extends BaseModel_1.default {
         return null;
     }
     async addToPlayHistory(track, origin) {
-        if (!this.hasAccessToken() || !track.urn) {
+        if (!this.hasCookie() || !track.urn) {
             return;
         }
         const api = this.getSoundCloudAPI();
@@ -75,19 +75,26 @@ class MeModel extends BaseModel_1.default {
             }
             if (setOrUrn) {
                 try {
-                    await api.me.addToPlayHistory(track.urn, setOrUrn);
+                    await api.me.addToPlayHistory(track.urn, setOrUrn, {
+                        onSendPlayTrackEventError: (err) => {
+                            SoundCloudContext_1.default.getLogger().log('error', SoundCloudContext_1.default.getErrorMessage('Error sending play event in addToPlayHistory():', err, false));
+                            return false;
+                        }
+                    });
                 }
                 catch (error) {
                     SoundCloudContext_1.default.getLogger().error(SoundCloudContext_1.default.getErrorMessage('Failed to add to play history - will retry without track origin:', error, true));
                     await this.addToPlayHistory(track);
+                    return;
                 }
             }
             else {
                 await api.me.addToPlayHistory(track.urn);
             }
+            SoundCloudContext_1.default.getLogger().info(`Added "${track.title}" to play history`);
         }
         catch (error) {
-            SoundCloudContext_1.default.getLogger().error(SoundCloudContext_1.default.getErrorMessage('Failed to add to play history:', error, true));
+            SoundCloudContext_1.default.getLogger().error(SoundCloudContext_1.default.getErrorMessage(`Failed to add "${track.title}" to play history:`, error, true));
         }
     }
 }

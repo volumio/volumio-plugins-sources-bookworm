@@ -26,7 +26,7 @@ class Renderer {
         if (RENDERER_TYPE_TO_CLASS[type]) {
             return new RENDERER_TYPE_TO_CLASS[type](uri, currentView, previousViews);
         }
-        throw Error(`Renderer not found for type ${String(type)}`);
+        throw Error(`Renderer not found for type ${type}`);
     }
 }
 exports.default = Renderer;

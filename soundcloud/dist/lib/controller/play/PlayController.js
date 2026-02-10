@@ -15,13 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
@@ -36,7 +46,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _PlayController_instances, _PlayController_mpdPlugin, _PlayController_doPlay, _PlayController_mpdAddTags, _PlayController_stripNewLine;
+var _PlayController_instances, _PlayController_mpdPlugin, _PlayController_playWithMpd, _PlayController_mpdAddTags, _PlayController_stripNewLine;
 Object.defineProperty(exports, "__esModule", { value: true });
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -46,6 +56,7 @@ const model_1 = __importStar(require("../../model"));
 const Misc_1 = require("../../util/Misc");
 const TrackHelper_1 = __importDefault(require("../../util/TrackHelper"));
 const ViewHelper_1 = __importDefault(require("../browse/view-handlers/ViewHelper"));
+const ExternalPlayers_1 = require("./ExternalPlayers");
 class PlayController {
     constructor() {
         _PlayController_instances.add(this);
@@ -78,62 +89,137 @@ class PlayController {
             SoundCloudContext_1.default.getStateMachine().next();
             return;
         }
-        const transcodingUrl = TrackHelper_1.default.getPreferredTranscoding(trackData);
+        const { transcodingUrl, codec, bitrate } = TrackHelper_1.default.getPreferredStream(trackData) || {};
         if (!transcodingUrl) {
             throw Error('No transcoding found');
         }
-        let streamingUrl = await model.getStreamingUrl(transcodingUrl);
+        let streamingUrl = await model.getStreamingUrl(transcodingUrl, trackData.trackAuthorization || undefined);
         if (!streamingUrl) {
             throw Error('No stream found');
         }
         /**
-         * 1. Add bitrate info to track
-         * 2. Fool MPD plugin to return correct `trackType` in `parseTrackInfo()` by adding
-         * track type to URL query string as a dummy param.
+         * Choose suitable player - VLC or mpv:
+         *
+         * | Format     | VLC               | mpv                  |
+         * |------------|-------------------|----------------------|
+         * | Opus HLS   | Fails             | Plays + seek         |
+         * | AAC HLS    | Plays + seek      | Plays; seek fails    |
+         * | MP3 HLS    | Plays; seek fails | Plays; seek fails    |
+         * | MP3 HTTP   | Plays + seek      | Plays + seek         |
          */
-        if (streamingUrl.includes('.128.mp3')) { // 128 kbps mp3
-            track.samplerate = '128 kbps';
-            streamingUrl += '&_vt=.mp3';
+        const target = {
+            ...track,
+            streamUrl: streamingUrl,
+            trackType: codec,
+            samplerate: bitrate
+        };
+        // Use VLC for AAC streams; mpv for others.
+        const playerName = codec === 'aac' ? 'vlc' : 'mpv';
+        // If the other player is active, stop it first to free up audio device.
+        if (playerName === 'vlc') {
+            await ExternalPlayers_1.ExternalPlayers.stop('mpv');
         }
-        else if (streamingUrl.includes('.64.opus')) { // 64 kbps opus
-            track.samplerate = '64 kbps';
-            streamingUrl += '&_vt=.opus';
+        else if (playerName === 'mpv') {
+            await ExternalPlayers_1.ExternalPlayers.stop('vlc');
         }
-        const safeUri = streamingUrl.replace(/"/g, '\\"');
-        await __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_doPlay).call(this, safeUri, track);
+        const player = await ExternalPlayers_1.ExternalPlayers.get(playerName);
+        if (player) {
+            await player.play(target);
+        }
+        else {
+            /**
+             * Fallback to mpd if player failed to start
+             * 1. Add bitrate info to track
+             * 2. Fool MPD plugin to return correct `trackType` in `parseTrackInfo()` by adding
+             * track type to URL query string as a dummy param.
+             */
+            track.samplerate = bitrate;
+            streamingUrl += `&_vt=.${codec}`;
+            const safeUri = streamingUrl.replace(/"/g, '\\"');
+            // Play with MPD
+            await __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_playWithMpd).call(this, safeUri, track);
+        }
         if (SoundCloudContext_1.default.getConfigValue('addPlayedToHistory')) {
             await model_1.default.getInstance(model_1.ModelType.Me).addToPlayHistory(trackData, origin);
         }
     }
     // Returns kew promise!
     stop() {
+        const player = ExternalPlayers_1.ExternalPlayers.getActive();
+        if (player) {
+            return (0, Misc_1.jsPromiseToKew)(player.stop());
+        }
         SoundCloudContext_1.default.getStateMachine().setConsumeUpdateService('mpd', true, false);
         return __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").stop();
     }
     // Returns kew promise!
     pause() {
+        const player = ExternalPlayers_1.ExternalPlayers.getActive();
+        if (player) {
+            return (0, Misc_1.jsPromiseToKew)(player.pause());
+        }
         SoundCloudContext_1.default.getStateMachine().setConsumeUpdateService('mpd', true, false);
         return __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").pause();
     }
     // Returns kew promise!
     resume() {
+        const player = ExternalPlayers_1.ExternalPlayers.getActive();
+        if (player) {
+            return (0, Misc_1.jsPromiseToKew)(player.resume());
+        }
         SoundCloudContext_1.default.getStateMachine().setConsumeUpdateService('mpd', true, false);
         return __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").resume();
     }
+    play() {
+        const player = ExternalPlayers_1.ExternalPlayers.getActive();
+        if (player) {
+            return (0, Misc_1.jsPromiseToKew)((async () => {
+                if (player.getStatus()?.state === 'paused') {
+                    return player.resume();
+                }
+            })());
+        }
+        SoundCloudContext_1.default.getStateMachine().setConsumeUpdateService('mpd', true, false);
+        return __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").play();
+    }
     // Returns kew promise!
     seek(position) {
+        const player = ExternalPlayers_1.ExternalPlayers.getActive();
+        if (player) {
+            return (0, Misc_1.jsPromiseToKew)(player.seek(position / 1000));
+        }
         SoundCloudContext_1.default.getStateMachine().setConsumeUpdateService('mpd', true, false);
         return __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").seek(position);
     }
     // Returns kew promise!
     next() {
+        const player = ExternalPlayers_1.ExternalPlayers.getActive();
+        if (player) {
+            return (0, Misc_1.jsPromiseToKew)(player.next());
+        }
         SoundCloudContext_1.default.getStateMachine().setConsumeUpdateService('mpd', true, false);
         return __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").next();
     }
     // Returns kew promise!
     previous() {
+        const player = ExternalPlayers_1.ExternalPlayers.getActive();
+        if (player) {
+            return (0, Misc_1.jsPromiseToKew)(player.previous());
+        }
         SoundCloudContext_1.default.getStateMachine().setConsumeUpdateService(undefined);
         return SoundCloudContext_1.default.getStateMachine().previous();
+    }
+    setRandom(value) {
+        const player = ExternalPlayers_1.ExternalPlayers.getActive();
+        if (player) {
+            player.setRandom(value);
+        }
+    }
+    setRepeat(value, repeatSingle) {
+        const player = ExternalPlayers_1.ExternalPlayers.getActive();
+        if (player) {
+            return (0, Misc_1.jsPromiseToKew)(player.setRepeat(value, repeatSingle));
+        }
     }
     async getGotoUri(type, uri) {
         const trackView = ViewHelper_1.default.getViewsFromUri(uri).pop();
@@ -169,8 +255,11 @@ class PlayController {
         }
         return 'soundcloud';
     }
+    async reset() {
+        await ExternalPlayers_1.ExternalPlayers.quitAll();
+    }
 }
-_PlayController_mpdPlugin = new WeakMap(), _PlayController_instances = new WeakSet(), _PlayController_doPlay = function _PlayController_doPlay(streamUrl, track) {
+_PlayController_mpdPlugin = new WeakMap(), _PlayController_instances = new WeakSet(), _PlayController_playWithMpd = function _PlayController_playWithMpd(streamUrl, track) {
     const mpdPlugin = __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f");
     return (0, Misc_1.kewToJSPromise)(mpdPlugin.sendMpdCommand('stop', [])
         .then(() => {

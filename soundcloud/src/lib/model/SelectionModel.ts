@@ -1,48 +1,30 @@
 import sc from '../SoundCloudContext';
-import BaseModel, { type LoopFetchResult } from './BaseModel';
-import { type Selection, type Collection } from 'soundcloud-fetch';
+import BaseModel from './BaseModel';
 import Mapper from './Mapper';
-import type SelectionEntity from '../entities/SelectionEntity';
 
 export interface SelectionModelGetSelectionsParams {
-  mixed?: boolean;
+  type: 'mixed' | 'charts';
 }
 
 export default class SelectionModel extends BaseModel {
 
-  getSelections(options: SelectionModelGetSelectionsParams) {
-    if (!options.mixed) {
-      const result: LoopFetchResult<SelectionEntity> = {
-        items: [],
-        nextPageToken: null,
-        nextPageOffset: 0
-      };
-      return result;
-    }
-
-    return this.loopFetch({
-      callbackParams: {},
-      getFetchPromise: this.#getSelectionsFetchPromise.bind(this),
-      getItemsFromFetchResult: this.#getSelectionsFromFetchResult.bind(this),
-      convertToEntity: this.#convertFetchedSelectionToEntity.bind(this)
-    });
-  }
-
-  #getSelectionsFetchPromise() {
+  async getSelections(params: SelectionModelGetSelectionsParams) {
     const api = this.getSoundCloudAPI();
-
-    // Only mixed selections supported (without options)
-    return sc.getCache().getOrSet(
-      this.getCacheKeyForFetch('selections', { mixed: true }),
-      () => api.getMixedSelections()
+    const collection = await sc.getCache().getOrSet(
+      this.getCacheKeyForFetch('selections', { ...params }),
+      () => {
+        switch (params.type) {
+          case 'mixed':
+            return api.getMixedSelections();
+          case 'charts':
+            return api.getCharts();
+        }
+      }
     );
-  }
-
-  #getSelectionsFromFetchResult(result: Collection<Selection>) {
-    return result.items;
-  }
-
-  #convertFetchedSelectionToEntity(item: Selection): Promise<SelectionEntity> {
-    return Mapper.mapSelection(item);
+    const mapPromises = collection.items.map((item) =>
+      Mapper.mapSelection(item).catch(() => null),
+    );
+    const mapped = await Promise.all(mapPromises);
+    return mapped.filter((item) => item !== null);
   }
 }
