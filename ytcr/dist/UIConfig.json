@@ -4,6 +4,51 @@
   },
   "sections": [
     {
+      "id": "section_disclaimer",
+      "element":" section",
+      "label": "TRANSLATE.YTCR_SECTION_DISCLAIMER",
+      "icon": "fa-exclamation-triangle",
+      "description": "TRANSLATE.YTCR_DISCLAIMER_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/ytcr",
+        "method": "configSaveDisclaimer"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.YTCR_SAVE",
+        "data": [
+          "hasAcceptedDisclaimer"
+        ]
+      },
+      "content": [
+        {
+          "id": "viewDisclaimer",
+          "element": "button",
+          "label": "TRANSLATE.YTCR_VIEW_DISCLAIMER",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "music_service/ytcr",
+            "method": "showDisclaimer"
+          }
+        },
+        {
+          "id": "hasAcceptedDisclaimer",
+          "element": "switch",
+          "label": "TRANSLATE.YTCR_ACCEPT",
+          "value": false
+        },
+        {
+          "id": "projectHome",
+          "element": "button",
+          "label": "TRANSLATE.YTCR_PROJECT_HOME",
+          "onClick": {
+            "type": "openUrl",
+            "url": "https://github.com/patrickkfkan/volumio-ytcr"
+          }
+        }        
+      ]
+    },
+    {
       "id": "section_connection",
       "element": "section",
       "label": "TRANSLATE.YTCR_CONNECTION",

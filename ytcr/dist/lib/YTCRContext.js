@@ -53,6 +53,11 @@ class YTCRContext {
     toast(type, message, title = 'YouTube Cast Receiver') {
         __classPrivateFieldGet(this, _YTCRContext_pluginContext, "f").coreCommand.pushToastMessage(type, title, message);
     }
+    refreshUIConfig() {
+        __classPrivateFieldGet(this, _YTCRContext_pluginContext, "f").coreCommand.getUIConfigOnPlugin('music_service', 'ytcr', {}).then((config) => {
+            __classPrivateFieldGet(this, _YTCRContext_pluginContext, "f").coreCommand.broadcastMessage('pushUiConfig', config);
+        });
+    }
     getDeviceInfo() {
         return __classPrivateFieldGet(this, _YTCRContext_pluginContext, "f").coreCommand.getId();
     }
@@ -122,6 +127,9 @@ class YTCRContext {
             str = (0, string_format_1.default)(str, ...formatValues);
         }
         return str;
+    }
+    get volumioCoreCommand() {
+        return __classPrivateFieldGet(this, _YTCRContext_pluginContext, "f")?.coreCommand || null;
     }
 }
 _YTCRContext_singletons = new WeakMap(), _YTCRContext_data = new WeakMap(), _YTCRContext_pluginContext = new WeakMap(), _YTCRContext_pluginConfig = new WeakMap(), _YTCRContext_i18n = new WeakMap(), _YTCRContext_i18nDefaults = new WeakMap(), _YTCRContext_i18CallbackRegistered = new WeakMap(), _YTCRContext_instances = new WeakSet(), _YTCRContext_getSingleton = function _YTCRContext_getSingleton(key, getValue) {

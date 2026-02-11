@@ -46,9 +46,9 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _VideoLoader_instances, _VideoLoader_logger, _VideoLoader_defaultInnertubeLoader, _VideoLoader_tvInnertubeLoader, _VideoLoader_senderSupportsYTMusicClient, _VideoLoader_getInnertubeInstances, _VideoLoader_fetchInnertubeVideoInfo, _VideoLoader_getAndValidateStreamInfo, _VideoLoader_getThumbnail, _VideoLoader_chooseFormat, _VideoLoader_parseStreamData, _VideoLoader_getStreamUrlFromHLS, _VideoLoader_sleep, _VideoLoader_head;
+var _VideoLoader_instances, _VideoLoader_logger, _VideoLoader_getInnertube, _VideoLoader_fetchInnertubeVideoInfo, _VideoLoader_getAndValidateStreamInfo, _VideoLoader_getThumbnail, _VideoLoader_chooseFormat, _VideoLoader_parseStreamData, _VideoLoader_getStreamUrlFromHLS, _VideoLoader_sleep, _VideoLoader_head;
 Object.defineProperty(exports, "__esModule", { value: true });
-const InnertubeLib = __importStar(require("volumio-youtubei.js"));
+const InnertubeLib = __importStar(require("volumio-yt-support/dist/innertube.js"));
 const yt_cast_receiver_1 = require("yt-cast-receiver");
 const YTCRContext_js_1 = __importDefault(require("./YTCRContext.js"));
 const InnertubeLoader_js_1 = __importDefault(require("./InnertubeLoader.js"));
@@ -72,26 +72,15 @@ class VideoLoader {
     constructor(logger) {
         _VideoLoader_instances.add(this);
         _VideoLoader_logger.set(this, void 0);
-        _VideoLoader_defaultInnertubeLoader.set(this, void 0);
-        _VideoLoader_tvInnertubeLoader.set(this, void 0);
-        // Whether YT Music client is supported (i.e. stream URLs do not return 403 Forbidden)
-        _VideoLoader_senderSupportsYTMusicClient.set(this, void 0);
         __classPrivateFieldSet(this, _VideoLoader_logger, logger, "f");
-        __classPrivateFieldSet(this, _VideoLoader_defaultInnertubeLoader, new InnertubeLoader_js_1.default(__classPrivateFieldGet(this, _VideoLoader_logger, "f")), "f");
-        __classPrivateFieldSet(this, _VideoLoader_tvInnertubeLoader, new InnertubeLoader_js_1.default(__classPrivateFieldGet(this, _VideoLoader_logger, "f"), InnertubeLib.ClientType.TV), "f");
-        __classPrivateFieldSet(this, _VideoLoader_senderSupportsYTMusicClient, true, "f"); // Initially assume true
+        InnertubeLoader_js_1.default.setLogger(logger);
     }
-    notifySendersChanged(senders) {
-        if (senders.length === 0) {
-            __classPrivateFieldSet(this, _VideoLoader_senderSupportsYTMusicClient, true, "f");
-        }
-    }
-    refreshI18nConfig() {
-        __classPrivateFieldGet(this, _VideoLoader_defaultInnertubeLoader, "f").applyI18nConfig();
-        __classPrivateFieldGet(this, _VideoLoader_tvInnertubeLoader, "f").applyI18nConfig();
+    async refreshI18nConfig() {
+        await InnertubeLoader_js_1.default.applyI18nConfig();
     }
     async getInfo(video, abortSignal) {
-        const { defaultInnertube, tvInnertube } = await __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_getInnertubeInstances).call(this);
+        const innertube = await __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_getInnertube).call(this);
+        ;
         const checkAbortSignal = () => {
             if (abortSignal.aborted) {
                 const msg = `VideoLoader.getInfo() aborted for video Id: ${video.id}`;
@@ -102,60 +91,60 @@ class VideoLoader {
             }
         };
         __classPrivateFieldGet(this, _VideoLoader_logger, "f").debug(`[ytcr] VideoLoader.getInfo: ${video.id}`);
+        const contentPoToken = (await InnertubeLoader_js_1.default.generatePoToken(video.id)).poToken;
         checkAbortSignal();
-        // Configure Innertube instances
-        const __prepInnertubeAndPayload = (innertube) => {
-            // Prepare request payload
-            const payload = {
-                videoId: video.id,
-                racyCheckOk: true,
-                contentCheckOk: true,
-                serviceIntegrityDimensions: {
-                    poToken: innertube.session.po_token
-                },
-                enableMdxAutoplay: true,
-                isMdxPlayback: true,
-                playbackContext: {
-                    contentPlaybackContext: {
-                        signatureTimestamp: innertube.session.player?.sts || 0
-                    }
+        const payload = {
+            videoId: video.id,
+            racyCheckOk: true,
+            contentCheckOk: true,
+            serviceIntegrityDimensions: {
+                poToken: contentPoToken
+            },
+            enableMdxAutoplay: true,
+            isMdxPlayback: true,
+            playbackContext: {
+                contentPlaybackContext: {
+                    vis: 0,
+                    splay: false,
+                    lactMilliseconds: '-1',
+                    signatureTimestamp: innertube.session.player?.signature_timestamp || 0
                 }
-            };
-            if (video.context?.playlistId) {
-                payload.playlistId = video.context.playlistId;
             }
-            if (video.context?.params) {
-                payload.params = video.context.params;
-            }
-            if (video.context?.index !== undefined) {
-                payload.index = video.context.index;
-            }
-            // Modify innertube's session context to include `ctt` param
-            if (video.context?.ctt) {
-                innertube.session.context.user = {
-                    enableSafetyMode: false,
-                    lockedSafetyMode: false,
-                    credentialTransferTokens: [
-                        {
-                            'scope': 'VIDEO',
-                            'token': video.context?.ctt
-                        }
-                    ]
-                };
-            }
-            else {
-                delete innertube.session.context.user?.credentialTransferTokens;
-            }
-            return payload;
         };
+        if (video.context?.playlistId) {
+            payload.playlistId = video.context.playlistId;
+        }
+        if (video.context?.params) {
+            payload.params = video.context.params;
+        }
+        if (video.context?.index !== undefined) {
+            payload.index = video.context.index;
+        }
+        // Modify innertube's session context to include `ctt` param
+        if (video.context?.ctt) {
+            innertube.session.context.user = {
+                enableSafetyMode: false,
+                lockedSafetyMode: false,
+                credentialTransferTokens: [
+                    {
+                        'scope': 'VIDEO',
+                        'token': video.context?.ctt
+                    }
+                ]
+            };
+        }
+        else {
+            delete innertube.session.context.user?.credentialTransferTokens;
+        }
         const cpn = InnertubeLib.Utils.generateRandomString(16);
-        const defaultPayload = __prepInnertubeAndPayload(defaultInnertube);
-        const tvPayload = __prepInnertubeAndPayload(tvInnertube);
         try {
             // There are two endpoints we need to fetch data from:
             // 1. '/next': for metadata (title, channel for video, artist / album for music...)
             // 2. '/player': for streaming data
-            const nextResponse = await tvInnertube.actions.execute('/next', tvPayload);
+            const nextResponse = await innertube.actions.execute('/next', {
+                ...payload,
+                client: 'TV'
+            });
             checkAbortSignal();
             let basicInfo = null;
             // We cannot use innertube to parse `nextResponse`, because it doesn't
@@ -185,53 +174,41 @@ class VideoLoader {
             if (!basicInfo) {
                 throw new yt_cast_receiver_1.DataError('Metadata not found in response');
             }
-            // Fetch response from '/player' endpoint. But first, choose which Innertube instance and client to use.
+            // Fetch response from '/player' endpoint. But first, decide on the Innertube client to use.
             // Setting payload.client will cause Innertube to modify 'context.client' before submitting request.
-            let it, payload;
-            if (basicInfo.src === 'ytmusic' && __classPrivateFieldGet(this, _VideoLoader_senderSupportsYTMusicClient, "f")) {
-                it = defaultInnertube;
-                payload = defaultPayload;
+            if (basicInfo.src === 'ytmusic') {
                 payload.client = 'YTMUSIC';
             }
             else if (basicInfo.isLive) {
                 // Do not use TV client for live streams, because it will only return DASH manifest URL.
                 // Use default WEB client instead, which will return HLS manifest URL.
-                it = defaultInnertube;
-                payload = defaultPayload;
+                payload.client = 'WEB';
             }
             else {
                 // Use TV client for regular videos. TV_EMBEDDED should also work.
                 // Anything else will likely give stream URLs that return 403 Forbidden.
-                it = tvInnertube;
-                payload = tvPayload;
+                payload.client = 'TV';
             }
-            let innertubeVideoInfo = await __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_fetchInnertubeVideoInfo).call(this, it, payload, cpn);
+            let innertubeVideoInfo = await __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_fetchInnertubeVideoInfo).call(this, payload, cpn);
             checkAbortSignal();
             const thumbnail = __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_getThumbnail).call(this, innertubeVideoInfo.basic_info.thumbnail);
-            const isLive = !!innertubeVideoInfo.basic_info.is_live;
             // Retrieve stream info
-            let { info: streamInfo, validated, errMsg } = await __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_getAndValidateStreamInfo).call(this, innertubeVideoInfo, basicInfo, abortSignal, checkAbortSignal);
+            let { info: streamInfo, validated, errMsg } = await __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_getAndValidateStreamInfo).call(this, innertubeVideoInfo, basicInfo, contentPoToken, abortSignal, checkAbortSignal);
             checkAbortSignal();
             if (streamInfo?.url && !validated && basicInfo.src === 'ytmusic') {
-                // We tried to fetch stream URL with YTMUSIC client, but it failed validation. This happens 
-                // when you're not subscribed to YT Premium. In this case, retry with TV client.
-                // We try YTMusic client first because it returns 256kbps streams for Premium accounts.
-                // First, mark that sender does not support YT Music client, so we don't try it again for subsequent requests.
-                // This will be reset to true when all senders disconnect.
-                __classPrivateFieldSet(this, _VideoLoader_senderSupportsYTMusicClient, false, "f");
-                __classPrivateFieldGet(this, _VideoLoader_logger, "f").info(`[ytcr] (${basicInfo.title || video.id}) failed to validate stream URL obtained with YT Music client; retrying with TV client...`);
-                it = tvInnertube;
-                payload = tvPayload;
-                innertubeVideoInfo = await __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_fetchInnertubeVideoInfo).call(this, it, payload, cpn);
+                // YTMUSIC client didn't work out; retry with TV client
+                __classPrivateFieldGet(this, _VideoLoader_logger, "f").info(`[ytcr] (${basicInfo.title || video.id}) failed to validate stream URL obtained with YTMUSIC client; retrying with TV client...`);
+                payload.client = 'TV';
+                innertubeVideoInfo = await __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_fetchInnertubeVideoInfo).call(this, payload, cpn);
                 checkAbortSignal();
-                ({ info: streamInfo, validated, errMsg } = await __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_getAndValidateStreamInfo).call(this, innertubeVideoInfo, basicInfo, abortSignal, checkAbortSignal));
+                ({ info: streamInfo, validated, errMsg } = await __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_getAndValidateStreamInfo).call(this, innertubeVideoInfo, basicInfo, contentPoToken, abortSignal, checkAbortSignal));
                 checkAbortSignal();
             }
             return {
                 ...basicInfo,
                 errMsg: errMsg || undefined,
                 thumbnail,
-                isLive,
+                isLive: !!basicInfo.isLive,
                 streamUrl: streamInfo?.url,
                 duration: innertubeVideoInfo.basic_info.duration || 0,
                 bitrate: streamInfo?.bitrate || undefined,
@@ -252,16 +229,14 @@ class VideoLoader {
         }
     }
 }
-_VideoLoader_logger = new WeakMap(), _VideoLoader_defaultInnertubeLoader = new WeakMap(), _VideoLoader_tvInnertubeLoader = new WeakMap(), _VideoLoader_senderSupportsYTMusicClient = new WeakMap(), _VideoLoader_instances = new WeakSet(), _VideoLoader_getInnertubeInstances = async function _VideoLoader_getInnertubeInstances() {
-    return {
-        defaultInnertube: (await __classPrivateFieldGet(this, _VideoLoader_defaultInnertubeLoader, "f").getInstance()).innertube,
-        tvInnertube: (await __classPrivateFieldGet(this, _VideoLoader_tvInnertubeLoader, "f").getInstance()).innertube
-    };
-}, _VideoLoader_fetchInnertubeVideoInfo = async function _VideoLoader_fetchInnertubeVideoInfo(it, payload, cpn) {
-    __classPrivateFieldGet(this, _VideoLoader_logger, "f").info(`[ytcr] (${payload.videoId}) fetching player data using ${payload.client || it.session.context.client.clientName} client...`);
-    const playerResponse = await it.actions.execute('/player', payload);
-    return new InnertubeLib.YT.VideoInfo([playerResponse], it.actions, cpn);
-}, _VideoLoader_getAndValidateStreamInfo = async function _VideoLoader_getAndValidateStreamInfo(videoInfo, basicInfo, abortSignal, checkAbort, validationRetries = 3) {
+_VideoLoader_logger = new WeakMap(), _VideoLoader_instances = new WeakSet(), _VideoLoader_getInnertube = async function _VideoLoader_getInnertube() {
+    return await (await InnertubeLoader_js_1.default.getInstance()).getInnertube();
+}, _VideoLoader_fetchInnertubeVideoInfo = async function _VideoLoader_fetchInnertubeVideoInfo(payload, cpn) {
+    const innertube = await __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_getInnertube).call(this);
+    __classPrivateFieldGet(this, _VideoLoader_logger, "f").info(`[ytcr] (${payload.videoId}) fetching player data using ${payload.client || innertube.session.context.client.clientName} client...`);
+    const playerResponse = await innertube.actions.execute('/player', payload);
+    return new InnertubeLib.YT.VideoInfo([playerResponse], innertube.actions, cpn);
+}, _VideoLoader_getAndValidateStreamInfo = async function _VideoLoader_getAndValidateStreamInfo(videoInfo, basicInfo, contentPoToken, abortSignal, checkAbort, validationRetries = 3) {
     // Retrieve stream info
     const isLive = !!videoInfo.basic_info.is_live;
     let playable = false;
@@ -295,6 +270,14 @@ _VideoLoader_logger = new WeakMap(), _VideoLoader_defaultInnertubeLoader = new W
     checkAbort();
     // Validate
     if (streamInfo?.url) {
+        if (!isLive) {
+            // Innertube sets `pot` searchParam of URL to session-bound PO token.
+            // Seems YT now requires `pot` to be the *content-bound* token, otherwise we'll get 403.
+            // See: https://github.com/TeamNewPipe/NewPipeExtractor/issues/1392
+            const urlObj = new URL(streamInfo.url);
+            urlObj.searchParams.set('pot', contentPoToken);
+            streamInfo.url = urlObj.toString();
+        }
         const title = basicInfo.title || basicInfo.id;
         const startTime = new Date().getTime();
         __classPrivateFieldGet(this, _VideoLoader_logger, "f").info(`[ytcr] (${title}) validating stream URL "${streamInfo.url}"...`);
@@ -329,7 +312,7 @@ _VideoLoader_logger = new WeakMap(), _VideoLoader_defaultInnertubeLoader = new W
     }
     return url;
 }, _VideoLoader_chooseFormat = async function _VideoLoader_chooseFormat(videoInfo) {
-    const { defaultInnertube: innertube } = await __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_getInnertubeInstances).call(this);
+    const innertube = await __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_getInnertube).call(this);
     const preferredFormat = {
         ...BEST_AUDIO_FORMAT
     };
@@ -358,7 +341,7 @@ _VideoLoader_logger = new WeakMap(), _VideoLoader_defaultInnertubeLoader = new W
             throw error;
         }
     }
-    const streamUrl = format ? format.decipher(innertube.session.player) : null;
+    const streamUrl = format ? await format.decipher(innertube.session.player) : null;
     const streamData = format ? { ...format, url: streamUrl } : null;
     if (streamData) {
         return __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_parseStreamData).call(this, streamData);

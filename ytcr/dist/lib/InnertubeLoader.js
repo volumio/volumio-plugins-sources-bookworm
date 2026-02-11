@@ -1,37 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
@@ -46,185 +13,52 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _InnertubeLoader_instances, _InnertubeLoader_innertube, _InnertubeLoader_pendingPromise, _InnertubeLoader_poTokenRefreshTimer, _InnertubeLoader_logger, _InnertubeLoader_clientType, _InnertubeLoader_recreateWithPOToken, _InnertubeLoader_createInstance, _InnertubeLoader_clearPOTokenRefreshTimer, _InnertubeLoader_resolveGetInstanceResult, _InnertubeLoader_refreshPOToken, _InnertubeLoader_generatePoToken;
+var _a, _InnertubeLoader_instancePromise, _InnertubeLoader_logger;
 Object.defineProperty(exports, "__esModule", { value: true });
-const volumio_youtubei_js_1 = __importStar(require("volumio-youtubei.js"));
-const bgutils_js_1 = __importDefault(require("bgutils-js"));
-const jsdom_1 = require("jsdom");
-const YTCRContext_1 = __importDefault(require("./YTCRContext"));
-var Stage;
-(function (Stage) {
-    Stage["Init"] = "1 - Init";
-    Stage["PO"] = "2 - PO";
-})(Stage || (Stage = {}));
+const YTCRContext_js_1 = __importDefault(require("./YTCRContext.js"));
+const volumio_yt_support_1 = require("volumio-yt-support");
 class InnertubeLoader {
-    constructor(logger, clientType = volumio_youtubei_js_1.ClientType.WEB) {
-        _InnertubeLoader_instances.add(this);
-        _InnertubeLoader_innertube.set(this, null);
-        _InnertubeLoader_pendingPromise.set(this, null);
-        _InnertubeLoader_poTokenRefreshTimer.set(this, null);
-        _InnertubeLoader_logger.set(this, null);
-        _InnertubeLoader_clientType.set(this, void 0);
-        __classPrivateFieldSet(this, _InnertubeLoader_logger, logger, "f");
-        __classPrivateFieldSet(this, _InnertubeLoader_clientType, clientType, "f");
+    static setLogger(logger) {
+        __classPrivateFieldSet(this, _a, logger, "f", _InnertubeLoader_logger);
     }
-    async getInstance() {
-        if (__classPrivateFieldGet(this, _InnertubeLoader_innertube, "f")) {
-            return {
-                innertube: __classPrivateFieldGet(this, _InnertubeLoader_innertube, "f"),
-            };
+    static async getInstance() {
+        if (!__classPrivateFieldGet(this, _a, "f", _InnertubeLoader_instancePromise)) {
+            __classPrivateFieldSet(this, _a, volumio_yt_support_1.InnertubeFactory.getWrappedInstance({
+                locale: {
+                    region: YTCRContext_js_1.default.getConfigValue('region'),
+                    language: YTCRContext_js_1.default.getConfigValue('language')
+                },
+                logger: {
+                    info: (msg) => __classPrivateFieldGet(this, _a, "f", _InnertubeLoader_logger)?.info(`[ytcr] ${msg}`),
+                    warn: (msg) => __classPrivateFieldGet(this, _a, "f", _InnertubeLoader_logger)?.warn(`[ytcr] ${msg}`),
+                    error: (msg) => __classPrivateFieldGet(this, _a, "f", _InnertubeLoader_logger)?.error(`[ytcr] ${msg}`),
+                }
+            }), "f", _InnertubeLoader_instancePromise);
         }
-        if (__classPrivateFieldGet(this, _InnertubeLoader_pendingPromise, "f")) {
-            return __classPrivateFieldGet(this, _InnertubeLoader_pendingPromise, "f");
-        }
-        __classPrivateFieldSet(this, _InnertubeLoader_pendingPromise, new Promise((resolve, reject) => {
-            __classPrivateFieldGet(this, _InnertubeLoader_instances, "m", _InnertubeLoader_createInstance).call(this, Stage.Init, resolve)
-                .catch((error) => {
-                reject(error instanceof Error ? error : Error(String(error)));
-            });
-        }), "f");
-        return __classPrivateFieldGet(this, _InnertubeLoader_pendingPromise, "f");
+        return __classPrivateFieldGet(this, _a, "f", _InnertubeLoader_instancePromise);
     }
-    reset() {
-        __classPrivateFieldGet(this, _InnertubeLoader_instances, "m", _InnertubeLoader_clearPOTokenRefreshTimer).call(this);
-        if (__classPrivateFieldGet(this, _InnertubeLoader_pendingPromise, "f")) {
-            __classPrivateFieldSet(this, _InnertubeLoader_pendingPromise, null, "f");
-        }
-        __classPrivateFieldSet(this, _InnertubeLoader_innertube, null, "f");
+    static async generatePoToken(identifier) {
+        const instance = await this.getInstance();
+        return await instance.generatePoToken(identifier);
     }
-    hasInstance() {
-        return !!__classPrivateFieldGet(this, _InnertubeLoader_innertube, "f");
-    }
-    applyI18nConfig() {
-        if (!__classPrivateFieldGet(this, _InnertubeLoader_innertube, "f")) {
-            return;
+    static async reset() {
+        if (__classPrivateFieldGet(this, _a, "f", _InnertubeLoader_instancePromise)) {
+            const instance = await __classPrivateFieldGet(this, _a, "f", _InnertubeLoader_instancePromise);
+            await instance.dispose();
+            __classPrivateFieldSet(this, _a, null, "f", _InnertubeLoader_instancePromise);
         }
-        const region = YTCRContext_1.default.getConfigValue('region');
-        const language = YTCRContext_1.default.getConfigValue('language');
-        __classPrivateFieldGet(this, _InnertubeLoader_innertube, "f").session.context.client.gl = region;
-        __classPrivateFieldGet(this, _InnertubeLoader_innertube, "f").session.context.client.hl = language;
+    }
+    static async applyI18nConfig() {
+        const region = YTCRContext_js_1.default.getConfigValue('region');
+        const language = YTCRContext_js_1.default.getConfigValue('language');
+        if (__classPrivateFieldGet(this, _a, "f", _InnertubeLoader_instancePromise)) {
+            const instance = await __classPrivateFieldGet(this, _a, "f", _InnertubeLoader_instancePromise);
+            instance.setLocale({ region, language });
+        }
     }
 }
-_InnertubeLoader_innertube = new WeakMap(), _InnertubeLoader_pendingPromise = new WeakMap(), _InnertubeLoader_poTokenRefreshTimer = new WeakMap(), _InnertubeLoader_logger = new WeakMap(), _InnertubeLoader_clientType = new WeakMap(), _InnertubeLoader_instances = new WeakSet(), _InnertubeLoader_recreateWithPOToken = async function _InnertubeLoader_recreateWithPOToken(innertube, resolve, lastToken) {
-    const visitorData = lastToken?.params.visitorData || innertube.session.context.client.visitorData;
-    let poTokenResult;
-    if (visitorData) {
-        __classPrivateFieldGet(this, _InnertubeLoader_logger, "f")?.info(`[ytcr] InnertubeLoader (${__classPrivateFieldGet(this, _InnertubeLoader_clientType, "f")}): obtaining po_token by visitorData...`);
-        try {
-            poTokenResult = await __classPrivateFieldGet(this, _InnertubeLoader_instances, "m", _InnertubeLoader_generatePoToken).call(this, visitorData);
-            __classPrivateFieldGet(this, _InnertubeLoader_logger, "f")?.info(`[ytcr] InnertubeLoader  (${__classPrivateFieldGet(this, _InnertubeLoader_clientType, "f")}): obtained po_token (expires in ${poTokenResult.ttl} seconds)`);
-        }
-        catch (error) {
-            __classPrivateFieldGet(this, _InnertubeLoader_logger, "f")?.error(`[ytcr] InnertubeLoader (${__classPrivateFieldGet(this, _InnertubeLoader_clientType, "f")}): failed to get poToken:`, error);
-        }
-        if (poTokenResult) {
-            __classPrivateFieldGet(this, _InnertubeLoader_logger, "f")?.info(`[ytcr] InnertubeLoader (${__classPrivateFieldGet(this, _InnertubeLoader_clientType, "f")}): re-create Innertube instance with po_token`);
-            __classPrivateFieldGet(this, _InnertubeLoader_instances, "m", _InnertubeLoader_createInstance).call(this, Stage.PO, resolve, {
-                params: {
-                    visitorData
-                },
-                value: poTokenResult.token,
-                ttl: poTokenResult.ttl,
-                refreshThreshold: poTokenResult.refreshThreshold
-            })
-                .catch((error) => {
-                __classPrivateFieldGet(this, _InnertubeLoader_logger, "f")?.error(`[ytcr] InnertubeLoader (${__classPrivateFieldGet(this, _InnertubeLoader_clientType, "f")}): error creating Innertube instance:`, error);
-            });
-            return;
-        }
-    }
-    __classPrivateFieldGet(this, _InnertubeLoader_logger, "f")?.warn(`[ytcr] InnertubeLoader (${__classPrivateFieldGet(this, _InnertubeLoader_clientType, "f")}): po_token was not used to create Innertube instance. Playback of YouTube content might fail.`);
-    __classPrivateFieldGet(this, _InnertubeLoader_instances, "m", _InnertubeLoader_resolveGetInstanceResult).call(this, innertube, resolve);
-}, _InnertubeLoader_createInstance = async function _InnertubeLoader_createInstance(stage, resolve, poToken) {
-    __classPrivateFieldGet(this, _InnertubeLoader_logger, "f")?.info(`[ytcr] InnertubeLoader (${__classPrivateFieldGet(this, _InnertubeLoader_clientType, "f")}): creating Innertube instance${poToken?.value ? ' with po_token' : ''}...`);
-    const innertube = await volumio_youtubei_js_1.default.create({
-        client_type: __classPrivateFieldGet(this, _InnertubeLoader_clientType, "f"),
-        visitor_data: poToken?.params.visitorData,
-        po_token: poToken?.value,
-        player_id: '0004de42' // https://github.com/LuanRT/YouTube.js/issues/1043
-    });
-    switch (stage) {
-        case Stage.Init:
-            await __classPrivateFieldGet(this, _InnertubeLoader_instances, "m", _InnertubeLoader_recreateWithPOToken).call(this, innertube, resolve);
-            break;
-        case Stage.PO:
-            __classPrivateFieldGet(this, _InnertubeLoader_instances, "m", _InnertubeLoader_resolveGetInstanceResult).call(this, innertube, resolve, poToken);
-            break;
-    }
-}, _InnertubeLoader_clearPOTokenRefreshTimer = function _InnertubeLoader_clearPOTokenRefreshTimer() {
-    if (__classPrivateFieldGet(this, _InnertubeLoader_poTokenRefreshTimer, "f")) {
-        clearTimeout(__classPrivateFieldGet(this, _InnertubeLoader_poTokenRefreshTimer, "f"));
-        __classPrivateFieldSet(this, _InnertubeLoader_poTokenRefreshTimer, null, "f");
-    }
-}, _InnertubeLoader_resolveGetInstanceResult = function _InnertubeLoader_resolveGetInstanceResult(innertube, resolve, poToken) {
-    __classPrivateFieldSet(this, _InnertubeLoader_pendingPromise, null, "f");
-    __classPrivateFieldSet(this, _InnertubeLoader_innertube, innertube, "f");
-    this.applyI18nConfig();
-    __classPrivateFieldGet(this, _InnertubeLoader_instances, "m", _InnertubeLoader_clearPOTokenRefreshTimer).call(this);
-    if (poToken) {
-        const { ttl, refreshThreshold = 100 } = poToken;
-        if (ttl) {
-            const timeout = ttl - refreshThreshold;
-            __classPrivateFieldGet(this, _InnertubeLoader_logger, "f")?.info(`[ytcr] InnertubeLoader (${__classPrivateFieldGet(this, _InnertubeLoader_clientType, "f")}): going to refresh po_token in ${timeout} seconds`);
-            __classPrivateFieldSet(this, _InnertubeLoader_poTokenRefreshTimer, setTimeout(() => __classPrivateFieldGet(this, _InnertubeLoader_instances, "m", _InnertubeLoader_refreshPOToken).call(this, poToken), timeout * 1000), "f");
-        }
-    }
-    resolve({
-        innertube,
-    });
-}, _InnertubeLoader_refreshPOToken = function _InnertubeLoader_refreshPOToken(lastToken) {
-    const innertube = __classPrivateFieldGet(this, _InnertubeLoader_innertube, "f");
-    if (!innertube) {
-        return;
-    }
-    this.reset();
-    __classPrivateFieldSet(this, _InnertubeLoader_pendingPromise, new Promise((resolve) => {
-        __classPrivateFieldGet(this, _InnertubeLoader_logger, "f")?.info(`[ytcr] InnertubeLoader (${__classPrivateFieldGet(this, _InnertubeLoader_clientType, "f")}): refresh po_token`);
-        __classPrivateFieldGet(this, _InnertubeLoader_instances, "m", _InnertubeLoader_recreateWithPOToken).call(this, innertube, resolve, lastToken)
-            .catch((error) => {
-            __classPrivateFieldGet(this, _InnertubeLoader_logger, "f")?.error(`[ytcr] InnertubeLoader (${__classPrivateFieldGet(this, _InnertubeLoader_clientType, "f")}): error creating Innertube instance (while refreshing po_token):`, error);
-        });
-    }), "f");
-}, _InnertubeLoader_generatePoToken = 
-/**
- * Required for initializing innertube, otherwise videos will return 403
- * Much of this taken from https://github.com/LuanRT/BgUtils/blob/main/examples/node/index.ts
- * @returns
- */
-async function _InnertubeLoader_generatePoToken(identifier) {
-    const requestKey = 'O43z0dpjhgX20SCx4KAo';
-    const bgConfig = {
-        fetch: (url, options) => fetch(url, options),
-        globalObj: globalThis,
-        identifier,
-        requestKey
-    };
-    const dom = new jsdom_1.JSDOM();
-    Object.assign(globalThis, {
-        window: dom.window,
-        document: dom.window.document
-    });
-    const bgChallenge = await bgutils_js_1.default.Challenge.create(bgConfig);
-    if (!bgChallenge) {
-        throw new Error('Could not get challenge');
-    }
-    const interpreterJavascript = bgChallenge.interpreterJavascript.privateDoNotAccessOrElseSafeScriptWrappedValue;
-    if (interpreterJavascript) {
-        // eslint-disable-next-line @typescript-eslint/no-implied-eval
-        new Function(interpreterJavascript)();
-    }
-    else
-        throw new Error('Could not load VM');
-    const poTokenResult = await bgutils_js_1.default.PoToken.generate({
-        program: bgChallenge.program,
-        globalName: bgChallenge.globalName,
-        bgConfig
-    });
-    return {
-        token: poTokenResult.poToken,
-        ttl: poTokenResult.integrityTokenData.estimatedTtlSecs,
-        refreshThreshold: poTokenResult.integrityTokenData.mintRefreshThreshold
-    };
-};
+_a = InnertubeLoader;
+_InnertubeLoader_instancePromise = { value: null };
+_InnertubeLoader_logger = { value: null };
 exports.default = InnertubeLoader;
 //# sourceMappingURL=InnertubeLoader.js.map

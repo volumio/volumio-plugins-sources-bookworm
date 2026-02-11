@@ -7,6 +7,7 @@ export interface PluginConfigSchemaEntry<T, U = false> {
     json: U;
 }
 export interface PluginConfigSchema {
+    hasAcceptedDisclaimer: PluginConfigSchemaEntry<boolean>;
     port: PluginConfigSchemaEntry<number>;
     bindToIf: PluginConfigSchemaEntry<string>;
     region: PluginConfigSchemaEntry<string>;
