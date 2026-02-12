@@ -17,19 +17,32 @@ let CamillaDsp = function (logger) {
     const cdPortWs = 9876;
     const cdPathConfig = "/data/configuration/audio_interface/fusiondsp/camilladsp.yml";
 
+    // Respawn backoff settings
+    const baseRespawnDelayMs = 1000;
+    const maxRespawnDelayMs = 10000;
+    const maxConsecutiveRespawns = 10;
+    const respawnCountResetMs = 30000; // Reset count if up for this long
+
     let run = false;
     let camilla = null;
     let uniqueid = ++counter;
+
+    // Respawn backoff state
+    let consecutiveRespawns = 0;
+    let lastSpawnTime = 0;
+    let respawnStopped = false;
 
     /**
      * Listener for event sent on camilladsp process termination.
      * The process may terminate either because FIFO has been closed (hence
      * we need to respawn the process immediately) or because of an error.
-     * In case of error, we wait for a second to avoid hogging CPU
+     * In case of error, we wait with exponential backoff to avoid hogging CPU.
+     * If too many consecutive quick respawns occur, stop respawning entirely.
      */
     let listenerClose = function(code, signal) {
 
         let timeout = 0;
+        let uptime = Date.now() - lastSpawnTime;
 
         logger.debug("close event");
 
@@ -41,12 +54,37 @@ let CamillaDsp = function (logger) {
         if (run === false)
             return;
 
-        // camilldsp exit with error, wait a second before respawn
-        if (code > 0)
-            timeout = 1000;
+        // If respawning was stopped due to too many failures, don't respawn
+        if (respawnStopped) {
+            logger.warn(`camilladsp respawn stopped due to repeated failures; not respawning`);
+            return;
+        }
+
+        // Check uptime: if process was up long enough, reset respawn count
+        if (uptime >= respawnCountResetMs) {
+            consecutiveRespawns = 0;
+        }
+
+        // Increment consecutive respawn counter
+        consecutiveRespawns++;
+
+        // Check if we've exceeded max consecutive respawns
+        if (consecutiveRespawns > maxConsecutiveRespawns) {
+            logger.error(`camilladsp exceeded max consecutive respawns (${maxConsecutiveRespawns}); stopping respawn. Plugin restart required.`);
+            respawnStopped = true;
+            return;
+        }
+
+        // Calculate backoff delay: baseDelay * 2^(respawnCount-1), capped at maxDelay
+        // For clean exit (code 0, e.g. FIFO closed), use shorter base delay
+        if (code === 0) {
+            timeout = Math.min(100 * Math.pow(2, consecutiveRespawns - 1), maxRespawnDelayMs);
+        } else {
+            timeout = Math.min(baseRespawnDelayMs * Math.pow(2, consecutiveRespawns - 1), maxRespawnDelayMs);
+        }
 
         logger.debug(`camilladsp close event, exit code ${code}, signal ${signal}`);
-        logger.debug(`respawn in ${timeout} ms`);
+        logger.info(`camilladsp respawn in ${timeout} ms (attempt ${consecutiveRespawns}/${maxConsecutiveRespawns})`);
 
         setTimeout(function() {
 
@@ -55,7 +93,7 @@ let CamillaDsp = function (logger) {
 
             // In case of error, cleanup the FIFO before starting, so it won't be
             // kept in wait state and stall the whole pipeline
-            if (timeout > 0) {
+            if (code > 0) {
                 try {
                     execSync("/bin/dd if=/tmp/fusiondspfifo of=/dev/null bs=32k iflag=nonblock");
                 } catch (e) {
@@ -104,6 +142,7 @@ let CamillaDsp = function (logger) {
         logger.debug(`camilladsp spawning process`);
 
         camilla = spawn(cdPath, args);
+        lastSpawnTime = Date.now();
 
      //   logger.info(`camilladsp spawned new process with pid ${camilla.pid}, instance ${uniqueid}, run: ${run}`);
 
@@ -151,6 +190,10 @@ let CamillaDsp = function (logger) {
     this.start = function() {
 
         run = true;
+
+        // Reset respawn state on explicit start
+        consecutiveRespawns = 0;
+        respawnStopped = false;
 
         processSpawn();
 

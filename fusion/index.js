@@ -1,6 +1,6 @@
 /*--------------------
-// FusionDsp plugin for volumio 3. By balbuze January 2026
-contribution : Paolo Sabatino
+// FusionDsp plugin for volumio 3. By balbuze Febuary 2026
+contribution : Nerd, Paolo Sabatino
 Multi Dsp features
 Based on CamillaDsp
 ----------------------
@@ -37,6 +37,10 @@ const eq3type = ["Lowshelf2", "Peaking", "Highshelf2"] //Filter type for EQ3
 const sv = 34300 // sound velocity cm/s
 const logPrefix = "FusionDsp - "
 const fileStreamParams = "/tmp/fusiondsp_stream_params.log";
+
+// Debounce for config file write + Reload (to coalesce rapid UI/config changes)
+let configReloadDebounceTimeout = null;
+const configReloadDebounceMs = 250;
 
 // Define the Parameq class
 module.exports = FusionDsp;
@@ -77,17 +81,6 @@ FusionDsp.prototype.onStart = function () {
 
   self.commandRouter.loadI18nStrings();
   self.commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'updateALSAConfigFile');
-  setTimeout(function () {
-    self.loadalsastuff();
-    self.camillaProcess = new CamillaDsp(self.logger);
-    self.camillaProcess.start();
-    self.hwinfo();
-    self.purecamillagui();
-    self.getIP();
-    self.volumioState();
-    self.reportFusionEnabled();
-    self.checksamplerate();
-  }, 2000);
 
   // if mixer set to none, do not show loudness settings
   var mixt = this.getAdditionalConf('audio_interface', 'alsa_controller', 'mixer_type');
@@ -101,10 +94,29 @@ FusionDsp.prototype.onStart = function () {
     self.config.set('showloudness', true)
   }
 
+  // Single 2s timeout with defined order: setup ALSA, write config, start CamillaDSP, then init rest
   setTimeout(function () {
-    self.createCamilladspfile()
+    // 1. Setup ALSA stuff (FIFO, log files)
+    self.loadalsastuff();
+
+    // 2. Write config file BEFORE starting CamillaDSP so it starts with current config
+    self._doCreateCamilladspfile(null);
+
+    // 3. Start CamillaDSP process (reads the config we just wrote)
+    self.camillaProcess = new CamillaDsp(self.logger);
+    self.camillaProcess.start();
+
+    // 4. Initialize everything else
+    self.hwinfo();
+    self.purecamillagui();
+    self.getIP();
+    self.volumioState();
+    self.reportFusionEnabled();
+    self.checksamplerate();
+
+    // 5. Send volume level if loudness is enabled
     if (self.config.get('loudness')) {
-      self.sendvolumelevel()
+      self.sendvolumelevel();
     }
   }, 2000);
 
@@ -208,11 +220,13 @@ FusionDsp.prototype.loadalsastuff = function () {
     execSync(`/bin/touch ${fileStreamParams} && /bin/chmod 666 ${fileStreamParams} && /bin/touch /tmp/camilladsp.log && /bin/chmod 666 /tmp/camilladsp.log && /usr/bin/mkfifo -m 646 /tmp/fusiondspfifo`, {
       uid: 1000,
       gid: 1000
-    })
+    });
+    defer.resolve();
   } catch (err) {
     self.logger.error(logPrefix + ' ----failed to create fusiondspfifo :' + err);
     defer.reject(err);
   }
+  return defer.promise;
 };
 //------------------Hw detection--------------------
 
@@ -890,7 +904,7 @@ function configurePresetSelection(self, uiconf, selectedsp) {
 
   self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.value', value);
   self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.label', plabel);
-  if (selectedsp != 'EQ3') {
+  if ((selectedsp != 'EQ3'&& selectedsp != 'purecgui')) {
     try {
       const items = fs.readdirSync(pFolder);
       const itemsf = items.map(item => item.replace(/^\./, '').replace(/\.json$/, ''));
@@ -904,7 +918,7 @@ function configurePresetSelection(self, uiconf, selectedsp) {
         });
       }
     } catch (e) {
-      self.logger.error(`${logPrefix} failed to read local file: ${e}`);
+      self.logger.error(`${logPrefix} failed to read local file for preset: ${e}`);
     }
   }
 }
@@ -1109,6 +1123,7 @@ FusionDsp.prototype.getIP = function () {
   const self = this;
   var address
   var iPAddresses = self.commandRouter.executeOnPlugin('system_controller', 'network', 'getCachedIPAddresses', '');
+  self.logger.info(logPrefix+'--'+iPAddresses);
   if (iPAddresses && iPAddresses.eth0 && iPAddresses.eth0 != '') {
     address = iPAddresses.eth0;
   } else if (iPAddresses && iPAddresses.wlan0 && iPAddresses.wlan0 != '' && iPAddresses.wlan0 !== '192.168.211.1') {
@@ -1372,11 +1387,26 @@ FusionDsp.prototype.sendCommandToCamilla = function () {
     reload: '"Reload"'
   };
 
-  // Use existing connection if available, otherwise create a new one
-  if (!this.reloadConnection || this.reloadConnection.readyState !== WebSocket.OPEN) {
-    this.reloadConnection = new WebSocket(url);
-    setupReloadConnection(this.reloadConnection);
+  // Close existing connection if not open before creating a new one
+  if (this.reloadConnection) {
+    if (this.reloadConnection.readyState === WebSocket.OPEN) {
+      // Connection is open, just send the reload command
+      this.reloadConnection.send(commands.reload);
+      return;
+    } else {
+      // Connection exists but is not open (closing, closed, or connecting) - clean up
+      try {
+        this.reloadConnection.close();
+      } catch (e) {
+        // ignore close errors
+      }
+      this.reloadConnection = null;
+    }
   }
+
+  // Create a new connection
+  this.reloadConnection = new WebSocket(url);
+  setupReloadConnection(this.reloadConnection);
 
   function setupReloadConnection(connection) {
     connection.onopen = () => {
@@ -1386,6 +1416,8 @@ FusionDsp.prototype.sendCommandToCamilla = function () {
 
     connection.onerror = (error) => {
       self.logger.error(logPrefix + `Reload WebSocket error: ${error}`);
+      // Clean up on error
+      self.reloadConnection = null;
     };
 
     connection.onmessage = (event) => {
@@ -1394,19 +1426,20 @@ FusionDsp.prototype.sendCommandToCamilla = function () {
 
     connection.onclose = () => {
       //   self.logger.info(logPrefix + 'Reload WebSocket connection closed');
+      // Clean up on close
+      self.reloadConnection = null;
     };
-  }
-
-  // Send reload if connection is already open
-  if (this.reloadConnection.readyState === WebSocket.OPEN) {
-    this.reloadConnection.send(commands.reload);
-    //  self.logger.info(logPrefix + 'Sent Reload command');
   }
 
   // Cleanup method (optional)
   this.stopReloadConnection = () => {
-    if (this.reloadConnection && this.reloadConnection.readyState === WebSocket.OPEN) {
-      this.reloadConnection.close();
+    if (this.reloadConnection) {
+      try {
+        this.reloadConnection.close();
+      } catch (e) {
+        // ignore
+      }
+      this.reloadConnection = null;
     }
     self.logger.info(logPrefix + 'Reload connection stopped');
   };
@@ -1421,6 +1454,11 @@ FusionDsp.prototype.resetClippedSamples = function () {
   }
 };
 
+// Clipping Monitor reconnect backoff settings
+const monitorReconnectBaseMs = 2000;
+const monitorReconnectMaxMs = 30000;
+const monitorReconnectResetMs = 30000; // Reset delay if connected for this long
+
 FusionDsp.prototype.monitorClippedSamples = function () {
   const self = this;
   const commands = {
@@ -1430,6 +1468,11 @@ FusionDsp.prototype.monitorClippedSamples = function () {
   self.lastClippedSamples = 0;
   self.isStopping = false;
 
+  // Initialize backoff state if not set
+  if (typeof self.monitorReconnectDelay === 'undefined') {
+    self.monitorReconnectDelay = monitorReconnectBaseMs;
+  }
+
   // Create a new WebSocket connection if not already open
   if (!this.monitorConnection || this.monitorConnection.readyState !== WebSocket.OPEN) {
     this.monitorConnection = new WebSocket(url);
@@ -1437,8 +1480,17 @@ FusionDsp.prototype.monitorClippedSamples = function () {
   }
 
   function setupMonitorConnection(connection) {
+    let connectionOpenTime = null;
+
     connection.onopen = () => {
       self.logger.info(logPrefix + 'Clipping Monitor started');
+      connectionOpenTime = Date.now();
+      // Reset reconnect delay on successful connection that stays open
+      setTimeout(() => {
+        if (connection.readyState === WebSocket.OPEN) {
+          self.monitorReconnectDelay = monitorReconnectBaseMs;
+        }
+      }, monitorReconnectResetMs);
     };
 
     connection.onerror = (error) => {
@@ -1472,11 +1524,22 @@ FusionDsp.prototype.monitorClippedSamples = function () {
 
     connection.onclose = () => {
       if (!self.isStopping) {
+        // Check if connection was up long enough to reset delay
+        if (connectionOpenTime && (Date.now() - connectionOpenTime) >= monitorReconnectResetMs) {
+          self.monitorReconnectDelay = monitorReconnectBaseMs;
+        }
+
+        let currentDelay = self.monitorReconnectDelay;
+        self.logger.info(logPrefix + `Clipping Monitor reconnecting in ${currentDelay}ms`);
+
         setTimeout(() => {
           if (!self.isStopping) {
             self.monitorClippedSamples(); // Reconnect and restart monitoring
           }
-        }, 2000);
+        }, currentDelay);
+
+        // Increase delay for next time (exponential backoff, capped)
+        self.monitorReconnectDelay = Math.min(self.monitorReconnectDelay * 2, monitorReconnectMaxMs);
       }
     };
   }
@@ -1748,6 +1811,8 @@ FusionDsp.prototype.dfiltertype = function (data) {
 
 // Guard against multiple samplerate change events in short amount of time
 let isSamplerateUpdating = false;
+const SAMPLERATE_UPDATE_IN_PROGRESS = "SAMPLERATE_UPDATE_IN_PROGRESS";
+const streamWatcherDebounceMs = 200;
 
 FusionDsp.prototype.checksamplerate = function () {
 
@@ -1755,19 +1820,21 @@ FusionDsp.prototype.checksamplerate = function () {
 
   self.pushstateSamplerate = null;
 
+  let debounceTimeout = null;
+
   /**
    * Callback invoked when fileStreamParams changes. In this callback
    * we read the stream parameters, validate them and update camilladsp
-   * configuration file to accomodate changes
+   * configuration file to accomodate changes. Debounced to avoid
+   * multiple restarts from a single ALSA write (fs.watch can fire multiple times).
    */
-  let callbackRead = function (event, file) {
+  let callbackRead = function () {
 
     let hcurrentsamplerate;
     let hformat;
     let hchannels;
     let hbitdepth;
     let needRestart = false;
-    let timestamp = null;
 
     try {
 
@@ -1780,8 +1847,10 @@ FusionDsp.prototype.checksamplerate = function () {
       if (!hcurrentsamplerate)
         throw "invalid sample rate";
 
-      if (isSamplerateUpdating === true)
-        throw " ---- read samplerate skipped, rate is already updating; keeping " + self.pushstateSamplerate;
+      if (isSamplerateUpdating === true) {
+        self.logger.info(logPrefix + " ---- read samplerate skipped, rate is already updating; keeping " + self.pushstateSamplerate);
+        throw SAMPLERATE_UPDATE_IN_PROGRESS;
+      }
 
       isSamplerateUpdating = true;
 
@@ -1813,19 +1882,30 @@ FusionDsp.prototype.checksamplerate = function () {
 
     } catch (e) {
 
-      isSamplerateUpdating = false;
-      self.logger.error(logPrefix + e);
+      // Only clear lock on real errors; skip clear when update already in progress
+      if (e !== SAMPLERATE_UPDATE_IN_PROGRESS) {
+        isSamplerateUpdating = false;
+        self.logger.error(logPrefix + e);
+      }
 
     }
 
-  }
+  };
+
+  let debouncedCallbackRead = function () {
+    if (debounceTimeout) clearTimeout(debounceTimeout);
+    debounceTimeout = setTimeout(function () {
+      debounceTimeout = null;
+      callbackRead();
+    }, streamWatcherDebounceMs);
+  };
 
   // Install a file watcher over fileStreamParams
-  // when the file changes, read the content and update the samplerate
+  // when the file changes, read the content and update the samplerate (debounced)
   try {
     let watcher = fs.watch(fileStreamParams);
-    watcher.on("change", callbackRead);
-    self.logger.info(logPrefix + " ---- installed callbackRead");
+    watcher.on("change", debouncedCallbackRead);
+    self.logger.info(logPrefix + " ---- installed callbackRead (debounced " + streamWatcherDebounceMs + "ms)");
   } catch (e) {
     self.logger.error(logPrefix + "### ERROR: could not watch file " + fileStreamParams + " for sampling rate check");
   }
@@ -2950,13 +3030,13 @@ let getCamillaPureGuiConfig = function (plugin, chunksize, samplerate) {
 
 //------------Here we build CmaillaDsp config file----------------------------------------------
 
-FusionDsp.prototype.createCamilladspfile = function (callback) {
+/**
+ * Internal function that does the actual config build, write, and optional callback/reload.
+ * Called directly when callback is provided (immediate), or via debounce when no callback.
+ */
+FusionDsp.prototype._doCreateCamilladspfile = function (callback) {
   const self = this;
-  let defer = libQ.defer();
   var hcurrentsamplerate = 44100;
-  let hformat = "S32_LE";
-  let hchannels = 2;
-  let hbitdepth = 32;
   let selectedsp = self.config.get('selectedsp')
   let chunksize = 4800;
   let strCamillaConf;
@@ -2996,6 +3076,27 @@ FusionDsp.prototype.createCamilladspfile = function (callback) {
     self.logger.error(err);
 
   }
+};
+
+/**
+ * Public API: creates CamillaDSP config file and either calls callback (for restart path)
+ * or sends Reload command (debounced for rapid UI changes).
+ */
+FusionDsp.prototype.createCamilladspfile = function (callback) {
+  const self = this;
+  let defer = libQ.defer();
+
+  if (callback) {
+    // Callback path (e.g. restart): run immediately, no debounce
+    self._doCreateCamilladspfile(callback);
+  } else {
+    // No callback (Reload path): debounce to coalesce rapid config changes
+    if (configReloadDebounceTimeout) clearTimeout(configReloadDebounceTimeout);
+    configReloadDebounceTimeout = setTimeout(function () {
+      configReloadDebounceTimeout = null;
+      self._doCreateCamilladspfile(null);
+    }, configReloadDebounceMs);
+  }
 
   return defer.promise;
 };
@@ -3018,7 +3119,7 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
       var eqr = (data[eqc]).split(',')
       var veq = Number(eqr[0]);
 
-      if (typer !== 'None' && typer !== 'Remove'&& typer !=='Tilt') {
+      if (typer !== 'None' && typer !== 'Remove' && typer !== 'Tilt') {
         //  self.logger.info(logPrefix + ' Type is ' + typer)
 
         if (Number.parseFloat(veq) && (veq > 0 && veq < 22050)) {
@@ -3106,12 +3207,12 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
           self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('TILT_GAIN_RANGE') + eqc)
           return;
         }
-       var secondParam = eqr[1];
+        var secondParam = eqr[1];
         if (secondParam != undefined) {
           self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('TILT_ONLY_GAIN') + eqc)
           return;
         }
-        
+
       }
 
       if (typer == 'Highpass2' || typer == 'Lowpass2' || typer == 'Notch2') {
