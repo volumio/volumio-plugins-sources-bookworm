@@ -15,6 +15,7 @@ const execSync = require('child_process').execSync;
 const libQ = require('kew');
 const net = require('net');
 const path = require('path');
+const http = require('http');
 const WebSocket = require('ws');
 const { CamillaDsp } = require('./camilladsp-js');
 const url = 'ws://localhost:9876';
@@ -37,6 +38,7 @@ const eq3type = ["Lowshelf2", "Peaking", "Highshelf2"] //Filter type for EQ3
 const sv = 34300 // sound velocity cm/s
 const logPrefix = "FusionDsp - "
 const fileStreamParams = "/tmp/fusiondsp_stream_params.log";
+const peqGraphPort = 10015;
 
 // Debounce for config file write + Reload (to coalesce rapid UI/config changes)
 let configReloadDebounceTimeout = null;
@@ -110,6 +112,7 @@ FusionDsp.prototype.onStart = function () {
     self.hwinfo();
     self.purecamillagui();
     self.getIP();
+    self.startPeqGraphServer();
     self.volumioState();
     self.reportFusionEnabled();
     self.checksamplerate();
@@ -145,6 +148,8 @@ FusionDsp.prototype.onStop = function () {
     self.camillaProcess.stop();
     self.camillaProcess = null;
   }
+
+  self.stopPeqGraphServer();
 
   // Stop the FusionDsp system service
   exec("/usr/bin/sudo /bin/systemctl stop fusiondsp.service", {
@@ -563,6 +568,18 @@ function addPeqButtons(self, uiconf, ncontent) {
       visibleIf: { field: 'showeq', value: true }
     });
   }
+
+  buttons.push({
+    id: 'showpeqcurve',
+    element: 'button',
+    label: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
+    doc: self.commandRouter.getI18nString('SHOW_PEQ_CURVE_DOC'),
+    onClick: {
+      type: 'openUrl',
+      url: 'http://' + self.config.get('address') + ':' + peqGraphPort
+    },
+    visibleIf: { field: 'showeq', value: true }
+  });
 
   uiconf.sections[1].content.push(...buttons);
 }
@@ -1151,6 +1168,77 @@ FusionDsp.prototype.purecamillagui = function () {
     self.logger.info(logPrefix + ' failed to load Camilla Gui' + err);
   }
 
+};
+
+FusionDsp.prototype.startPeqGraphServer = function () {
+  const self = this;
+  if (self.peqGraphServer) return;
+
+  self.peqGraphServer = http.createServer(function (req, res) {
+    if (req.method === 'GET' && req.url === '/') {
+      fs.readFile(path.join(__dirname, 'peq-graph.html'), function (err, data) {
+        if (err) {
+          res.writeHead(500, { 'Content-Type': 'text/plain' });
+          res.end('Error loading page');
+          return;
+        }
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(data);
+      });
+    } else if (req.method === 'GET' && req.url === '/api/peq') {
+      var sampleRate = self.pushstateSamplerate || 44100;
+      var mergedeq = self.config.get('mergedeq') || '';
+      var parts = mergedeq.toString().split('|');
+      var filters = [];
+
+      for (var i = 0; i + 3 < parts.length; i += 4) {
+        var indexMatch = parts[i].match(/\d+/);
+        var filterIndex = indexMatch ? parseInt(indexMatch[0]) : i / 4;
+        var type = parts[i + 1];
+        var scope = parts[i + 2];
+        var paramStr = parts[i + 3];
+        if (!type || type === 'None' || type === 'undefined') continue;
+        var params = paramStr.split(',').map(Number);
+        filters.push({
+          index: filterIndex,
+          type: type,
+          scope: scope,
+          params: params
+        });
+      }
+
+      var result = {
+        sampleRate: sampleRate,
+        filters: filters
+      };
+
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      res.end(JSON.stringify(result));
+    } else {
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      res.end('Not found');
+    }
+  });
+
+  self.peqGraphServer.on('error', function (err) {
+    self.logger.info(logPrefix + ' PEQ graph server error: ' + err.message);
+  });
+
+  self.peqGraphServer.listen(peqGraphPort, function () {
+    self.logger.info(logPrefix + ' PEQ graph server listening on port ' + peqGraphPort);
+  });
+};
+
+FusionDsp.prototype.stopPeqGraphServer = function () {
+  const self = this;
+  if (self.peqGraphServer) {
+    self.peqGraphServer.close();
+    self.peqGraphServer = null;
+    self.logger.info(logPrefix + ' PEQ graph server stopped');
+  }
 };
 
 FusionDsp.prototype.addeq = function (data) {
