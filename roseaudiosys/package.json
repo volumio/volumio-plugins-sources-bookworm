@@ -1,20 +1,19 @@
 {
 	"name": "roseaudiosys",
-	"version": "2.0.0",
-	"description": "Volumio setup and GPIO controls",
+	"version": "0.1.0",
+	"description": "System Plugin for Rose Audio Devices",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
-	"author": "lelsteph",
+	"author": "Stephane Lelong",
 	"license": "ISC",
-	"repository": "https://github.com/yourname/yourrepo",
+	"repository": "https://github.com/lelsteph/volumio-plugins-sources-bookworm",
 	"volumio_info": {
 		"prettyName": "RoseAudioSys",
-		"icon": "fa-lightbulb-o",
+		"icon": "fa-microchip",
 		"plugin_type": "system_hardware",
 		"architectures": [
-			"amd64",
 			"armhf"
 		],
 		"os": [
@@ -28,6 +27,7 @@
 		"volumio": ">=4.73.0 <5.0.0"
 	},
 	"dependencies": {
+		"@iiot2k/gpiox": "^2.1.4",
 		"fs-extra": "^0.28.0",
 		"kew": "^0.7.0",
 		"v-conf": "^1.4.0"
