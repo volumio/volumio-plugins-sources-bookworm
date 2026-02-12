@@ -4,6 +4,51 @@
   },
   "sections": [
     {
+      "id": "section_disclaimer",
+      "element":" section",
+      "label": "TRANSLATE.YTMUSIC_SECTION_DISCLAIMER",
+      "icon": "fa-exclamation-triangle",
+      "description": "TRANSLATE.YTMUSIC_DISCLAIMER_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/ytmusic",
+        "method": "configSaveDisclaimer"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.YTMUSIC_SAVE",
+        "data": [
+          "hasAcceptedDisclaimer"
+        ]
+      },
+      "content": [
+        {
+          "id": "viewDisclaimer",
+          "element": "button",
+          "label": "TRANSLATE.YTMUSIC_VIEW_DISCLAIMER",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "music_service/ytmusic",
+            "method": "showDisclaimer"
+          }
+        },
+        {
+          "id": "hasAcceptedDisclaimer",
+          "element": "switch",
+          "label": "TRANSLATE.YTMUSIC_ACCEPT",
+          "value": false
+        },
+        {
+          "id": "projectHome",
+          "element": "button",
+          "label": "TRANSLATE.YTMUSIC_PROJECT_HOME",
+          "onClick": {
+            "type": "openUrl",
+            "url": "https://github.com/patrickkfkan/volumio-ytmusic"
+          }
+        }        
+      ]
+    },
+    {
       "id": "section_i18n",
       "element": "section",
       "label": "TRANSLATE.YTMUSIC_SECTION_I18N",
