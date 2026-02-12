@@ -1,0 +1,34 @@
+{
+  "name": "radio2playlist",
+  "version": "1.4.0",
+  "description": "Save web radio stations to Volumio playlists (Favorites + optional Auto mode)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "volumio_info": {
+    "prettyName": "Radio to Playlist",
+    "icon": "fa-list-ul",
+    "plugin_type": "miscellanea",
+    "plugin_name": "Radio2Playlist",
+    "plugin_description": "Save web radio stations to Volumio playlists",
+    "os": [
+      "debian"
+    ],
+    "architecture": [
+      "armhf",
+      "armv7",
+      "x86",
+      "amd64"
+    ],
+    "version": "1.4.0"
+  },
+  "dependencies": {
+    "fs-extra": "^0.30.0",
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.2",
+    "socket.io-client": "^2.5.0"
+  }
+}
