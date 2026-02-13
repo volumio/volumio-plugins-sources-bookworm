@@ -157,12 +157,59 @@
   #filter-popup .popup-buttons button.apply-btn:hover {
     background: #d03050;
   }
+  #header-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-btn {
+    padding: 5px 14px;
+    font-size: 12px;
+    border: 1px solid #0f3460;
+    border-radius: 3px;
+    cursor: pointer;
+    background: #16213e;
+    color: #e0e0e0;
+    font-family: inherit;
+  }
+  .header-btn:hover {
+    background: #1a2a4e;
+  }
+  .header-btn.save-btn {
+    background: #e94560;
+    border-color: #e94560;
+    color: #fff;
+  }
+  .header-btn.save-btn:hover {
+    background: #d03050;
+  }
+  #unsaved-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f5a623;
+    display: none;
+    flex-shrink: 0;
+  }
+  #status-msg {
+    font-size: 11px;
+    color: #888;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+  }
 </style>
 </head>
 <body>
 <div id="header">
   <h1>FusionDSP - PEQ Frequency Response</h1>
-  <div id="info">Sample rate: <span id="samplerate">--</span> Hz</div>
+  <div id="header-controls">
+    <span id="status-msg"></span>
+    <span id="unsaved-dot" title="Unsaved changes"></span>
+    <button class="header-btn" id="btn-reset">Reset</button>
+    <button class="header-btn save-btn" id="btn-save">Save</button>
+    <div id="info">Sample rate: <span id="samplerate">--</span> Hz</div>
+  </div>
 </div>
 <div id="canvas-container">
   <canvas id="graph"></canvas>
@@ -188,6 +235,11 @@
   var mouseX = -1, mouseY = -1;
   var dpr = window.devicePixelRatio || 1;
   var popupEl = document.getElementById('filter-popup');
+  var btnReset = document.getElementById('btn-reset');
+  var btnSave = document.getElementById('btn-save');
+  var unsavedDot = document.getElementById('unsaved-dot');
+  var statusMsg = document.getElementById('status-msg');
+  var hasUnsavedChanges = false;
 
   // Interaction state
   var interacting = false;
@@ -1065,6 +1117,7 @@
       if (xhr.status === 200) {
         try {
           var resp = JSON.parse(xhr.responseText);
+          if (!resp.error) markUnsaved();
           if (callback) callback(resp.error || null);
         } catch (e) {
           if (callback) callback('Invalid response');
@@ -1671,6 +1724,70 @@
         updateLegend(responses);
       }
     }
+  });
+
+  // ========== Unsaved changes tracking ==========
+
+  function markUnsaved() {
+    hasUnsavedChanges = true;
+    unsavedDot.style.display = 'inline-block';
+  }
+
+  function markSaved() {
+    hasUnsavedChanges = false;
+    unsavedDot.style.display = 'none';
+  }
+
+  function showStatus(text, duration) {
+    statusMsg.textContent = text;
+    if (duration) {
+      setTimeout(function () {
+        if (statusMsg.textContent === text) statusMsg.textContent = '';
+      }, duration);
+    }
+  }
+
+  // ========== Save / Reset buttons ==========
+
+  btnSave.addEventListener('click', function () {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/peq/save', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 5000;
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        markSaved();
+        showStatus('Saved', 2000);
+      } else {
+        showStatus('Save failed', 2000);
+      }
+    };
+    xhr.onerror = function () {
+      showStatus('Network error', 2000);
+    };
+    xhr.send('{}');
+  });
+
+  btnReset.addEventListener('click', function () {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/peq/reset', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 5000;
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        markSaved();
+        showStatus('Reset to saved', 2000);
+        // Force re-fetch to update graph with restored data
+        interacting = false;
+        fetchAndRender();
+      } else {
+        showStatus('Reset failed', 2000);
+      }
+    };
+    xhr.onerror = function () {
+      showStatus('Network error', 2000);
+    };
+    xhr.send('{}');
   });
 
   // ========== Init ==========

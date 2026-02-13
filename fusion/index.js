@@ -570,6 +570,13 @@ function addPeqButtons(self, uiconf, ncontent) {
   }
 
   buttons.push({
+    id: 'resetpeq',
+    element: 'button',
+    label: self.commandRouter.getI18nString('RESET_PEQ'),
+    doc: self.commandRouter.getI18nString('RESET_PEQ_DOC'),
+    onClick: { type: 'plugin', endpoint: 'audio_interface/fusiondsp', method: 'resetPeqToSaved', data: [] },
+    visibleIf: { field: 'showeq', value: true }
+  }, {
     id: 'showpeqcurve',
     element: 'button',
     label: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
@@ -1185,7 +1192,7 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.end(data);
       });
-    } else if (req.method === 'OPTIONS' && req.url === '/api/peq') {
+    } else if (req.method === 'OPTIONS' && (req.url === '/api/peq' || req.url === '/api/peq/reset' || req.url === '/api/peq/save')) {
       res.writeHead(204, {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -1405,7 +1412,6 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         }
 
         self.config.set('mergedeq', newMergedeq);
-        self.config.set('savedmergedeq', newMergedeq);
 
         setTimeout(function () {
           self.refreshUI();
@@ -1415,6 +1421,49 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         res.writeHead(200, corsHeaders);
         res.end(JSON.stringify({ ok: true }));
       });
+
+    } else if (req.method === 'POST' && req.url === '/api/peq/reset') {
+      var corsHeaders = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      };
+
+      if (self.config.get('selectedsp') !== 'PEQ') {
+        res.writeHead(400, corsHeaders);
+        res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
+        return;
+      }
+
+      var savedmergedeq = self.config.get('savedmergedeq');
+      var savednbreq = self.config.get('savednbreq');
+      self.config.set('mergedeq', savedmergedeq);
+      self.config.set('nbreq', savednbreq);
+
+      setTimeout(function () {
+        self.createCamilladspfile();
+        self.refreshUI();
+      }, 100);
+
+      res.writeHead(200, corsHeaders);
+      res.end(JSON.stringify({ ok: true }));
+
+    } else if (req.method === 'POST' && req.url === '/api/peq/save') {
+      var corsHeaders = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      };
+
+      if (self.config.get('selectedsp') !== 'PEQ') {
+        res.writeHead(400, corsHeaders);
+        res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
+        return;
+      }
+
+      self.config.set('savedmergedeq', self.config.get('mergedeq'));
+      self.config.set('savednbreq', self.config.get('nbreq'));
+
+      res.writeHead(200, corsHeaders);
+      res.end(JSON.stringify({ ok: true }));
 
     } else {
       res.writeHead(404, { 'Content-Type': 'text/plain' });
@@ -1489,6 +1538,19 @@ FusionDsp.prototype.removealleq = function () {
   setTimeout(function () {
     self.createCamilladspfile()
   }, 300);
+  self.refreshUI();
+};
+
+FusionDsp.prototype.resetPeqToSaved = function () {
+  const self = this;
+  var savedmergedeq = self.config.get('savedmergedeq');
+  var savednbreq = self.config.get('savednbreq');
+  self.config.set('mergedeq', savedmergedeq);
+  self.config.set('nbreq', savednbreq);
+
+  setTimeout(function () {
+    self.createCamilladspfile();
+  }, 100);
   self.refreshUI();
 };
 
