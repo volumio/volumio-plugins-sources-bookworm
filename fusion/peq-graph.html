@@ -201,6 +201,7 @@
   var lastDbMin = -15, lastDbMax = 15;
   var interactionEndTimer = null;
   var hoveredFilterIndex = -1;
+  var popupSnapshotData = null;
 
   // Filter type metadata
   var filterTypeMeta = {
@@ -1096,6 +1097,7 @@
     selectedFilterIndex = fi;
     interacting = true;
     clearInteractionTimer();
+    popupSnapshotData = JSON.parse(JSON.stringify(currentData));
 
     var editParams = ind.params.slice();
     var html = '<div class="popup-title">Eq' + ind.index + ' ' + ind.type + ' [' + ind.scope + ']</div>';
@@ -1188,10 +1190,7 @@
     });
 
     document.getElementById('popup-cancel').addEventListener('click', function () {
-      closePopup();
-      scheduleInteractionEnd();
-      // Revert to server data
-      fetchAndRender();
+      revertAndClosePopup();
     });
 
     // Focus first input
@@ -1204,12 +1203,20 @@
     selectedFilterIndex = -1;
   }
 
+  function revertAndClosePopup() {
+    if (popupSnapshotData) {
+      currentData = popupSnapshotData;
+      popupSnapshotData = null;
+      renderLocal();
+    }
+    closePopup();
+    scheduleInteractionEnd();
+  }
+
   // Close popup on Escape key (global)
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && selectedFilterIndex >= 0) {
-      closePopup();
-      scheduleInteractionEnd();
-      fetchAndRender();
+      revertAndClosePopup();
     }
   });
 
