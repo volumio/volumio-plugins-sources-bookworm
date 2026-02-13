@@ -202,6 +202,6 @@
   "MUTE_RIGHT": "Mute right",
   "TILT_GAIN_RANGE": "Tilt gain must be a number between -100 and 100 in ",
   "TILT_ONLY_GAIN": "Tilt requires only gain value (dB) in ",
-  "SHOW_PEQ_CURVE": "Show frequency response",
-  "SHOW_PEQ_CURVE_DOC": "Open PEQ frequency response graph (auto-updates)"
+  "SHOW_PEQ_CURVE": "Open graphic EQ",
+  "SHOW_PEQ_CURVE_DOC": "Open interactive PEQ graph to view and adjust filters"
 }

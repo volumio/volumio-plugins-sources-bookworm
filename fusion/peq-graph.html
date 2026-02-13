@@ -1206,7 +1206,7 @@
 
   // Close popup on Escape key (global)
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && popupEl.style.display !== 'none') {
+    if (e.key === 'Escape' && selectedFilterIndex >= 0) {
       closePopup();
       scheduleInteractionEnd();
       fetchAndRender();
@@ -1413,7 +1413,7 @@
 
   canvas.addEventListener('mousedown', function (e) {
     if (e.button !== 0) return;
-    if (popupEl.style.display !== 'none') return;
+    if (selectedFilterIndex >= 0) return;
     var pos = getMousePos(e);
     var hit = hitTestMarker(pos.x, pos.y, lastResponses);
     if (hit < 0) return;
@@ -1551,7 +1551,7 @@
   // ========== Touch event handlers ==========
 
   canvas.addEventListener('touchstart', function (e) {
-    if (popupEl.style.display !== 'none') return;
+    if (selectedFilterIndex >= 0) return;
     var pos = getTouchPos(e);
     var hit = hitTestMarker(pos.x, pos.y, lastResponses);
     if (hit < 0) return;
