@@ -191,11 +191,7 @@
           "attributes": [
             { "placeholder": "TRANSLATE.RENAME_PRESET_SW_DOC" }
           ],
-          "value": {
-            "value": "",
-            "label": ""
-          },
-          "options": []
+          "value": ""
         },
         {
           "id": "deletepreset",

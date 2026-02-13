@@ -202,7 +202,7 @@
   "MUTE_RIGHT": "Mute right",
   "TILT_GAIN_RANGE": "Tilt gain must be a number between -100 and 100 in ",
   "TILT_ONLY_GAIN": "Tilt requires only gain value (dB) in ",
-  "MANAGE_PRESETS": "Manage presets",
+  "MANAGE_PRESETS": "Manage preset",
   "DELETE_PRESET": "Delete preset",
   "DELETE_PRESET_DOC": "Delete the currently loaded preset",
   "RENAME_PRESET": "Rename",
