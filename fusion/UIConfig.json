@@ -163,18 +163,6 @@
             "label": ""
           },
           "options": []
-        },
-        {
-          "id": "deletepreset",
-          "element": "button",
-          "label": "TRANSLATE.DELETE_PRESET",
-          "description": "TRANSLATE.DELETE_PRESET_DOC",
-          "onClick": {
-            "type": "plugin",
-            "endpoint": "audio_interface/fusiondsp",
-            "method": "deletepreset",
-            "data": []
-          }
         }
       ]
     },
@@ -204,6 +192,38 @@
             { "placeholder": "TRANSLATE.RENAME_PRESET_SW_DOC" }
           ],
           "value": ""
+        }
+      ]
+    },
+    {
+      "id": "presetactions",
+      "element": "section",
+      "label": "TRANSLATE.PRESET_ACTIONS",
+      "icon": "fa-copy",
+      "content": [
+        {
+          "id": "duplicatepreset",
+          "element": "button",
+          "label": "TRANSLATE.DUPLICATE_PRESET",
+          "description": "TRANSLATE.DUPLICATE_PRESET_DOC",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "audio_interface/fusiondsp",
+            "method": "duplicatepreset",
+            "data": []
+          }
+        },
+        {
+          "id": "deletepreset",
+          "element": "button",
+          "label": "TRANSLATE.DELETE_PRESET",
+          "description": "TRANSLATE.DELETE_PRESET_DOC",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "audio_interface/fusiondsp",
+            "method": "deletepreset",
+            "data": []
+          }
         }
       ]
     },
