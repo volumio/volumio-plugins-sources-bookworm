@@ -929,9 +929,10 @@ function configurePresetSelection(self, uiconf, selectedsp) {
 function configureManagePreset(self, uiconf) {
   const selectedsp = self.config.get('selectedsp');
   const currentPreset = (self.config.get(selectedsp + 'preset') || '').replace(/^\./, '').replace(/\.json$/, '');
-  uiconf.sections[3].content[0].value = '';
   if (currentPreset && currentPreset !== 'nopreset' && currentPreset !== 'no preset' && currentPreset !== 'no preset used') {
-    self.configManager.setUIConfigParam(uiconf, 'sections[3].content[0].attributes[0].placeholder', currentPreset);
+    uiconf.sections[3].content[0].value = currentPreset;
+  } else {
+    uiconf.sections[3].content[0].value = '';
   }
   if (selectedsp === 'EQ3' || selectedsp === 'purecgui') {
     uiconf.sections[3].hidden = true;
