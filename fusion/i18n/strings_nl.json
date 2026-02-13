@@ -201,5 +201,20 @@
   "MUTE_RIGHT_DOC": "Dempen rechterkanaal",
   "MUTE_RIGHT": "Dempen rechts",
   "TILT_GAIN_RANGE": "Tilt versterking moet een getal zijn tussen -100 en 100 in ",
-  "TILT_ONLY_GAIN": "Tilt vereist alleen versterkingswaarde (dB) in "
+  "TILT_ONLY_GAIN": "Tilt vereist alleen versterkingswaarde (dB) in ",
+  "MANAGE_PRESETS": "Voorkeuze beheren",
+  "PRESET_ACTIONS": "Voorkeuze-acties",
+  "DUPLICATE_PRESET": "Voorkeuze dupliceren",
+  "DUPLICATE_PRESET_DOC": "Maak een kopie van de momenteel geladen voorkeuze",
+  "PRESET_DUPLICATED": "Voorkeuze gedupliceerd als \"{0}\"",
+  "DELETE_PRESET": "Voorkeuze verwijderen",
+  "DELETE_PRESET_DOC": "De momenteel geladen voorkeuze verwijderen",
+  "RENAME_PRESET": "Hernoemen",
+  "DELETE_PRESET_CONFIRM_TITLE": "Voorkeuze verwijderen?",
+  "DELETE_PRESET_CONFIRM_MSG": "Weet u zeker dat u de voorkeuze \"{0}\" wilt verwijderen?",
+  "DELETE": "Verwijderen",
+  "CANCEL": "Annuleren",
+  "PRESET_DELETED": "Voorkeuze succesvol verwijderd",
+  "PRESET_RENAMED": "Voorkeuze hernoemd naar \"{0}\"",
+  "RENAME_PRESET_EMPTY": "Voer een nieuwe naam in voor de voorkeuze"
 }

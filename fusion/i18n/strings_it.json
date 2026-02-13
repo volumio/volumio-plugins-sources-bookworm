@@ -201,5 +201,20 @@
   "MUTE_RIGHT_DOC": "Disattiva canale destro",
   "MUTE_RIGHT": "Disattiva audio a destra",
   "TILT_GAIN_RANGE": "Il guadagno Tilt deve essere un numero tra -100 e 100 in ",
-  "TILT_ONLY_GAIN": "Tilt richiede solo il valore di guadagno (dB) in "
+  "TILT_ONLY_GAIN": "Tilt richiede solo il valore di guadagno (dB) in ",
+  "MANAGE_PRESETS": "Gestisci preset",
+  "PRESET_ACTIONS": "Azioni preset",
+  "DUPLICATE_PRESET": "Duplica preset",
+  "DUPLICATE_PRESET_DOC": "Crea una copia del preset attualmente caricato",
+  "PRESET_DUPLICATED": "Preset duplicato come \"{0}\"",
+  "DELETE_PRESET": "Elimina preset",
+  "DELETE_PRESET_DOC": "Elimina il preset attualmente caricato",
+  "RENAME_PRESET": "Rinomina",
+  "DELETE_PRESET_CONFIRM_TITLE": "Eliminare il preset?",
+  "DELETE_PRESET_CONFIRM_MSG": "Sei sicuro di voler eliminare il preset \"{0}\"?",
+  "DELETE": "Elimina",
+  "CANCEL": "Annulla",
+  "PRESET_DELETED": "Preset eliminato con successo",
+  "PRESET_RENAMED": "Preset rinominato in \"{0}\"",
+  "RENAME_PRESET_EMPTY": "Inserisci un nuovo nome per il preset"
 }

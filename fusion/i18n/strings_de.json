@@ -201,5 +201,20 @@
   "MUTE_RIGHT_DOC": "Rechten Kanal stumm schalten",
   "MUTE_RIGHT": "Rechts stummschalten",
   "TILT_GAIN_RANGE": "Tilt-Verstaerkung muss eine Zahl zwischen -100 und 100 sein in ",
-  "TILT_ONLY_GAIN": "Tilt benoetigt nur den Verstaerkungswert (dB) in "
+  "TILT_ONLY_GAIN": "Tilt benoetigt nur den Verstaerkungswert (dB) in ",
+  "MANAGE_PRESETS": "Voreinstellung verwalten",
+  "PRESET_ACTIONS": "Voreinstellungsaktionen",
+  "DUPLICATE_PRESET": "Voreinstellung duplizieren",
+  "DUPLICATE_PRESET_DOC": "Eine Kopie der aktuell geladenen Voreinstellung erstellen",
+  "PRESET_DUPLICATED": "Voreinstellung dupliziert als \"{0}\"",
+  "DELETE_PRESET": "Voreinstellung löschen",
+  "DELETE_PRESET_DOC": "Die aktuell geladene Voreinstellung löschen",
+  "RENAME_PRESET": "Umbenennen",
+  "DELETE_PRESET_CONFIRM_TITLE": "Voreinstellung löschen?",
+  "DELETE_PRESET_CONFIRM_MSG": "Sind Sie sicher, dass Sie die Voreinstellung \"{0}\" löschen möchten?",
+  "DELETE": "Löschen",
+  "CANCEL": "Abbrechen",
+  "PRESET_DELETED": "Voreinstellung erfolgreich gelöscht",
+  "PRESET_RENAMED": "Voreinstellung umbenannt in \"{0}\"",
+  "RENAME_PRESET_EMPTY": "Bitte geben Sie einen neuen Namen für die Voreinstellung ein"
 }

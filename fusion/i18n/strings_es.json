@@ -201,5 +201,20 @@
   "MUTE_RIGHT_DOC": "Silenciar canal derecho",
   "MUTE_RIGHT": "Silenciar a la derecha",
   "TILT_GAIN_RANGE": "La ganancia Tilt debe ser un numero entre -100 y 100 en ",
-  "TILT_ONLY_GAIN": "Tilt requiere solo el valor de ganancia (dB) en "
+  "TILT_ONLY_GAIN": "Tilt requiere solo el valor de ganancia (dB) en ",
+  "MANAGE_PRESETS": "Gestionar preajuste",
+  "PRESET_ACTIONS": "Acciones del preajuste",
+  "DUPLICATE_PRESET": "Duplicar preajuste",
+  "DUPLICATE_PRESET_DOC": "Crear una copia del preajuste cargado actualmente",
+  "PRESET_DUPLICATED": "Preajuste duplicado como \"{0}\"",
+  "DELETE_PRESET": "Eliminar preajuste",
+  "DELETE_PRESET_DOC": "Eliminar el preajuste cargado actualmente",
+  "RENAME_PRESET": "Renombrar",
+  "DELETE_PRESET_CONFIRM_TITLE": "¿Eliminar preajuste?",
+  "DELETE_PRESET_CONFIRM_MSG": "¿Está seguro de que desea eliminar el preajuste \"{0}\"?",
+  "DELETE": "Eliminar",
+  "CANCEL": "Cancelar",
+  "PRESET_DELETED": "Preajuste eliminado correctamente",
+  "PRESET_RENAMED": "Preajuste renombrado a \"{0}\"",
+  "RENAME_PRESET_EMPTY": "Por favor, introduzca un nuevo nombre para el preajuste"
 }
