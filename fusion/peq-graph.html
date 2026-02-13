@@ -84,6 +84,79 @@
     font-size: 16px;
     display: none;
   }
+  #filter-popup {
+    position: absolute;
+    display: none;
+    background: rgba(22, 33, 62, 0.95);
+    border: 1px solid #0f3460;
+    border-radius: 6px;
+    padding: 12px;
+    z-index: 10;
+    min-width: 200px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  }
+  #filter-popup .popup-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e94560;
+    margin-bottom: 8px;
+  }
+  #filter-popup .popup-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  #filter-popup .popup-row label {
+    font-size: 12px;
+    color: #aaa;
+    min-width: 80px;
+  }
+  #filter-popup .popup-row input {
+    width: 90px;
+    padding: 3px 6px;
+    font-size: 12px;
+    background: #1a1a2e;
+    border: 1px solid #0f3460;
+    border-radius: 3px;
+    color: #e0e0e0;
+    outline: none;
+  }
+  #filter-popup .popup-row input:focus {
+    border-color: #e94560;
+  }
+  #filter-popup .popup-error {
+    font-size: 11px;
+    color: #e94560;
+    margin-bottom: 6px;
+    min-height: 14px;
+  }
+  #filter-popup .popup-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  #filter-popup .popup-buttons button {
+    flex: 1;
+    padding: 4px 10px;
+    font-size: 12px;
+    border: 1px solid #0f3460;
+    border-radius: 3px;
+    cursor: pointer;
+    background: #16213e;
+    color: #e0e0e0;
+  }
+  #filter-popup .popup-buttons button:hover {
+    background: #1a2a4e;
+  }
+  #filter-popup .popup-buttons button.apply-btn {
+    background: #e94560;
+    border-color: #e94560;
+    color: #fff;
+  }
+  #filter-popup .popup-buttons button.apply-btn:hover {
+    background: #d03050;
+  }
 </style>
 </head>
 <body>
@@ -95,6 +168,7 @@
   <canvas id="graph"></canvas>
   <div id="crosshair-info"></div>
   <div id="error-msg">Unable to load PEQ data</div>
+  <div id="filter-popup"></div>
 </div>
 <div id="legend"></div>
 
@@ -113,6 +187,41 @@
   var currentData = null;
   var mouseX = -1, mouseY = -1;
   var dpr = window.devicePixelRatio || 1;
+  var popupEl = document.getElementById('filter-popup');
+
+  // Interaction state
+  var interacting = false;
+  var dragging = false;
+  var dragFilterIndex = -1;
+  var dragOriginalParams = null;
+  var selectedFilterIndex = -1;
+  var dragStartX = 0, dragStartY = 0;
+  var dragMoved = false;
+  var lastResponses = null;
+  var lastDbMin = -15, lastDbMax = 15;
+  var interactionEndTimer = null;
+  var hoveredFilterIndex = -1;
+
+  // Filter type metadata
+  var filterTypeMeta = {
+    'Peaking':            { hasGain: true,  paramLabels: ['Freq (Hz)', 'Gain (dB)', 'Q'], draggable: true },
+    'Peaking2':           { hasGain: true,  paramLabels: ['Freq (Hz)', 'Gain (dB)', 'Bandwidth'], draggable: true },
+    'Lowshelf':           { hasGain: true,  paramLabels: ['Freq (Hz)', 'Gain (dB)', 'Slope'], draggable: true },
+    'Lowshelf2':          { hasGain: true,  paramLabels: ['Freq (Hz)', 'Gain (dB)', 'Q'], draggable: true },
+    'Highshelf':          { hasGain: true,  paramLabels: ['Freq (Hz)', 'Gain (dB)', 'Slope'], draggable: true },
+    'Highshelf2':         { hasGain: true,  paramLabels: ['Freq (Hz)', 'Gain (dB)', 'Q'], draggable: true },
+    'LowshelfFO':         { hasGain: true,  paramLabels: ['Freq (Hz)', 'Gain (dB)'], draggable: true },
+    'HighshelfFO':        { hasGain: true,  paramLabels: ['Freq (Hz)', 'Gain (dB)'], draggable: true },
+    'Lowpass':            { hasGain: false, paramLabels: ['Freq (Hz)', 'Q'], draggable: true },
+    'Highpass':           { hasGain: false, paramLabels: ['Freq (Hz)', 'Q'], draggable: true },
+    'LowpassFO':          { hasGain: false, paramLabels: ['Freq (Hz)'], draggable: true },
+    'HighpassFO':          { hasGain: false, paramLabels: ['Freq (Hz)'], draggable: true },
+    'Notch':              { hasGain: false, paramLabels: ['Freq (Hz)', 'Q'], draggable: true },
+    'Notch2':             { hasGain: false, paramLabels: ['Freq (Hz)', 'Bandwidth'], draggable: true },
+    'LinkwitzTransform':  { hasGain: false, paramLabels: ['Fa (Hz)', 'Qa', 'Ft (Hz)', 'Qt'], draggable: false },
+    'ButterworthHighpass': { hasGain: false, paramLabels: ['Freq (Hz)', 'Order'], draggable: true },
+    'ButterworthLowpass':  { hasGain: false, paramLabels: ['Freq (Hz)', 'Order'], draggable: true }
+  };
 
   // Plot margins
   var margin = { top: 20, right: 30, bottom: 40, left: 60 };
@@ -811,7 +920,14 @@
       if (my < margin.top) my = margin.top;
       if (my > h - margin.bottom) my = h - margin.bottom;
       var label = '' + ind.index;
-      var radius = 10;
+      var isActive = (fi === dragFilterIndex || fi === selectedFilterIndex || fi === hoveredFilterIndex);
+      var radius = isActive ? 13 : 10;
+      // Glow effect for active dot
+      if (isActive) {
+        ctx.save();
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 12;
+      }
       // Filled circle
       ctx.beginPath();
       ctx.arc(mx, my, radius, 0, 2 * Math.PI);
@@ -819,11 +935,14 @@
       ctx.fill();
       // Dark outline for contrast
       ctx.strokeStyle = '#1a1a2e';
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = isActive ? 2 : 1.5;
       ctx.stroke();
+      if (isActive) {
+        ctx.restore();
+      }
       // Number label
       ctx.fillStyle = '#fff';
-      ctx.font = 'bold 10px sans-serif';
+      ctx.font = isActive ? 'bold 11px sans-serif' : 'bold 10px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(label, mx, my + 3.5);
     }
@@ -859,6 +978,271 @@
       else ctx.lineTo(x, y);
     }
     ctx.stroke();
+  }
+
+  // ========== Hit-testing ==========
+
+  function hitTestMarker(mx, my, responses) {
+    if (!responses) return -1;
+    var w = canvas.width / dpr;
+    var h = canvas.height / dpr;
+    // Iterate in reverse so topmost (last drawn) is tested first
+    for (var fi = responses.individual.length - 1; fi >= 0; fi--) {
+      var ind = responses.individual[fi];
+      var markerFreq = ind.params[0];
+      if (markerFreq < fMin || markerFreq > fMax) continue;
+      var markerDb = evalBiquadMagnitudeDb(ind.biquads, markerFreq, responses.sampleRate);
+      if (!isFinite(markerDb)) continue;
+      var dotX = freqToX(markerFreq);
+      var dotY = dbToY(markerDb, lastDbMin, lastDbMax);
+      if (dotY < margin.top) dotY = margin.top;
+      if (dotY > h - margin.bottom) dotY = h - margin.bottom;
+      var dx = mx - dotX;
+      var dy = my - dotY;
+      if (dx * dx + dy * dy <= 14 * 14) return fi;
+    }
+    return -1;
+  }
+
+  // ========== Client-side validation ==========
+
+  function validateParams(type, params) {
+    var freq = Number(params[0]);
+    if (type !== 'None') {
+      if (!isFinite(freq) || freq <= 0 || freq >= 22050) return 'Frequency must be between 0 and 22050 Hz';
+    }
+    var meta = filterTypeMeta[type];
+    if (!meta) return 'Unknown filter type';
+
+    if (meta.hasGain) {
+      var g = Number(params[1]);
+      if (!isFinite(g) || g <= -20.1 || g >= 20.1) return 'Gain must be between -20 and 20 dB';
+    }
+    if (type === 'Peaking' || type === 'Highshelf2' || type === 'Lowshelf2') {
+      var q = Number(params[2]);
+      if (!isFinite(q) || q <= 0 || q >= 40.1) return 'Q must be between 0 and 40';
+    }
+    if (type === 'Peaking2') {
+      var bw = Number(params[2]);
+      if (!isFinite(bw) || bw <= 0 || bw >= 8) return 'Bandwidth must be between 0 and 8';
+    }
+    if (type === 'Highpass' || type === 'Lowpass' || type === 'Notch') {
+      var q = Number(params[1]);
+      if (!isFinite(q) || q <= 0 || q >= 40.1) return 'Q must be between 0 and 40';
+    }
+    if (type === 'Highpass2' || type === 'Lowpass2' || type === 'Notch2') {
+      var bw = Number(params[1]);
+      if (!isFinite(bw) || bw <= 0 || bw >= 25.1) return 'Bandwidth must be between 0 and 25';
+    }
+    if (type === 'Highshelf' || type === 'Lowshelf') {
+      var s = Number(params[2]);
+      if (!isFinite(s) || s <= 0 || s >= 13) return 'Slope must be between 0 and 13';
+    }
+    if (type === 'ButterworthHighpass' || type === 'ButterworthLowpass') {
+      var order = Number(params[1]);
+      if ([2, 4, 6, 8].indexOf(order) === -1) return 'Order must be 2, 4, 6, or 8';
+    }
+    if (type === 'LinkwitzTransform') {
+      var qa = Number(params[1]);
+      var ft = Number(params[2]);
+      var qt = Number(params[3]);
+      if (!isFinite(qa) || qa <= 0 || qa >= 40.1) return 'Qa must be between 0 and 40';
+      if (!isFinite(ft) || ft <= 0 || ft >= 22050) return 'Ft must be between 0 and 22050 Hz';
+      if (!isFinite(qt) || qt <= 0 || qt >= 40.1) return 'Qt must be between 0 and 40';
+    }
+    return null;
+  }
+
+  // ========== POST to backend ==========
+
+  function postFilterUpdate(filterIndex, params, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/peq', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 5000;
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        try {
+          var resp = JSON.parse(xhr.responseText);
+          if (callback) callback(resp.error || null);
+        } catch (e) {
+          if (callback) callback('Invalid response');
+        }
+      } else {
+        try {
+          var resp = JSON.parse(xhr.responseText);
+          if (callback) callback(resp.error || 'Server error');
+        } catch (e) {
+          if (callback) callback('Server error');
+        }
+      }
+    };
+    xhr.onerror = function () {
+      if (callback) callback('Network error');
+    };
+    xhr.send(JSON.stringify({
+      filters: [{ index: filterIndex, params: params }]
+    }));
+  }
+
+  // ========== Popup ==========
+
+  function showPopup(fi) {
+    if (!lastResponses || fi < 0 || fi >= lastResponses.individual.length) return;
+    var ind = lastResponses.individual[fi];
+    var meta = filterTypeMeta[ind.type];
+    if (!meta) return;
+
+    selectedFilterIndex = fi;
+    interacting = true;
+    clearInteractionTimer();
+
+    var editParams = ind.params.slice();
+    var html = '<div class="popup-title">Eq' + ind.index + ' ' + ind.type + ' [' + ind.scope + ']</div>';
+    for (var i = 0; i < meta.paramLabels.length; i++) {
+      html += '<div class="popup-row"><label>' + meta.paramLabels[i] + '</label>' +
+        '<input type="number" step="any" data-pi="' + i + '" value="' + editParams[i] + '"></div>';
+    }
+    html += '<div class="popup-error" id="popup-error-text"></div>';
+    html += '<div class="popup-buttons">' +
+      '<button class="cancel-btn" id="popup-cancel">Cancel</button>' +
+      '<button class="apply-btn" id="popup-apply">Apply</button></div>';
+
+    popupEl.innerHTML = html;
+    popupEl.style.display = 'block';
+
+    // Position near the dot
+    var markerFreq = ind.params[0];
+    var markerDb = evalBiquadMagnitudeDb(ind.biquads, markerFreq, lastResponses.sampleRate);
+    var dotX = freqToX(markerFreq);
+    var dotY = dbToY(markerDb, lastDbMin, lastDbMax);
+    var w = canvas.width / dpr;
+    var h = canvas.height / dpr;
+    var pLeft = dotX + 20;
+    var pTop = dotY - 30;
+    if (pLeft + 220 > w) pLeft = dotX - 230;
+    if (pTop < 0) pTop = 10;
+    if (pTop + 200 > h) pTop = h - 210;
+    popupEl.style.left = pLeft + 'px';
+    popupEl.style.top = pTop + 'px';
+
+    // Live preview on input change
+    var inputs = popupEl.querySelectorAll('input[type="number"]');
+    for (var i = 0; i < inputs.length; i++) {
+      inputs[i].addEventListener('input', function () {
+        var ep = [];
+        for (var j = 0; j < inputs.length; j++) {
+          ep.push(parseFloat(inputs[j].value) || 0);
+        }
+        // Live preview: temporarily update currentData
+        var f = currentData.filters;
+        for (var j = 0; j < f.length; j++) {
+          if (f[j].index === ind.index) {
+            f[j].params = ep;
+            break;
+          }
+        }
+        var resp = computeResponses(currentData);
+        if (resp) {
+          lastResponses = resp;
+          resizeCanvas();
+          render(resp);
+          updateLegend(resp);
+        }
+        // Show validation error
+        var errEl = document.getElementById('popup-error-text');
+        var err = validateParams(ind.type, ep);
+        if (errEl) errEl.textContent = err || '';
+      });
+      // Enter key = Apply
+      inputs[i].addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.getElementById('popup-apply').click();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          document.getElementById('popup-cancel').click();
+        }
+      });
+    }
+
+    document.getElementById('popup-apply').addEventListener('click', function () {
+      var ep = [];
+      for (var j = 0; j < inputs.length; j++) {
+        ep.push(parseFloat(inputs[j].value) || 0);
+      }
+      var err = validateParams(ind.type, ep);
+      var errEl = document.getElementById('popup-error-text');
+      if (err) {
+        if (errEl) errEl.textContent = err;
+        return;
+      }
+      postFilterUpdate(ind.index, ep, function (serverErr) {
+        if (serverErr) {
+          if (errEl) errEl.textContent = serverErr;
+        } else {
+          closePopup();
+          scheduleInteractionEnd();
+        }
+      });
+    });
+
+    document.getElementById('popup-cancel').addEventListener('click', function () {
+      closePopup();
+      scheduleInteractionEnd();
+      // Revert to server data
+      fetchAndRender();
+    });
+
+    // Focus first input
+    if (inputs.length > 0) inputs[0].focus();
+  }
+
+  function closePopup() {
+    popupEl.style.display = 'none';
+    popupEl.innerHTML = '';
+    selectedFilterIndex = -1;
+  }
+
+  // Close popup on Escape key (global)
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && popupEl.style.display !== 'none') {
+      closePopup();
+      scheduleInteractionEnd();
+      fetchAndRender();
+    }
+  });
+
+  // ========== Interaction timer ==========
+
+  function clearInteractionTimer() {
+    if (interactionEndTimer) {
+      clearTimeout(interactionEndTimer);
+      interactionEndTimer = null;
+    }
+  }
+
+  function scheduleInteractionEnd() {
+    clearInteractionTimer();
+    interactionEndTimer = setTimeout(function () {
+      interacting = false;
+      fetchAndRender();
+    }, 2000);
+  }
+
+  // ========== Local render helper ==========
+
+  function renderLocal() {
+    if (!currentData) return;
+    var responses = computeResponses(currentData);
+    if (responses) {
+      lastResponses = responses;
+      lastDbMin = render.dbMin || -15;
+      lastDbMax = render.dbMax || 15;
+      resizeCanvas();
+      render(responses);
+      updateLegend(responses);
+    }
   }
 
   // ========== Legend ==========
@@ -902,6 +1286,7 @@
   // ========== Data fetching ==========
 
   function fetchAndRender() {
+    if (interacting) return;
     var xhr = new XMLHttpRequest();
     xhr.open('GET', '/api/peq', true);
     xhr.timeout = 5000;
@@ -912,9 +1297,12 @@
           errorMsg.style.display = 'none';
           samplerateEl.textContent = currentData.sampleRate || '--';
           var responses = computeResponses(currentData);
+          lastResponses = responses;
           updateLegend(responses);
           resizeCanvas();
           render(responses);
+          lastDbMin = render.dbMin || -15;
+          lastDbMax = render.dbMax || 15;
         } catch (e) {
           errorMsg.style.display = 'block';
         }
@@ -928,55 +1316,353 @@
     xhr.send();
   }
 
-  // ========== Event handlers ==========
+  // ========== Mouse event helpers ==========
 
-  canvas.addEventListener('mousemove', function (e) {
+  function getMousePos(e) {
     var rect = canvas.getBoundingClientRect();
-    mouseX = e.clientX - rect.left;
-    mouseY = e.clientY - rect.top;
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
 
+  function getTouchPos(e) {
+    var rect = canvas.getBoundingClientRect();
+    var touch = e.touches[0] || e.changedTouches[0];
+    return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+  }
+
+  function updateCrosshair(mx, my) {
     var w = canvas.width / dpr;
     var h = canvas.height / dpr;
-    if (mouseX >= margin.left && mouseX <= w - margin.right &&
-        mouseY >= margin.top && mouseY <= h - margin.bottom) {
-      var freq = xToFreq(mouseX);
-      var db = yToDb(mouseY, render.dbMin || -15, render.dbMax || 15);
+    if (mx >= margin.left && mx <= w - margin.right &&
+        my >= margin.top && my <= h - margin.bottom) {
+      var freq = xToFreq(mx);
+      var db = yToDb(my, render.dbMin || -15, render.dbMax || 15);
       crosshairInfo.style.display = 'block';
       crosshairInfo.textContent = Math.round(freq) + ' Hz / ' + db.toFixed(1) + ' dB';
-      var infoX = mouseX + 15;
-      var infoY = mouseY - 25;
-      if (infoX + 150 > w) infoX = mouseX - 160;
-      if (infoY < 0) infoY = mouseY + 15;
+      var infoX = mx + 15;
+      var infoY = my - 25;
+      if (infoX + 150 > w) infoX = mx - 160;
+      if (infoY < 0) infoY = my + 15;
       crosshairInfo.style.left = infoX + 'px';
       crosshairInfo.style.top = infoY + 'px';
     } else {
       crosshairInfo.style.display = 'none';
     }
+  }
+
+  function updateCursor(mx, my) {
+    if (dragging) {
+      canvas.style.cursor = 'grabbing';
+      return;
+    }
+    var hit = hitTestMarker(mx, my, lastResponses);
+    if (hit >= 0) {
+      canvas.style.cursor = 'pointer';
+      if (hoveredFilterIndex !== hit) {
+        hoveredFilterIndex = hit;
+        renderLocal();
+      }
+    } else {
+      canvas.style.cursor = 'crosshair';
+      if (hoveredFilterIndex !== -1) {
+        hoveredFilterIndex = -1;
+        renderLocal();
+      }
+    }
+  }
+
+  function applyDrag(mx, my) {
+    if (dragFilterIndex < 0 || !lastResponses || dragFilterIndex >= lastResponses.individual.length) return;
+    var ind = lastResponses.individual[dragFilterIndex];
+    var meta = filterTypeMeta[ind.type];
+    if (!meta || !meta.draggable) return;
+
+    // Find the filter in currentData
+    for (var j = 0; j < currentData.filters.length; j++) {
+      if (currentData.filters[j].index === ind.index) {
+        var newParams = currentData.filters[j].params.slice();
+        // Clamp mouse to plot area
+        var w = canvas.width / dpr;
+        var h = canvas.height / dpr;
+        var clampedX = Math.max(margin.left, Math.min(mx, w - margin.right));
+        var clampedY = Math.max(margin.top, Math.min(my, h - margin.bottom));
+        // Update frequency from X
+        var newFreq = xToFreq(clampedX);
+        newFreq = Math.max(1, Math.min(22049, newFreq));
+        newParams[0] = Math.round(newFreq * 10) / 10;
+        // Update gain from Y if applicable
+        if (meta.hasGain) {
+          var newGain = yToDb(clampedY, lastDbMin, lastDbMax);
+          newGain = Math.max(-20, Math.min(20, newGain));
+          newParams[1] = Math.round(newGain * 100) / 100;
+        }
+        currentData.filters[j].params = newParams;
+        break;
+      }
+    }
+
+    var responses = computeResponses(currentData);
+    if (responses) {
+      lastResponses = responses;
+      resizeCanvas();
+      render(responses);
+      updateLegend(responses);
+    }
+  }
+
+  // ========== Mouse event handlers ==========
+
+  canvas.addEventListener('mousedown', function (e) {
+    if (e.button !== 0) return;
+    if (popupEl.style.display !== 'none') return;
+    var pos = getMousePos(e);
+    var hit = hitTestMarker(pos.x, pos.y, lastResponses);
+    if (hit < 0) return;
+
+    var ind = lastResponses.individual[hit];
+    var meta = filterTypeMeta[ind.type];
+    if (!meta) return;
+
+    e.preventDefault();
+    interacting = true;
+    clearInteractionTimer();
+    dragFilterIndex = hit;
+    dragStartX = pos.x;
+    dragStartY = pos.y;
+    dragMoved = false;
+    // Save original params for revert
+    for (var j = 0; j < currentData.filters.length; j++) {
+      if (currentData.filters[j].index === ind.index) {
+        dragOriginalParams = currentData.filters[j].params.slice();
+        break;
+      }
+    }
+    canvas.style.cursor = 'grabbing';
+  });
+
+  canvas.addEventListener('mousemove', function (e) {
+    var pos = getMousePos(e);
+    mouseX = pos.x;
+    mouseY = pos.y;
+
+    if (dragFilterIndex >= 0) {
+      var dx = pos.x - dragStartX;
+      var dy = pos.y - dragStartY;
+      if (!dragMoved && (dx * dx + dy * dy > 9)) {
+        dragMoved = true;
+        dragging = true;
+      }
+      if (dragMoved) {
+        var ind = lastResponses.individual[dragFilterIndex];
+        var meta = filterTypeMeta[ind.type];
+        if (meta && meta.draggable) {
+          applyDrag(pos.x, pos.y);
+        }
+      }
+      return;
+    }
+
+    updateCrosshair(pos.x, pos.y);
+    updateCursor(pos.x, pos.y);
 
     // Re-render for crosshair
-    if (currentData) {
+    if (currentData && !dragging) {
       var responses = computeResponses(currentData);
-      render(responses);
+      if (responses) {
+        lastResponses = responses;
+        render(responses);
+      }
+    }
+  });
+
+  canvas.addEventListener('mouseup', function (e) {
+    if (e.button !== 0) return;
+    var pos = getMousePos(e);
+
+    if (dragFilterIndex >= 0) {
+      var fi = dragFilterIndex;
+      var ind = lastResponses.individual[fi];
+
+      if (dragMoved) {
+        // Drag completed - POST updated params
+        dragging = false;
+        dragFilterIndex = -1;
+        canvas.style.cursor = 'pointer';
+        for (var j = 0; j < currentData.filters.length; j++) {
+          if (currentData.filters[j].index === ind.index) {
+            postFilterUpdate(ind.index, currentData.filters[j].params, function (err) {
+              if (err) {
+                // Revert on error
+                for (var k = 0; k < currentData.filters.length; k++) {
+                  if (currentData.filters[k].index === ind.index) {
+                    currentData.filters[k].params = dragOriginalParams;
+                    break;
+                  }
+                }
+                renderLocal();
+              }
+              dragOriginalParams = null;
+              scheduleInteractionEnd();
+            });
+            break;
+          }
+        }
+      } else {
+        // Click (no drag) - show popup
+        dragFilterIndex = -1;
+        dragging = false;
+        canvas.style.cursor = 'pointer';
+        dragOriginalParams = null;
+        showPopup(fi);
+      }
     }
   });
 
   canvas.addEventListener('mouseleave', function () {
     mouseX = -1;
     mouseY = -1;
+    hoveredFilterIndex = -1;
     crosshairInfo.style.display = 'none';
+    if (dragFilterIndex >= 0 && dragMoved) {
+      // Treat as drag end
+      var ind = lastResponses.individual[dragFilterIndex];
+      dragging = false;
+      dragFilterIndex = -1;
+      canvas.style.cursor = 'default';
+      for (var j = 0; j < currentData.filters.length; j++) {
+        if (currentData.filters[j].index === ind.index) {
+          postFilterUpdate(ind.index, currentData.filters[j].params, function () {
+            dragOriginalParams = null;
+            scheduleInteractionEnd();
+          });
+          break;
+        }
+      }
+    } else {
+      dragFilterIndex = -1;
+      dragging = false;
+      dragOriginalParams = null;
+    }
     if (currentData) {
       var responses = computeResponses(currentData);
-      render(responses);
+      if (responses) { lastResponses = responses; render(responses); }
     }
   });
+
+  // ========== Touch event handlers ==========
+
+  canvas.addEventListener('touchstart', function (e) {
+    if (popupEl.style.display !== 'none') return;
+    var pos = getTouchPos(e);
+    var hit = hitTestMarker(pos.x, pos.y, lastResponses);
+    if (hit < 0) return;
+
+    var ind = lastResponses.individual[hit];
+    var meta = filterTypeMeta[ind.type];
+    if (!meta) return;
+
+    e.preventDefault();
+    interacting = true;
+    clearInteractionTimer();
+    dragFilterIndex = hit;
+    dragStartX = pos.x;
+    dragStartY = pos.y;
+    dragMoved = false;
+    for (var j = 0; j < currentData.filters.length; j++) {
+      if (currentData.filters[j].index === ind.index) {
+        dragOriginalParams = currentData.filters[j].params.slice();
+        break;
+      }
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', function (e) {
+    if (dragFilterIndex < 0) return;
+    e.preventDefault();
+    var pos = getTouchPos(e);
+    mouseX = pos.x;
+    mouseY = pos.y;
+    var dx = pos.x - dragStartX;
+    var dy = pos.y - dragStartY;
+    if (!dragMoved && (dx * dx + dy * dy > 9)) {
+      dragMoved = true;
+      dragging = true;
+    }
+    if (dragMoved) {
+      var ind = lastResponses.individual[dragFilterIndex];
+      var meta = filterTypeMeta[ind.type];
+      if (meta && meta.draggable) {
+        applyDrag(pos.x, pos.y);
+      }
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', function (e) {
+    if (dragFilterIndex < 0) return;
+    e.preventDefault();
+    var fi = dragFilterIndex;
+    var ind = lastResponses.individual[fi];
+
+    if (dragMoved) {
+      dragging = false;
+      dragFilterIndex = -1;
+      for (var j = 0; j < currentData.filters.length; j++) {
+        if (currentData.filters[j].index === ind.index) {
+          postFilterUpdate(ind.index, currentData.filters[j].params, function (err) {
+            if (err) {
+              for (var k = 0; k < currentData.filters.length; k++) {
+                if (currentData.filters[k].index === ind.index) {
+                  currentData.filters[k].params = dragOriginalParams;
+                  break;
+                }
+              }
+              renderLocal();
+            }
+            dragOriginalParams = null;
+            scheduleInteractionEnd();
+          });
+          break;
+        }
+      }
+    } else {
+      dragFilterIndex = -1;
+      dragging = false;
+      dragOriginalParams = null;
+      showPopup(fi);
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchcancel', function () {
+    if (dragFilterIndex >= 0 && dragOriginalParams) {
+      var ind = lastResponses.individual[dragFilterIndex];
+      for (var j = 0; j < currentData.filters.length; j++) {
+        if (currentData.filters[j].index === ind.index) {
+          currentData.filters[j].params = dragOriginalParams;
+          break;
+        }
+      }
+      renderLocal();
+    }
+    dragFilterIndex = -1;
+    dragging = false;
+    dragMoved = false;
+    dragOriginalParams = null;
+    scheduleInteractionEnd();
+  });
+
+  // ========== Window resize ==========
 
   window.addEventListener('resize', function () {
     dpr = window.devicePixelRatio || 1;
     resizeCanvas();
     if (currentData) {
       var responses = computeResponses(currentData);
-      render(responses);
-      updateLegend(responses);
+      if (responses) {
+        lastResponses = responses;
+        lastDbMin = render.dbMin || -15;
+        lastDbMax = render.dbMax || 15;
+        render(responses);
+        updateLegend(responses);
+      }
     }
   });
 

@@ -1185,6 +1185,14 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.end(data);
       });
+    } else if (req.method === 'OPTIONS' && req.url === '/api/peq') {
+      res.writeHead(204, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      });
+      res.end();
+
     } else if (req.method === 'GET' && req.url === '/api/peq') {
       var sampleRate = self.pushstateSamplerate || 44100;
       var mergedeq = self.config.get('mergedeq') || '';
@@ -1217,6 +1225,197 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         'Access-Control-Allow-Origin': '*'
       });
       res.end(JSON.stringify(result));
+
+    } else if (req.method === 'POST' && req.url === '/api/peq') {
+      var body = '';
+      req.on('data', function (chunk) { body += chunk; });
+      req.on('end', function () {
+        var corsHeaders = {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        };
+
+        if (self.config.get('selectedsp') !== 'PEQ') {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
+          return;
+        }
+
+        var payload;
+        try {
+          payload = JSON.parse(body);
+        } catch (e) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Invalid JSON' }));
+          return;
+        }
+
+        if (!payload.filters || !Array.isArray(payload.filters) || payload.filters.length === 0) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Missing or empty filters array' }));
+          return;
+        }
+
+        // Parse current mergedeq into slot array (groups of 4 pipe-delimited parts)
+        var mergedeq = self.config.get('mergedeq') || '';
+        var rawParts = mergedeq.toString().split('|');
+        // Build array of slots: each slot = { label, type, scope, paramStr }
+        var slots = [];
+        for (var si = 0; si + 3 < rawParts.length; si += 4) {
+          slots.push({
+            label: rawParts[si],
+            type: rawParts[si + 1],
+            scope: rawParts[si + 2],
+            paramStr: rawParts[si + 3]
+          });
+        }
+
+        // Validate and patch each requested filter
+        for (var fi = 0; fi < payload.filters.length; fi++) {
+          var upd = payload.filters[fi];
+          var idx = upd.index;
+          var newParams = upd.params;
+
+          if (!Array.isArray(newParams) || newParams.length === 0) {
+            res.writeHead(400, corsHeaders);
+            res.end(JSON.stringify({ error: 'Invalid params for filter index ' + idx }));
+            return;
+          }
+
+          // Find matching slot by index number
+          var slotIdx = -1;
+          for (var si = 0; si < slots.length; si++) {
+            var m = slots[si].label.match(/\d+/);
+            if (m && parseInt(m[0]) === idx) { slotIdx = si; break; }
+          }
+          if (slotIdx === -1) {
+            res.writeHead(400, corsHeaders);
+            res.end(JSON.stringify({ error: 'Filter index ' + idx + ' not found' }));
+            return;
+          }
+
+          var typer = slots[slotIdx].type;
+
+          // Validate frequency (param 0 for all types except None)
+          if (typer !== 'None') {
+            var freq = Number(newParams[0]);
+            if (!isFinite(freq) || freq <= 0 || freq >= 22050) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Frequency out of range for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Validate gain for types that have it at param index 1
+          if (typer === 'Peaking' || typer === 'Peaking2' || typer === 'Highshelf' || typer === 'Highshelf2' ||
+              typer === 'Lowshelf' || typer === 'Lowshelf2' || typer === 'LowshelfFO' || typer === 'HighshelfFO') {
+            var g = Number(newParams[1]);
+            if (!isFinite(g) || g <= -20.1 || g >= 20.1) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Gain out of range for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Validate Q for Peaking, Highshelf2, Lowshelf2
+          if (typer === 'Peaking' || typer === 'Highshelf2' || typer === 'Lowshelf2') {
+            var q = Number(newParams[2]);
+            if (!isFinite(q) || q <= 0 || q >= 40.1) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Q out of range for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Validate bandwidth for Peaking2
+          if (typer === 'Peaking2') {
+            var bw = Number(newParams[2]);
+            if (!isFinite(bw) || bw <= 0 || bw >= 8) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Bandwidth out of range for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Validate Q for Highpass, Lowpass, Notch
+          if (typer === 'Highpass' || typer === 'Lowpass' || typer === 'Notch') {
+            var q = Number(newParams[1]);
+            if (!isFinite(q) || q <= 0 || q >= 40.1) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Q out of range for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Validate bandwidth for Highpass2, Lowpass2, Notch2
+          if (typer === 'Highpass2' || typer === 'Lowpass2' || typer === 'Notch2') {
+            var bw = Number(newParams[1]);
+            if (!isFinite(bw) || bw <= 0 || bw >= 25.1) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Bandwidth out of range for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Validate slope for Highshelf, Lowshelf
+          if (typer === 'Highshelf' || typer === 'Lowshelf') {
+            var s = Number(newParams[2]);
+            if (!isFinite(s) || s <= 0 || s >= 13) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Slope out of range for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Validate order for Butterworth types
+          if (typer === 'ButterworthHighpass' || typer === 'ButterworthLowpass') {
+            var order = Number(newParams[1]);
+            if ([2, 4, 6, 8].indexOf(order) === -1) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Invalid order for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Validate LinkwitzTransform
+          if (typer === 'LinkwitzTransform') {
+            var qa = Number(newParams[1]);
+            var ft = Number(newParams[2]);
+            var qt = Number(newParams[3]);
+            if (!isFinite(qa) || qa <= 0 || qa >= 40.1 || !isFinite(qt) || qt <= 0 || qt >= 40.1) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Q out of range for Eq' + idx }));
+              return;
+            }
+            if (!isFinite(ft) || ft <= 0 || ft >= 22050) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Target frequency out of range for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Patch the slot params
+          slots[slotIdx].paramStr = newParams.join(',');
+        }
+
+        // Reconstruct mergedeq string
+        var newMergedeq = '';
+        for (var si = 0; si < slots.length; si++) {
+          newMergedeq += slots[si].label + '|' + slots[si].type + '|' + slots[si].scope + '|' + slots[si].paramStr + '|';
+        }
+
+        self.config.set('mergedeq', newMergedeq);
+        self.config.set('savedmergedeq', newMergedeq);
+
+        setTimeout(function () {
+          self.refreshUI();
+          self.createCamilladspfile();
+        }, 100);
+
+        res.writeHead(200, corsHeaders);
+        res.end(JSON.stringify({ ok: true }));
+      });
+
     } else {
       res.writeHead(404, { 'Content-Type': 'text/plain' });
       res.end('Not found');
