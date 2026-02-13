@@ -582,8 +582,10 @@ function addPeqButtons(self, uiconf, ncontent) {
     label: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
     doc: self.commandRouter.getI18nString('SHOW_PEQ_CURVE_DOC'),
     onClick: {
-      type: 'openUrl',
-      url: 'http://' + self.config.get('address') + ':' + peqGraphPort
+      type: 'plugin',
+      endpoint: 'audio_interface/fusiondsp',
+      method: 'showPeqGraph',
+      data: []
     },
     visibleIf: { field: 'showeq', value: true }
   });
@@ -1609,6 +1611,27 @@ FusionDsp.prototype.startPeqGraphServer = function () {
   self.peqGraphServer.listen(peqGraphPort, function () {
     self.logger.info(logPrefix + ' PEQ graph server listening on port ' + peqGraphPort);
   });
+};
+
+FusionDsp.prototype.showPeqGraph = function () {
+  var self = this;
+  var url = 'http://' + self.config.get('address') + ':' + peqGraphPort;
+  var modalData = {
+    title: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
+    message: self.commandRouter.getI18nString('SHOW_PEQ_CURVE_DOC'),
+    size: 'lg',
+    buttons: [{
+      name: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
+      class: 'btn btn-info',
+      url: url
+    }, {
+      name: 'Close',
+      class: 'btn btn-warning',
+      emit: 'closeModals',
+      payload: ''
+    }]
+  };
+  self.commandRouter.broadcastMessage('openModal', modalData);
 };
 
 FusionDsp.prototype.stopPeqGraphServer = function () {

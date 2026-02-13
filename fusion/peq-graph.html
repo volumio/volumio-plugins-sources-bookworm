@@ -28,6 +28,20 @@
     font-weight: 500;
     color: #e94560;
   }
+  #back-btn {
+    background: #0f3460;
+    color: #e0e0e0;
+    border: 1px solid #e94560;
+    border-radius: 4px;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  #back-btn:hover {
+    background: #e94560;
+    color: #fff;
+  }
   #info {
     font-size: 13px;
     color: #888;
@@ -214,6 +228,7 @@
 </head>
 <body>
 <div id="header">
+  <a id="back-btn" onclick="history.back()">&#9664; Back to Volumio</a>
   <h1>FusionDSP - PEQ Frequency Response</h1>
   <div id="header-controls">
     <span id="status-msg"></span>
