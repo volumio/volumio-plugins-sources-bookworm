@@ -167,6 +167,51 @@
       ]
     },
     {
+      "id": "managepreset",
+      "element": "section",
+      "label": "TRANSLATE.MANAGE_PRESETS",
+      "icon": "fa-pencil",
+      "onSave": {
+        "type": "plugin",
+        "endpoint": "audio_interface/fusiondsp",
+        "method": "renamepreset"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.RENAME_PRESET",
+        "data": [
+          "newpresetname"
+        ]
+      },
+      "content": [
+        {
+          "id": "newpresetname",
+          "element": "input",
+          "label": "TRANSLATE.RENAME_PRESET_SW",
+          "doc": "TRANSLATE.RENAME_PRESET_SW_DOC",
+          "attributes": [
+            { "placeholder": "TRANSLATE.RENAME_PRESET_SW_DOC" }
+          ],
+          "value": {
+            "value": "",
+            "label": ""
+          },
+          "options": []
+        },
+        {
+          "id": "deletepreset",
+          "element": "button",
+          "label": "TRANSLATE.DELETE_PRESET",
+          "description": "TRANSLATE.DELETE_PRESET_DOC",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "audio_interface/fusiondsp",
+            "method": "deletepreset",
+            "data": []
+          }
+        }
+      ]
+    },
+    {
       "id": "savepreset",
       "element": "section",
       "label": "TRANSLATE.SAVEPRESET",

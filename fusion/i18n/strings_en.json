@@ -201,5 +201,16 @@
   "MUTE_RIGHT_DOC": "Mute right channel",
   "MUTE_RIGHT": "Mute right",
   "TILT_GAIN_RANGE": "Tilt gain must be a number between -100 and 100 in ",
-  "TILT_ONLY_GAIN": "Tilt requires only gain value (dB) in "
+  "TILT_ONLY_GAIN": "Tilt requires only gain value (dB) in ",
+  "MANAGE_PRESETS": "Manage presets",
+  "DELETE_PRESET": "Delete preset",
+  "DELETE_PRESET_DOC": "Delete the currently loaded preset",
+  "RENAME_PRESET": "Rename",
+  "DELETE_PRESET_CONFIRM_TITLE": "Delete preset?",
+  "DELETE_PRESET_CONFIRM_MSG": "Are you sure you want to delete preset \"{0}\"?",
+  "DELETE": "Delete",
+  "CANCEL": "Cancel",
+  "PRESET_DELETED": "Preset deleted successfully",
+  "PRESET_RENAMED": "Preset renamed to \"{0}\"",
+  "RENAME_PRESET_EMPTY": "Please enter a new name for the preset"
 }
