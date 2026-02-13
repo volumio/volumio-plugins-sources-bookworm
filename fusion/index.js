@@ -1239,9 +1239,13 @@ FusionDsp.prototype.showPeqGraph = function () {
   var url = 'http://' + self.config.get('address') + ':' + peqGraphPort;
   var modalData = {
     title: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
-    message: '<iframe src="' + url + '" style="width:100%;height:70vh;border:none;"></iframe>',
+    message: self.commandRouter.getI18nString('SHOW_PEQ_CURVE_DOC'),
     size: 'lg',
     buttons: [{
+      name: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
+      class: 'btn btn-info',
+      url: url
+    }, {
       name: 'Close',
       class: 'btn btn-warning',
       emit: 'closeModals',
