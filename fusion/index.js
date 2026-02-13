@@ -1192,7 +1192,7 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.end(data);
       });
-    } else if (req.method === 'OPTIONS' && (req.url === '/api/peq' || req.url === '/api/peq/reset' || req.url === '/api/peq/save')) {
+    } else if (req.method === 'OPTIONS' && (req.url === '/api/peq' || req.url === '/api/peq/reset' || req.url === '/api/peq/save' || req.url === '/api/peq/add' || req.url === '/api/peq/remove')) {
       res.writeHead(204, {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -1464,6 +1464,137 @@ FusionDsp.prototype.startPeqGraphServer = function () {
 
       res.writeHead(200, corsHeaders);
       res.end(JSON.stringify({ ok: true }));
+
+    } else if (req.method === 'POST' && req.url === '/api/peq/add') {
+      var corsHeaders = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      };
+
+      if (self.config.get('selectedsp') !== 'PEQ') {
+        res.writeHead(400, corsHeaders);
+        res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
+        return;
+      }
+
+      var nbreq = self.config.get('nbreq');
+      if (nbreq >= tnbreq) {
+        res.writeHead(400, corsHeaders);
+        res.end(JSON.stringify({ error: 'Maximum number of filters reached' }));
+        return;
+      }
+
+      var mergedeq = (self.config.get('mergedeq') || '').toString();
+      var rawParts = mergedeq.split('|');
+
+      // Find the max EqN index in existing slots
+      var maxIndex = 0;
+      for (var si = 0; si + 3 < rawParts.length; si += 4) {
+        var m = rawParts[si].match(/\d+/);
+        if (m) {
+          var idx = parseInt(m[0]);
+          if (idx > maxIndex) maxIndex = idx;
+        }
+      }
+
+      var newIndex = maxIndex + 1;
+      mergedeq += 'Eq' + newIndex + '|Peaking|L+R|1000,0,1|';
+      self.config.set('mergedeq', mergedeq);
+      self.config.set('nbreq', nbreq + 1);
+      self.config.set('effect', true);
+
+      setTimeout(function () {
+        self.createCamilladspfile();
+        self.refreshUI();
+      }, 100);
+
+      res.writeHead(200, corsHeaders);
+      res.end(JSON.stringify({ ok: true }));
+
+    } else if (req.method === 'POST' && req.url === '/api/peq/remove') {
+      var body = '';
+      req.on('data', function (chunk) { body += chunk; });
+      req.on('end', function () {
+        var corsHeaders = {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        };
+
+        if (self.config.get('selectedsp') !== 'PEQ') {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
+          return;
+        }
+
+        var nbreq = self.config.get('nbreq');
+        if (nbreq <= 1) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Cannot remove the last filter' }));
+          return;
+        }
+
+        var payload;
+        try {
+          payload = JSON.parse(body);
+        } catch (e) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Invalid JSON' }));
+          return;
+        }
+
+        var removeIndex = payload.index;
+        if (removeIndex === undefined || removeIndex === null) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Missing index' }));
+          return;
+        }
+
+        var mergedeq = (self.config.get('mergedeq') || '').toString();
+        var rawParts = mergedeq.split('|');
+        var slots = [];
+        for (var si = 0; si + 3 < rawParts.length; si += 4) {
+          slots.push({
+            label: rawParts[si],
+            type: rawParts[si + 1],
+            scope: rawParts[si + 2],
+            paramStr: rawParts[si + 3]
+          });
+        }
+
+        // Find and remove the slot matching the requested index
+        var found = false;
+        for (var si = 0; si < slots.length; si++) {
+          var m = slots[si].label.match(/\d+/);
+          if (m && parseInt(m[0]) === removeIndex) {
+            slots.splice(si, 1);
+            found = true;
+            break;
+          }
+        }
+
+        if (!found) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Filter index ' + removeIndex + ' not found' }));
+          return;
+        }
+
+        // Rebuild mergedeq string
+        var newMergedeq = '';
+        for (var si = 0; si < slots.length; si++) {
+          newMergedeq += slots[si].label + '|' + slots[si].type + '|' + slots[si].scope + '|' + slots[si].paramStr + '|';
+        }
+
+        self.config.set('mergedeq', newMergedeq);
+        self.config.set('nbreq', nbreq - 1);
+
+        setTimeout(function () {
+          self.createCamilladspfile();
+          self.refreshUI();
+        }, 100);
+
+        res.writeHead(200, corsHeaders);
+        res.end(JSON.stringify({ ok: true }));
+      });
 
     } else {
       res.writeHead(404, { 'Content-Type': 'text/plain' });
