@@ -1303,6 +1303,11 @@ FusionDsp.prototype.startPeqGraphServer = function () {
             return;
           }
 
+          // Allow type change if provided
+          if (upd.type && typeof upd.type === 'string') {
+            slots[slotIdx].type = upd.type;
+          }
+
           var typer = slots[slotIdx].type;
 
           // Validate frequency (param 0 for all types except None)

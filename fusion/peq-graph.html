@@ -136,8 +136,19 @@
     color: #e0e0e0;
     outline: none;
   }
-  #filter-popup .popup-row input:focus {
+  #filter-popup .popup-row input:focus,
+  #filter-popup .popup-row select:focus {
     border-color: #e94560;
+  }
+  #filter-popup .popup-row select {
+    width: 200px;
+    padding: 3px 6px;
+    font-size: 12px;
+    background: #1a1a2e;
+    border: 1px solid #0f3460;
+    border-radius: 3px;
+    color: #e0e0e0;
+    outline: none;
   }
   #filter-popup .popup-error {
     font-size: 11px;
@@ -283,6 +294,7 @@
   var interactionEndTimer = null;
   var hoveredFilterIndex = -1;
   var popupSnapshotData = null;
+  var popupCurrentType = null;
 
   // Filter type metadata
   var filterTypeMeta = {
@@ -303,6 +315,38 @@
     'LinkwitzTransform':  { hasGain: false, paramLabels: ['Fa (Hz)', 'Qa', 'Ft (Hz)', 'Qt'], draggable: false },
     'ButterworthHighpass': { hasGain: false, paramLabels: ['Freq (Hz)', 'Order'], draggable: true },
     'ButterworthLowpass':  { hasGain: false, paramLabels: ['Freq (Hz)', 'Order'], draggable: true }
+  };
+
+  var filterTypeOptions = [
+    { value: 'Peaking', label: 'Peaking Hz,dB,Q' },
+    { value: 'Peaking2', label: 'Peaking Hz,dB,bandwidth Octave' },
+    { value: 'Lowshelf', label: 'Lowshelf Hz,dB,slope dB/Octave' },
+    { value: 'Lowshelf2', label: 'Lowshelf Hz,dB,Q' },
+    { value: 'Highshelf', label: 'Highshelf Hz,dB,slope dB/Octave' },
+    { value: 'Highshelf2', label: 'Highshelf Hz,dB,Q' },
+    { value: 'LowshelfFO', label: 'LowshelfFO Hz,dB' },
+    { value: 'HighshelfFO', label: 'HighshelfFO Hz,dB' },
+    { value: 'Notch', label: 'Notch Hz,Q' },
+    { value: 'Notch2', label: 'Notch Hz,bandwidth Octave' },
+    { value: 'Highpass', label: 'Highpass Hz,Q' },
+    { value: 'Lowpass', label: 'Lowpass Hz,Q' },
+    { value: 'HighpassFO', label: 'HighpassFO Hz' },
+    { value: 'LowpassFO', label: 'LowpassFO Hz' },
+    { value: 'LinkwitzTransform', label: 'LinkwitzTransform Fa Hz,Qa,FT Hz,Qt' },
+    { value: 'ButterworthHighpass', label: 'ButterworthHighpass Hz, order' },
+    { value: 'ButterworthLowpass', label: 'ButterworthLowpass Hz, order' }
+  ];
+
+  var filterTypeDefaults = {
+    'Peaking': [1000, 0, 1], 'Peaking2': [1000, 0, 1],
+    'Lowshelf': [200, 0, 6], 'Lowshelf2': [200, 0, 0.707],
+    'Highshelf': [8000, 0, 6], 'Highshelf2': [8000, 0, 0.707],
+    'LowshelfFO': [200, 0], 'HighshelfFO': [8000, 0],
+    'Lowpass': [8000, 0.707], 'Highpass': [200, 0.707],
+    'LowpassFO': [8000], 'HighpassFO': [200],
+    'Notch': [1000, 1], 'Notch2': [1000, 1],
+    'LinkwitzTransform': [50, 0.707, 30, 0.707],
+    'ButterworthHighpass': [200, 4], 'ButterworthLowpass': [8000, 4]
   };
 
   // Plot margins
@@ -1137,7 +1181,7 @@
 
   // ========== POST to backend ==========
 
-  function postFilterUpdate(filterIndex, params, callback) {
+  function postFilterUpdate(filterIndex, params, type, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open('POST', '/api/peq', true);
     xhr.setRequestHeader('Content-Type', 'application/json');
@@ -1163,12 +1207,73 @@
     xhr.onerror = function () {
       if (callback) callback('Network error');
     };
-    xhr.send(JSON.stringify({
-      filters: [{ index: filterIndex, params: params }]
-    }));
+    var filterData = { index: filterIndex, params: params };
+    if (type) filterData.type = type;
+    xhr.send(JSON.stringify({ filters: [filterData] }));
   }
 
   // ========== Popup ==========
+
+  function getPopupParams() {
+    var inputs = document.querySelectorAll('#popup-params-container input[type="number"]');
+    var ep = [];
+    for (var j = 0; j < inputs.length; j++) {
+      ep.push(parseFloat(inputs[j].value) || 0);
+    }
+    return ep;
+  }
+
+  function getDefaultParamsForType(type, preserveFreq) {
+    var defaults = filterTypeDefaults[type] || [1000];
+    var params = defaults.slice();
+    if (isFinite(preserveFreq) && preserveFreq > 0) {
+      params[0] = preserveFreq;
+    }
+    return params;
+  }
+
+  function rebuildPopupParams(type, params, ind) {
+    var container = document.getElementById('popup-params-container');
+    var meta = filterTypeMeta[type];
+    if (!meta) { container.innerHTML = ''; return; }
+
+    var html = '';
+    for (var i = 0; i < meta.paramLabels.length; i++) {
+      var val = (i < params.length) ? params[i] : 0;
+      html += '<div class="popup-row"><label>' + meta.paramLabels[i] + '</label>' +
+        '<input type="number" step="any" data-pi="' + i + '" value="' + val + '"></div>';
+    }
+    container.innerHTML = html;
+
+    // Attach live preview and keyboard handlers to new inputs
+    var inputs = container.querySelectorAll('input[type="number"]');
+    for (var i = 0; i < inputs.length; i++) {
+      inputs[i].addEventListener('input', function () {
+        var ep = getPopupParams();
+        var f = currentData.filters;
+        for (var j = 0; j < f.length; j++) {
+          if (f[j].index === ind.index) {
+            f[j].params = ep;
+            break;
+          }
+        }
+        renderLocal();
+        var errEl = document.getElementById('popup-error-text');
+        var err = validateParams(popupCurrentType, ep);
+        if (errEl) errEl.textContent = err || '';
+      });
+      inputs[i].addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.getElementById('popup-apply').click();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          document.getElementById('popup-cancel').click();
+        }
+      });
+    }
+    if (inputs.length > 0) inputs[0].focus();
+  }
 
   function showPopup(fi) {
     if (!lastResponses || fi < 0 || fi >= lastResponses.individual.length) return;
@@ -1180,13 +1285,18 @@
     interacting = true;
     clearInteractionTimer();
     popupSnapshotData = JSON.parse(JSON.stringify(currentData));
+    popupCurrentType = ind.type;
 
-    var editParams = ind.params.slice();
-    var html = '<div class="popup-title">Eq' + ind.index + ' ' + ind.type + ' [' + ind.scope + ']</div>';
-    for (var i = 0; i < meta.paramLabels.length; i++) {
-      html += '<div class="popup-row"><label>' + meta.paramLabels[i] + '</label>' +
-        '<input type="number" step="any" data-pi="' + i + '" value="' + editParams[i] + '"></div>';
+    // Build popup HTML with type selector
+    var html = '<div class="popup-title">Eq' + ind.index + ' [' + ind.scope + ']</div>';
+    html += '<div class="popup-row"><label>Type</label><select id="popup-type-select">';
+    for (var ti = 0; ti < filterTypeOptions.length; ti++) {
+      var opt = filterTypeOptions[ti];
+      var sel = (opt.value === ind.type) ? ' selected' : '';
+      html += '<option value="' + opt.value + '"' + sel + '>' + opt.label + '</option>';
     }
+    html += '</select></div>';
+    html += '<div id="popup-params-container"></div>';
     html += '<div class="popup-error" id="popup-error-text"></div>';
     var deleteDisabled = (currentData && currentData.filters.length <= 1) ? ' disabled title="Cannot remove the last filter"' : '';
     html += '<div class="popup-buttons">' +
@@ -1212,58 +1322,40 @@
     popupEl.style.left = pLeft + 'px';
     popupEl.style.top = pTop + 'px';
 
-    // Live preview on input change
-    var inputs = popupEl.querySelectorAll('input[type="number"]');
-    for (var i = 0; i < inputs.length; i++) {
-      inputs[i].addEventListener('input', function () {
-        var ep = [];
-        for (var j = 0; j < inputs.length; j++) {
-          ep.push(parseFloat(inputs[j].value) || 0);
-        }
-        // Live preview: temporarily update currentData
-        var f = currentData.filters;
-        for (var j = 0; j < f.length; j++) {
-          if (f[j].index === ind.index) {
-            f[j].params = ep;
-            break;
-          }
-        }
-        var resp = computeResponses(currentData);
-        if (resp) {
-          lastResponses = resp;
-          resizeCanvas();
-          render(resp);
-          updateLegend(resp);
-        }
-        // Show validation error
-        var errEl = document.getElementById('popup-error-text');
-        var err = validateParams(ind.type, ep);
-        if (errEl) errEl.textContent = err || '';
-      });
-      // Enter key = Apply
-      inputs[i].addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          document.getElementById('popup-apply').click();
-        } else if (e.key === 'Escape') {
-          e.preventDefault();
-          document.getElementById('popup-cancel').click();
-        }
-      });
-    }
+    // Build initial parameter fields
+    rebuildPopupParams(ind.type, ind.params.slice(), ind);
 
-    document.getElementById('popup-apply').addEventListener('click', function () {
-      var ep = [];
-      for (var j = 0; j < inputs.length; j++) {
-        ep.push(parseFloat(inputs[j].value) || 0);
+    // Type change handler
+    document.getElementById('popup-type-select').addEventListener('change', function () {
+      var newType = this.value;
+      popupCurrentType = newType;
+      var currentFreq = getPopupParams()[0] || ind.params[0];
+      var newParams = getDefaultParamsForType(newType, currentFreq);
+      // Update currentData for live preview
+      for (var j = 0; j < currentData.filters.length; j++) {
+        if (currentData.filters[j].index === ind.index) {
+          currentData.filters[j].type = newType;
+          currentData.filters[j].params = newParams;
+          break;
+        }
       }
-      var err = validateParams(ind.type, ep);
+      rebuildPopupParams(newType, newParams, ind);
+      renderLocal();
+    });
+
+    // Apply button
+    document.getElementById('popup-apply').addEventListener('click', function () {
+      var ep = getPopupParams();
+      var err = validateParams(popupCurrentType, ep);
       var errEl = document.getElementById('popup-error-text');
       if (err) {
         if (errEl) errEl.textContent = err;
         return;
       }
-      postFilterUpdate(ind.index, ep, function (serverErr) {
+      var typeChanged = (popupCurrentType !== popupSnapshotData.filters.filter(function (f) {
+        return f.index === ind.index;
+      })[0].type);
+      postFilterUpdate(ind.index, ep, typeChanged ? popupCurrentType : null, function (serverErr) {
         if (serverErr) {
           if (errEl) errEl.textContent = serverErr;
         } else {
@@ -1273,10 +1365,12 @@
       });
     });
 
+    // Cancel button
     document.getElementById('popup-cancel').addEventListener('click', function () {
       revertAndClosePopup();
     });
 
+    // Delete button
     document.getElementById('popup-delete').addEventListener('click', function () {
       if (currentData && currentData.filters.length <= 1) return;
       var xhr = new XMLHttpRequest();
@@ -1304,15 +1398,13 @@
       };
       xhr.send(JSON.stringify({ index: ind.index }));
     });
-
-    // Focus first input
-    if (inputs.length > 0) inputs[0].focus();
   }
 
   function closePopup() {
     popupEl.style.display = 'none';
     popupEl.innerHTML = '';
     selectedFilterIndex = -1;
+    popupCurrentType = null;
   }
 
   function revertAndClosePopup() {
@@ -1608,7 +1700,7 @@
         canvas.style.cursor = 'pointer';
         for (var j = 0; j < currentData.filters.length; j++) {
           if (currentData.filters[j].index === ind.index) {
-            postFilterUpdate(ind.index, currentData.filters[j].params, function (err) {
+            postFilterUpdate(ind.index, currentData.filters[j].params, null, function (err) {
               if (err) {
                 // Revert on error
                 for (var k = 0; k < currentData.filters.length; k++) {
@@ -1649,7 +1741,7 @@
       canvas.style.cursor = 'default';
       for (var j = 0; j < currentData.filters.length; j++) {
         if (currentData.filters[j].index === ind.index) {
-          postFilterUpdate(ind.index, currentData.filters[j].params, function () {
+          postFilterUpdate(ind.index, currentData.filters[j].params, null, function () {
             dragOriginalParams = null;
             scheduleInteractionEnd();
           });
@@ -1726,7 +1818,7 @@
       dragFilterIndex = -1;
       for (var j = 0; j < currentData.filters.length; j++) {
         if (currentData.filters[j].index === ind.index) {
-          postFilterUpdate(ind.index, currentData.filters[j].params, function (err) {
+          postFilterUpdate(ind.index, currentData.filters[j].params, null, function (err) {
             if (err) {
               for (var k = 0; k < currentData.filters.length; k++) {
                 if (currentData.filters[k].index === ind.index) {
