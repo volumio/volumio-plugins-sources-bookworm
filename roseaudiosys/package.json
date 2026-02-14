@@ -1,6 +1,6 @@
 {
 	"name": "roseaudiosys",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "System Plugin for Rose Audio Devices",
 	"main": "index.js",
 	"scripts": {

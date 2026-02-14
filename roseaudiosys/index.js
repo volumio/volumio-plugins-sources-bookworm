@@ -118,7 +118,7 @@ roseaudiosys.prototype.onStart = function() {
 	const  volumioReadyGPIO = parseInt(self.config.get("volumioReadyGPIO.pin"), 10);
 	
 	//Log Rose Audio System Initialization Plugin startup
-	self.log("onStart > Starting Rose Audio System Initialization Plugin!", "info");
+	self.log("onStart > Starting Rose Audio System Initialization Plugin!", "info", true);
 
 	/*#######################################################################*/
 	/* Retrieve the audio output device name
@@ -161,6 +161,9 @@ roseaudiosys.prototype.onStart = function() {
 			// Set the Volumio Ready GPIO to High State
 			self.log("onStart > Volumio Ready GPIO Number: " + volumioReadyGPIO + " set to HIGH!", "info");
 			gpiox.set_gpio(volumioReadyGPIO, 1);
+
+			//Log the successful initialization of the Rose Audio Femto Player
+			self.log("onStart > Rose Audio Femto Player initialization completed successfully!", "info", true);
 
 			break;
 	
@@ -219,6 +222,7 @@ roseaudiosys.prototype.onRestart = function() {
  * Logging Method
  * @param {*} message : the message to log 
  * @param {*} level : the log level (e.g. "info", "error", "debug"). Default is "info".
+ * @param {*} force : if true, the message will be logged even if logging is disabled. Default is false.
  * @returns 
  */
 const LogLevels = {
@@ -227,12 +231,12 @@ const LogLevels = {
 	"error": "error",
 	"debug": "debug"
 };
-roseaudiosys.prototype.log = function(message, level = "info") {
+roseaudiosys.prototype.log = function(message, level = "info", force = false) {
 	const self = this;
 
 	//Check if logging is enabled
-	if (!logging) {
-		return; //Do not log if logging is disabled
+	if (!logging && !force) {
+		return; //Do not log if logging is disabled and force is false
 	}
 
 	//Check log level is valid
