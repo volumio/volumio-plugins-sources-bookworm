@@ -202,6 +202,10 @@
   "MUTE_RIGHT": "Mute right",
   "TILT_GAIN_RANGE": "Tilt gain must be a number between -100 and 100 in ",
   "TILT_ONLY_GAIN": "Tilt requires only gain value (dB) in ",
+  "SHOW_PEQ_CURVE": "Open graphic EQ",
+  "SHOW_PEQ_CURVE_DOC": "Open interactive PEQ graph to view and adjust filters",
+  "RESET_PEQ": "Reset PEQ",
+  "RESET_PEQ_DOC": "Revert to last saved PEQ settings"
   "MANAGE_PRESETS": "Manage preset",
   "PRESET_ACTIONS": "Preset actions",
   "DUPLICATE_PRESET": "Duplicate preset",

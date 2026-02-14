@@ -1,0 +1,2335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FusionDSP - PEQ Frequency Response</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #333;
+    color: #fff;
+    font-family: Lato, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  #header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: #090909;
+    border-bottom: 1px solid #3C3C3C;
+  }
+  #header h1 {
+    font-size: 18px;
+    font-weight: 500;
+    color: #54C688;
+  }
+  #back-btn {
+    background: transparent;
+    color: #fff;
+    border: 1px solid #54C688;
+    border-radius: 4px;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  #back-btn:hover {
+    background: #54C688;
+    color: #fff;
+  }
+  #info {
+    font-size: 13px;
+    color: #AAA;
+  }
+  #canvas-container {
+    flex: 1;
+    position: relative;
+    min-height: 0;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  #crosshair-info {
+    position: absolute;
+    pointer-events: none;
+    background: rgba(30, 30, 30, 0.9);
+    border: 1px solid #54C688;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #fff;
+    display: none;
+    white-space: nowrap;
+  }
+  #legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 8px 20px;
+    background: #090909;
+    border-top: 1px solid #3C3C3C;
+    font-size: 12px;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend-color {
+    width: 20px;
+    height: 3px;
+    border-radius: 1px;
+  }
+  #error-msg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #DF4649;
+    font-size: 16px;
+    display: none;
+  }
+  #filter-popup {
+    position: absolute;
+    display: none;
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid #54C688;
+    border-radius: 6px;
+    padding: 12px;
+    z-index: 10;
+    min-width: 280px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  }
+  #filter-popup .popup-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #54C688;
+    margin-bottom: 8px;
+  }
+  #filter-popup .popup-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  #filter-popup .popup-row label {
+    font-size: 12px;
+    color: #aaa;
+    min-width: 80px;
+  }
+  #filter-popup .popup-row input {
+    width: 90px;
+    padding: 3px 6px;
+    font-size: 12px;
+    background: #333;
+    border: 1px solid #7C7C7C;
+    border-radius: 3px;
+    color: #fff;
+    outline: none;
+  }
+  #filter-popup .popup-row input:focus,
+  #filter-popup .popup-row select:focus {
+    border-color: #54C688;
+  }
+  #filter-popup .popup-row select {
+    width: 200px;
+    padding: 3px 6px;
+    font-size: 12px;
+    background: #333;
+    border: 1px solid #7C7C7C;
+    border-radius: 3px;
+    color: #fff;
+    outline: none;
+  }
+  #filter-popup .popup-error {
+    font-size: 11px;
+    color: #DF4649;
+    margin-bottom: 6px;
+    min-height: 14px;
+  }
+  #filter-popup .popup-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  #filter-popup .popup-buttons button {
+    flex: 1;
+    padding: 4px 10px;
+    font-size: 12px;
+    border: 1px solid #7C7C7C;
+    border-radius: 3px;
+    cursor: pointer;
+    background: #090909;
+    color: #fff;
+  }
+  #filter-popup .popup-buttons button:hover {
+    background: #484848;
+  }
+  #filter-popup .popup-buttons button.apply-btn {
+    background: #54C688;
+    border-color: #54C688;
+    color: #fff;
+  }
+  #filter-popup .popup-buttons button.apply-btn:hover {
+    background: #349b62;
+  }
+  #filter-popup .popup-buttons button.delete-btn {
+    background: #DF4649;
+    border-color: #DF4649;
+    color: #fff;
+  }
+  #filter-popup .popup-buttons button.delete-btn:hover {
+    background: #c0392b;
+  }
+  #filter-popup .popup-buttons button.delete-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .knob-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 72px;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .knob-container svg {
+    cursor: ns-resize;
+  }
+  .knob-label {
+    font-size: 10px;
+    color: #aaa;
+    margin-top: 2px;
+    white-space: nowrap;
+  }
+  .knob-value {
+    font-size: 11px;
+    color: #fff;
+    cursor: pointer;
+    white-space: nowrap;
+    min-height: 16px;
+  }
+  .knob-value-input {
+    width: 56px;
+    padding: 1px 3px;
+    font-size: 11px;
+    background: #333;
+    border: 1px solid #54C688;
+    border-radius: 3px;
+    color: #fff;
+    outline: none;
+    text-align: center;
+  }
+  #popup-params-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 12px;
+    padding: 4px 0;
+  }
+  #header-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-btn {
+    padding: 5px 14px;
+    font-size: 12px;
+    border: 1px solid #7C7C7C;
+    border-radius: 3px;
+    cursor: pointer;
+    background: #090909;
+    color: #fff;
+    font-family: inherit;
+  }
+  .header-btn:hover {
+    background: #484848;
+  }
+  .header-btn.save-btn {
+    background: #54C688;
+    border-color: #54C688;
+    color: #fff;
+  }
+  .header-btn.save-btn:hover {
+    background: #349b62;
+  }
+  #unsaved-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f5a623;
+    display: none;
+    flex-shrink: 0;
+  }
+  #status-msg {
+    font-size: 11px;
+    color: #AAA;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+</style>
+</head>
+<body>
+<div id="header">
+  <a id="back-btn" onclick="history.back()">&#9664; Back to Volumio</a>
+  <h1>FusionDSP - PEQ Frequency Response</h1>
+  <div id="header-controls">
+    <span id="status-msg"></span>
+    <span id="unsaved-dot" title="Unsaved changes"></span>
+    <button class="header-btn" id="btn-add-filter">+ Add Filter</button>
+    <button class="header-btn" id="btn-reset">Reset</button>
+    <button class="header-btn save-btn" id="btn-save">Save</button>
+    <div id="info">Sample rate: <span id="samplerate">--</span> Hz</div>
+  </div>
+</div>
+<div id="canvas-container">
+  <canvas id="graph"></canvas>
+  <div id="crosshair-info"></div>
+  <div id="error-msg">Unable to load PEQ data</div>
+  <div id="filter-popup"></div>
+</div>
+<div id="legend"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var canvas = document.getElementById('graph');
+  var ctx = canvas.getContext('2d');
+  var container = document.getElementById('canvas-container');
+  var crosshairInfo = document.getElementById('crosshair-info');
+  var legendEl = document.getElementById('legend');
+  var samplerateEl = document.getElementById('samplerate');
+  var errorMsg = document.getElementById('error-msg');
+
+  var currentData = null;
+  var mouseX = -1, mouseY = -1;
+  var dpr = window.devicePixelRatio || 1;
+  var popupEl = document.getElementById('filter-popup');
+  popupEl.addEventListener('mousedown', function (e) { e.stopPropagation(); });
+  popupEl.addEventListener('touchstart', function (e) { e.stopPropagation(); }, { passive: true });
+  var btnReset = document.getElementById('btn-reset');
+  var btnSave = document.getElementById('btn-save');
+  var btnAddFilter = document.getElementById('btn-add-filter');
+  var unsavedDot = document.getElementById('unsaved-dot');
+  var statusMsg = document.getElementById('status-msg');
+  var hasUnsavedChanges = false;
+
+  // Interaction state
+  var interacting = false;
+  var dragging = false;
+  var dragFilterIndex = -1;
+  var dragOriginalParams = null;
+  var selectedFilterIndex = -1;
+  var dragStartX = 0, dragStartY = 0;
+  var dragMoved = false;
+  var lastResponses = null;
+  var lastDbMin = -15, lastDbMax = 15;
+  var interactionEndTimer = null;
+  var hoveredFilterIndex = -1;
+  var popupSnapshotData = null;
+  var popupCurrentType = null;
+
+  // Filter type metadata
+  var filterTypeMeta = {
+    'Peaking':            { hasGain: true,  paramLabels: ['Freq (Hz)', 'Gain (dB)', 'Q'], draggable: true },
+    'Peaking2':           { hasGain: true,  paramLabels: ['Freq (Hz)', 'Gain (dB)', 'Bandwidth'], draggable: true },
+    'Lowshelf':           { hasGain: true,  paramLabels: ['Freq (Hz)', 'Gain (dB)', 'Slope'], draggable: true },
+    'Lowshelf2':          { hasGain: true,  paramLabels: ['Freq (Hz)', 'Gain (dB)', 'Q'], draggable: true },
+    'Highshelf':          { hasGain: true,  paramLabels: ['Freq (Hz)', 'Gain (dB)', 'Slope'], draggable: true },
+    'Highshelf2':         { hasGain: true,  paramLabels: ['Freq (Hz)', 'Gain (dB)', 'Q'], draggable: true },
+    'LowshelfFO':         { hasGain: true,  paramLabels: ['Freq (Hz)', 'Gain (dB)'], draggable: true },
+    'HighshelfFO':        { hasGain: true,  paramLabels: ['Freq (Hz)', 'Gain (dB)'], draggable: true },
+    'Lowpass':            { hasGain: false, paramLabels: ['Freq (Hz)', 'Q'], draggable: true },
+    'Highpass':           { hasGain: false, paramLabels: ['Freq (Hz)', 'Q'], draggable: true },
+    'LowpassFO':          { hasGain: false, paramLabels: ['Freq (Hz)'], draggable: true },
+    'HighpassFO':          { hasGain: false, paramLabels: ['Freq (Hz)'], draggable: true },
+    'Notch':              { hasGain: false, paramLabels: ['Freq (Hz)', 'Q'], draggable: true },
+    'Notch2':             { hasGain: false, paramLabels: ['Freq (Hz)', 'Bandwidth'], draggable: true },
+    'LinkwitzTransform':  { hasGain: false, paramLabels: ['Fa (Hz)', 'Qa', 'Ft (Hz)', 'Qt'], draggable: false },
+    'ButterworthHighpass': { hasGain: false, paramLabels: ['Freq (Hz)', 'Order'], draggable: true },
+    'ButterworthLowpass':  { hasGain: false, paramLabels: ['Freq (Hz)', 'Order'], draggable: true }
+  };
+
+  var filterTypeOptions = [
+    { value: 'Peaking', label: 'Peaking Hz,dB,Q' },
+    { value: 'Peaking2', label: 'Peaking Hz,dB,bandwidth Octave' },
+    { value: 'Lowshelf', label: 'Lowshelf Hz,dB,slope dB/Octave' },
+    { value: 'Lowshelf2', label: 'Lowshelf Hz,dB,Q' },
+    { value: 'Highshelf', label: 'Highshelf Hz,dB,slope dB/Octave' },
+    { value: 'Highshelf2', label: 'Highshelf Hz,dB,Q' },
+    { value: 'LowshelfFO', label: 'LowshelfFO Hz,dB' },
+    { value: 'HighshelfFO', label: 'HighshelfFO Hz,dB' },
+    { value: 'Notch', label: 'Notch Hz,Q' },
+    { value: 'Notch2', label: 'Notch Hz,bandwidth Octave' },
+    { value: 'Highpass', label: 'Highpass Hz,Q' },
+    { value: 'Lowpass', label: 'Lowpass Hz,Q' },
+    { value: 'HighpassFO', label: 'HighpassFO Hz' },
+    { value: 'LowpassFO', label: 'LowpassFO Hz' },
+    { value: 'LinkwitzTransform', label: 'LinkwitzTransform Fa Hz,Qa,FT Hz,Qt' },
+    { value: 'ButterworthHighpass', label: 'ButterworthHighpass Hz, order' },
+    { value: 'ButterworthLowpass', label: 'ButterworthLowpass Hz, order' }
+  ];
+
+  var filterTypeDefaults = {
+    'Peaking': [1000, 0, 1], 'Peaking2': [1000, 0, 1],
+    'Lowshelf': [200, 0, 6], 'Lowshelf2': [200, 0, 0.707],
+    'Highshelf': [8000, 0, 6], 'Highshelf2': [8000, 0, 0.707],
+    'LowshelfFO': [200, 0], 'HighshelfFO': [8000, 0],
+    'Lowpass': [8000, 0.707], 'Highpass': [200, 0.707],
+    'LowpassFO': [8000], 'HighpassFO': [200],
+    'Notch': [1000, 1], 'Notch2': [1000, 1],
+    'LinkwitzTransform': [50, 0.707, 30, 0.707],
+    'ButterworthHighpass': [200, 4], 'ButterworthLowpass': [8000, 4]
+  };
+
+  // ========== Knob configuration ==========
+
+  var knobConfigs = {
+    'Freq (Hz)': { min: 1, max: 22050, scale: 'log', step: 1, decimals: 0, unit: ' Hz' },
+    'Fa (Hz)':   { min: 1, max: 22050, scale: 'log', step: 1, decimals: 0, unit: ' Hz' },
+    'Ft (Hz)':   { min: 1, max: 22050, scale: 'log', step: 1, decimals: 0, unit: ' Hz' },
+    'Gain (dB)': { min: -20, max: 20, scale: 'linear', step: 0.1, decimals: 1, unit: ' dB', center: 0 },
+    'Q':         { min: 0.1, max: 40, scale: 'log', step: 0.01, decimals: 2, unit: '' },
+    'Qa':        { min: 0.1, max: 40, scale: 'log', step: 0.01, decimals: 3, unit: '' },
+    'Qt':        { min: 0.1, max: 40, scale: 'log', step: 0.01, decimals: 3, unit: '' },
+    'Bandwidth': { min: 0.1, max: 8, scale: 'linear', step: 0.1, decimals: 1, unit: ' oct' },
+    'Slope':     { min: 0.1, max: 12, scale: 'linear', step: 0.1, decimals: 1, unit: '' },
+    'Order':     { min: 2, max: 8, scale: 'discrete', steps: [2, 4, 6, 8], step: 2, decimals: 0, unit: '' }
+  };
+
+  function getKnobConfig(label, type) {
+    var cfg = knobConfigs[label];
+    if (!cfg) return { min: 0, max: 100, scale: 'linear', step: 1, decimals: 1, unit: '' };
+    cfg = JSON.parse(JSON.stringify(cfg));
+    if (label === 'Bandwidth' && (type === 'Notch2' || type === 'Highpass2' || type === 'Lowpass2')) {
+      cfg.max = 25;
+    }
+    return cfg;
+  }
+
+  // ========== SVG arc utilities ==========
+
+  var ARC_START_DEG = -135;
+  var ARC_END_DEG = 135;
+  var ARC_RANGE_DEG = 270;
+  var KNOB_SIZE = 56;
+  var KNOB_CX = 28, KNOB_CY = 28, KNOB_R = 22;
+
+  function polarToCartesian(cx, cy, r, angleDeg) {
+    var rad = angleDeg * Math.PI / 180;
+    return { x: cx + r * Math.sin(rad), y: cy - r * Math.cos(rad) };
+  }
+
+  function describeArc(cx, cy, r, startDeg, endDeg) {
+    var s = polarToCartesian(cx, cy, r, startDeg);
+    var e = polarToCartesian(cx, cy, r, endDeg);
+    var sweep = endDeg - startDeg;
+    if (sweep < 0) sweep += 360;
+    var largeArc = sweep > 180 ? 1 : 0;
+    return 'M ' + s.x.toFixed(2) + ' ' + s.y.toFixed(2) +
+      ' A ' + r + ' ' + r + ' 0 ' + largeArc + ' 1 ' +
+      e.x.toFixed(2) + ' ' + e.y.toFixed(2);
+  }
+
+  // ========== Value mapping ==========
+
+  function valueToNormalized(value, config) {
+    if (config.scale === 'log') {
+      if (value <= 0) value = config.min;
+      return (Math.log(value) - Math.log(config.min)) / (Math.log(config.max) - Math.log(config.min));
+    }
+    if (config.scale === 'discrete') {
+      var steps = config.steps;
+      var idx = steps.indexOf(value);
+      if (idx < 0) {
+        idx = 0;
+        for (var i = 1; i < steps.length; i++) {
+          if (Math.abs(value - steps[i]) < Math.abs(value - steps[idx])) idx = i;
+        }
+      }
+      return steps.length > 1 ? idx / (steps.length - 1) : 0;
+    }
+    return (value - config.min) / (config.max - config.min);
+  }
+
+  function normalizedToValue(norm, config) {
+    norm = Math.max(0, Math.min(1, norm));
+    if (config.scale === 'log') {
+      return Math.exp(Math.log(config.min) + norm * (Math.log(config.max) - Math.log(config.min)));
+    }
+    if (config.scale === 'discrete') {
+      var steps = config.steps;
+      var idx = Math.round(norm * (steps.length - 1));
+      return steps[Math.max(0, Math.min(steps.length - 1, idx))];
+    }
+    return config.min + norm * (config.max - config.min);
+  }
+
+  function quantizeValue(value, config) {
+    if (config.scale === 'discrete') {
+      var steps = config.steps;
+      var closest = steps[0];
+      var minDist = Math.abs(value - steps[0]);
+      for (var i = 1; i < steps.length; i++) {
+        var d = Math.abs(value - steps[i]);
+        if (d < minDist) { minDist = d; closest = steps[i]; }
+      }
+      return closest;
+    }
+    value = Math.max(config.min, Math.min(config.max, value));
+    if (config.step) {
+      value = Math.round(value / config.step) * config.step;
+    }
+    return parseFloat(value.toFixed(config.decimals));
+  }
+
+  function formatKnobValue(value, config) {
+    if (config.scale === 'discrete') return value + (config.unit || '');
+    return value.toFixed(config.decimals) + (config.unit || '');
+  }
+
+  // ========== Knob creation ==========
+
+  function createKnob(paramIndex, label, value, config) {
+    var div = document.createElement('div');
+    div.className = 'knob-container';
+
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', KNOB_SIZE);
+    svg.setAttribute('height', KNOB_SIZE);
+    svg.setAttribute('viewBox', '0 0 ' + KNOB_SIZE + ' ' + KNOB_SIZE);
+
+    var bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    bg.setAttribute('cx', KNOB_CX); bg.setAttribute('cy', KNOB_CY);
+    bg.setAttribute('r', KNOB_R);
+    bg.setAttribute('fill', '#333'); bg.setAttribute('stroke', '#4a4a4a');
+    bg.setAttribute('stroke-width', '2');
+    svg.appendChild(bg);
+
+    var track = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    track.setAttribute('d', describeArc(KNOB_CX, KNOB_CY, KNOB_R, ARC_START_DEG, ARC_END_DEG - 0.1));
+    track.setAttribute('fill', 'none'); track.setAttribute('stroke', '#4a4a4a');
+    track.setAttribute('stroke-width', '3'); track.setAttribute('stroke-linecap', 'round');
+    svg.appendChild(track);
+
+    var fill = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    fill.setAttribute('fill', 'none'); fill.setAttribute('stroke', '#54C688');
+    fill.setAttribute('stroke-width', '3'); fill.setAttribute('stroke-linecap', 'round');
+    fill.setAttribute('class', 'knob-fill');
+    svg.appendChild(fill);
+
+    var ptr = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    ptr.setAttribute('stroke', '#fff'); ptr.setAttribute('stroke-width', '2');
+    ptr.setAttribute('stroke-linecap', 'round');
+    ptr.setAttribute('class', 'knob-pointer');
+    svg.appendChild(ptr);
+
+    var tip = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    tip.setAttribute('r', '2.5'); tip.setAttribute('fill', '#fff');
+    tip.setAttribute('class', 'knob-tip');
+    svg.appendChild(tip);
+
+    div.appendChild(svg);
+
+    var labelEl = document.createElement('span');
+    labelEl.className = 'knob-label';
+    labelEl.textContent = label;
+    div.appendChild(labelEl);
+
+    var valueEl = document.createElement('span');
+    valueEl.className = 'knob-value';
+    valueEl.textContent = formatKnobValue(value, config);
+    div.appendChild(valueEl);
+
+    div._knobState = { value: value, config: config, paramIndex: paramIndex };
+    updateKnobVisual(div, value, config);
+
+    return div;
+  }
+
+  // ========== Knob visual update ==========
+
+  function updateKnobVisual(knobEl, value, config) {
+    var norm = valueToNormalized(value, config);
+    norm = Math.max(0, Math.min(1, norm));
+    var angle = ARC_START_DEG + norm * ARC_RANGE_DEG;
+
+    var fillEl = knobEl.querySelector('.knob-fill');
+    var ptrEl = knobEl.querySelector('.knob-pointer');
+    var tipEl = knobEl.querySelector('.knob-tip');
+    var valEl = knobEl.querySelector('.knob-value');
+
+    var isBipolar = config.center !== undefined;
+    if (isBipolar) {
+      var centerNorm = valueToNormalized(config.center, config);
+      var centerAngle = ARC_START_DEG + centerNorm * ARC_RANGE_DEG;
+      if (Math.abs(angle - centerAngle) < 0.5) {
+        fillEl.setAttribute('d', '');
+      } else if (angle > centerAngle) {
+        fillEl.setAttribute('d', describeArc(KNOB_CX, KNOB_CY, KNOB_R, centerAngle, angle));
+      } else {
+        fillEl.setAttribute('d', describeArc(KNOB_CX, KNOB_CY, KNOB_R, angle, centerAngle));
+      }
+    } else {
+      if (norm < 0.005) {
+        fillEl.setAttribute('d', '');
+      } else if (norm > 0.995) {
+        fillEl.setAttribute('d', describeArc(KNOB_CX, KNOB_CY, KNOB_R, ARC_START_DEG, ARC_END_DEG - 0.1));
+      } else {
+        fillEl.setAttribute('d', describeArc(KNOB_CX, KNOB_CY, KNOB_R, ARC_START_DEG, angle));
+      }
+    }
+
+    var rad = angle * Math.PI / 180;
+    var innerR = 8, outerR = KNOB_R - 3;
+    ptrEl.setAttribute('x1', KNOB_CX + innerR * Math.sin(rad));
+    ptrEl.setAttribute('y1', KNOB_CY - innerR * Math.cos(rad));
+    ptrEl.setAttribute('x2', KNOB_CX + outerR * Math.sin(rad));
+    ptrEl.setAttribute('y2', KNOB_CY - outerR * Math.cos(rad));
+
+    tipEl.setAttribute('cx', KNOB_CX + outerR * Math.sin(rad));
+    tipEl.setAttribute('cy', KNOB_CY - outerR * Math.cos(rad));
+
+    if (valEl && !valEl._editing) {
+      valEl.textContent = formatKnobValue(value, config);
+    }
+  }
+
+  // ========== Knob interaction ==========
+
+  var knobDragState = null;
+
+  function attachKnobInteraction(knobEl, config, paramIndex, onValueChange) {
+    var svg = knobEl.querySelector('svg');
+    var valEl = knobEl.querySelector('.knob-value');
+
+    function beginDrag(startY) {
+      knobDragState = {
+        knobEl: knobEl, startY: startY,
+        startNorm: valueToNormalized(knobEl._knobState.value, config)
+      };
+    }
+
+    function processDrag(clientY) {
+      if (!knobDragState || knobDragState.knobEl !== knobEl) return;
+      var deltaY = knobDragState.startY - clientY;
+      var newNorm = knobDragState.startNorm + deltaY / 200;
+      newNorm = Math.max(0, Math.min(1, newNorm));
+      var newVal = quantizeValue(normalizedToValue(newNorm, config), config);
+      knobEl._knobState.value = newVal;
+      updateKnobVisual(knobEl, newVal, config);
+      onValueChange(paramIndex, newVal);
+    }
+
+    svg.addEventListener('mousedown', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      beginDrag(e.clientY);
+      function onMove(ev) { processDrag(ev.clientY); }
+      function onUp() {
+        knobDragState = null;
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+
+    svg.addEventListener('touchstart', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      beginDrag(e.touches[0].clientY);
+      function onMove(ev) { ev.preventDefault(); processDrag(ev.touches[0].clientY); }
+      function onEnd() {
+        knobDragState = null;
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onEnd);
+      }
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend', onEnd);
+    }, { passive: false });
+
+    valEl.addEventListener('dblclick', function (e) {
+      e.stopPropagation();
+      startInlineEdit(knobEl, config, paramIndex, onValueChange);
+    });
+    var lastTap = 0;
+    valEl.addEventListener('touchend', function (e) {
+      var now = Date.now();
+      if (now - lastTap < 300) {
+        e.preventDefault();
+        startInlineEdit(knobEl, config, paramIndex, onValueChange);
+      }
+      lastTap = now;
+    });
+  }
+
+  function startInlineEdit(knobEl, config, paramIndex, onValueChange) {
+    var valEl = knobEl.querySelector('.knob-value');
+    if (valEl._editing) return;
+    valEl._editing = true;
+
+    var input = document.createElement('input');
+    input.type = 'number';
+    input.className = 'knob-value-input';
+    input.value = knobEl._knobState.value;
+    input.step = config.step || 'any';
+
+    valEl.textContent = '';
+    valEl.appendChild(input);
+    input.focus();
+    input.select();
+
+    function commit() {
+      if (!valEl._editing) return;
+      valEl._editing = false;
+      var v = parseFloat(input.value);
+      if (isFinite(v)) {
+        v = quantizeValue(v, config);
+        knobEl._knobState.value = v;
+        updateKnobVisual(knobEl, v, config);
+        onValueChange(paramIndex, v);
+      }
+      valEl.textContent = formatKnobValue(knobEl._knobState.value, config);
+    }
+
+    input.addEventListener('keydown', function (e) {
+      e.stopPropagation();
+      if (e.key === 'Enter') { e.preventDefault(); commit(); }
+      else if (e.key === 'Escape') {
+        e.preventDefault();
+        valEl._editing = false;
+        valEl.textContent = formatKnobValue(knobEl._knobState.value, config);
+      }
+    });
+    input.addEventListener('blur', commit);
+  }
+
+  // Plot margins
+  var margin = { top: 20, right: 30, bottom: 40, left: 60 };
+
+  // Frequency range
+  var fMin = 20, fMax = 20000;
+  // Number of frequency points
+  var numPoints = 500;
+
+  // Precompute log-spaced frequencies
+  var frequencies = [];
+  var logMin = Math.log10(fMin);
+  var logMax = Math.log10(fMax);
+  for (var i = 0; i < numPoints; i++) {
+    frequencies.push(Math.pow(10, logMin + (logMax - logMin) * i / (numPoints - 1)));
+  }
+
+  // Grid frequencies for labels
+  var gridFreqs = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000];
+
+  // Filter colors (for individual curves)
+  var filterColors = [
+    '#e94560', '#f5a623', '#7ed321', '#4a90d9', '#bd10e0',
+    '#50e3c2', '#d0021b', '#f8e71c', '#8b572a', '#417505',
+    '#9013fe', '#ff6f61', '#88d8b0', '#c7b299', '#6c5b7b',
+    '#45b7d1', '#e8a87c', '#d5aaff', '#a8e6cf', '#fddb92'
+  ];
+
+  // ========== Biquad coefficient computation ==========
+
+  function computeBiquadCoeffs(type, params, sampleRate) {
+    var w0, alpha, A, cosw0, sinw0, b0, b1, b2, a0, a1, a2;
+    var freq, gain, Q, bandwidth, slope, order;
+    var omega, sn, cs, k, kk, v0, H0, tn;
+
+    switch (type) {
+      case 'Peaking':
+        freq = params[0]; gain = params[1]; Q = params[2];
+        A = Math.pow(10, gain / 40);
+        w0 = 2 * Math.PI * freq / sampleRate;
+        sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
+        alpha = sinw0 / (2 * Q);
+        b0 = 1 + alpha * A;
+        b1 = -2 * cosw0;
+        b2 = 1 - alpha * A;
+        a0 = 1 + alpha / A;
+        a1 = -2 * cosw0;
+        a2 = 1 - alpha / A;
+        return [{ b0: b0/a0, b1: b1/a0, b2: b2/a0, a1: a1/a0, a2: a2/a0 }];
+
+      case 'Peaking2':
+        // Peaking with bandwidth in octaves
+        freq = params[0]; gain = params[1]; bandwidth = params[2];
+        A = Math.pow(10, gain / 40);
+        w0 = 2 * Math.PI * freq / sampleRate;
+        sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
+        alpha = sinw0 * Math.sinh(Math.log(2) / 2 * bandwidth * w0 / sinw0);
+        b0 = 1 + alpha * A;
+        b1 = -2 * cosw0;
+        b2 = 1 - alpha * A;
+        a0 = 1 + alpha / A;
+        a1 = -2 * cosw0;
+        a2 = 1 - alpha / A;
+        return [{ b0: b0/a0, b1: b1/a0, b2: b2/a0, a1: a1/a0, a2: a2/a0 }];
+
+      case 'Lowshelf':
+        // Lowshelf with slope S (dB/octave)
+        freq = params[0]; gain = params[1]; slope = params[2];
+        A = Math.pow(10, gain / 40);
+        w0 = 2 * Math.PI * freq / sampleRate;
+        sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
+        alpha = sinw0 / 2 * Math.sqrt((A + 1/A) * (1/slope - 1) + 2);
+        var sqA = Math.sqrt(A);
+        b0 = A * ((A + 1) - (A - 1) * cosw0 + 2 * sqA * alpha);
+        b1 = 2 * A * ((A - 1) - (A + 1) * cosw0);
+        b2 = A * ((A + 1) - (A - 1) * cosw0 - 2 * sqA * alpha);
+        a0 = (A + 1) + (A - 1) * cosw0 + 2 * sqA * alpha;
+        a1 = -2 * ((A - 1) + (A + 1) * cosw0);
+        a2 = (A + 1) + (A - 1) * cosw0 - 2 * sqA * alpha;
+        return [{ b0: b0/a0, b1: b1/a0, b2: b2/a0, a1: a1/a0, a2: a2/a0 }];
+
+      case 'Lowshelf2':
+        // Lowshelf with Q
+        freq = params[0]; gain = params[1]; Q = params[2];
+        A = Math.pow(10, gain / 40);
+        w0 = 2 * Math.PI * freq / sampleRate;
+        sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
+        alpha = sinw0 / (2 * Q);
+        sqA = Math.sqrt(A);
+        b0 = A * ((A + 1) - (A - 1) * cosw0 + 2 * sqA * alpha);
+        b1 = 2 * A * ((A - 1) - (A + 1) * cosw0);
+        b2 = A * ((A + 1) - (A - 1) * cosw0 - 2 * sqA * alpha);
+        a0 = (A + 1) + (A - 1) * cosw0 + 2 * sqA * alpha;
+        a1 = -2 * ((A - 1) + (A + 1) * cosw0);
+        a2 = (A + 1) + (A - 1) * cosw0 - 2 * sqA * alpha;
+        return [{ b0: b0/a0, b1: b1/a0, b2: b2/a0, a1: a1/a0, a2: a2/a0 }];
+
+      case 'Highshelf':
+        // Highshelf with slope S
+        freq = params[0]; gain = params[1]; slope = params[2];
+        A = Math.pow(10, gain / 40);
+        w0 = 2 * Math.PI * freq / sampleRate;
+        sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
+        alpha = sinw0 / 2 * Math.sqrt((A + 1/A) * (1/slope - 1) + 2);
+        sqA = Math.sqrt(A);
+        b0 = A * ((A + 1) + (A - 1) * cosw0 + 2 * sqA * alpha);
+        b1 = -2 * A * ((A - 1) + (A + 1) * cosw0);
+        b2 = A * ((A + 1) + (A - 1) * cosw0 - 2 * sqA * alpha);
+        a0 = (A + 1) - (A - 1) * cosw0 + 2 * sqA * alpha;
+        a1 = 2 * ((A - 1) - (A + 1) * cosw0);
+        a2 = (A + 1) - (A - 1) * cosw0 - 2 * sqA * alpha;
+        return [{ b0: b0/a0, b1: b1/a0, b2: b2/a0, a1: a1/a0, a2: a2/a0 }];
+
+      case 'Highshelf2':
+        // Highshelf with Q
+        freq = params[0]; gain = params[1]; Q = params[2];
+        A = Math.pow(10, gain / 40);
+        w0 = 2 * Math.PI * freq / sampleRate;
+        sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
+        alpha = sinw0 / (2 * Q);
+        sqA = Math.sqrt(A);
+        b0 = A * ((A + 1) + (A - 1) * cosw0 + 2 * sqA * alpha);
+        b1 = -2 * A * ((A - 1) + (A + 1) * cosw0);
+        b2 = A * ((A + 1) + (A - 1) * cosw0 - 2 * sqA * alpha);
+        a0 = (A + 1) - (A - 1) * cosw0 + 2 * sqA * alpha;
+        a1 = 2 * ((A - 1) - (A + 1) * cosw0);
+        a2 = (A + 1) - (A - 1) * cosw0 - 2 * sqA * alpha;
+        return [{ b0: b0/a0, b1: b1/a0, b2: b2/a0, a1: a1/a0, a2: a2/a0 }];
+
+      case 'LowshelfFO':
+        // First-order low shelf via bilinear transform
+        freq = params[0]; gain = params[1];
+        omega = 2 * Math.PI * freq / sampleRate;
+        tn = Math.tan(omega / 2);
+        A = Math.pow(10, gain / 20);
+        v0 = A;
+        H0 = v0 - 1;
+        if (A >= 1) {
+          b0 = 1 + H0 / (1 + 1/tn);
+          b1 = H0 * (1/(1 + 1/tn) - 1/(1 + tn));
+          b2 = 0;
+          a0 = 1;
+          a1 = -1 * (1 - tn) / (1 + tn);
+          a2 = 0;
+          // Normalize: treat as b0 + b1*z^-1 / 1 + a1*z^-1
+          // Actually let's use the standard shelf formula
+        } else {
+          // Cut case
+          b0 = 1 + H0 / (1 + tn);
+          b1 = H0 * (1/(1 + tn) - 1/(1 + 1/tn));
+          b2 = 0;
+          a0 = 1;
+          a1 = -1 * (1 - tn) / (1 + tn);
+          a2 = 0;
+        }
+        // Use CamillaDSP's actual first-order shelf formula
+        // H(s) = (s + wc*sqrt(A)) / (s + wc/sqrt(A)) * A  [low shelf]
+        // Bilinear: s = 2*fs*(z-1)/(z+1)
+        var wc = 2 * Math.PI * freq;
+        var fs = sampleRate;
+        var sqrtA = Math.sqrt(A);
+        // Pre-warp
+        var wp = 2 * fs * Math.tan(wc / (2 * fs));
+        // s -> z via bilinear
+        // Numerator: s + wp*sqrtA => 2*fs*(z-1)/(z+1) + wp*sqrtA
+        // => (2*fs + wp*sqrtA)*z + (wp*sqrtA - 2*fs) / (z+1)
+        // Denominator: s + wp/sqrtA => (2*fs + wp/sqrtA)*z + (wp/sqrtA - 2*fs) / (z+1)
+        var bn = 2 * fs + wp * sqrtA;
+        var bn1 = wp * sqrtA - 2 * fs;
+        var an = 2 * fs + wp / sqrtA;
+        var an1 = wp / sqrtA - 2 * fs;
+        b0 = bn / an;
+        b1 = bn1 / an;
+        b2 = 0;
+        a0 = 1;
+        a1 = an1 / an;
+        a2 = 0;
+        return [{ b0: b0, b1: b1, b2: 0, a1: a1, a2: 0 }];
+
+      case 'HighshelfFO':
+        // First-order high shelf via bilinear transform
+        freq = params[0]; gain = params[1];
+        A = Math.pow(10, gain / 20);
+        wc = 2 * Math.PI * freq;
+        fs = sampleRate;
+        sqrtA = Math.sqrt(A);
+        wp = 2 * fs * Math.tan(wc / (2 * fs));
+        // H(s) = A * (s*sqrtA + wc) / (s/sqrtA + wc)
+        // Numerator: sqrtA*s + wc => sqrtA*2*fs*(z-1)/(z+1) + wc_p
+        // => (sqrtA*2*fs + wc_p)*z + (wc_p - sqrtA*2*fs)  / (z+1)
+        // Denominator: s/sqrtA + wc => (2*fs/sqrtA + wc_p)*z + (wc_p - 2*fs/sqrtA) / (z+1)
+        bn = sqrtA * 2 * fs + wp;
+        bn1 = wp - sqrtA * 2 * fs;
+        an = 2 * fs / sqrtA + wp;
+        an1 = wp - 2 * fs / sqrtA;
+        // Multiply numerator by A/sqrtA = sqrtA? No.
+        // Actually for high shelf: H(s) = (A*s + wc*sqrtA) / (s + wc*sqrtA)
+        // Let me use the correct CamillaDSP formulation.
+        // CamillaDSP HighshelfFO: first-order high-shelf
+        // Using matched bilinear:
+        // H(s) = (sqrtA * s + wc) / (s/sqrtA + wc) -- this gives high-shelf
+        // Actually after pre-warping:
+        bn = sqrtA * 2 * fs + wp;
+        bn1 = -(sqrtA * 2 * fs) + wp;
+        an = 2 * fs / sqrtA + wp;
+        an1 = -(2 * fs / sqrtA) + wp;
+        // Normalize: multiply through
+        b0 = (sqrtA * bn) / an;
+        b1 = (sqrtA * bn1) / an;
+        b2 = 0;
+        a1 = an1 / an;
+        a2 = 0;
+        // Hmm, let's simplify. The standard first-order high shelf bilinear result:
+        // Actually let's just use the cookbook approach consistently.
+        // For first-order high shelf (CamillaDSP implementation):
+        // b0 = A*( (A+1) + (A-1)*... ) etc but for first order it's simpler.
+        // Use a direct bilinear of H(s) = A * (s + wa/sqrtA) / (s + wa*sqrtA) where wa = prewarped
+        wp = 2 * fs * Math.tan(Math.PI * freq / fs);
+        var b0n = A * (2 * fs + wp / sqrtA);
+        var b1n = A * (wp / sqrtA - 2 * fs);
+        var a0n = 2 * fs + wp * sqrtA;
+        var a1n = wp * sqrtA - 2 * fs;
+        b0 = b0n / a0n;
+        b1 = b1n / a0n;
+        b2 = 0;
+        a1 = a1n / a0n;
+        a2 = 0;
+        return [{ b0: b0, b1: b1, b2: 0, a1: a1, a2: 0 }];
+
+      case 'Lowpass':
+        freq = params[0]; Q = params[1];
+        w0 = 2 * Math.PI * freq / sampleRate;
+        sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
+        alpha = sinw0 / (2 * Q);
+        b0 = (1 - cosw0) / 2;
+        b1 = 1 - cosw0;
+        b2 = (1 - cosw0) / 2;
+        a0 = 1 + alpha;
+        a1 = -2 * cosw0;
+        a2 = 1 - alpha;
+        return [{ b0: b0/a0, b1: b1/a0, b2: b2/a0, a1: a1/a0, a2: a2/a0 }];
+
+      case 'Highpass':
+        freq = params[0]; Q = params[1];
+        w0 = 2 * Math.PI * freq / sampleRate;
+        sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
+        alpha = sinw0 / (2 * Q);
+        b0 = (1 + cosw0) / 2;
+        b1 = -(1 + cosw0);
+        b2 = (1 + cosw0) / 2;
+        a0 = 1 + alpha;
+        a1 = -2 * cosw0;
+        a2 = 1 - alpha;
+        return [{ b0: b0/a0, b1: b1/a0, b2: b2/a0, a1: a1/a0, a2: a2/a0 }];
+
+      case 'LowpassFO':
+        freq = params[0];
+        w0 = 2 * Math.PI * freq / sampleRate;
+        k = Math.tan(w0 / 2);
+        b0 = k / (k + 1);
+        b1 = k / (k + 1);
+        b2 = 0;
+        a1 = (k - 1) / (k + 1);
+        a2 = 0;
+        return [{ b0: b0, b1: b1, b2: 0, a1: a1, a2: 0 }];
+
+      case 'HighpassFO':
+        freq = params[0];
+        w0 = 2 * Math.PI * freq / sampleRate;
+        k = Math.tan(w0 / 2);
+        b0 = 1 / (k + 1);
+        b1 = -1 / (k + 1);
+        b2 = 0;
+        a1 = (k - 1) / (k + 1);
+        a2 = 0;
+        return [{ b0: b0, b1: b1, b2: 0, a1: a1, a2: 0 }];
+
+      case 'Notch':
+        freq = params[0]; Q = params[1];
+        w0 = 2 * Math.PI * freq / sampleRate;
+        sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
+        alpha = sinw0 / (2 * Q);
+        b0 = 1;
+        b1 = -2 * cosw0;
+        b2 = 1;
+        a0 = 1 + alpha;
+        a1 = -2 * cosw0;
+        a2 = 1 - alpha;
+        return [{ b0: b0/a0, b1: b1/a0, b2: b2/a0, a1: a1/a0, a2: a2/a0 }];
+
+      case 'Notch2':
+        // Notch with bandwidth in octaves
+        freq = params[0]; bandwidth = params[1];
+        w0 = 2 * Math.PI * freq / sampleRate;
+        sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
+        alpha = sinw0 * Math.sinh(Math.log(2) / 2 * bandwidth * w0 / sinw0);
+        b0 = 1;
+        b1 = -2 * cosw0;
+        b2 = 1;
+        a0 = 1 + alpha;
+        a1 = -2 * cosw0;
+        a2 = 1 - alpha;
+        return [{ b0: b0/a0, b1: b1/a0, b2: b2/a0, a1: a1/a0, a2: a2/a0 }];
+
+      case 'LinkwitzTransform':
+        // Ratio of two 2nd-order sections: target / actual
+        var Fa = params[0], Qa = params[1], Ft = params[2], Qt = params[3];
+        // Actual speaker resonance (to flatten)
+        w0 = 2 * Math.PI * Fa / sampleRate;
+        sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
+        alpha = sinw0 / (2 * Qa);
+        var a0a = 1 + alpha;
+        var a1a = -2 * cosw0;
+        var a2a = 1 - alpha;
+        // Target response
+        w0 = 2 * Math.PI * Ft / sampleRate;
+        sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
+        alpha = sinw0 / (2 * Qt);
+        var a0t = 1 + alpha;
+        var a1t = -2 * cosw0;
+        var a2t = 1 - alpha;
+        // H(z) = (a0a + a1a*z^-1 + a2a*z^-2) / (a0t + a1t*z^-1 + a2t*z^-2)
+        // Normalized:
+        return [{
+          b0: a0a / a0t,
+          b1: a1a / a0t,
+          b2: a2a / a0t,
+          a1: a1t / a0t,
+          a2: a2t / a0t
+        }];
+
+      case 'ButterworthHighpass':
+        freq = params[0]; order = Math.round(params[1]);
+        return butterworthBiquads(freq, order, 'highpass', sampleRate);
+
+      case 'ButterworthLowpass':
+        freq = params[0]; order = Math.round(params[1]);
+        return butterworthBiquads(freq, order, 'lowpass', sampleRate);
+
+      default:
+        return [];
+    }
+  }
+
+  function butterworthBiquads(freq, order, type, sampleRate) {
+    // Decompose Butterworth into cascaded biquad sections
+    var sections = [];
+    var nSections = Math.floor(order / 2);
+    var w0, sinw0, cosw0, alpha, Q, b0, b1, b2, a0, a1, a2;
+
+    for (var i = 0; i < nSections; i++) {
+      // Q for each section of Butterworth filter
+      Q = 1 / (2 * Math.cos(Math.PI * (2 * i + 1) / (2 * order)));
+      w0 = 2 * Math.PI * freq / sampleRate;
+      sinw0 = Math.sin(w0);
+      cosw0 = Math.cos(w0);
+      alpha = sinw0 / (2 * Q);
+
+      if (type === 'lowpass') {
+        b0 = (1 - cosw0) / 2;
+        b1 = 1 - cosw0;
+        b2 = (1 - cosw0) / 2;
+      } else {
+        b0 = (1 + cosw0) / 2;
+        b1 = -(1 + cosw0);
+        b2 = (1 + cosw0) / 2;
+      }
+      a0 = 1 + alpha;
+      a1 = -2 * cosw0;
+      a2 = 1 - alpha;
+      sections.push({ b0: b0/a0, b1: b1/a0, b2: b2/a0, a1: a1/a0, a2: a2/a0 });
+    }
+
+    // If odd order, add a first-order section
+    if (order % 2 === 1) {
+      var k = Math.tan(Math.PI * freq / sampleRate);
+      if (type === 'lowpass') {
+        b0 = k / (k + 1);
+        b1 = k / (k + 1);
+        b2 = 0;
+        a1 = (k - 1) / (k + 1);
+        a2 = 0;
+      } else {
+        b0 = 1 / (k + 1);
+        b1 = -1 / (k + 1);
+        b2 = 0;
+        a1 = (k - 1) / (k + 1);
+        a2 = 0;
+      }
+      sections.push({ b0: b0, b1: b1, b2: 0, a1: a1, a2: 0 });
+    }
+
+    return sections;
+  }
+
+  // ========== Transfer function evaluation ==========
+
+  function evalBiquadMagnitudeDb(biquads, freq, sampleRate) {
+    // Evaluate cascaded biquad magnitude at a given frequency
+    var w = 2 * Math.PI * freq / sampleRate;
+    var cosw = Math.cos(w);
+    var cos2w = Math.cos(2 * w);
+    var sinw = Math.sin(w);
+    var sin2w = Math.sin(2 * w);
+
+    var totalMagSq = 1;
+    for (var i = 0; i < biquads.length; i++) {
+      var c = biquads[i];
+      // Numerator: b0 + b1*e^(-jw) + b2*e^(-j2w)
+      var numRe = c.b0 + c.b1 * cosw + c.b2 * cos2w;
+      var numIm = -(c.b1 * sinw + c.b2 * sin2w);
+      // Denominator: 1 + a1*e^(-jw) + a2*e^(-j2w)
+      var denRe = 1 + c.a1 * cosw + c.a2 * cos2w;
+      var denIm = -(c.a1 * sinw + c.a2 * sin2w);
+
+      var numMagSq = numRe * numRe + numIm * numIm;
+      var denMagSq = denRe * denRe + denIm * denIm;
+
+      if (denMagSq === 0) denMagSq = 1e-20;
+      totalMagSq *= numMagSq / denMagSq;
+    }
+
+    return 10 * Math.log10(totalMagSq);
+  }
+
+  // ========== Compute response curves ==========
+
+  function computeResponses(data) {
+    if (!data || !data.filters) return null;
+
+    var sampleRate = data.sampleRate || 44100;
+    var filters = data.filters.filter(function (f) {
+      return f.type !== 'None';
+    });
+
+    if (filters.length === 0) {
+      return { individual: [], combinedL: null, combinedR: null, combinedLR: null, sampleRate: sampleRate };
+    }
+
+    var individual = [];
+    var hasL = false, hasR = false, allLR = true;
+
+    for (var fi = 0; fi < filters.length; fi++) {
+      var f = filters[fi];
+      var biquads = computeBiquadCoeffs(f.type, f.params, sampleRate);
+      if (biquads.length === 0) continue;
+
+      var curve = new Float64Array(numPoints);
+      for (var j = 0; j < numPoints; j++) {
+        curve[j] = evalBiquadMagnitudeDb(biquads, frequencies[j], sampleRate);
+      }
+
+      individual.push({
+        index: f.index,
+        type: f.type,
+        scope: f.scope,
+        params: f.params,
+        curve: curve,
+        biquads: biquads
+      });
+
+      if (f.scope === 'L' || f.scope === 'L+R') hasL = true;
+      if (f.scope === 'R' || f.scope === 'L+R') hasR = true;
+      if (f.scope !== 'L+R') allLR = false;
+    }
+
+    // Compute combined responses
+    var combinedL = null, combinedR = null, combinedLR = null;
+
+    if (allLR && hasL) {
+      // All filters are L+R, show single combined curve
+      combinedLR = new Float64Array(numPoints);
+      for (var j = 0; j < numPoints; j++) {
+        var total = 0;
+        for (var fi = 0; fi < individual.length; fi++) {
+          total += individual[fi].curve[j];
+        }
+        combinedLR[j] = total;
+      }
+    } else {
+      if (hasL) {
+        combinedL = new Float64Array(numPoints);
+        for (var j = 0; j < numPoints; j++) {
+          var total = 0;
+          for (var fi = 0; fi < individual.length; fi++) {
+            if (individual[fi].scope === 'L' || individual[fi].scope === 'L+R') {
+              total += individual[fi].curve[j];
+            }
+          }
+          combinedL[j] = total;
+        }
+      }
+      if (hasR) {
+        combinedR = new Float64Array(numPoints);
+        for (var j = 0; j < numPoints; j++) {
+          var total = 0;
+          for (var fi = 0; fi < individual.length; fi++) {
+            if (individual[fi].scope === 'R' || individual[fi].scope === 'L+R') {
+              total += individual[fi].curve[j];
+            }
+          }
+          combinedR[j] = total;
+        }
+      }
+    }
+
+    return {
+      individual: individual,
+      combinedL: combinedL,
+      combinedR: combinedR,
+      combinedLR: combinedLR,
+      sampleRate: sampleRate
+    };
+  }
+
+  // ========== Canvas rendering ==========
+
+  function resizeCanvas() {
+    var rect = container.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function freqToX(freq) {
+    var w = canvas.width / dpr;
+    var plotW = w - margin.left - margin.right;
+    return margin.left + plotW * (Math.log10(freq) - logMin) / (logMax - logMin);
+  }
+
+  function xToFreq(x) {
+    var w = canvas.width / dpr;
+    var plotW = w - margin.left - margin.right;
+    var logF = logMin + (x - margin.left) / plotW * (logMax - logMin);
+    return Math.pow(10, logF);
+  }
+
+  function dbToY(db, dbMin, dbMax) {
+    var h = canvas.height / dpr;
+    var plotH = h - margin.top - margin.bottom;
+    return margin.top + plotH * (1 - (db - dbMin) / (dbMax - dbMin));
+  }
+
+  function yToDb(y, dbMin, dbMax) {
+    var h = canvas.height / dpr;
+    var plotH = h - margin.top - margin.bottom;
+    return dbMin + (1 - (y - margin.top) / plotH) * (dbMax - dbMin);
+  }
+
+  function formatFreq(f) {
+    if (f >= 1000) return (f / 1000) + 'k';
+    return f.toString();
+  }
+
+  function render(responses) {
+    var w = canvas.width / dpr;
+    var h = canvas.height / dpr;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Determine dB range
+    var dbMin = -15, dbMax = 15;
+    if (responses) {
+      var allCurves = [];
+      for (var i = 0; i < responses.individual.length; i++) {
+        allCurves.push(responses.individual[i].curve);
+      }
+      if (responses.combinedL) allCurves.push(responses.combinedL);
+      if (responses.combinedR) allCurves.push(responses.combinedR);
+      if (responses.combinedLR) allCurves.push(responses.combinedLR);
+
+      for (var i = 0; i < allCurves.length; i++) {
+        for (var j = 0; j < allCurves[i].length; j++) {
+          var v = allCurves[i][j];
+          if (isFinite(v)) {
+            if (v < dbMin) dbMin = v;
+            if (v > dbMax) dbMax = v;
+          }
+        }
+      }
+      // Add padding and ensure minimum range
+      var range = dbMax - dbMin;
+      if (range < 30) {
+        var mid = (dbMax + dbMin) / 2;
+        dbMin = mid - 15;
+        dbMax = mid + 15;
+      }
+      dbMin = Math.floor(dbMin / 6) * 6 - 6;
+      dbMax = Math.ceil(dbMax / 6) * 6 + 6;
+    }
+
+    var plotW = w - margin.left - margin.right;
+    var plotH = h - margin.top - margin.bottom;
+
+    // Draw background
+    ctx.fillStyle = '#333';
+    ctx.fillRect(0, 0, w, h);
+
+    // Draw grid - vertical (frequency)
+    ctx.strokeStyle = '#4a4a4a';
+    ctx.lineWidth = 0.5;
+    ctx.font = '11px Lato, sans-serif';
+    ctx.fillStyle = '#999';
+    ctx.textAlign = 'center';
+
+    for (var i = 0; i < gridFreqs.length; i++) {
+      var x = freqToX(gridFreqs[i]);
+      ctx.beginPath();
+      ctx.moveTo(x, margin.top);
+      ctx.lineTo(x, h - margin.bottom);
+      ctx.stroke();
+      ctx.fillText(formatFreq(gridFreqs[i]), x, h - margin.bottom + 16);
+    }
+
+    // Draw grid - horizontal (dB)
+    ctx.textAlign = 'right';
+    for (var db = dbMin; db <= dbMax; db += 6) {
+      var y = dbToY(db, dbMin, dbMax);
+      if (db === 0) {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 0.8;
+        ctx.setLineDash([5, 5]);
+      } else {
+        ctx.strokeStyle = '#4a4a4a';
+        ctx.lineWidth = 0.5;
+        ctx.setLineDash([]);
+      }
+      ctx.beginPath();
+      ctx.moveTo(margin.left, y);
+      ctx.lineTo(w - margin.right, y);
+      ctx.stroke();
+      ctx.fillStyle = db === 0 ? '#fff' : '#999';
+      ctx.fillText(db + ' dB', margin.left - 8, y + 4);
+    }
+    ctx.setLineDash([]);
+
+    // Draw axis labels
+    ctx.fillStyle = '#AAA';
+    ctx.textAlign = 'center';
+    ctx.fillText('Hz', w - margin.right + 15, h - margin.bottom + 16);
+
+    if (!responses || responses.individual.length === 0) {
+      // Draw flat line at 0dB
+      var y0 = dbToY(0, dbMin, dbMax);
+      ctx.strokeStyle = '#555';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(margin.left, y0);
+      ctx.lineTo(w - margin.right, y0);
+      ctx.stroke();
+      return;
+    }
+
+    // Draw individual filter curves
+    for (var fi = 0; fi < responses.individual.length; fi++) {
+      var ind = responses.individual[fi];
+      var color = filterColors[fi % filterColors.length];
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = 0.4;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (var j = 0; j < numPoints; j++) {
+        var x = freqToX(frequencies[j]);
+        var y = dbToY(ind.curve[j], dbMin, dbMax);
+        if (j === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1.0;
+    }
+
+    // Draw combined curves
+    if (responses.combinedLR) {
+      drawCurve(responses.combinedLR, '#54C688', 3, dbMin, dbMax);
+    }
+    if (responses.combinedL) {
+      drawCurve(responses.combinedL, '#4CAF50', 2.5, dbMin, dbMax);
+    }
+    if (responses.combinedR) {
+      drawCurve(responses.combinedR, '#2196F3', 2.5, dbMin, dbMax);
+    }
+
+    // Draw numbered PEQ markers at each filter's center frequency (on top of all curves)
+    for (var fi = 0; fi < responses.individual.length; fi++) {
+      var ind = responses.individual[fi];
+      var color = filterColors[fi % filterColors.length];
+      var markerFreq = ind.params[0];
+      if (markerFreq < fMin || markerFreq > fMax) continue;
+      var markerDb = evalBiquadMagnitudeDb(ind.biquads, markerFreq, responses.sampleRate);
+      if (!isFinite(markerDb)) continue;
+      var mx = freqToX(markerFreq);
+      var my = dbToY(markerDb, dbMin, dbMax);
+      // Clamp to plot area
+      if (my < margin.top) my = margin.top;
+      if (my > h - margin.bottom) my = h - margin.bottom;
+      var label = '' + ind.index;
+      var isActive = (fi === dragFilterIndex || fi === selectedFilterIndex || fi === hoveredFilterIndex);
+      var radius = isActive ? 13 : 10;
+      // Glow effect for active dot
+      if (isActive) {
+        ctx.save();
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 12;
+      }
+      // Filled circle
+      ctx.beginPath();
+      ctx.arc(mx, my, radius, 0, 2 * Math.PI);
+      ctx.fillStyle = color;
+      ctx.fill();
+      // Dark outline for contrast
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = isActive ? 2 : 1.5;
+      ctx.stroke();
+      if (isActive) {
+        ctx.restore();
+      }
+      // Number label
+      ctx.fillStyle = '#fff';
+      ctx.font = isActive ? 'bold 11px Lato, sans-serif' : 'bold 10px Lato, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, mx, my + 3.5);
+    }
+
+    // Draw crosshair
+    if (mouseX >= margin.left && mouseX <= w - margin.right &&
+        mouseY >= margin.top && mouseY <= h - margin.bottom) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(mouseX, margin.top);
+      ctx.lineTo(mouseX, h - margin.bottom);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(margin.left, mouseY);
+      ctx.lineTo(w - margin.right, mouseY);
+      ctx.stroke();
+    }
+
+    // Store dbMin/dbMax for crosshair
+    render.dbMin = dbMin;
+    render.dbMax = dbMax;
+  }
+
+  function drawCurve(curve, color, lineWidth, dbMin, dbMax) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.beginPath();
+    for (var j = 0; j < numPoints; j++) {
+      var x = freqToX(frequencies[j]);
+      var y = dbToY(curve[j], dbMin, dbMax);
+      if (j === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  // ========== Hit-testing ==========
+
+  function hitTestMarker(mx, my, responses) {
+    if (!responses) return -1;
+    var w = canvas.width / dpr;
+    var h = canvas.height / dpr;
+    // Iterate in reverse so topmost (last drawn) is tested first
+    for (var fi = responses.individual.length - 1; fi >= 0; fi--) {
+      var ind = responses.individual[fi];
+      var markerFreq = ind.params[0];
+      if (markerFreq < fMin || markerFreq > fMax) continue;
+      var markerDb = evalBiquadMagnitudeDb(ind.biquads, markerFreq, responses.sampleRate);
+      if (!isFinite(markerDb)) continue;
+      var dotX = freqToX(markerFreq);
+      var dotY = dbToY(markerDb, lastDbMin, lastDbMax);
+      if (dotY < margin.top) dotY = margin.top;
+      if (dotY > h - margin.bottom) dotY = h - margin.bottom;
+      var dx = mx - dotX;
+      var dy = my - dotY;
+      if (dx * dx + dy * dy <= 14 * 14) return fi;
+    }
+    return -1;
+  }
+
+  // ========== Client-side validation ==========
+
+  function validateParams(type, params) {
+    var freq = Number(params[0]);
+    if (type !== 'None') {
+      if (!isFinite(freq) || freq <= 0 || freq >= 22050) return 'Frequency must be between 0 and 22050 Hz';
+    }
+    var meta = filterTypeMeta[type];
+    if (!meta) return 'Unknown filter type';
+
+    if (meta.hasGain) {
+      var g = Number(params[1]);
+      if (!isFinite(g) || g <= -20.1 || g >= 20.1) return 'Gain must be between -20 and 20 dB';
+    }
+    if (type === 'Peaking' || type === 'Highshelf2' || type === 'Lowshelf2') {
+      var q = Number(params[2]);
+      if (!isFinite(q) || q <= 0 || q >= 40.1) return 'Q must be between 0 and 40';
+    }
+    if (type === 'Peaking2') {
+      var bw = Number(params[2]);
+      if (!isFinite(bw) || bw <= 0 || bw >= 8) return 'Bandwidth must be between 0 and 8';
+    }
+    if (type === 'Highpass' || type === 'Lowpass' || type === 'Notch') {
+      var q = Number(params[1]);
+      if (!isFinite(q) || q <= 0 || q >= 40.1) return 'Q must be between 0 and 40';
+    }
+    if (type === 'Highpass2' || type === 'Lowpass2' || type === 'Notch2') {
+      var bw = Number(params[1]);
+      if (!isFinite(bw) || bw <= 0 || bw >= 25.1) return 'Bandwidth must be between 0 and 25';
+    }
+    if (type === 'Highshelf' || type === 'Lowshelf') {
+      var s = Number(params[2]);
+      if (!isFinite(s) || s <= 0 || s >= 13) return 'Slope must be between 0 and 13';
+    }
+    if (type === 'ButterworthHighpass' || type === 'ButterworthLowpass') {
+      var order = Number(params[1]);
+      if ([2, 4, 6, 8].indexOf(order) === -1) return 'Order must be 2, 4, 6, or 8';
+    }
+    if (type === 'LinkwitzTransform') {
+      var qa = Number(params[1]);
+      var ft = Number(params[2]);
+      var qt = Number(params[3]);
+      if (!isFinite(qa) || qa <= 0 || qa >= 40.1) return 'Qa must be between 0 and 40';
+      if (!isFinite(ft) || ft <= 0 || ft >= 22050) return 'Ft must be between 0 and 22050 Hz';
+      if (!isFinite(qt) || qt <= 0 || qt >= 40.1) return 'Qt must be between 0 and 40';
+    }
+    return null;
+  }
+
+  // ========== POST to backend ==========
+
+  function postFilterUpdate(filterIndex, params, type, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/peq', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 5000;
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        try {
+          var resp = JSON.parse(xhr.responseText);
+          if (!resp.error) markUnsaved();
+          if (callback) callback(resp.error || null);
+        } catch (e) {
+          if (callback) callback('Invalid response');
+        }
+      } else {
+        try {
+          var resp = JSON.parse(xhr.responseText);
+          if (callback) callback(resp.error || 'Server error');
+        } catch (e) {
+          if (callback) callback('Server error');
+        }
+      }
+    };
+    xhr.onerror = function () {
+      if (callback) callback('Network error');
+    };
+    var filterData = { index: filterIndex, params: params };
+    if (type) filterData.type = type;
+    xhr.send(JSON.stringify({ filters: [filterData] }));
+  }
+
+  // ========== Popup ==========
+
+  function getPopupParams() {
+    var knobs = document.querySelectorAll('#popup-params-container .knob-container');
+    var ep = [];
+    for (var j = 0; j < knobs.length; j++) {
+      ep.push(knobs[j]._knobState ? knobs[j]._knobState.value : 0);
+    }
+    return ep;
+  }
+
+  function getDefaultParamsForType(type, preserveFreq) {
+    var defaults = filterTypeDefaults[type] || [1000];
+    var params = defaults.slice();
+    if (isFinite(preserveFreq) && preserveFreq > 0) {
+      params[0] = preserveFreq;
+    }
+    return params;
+  }
+
+  function rebuildPopupParams(type, params, ind) {
+    var paramsContainer = document.getElementById('popup-params-container');
+    var meta = filterTypeMeta[type];
+    if (!meta) { paramsContainer.innerHTML = ''; return; }
+
+    paramsContainer.innerHTML = '';
+
+    for (var i = 0; i < meta.paramLabels.length; i++) {
+      var label = meta.paramLabels[i];
+      var val = (i < params.length) ? params[i] : 0;
+      var config = getKnobConfig(label, type);
+      var knobEl = createKnob(i, label, val, config);
+
+      attachKnobInteraction(knobEl, config, i, function (paramIdx, newValue) {
+        var f = currentData.filters;
+        for (var j = 0; j < f.length; j++) {
+          if (f[j].index === ind.index) {
+            f[j].params[paramIdx] = newValue;
+            break;
+          }
+        }
+        renderLocal();
+        var errEl = document.getElementById('popup-error-text');
+        var ep = getPopupParams();
+        var err = validateParams(popupCurrentType, ep);
+        if (errEl) errEl.textContent = err || '';
+      });
+
+      paramsContainer.appendChild(knobEl);
+    }
+  }
+
+  function showPopup(fi) {
+    if (!lastResponses || fi < 0 || fi >= lastResponses.individual.length) return;
+    var ind = lastResponses.individual[fi];
+    var meta = filterTypeMeta[ind.type];
+    if (!meta) return;
+
+    selectedFilterIndex = fi;
+    interacting = true;
+    clearInteractionTimer();
+    popupSnapshotData = JSON.parse(JSON.stringify(currentData));
+    popupCurrentType = ind.type;
+
+    // Build popup HTML with type selector
+    var html = '<div class="popup-title">Eq' + ind.index + ' [' + ind.scope + ']</div>';
+    html += '<div class="popup-row"><label>Type</label><select id="popup-type-select">';
+    for (var ti = 0; ti < filterTypeOptions.length; ti++) {
+      var opt = filterTypeOptions[ti];
+      var sel = (opt.value === ind.type) ? ' selected' : '';
+      html += '<option value="' + opt.value + '"' + sel + '>' + opt.label + '</option>';
+    }
+    html += '</select></div>';
+    html += '<div id="popup-params-container"></div>';
+    html += '<div class="popup-error" id="popup-error-text"></div>';
+    var deleteDisabled = (currentData && currentData.filters.length <= 1) ? ' disabled title="Cannot remove the last filter"' : '';
+    html += '<div class="popup-buttons">' +
+      '<button class="delete-btn" id="popup-delete"' + deleteDisabled + '>Delete</button>' +
+      '<button class="cancel-btn" id="popup-cancel">Cancel</button>' +
+      '<button class="apply-btn" id="popup-apply">Apply</button></div>';
+
+    popupEl.innerHTML = html;
+    popupEl.style.display = 'block';
+
+    // Position near the dot
+    var markerFreq = ind.params[0];
+    var markerDb = evalBiquadMagnitudeDb(ind.biquads, markerFreq, lastResponses.sampleRate);
+    var dotX = freqToX(markerFreq);
+    var dotY = dbToY(markerDb, lastDbMin, lastDbMax);
+    var w = canvas.width / dpr;
+    var h = canvas.height / dpr;
+    var pLeft = dotX + 20;
+    var pTop = dotY - 30;
+    if (pLeft + 320 > w) pLeft = dotX - 330;
+    if (pTop < 0) pTop = 10;
+    if (pTop + 280 > h) pTop = h - 290;
+    popupEl.style.left = pLeft + 'px';
+    popupEl.style.top = pTop + 'px';
+
+    // Build initial parameter fields
+    rebuildPopupParams(ind.type, ind.params.slice(), ind);
+
+    // Type change handler
+    document.getElementById('popup-type-select').addEventListener('change', function () {
+      var newType = this.value;
+      popupCurrentType = newType;
+      var currentFreq = getPopupParams()[0] || ind.params[0];
+      var newParams = getDefaultParamsForType(newType, currentFreq);
+      // Update currentData for live preview
+      for (var j = 0; j < currentData.filters.length; j++) {
+        if (currentData.filters[j].index === ind.index) {
+          currentData.filters[j].type = newType;
+          currentData.filters[j].params = newParams;
+          break;
+        }
+      }
+      knobDragState = null;
+      rebuildPopupParams(newType, newParams, ind);
+      renderLocal();
+    });
+
+    // Apply button
+    document.getElementById('popup-apply').addEventListener('click', function () {
+      var ep = getPopupParams();
+      var err = validateParams(popupCurrentType, ep);
+      var errEl = document.getElementById('popup-error-text');
+      if (err) {
+        if (errEl) errEl.textContent = err;
+        return;
+      }
+      var typeChanged = (popupCurrentType !== popupSnapshotData.filters.filter(function (f) {
+        return f.index === ind.index;
+      })[0].type);
+      postFilterUpdate(ind.index, ep, typeChanged ? popupCurrentType : null, function (serverErr) {
+        if (serverErr) {
+          if (errEl) errEl.textContent = serverErr;
+        } else {
+          closePopup();
+          scheduleInteractionEnd();
+        }
+      });
+    });
+
+    // Cancel button
+    document.getElementById('popup-cancel').addEventListener('click', function () {
+      revertAndClosePopup();
+    });
+
+    // Delete button
+    document.getElementById('popup-delete').addEventListener('click', function () {
+      if (currentData && currentData.filters.length <= 1) return;
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/peq/remove', true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.timeout = 5000;
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          closePopup();
+          popupSnapshotData = null;
+          markUnsaved();
+          showStatus('Filter removed', 2000);
+          interacting = false;
+          fetchAndRender();
+        } else {
+          var errEl = document.getElementById('popup-error-text');
+          var msg = 'Remove failed';
+          try { msg = JSON.parse(xhr.responseText).error || msg; } catch (e) {}
+          if (errEl) errEl.textContent = msg;
+        }
+      };
+      xhr.onerror = function () {
+        var errEl = document.getElementById('popup-error-text');
+        if (errEl) errEl.textContent = 'Network error';
+      };
+      xhr.send(JSON.stringify({ index: ind.index }));
+    });
+  }
+
+  function closePopup() {
+    popupEl.style.display = 'none';
+    popupEl.innerHTML = '';
+    selectedFilterIndex = -1;
+    popupCurrentType = null;
+  }
+
+  function revertAndClosePopup() {
+    if (popupSnapshotData) {
+      currentData = popupSnapshotData;
+      popupSnapshotData = null;
+      renderLocal();
+    }
+    closePopup();
+    scheduleInteractionEnd();
+  }
+
+  // Close popup on Escape key (global)
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && selectedFilterIndex >= 0) {
+      revertAndClosePopup();
+    }
+  });
+
+  // ========== Interaction timer ==========
+
+  function clearInteractionTimer() {
+    if (interactionEndTimer) {
+      clearTimeout(interactionEndTimer);
+      interactionEndTimer = null;
+    }
+  }
+
+  function scheduleInteractionEnd() {
+    clearInteractionTimer();
+    interactionEndTimer = setTimeout(function () {
+      interacting = false;
+      fetchAndRender();
+    }, 2000);
+  }
+
+  // ========== Local render helper ==========
+
+  function renderLocal() {
+    if (!currentData) return;
+    var responses = computeResponses(currentData);
+    if (responses) {
+      lastResponses = responses;
+      lastDbMin = render.dbMin || -15;
+      lastDbMax = render.dbMax || 15;
+      resizeCanvas();
+      render(responses);
+      updateLegend(responses);
+    }
+  }
+
+  // ========== Legend ==========
+
+  function updateLegend(responses) {
+    legendEl.innerHTML = '';
+    if (!responses) return;
+
+    // Individual filters
+    for (var i = 0; i < responses.individual.length; i++) {
+      var ind = responses.individual[i];
+      var color = filterColors[i % filterColors.length];
+      var paramStr = ind.params.join(', ');
+      var div = document.createElement('div');
+      div.className = 'legend-item';
+      div.innerHTML = '<span class="legend-color" style="background:' + color + '"></span>' +
+        '<span>Eq' + ind.index + ' ' + ind.type + ' [' + ind.scope + '] (' + paramStr + ')</span>';
+      legendEl.appendChild(div);
+    }
+
+    // Combined curves
+    if (responses.combinedLR) {
+      addLegendItem('Combined L+R', '#54C688');
+    }
+    if (responses.combinedL) {
+      addLegendItem('Combined L', '#4CAF50');
+    }
+    if (responses.combinedR) {
+      addLegendItem('Combined R', '#2196F3');
+    }
+  }
+
+  function addLegendItem(label, color) {
+    var div = document.createElement('div');
+    div.className = 'legend-item';
+    div.innerHTML = '<span class="legend-color" style="background:' + color + '; height: 4px;"></span>' +
+      '<span style="font-weight:600;">' + label + '</span>';
+    legendEl.appendChild(div);
+  }
+
+  // ========== Data fetching ==========
+
+  function fetchAndRender() {
+    if (interacting) return;
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/peq', true);
+    xhr.timeout = 5000;
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        try {
+          currentData = JSON.parse(xhr.responseText);
+          errorMsg.style.display = 'none';
+          samplerateEl.textContent = currentData.sampleRate || '--';
+          var responses = computeResponses(currentData);
+          lastResponses = responses;
+          updateLegend(responses);
+          resizeCanvas();
+          render(responses);
+          lastDbMin = render.dbMin || -15;
+          lastDbMax = render.dbMax || 15;
+        } catch (e) {
+          errorMsg.style.display = 'block';
+        }
+      } else {
+        errorMsg.style.display = 'block';
+      }
+    };
+    xhr.onerror = function () {
+      errorMsg.style.display = 'block';
+    };
+    xhr.send();
+  }
+
+  // ========== Mouse event helpers ==========
+
+  function getMousePos(e) {
+    var rect = canvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
+  function getTouchPos(e) {
+    var rect = canvas.getBoundingClientRect();
+    var touch = e.touches[0] || e.changedTouches[0];
+    return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+  }
+
+  function updateCrosshair(mx, my) {
+    var w = canvas.width / dpr;
+    var h = canvas.height / dpr;
+    if (mx >= margin.left && mx <= w - margin.right &&
+        my >= margin.top && my <= h - margin.bottom) {
+      var freq = xToFreq(mx);
+      var db = yToDb(my, render.dbMin || -15, render.dbMax || 15);
+      crosshairInfo.style.display = 'block';
+      crosshairInfo.textContent = Math.round(freq) + ' Hz / ' + db.toFixed(1) + ' dB';
+      var infoX = mx + 15;
+      var infoY = my - 25;
+      if (infoX + 150 > w) infoX = mx - 160;
+      if (infoY < 0) infoY = my + 15;
+      crosshairInfo.style.left = infoX + 'px';
+      crosshairInfo.style.top = infoY + 'px';
+    } else {
+      crosshairInfo.style.display = 'none';
+    }
+  }
+
+  function updateCursor(mx, my) {
+    if (dragging) {
+      canvas.style.cursor = 'grabbing';
+      return;
+    }
+    var hit = hitTestMarker(mx, my, lastResponses);
+    if (hit >= 0) {
+      canvas.style.cursor = 'pointer';
+      if (hoveredFilterIndex !== hit) {
+        hoveredFilterIndex = hit;
+        renderLocal();
+      }
+    } else {
+      canvas.style.cursor = 'crosshair';
+      if (hoveredFilterIndex !== -1) {
+        hoveredFilterIndex = -1;
+        renderLocal();
+      }
+    }
+  }
+
+  function applyDrag(mx, my) {
+    if (dragFilterIndex < 0 || !lastResponses || dragFilterIndex >= lastResponses.individual.length) return;
+    var ind = lastResponses.individual[dragFilterIndex];
+    var meta = filterTypeMeta[ind.type];
+    if (!meta || !meta.draggable) return;
+
+    // Find the filter in currentData
+    for (var j = 0; j < currentData.filters.length; j++) {
+      if (currentData.filters[j].index === ind.index) {
+        var newParams = currentData.filters[j].params.slice();
+        // Clamp mouse to plot area
+        var w = canvas.width / dpr;
+        var h = canvas.height / dpr;
+        var clampedX = Math.max(margin.left, Math.min(mx, w - margin.right));
+        var clampedY = Math.max(margin.top, Math.min(my, h - margin.bottom));
+        // Update frequency from X
+        var newFreq = xToFreq(clampedX);
+        newFreq = Math.max(1, Math.min(22049, newFreq));
+        newParams[0] = Math.round(newFreq * 10) / 10;
+        // Update gain from Y if applicable
+        if (meta.hasGain) {
+          var newGain = yToDb(clampedY, lastDbMin, lastDbMax);
+          newGain = Math.max(-20, Math.min(20, newGain));
+          newParams[1] = Math.round(newGain * 100) / 100;
+        }
+        currentData.filters[j].params = newParams;
+        break;
+      }
+    }
+
+    var responses = computeResponses(currentData);
+    if (responses) {
+      lastResponses = responses;
+      resizeCanvas();
+      render(responses);
+      updateLegend(responses);
+    }
+  }
+
+  // ========== Mouse event handlers ==========
+
+  canvas.addEventListener('mousedown', function (e) {
+    if (e.button !== 0) return;
+    if (selectedFilterIndex >= 0) return;
+    var pos = getMousePos(e);
+    var hit = hitTestMarker(pos.x, pos.y, lastResponses);
+    if (hit < 0) return;
+
+    var ind = lastResponses.individual[hit];
+    var meta = filterTypeMeta[ind.type];
+    if (!meta) return;
+
+    e.preventDefault();
+    interacting = true;
+    clearInteractionTimer();
+    dragFilterIndex = hit;
+    dragStartX = pos.x;
+    dragStartY = pos.y;
+    dragMoved = false;
+    // Save original params for revert
+    for (var j = 0; j < currentData.filters.length; j++) {
+      if (currentData.filters[j].index === ind.index) {
+        dragOriginalParams = currentData.filters[j].params.slice();
+        break;
+      }
+    }
+    canvas.style.cursor = 'grabbing';
+  });
+
+  canvas.addEventListener('mousemove', function (e) {
+    var pos = getMousePos(e);
+    mouseX = pos.x;
+    mouseY = pos.y;
+
+    if (dragFilterIndex >= 0) {
+      var dx = pos.x - dragStartX;
+      var dy = pos.y - dragStartY;
+      if (!dragMoved && (dx * dx + dy * dy > 9)) {
+        dragMoved = true;
+        dragging = true;
+      }
+      if (dragMoved) {
+        var ind = lastResponses.individual[dragFilterIndex];
+        var meta = filterTypeMeta[ind.type];
+        if (meta && meta.draggable) {
+          applyDrag(pos.x, pos.y);
+        }
+      }
+      return;
+    }
+
+    updateCrosshair(pos.x, pos.y);
+    updateCursor(pos.x, pos.y);
+
+    // Re-render for crosshair
+    if (currentData && !dragging) {
+      var responses = computeResponses(currentData);
+      if (responses) {
+        lastResponses = responses;
+        render(responses);
+      }
+    }
+  });
+
+  canvas.addEventListener('mouseup', function (e) {
+    if (e.button !== 0) return;
+    var pos = getMousePos(e);
+
+    if (dragFilterIndex >= 0) {
+      var fi = dragFilterIndex;
+      var ind = lastResponses.individual[fi];
+
+      if (dragMoved) {
+        // Drag completed - POST updated params
+        dragging = false;
+        dragFilterIndex = -1;
+        canvas.style.cursor = 'pointer';
+        for (var j = 0; j < currentData.filters.length; j++) {
+          if (currentData.filters[j].index === ind.index) {
+            postFilterUpdate(ind.index, currentData.filters[j].params, null, function (err) {
+              if (err) {
+                // Revert on error
+                for (var k = 0; k < currentData.filters.length; k++) {
+                  if (currentData.filters[k].index === ind.index) {
+                    currentData.filters[k].params = dragOriginalParams;
+                    break;
+                  }
+                }
+                renderLocal();
+              }
+              dragOriginalParams = null;
+              scheduleInteractionEnd();
+            });
+            break;
+          }
+        }
+      } else {
+        // Click (no drag) - show popup
+        dragFilterIndex = -1;
+        dragging = false;
+        canvas.style.cursor = 'pointer';
+        dragOriginalParams = null;
+        showPopup(fi);
+      }
+    }
+  });
+
+  canvas.addEventListener('mouseleave', function () {
+    mouseX = -1;
+    mouseY = -1;
+    hoveredFilterIndex = -1;
+    crosshairInfo.style.display = 'none';
+    if (dragFilterIndex >= 0 && dragMoved) {
+      // Treat as drag end
+      var ind = lastResponses.individual[dragFilterIndex];
+      dragging = false;
+      dragFilterIndex = -1;
+      canvas.style.cursor = 'default';
+      for (var j = 0; j < currentData.filters.length; j++) {
+        if (currentData.filters[j].index === ind.index) {
+          postFilterUpdate(ind.index, currentData.filters[j].params, null, function () {
+            dragOriginalParams = null;
+            scheduleInteractionEnd();
+          });
+          break;
+        }
+      }
+    } else {
+      dragFilterIndex = -1;
+      dragging = false;
+      dragOriginalParams = null;
+    }
+    if (currentData) {
+      var responses = computeResponses(currentData);
+      if (responses) { lastResponses = responses; render(responses); }
+    }
+  });
+
+  // ========== Touch event handlers ==========
+
+  canvas.addEventListener('touchstart', function (e) {
+    if (selectedFilterIndex >= 0) return;
+    var pos = getTouchPos(e);
+    var hit = hitTestMarker(pos.x, pos.y, lastResponses);
+    if (hit < 0) return;
+
+    var ind = lastResponses.individual[hit];
+    var meta = filterTypeMeta[ind.type];
+    if (!meta) return;
+
+    e.preventDefault();
+    interacting = true;
+    clearInteractionTimer();
+    dragFilterIndex = hit;
+    dragStartX = pos.x;
+    dragStartY = pos.y;
+    dragMoved = false;
+    for (var j = 0; j < currentData.filters.length; j++) {
+      if (currentData.filters[j].index === ind.index) {
+        dragOriginalParams = currentData.filters[j].params.slice();
+        break;
+      }
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', function (e) {
+    if (dragFilterIndex < 0) return;
+    e.preventDefault();
+    var pos = getTouchPos(e);
+    mouseX = pos.x;
+    mouseY = pos.y;
+    var dx = pos.x - dragStartX;
+    var dy = pos.y - dragStartY;
+    if (!dragMoved && (dx * dx + dy * dy > 9)) {
+      dragMoved = true;
+      dragging = true;
+    }
+    if (dragMoved) {
+      var ind = lastResponses.individual[dragFilterIndex];
+      var meta = filterTypeMeta[ind.type];
+      if (meta && meta.draggable) {
+        applyDrag(pos.x, pos.y);
+      }
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', function (e) {
+    if (dragFilterIndex < 0) return;
+    e.preventDefault();
+    var fi = dragFilterIndex;
+    var ind = lastResponses.individual[fi];
+
+    if (dragMoved) {
+      dragging = false;
+      dragFilterIndex = -1;
+      for (var j = 0; j < currentData.filters.length; j++) {
+        if (currentData.filters[j].index === ind.index) {
+          postFilterUpdate(ind.index, currentData.filters[j].params, null, function (err) {
+            if (err) {
+              for (var k = 0; k < currentData.filters.length; k++) {
+                if (currentData.filters[k].index === ind.index) {
+                  currentData.filters[k].params = dragOriginalParams;
+                  break;
+                }
+              }
+              renderLocal();
+            }
+            dragOriginalParams = null;
+            scheduleInteractionEnd();
+          });
+          break;
+        }
+      }
+    } else {
+      dragFilterIndex = -1;
+      dragging = false;
+      dragOriginalParams = null;
+      showPopup(fi);
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchcancel', function () {
+    if (dragFilterIndex >= 0 && dragOriginalParams) {
+      var ind = lastResponses.individual[dragFilterIndex];
+      for (var j = 0; j < currentData.filters.length; j++) {
+        if (currentData.filters[j].index === ind.index) {
+          currentData.filters[j].params = dragOriginalParams;
+          break;
+        }
+      }
+      renderLocal();
+    }
+    dragFilterIndex = -1;
+    dragging = false;
+    dragMoved = false;
+    dragOriginalParams = null;
+    scheduleInteractionEnd();
+  });
+
+  // ========== Window resize ==========
+
+  window.addEventListener('resize', function () {
+    dpr = window.devicePixelRatio || 1;
+    resizeCanvas();
+    if (currentData) {
+      var responses = computeResponses(currentData);
+      if (responses) {
+        lastResponses = responses;
+        lastDbMin = render.dbMin || -15;
+        lastDbMax = render.dbMax || 15;
+        render(responses);
+        updateLegend(responses);
+      }
+    }
+  });
+
+  // ========== Unsaved changes tracking ==========
+
+  function markUnsaved() {
+    hasUnsavedChanges = true;
+    unsavedDot.style.display = 'inline-block';
+  }
+
+  function markSaved() {
+    hasUnsavedChanges = false;
+    unsavedDot.style.display = 'none';
+  }
+
+  function showStatus(text, duration) {
+    statusMsg.textContent = text;
+    if (duration) {
+      setTimeout(function () {
+        if (statusMsg.textContent === text) statusMsg.textContent = '';
+      }, duration);
+    }
+  }
+
+  // ========== Save / Reset buttons ==========
+
+  btnSave.addEventListener('click', function () {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/peq/save', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 5000;
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        markSaved();
+        showStatus('Saved', 2000);
+      } else {
+        showStatus('Save failed', 2000);
+      }
+    };
+    xhr.onerror = function () {
+      showStatus('Network error', 2000);
+    };
+    xhr.send('{}');
+  });
+
+  btnReset.addEventListener('click', function () {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/peq/reset', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 5000;
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        markSaved();
+        showStatus('Reset to saved', 2000);
+        // Force re-fetch to update graph with restored data
+        interacting = false;
+        fetchAndRender();
+      } else {
+        showStatus('Reset failed', 2000);
+      }
+    };
+    xhr.onerror = function () {
+      showStatus('Network error', 2000);
+    };
+    xhr.send('{}');
+  });
+
+  // ========== Add Filter button ==========
+
+  btnAddFilter.addEventListener('click', function () {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/peq/add', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 5000;
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        markUnsaved();
+        showStatus('Filter added', 2000);
+        interacting = false;
+        fetchAndRender();
+      } else {
+        var msg = 'Add failed';
+        try { msg = JSON.parse(xhr.responseText).error || msg; } catch (e) {}
+        showStatus(msg, 3000);
+      }
+    };
+    xhr.onerror = function () {
+      showStatus('Network error', 2000);
+    };
+    xhr.send('{}');
+  });
+
+  // ========== Init ==========
+
+  resizeCanvas();
+  render(null);
+  fetchAndRender();
+  setInterval(fetchAndRender, 3000);
+
+})();
+</script>
+</body>
+</html>

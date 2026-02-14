@@ -202,6 +202,10 @@
   "MUTE_RIGHT": "Droite muet",
   "TILT_GAIN_RANGE": "Le gain Tilt doit etre un nombre entre -100 et 100 dans ",
   "TILT_ONLY_GAIN": "Tilt necessite uniquement la valeur de gain (dB) dans ",
+  "SHOW_PEQ_CURVE": "Afficher la réponse en fréquence",
+  "SHOW_PEQ_CURVE_DOC": "Ouvrir le graphique de réponse en fréquence PEQ (mise à jour automatique)",
+  "RESET_PEQ": "Réinitialiser le PEQ",
+  "RESET_PEQ_DOC": "Revenir aux derniers réglages PEQ enregistrés"
   "MANAGE_PRESETS": "Gérer le pré réglage",
   "PRESET_ACTIONS": "Actions du pré réglage",
   "DUPLICATE_PRESET": "Dupliquer le pré réglage",

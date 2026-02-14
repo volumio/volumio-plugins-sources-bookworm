@@ -202,6 +202,10 @@
   "MUTE_RIGHT": "Rechts stummschalten",
   "TILT_GAIN_RANGE": "Tilt-Verstaerkung muss eine Zahl zwischen -100 und 100 sein in ",
   "TILT_ONLY_GAIN": "Tilt benoetigt nur den Verstaerkungswert (dB) in ",
+  "SHOW_PEQ_CURVE": "Frequenzgang anzeigen",
+  "SHOW_PEQ_CURVE_DOC": "PEQ-Frequenzgang-Diagramm öffnen (automatische Aktualisierung)",
+  "RESET_PEQ": "PEQ zurücksetzen",
+  "RESET_PEQ_DOC": "Auf die zuletzt gespeicherten PEQ-Einstellungen zurücksetzen"
   "MANAGE_PRESETS": "Voreinstellung verwalten",
   "PRESET_ACTIONS": "Voreinstellungsaktionen",
   "DUPLICATE_PRESET": "Voreinstellung duplizieren",
