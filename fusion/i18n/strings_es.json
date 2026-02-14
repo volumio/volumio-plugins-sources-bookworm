@@ -203,5 +203,7 @@
   "TILT_GAIN_RANGE": "La ganancia Tilt debe ser un numero entre -100 y 100 en ",
   "TILT_ONLY_GAIN": "Tilt requiere solo el valor de ganancia (dB) en ",
   "SHOW_PEQ_CURVE": "Mostrar respuesta en frecuencia",
-  "SHOW_PEQ_CURVE_DOC": "Abrir gráfico de respuesta en frecuencia PEQ (actualización automática)"
+  "SHOW_PEQ_CURVE_DOC": "Abrir gráfico de respuesta en frecuencia PEQ (actualización automática)",
+  "RESET_PEQ": "Restablecer PEQ",
+  "RESET_PEQ_DOC": "Volver a la última configuración PEQ guardada"
 }

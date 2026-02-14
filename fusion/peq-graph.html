@@ -106,7 +106,7 @@
     border-radius: 6px;
     padding: 12px;
     z-index: 10;
-    min-width: 200px;
+    min-width: 280px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.5);
   }
   #filter-popup .popup-title {
@@ -194,6 +194,49 @@
     opacity: 0.4;
     cursor: not-allowed;
   }
+  .knob-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 72px;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .knob-container svg {
+    cursor: ns-resize;
+  }
+  .knob-label {
+    font-size: 10px;
+    color: #aaa;
+    margin-top: 2px;
+    white-space: nowrap;
+  }
+  .knob-value {
+    font-size: 11px;
+    color: #e0e0e0;
+    cursor: pointer;
+    white-space: nowrap;
+    min-height: 16px;
+  }
+  .knob-value-input {
+    width: 56px;
+    padding: 1px 3px;
+    font-size: 11px;
+    background: #1a1a2e;
+    border: 1px solid #e94560;
+    border-radius: 3px;
+    color: #e0e0e0;
+    outline: none;
+    text-align: center;
+  }
+  #popup-params-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 12px;
+    padding: 4px 0;
+  }
   #header-controls {
     display: flex;
     align-items: center;
@@ -274,6 +317,8 @@
   var mouseX = -1, mouseY = -1;
   var dpr = window.devicePixelRatio || 1;
   var popupEl = document.getElementById('filter-popup');
+  popupEl.addEventListener('mousedown', function (e) { e.stopPropagation(); });
+  popupEl.addEventListener('touchstart', function (e) { e.stopPropagation(); }, { passive: true });
   var btnReset = document.getElementById('btn-reset');
   var btnSave = document.getElementById('btn-save');
   var btnAddFilter = document.getElementById('btn-add-filter');
@@ -348,6 +393,327 @@
     'LinkwitzTransform': [50, 0.707, 30, 0.707],
     'ButterworthHighpass': [200, 4], 'ButterworthLowpass': [8000, 4]
   };
+
+  // ========== Knob configuration ==========
+
+  var knobConfigs = {
+    'Freq (Hz)': { min: 1, max: 22050, scale: 'log', step: 1, decimals: 0, unit: ' Hz' },
+    'Fa (Hz)':   { min: 1, max: 22050, scale: 'log', step: 1, decimals: 0, unit: ' Hz' },
+    'Ft (Hz)':   { min: 1, max: 22050, scale: 'log', step: 1, decimals: 0, unit: ' Hz' },
+    'Gain (dB)': { min: -20, max: 20, scale: 'linear', step: 0.1, decimals: 1, unit: ' dB', center: 0 },
+    'Q':         { min: 0.1, max: 40, scale: 'log', step: 0.01, decimals: 2, unit: '' },
+    'Qa':        { min: 0.1, max: 40, scale: 'log', step: 0.01, decimals: 3, unit: '' },
+    'Qt':        { min: 0.1, max: 40, scale: 'log', step: 0.01, decimals: 3, unit: '' },
+    'Bandwidth': { min: 0.1, max: 8, scale: 'linear', step: 0.1, decimals: 1, unit: ' oct' },
+    'Slope':     { min: 0.1, max: 12, scale: 'linear', step: 0.1, decimals: 1, unit: '' },
+    'Order':     { min: 2, max: 8, scale: 'discrete', steps: [2, 4, 6, 8], step: 2, decimals: 0, unit: '' }
+  };
+
+  function getKnobConfig(label, type) {
+    var cfg = knobConfigs[label];
+    if (!cfg) return { min: 0, max: 100, scale: 'linear', step: 1, decimals: 1, unit: '' };
+    cfg = JSON.parse(JSON.stringify(cfg));
+    if (label === 'Bandwidth' && (type === 'Notch2' || type === 'Highpass2' || type === 'Lowpass2')) {
+      cfg.max = 25;
+    }
+    return cfg;
+  }
+
+  // ========== SVG arc utilities ==========
+
+  var ARC_START_DEG = -135;
+  var ARC_END_DEG = 135;
+  var ARC_RANGE_DEG = 270;
+  var KNOB_SIZE = 56;
+  var KNOB_CX = 28, KNOB_CY = 28, KNOB_R = 22;
+
+  function polarToCartesian(cx, cy, r, angleDeg) {
+    var rad = angleDeg * Math.PI / 180;
+    return { x: cx + r * Math.sin(rad), y: cy - r * Math.cos(rad) };
+  }
+
+  function describeArc(cx, cy, r, startDeg, endDeg) {
+    var s = polarToCartesian(cx, cy, r, startDeg);
+    var e = polarToCartesian(cx, cy, r, endDeg);
+    var sweep = endDeg - startDeg;
+    if (sweep < 0) sweep += 360;
+    var largeArc = sweep > 180 ? 1 : 0;
+    return 'M ' + s.x.toFixed(2) + ' ' + s.y.toFixed(2) +
+      ' A ' + r + ' ' + r + ' 0 ' + largeArc + ' 1 ' +
+      e.x.toFixed(2) + ' ' + e.y.toFixed(2);
+  }
+
+  // ========== Value mapping ==========
+
+  function valueToNormalized(value, config) {
+    if (config.scale === 'log') {
+      if (value <= 0) value = config.min;
+      return (Math.log(value) - Math.log(config.min)) / (Math.log(config.max) - Math.log(config.min));
+    }
+    if (config.scale === 'discrete') {
+      var steps = config.steps;
+      var idx = steps.indexOf(value);
+      if (idx < 0) {
+        idx = 0;
+        for (var i = 1; i < steps.length; i++) {
+          if (Math.abs(value - steps[i]) < Math.abs(value - steps[idx])) idx = i;
+        }
+      }
+      return steps.length > 1 ? idx / (steps.length - 1) : 0;
+    }
+    return (value - config.min) / (config.max - config.min);
+  }
+
+  function normalizedToValue(norm, config) {
+    norm = Math.max(0, Math.min(1, norm));
+    if (config.scale === 'log') {
+      return Math.exp(Math.log(config.min) + norm * (Math.log(config.max) - Math.log(config.min)));
+    }
+    if (config.scale === 'discrete') {
+      var steps = config.steps;
+      var idx = Math.round(norm * (steps.length - 1));
+      return steps[Math.max(0, Math.min(steps.length - 1, idx))];
+    }
+    return config.min + norm * (config.max - config.min);
+  }
+
+  function quantizeValue(value, config) {
+    if (config.scale === 'discrete') {
+      var steps = config.steps;
+      var closest = steps[0];
+      var minDist = Math.abs(value - steps[0]);
+      for (var i = 1; i < steps.length; i++) {
+        var d = Math.abs(value - steps[i]);
+        if (d < minDist) { minDist = d; closest = steps[i]; }
+      }
+      return closest;
+    }
+    value = Math.max(config.min, Math.min(config.max, value));
+    if (config.step) {
+      value = Math.round(value / config.step) * config.step;
+    }
+    return parseFloat(value.toFixed(config.decimals));
+  }
+
+  function formatKnobValue(value, config) {
+    if (config.scale === 'discrete') return value + (config.unit || '');
+    return value.toFixed(config.decimals) + (config.unit || '');
+  }
+
+  // ========== Knob creation ==========
+
+  function createKnob(paramIndex, label, value, config) {
+    var div = document.createElement('div');
+    div.className = 'knob-container';
+
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', KNOB_SIZE);
+    svg.setAttribute('height', KNOB_SIZE);
+    svg.setAttribute('viewBox', '0 0 ' + KNOB_SIZE + ' ' + KNOB_SIZE);
+
+    var bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    bg.setAttribute('cx', KNOB_CX); bg.setAttribute('cy', KNOB_CY);
+    bg.setAttribute('r', KNOB_R);
+    bg.setAttribute('fill', '#1a1a2e'); bg.setAttribute('stroke', '#2a2a4e');
+    bg.setAttribute('stroke-width', '2');
+    svg.appendChild(bg);
+
+    var track = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    track.setAttribute('d', describeArc(KNOB_CX, KNOB_CY, KNOB_R, ARC_START_DEG, ARC_END_DEG - 0.1));
+    track.setAttribute('fill', 'none'); track.setAttribute('stroke', '#2a2a4e');
+    track.setAttribute('stroke-width', '3'); track.setAttribute('stroke-linecap', 'round');
+    svg.appendChild(track);
+
+    var fill = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    fill.setAttribute('fill', 'none'); fill.setAttribute('stroke', '#e94560');
+    fill.setAttribute('stroke-width', '3'); fill.setAttribute('stroke-linecap', 'round');
+    fill.setAttribute('class', 'knob-fill');
+    svg.appendChild(fill);
+
+    var ptr = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    ptr.setAttribute('stroke', '#e0e0e0'); ptr.setAttribute('stroke-width', '2');
+    ptr.setAttribute('stroke-linecap', 'round');
+    ptr.setAttribute('class', 'knob-pointer');
+    svg.appendChild(ptr);
+
+    var tip = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    tip.setAttribute('r', '2.5'); tip.setAttribute('fill', '#e0e0e0');
+    tip.setAttribute('class', 'knob-tip');
+    svg.appendChild(tip);
+
+    div.appendChild(svg);
+
+    var labelEl = document.createElement('span');
+    labelEl.className = 'knob-label';
+    labelEl.textContent = label;
+    div.appendChild(labelEl);
+
+    var valueEl = document.createElement('span');
+    valueEl.className = 'knob-value';
+    valueEl.textContent = formatKnobValue(value, config);
+    div.appendChild(valueEl);
+
+    div._knobState = { value: value, config: config, paramIndex: paramIndex };
+    updateKnobVisual(div, value, config);
+
+    return div;
+  }
+
+  // ========== Knob visual update ==========
+
+  function updateKnobVisual(knobEl, value, config) {
+    var norm = valueToNormalized(value, config);
+    norm = Math.max(0, Math.min(1, norm));
+    var angle = ARC_START_DEG + norm * ARC_RANGE_DEG;
+
+    var fillEl = knobEl.querySelector('.knob-fill');
+    var ptrEl = knobEl.querySelector('.knob-pointer');
+    var tipEl = knobEl.querySelector('.knob-tip');
+    var valEl = knobEl.querySelector('.knob-value');
+
+    var isBipolar = config.center !== undefined;
+    if (isBipolar) {
+      var centerNorm = valueToNormalized(config.center, config);
+      var centerAngle = ARC_START_DEG + centerNorm * ARC_RANGE_DEG;
+      if (Math.abs(angle - centerAngle) < 0.5) {
+        fillEl.setAttribute('d', '');
+      } else if (angle > centerAngle) {
+        fillEl.setAttribute('d', describeArc(KNOB_CX, KNOB_CY, KNOB_R, centerAngle, angle));
+      } else {
+        fillEl.setAttribute('d', describeArc(KNOB_CX, KNOB_CY, KNOB_R, angle, centerAngle));
+      }
+    } else {
+      if (norm < 0.005) {
+        fillEl.setAttribute('d', '');
+      } else if (norm > 0.995) {
+        fillEl.setAttribute('d', describeArc(KNOB_CX, KNOB_CY, KNOB_R, ARC_START_DEG, ARC_END_DEG - 0.1));
+      } else {
+        fillEl.setAttribute('d', describeArc(KNOB_CX, KNOB_CY, KNOB_R, ARC_START_DEG, angle));
+      }
+    }
+
+    var rad = angle * Math.PI / 180;
+    var innerR = 8, outerR = KNOB_R - 3;
+    ptrEl.setAttribute('x1', KNOB_CX + innerR * Math.sin(rad));
+    ptrEl.setAttribute('y1', KNOB_CY - innerR * Math.cos(rad));
+    ptrEl.setAttribute('x2', KNOB_CX + outerR * Math.sin(rad));
+    ptrEl.setAttribute('y2', KNOB_CY - outerR * Math.cos(rad));
+
+    tipEl.setAttribute('cx', KNOB_CX + outerR * Math.sin(rad));
+    tipEl.setAttribute('cy', KNOB_CY - outerR * Math.cos(rad));
+
+    if (valEl && !valEl._editing) {
+      valEl.textContent = formatKnobValue(value, config);
+    }
+  }
+
+  // ========== Knob interaction ==========
+
+  var knobDragState = null;
+
+  function attachKnobInteraction(knobEl, config, paramIndex, onValueChange) {
+    var svg = knobEl.querySelector('svg');
+    var valEl = knobEl.querySelector('.knob-value');
+
+    function beginDrag(startY) {
+      knobDragState = {
+        knobEl: knobEl, startY: startY,
+        startNorm: valueToNormalized(knobEl._knobState.value, config)
+      };
+    }
+
+    function processDrag(clientY) {
+      if (!knobDragState || knobDragState.knobEl !== knobEl) return;
+      var deltaY = knobDragState.startY - clientY;
+      var newNorm = knobDragState.startNorm + deltaY / 200;
+      newNorm = Math.max(0, Math.min(1, newNorm));
+      var newVal = quantizeValue(normalizedToValue(newNorm, config), config);
+      knobEl._knobState.value = newVal;
+      updateKnobVisual(knobEl, newVal, config);
+      onValueChange(paramIndex, newVal);
+    }
+
+    svg.addEventListener('mousedown', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      beginDrag(e.clientY);
+      function onMove(ev) { processDrag(ev.clientY); }
+      function onUp() {
+        knobDragState = null;
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+
+    svg.addEventListener('touchstart', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      beginDrag(e.touches[0].clientY);
+      function onMove(ev) { ev.preventDefault(); processDrag(ev.touches[0].clientY); }
+      function onEnd() {
+        knobDragState = null;
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onEnd);
+      }
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend', onEnd);
+    }, { passive: false });
+
+    valEl.addEventListener('dblclick', function (e) {
+      e.stopPropagation();
+      startInlineEdit(knobEl, config, paramIndex, onValueChange);
+    });
+    var lastTap = 0;
+    valEl.addEventListener('touchend', function (e) {
+      var now = Date.now();
+      if (now - lastTap < 300) {
+        e.preventDefault();
+        startInlineEdit(knobEl, config, paramIndex, onValueChange);
+      }
+      lastTap = now;
+    });
+  }
+
+  function startInlineEdit(knobEl, config, paramIndex, onValueChange) {
+    var valEl = knobEl.querySelector('.knob-value');
+    if (valEl._editing) return;
+    valEl._editing = true;
+
+    var input = document.createElement('input');
+    input.type = 'number';
+    input.className = 'knob-value-input';
+    input.value = knobEl._knobState.value;
+    input.step = config.step || 'any';
+
+    valEl.textContent = '';
+    valEl.appendChild(input);
+    input.focus();
+    input.select();
+
+    function commit() {
+      if (!valEl._editing) return;
+      valEl._editing = false;
+      var v = parseFloat(input.value);
+      if (isFinite(v)) {
+        v = quantizeValue(v, config);
+        knobEl._knobState.value = v;
+        updateKnobVisual(knobEl, v, config);
+        onValueChange(paramIndex, v);
+      }
+      valEl.textContent = formatKnobValue(knobEl._knobState.value, config);
+    }
+
+    input.addEventListener('keydown', function (e) {
+      e.stopPropagation();
+      if (e.key === 'Enter') { e.preventDefault(); commit(); }
+      else if (e.key === 'Escape') {
+        e.preventDefault();
+        valEl._editing = false;
+        valEl.textContent = formatKnobValue(knobEl._knobState.value, config);
+      }
+    });
+    input.addEventListener('blur', commit);
+  }
 
   // Plot margins
   var margin = { top: 20, right: 30, bottom: 40, left: 60 };
@@ -1215,10 +1581,10 @@
   // ========== Popup ==========
 
   function getPopupParams() {
-    var inputs = document.querySelectorAll('#popup-params-container input[type="number"]');
+    var knobs = document.querySelectorAll('#popup-params-container .knob-container');
     var ep = [];
-    for (var j = 0; j < inputs.length; j++) {
-      ep.push(parseFloat(inputs[j].value) || 0);
+    for (var j = 0; j < knobs.length; j++) {
+      ep.push(knobs[j]._knobState ? knobs[j]._knobState.value : 0);
     }
     return ep;
   }
@@ -1233,46 +1599,35 @@
   }
 
   function rebuildPopupParams(type, params, ind) {
-    var container = document.getElementById('popup-params-container');
+    var paramsContainer = document.getElementById('popup-params-container');
     var meta = filterTypeMeta[type];
-    if (!meta) { container.innerHTML = ''; return; }
+    if (!meta) { paramsContainer.innerHTML = ''; return; }
 
-    var html = '';
+    paramsContainer.innerHTML = '';
+
     for (var i = 0; i < meta.paramLabels.length; i++) {
+      var label = meta.paramLabels[i];
       var val = (i < params.length) ? params[i] : 0;
-      html += '<div class="popup-row"><label>' + meta.paramLabels[i] + '</label>' +
-        '<input type="number" step="any" data-pi="' + i + '" value="' + val + '"></div>';
-    }
-    container.innerHTML = html;
+      var config = getKnobConfig(label, type);
+      var knobEl = createKnob(i, label, val, config);
 
-    // Attach live preview and keyboard handlers to new inputs
-    var inputs = container.querySelectorAll('input[type="number"]');
-    for (var i = 0; i < inputs.length; i++) {
-      inputs[i].addEventListener('input', function () {
-        var ep = getPopupParams();
+      attachKnobInteraction(knobEl, config, i, function (paramIdx, newValue) {
         var f = currentData.filters;
         for (var j = 0; j < f.length; j++) {
           if (f[j].index === ind.index) {
-            f[j].params = ep;
+            f[j].params[paramIdx] = newValue;
             break;
           }
         }
         renderLocal();
         var errEl = document.getElementById('popup-error-text');
+        var ep = getPopupParams();
         var err = validateParams(popupCurrentType, ep);
         if (errEl) errEl.textContent = err || '';
       });
-      inputs[i].addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          document.getElementById('popup-apply').click();
-        } else if (e.key === 'Escape') {
-          e.preventDefault();
-          document.getElementById('popup-cancel').click();
-        }
-      });
+
+      paramsContainer.appendChild(knobEl);
     }
-    if (inputs.length > 0) inputs[0].focus();
   }
 
   function showPopup(fi) {
@@ -1316,9 +1671,9 @@
     var h = canvas.height / dpr;
     var pLeft = dotX + 20;
     var pTop = dotY - 30;
-    if (pLeft + 220 > w) pLeft = dotX - 230;
+    if (pLeft + 320 > w) pLeft = dotX - 330;
     if (pTop < 0) pTop = 10;
-    if (pTop + 200 > h) pTop = h - 210;
+    if (pTop + 280 > h) pTop = h - 290;
     popupEl.style.left = pLeft + 'px';
     popupEl.style.top = pTop + 'px';
 
@@ -1339,6 +1694,7 @@
           break;
         }
       }
+      knobDragState = null;
       rebuildPopupParams(newType, newParams, ind);
       renderLocal();
     });
