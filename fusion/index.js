@@ -340,22 +340,26 @@ FusionDsp.prototype.getUIConfig = function () {
         // Section 2: Preset Selection
         configurePresetSelection(self, uiconf, selectedsp);
 
-        // Section 3: Save Preset
-        uiconf.sections[3].content[0].value = self.config.get('renpreset');
+        // Section 3: Manage Preset (rename)
+        // Section 4: Preset Actions (duplicate/delete)
+        configureManagePreset(self, uiconf);
 
-        // Section 4: Import EQ
+        // Section 5: Save Preset
+        uiconf.sections[5].content[0].value = self.config.get('renpreset');
+
+        // Section 6: Import EQ
         configureImportEq(self, uiconf);
 
-        // Section 5: Local EQ Import
+        // Section 7: Local EQ Import
         configureLocalEqImport(self, uiconf);
 
-        // Section 6: Resampling
+        // Section 8: Resampling
         configureResampling(self, uiconf);
 
-        // Section 7: DRC Configuration
+        // Section 9: DRC Configuration
         configureDrc(self, uiconf);
 
-        // Section 8: Tools
+        // Section 9: Tools
         configureTools(self, uiconf);
 
         defer.resolve(uiconf);
@@ -442,8 +446,8 @@ function configureSection1(self, uiconf, selectedsp, ncontent, effect) {
 }
 
 function configurePeqSection(self, uiconf, ncontent) {
-  uiconf.sections[7].hidden = true;
   uiconf.sections[9].hidden = true;
+  uiconf.sections[11].hidden = true;
 
   const eqval = self.config.get('mergedeq') || '';
   const subtypex = eqval.toString().split('|');
@@ -594,10 +598,10 @@ function addPeqButtons(self, uiconf, ncontent) {
 }
 
 function configureEq15Section(self, uiconf, selectedsp) {
-  uiconf.sections[9].hidden = true;
-  uiconf.sections[4].hidden = true;
-  uiconf.sections[5].hidden = true;
+  uiconf.sections[11].hidden = true;
+  uiconf.sections[6].hidden = true;
   uiconf.sections[7].hidden = true;
+  uiconf.sections[9].hidden = true;
 
   const listeq = selectedsp === 'EQ15' ? ['geq15'] : ['geq15', 'x2geq15'];
   const eqtext = selectedsp === 'EQ15'
@@ -639,7 +643,7 @@ function configureEq15Section(self, uiconf, selectedsp) {
 }
 
 function configureEq3Section(self, uiconf) {
-  for (let i = 2; i <= 9; i++) uiconf.sections[i].hidden = true;
+  for (let i = 2; i <= 10; i++) uiconf.sections[i].hidden = true;
 
   const geq3 = self.config.get('geq3').split(',');
   const bars = [
@@ -663,9 +667,9 @@ function configureConvfirSection(self, uiconf) {
 
   // Ensure section 1 is visible and reset content
   uiconf.sections[1].hidden = false;
-  uiconf.sections[4].hidden = true;
-  uiconf.sections[5].hidden = true;
-  uiconf.sections[9].hidden = true;
+  uiconf.sections[6].hidden = true;
+  uiconf.sections[7].hidden = true;
+  uiconf.sections[11].hidden = true;
 
   // Clear existing content to avoid conflicts
   uiconf.sections[1].content = [];
@@ -760,13 +764,13 @@ function configureConvfirSection(self, uiconf) {
 }
 
 function configurePureCamillaSection(self, uiconf) {
-  for (let i = 1; i <= 8; i++) uiconf.sections[i].hidden = true;
+  for (let i = 1; i <= 9; i++) uiconf.sections[i].hidden = true;
 
   const IPaddress = self.config.get('address');
   const purecamillainstalled = self.config.get('purecgui');
 
   if (purecamillainstalled) {
-    uiconf.sections[9].content.push({
+    uiconf.sections[11].content.push({
       id: 'camillagui',
       element: 'button',
       label: 'Access to Camilla Gui',
@@ -774,7 +778,7 @@ function configurePureCamillaSection(self, uiconf) {
       onClick: { type: 'openUrl', url: `http://${IPaddress}:5011` }
     });
   } else {
-    uiconf.sections[9].content.push({
+    uiconf.sections[11].content.push({
       id: 'installcamillagui',
       element: 'button',
       label: 'First use. Install Camilla GUI',
@@ -949,16 +953,30 @@ function configurePresetSelection(self, uiconf, selectedsp) {
   }
 }
 
+function configureManagePreset(self, uiconf) {
+  const selectedsp = self.config.get('selectedsp');
+  const currentPreset = (self.config.get(selectedsp + 'preset') || '').replace(/^\./, '').replace(/\.json$/, '');
+  if (currentPreset && currentPreset !== 'nopreset' && currentPreset !== 'no preset' && currentPreset !== 'no preset used') {
+    uiconf.sections[3].content[0].value = currentPreset;
+  } else {
+    uiconf.sections[3].content[0].value = '';
+  }
+  if (selectedsp === 'EQ3' || selectedsp === 'purecgui') {
+    uiconf.sections[3].hidden = true;
+    uiconf.sections[4].hidden = true;
+  }
+}
+
 function configureImportEq(self, uiconf) {
   const value = self.config.get('importeq');
-  self.configManager.setUIConfigParam(uiconf, 'sections[4].content[0].value.value', value);
-  self.configManager.setUIConfigParam(uiconf, 'sections[4].content[0].value.label', value);
+  self.configManager.setUIConfigParam(uiconf, 'sections[6].content[0].value.value', value);
+  self.configManager.setUIConfigParam(uiconf, 'sections[6].content[0].value.label', value);
 
   try {
     const listf = fs.readFileSync('/data/plugins/audio_interface/fusiondsp/downloadedlist.txt', 'utf8').split('\n');
     listf.slice(15).forEach((line, i) => {
       const [namel, linkl] = line.replace(/- \[/g, '').replace('](.', ',').slice(0, -1).split(',');
-      self.configManager.pushUIConfigParam(uiconf, 'sections[4].content[0].options', { value: linkl, label: `${i + 1}  ${namel}` });
+      self.configManager.pushUIConfigParam(uiconf, 'sections[6].content[0].options', { value: linkl, label: `${i + 1}  ${namel}` });
     });
   } catch (e) {
     self.logger.error(logPrfix + ' failed to read downloadedlist.txt: ' + e);
@@ -967,95 +985,95 @@ function configureImportEq(self, uiconf) {
 
 function configureLocalEqImport(self, uiconf) {
   const value = self.config.get('importlocal');
-  self.configManager.setUIConfigParam(uiconf, 'sections[5].content[0].value.value', value);
-  self.configManager.setUIConfigParam(uiconf, 'sections[5].content[0].value.label', self.commandRouter.getI18nString('CHOOSE_LOCALEQ'));
+  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[0].value.value', value);
+  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[0].value.label', self.commandRouter.getI18nString('CHOOSE_LOCALEQ'));
 
   try {
     fs.readdirSync('/data/INTERNAL/FusionDsp/peq').forEach(item => {
-      self.configManager.pushUIConfigParam(uiconf, 'sections[5].content[0].options', { value: item, label: item });
+      self.configManager.pushUIConfigParam(uiconf, 'sections[7].content[0].options', { value: item, label: item });
     });
   } catch (e) {
     self.logger.error(logPrefix + ' failed to read local file: ' + e);
   }
 
   const localscope = self.config.get('localscope');
-  self.configManager.setUIConfigParam(uiconf, 'sections[5].content[1].value.value', localscope);
-  self.configManager.setUIConfigParam(uiconf, 'sections[5].content[1].value.label', localscope);
+  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[1].value.value', localscope);
+  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[1].value.label', localscope);
   ['L', 'R', 'L+R'].forEach(item => {
-    self.configManager.pushUIConfigParam(uiconf, 'sections[5].content[1].options', { value: item, label: item });
+    self.configManager.pushUIConfigParam(uiconf, 'sections[7].content[1].options', { value: item, label: item });
   });
 
-  uiconf.sections[5].content[2].value = self.config.get('addreplace');
+  uiconf.sections[7].content[2].value = self.config.get('addreplace');
 }
 
 function configureResampling(self, uiconf) {
-  uiconf.sections[6].content[0].value = self.config.get('enableresampling');
+  uiconf.sections[8].content[0].value = self.config.get('enableresampling');
 
   const resamplingSet = self.config.get('resamplingset');
-  self.configManager.setUIConfigParam(uiconf, 'sections[6].content[1].value.value', resamplingSet);
-  self.configManager.setUIConfigParam(uiconf, 'sections[6].content[1].value.label', resamplingSet);
+  self.configManager.setUIConfigParam(uiconf, 'sections[8].content[1].value.value', resamplingSet);
+  self.configManager.setUIConfigParam(uiconf, 'sections[8].content[1].value.label', resamplingSet);
   self.config.get('probesmplerate').split(' ').forEach(rate => {
-    self.configManager.pushUIConfigParam(uiconf, 'sections[6].content[1].options', { value: rate, label: rate });
+    self.configManager.pushUIConfigParam(uiconf, 'sections[8].content[1].options', { value: rate, label: rate });
   });
 
   const resamplingQ = self.config.get('resamplingq');
-  self.configManager.setUIConfigParam(uiconf, 'sections[6].content[2].value.value', resamplingQ);
-  self.configManager.setUIConfigParam(uiconf, 'sections[6].content[2].value.label', resamplingQ);
+  self.configManager.setUIConfigParam(uiconf, 'sections[8].content[2].value.value', resamplingQ);
+  self.configManager.setUIConfigParam(uiconf, 'sections[8].content[2].value.label', resamplingQ);
   ['+', '++', '+++', '++++'].forEach(q => {
-    self.configManager.pushUIConfigParam(uiconf, 'sections[6].content[2].options', { value: q, label: q });
+    self.configManager.pushUIConfigParam(uiconf, 'sections[8].content[2].options', { value: q, label: q });
   });
 }
 
 function configureDrc(self, uiconf) {
   const filetoconvertl = self.config.get('filetoconvert');
-  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[0].value.value', filetoconvertl);
-  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[0].value.label', filetoconvertl);
+  self.configManager.setUIConfigParam(uiconf, 'sections[9].content[0].value.value', filetoconvertl);
+  self.configManager.setUIConfigParam(uiconf, 'sections[9].content[0].value.label', filetoconvertl);
   try {
     fs.readdirSync(filtersource).forEach(item => {
-      self.configManager.pushUIConfigParam(uiconf, 'sections[7].content[0].options', { value: item, label: item });
+      self.configManager.pushUIConfigParam(uiconf, 'sections[9].content[0].options', { value: item, label: item });
     });
   } catch (e) {
     self.logger.error(logPrefix + ' Could not read file: ' + e);
   }
 
   const drcSampleRate = self.config.get('drc_sample_rate');
-  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[1].value.value', drcSampleRate);
-  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[1].value.label', self.getLabelForSelect(self.configManager.getValue(uiconf, 'sections[7].content[1].options'), drcSampleRate));
+  self.configManager.setUIConfigParam(uiconf, 'sections[9].content[1].value.value', drcSampleRate);
+  self.configManager.setUIConfigParam(uiconf, 'sections[9].content[1].value.label', self.getLabelForSelect(self.configManager.getValue(uiconf, 'sections[9].content[1].options'), drcSampleRate));
 
   const tc = self.config.get('tc');
-  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[2].value.value', tc);
-  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[2].value.label', tc);
+  self.configManager.setUIConfigParam(uiconf, 'sections[9].content[2].value.value', tc);
+  self.configManager.setUIConfigParam(uiconf, 'sections[9].content[2].value.label', tc);
   try {
     fs.readdirSync(tccurvepath).forEach(item => {
-      self.configManager.pushUIConfigParam(uiconf, 'sections[7].content[2].options', { value: item, label: item });
+      self.configManager.pushUIConfigParam(uiconf, 'sections[9].content[2].options', { value: item, label: item });
     });
   } catch (e) {
     self.logger.error(logPrefix + ' Could not read file: ' + e);
   }
 
   const drcconfig = self.config.get('drcconfig');
-  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[3].value.value', drcconfig);
-  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[3].value.label', self.getLabelForSelect(self.configManager.getValue(uiconf, 'sections[7].content[3].options'), drcconfig));
-  uiconf.sections[7].content[4].value = self.config.get('outputfilename');
+  self.configManager.setUIConfigParam(uiconf, 'sections[9].content[3].value.value', drcconfig);
+  self.configManager.setUIConfigParam(uiconf, 'sections[9].content[3].value.label', self.getLabelForSelect(self.configManager.getValue(uiconf, 'sections[9].content[3].options'), drcconfig));
+  uiconf.sections[9].content[4].value = self.config.get('outputfilename');
 }
 
 function configureTools(self, uiconf) {
   const ttools = self.config.get('toolsinstalled');
   const toolsfiletoplay = self.config.get('toolsfiletoplay');
-  self.configManager.setUIConfigParam(uiconf, 'sections[8].content[0].value.value', toolsfiletoplay);
-  self.configManager.setUIConfigParam(uiconf, 'sections[8].content[0].value.label', toolsfiletoplay);
+  self.configManager.setUIConfigParam(uiconf, 'sections[10].content[0].value.value', toolsfiletoplay);
+  self.configManager.setUIConfigParam(uiconf, 'sections[10].content[0].value.label', toolsfiletoplay);
 
   try {
     fs.readdirSync('/data/' + toolspath).filter(item => item !== 'folder.png').forEach(item => {
-      self.configManager.pushUIConfigParam(uiconf, 'sections[8].content[0].options', { value: item, label: item });
+      self.configManager.pushUIConfigParam(uiconf, 'sections[10].content[0].options', { value: item, label: item });
     });
   } catch (e) {
     self.logger.error(logPrefix + ' Could not read file: ' + e);
   }
 
-  uiconf.sections[8].content[0].hidden = !ttools;
-  uiconf.sections[8].content[1].hidden = !ttools;
-  uiconf.sections[8].content[2].hidden = ttools;
+  uiconf.sections[10].content[0].hidden = !ttools;
+  uiconf.sections[10].content[1].hidden = !ttools;
+  uiconf.sections[10].content[2].hidden = ttools;
 }
 
 FusionDsp.prototype.refreshUI = function () {
@@ -4198,6 +4216,119 @@ FusionDsp.prototype.saveequalizerpresetv = function (data) {
   });
 
   return defer.promise;
+};
+
+FusionDsp.prototype.duplicatepreset = function () {
+  const self = this;
+  const selectedsp = self.config.get('selectedsp');
+  const preset = self.config.get(selectedsp + 'preset');
+
+  if (!preset || preset === 'nopreset' || preset === 'no preset' || preset === 'no preset used' || preset === 'Choose a preset') {
+    self.commandRouter.pushToastMessage('warning', self.commandRouter.getI18nString('NO_PRESET_USED'));
+    return libQ.resolve();
+  }
+
+  const presetName = preset.replace(/^\./, '').replace(/\.json$/, '');
+  const newName = presetName + ' Copy';
+  const oldPath = presetFolder + selectedsp + '/' + preset;
+  const newFileName = newName + '.json';
+  const newPath = presetFolder + selectedsp + '/' + newFileName;
+
+  try {
+    fs.copySync(oldPath, newPath);
+    self.config.set(selectedsp + 'preset', newFileName);
+    self.commandRouter.pushToastMessage('success',
+      self.commandRouter.getI18nString('PRESET_DUPLICATED').replace('{0}', newName));
+    setTimeout(function () { self.refreshUI(); }, 500);
+  } catch (e) {
+    self.logger.error(logPrefix + ' failed to duplicate preset: ' + e);
+    self.commandRouter.pushToastMessage('error', 'Failed to duplicate preset');
+  }
+  return libQ.resolve();
+};
+
+FusionDsp.prototype.deletepreset = function () {
+  const self = this;
+  const selectedsp = self.config.get('selectedsp');
+  const preset = self.config.get(selectedsp + 'preset');
+
+  if (!preset || preset === 'nopreset' || preset === 'no preset' || preset === 'no preset used' || preset === 'Choose a preset') {
+    self.commandRouter.pushToastMessage('warning', self.commandRouter.getI18nString('NO_PRESET_USED'));
+    return libQ.resolve();
+  }
+
+  const presetName = preset.replace(/^\./, '').replace(/\.json$/, '');
+  var responseData = {
+    title: self.commandRouter.getI18nString('DELETE_PRESET_CONFIRM_TITLE'),
+    message: self.commandRouter.getI18nString('DELETE_PRESET_CONFIRM_MSG').replace('{0}', presetName),
+    size: 'lg',
+    buttons: [
+      {
+        name: self.commandRouter.getI18nString('DELETE'),
+        class: 'btn btn-cancel',
+        emit: 'callMethod',
+        payload: { 'endpoint': 'audio_interface/fusiondsp', 'method': 'deletepresetconfirm' }
+      },
+      {
+        name: self.commandRouter.getI18nString('CANCEL'),
+        class: 'btn btn-info',
+        emit: 'closeModals',
+        payload: ''
+      }
+    ]
+  };
+  self.commandRouter.broadcastMessage('openModal', responseData);
+};
+
+FusionDsp.prototype.deletepresetconfirm = function () {
+  const self = this;
+  const selectedsp = self.config.get('selectedsp');
+  const preset = self.config.get(selectedsp + 'preset');
+  const filePath = presetFolder + selectedsp + '/' + preset;
+
+  try {
+    fs.unlinkSync(filePath);
+    self.config.set(selectedsp + 'preset', '');
+    self.commandRouter.pushToastMessage('success', self.commandRouter.getI18nString('PRESET_DELETED'));
+    setTimeout(function () { self.refreshUI(); }, 500);
+  } catch (e) {
+    self.logger.error(logPrefix + ' failed to delete preset: ' + e);
+    self.commandRouter.pushToastMessage('error', 'Failed to delete preset');
+  }
+  return libQ.resolve();
+};
+
+FusionDsp.prototype.renamepreset = function (data) {
+  const self = this;
+  const selectedsp = self.config.get('selectedsp');
+  const preset = self.config.get(selectedsp + 'preset');
+
+  if (!preset || preset === 'nopreset' || preset === 'no preset' || preset === 'no preset used' || preset === 'Choose a preset') {
+    self.commandRouter.pushToastMessage('warning', self.commandRouter.getI18nString('NO_PRESET_USED'));
+    return libQ.resolve();
+  }
+
+  const newName = data['newpresetname'];
+  if (!newName || newName.trim() === '') {
+    self.commandRouter.pushToastMessage('warning', self.commandRouter.getI18nString('RENAME_PRESET_EMPTY'));
+    return libQ.resolve();
+  }
+
+  const oldPath = presetFolder + selectedsp + '/' + preset;
+  const newFileName = newName.trim() + '.json';
+  const newPath = presetFolder + selectedsp + '/' + newFileName;
+
+  try {
+    fs.renameSync(oldPath, newPath);
+    self.config.set(selectedsp + 'preset', newFileName);
+    self.commandRouter.pushToastMessage('success',
+      self.commandRouter.getI18nString('PRESET_RENAMED').replace('{0}', newName.trim()));
+    setTimeout(function () { self.refreshUI(); }, 500);
+  } catch (e) {
+    self.logger.error(logPrefix + ' failed to rename preset: ' + e);
+    self.commandRouter.pushToastMessage('error', 'Failed to rename preset');
+  }
+  return libQ.resolve();
 };
 
 FusionDsp.prototype.usethispreset = function (data) {

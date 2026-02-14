@@ -206,4 +206,19 @@
   "SHOW_PEQ_CURVE_DOC": "Ouvrir le graphique de réponse en fréquence PEQ (mise à jour automatique)",
   "RESET_PEQ": "Réinitialiser le PEQ",
   "RESET_PEQ_DOC": "Revenir aux derniers réglages PEQ enregistrés"
+  "MANAGE_PRESETS": "Gérer le pré réglage",
+  "PRESET_ACTIONS": "Actions du pré réglage",
+  "DUPLICATE_PRESET": "Dupliquer le pré réglage",
+  "DUPLICATE_PRESET_DOC": "Créer une copie du pré réglage actuellement chargé",
+  "PRESET_DUPLICATED": "Pré réglage dupliqué sous le nom \"{0}\"",
+  "DELETE_PRESET": "Supprimer le pré réglage",
+  "DELETE_PRESET_DOC": "Supprimer le pré réglage actuellement chargé",
+  "RENAME_PRESET": "Renommer",
+  "DELETE_PRESET_CONFIRM_TITLE": "Supprimer le pré réglage ?",
+  "DELETE_PRESET_CONFIRM_MSG": "Êtes-vous sûr de vouloir supprimer le pré réglage \"{0}\" ?",
+  "DELETE": "Supprimer",
+  "CANCEL": "Annuler",
+  "PRESET_DELETED": "Pré réglage supprimé avec succès",
+  "PRESET_RENAMED": "Pré réglage renommé en \"{0}\"",
+  "RENAME_PRESET_EMPTY": "Veuillez saisir un nouveau nom pour le pré réglage"
 }

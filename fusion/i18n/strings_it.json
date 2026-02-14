@@ -206,4 +206,19 @@
   "SHOW_PEQ_CURVE_DOC": "Apri il grafico della risposta in frequenza PEQ (aggiornamento automatico)",
   "RESET_PEQ": "Ripristina PEQ",
   "RESET_PEQ_DOC": "Ripristina le ultime impostazioni PEQ salvate"
+  "MANAGE_PRESETS": "Gestisci preset",
+  "PRESET_ACTIONS": "Azioni preset",
+  "DUPLICATE_PRESET": "Duplica preset",
+  "DUPLICATE_PRESET_DOC": "Crea una copia del preset attualmente caricato",
+  "PRESET_DUPLICATED": "Preset duplicato come \"{0}\"",
+  "DELETE_PRESET": "Elimina preset",
+  "DELETE_PRESET_DOC": "Elimina il preset attualmente caricato",
+  "RENAME_PRESET": "Rinomina",
+  "DELETE_PRESET_CONFIRM_TITLE": "Eliminare il preset?",
+  "DELETE_PRESET_CONFIRM_MSG": "Sei sicuro di voler eliminare il preset \"{0}\"?",
+  "DELETE": "Elimina",
+  "CANCEL": "Annulla",
+  "PRESET_DELETED": "Preset eliminato con successo",
+  "PRESET_RENAMED": "Preset rinominato in \"{0}\"",
+  "RENAME_PRESET_EMPTY": "Inserisci un nuovo nome per il preset"
 }

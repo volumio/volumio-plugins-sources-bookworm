@@ -206,4 +206,19 @@
   "SHOW_PEQ_CURVE_DOC": "Abrir gráfico de respuesta en frecuencia PEQ (actualización automática)",
   "RESET_PEQ": "Restablecer PEQ",
   "RESET_PEQ_DOC": "Volver a la última configuración PEQ guardada"
+  "MANAGE_PRESETS": "Gestionar preajuste",
+  "PRESET_ACTIONS": "Acciones del preajuste",
+  "DUPLICATE_PRESET": "Duplicar preajuste",
+  "DUPLICATE_PRESET_DOC": "Crear una copia del preajuste cargado actualmente",
+  "PRESET_DUPLICATED": "Preajuste duplicado como \"{0}\"",
+  "DELETE_PRESET": "Eliminar preajuste",
+  "DELETE_PRESET_DOC": "Eliminar el preajuste cargado actualmente",
+  "RENAME_PRESET": "Renombrar",
+  "DELETE_PRESET_CONFIRM_TITLE": "¿Eliminar preajuste?",
+  "DELETE_PRESET_CONFIRM_MSG": "¿Está seguro de que desea eliminar el preajuste \"{0}\"?",
+  "DELETE": "Eliminar",
+  "CANCEL": "Cancelar",
+  "PRESET_DELETED": "Preajuste eliminado correctamente",
+  "PRESET_RENAMED": "Preajuste renombrado a \"{0}\"",
+  "RENAME_PRESET_EMPTY": "Por favor, introduzca un nuevo nombre para el preajuste"
 }
