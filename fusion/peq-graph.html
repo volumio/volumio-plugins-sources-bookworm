@@ -7,9 +7,9 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    background: #1a1a2e;
-    color: #e0e0e0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #333;
+    color: #fff;
+    font-family: Lato, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     overflow: hidden;
     height: 100vh;
     display: flex;
@@ -20,18 +20,18 @@
     justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
-    background: #16213e;
-    border-bottom: 1px solid #0f3460;
+    background: #090909;
+    border-bottom: 1px solid #3C3C3C;
   }
   #header h1 {
     font-size: 18px;
     font-weight: 500;
-    color: #e94560;
+    color: #54C688;
   }
   #back-btn {
-    background: #0f3460;
-    color: #e0e0e0;
-    border: 1px solid #e94560;
+    background: transparent;
+    color: #fff;
+    border: 1px solid #54C688;
     border-radius: 4px;
     padding: 6px 14px;
     font-size: 13px;
@@ -39,12 +39,12 @@
     text-decoration: none;
   }
   #back-btn:hover {
-    background: #e94560;
+    background: #54C688;
     color: #fff;
   }
   #info {
     font-size: 13px;
-    color: #888;
+    color: #AAA;
   }
   #canvas-container {
     flex: 1;
@@ -59,12 +59,12 @@
   #crosshair-info {
     position: absolute;
     pointer-events: none;
-    background: rgba(22, 33, 62, 0.9);
-    border: 1px solid #0f3460;
+    background: rgba(30, 30, 30, 0.9);
+    border: 1px solid #54C688;
     border-radius: 4px;
     padding: 4px 8px;
     font-size: 12px;
-    color: #e0e0e0;
+    color: #fff;
     display: none;
     white-space: nowrap;
   }
@@ -73,8 +73,8 @@
     flex-wrap: wrap;
     gap: 8px 16px;
     padding: 8px 20px;
-    background: #16213e;
-    border-top: 1px solid #0f3460;
+    background: #090909;
+    border-top: 1px solid #3C3C3C;
     font-size: 12px;
     flex-shrink: 0;
     overflow-y: auto;
@@ -94,15 +94,15 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #e94560;
+    color: #DF4649;
     font-size: 16px;
     display: none;
   }
   #filter-popup {
     position: absolute;
     display: none;
-    background: rgba(22, 33, 62, 0.95);
-    border: 1px solid #0f3460;
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid #54C688;
     border-radius: 6px;
     padding: 12px;
     z-index: 10;
@@ -112,7 +112,7 @@
   #filter-popup .popup-title {
     font-size: 13px;
     font-weight: 600;
-    color: #e94560;
+    color: #54C688;
     margin-bottom: 8px;
   }
   #filter-popup .popup-row {
@@ -130,29 +130,29 @@
     width: 90px;
     padding: 3px 6px;
     font-size: 12px;
-    background: #1a1a2e;
-    border: 1px solid #0f3460;
+    background: #333;
+    border: 1px solid #7C7C7C;
     border-radius: 3px;
-    color: #e0e0e0;
+    color: #fff;
     outline: none;
   }
   #filter-popup .popup-row input:focus,
   #filter-popup .popup-row select:focus {
-    border-color: #e94560;
+    border-color: #54C688;
   }
   #filter-popup .popup-row select {
     width: 200px;
     padding: 3px 6px;
     font-size: 12px;
-    background: #1a1a2e;
-    border: 1px solid #0f3460;
+    background: #333;
+    border: 1px solid #7C7C7C;
     border-radius: 3px;
-    color: #e0e0e0;
+    color: #fff;
     outline: none;
   }
   #filter-popup .popup-error {
     font-size: 11px;
-    color: #e94560;
+    color: #DF4649;
     margin-bottom: 6px;
     min-height: 14px;
   }
@@ -165,30 +165,30 @@
     flex: 1;
     padding: 4px 10px;
     font-size: 12px;
-    border: 1px solid #0f3460;
+    border: 1px solid #7C7C7C;
     border-radius: 3px;
     cursor: pointer;
-    background: #16213e;
-    color: #e0e0e0;
+    background: #090909;
+    color: #fff;
   }
   #filter-popup .popup-buttons button:hover {
-    background: #1a2a4e;
+    background: #484848;
   }
   #filter-popup .popup-buttons button.apply-btn {
-    background: #e94560;
-    border-color: #e94560;
+    background: #54C688;
+    border-color: #54C688;
     color: #fff;
   }
   #filter-popup .popup-buttons button.apply-btn:hover {
-    background: #d03050;
+    background: #349b62;
   }
   #filter-popup .popup-buttons button.delete-btn {
-    background: #8b0000;
-    border-color: #8b0000;
+    background: #DF4649;
+    border-color: #DF4649;
     color: #fff;
   }
   #filter-popup .popup-buttons button.delete-btn:hover {
-    background: #a00000;
+    background: #c0392b;
   }
   #filter-popup .popup-buttons button.delete-btn:disabled {
     opacity: 0.4;
@@ -214,7 +214,7 @@
   }
   .knob-value {
     font-size: 11px;
-    color: #e0e0e0;
+    color: #fff;
     cursor: pointer;
     white-space: nowrap;
     min-height: 16px;
@@ -223,10 +223,10 @@
     width: 56px;
     padding: 1px 3px;
     font-size: 11px;
-    background: #1a1a2e;
-    border: 1px solid #e94560;
+    background: #333;
+    border: 1px solid #54C688;
     border-radius: 3px;
-    color: #e0e0e0;
+    color: #fff;
     outline: none;
     text-align: center;
   }
@@ -245,23 +245,23 @@
   .header-btn {
     padding: 5px 14px;
     font-size: 12px;
-    border: 1px solid #0f3460;
+    border: 1px solid #7C7C7C;
     border-radius: 3px;
     cursor: pointer;
-    background: #16213e;
-    color: #e0e0e0;
+    background: #090909;
+    color: #fff;
     font-family: inherit;
   }
   .header-btn:hover {
-    background: #1a2a4e;
+    background: #484848;
   }
   .header-btn.save-btn {
-    background: #e94560;
-    border-color: #e94560;
+    background: #54C688;
+    border-color: #54C688;
     color: #fff;
   }
   .header-btn.save-btn:hover {
-    background: #d03050;
+    background: #349b62;
   }
   #unsaved-dot {
     width: 8px;
@@ -273,7 +273,7 @@
   }
   #status-msg {
     font-size: 11px;
-    color: #888;
+    color: #AAA;
     min-width: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -514,30 +514,30 @@
     var bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     bg.setAttribute('cx', KNOB_CX); bg.setAttribute('cy', KNOB_CY);
     bg.setAttribute('r', KNOB_R);
-    bg.setAttribute('fill', '#1a1a2e'); bg.setAttribute('stroke', '#2a2a4e');
+    bg.setAttribute('fill', '#333'); bg.setAttribute('stroke', '#4a4a4a');
     bg.setAttribute('stroke-width', '2');
     svg.appendChild(bg);
 
     var track = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     track.setAttribute('d', describeArc(KNOB_CX, KNOB_CY, KNOB_R, ARC_START_DEG, ARC_END_DEG - 0.1));
-    track.setAttribute('fill', 'none'); track.setAttribute('stroke', '#2a2a4e');
+    track.setAttribute('fill', 'none'); track.setAttribute('stroke', '#4a4a4a');
     track.setAttribute('stroke-width', '3'); track.setAttribute('stroke-linecap', 'round');
     svg.appendChild(track);
 
     var fill = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    fill.setAttribute('fill', 'none'); fill.setAttribute('stroke', '#e94560');
+    fill.setAttribute('fill', 'none'); fill.setAttribute('stroke', '#54C688');
     fill.setAttribute('stroke-width', '3'); fill.setAttribute('stroke-linecap', 'round');
     fill.setAttribute('class', 'knob-fill');
     svg.appendChild(fill);
 
     var ptr = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    ptr.setAttribute('stroke', '#e0e0e0'); ptr.setAttribute('stroke-width', '2');
+    ptr.setAttribute('stroke', '#fff'); ptr.setAttribute('stroke-width', '2');
     ptr.setAttribute('stroke-linecap', 'round');
     ptr.setAttribute('class', 'knob-pointer');
     svg.appendChild(ptr);
 
     var tip = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    tip.setAttribute('r', '2.5'); tip.setAttribute('fill', '#e0e0e0');
+    tip.setAttribute('r', '2.5'); tip.setAttribute('fill', '#fff');
     tip.setAttribute('class', 'knob-tip');
     svg.appendChild(tip);
 
@@ -1311,14 +1311,14 @@
     var plotH = h - margin.top - margin.bottom;
 
     // Draw background
-    ctx.fillStyle = '#1a1a2e';
+    ctx.fillStyle = '#333';
     ctx.fillRect(0, 0, w, h);
 
     // Draw grid - vertical (frequency)
-    ctx.strokeStyle = '#2a2a4e';
+    ctx.strokeStyle = '#4a4a4a';
     ctx.lineWidth = 0.5;
-    ctx.font = '11px sans-serif';
-    ctx.fillStyle = '#666';
+    ctx.font = '11px Lato, sans-serif';
+    ctx.fillStyle = '#999';
     ctx.textAlign = 'center';
 
     for (var i = 0; i < gridFreqs.length; i++) {
@@ -1339,7 +1339,7 @@
         ctx.lineWidth = 0.8;
         ctx.setLineDash([5, 5]);
       } else {
-        ctx.strokeStyle = '#2a2a4e';
+        ctx.strokeStyle = '#4a4a4a';
         ctx.lineWidth = 0.5;
         ctx.setLineDash([]);
       }
@@ -1347,13 +1347,13 @@
       ctx.moveTo(margin.left, y);
       ctx.lineTo(w - margin.right, y);
       ctx.stroke();
-      ctx.fillStyle = db === 0 ? '#aaa' : '#666';
+      ctx.fillStyle = db === 0 ? '#fff' : '#999';
       ctx.fillText(db + ' dB', margin.left - 8, y + 4);
     }
     ctx.setLineDash([]);
 
     // Draw axis labels
-    ctx.fillStyle = '#888';
+    ctx.fillStyle = '#AAA';
     ctx.textAlign = 'center';
     ctx.fillText('Hz', w - margin.right + 15, h - margin.bottom + 16);
 
@@ -1426,7 +1426,7 @@
       ctx.fillStyle = color;
       ctx.fill();
       // Dark outline for contrast
-      ctx.strokeStyle = '#1a1a2e';
+      ctx.strokeStyle = '#333';
       ctx.lineWidth = isActive ? 2 : 1.5;
       ctx.stroke();
       if (isActive) {
@@ -1434,7 +1434,7 @@
       }
       // Number label
       ctx.fillStyle = '#fff';
-      ctx.font = isActive ? 'bold 11px sans-serif' : 'bold 10px sans-serif';
+      ctx.font = isActive ? 'bold 11px Lato, sans-serif' : 'bold 10px Lato, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(label, mx, my + 3.5);
     }
