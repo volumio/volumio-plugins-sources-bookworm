@@ -314,6 +314,7 @@
   var errorMsg = document.getElementById('error-msg');
 
   var currentData = null;
+  var currentMode = 'PEQ';
   var mouseX = -1, mouseY = -1;
   var dpr = window.devicePixelRatio || 1;
   var popupEl = document.getElementById('filter-popup');
@@ -359,7 +360,8 @@
     'Notch2':             { hasGain: false, paramLabels: ['Freq (Hz)', 'Bandwidth'], draggable: true },
     'LinkwitzTransform':  { hasGain: false, paramLabels: ['Fa (Hz)', 'Qa', 'Ft (Hz)', 'Qt'], draggable: false },
     'ButterworthHighpass': { hasGain: false, paramLabels: ['Freq (Hz)', 'Order'], draggable: true },
-    'ButterworthLowpass':  { hasGain: false, paramLabels: ['Freq (Hz)', 'Order'], draggable: true }
+    'ButterworthLowpass':  { hasGain: false, paramLabels: ['Freq (Hz)', 'Order'], draggable: true },
+    'Tilt':                { hasGain: false, paramLabels: ['Tilt Gain (dB)'], draggable: false }
   };
 
   var filterTypeOptions = [
@@ -379,7 +381,8 @@
     { value: 'LowpassFO', label: 'LowpassFO Hz' },
     { value: 'LinkwitzTransform', label: 'LinkwitzTransform Fa Hz,Qa,FT Hz,Qt' },
     { value: 'ButterworthHighpass', label: 'ButterworthHighpass Hz, order' },
-    { value: 'ButterworthLowpass', label: 'ButterworthLowpass Hz, order' }
+    { value: 'ButterworthLowpass', label: 'ButterworthLowpass Hz, order' },
+    { value: 'Tilt', label: 'Tilt gain dB' }
   ];
 
   var filterTypeDefaults = {
@@ -391,7 +394,8 @@
     'LowpassFO': [8000], 'HighpassFO': [200],
     'Notch': [1000, 1], 'Notch2': [1000, 1],
     'LinkwitzTransform': [50, 0.707, 30, 0.707],
-    'ButterworthHighpass': [200, 4], 'ButterworthLowpass': [8000, 4]
+    'ButterworthHighpass': [200, 4], 'ButterworthLowpass': [8000, 4],
+    'Tilt': [0]
   };
 
   // ========== Knob configuration ==========
@@ -406,7 +410,8 @@
     'Qt':        { min: 0.1, max: 40, scale: 'log', step: 0.01, decimals: 3, unit: '' },
     'Bandwidth': { min: 0.1, max: 8, scale: 'linear', step: 0.1, decimals: 1, unit: ' oct' },
     'Slope':     { min: 0.1, max: 12, scale: 'linear', step: 0.1, decimals: 1, unit: '' },
-    'Order':     { min: 2, max: 8, scale: 'discrete', steps: [2, 4, 6, 8], step: 2, decimals: 0, unit: '' }
+    'Order':     { min: 2, max: 8, scale: 'discrete', steps: [2, 4, 6, 8], step: 2, decimals: 0, unit: '' },
+    'Tilt Gain (dB)': { min: -100, max: 100, scale: 'linear', step: 0.1, decimals: 1, unit: ' dB', center: 0 }
   };
 
   function getKnobConfig(label, type) {
@@ -1053,6 +1058,41 @@
         freq = params[0]; order = Math.round(params[1]);
         return butterworthBiquads(freq, order, 'lowpass', sampleRate);
 
+      case 'Tilt':
+        // Approximate Tilt as low shelf at 1kHz with -gain/2 plus high shelf at 1kHz with +gain/2
+        gain = params[0];
+        var tiltFreq = 1000;
+        var tiltSlope = 6;
+        // Low shelf with -gain/2
+        var halfGainLow = -gain / 2;
+        A = Math.pow(10, halfGainLow / 40);
+        w0 = 2 * Math.PI * tiltFreq / sampleRate;
+        sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
+        alpha = sinw0 / 2 * Math.sqrt((A + 1/A) * (1/tiltSlope - 1) + 2);
+        sqA = Math.sqrt(A);
+        b0 = A * ((A + 1) - (A - 1) * cosw0 + 2 * sqA * alpha);
+        b1 = 2 * A * ((A - 1) - (A + 1) * cosw0);
+        b2 = A * ((A + 1) - (A - 1) * cosw0 - 2 * sqA * alpha);
+        a0 = (A + 1) + (A - 1) * cosw0 + 2 * sqA * alpha;
+        a1 = -2 * ((A - 1) + (A + 1) * cosw0);
+        a2 = (A + 1) + (A - 1) * cosw0 - 2 * sqA * alpha;
+        var lowSection = { b0: b0/a0, b1: b1/a0, b2: b2/a0, a1: a1/a0, a2: a2/a0 };
+        // High shelf with +gain/2
+        var halfGainHigh = gain / 2;
+        A = Math.pow(10, halfGainHigh / 40);
+        w0 = 2 * Math.PI * tiltFreq / sampleRate;
+        sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
+        alpha = sinw0 / 2 * Math.sqrt((A + 1/A) * (1/tiltSlope - 1) + 2);
+        sqA = Math.sqrt(A);
+        b0 = A * ((A + 1) + (A - 1) * cosw0 + 2 * sqA * alpha);
+        b1 = -2 * A * ((A - 1) + (A + 1) * cosw0);
+        b2 = A * ((A + 1) + (A - 1) * cosw0 - 2 * sqA * alpha);
+        a0 = (A + 1) - (A - 1) * cosw0 + 2 * sqA * alpha;
+        a1 = 2 * ((A - 1) - (A + 1) * cosw0);
+        a2 = (A + 1) - (A - 1) * cosw0 - 2 * sqA * alpha;
+        var highSection = { b0: b0/a0, b1: b1/a0, b2: b2/a0, a1: a1/a0, a2: a2/a0 };
+        return [lowSection, highSection];
+
       default:
         return [];
     }
@@ -1402,9 +1442,15 @@
     for (var fi = 0; fi < responses.individual.length; fi++) {
       var ind = responses.individual[fi];
       var color = filterColors[fi % filterColors.length];
-      var markerFreq = ind.params[0];
+      var markerFreq, markerDb;
+      if (ind.type === 'Tilt') {
+        markerFreq = 1000;
+        markerDb = 0;
+      } else {
+        markerFreq = ind.params[0];
+        markerDb = evalBiquadMagnitudeDb(ind.biquads, markerFreq, responses.sampleRate);
+      }
       if (markerFreq < fMin || markerFreq > fMax) continue;
-      var markerDb = evalBiquadMagnitudeDb(ind.biquads, markerFreq, responses.sampleRate);
       if (!isFinite(markerDb)) continue;
       var mx = freqToX(markerFreq);
       var my = dbToY(markerDb, dbMin, dbMax);
@@ -1481,9 +1527,15 @@
     // Iterate in reverse so topmost (last drawn) is tested first
     for (var fi = responses.individual.length - 1; fi >= 0; fi--) {
       var ind = responses.individual[fi];
-      var markerFreq = ind.params[0];
+      var markerFreq, markerDb;
+      if (ind.type === 'Tilt') {
+        markerFreq = 1000;
+        markerDb = 0;
+      } else {
+        markerFreq = ind.params[0];
+        markerDb = evalBiquadMagnitudeDb(ind.biquads, markerFreq, responses.sampleRate);
+      }
       if (markerFreq < fMin || markerFreq > fMax) continue;
-      var markerDb = evalBiquadMagnitudeDb(ind.biquads, markerFreq, responses.sampleRate);
       if (!isFinite(markerDb)) continue;
       var dotX = freqToX(markerFreq);
       var dotY = dbToY(markerDb, lastDbMin, lastDbMax);
@@ -1499,6 +1551,11 @@
   // ========== Client-side validation ==========
 
   function validateParams(type, params) {
+    if (type === 'Tilt') {
+      var g = Number(params[0]);
+      if (!isFinite(g) || g <= -100.1 || g >= 100.1) return 'Gain must be between -100 and 100';
+      return null;
+    }
     var freq = Number(params[0]);
     if (type !== 'None') {
       if (!isFinite(freq) || freq <= 0 || freq >= 22050) return 'Frequency must be between 0 and 22050 Hz';
@@ -1547,7 +1604,7 @@
 
   // ========== POST to backend ==========
 
-  function postFilterUpdate(filterIndex, params, type, callback) {
+  function postFilterUpdate(filterIndex, params, type, scope, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open('POST', '/api/peq', true);
     xhr.setRequestHeader('Content-Type', 'application/json');
@@ -1575,6 +1632,7 @@
     };
     var filterData = { index: filterIndex, params: params };
     if (type) filterData.type = type;
+    if (scope) filterData.scope = scope;
     xhr.send(JSON.stringify({ filters: [filterData] }));
   }
 
@@ -1592,7 +1650,7 @@
   function getDefaultParamsForType(type, preserveFreq) {
     var defaults = filterTypeDefaults[type] || [1000];
     var params = defaults.slice();
-    if (isFinite(preserveFreq) && preserveFreq > 0) {
+    if (type !== 'Tilt' && isFinite(preserveFreq) && preserveFreq > 0) {
       params[0] = preserveFreq;
     }
     return params;
@@ -1604,8 +1662,12 @@
     if (!meta) { paramsContainer.innerHTML = ''; return; }
 
     paramsContainer.innerHTML = '';
+    var isEQ15 = (currentMode === 'EQ15' || currentMode === '2XEQ15');
 
     for (var i = 0; i < meta.paramLabels.length; i++) {
+      // In EQ15 mode, only show the Gain knob (params index 1 for Peaking)
+      if (isEQ15 && i !== 1) continue;
+
       var label = meta.paramLabels[i];
       var val = (i < params.length) ? params[i] : 0;
       var config = getKnobConfig(label, type);
@@ -1622,6 +1684,12 @@
         renderLocal();
         var errEl = document.getElementById('popup-error-text');
         var ep = getPopupParams();
+        // In EQ15 mode, reconstruct full params with original freq/Q
+        if (isEQ15) {
+          var origParams = ind.params.slice();
+          origParams[1] = ep[0]; // knob value is the only one shown
+          ep = origParams;
+        }
         var err = validateParams(popupCurrentType, ep);
         if (errEl) errEl.textContent = err || '';
       });
@@ -1642,29 +1710,41 @@
     popupSnapshotData = JSON.parse(JSON.stringify(currentData));
     popupCurrentType = ind.type;
 
-    // Build popup HTML with type selector
-    var html = '<div class="popup-title">Eq' + ind.index + ' [' + ind.scope + ']</div>';
-    html += '<div class="popup-row"><label>Type</label><select id="popup-type-select">';
-    for (var ti = 0; ti < filterTypeOptions.length; ti++) {
-      var opt = filterTypeOptions[ti];
-      var sel = (opt.value === ind.type) ? ' selected' : '';
-      html += '<option value="' + opt.value + '"' + sel + '>' + opt.label + '</option>';
+    // Build popup HTML with type selector and scope selector
+    var isEQ15 = (currentMode === 'EQ15' || currentMode === '2XEQ15');
+    var html = '<div class="popup-title">Eq' + ind.index + (isEQ15 ? ' [' + ind.scope + ']' : '') + '</div>';
+    if (!isEQ15) {
+      html += '<div class="popup-row"><label>Type</label><select id="popup-type-select">';
+      for (var ti = 0; ti < filterTypeOptions.length; ti++) {
+        var opt = filterTypeOptions[ti];
+        var sel = (opt.value === ind.type) ? ' selected' : '';
+        html += '<option value="' + opt.value + '"' + sel + '>' + opt.label + '</option>';
+      }
+      html += '</select></div>';
+      html += '<div class="popup-row"><label>Scope</label><select id="popup-scope-select">';
+      var scopeOptions = ['L+R', 'L', 'R'];
+      for (var si = 0; si < scopeOptions.length; si++) {
+        var ssel = (scopeOptions[si] === ind.scope) ? ' selected' : '';
+        html += '<option value="' + scopeOptions[si] + '"' + ssel + '>' + scopeOptions[si] + '</option>';
+      }
+      html += '</select></div>';
     }
-    html += '</select></div>';
     html += '<div id="popup-params-container"></div>';
     html += '<div class="popup-error" id="popup-error-text"></div>';
-    var deleteDisabled = (currentData && currentData.filters.length <= 1) ? ' disabled title="Cannot remove the last filter"' : '';
-    html += '<div class="popup-buttons">' +
-      '<button class="delete-btn" id="popup-delete"' + deleteDisabled + '>Delete</button>' +
-      '<button class="cancel-btn" id="popup-cancel">Cancel</button>' +
+    var deleteDisabled = isEQ15 || (currentData && currentData.filters.length <= 1) ? ' disabled title="Cannot remove this filter"' : '';
+    html += '<div class="popup-buttons">';
+    if (!isEQ15) {
+      html += '<button class="delete-btn" id="popup-delete"' + deleteDisabled + '>Delete</button>';
+    }
+    html += '<button class="cancel-btn" id="popup-cancel">Cancel</button>' +
       '<button class="apply-btn" id="popup-apply">Apply</button></div>';
 
     popupEl.innerHTML = html;
     popupEl.style.display = 'block';
 
     // Position near the dot
-    var markerFreq = ind.params[0];
-    var markerDb = evalBiquadMagnitudeDb(ind.biquads, markerFreq, lastResponses.sampleRate);
+    var markerFreq = ind.type === 'Tilt' ? 1000 : ind.params[0];
+    var markerDb = ind.type === 'Tilt' ? 0 : evalBiquadMagnitudeDb(ind.biquads, markerFreq, lastResponses.sampleRate);
     var dotX = freqToX(markerFreq);
     var dotY = dbToY(markerDb, lastDbMin, lastDbMax);
     var w = canvas.width / dpr;
@@ -1680,38 +1760,51 @@
     // Build initial parameter fields
     rebuildPopupParams(ind.type, ind.params.slice(), ind);
 
-    // Type change handler
-    document.getElementById('popup-type-select').addEventListener('change', function () {
-      var newType = this.value;
-      popupCurrentType = newType;
-      var currentFreq = getPopupParams()[0] || ind.params[0];
-      var newParams = getDefaultParamsForType(newType, currentFreq);
-      // Update currentData for live preview
-      for (var j = 0; j < currentData.filters.length; j++) {
-        if (currentData.filters[j].index === ind.index) {
-          currentData.filters[j].type = newType;
-          currentData.filters[j].params = newParams;
-          break;
+    // Type change handler (not available in EQ15 mode)
+    var typeSelect = document.getElementById('popup-type-select');
+    if (typeSelect) {
+      typeSelect.addEventListener('change', function () {
+        var newType = this.value;
+        popupCurrentType = newType;
+        var currentFreq = getPopupParams()[0] || ind.params[0];
+        var newParams = getDefaultParamsForType(newType, currentFreq);
+        // Update currentData for live preview
+        for (var j = 0; j < currentData.filters.length; j++) {
+          if (currentData.filters[j].index === ind.index) {
+            currentData.filters[j].type = newType;
+            currentData.filters[j].params = newParams;
+            break;
+          }
         }
-      }
-      knobDragState = null;
-      rebuildPopupParams(newType, newParams, ind);
-      renderLocal();
-    });
+        knobDragState = null;
+        rebuildPopupParams(newType, newParams, ind);
+        renderLocal();
+      });
+    }
 
     // Apply button
     document.getElementById('popup-apply').addEventListener('click', function () {
       var ep = getPopupParams();
+      // In EQ15 mode, reconstruct full params with original freq/Q
+      if (isEQ15) {
+        var origParams = ind.params.slice();
+        origParams[1] = ep[0]; // only the gain knob is shown
+        ep = origParams;
+      }
       var err = validateParams(popupCurrentType, ep);
       var errEl = document.getElementById('popup-error-text');
       if (err) {
         if (errEl) errEl.textContent = err;
         return;
       }
-      var typeChanged = (popupCurrentType !== popupSnapshotData.filters.filter(function (f) {
+      var origFilter = popupSnapshotData.filters.filter(function (f) {
         return f.index === ind.index;
-      })[0].type);
-      postFilterUpdate(ind.index, ep, typeChanged ? popupCurrentType : null, function (serverErr) {
+      })[0];
+      var typeChanged = !isEQ15 && (popupCurrentType !== origFilter.type);
+      var scopeSelect = document.getElementById('popup-scope-select');
+      var newScope = scopeSelect ? scopeSelect.value : null;
+      var scopeChanged = newScope && newScope !== origFilter.scope;
+      postFilterUpdate(ind.index, ep, typeChanged ? popupCurrentType : null, scopeChanged ? newScope : null, function (serverErr) {
         if (serverErr) {
           if (errEl) errEl.textContent = serverErr;
         } else {
@@ -1726,8 +1819,9 @@
       revertAndClosePopup();
     });
 
-    // Delete button
-    document.getElementById('popup-delete').addEventListener('click', function () {
+    // Delete button (not available in EQ15 mode)
+    var deleteBtn = document.getElementById('popup-delete');
+    if (deleteBtn) deleteBtn.addEventListener('click', function () {
       if (currentData && currentData.filters.length <= 1) return;
       var xhr = new XMLHttpRequest();
       xhr.open('POST', '/api/peq/remove', true);
@@ -1814,6 +1908,18 @@
 
   // ========== Legend ==========
 
+  function curveMinMax(curve) {
+    var mn = Infinity, mx = -Infinity;
+    for (var j = 0; j < curve.length; j++) {
+      var v = curve[j];
+      if (isFinite(v)) {
+        if (v < mn) mn = v;
+        if (v > mx) mx = v;
+      }
+    }
+    return { min: mn, max: mx };
+  }
+
   function updateLegend(responses) {
     legendEl.innerHTML = '';
     if (!responses) return;
@@ -1823,22 +1929,32 @@
       var ind = responses.individual[i];
       var color = filterColors[i % filterColors.length];
       var paramStr = ind.params.join(', ');
+      // Compute peak dB for this filter
+      var mm = curveMinMax(ind.curve);
+      var peakStr = '';
+      if (isFinite(mm.min) && isFinite(mm.max)) {
+        var peak = Math.abs(mm.max) >= Math.abs(mm.min) ? mm.max : mm.min;
+        peakStr = ' peak: ' + peak.toFixed(1) + ' dB';
+      }
       var div = document.createElement('div');
       div.className = 'legend-item';
       div.innerHTML = '<span class="legend-color" style="background:' + color + '"></span>' +
-        '<span>Eq' + ind.index + ' ' + ind.type + ' [' + ind.scope + '] (' + paramStr + ')</span>';
+        '<span>Eq' + ind.index + ' ' + ind.type + ' [' + ind.scope + '] (' + paramStr + ')' + peakStr + '</span>';
       legendEl.appendChild(div);
     }
 
     // Combined curves
     if (responses.combinedLR) {
-      addLegendItem('Combined L+R', '#54C688');
+      var mm = curveMinMax(responses.combinedLR);
+      addLegendItem('Combined L+R (min: ' + mm.min.toFixed(1) + ' / max: ' + mm.max.toFixed(1) + ' dB)', '#54C688');
     }
     if (responses.combinedL) {
-      addLegendItem('Combined L', '#4CAF50');
+      var mm = curveMinMax(responses.combinedL);
+      addLegendItem('Combined L (min: ' + mm.min.toFixed(1) + ' / max: ' + mm.max.toFixed(1) + ' dB)', '#4CAF50');
     }
     if (responses.combinedR) {
-      addLegendItem('Combined R', '#2196F3');
+      var mm = curveMinMax(responses.combinedR);
+      addLegendItem('Combined R (min: ' + mm.min.toFixed(1) + ' / max: ' + mm.max.toFixed(1) + ' dB)', '#2196F3');
     }
   }
 
@@ -1861,8 +1977,12 @@
       if (xhr.status === 200) {
         try {
           currentData = JSON.parse(xhr.responseText);
+          currentMode = currentData.mode || 'PEQ';
           errorMsg.style.display = 'none';
           samplerateEl.textContent = currentData.sampleRate || '--';
+          // Show/hide Add Filter button based on mode
+          var isEQ15 = (currentMode === 'EQ15' || currentMode === '2XEQ15');
+          btnAddFilter.style.display = isEQ15 ? 'none' : '';
           var responses = computeResponses(currentData);
           lastResponses = responses;
           updateLegend(responses);
@@ -1903,11 +2023,23 @@
         my >= margin.top && my <= h - margin.bottom) {
       var freq = xToFreq(mx);
       var db = yToDb(my, render.dbMin || -15, render.dbMax || 15);
+      var text = Math.round(freq) + ' Hz / ' + db.toFixed(1) + ' dB';
+      // Compute combined response at cursor frequency
+      if (lastResponses) {
+        var combinedDb = 0;
+        for (var i = 0; i < lastResponses.individual.length; i++) {
+          var ind = lastResponses.individual[i];
+          if (ind.biquads && ind.biquads.length > 0) {
+            combinedDb += evalBiquadMagnitudeDb(ind.biquads, freq, lastResponses.sampleRate);
+          }
+        }
+        text += ' / combined: ' + combinedDb.toFixed(1) + ' dB';
+      }
       crosshairInfo.style.display = 'block';
-      crosshairInfo.textContent = Math.round(freq) + ' Hz / ' + db.toFixed(1) + ' dB';
+      crosshairInfo.textContent = text;
       var infoX = mx + 15;
       var infoY = my - 25;
-      if (infoX + 150 > w) infoX = mx - 160;
+      if (infoX + 250 > w) infoX = mx - 260;
       if (infoY < 0) infoY = my + 15;
       crosshairInfo.style.left = infoX + 'px';
       crosshairInfo.style.top = infoY + 'px';
@@ -1942,6 +2074,7 @@
     var ind = lastResponses.individual[dragFilterIndex];
     var meta = filterTypeMeta[ind.type];
     if (!meta || !meta.draggable) return;
+    var isEQ15 = (currentMode === 'EQ15' || currentMode === '2XEQ15');
 
     // Find the filter in currentData
     for (var j = 0; j < currentData.filters.length; j++) {
@@ -1952,10 +2085,12 @@
         var h = canvas.height / dpr;
         var clampedX = Math.max(margin.left, Math.min(mx, w - margin.right));
         var clampedY = Math.max(margin.top, Math.min(my, h - margin.bottom));
-        // Update frequency from X
-        var newFreq = xToFreq(clampedX);
-        newFreq = Math.max(1, Math.min(22049, newFreq));
-        newParams[0] = Math.round(newFreq * 10) / 10;
+        // Update frequency from X (locked in EQ15 mode)
+        if (!isEQ15) {
+          var newFreq = xToFreq(clampedX);
+          newFreq = Math.max(1, Math.min(22049, newFreq));
+          newParams[0] = Math.round(newFreq * 10) / 10;
+        }
         // Update gain from Y if applicable
         if (meta.hasGain) {
           var newGain = yToDb(clampedY, lastDbMin, lastDbMax);
@@ -2056,7 +2191,7 @@
         canvas.style.cursor = 'pointer';
         for (var j = 0; j < currentData.filters.length; j++) {
           if (currentData.filters[j].index === ind.index) {
-            postFilterUpdate(ind.index, currentData.filters[j].params, null, function (err) {
+            postFilterUpdate(ind.index, currentData.filters[j].params, null, null, function (err) {
               if (err) {
                 // Revert on error
                 for (var k = 0; k < currentData.filters.length; k++) {
@@ -2097,7 +2232,7 @@
       canvas.style.cursor = 'default';
       for (var j = 0; j < currentData.filters.length; j++) {
         if (currentData.filters[j].index === ind.index) {
-          postFilterUpdate(ind.index, currentData.filters[j].params, null, function () {
+          postFilterUpdate(ind.index, currentData.filters[j].params, null, null, function () {
             dragOriginalParams = null;
             scheduleInteractionEnd();
           });
@@ -2174,7 +2309,7 @@
       dragFilterIndex = -1;
       for (var j = 0; j < currentData.filters.length; j++) {
         if (currentData.filters[j].index === ind.index) {
-          postFilterUpdate(ind.index, currentData.filters[j].params, null, function (err) {
+          postFilterUpdate(ind.index, currentData.filters[j].params, null, null, function (err) {
             if (err) {
               for (var k = 0; k < currentData.filters.length; k++) {
                 if (currentData.filters[k].index === ind.index) {
