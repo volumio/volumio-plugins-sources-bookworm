@@ -242,7 +242,8 @@
       "saveButton": {
         "label": "TRANSLATE.NOW_PLAYING_SAVE",
         "data": [
-          "openWeatherMapApiKey"
+          "openWeatherMapApiKey",
+          "weatherCacheMinutes"
         ]
       },
       "content": [
@@ -253,6 +254,25 @@
           "label": "TRANSLATE.NOW_PLAYING_OPENWEATHERMAP_API_KEY",
           "doc": "TRANSLATE.NOW_PLAYING_OPENWEATHERMAP_API_KEY_DESC",
           "value": ""
+        },
+        {
+          "id": "weatherCacheMinutes",
+          "element": "select",
+          "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_MINUTES",
+          "doc": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_MINUTES_DESC",
+          "value": {
+            "value": 10,
+            "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_10_MIN"
+          },
+          "options": [
+            { "value": 10, "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_10_MIN" },
+            { "value": 30, "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_30_MIN" },
+            { "value": 60, "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_1_H" },
+            { "value": 120, "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_2_H" },
+            { "value": 360, "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_6_H" },
+            { "value": 720, "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_12_H" },
+            { "value": 1440, "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_24_H" }
+          ]
         },
         {
           "id": "clearWeatherCache",

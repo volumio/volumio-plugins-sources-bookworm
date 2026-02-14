@@ -33,10 +33,12 @@ export interface PluginConfigSchema {
 
 export interface WeatherOptions {
   openWeatherMapApiKey: string;
+  cacheMinutes: number;
 }
 
 export const DefaultWeatherOptions: WeatherOptions = {
-  openWeatherMapApiKey: ''
+  openWeatherMapApiKey: '',
+  cacheMinutes: 10
 };
 
 export interface MetadataServiceOptions {

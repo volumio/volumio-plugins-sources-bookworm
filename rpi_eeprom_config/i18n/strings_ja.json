@@ -65,5 +65,7 @@
   "APPLY_AND_REBOOT": "設定を適用して再起動",
   "RISK_ACKNOWLEDGED": "リスクを理解し、変更を適用したい",
   "RISK_ACKNOWLEDGED_DOC": "警告: EEPROM設定を変更すると、Raspberry Piが起動しなくなる可能性があります。上記のステージングされたすべての設定を確認し、バックアップSDカードまたは回復方法が利用可能であることを確認してください。変更を有効にするには再起動が必要です。",
-  "SAVE_CONFIGURATION": "設定を保存して再起動"
+  "SAVE_CONFIGURATION": "設定を保存して再起動",
+  "RTC_BATTERY_CHARGING": "RTCバッテリー充電",
+  "RTC_BATTERY_CHARGING_DOC": "Piの電源投入時にオンボードRTCバックアップバッテリーの充電を有効にします（Raspberry Pi 5 / 500+ / CM5のみ）。公式RTCバッテリーコネクタを使用します。注意：有効にするとRTCに問題が報告される場合があります。RTCが動作しなくなった場合はこのオプションを無効にしてください。設定はuserconfig.txtに保存されます（OTA更新後も保持）。"
 }
