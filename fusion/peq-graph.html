@@ -68,6 +68,53 @@
     display: none;
     white-space: nowrap;
   }
+  #octave-table {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    background: #090909;
+    border-top: 1px solid #3C3C3C;
+    height: 52px;
+    flex-shrink: 0;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: #4a4a4a #090909;
+  }
+  #octave-table::-webkit-scrollbar { height: 4px; }
+  #octave-table::-webkit-scrollbar-track { background: #090909; }
+  #octave-table::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 2px; }
+  .octave-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    padding: 2px 1px;
+    border-right: 1px solid #2a2a2a;
+  }
+  .octave-col:last-child { border-right: none; }
+  .octave-val {
+    font-size: 10px;
+    line-height: 14px;
+    white-space: nowrap;
+  }
+  .octave-val.positive { color: #54C688; }
+  .octave-val.negative { color: #e94560; }
+  .octave-val.zero { color: #777; }
+  .octave-val-lr {
+    font-size: 9px;
+    line-height: 12px;
+    white-space: nowrap;
+  }
+  .octave-val-lr.left { color: #4CAF50; }
+  .octave-val-lr.right { color: #2196F3; }
+  .octave-freq {
+    font-size: 9px;
+    color: #777;
+    margin-top: 1px;
+    white-space: nowrap;
+  }
   #legend {
     display: flex;
     flex-wrap: wrap;
@@ -299,6 +346,7 @@
   <div id="error-msg">Unable to load PEQ data</div>
   <div id="filter-popup"></div>
 </div>
+<div id="octave-table"></div>
 <div id="legend"></div>
 
 <script>
@@ -746,6 +794,19 @@
     '#9013fe', '#ff6f61', '#88d8b0', '#c7b299', '#6c5b7b',
     '#45b7d1', '#e8a87c', '#d5aaff', '#a8e6cf', '#fddb92'
   ];
+
+  // 1/3-octave center frequencies (ISO 266)
+  var thirdOctaveFreqs = [
+    20, 25, 31.5, 40, 50, 63, 80, 100, 125, 160,
+    200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600,
+    2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000, 12500, 16000, 20000
+  ];
+
+  var octaveTableEl = document.getElementById('octave-table');
+
+  // Crosshair snapping
+  var SNAP_THRESHOLD_PX = 30;
+  var snappedState = null; // { freq, x, filterIndex } or null
 
   // ========== Biquad coefficient computation ==========
 
@@ -1485,15 +1546,25 @@
       ctx.fillText(label, mx, my + 3.5);
     }
 
-    // Draw crosshair
+    // Draw crosshair (with snap support)
     if (mouseX >= margin.left && mouseX <= w - margin.right &&
         mouseY >= margin.top && mouseY <= h - margin.bottom) {
+      var crossX = (snappedState) ? snappedState.x : mouseX;
+      // Vertical line
+      if (snappedState) {
+        ctx.strokeStyle = 'rgba(84, 198, 136, 0.5)';
+        ctx.lineWidth = 1;
+      } else {
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        ctx.lineWidth = 0.5;
+      }
+      ctx.beginPath();
+      ctx.moveTo(crossX, margin.top);
+      ctx.lineTo(crossX, h - margin.bottom);
+      ctx.stroke();
+      // Horizontal line (always follows mouse)
       ctx.strokeStyle = 'rgba(255,255,255,0.3)';
       ctx.lineWidth = 0.5;
-      ctx.beginPath();
-      ctx.moveTo(mouseX, margin.top);
-      ctx.lineTo(mouseX, h - margin.bottom);
-      ctx.stroke();
       ctx.beginPath();
       ctx.moveTo(margin.left, mouseY);
       ctx.lineTo(w - margin.right, mouseY);
@@ -1903,6 +1974,7 @@
       resizeCanvas();
       render(responses);
       updateLegend(responses);
+      updateOctaveTable(responses);
     }
   }
 
@@ -1966,6 +2038,89 @@
     legendEl.appendChild(div);
   }
 
+  // ========== 1/3-Octave Table ==========
+
+  function formatOctaveFreq(f) {
+    if (f >= 1000) return (f / 1000) + 'k';
+    return f.toString();
+  }
+
+  function updateOctaveTable(responses) {
+    if (!responses || !responses.individual || responses.individual.length === 0) {
+      octaveTableEl.innerHTML = '';
+      return;
+    }
+
+    var sr = responses.sampleRate || 44100;
+    var allLR = true;
+    var hasL = false, hasR = false;
+    for (var i = 0; i < responses.individual.length; i++) {
+      var s = responses.individual[i].scope;
+      if (s !== 'L+R') allLR = false;
+      if (s === 'L' || s === 'L+R') hasL = true;
+      if (s === 'R' || s === 'L+R') hasR = true;
+    }
+    var separate = !allLR && hasL && hasR;
+
+    var html = '';
+    for (var fi = 0; fi < thirdOctaveFreqs.length; fi++) {
+      var freq = thirdOctaveFreqs[fi];
+      html += '<div class="octave-col">';
+
+      if (separate) {
+        // Compute L and R separately
+        var dbL = 0, dbR = 0;
+        for (var i = 0; i < responses.individual.length; i++) {
+          var ind = responses.individual[i];
+          if (ind.biquads && ind.biquads.length > 0) {
+            var db = evalBiquadMagnitudeDb(ind.biquads, freq, sr);
+            if (ind.scope === 'L' || ind.scope === 'L+R') dbL += db;
+            if (ind.scope === 'R' || ind.scope === 'L+R') dbR += db;
+          }
+        }
+        var clsL = dbL > 0.05 ? 'positive' : (dbL < -0.05 ? 'negative' : 'zero');
+        var clsR = dbR > 0.05 ? 'positive' : (dbR < -0.05 ? 'negative' : 'zero');
+        html += '<span class="octave-val-lr left">' + dbL.toFixed(1) + '</span>';
+        html += '<span class="octave-val-lr right">' + dbR.toFixed(1) + '</span>';
+      } else {
+        // Combined
+        var dbC = 0;
+        for (var i = 0; i < responses.individual.length; i++) {
+          var ind = responses.individual[i];
+          if (ind.biquads && ind.biquads.length > 0) {
+            dbC += evalBiquadMagnitudeDb(ind.biquads, freq, sr);
+          }
+        }
+        var cls = dbC > 0.05 ? 'positive' : (dbC < -0.05 ? 'negative' : 'zero');
+        html += '<span class="octave-val ' + cls + '">' + dbC.toFixed(1) + '</span>';
+      }
+
+      html += '<span class="octave-freq">' + formatOctaveFreq(freq) + '</span>';
+      html += '</div>';
+    }
+    octaveTableEl.innerHTML = html;
+  }
+
+  // ========== Crosshair snapping ==========
+
+  function findSnapFrequency(mx) {
+    if (!lastResponses || !lastResponses.individual) return null;
+    var closest = null;
+    var closestDist = Infinity;
+    for (var i = 0; i < lastResponses.individual.length; i++) {
+      var ind = lastResponses.individual[i];
+      var filterFreq = ind.type === 'Tilt' ? 1000 : ind.params[0];
+      if (filterFreq < fMin || filterFreq > fMax) continue;
+      var fx = freqToX(filterFreq);
+      var dist = Math.abs(mx - fx);
+      if (dist < closestDist && dist <= SNAP_THRESHOLD_PX) {
+        closestDist = dist;
+        closest = { freq: filterFreq, x: fx, filterIndex: i };
+      }
+    }
+    return closest;
+  }
+
   // ========== Data fetching ==========
 
   function fetchAndRender() {
@@ -1986,6 +2141,7 @@
           var responses = computeResponses(currentData);
           lastResponses = responses;
           updateLegend(responses);
+          updateOctaveTable(responses);
           resizeCanvas();
           render(responses);
           lastDbMin = render.dbMin || -15;
@@ -2021,30 +2177,51 @@
     var h = canvas.height / dpr;
     if (mx >= margin.left && mx <= w - margin.right &&
         my >= margin.top && my <= h - margin.bottom) {
-      var freq = xToFreq(mx);
+      // Check for snap to filter frequency
+      var snap = findSnapFrequency(mx);
+      var displayFreq, isSnapped;
+      if (snap) {
+        displayFreq = snap.freq;
+        snappedState = snap;
+        isSnapped = true;
+      } else {
+        displayFreq = xToFreq(mx);
+        snappedState = null;
+        isSnapped = false;
+      }
       var db = yToDb(my, render.dbMin || -15, render.dbMax || 15);
-      var text = Math.round(freq) + ' Hz / ' + db.toFixed(1) + ' dB';
-      // Compute combined response at cursor frequency
+      var prefix = isSnapped ? '\u25C6 ' : '';
+      var text = prefix + Math.round(displayFreq) + ' Hz / ' + db.toFixed(1) + ' dB';
+      // Compute combined response at cursor/snapped frequency
       if (lastResponses) {
         var combinedDb = 0;
         for (var i = 0; i < lastResponses.individual.length; i++) {
           var ind = lastResponses.individual[i];
           if (ind.biquads && ind.biquads.length > 0) {
-            combinedDb += evalBiquadMagnitudeDb(ind.biquads, freq, lastResponses.sampleRate);
+            combinedDb += evalBiquadMagnitudeDb(ind.biquads, displayFreq, lastResponses.sampleRate);
           }
         }
         text += ' / combined: ' + combinedDb.toFixed(1) + ' dB';
       }
       crosshairInfo.style.display = 'block';
       crosshairInfo.textContent = text;
+      // Style tooltip when snapped
+      if (isSnapped) {
+        crosshairInfo.style.borderColor = '#54C688';
+        crosshairInfo.style.boxShadow = '0 0 6px rgba(84, 198, 136, 0.5)';
+      } else {
+        crosshairInfo.style.borderColor = '#54C688';
+        crosshairInfo.style.boxShadow = 'none';
+      }
       var infoX = mx + 15;
       var infoY = my - 25;
-      if (infoX + 250 > w) infoX = mx - 260;
+      if (infoX + 280 > w) infoX = mx - 290;
       if (infoY < 0) infoY = my + 15;
       crosshairInfo.style.left = infoX + 'px';
       crosshairInfo.style.top = infoY + 'px';
     } else {
       crosshairInfo.style.display = 'none';
+      snappedState = null;
     }
   }
 
@@ -2223,6 +2400,7 @@
     mouseX = -1;
     mouseY = -1;
     hoveredFilterIndex = -1;
+    snappedState = null;
     crosshairInfo.style.display = 'none';
     if (dragFilterIndex >= 0 && dragMoved) {
       // Treat as drag end
@@ -2364,6 +2542,7 @@
         lastDbMax = render.dbMax || 15;
         render(responses);
         updateLegend(responses);
+        updateOctaveTable(responses);
       }
     }
   });

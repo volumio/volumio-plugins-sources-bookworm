@@ -1245,7 +1245,8 @@ FusionDsp.prototype.startPeqGraphServer = function () {
           'Access-Control-Allow-Origin': '*'
         };
 
-        if (self.config.get('selectedsp') !== 'PEQ') {
+        var mode = self.config.get('selectedsp');
+        if (mode !== 'PEQ' && mode !== 'EQ15' && mode !== '2XEQ15') {
           res.writeHead(400, corsHeaders);
           res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
           return;
