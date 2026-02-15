@@ -1,0 +1,34 @@
+{
+  "enabled": {
+    "value": false,
+    "type": "boolean"
+  },
+  "int_time": {
+    "value": 1,
+    "type": "number"
+  },
+  "min_backlight": {
+    "value": 12,
+    "type": "number"
+  },
+  "max_backlight": {
+    "value": 255,
+    "type": "number"
+  },
+  "lux_multiplier": {
+    "value": 0.75,
+    "type": "number"
+  },
+  "smoothing_factor": {
+    "value": 0.3,
+    "type": "number"
+  },
+  "playback_boost": {
+    "value": 0,
+    "type": "number"
+  },
+  "playback_boost_duration": {
+    "value": 30,
+    "type": "number"
+  }
+}

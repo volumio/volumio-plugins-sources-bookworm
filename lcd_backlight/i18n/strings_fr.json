@@ -1,0 +1,21 @@
+{
+  "PLUGIN_NAME": "Contrôle du rétroéclairage LCD",
+  "GENERAL_SETTINGS": "Paramètres généraux",
+  "MEASUREMENT_INTERVAL": "Intervalle de mesure (secondes)",
+  "MEASUREMENT_INTERVAL_DOC": "Temps entre les lectures du capteur de lumière. Des valeurs plus faibles offrent des changements de luminosité plus réactifs mais peuvent augmenter l'utilisation du processeur.",
+  "MIN_BACKLIGHT": "Luminosité minimale",
+  "MIN_BACKLIGHT_DOC": "Le niveau de luminosité le plus bas que l'écran atteindra (0-255). Empêche l'écran de devenir trop sombre.",
+  "MAX_BACKLIGHT": "Luminosité maximale",
+  "MAX_BACKLIGHT_DOC": "Le niveau de luminosité le plus élevé que l'écran atteindra (0-255). Peut être réduit pour économiser de l'énergie.",
+  "LUX_MULTIPLIER": "Multiplicateur de lux",
+  "LUX_MULTIPLIER_DOC": "Multiplicateur d'étalonnage pour le capteur VEML7700. Augmenter pour une réponse plus lumineuse, diminuer pour une réponse plus sombre.",
+  "SMOOTHING_FACTOR": "Facteur de lissage",
+  "SMOOTHING_FACTOR_DOC": "Contrôle la rapidité des transitions de luminosité (0,0-1,0). Des valeurs plus faibles créent des transitions plus lentes et plus douces.",
+  "PLAYBACK_BOOST": "Augmentation de luminosité en lecture",
+  "PLAYBACK_BOOST_DOC": "Luminosité supplémentaire ajoutée pendant la lecture musicale (0-255). Définir à 0 pour désactiver cette fonctionnalité.",
+  "PLAYBACK_BOOST_DURATION": "Durée du boost après la lecture (secondes)",
+  "PLAYBACK_BOOST_DURATION_DOC": "Combien de temps maintenir l'augmentation de luminosité après l'arrêt de la lecture (0-300 secondes). Recommandé : 30 secondes.",
+  "SAVE": "Enregistrer les paramètres",
+  "SAVE_SUCCESS": "Configuration enregistrée avec succès",
+  "SAVE_ERROR": "Erreur lors de l'enregistrement de la configuration"
+}
