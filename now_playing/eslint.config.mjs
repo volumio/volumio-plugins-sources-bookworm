@@ -1,6 +1,7 @@
 // @ts-check
 import eslint from "@eslint/js";
 import tslint from "typescript-eslint";
+import unusedImports from "eslint-plugin-unused-imports";
 
 /** @type {import("typescript-eslint").ConfigWithExtends} */
 const config = {
@@ -10,7 +11,11 @@ const config = {
             tsconfigRootDir: import.meta.dirname,
         },
     },
+    plugins: {
+        'unused-imports': unusedImports
+    },
     rules: {
+        "unused-imports/no-unused-imports": "error",
         "@typescript-eslint/no-floating-promises": "error",
         "@typescript-eslint/await-thenable": "error",
         "@typescript-eslint/consistent-type-imports": [
@@ -122,9 +127,9 @@ export default tslint.config(
             "docs",
             "**/node_modules",
             "bin",
-            "test",
-            "src/app/client/build",
-            "src/app/preview/build"
+            "tests",
+            'src/app/client/**',
+            'src/app/preview'
         ],
     },
 );

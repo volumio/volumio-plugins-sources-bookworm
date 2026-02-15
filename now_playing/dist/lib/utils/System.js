@@ -59,11 +59,11 @@ function systemctl(cmd, service) {
         NowPlayingContext_1.default.getLogger().info(`[now-playing] Executing ${fullCmd}`);
         (0, child_process_1.exec)(fullCmd, { uid: 1000, gid: 1000 }, function (error, stdout, stderr) {
             if (error) {
-                NowPlayingContext_1.default.getLogger().error(NowPlayingContext_1.default.getErrorMessage(`[now-playing] Failed to execute systemctl command ${cmd} on ${service}: ${stderr.toString()}`, error));
+                NowPlayingContext_1.default.getLogger().error(NowPlayingContext_1.default.getErrorMessage(`[now-playing] Failed to execute systemctl command ${cmd} on ${service}: ${stderr}`, error));
                 reject(error);
             }
             else {
-                resolve(stdout.toString());
+                resolve(stdout);
             }
         });
     });
