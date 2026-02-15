@@ -1226,6 +1226,7 @@ FusionDsp.prototype.startPeqGraphServer = function () {
 
       var result = {
         sampleRate: sampleRate,
+        mode: self.config.get('selectedsp'),
         filters: filters
       };
 
@@ -1244,7 +1245,8 @@ FusionDsp.prototype.startPeqGraphServer = function () {
           'Access-Control-Allow-Origin': '*'
         };
 
-        if (self.config.get('selectedsp') !== 'PEQ') {
+        var mode = self.config.get('selectedsp');
+        if (mode !== 'PEQ' && mode !== 'EQ15' && mode !== '2XEQ15') {
           res.writeHead(400, corsHeaders);
           res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
           return;
@@ -1303,15 +1305,38 @@ FusionDsp.prototype.startPeqGraphServer = function () {
             return;
           }
 
+          // In EQ15/2XEQ15 mode, only gain (params[1]) can be changed
+          if (mode === 'EQ15' || mode === '2XEQ15') {
+            if (upd.type) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Cannot change filter type in EQ15 mode' }));
+              return;
+            }
+            if (upd.scope) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Cannot change scope in EQ15 mode' }));
+              return;
+            }
+            var originalParams = slots[slotIdx].paramStr.split(',').map(Number);
+            newParams[0] = originalParams[0];
+            if (newParams.length > 2) newParams[2] = originalParams[2];
+            upd.params = newParams;
+          }
+
           // Allow type change if provided
           if (upd.type && typeof upd.type === 'string') {
             slots[slotIdx].type = upd.type;
           }
 
+          // Allow scope change if provided
+          if (upd.scope && ['L+R', 'L', 'R'].indexOf(upd.scope) !== -1) {
+            slots[slotIdx].scope = upd.scope;
+          }
+
           var typer = slots[slotIdx].type;
 
-          // Validate frequency (param 0 for all types except None)
-          if (typer !== 'None') {
+          // Validate frequency (param 0 for all types except None and Tilt)
+          if (typer !== 'None' && typer !== 'Tilt') {
             var freq = Number(newParams[0]);
             if (!isFinite(freq) || freq <= 0 || freq >= 22050) {
               res.writeHead(400, corsHeaders);
@@ -1408,6 +1433,16 @@ FusionDsp.prototype.startPeqGraphServer = function () {
             }
           }
 
+          // Validate Tilt
+          if (typer === 'Tilt') {
+            var g = Number(newParams[0]);
+            if (!isFinite(g) || g <= -100.1 || g >= 100.1) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Tilt gain out of range for Eq' + idx }));
+              return;
+            }
+          }
+
           // Patch the slot params
           slots[slotIdx].paramStr = newParams.join(',');
         }
@@ -1473,50 +1508,64 @@ FusionDsp.prototype.startPeqGraphServer = function () {
       res.end(JSON.stringify({ ok: true }));
 
     } else if (req.method === 'POST' && req.url === '/api/peq/add') {
-      var corsHeaders = {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      };
+      var body = '';
+      req.on('data', function (chunk) { body += chunk; });
+      req.on('end', function () {
+        var corsHeaders = {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        };
 
-      if (self.config.get('selectedsp') !== 'PEQ') {
-        res.writeHead(400, corsHeaders);
-        res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
-        return;
-      }
-
-      var nbreq = self.config.get('nbreq');
-      if (nbreq >= tnbreq) {
-        res.writeHead(400, corsHeaders);
-        res.end(JSON.stringify({ error: 'Maximum number of filters reached' }));
-        return;
-      }
-
-      var mergedeq = (self.config.get('mergedeq') || '').toString();
-      var rawParts = mergedeq.split('|');
-
-      // Find the max EqN index in existing slots
-      var maxIndex = 0;
-      for (var si = 0; si + 3 < rawParts.length; si += 4) {
-        var m = rawParts[si].match(/\d+/);
-        if (m) {
-          var idx = parseInt(m[0]);
-          if (idx > maxIndex) maxIndex = idx;
+        if (self.config.get('selectedsp') !== 'PEQ') {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
+          return;
         }
-      }
 
-      var newIndex = maxIndex + 1;
-      mergedeq += 'Eq' + newIndex + '|Peaking|L+R|1000,0,1|';
-      self.config.set('mergedeq', mergedeq);
-      self.config.set('nbreq', nbreq + 1);
-      self.config.set('effect', true);
+        var nbreq = self.config.get('nbreq');
+        if (nbreq >= tnbreq) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Maximum number of filters reached' }));
+          return;
+        }
 
-      setTimeout(function () {
-        self.createCamilladspfile();
-        self.refreshUI();
-      }, 100);
+        var scope = 'L+R';
+        try {
+          var payload = JSON.parse(body);
+          if (payload.scope && ['L+R', 'L', 'R'].indexOf(payload.scope) !== -1) {
+            scope = payload.scope;
+          }
+        } catch (e) {
+          // ignore parse errors, use defaults
+        }
 
-      res.writeHead(200, corsHeaders);
-      res.end(JSON.stringify({ ok: true }));
+        var mergedeq = (self.config.get('mergedeq') || '').toString();
+        var rawParts = mergedeq.split('|');
+
+        // Find the max EqN index in existing slots
+        var maxIndex = 0;
+        for (var si = 0; si + 3 < rawParts.length; si += 4) {
+          var m = rawParts[si].match(/\d+/);
+          if (m) {
+            var idx = parseInt(m[0]);
+            if (idx > maxIndex) maxIndex = idx;
+          }
+        }
+
+        var newIndex = maxIndex + 1;
+        mergedeq += 'Eq' + newIndex + '|Peaking|' + scope + '|1000,0,1|';
+        self.config.set('mergedeq', mergedeq);
+        self.config.set('nbreq', nbreq + 1);
+        self.config.set('effect', true);
+
+        setTimeout(function () {
+          self.createCamilladspfile();
+          self.refreshUI();
+        }, 100);
+
+        res.writeHead(200, corsHeaders);
+        res.end(JSON.stringify({ ok: true }));
+      });
 
     } else if (req.method === 'POST' && req.url === '/api/peq/remove') {
       var body = '';
@@ -1527,7 +1576,8 @@ FusionDsp.prototype.startPeqGraphServer = function () {
           'Access-Control-Allow-Origin': '*'
         };
 
-        if (self.config.get('selectedsp') !== 'PEQ') {
+        var mode = self.config.get('selectedsp');
+        if (mode !== 'PEQ' && mode !== 'EQ15' && mode !== '2XEQ15') {
           res.writeHead(400, corsHeaders);
           res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
           return;
