@@ -851,7 +851,7 @@
         A = Math.pow(10, gain / 40);
         w0 = 2 * Math.PI * freq / sampleRate;
         sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
-        alpha = sinw0 / 2 * Math.sqrt((A + 1/A) * (1/slope - 1) + 2);
+        alpha = sinw0 / 2 * Math.sqrt((A + 1/A) * (1/(slope / 12) - 1) + 2);
         var sqA = Math.sqrt(A);
         b0 = A * ((A + 1) - (A - 1) * cosw0 + 2 * sqA * alpha);
         b1 = 2 * A * ((A - 1) - (A + 1) * cosw0);
@@ -883,7 +883,7 @@
         A = Math.pow(10, gain / 40);
         w0 = 2 * Math.PI * freq / sampleRate;
         sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
-        alpha = sinw0 / 2 * Math.sqrt((A + 1/A) * (1/slope - 1) + 2);
+        alpha = sinw0 / 2 * Math.sqrt((A + 1/A) * (1/(slope / 12) - 1) + 2);
         sqA = Math.sqrt(A);
         b0 = A * ((A + 1) + (A - 1) * cosw0 + 2 * sqA * alpha);
         b1 = -2 * A * ((A - 1) + (A + 1) * cosw0);
@@ -1120,16 +1120,15 @@
         return butterworthBiquads(freq, order, 'lowpass', sampleRate);
 
       case 'Tilt':
-        // Approximate Tilt as low shelf at 1kHz with -gain/2 plus high shelf at 1kHz with +gain/2
+        // CamillaDSP Tilt: Lowshelf2 @ 110Hz Q=0.35 gain=-g/2 + Highshelf2 @ 3500Hz Q=0.35 gain=+g/2
         gain = params[0];
-        var tiltFreq = 1000;
-        var tiltSlope = 6;
-        // Low shelf with -gain/2
+        var tiltQ = 0.35;
+        // Low shelf section (Lowshelf2 with Q)
         var halfGainLow = -gain / 2;
         A = Math.pow(10, halfGainLow / 40);
-        w0 = 2 * Math.PI * tiltFreq / sampleRate;
+        w0 = 2 * Math.PI * 110 / sampleRate;
         sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
-        alpha = sinw0 / 2 * Math.sqrt((A + 1/A) * (1/tiltSlope - 1) + 2);
+        alpha = sinw0 / (2 * tiltQ);
         sqA = Math.sqrt(A);
         b0 = A * ((A + 1) - (A - 1) * cosw0 + 2 * sqA * alpha);
         b1 = 2 * A * ((A - 1) - (A + 1) * cosw0);
@@ -1138,12 +1137,12 @@
         a1 = -2 * ((A - 1) + (A + 1) * cosw0);
         a2 = (A + 1) + (A - 1) * cosw0 - 2 * sqA * alpha;
         var lowSection = { b0: b0/a0, b1: b1/a0, b2: b2/a0, a1: a1/a0, a2: a2/a0 };
-        // High shelf with +gain/2
+        // High shelf section (Highshelf2 with Q)
         var halfGainHigh = gain / 2;
         A = Math.pow(10, halfGainHigh / 40);
-        w0 = 2 * Math.PI * tiltFreq / sampleRate;
+        w0 = 2 * Math.PI * 3500 / sampleRate;
         sinw0 = Math.sin(w0); cosw0 = Math.cos(w0);
-        alpha = sinw0 / 2 * Math.sqrt((A + 1/A) * (1/tiltSlope - 1) + 2);
+        alpha = sinw0 / (2 * tiltQ);
         sqA = Math.sqrt(A);
         b0 = A * ((A + 1) + (A - 1) * cosw0 + 2 * sqA * alpha);
         b1 = -2 * A * ((A - 1) + (A + 1) * cosw0);
