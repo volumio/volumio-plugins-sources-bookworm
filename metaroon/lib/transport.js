@@ -7,11 +7,13 @@ function attach(proto) {
 	proto.play = function() {
 		this.logger.info('metaroon: play() called');
 		if (this.roonTransport && this.zoneId) this.roonTransport.control(this.zoneId, 'play');
+		return libQ.resolve();
 	};
 
 	proto.pause = function() {
 		this.logger.info('metaroon: pause() called');
 		if (this.roonTransport && this.zoneId) this.roonTransport.control(this.zoneId, 'pause');
+		return libQ.resolve();
 	};
 
 	proto.stop = function() {

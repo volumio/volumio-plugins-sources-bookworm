@@ -120,7 +120,15 @@ metaroon.prototype.onStop = function() {
 	if (currentPluginInstance === self) currentPluginInstance = null;
 
 	self.unregisterVolumeControl();
+	self._stopSeekTimer();
 	helpers.invalidateHwParamsCache();
+
+	if (globalRoonApi) {
+		try { globalRoonApi.stop_discovery(); } catch (e) { /* ignore */ }
+		try { globalRoonApi.disconnect_all(); } catch (e) { /* ignore */ }
+		globalRoonApi = null;
+		globalRoonCore = null;
+	}
 
 	self.roonApi = null;
 	self.roonCore = null;
@@ -403,26 +411,31 @@ metaroon.prototype._populateMetadata = function(zone) {
 metaroon.prototype._startPlayback = function() {
 	this.logger.info('metaroon: Starting playback');
 	this.isActive = true;
-	if (!this.isVolatile) {
-		this.state.status = 'play';
-		this._setVolatileMode();
-		this.commandRouter.stateMachine.currentStatus = 'play';
-		this.pushState();
-	}
+	this.state.status = 'play';
+	if (!this.isVolatile) this._setVolatileMode();
+	this.pushState();
+	this._startSeekTimer();
 };
 
 metaroon.prototype._startPlaybackPaused = function() {
 	this.logger.info('metaroon: Starting playback (paused)');
 	this.isActive = true;
 	this.state.status = 'pause';
-	this._setVolatileMode();
-	this.commandRouter.stateMachine.currentStatus = 'pause';
 	this.pushState();
+	var self = this;
+	setTimeout(function() {
+		if (self.isActive && !self.isVolatile) {
+			self.logger.info('metaroon: Delayed volatile entry for paused state');
+			self._setVolatileMode();
+			self.pushState();
+		}
+	}, 5000);
 };
 
 metaroon.prototype._stopPlayback = function() {
 	this.logger.info('metaroon: Stopping playback');
 	this.isActive = false;
+	this._stopSeekTimer();
 	this.state.status = 'stop';
 	this.state.title = '';
 	this.state.artist = '';
@@ -430,6 +443,8 @@ metaroon.prototype._stopPlayback = function() {
 	this.state.albumart = '/albumart';
 	this.state.seek = 0;
 	this.state.duration = 0;
+	this.state.samplerate = '';
+	this.state.bitdepth = '';
 	helpers.invalidateHwParamsCache();
 	this.pushState();
 	if (this.isVolatile) {
@@ -438,33 +453,27 @@ metaroon.prototype._stopPlayback = function() {
 	}
 };
 
-metaroon.prototype._setVolatileMode = function(status) {
+metaroon.prototype._setVolatileMode = function() {
 	try {
 		this.commandRouter.stateMachine.setConsumeUpdateService(undefined);
 		this.commandRouter.stateMachine.setVolatile({ service: 'metaroon', callback: this.unsetVolatileCallback.bind(this) });
 		this.isVolatile = true;
-		this.commandRouter.stateMachine.isVolatile = true;
-		this.commandRouter.stateMachine.volatileService = 'metaroon';
-		if (status) this.commandRouter.stateMachine.currentStatus = status;
 	} catch (e) {
 		this.logger.error('metaroon: Error setting volatile: ' + e.message);
 	}
 };
 
 metaroon.prototype.unsetVolatileCallback = function() {
+	this.isVolatile = false;
 	try {
 		var state = this.commandRouter.stateMachine.getState();
-		if (state && state.service !== 'metaroon') {
-			this.logger.info('metaroon: unsetVolatile - switching away');
+		if (state && state.service && state.service !== 'metaroon' && state.service !== 'mpd' && state.status === 'play') {
+			this.logger.info('metaroon: unsetVolatile - service ' + state.service + ' is playing, stopping Roon');
 			if (this.roonTransport && this.zoneId) this.roonTransport.control(this.zoneId, 'stop');
 			this.isActive = false;
-			this.isVolatile = false;
-		} else {
-			this.isVolatile = false;
-			if (this.isActive) {
-				var self = this;
-				process.nextTick(function() { if (self.isActive && !self.commandRouter.stateMachine.isVolatile) self._setVolatileMode(); });
-			}
+			this._stopSeekTimer();
+		} else if (this.isActive) {
+			this._setVolatileMode();
 		}
 	} catch (e) { this.logger.warn('metaroon: unsetVolatile error: ' + e.message); }
 	return libQ.resolve();
@@ -478,8 +487,10 @@ metaroon.prototype._updateMetadata = function(zone) {
 	var titleChanged = zone.now_playing && zone.now_playing.three_line && zone.now_playing.three_line.line1 !== this.state.title;
 
 	this.state.status = newStatus;
-	if (statusChanged && this.isActive) this.commandRouter.stateMachine.currentStatus = newStatus;
 	this._populateMetadata(zone);
+
+	if (statusChanged && newStatus === 'play') this._startSeekTimer();
+	else if (statusChanged && newStatus !== 'play') this._stopSeekTimer();
 
 	if (zone.settings) {
 		this.state.random = zone.settings.shuffle || false;
@@ -487,6 +498,9 @@ metaroon.prototype._updateMetadata = function(zone) {
 		else if (zone.settings.loop === 'loop_one') { this.state.repeat = true; this.state.repeatSingle = true; }
 		else { this.state.repeat = false; this.state.repeatSingle = false; }
 	}
+
+	if (this.state.duration === 0) this.state.stream = true;
+	else this.state.stream = false;
 
 	if (statusChanged || titleChanged) this.pushState();
 };
@@ -513,13 +527,29 @@ metaroon.prototype.pushState = function() {
 
 	if (this.isActive && (this.state.status === 'play' || this.state.status === 'pause')) {
 		if (!this.commandRouter.stateMachine.isVolatile || this.commandRouter.stateMachine.volatileService !== 'metaroon') {
-			this._setVolatileMode(this.state.status);
-		} else {
-			this.commandRouter.stateMachine.currentStatus = this.state.status;
+			this.isVolatile = false;
+			this._setVolatileMode();
 		}
 	}
 
 	return this.commandRouter.servicePushState(this.state, 'metaroon');
+};
+
+metaroon.prototype._startSeekTimer = function() {
+	var self = this;
+	this._stopSeekTimer();
+	this.seekTimer = setInterval(function() {
+		if (self.isActive && self.state.status === 'play') {
+			self.state.seek += 1000;
+		}
+	}, 1000);
+};
+
+metaroon.prototype._stopSeekTimer = function() {
+	if (this.seekTimer) {
+		clearInterval(this.seekTimer);
+		this.seekTimer = null;
+	}
 };
 
 metaroon.prototype.selectZone = function(zoneId) {
@@ -554,7 +584,10 @@ metaroon.prototype.getUIConfig = function() {
 			});
 		}
 		defer.resolve(uiconf);
-	}).fail(function(err) { defer.reject(err); });
+	}).fail(function(err) {
+		self.logger.error('metaroon: Failed to parse UI Configuration: ' + err);
+		defer.reject(new Error());
+	});
 
 	return defer.promise;
 };
