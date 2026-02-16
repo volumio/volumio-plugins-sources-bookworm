@@ -76,3 +76,5 @@ echo "================================================"
 echo ""
 echo "RoonBridge has been removed. Your Volumio device"
 echo "will no longer appear as a Roon output."
+
+echo "pluginuninstallend"

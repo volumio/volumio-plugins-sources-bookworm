@@ -306,7 +306,10 @@ metaroon.prototype._updateAvailableZones = function(zones) {
 metaroon.prototype._identifyZone = function(zones) {
 	var target = null;
 	if (this.selectedZoneId) target = zones.find(function(z) { return z.zone_id === this.selectedZoneId; }.bind(this));
-	if (!target && zones.length > 0) target = zones[0];
+	if (!target && zones.length > 0) {
+		target = zones[0];
+		this.commandRouter.pushToastMessage('info', 'MetaRoon', 'Auto-selected Roon zone: ' + target.display_name + '. You can change this in plugin settings.');
+	}
 	if (target) this._setZone(target);
 };
 

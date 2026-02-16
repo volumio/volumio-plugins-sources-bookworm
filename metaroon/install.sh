@@ -162,8 +162,6 @@ END_SYSTEMD
     mkdir -p "/data/configuration/$PLUGIN_CATEGORY/$PACKAGE_NAME/roonbridge"
     
     systemctl daemon-reload
-    systemctl enable roonbridge
-    systemctl start roonbridge
     
     echo "RoonBridge service created and started"
 fi
