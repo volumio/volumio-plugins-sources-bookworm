@@ -305,19 +305,42 @@ metaroon.prototype._updateAvailableZones = function(zones) {
 		return {
 			zone_id: z.zone_id, display_name: z.display_name,
 			outputs: (z.outputs || []).map(function(o) {
-				return { output_id: o.output_id, display_name: o.display_name };
+				return {
+					output_id: o.output_id, display_name: o.display_name,
+					source_controls: (o.source_controls || []).map(function(sc) {
+						return { display_name: sc.display_name, control_key: sc.control_key };
+					})
+				};
 			})
 		};
 	});
 };
 
+// Attempting matching to the zone on volumio instance
+// Not super reliable but we have manual override so being serviceable enough
+// should be ok
 metaroon.prototype._identifyZone = function(zones) {
 	var target = null;
-	if (this.selectedZoneId) target = zones.find(function(z) { return z.zone_id === this.selectedZoneId; }.bind(this));
+
+	if (this.selectedZoneId) {
+		target = zones.find(function(z) { return z.zone_id === this.selectedZoneId; }.bind(this));
+		if (target) { this.logger.info('metaroon: Zone matched by saved selection: ' + target.display_name); }
+	}
+
+	if (!target) {
+		target = helpers.findLocalZone(zones, this.commandRouter);
+		if (target) {
+			this.logger.info('metaroon: Zone auto-detected as local RoonBridge: ' + target.display_name);
+			this.commandRouter.pushToastMessage('success', 'MetaRoon', 'Detected local Roon zone: ' + target.display_name);
+		}
+	}
+
 	if (!target && zones.length > 0) {
 		target = zones[0];
+		this.logger.info('metaroon: No local zone detected, falling back to first zone: ' + target.display_name);
 		this.commandRouter.pushToastMessage('info', 'MetaRoon', 'Auto-selected Roon zone: ' + target.display_name + '. You can change this in plugin settings.');
 	}
+
 	if (target) this._setZone(target);
 };
 

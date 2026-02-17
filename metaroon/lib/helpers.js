@@ -15,14 +15,18 @@ function extractRoonCoreIP(core) {
 				if (addr.startsWith('::ffff:')) addr = addr.substring(7);
 				return addr;
 			}
-		} catch (e) { /* ignore */ }
+		} catch (e) { 
+			// Not ideal to absorb exception silently but works in this case
+		}
 	}
 	if (core.moo && core.moo.core && core.moo.core.ws && core.moo.core.ws._socket) {
 		try {
 			let addr = core.moo.core.ws._socket.remoteAddress;
 			if (addr.startsWith('::ffff:')) addr = addr.substring(7);
 			return addr;
-		} catch (e) { /* ignore */ }
+		} catch (e) {
+			// Same as above
+		 }
 	}
 	return null;
 }
@@ -119,7 +123,9 @@ function readAlsaHwParams(currentTrackTitle) {
 				cachedHwParamsTrack = currentTrackTitle;
 				return cachedHwParams;
 			}
-		} catch (e) { /* ignore */ }
+		} catch (e) { 
+			// Another silent exception absorb
+		 }
 	}
 
 	return null;
@@ -165,6 +171,93 @@ function invalidateHwParamsCache() {
 	cachedHwParamsTrack = '';
 }
 
+function getLocalAlsaDeviceNames(commandRouter) {
+	var names = [];
+	try {
+		var cards = commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'getAplayInfo', '');
+		var outputDeviceId = commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'getConfigParam', 'outputdevice');
+		if (cards && cards.length > 0) {
+			cards.forEach(function(card) {
+				if (card.name) names.push(card.name);
+			});
+			if (outputDeviceId) {
+				var selected = cards.find(function(c) { return c.id === outputDeviceId; });
+				if (selected && selected.name) {
+					names = names.filter(function(n) { return n !== selected.name; });
+					names.unshift(selected.name);
+				}
+			}
+		}
+	} catch (e) { 
+		// And another one
+	}
+	return names;
+}
+
+function getLocalHostname() {
+	try { return require('os').hostname(); } catch (e) { return ''; }
+}
+
+function findLocalZone(zones, commandRouter) {
+	if (!zones || zones.length === 0) return null;
+
+	var localDeviceNames = getLocalAlsaDeviceNames(commandRouter);
+	var hostname = getLocalHostname().toLowerCase();
+
+	if (localDeviceNames.length > 0) {
+		for (var z = 0; z < zones.length; z++) {
+			var zone = zones[z];
+			if (!zone.outputs) continue;
+			for (var o = 0; o < zone.outputs.length; o++) {
+				var output = zone.outputs[o];
+				if (!output.source_controls) continue;
+				for (var s = 0; s < output.source_controls.length; s++) {
+					var scName = (output.source_controls[s].display_name || '').toLowerCase();
+					for (var d = 0; d < localDeviceNames.length; d++) {
+						if (scName && scName === localDeviceNames[d].toLowerCase()) {
+							return zone;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if (hostname) {
+		var byName = zones.find(function(z) {
+			if (z.display_name && z.display_name.toLowerCase() === hostname) return true;
+			if (z.outputs) {
+				return z.outputs.some(function(o) {
+					return o.display_name && o.display_name.toLowerCase() === hostname;
+				});
+			}
+			return false;
+		});
+		if (byName) return byName;
+	}
+
+	try {
+		var systemName = commandRouter.sharedVars.get('system.name');
+		if (systemName) {
+			var sysNameLower = systemName.toLowerCase();
+			var bySysName = zones.find(function(z) {
+				if (z.display_name && z.display_name.toLowerCase() === sysNameLower) return true;
+				if (z.outputs) {
+					return z.outputs.some(function(o) {
+						return o.display_name && o.display_name.toLowerCase() === sysNameLower;
+					});
+				}
+				return false;
+			});
+			if (bySysName) return bySysName;
+		}
+	} catch (e) {
+		// And another
+	 }
+
+	return null;
+}
+
 module.exports = {
 	extractRoonCoreIP,
 	getRoonImageUrl,
@@ -173,5 +266,6 @@ module.exports = {
 	findBestPlayAction,
 	readAlsaHwParams,
 	formatSampleRate,
-	invalidateHwParamsCache
+	invalidateHwParamsCache,
+	findLocalZone
 };
