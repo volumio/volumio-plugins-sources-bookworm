@@ -34,7 +34,7 @@ httpcaller.prototype.onStart = function() {
         self.load18nStrings();
         // Place on browse menu bar
         let browseTitle = this.config.get('browseMenuTitle');
-//        if (browseTitle == "") { browseTitle = 'HTTP Caller';}
+        if (browseTitle == "") { browseTitle = 'HTTP Caller';}
         var data = {
            name: browseTitle,
            uri: 'httpcaller',
@@ -54,7 +54,7 @@ httpcaller.prototype.onStop = function() {
     var self = this;
     var defer=libQ.defer();
     let browseTitle = this.config.get('browseMenuTitle');
-//    if (browseTitle == "") { browseTitle = 'HTTP Caller';}
+    if (browseTitle == "") { browseTitle = 'HTTP Caller';}
     self.commandRouter.volumioRemoveToBrowseSources(browseTitle);
 
     // Once the Plugin has successfull stopped resolve the promise
