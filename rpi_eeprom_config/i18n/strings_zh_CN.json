@@ -65,5 +65,7 @@
   "APPLY_AND_REBOOT": "应用配置并重启",
   "RISK_ACKNOWLEDGED": "我了解风险并想应用更改",
   "RISK_ACKNOWLEDGED_DOC": "警告: 修改 EEPROM 设置可能会阻止您的 Raspberry Pi 启动。确保您已审查上面准备的所有设置,并有备份 SD 卡或恢复方法可用。更改需要重新启动才能生效。",
-  "SAVE_CONFIGURATION": "保存配置并重启"
+  "SAVE_CONFIGURATION": "保存配置并重启",
+  "RTC_BATTERY_CHARGING": "RTC 电池充电",
+  "RTC_BATTERY_CHARGING_DOC": "在 Pi 通电时启用板载 RTC 备用电池充电（仅限 Raspberry Pi 5 / 500+ / CM5）。使用官方 RTC 电池接口。注意：部分用户报告启用后出现 RTC 问题；若 RTC 停止工作，请关闭此选项。设置保存在 userconfig.txt 中（OTA 更新后保留）。"
 }

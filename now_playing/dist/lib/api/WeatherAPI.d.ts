@@ -3,6 +3,7 @@ export interface WeatherAPIConfig {
     coordinates: string;
     units: 'imperial' | 'metric' | 'standard';
     apiKey?: string | null;
+    cacheMinutes?: number;
 }
 export interface WeatherAPIParsedConfig {
     coordinates?: {

@@ -23,7 +23,8 @@
           "boot_uart",
           "uart_baud",
           "psu_max_current_enable",
-          "psu_max_current"
+          "psu_max_current",
+          "rtc_battery_charging"
         ]
       },
       "content": [
@@ -144,6 +145,13 @@
             "field": "psu_max_current_enable",
             "value": true
           }
+        },
+        {
+          "id": "rtc_battery_charging",
+          "element": "switch",
+          "label": "TRANSLATE.RTC_BATTERY_CHARGING",
+          "doc": "TRANSLATE.RTC_BATTERY_CHARGING_DOC",
+          "value": false
         }
       ]
     },

@@ -65,5 +65,7 @@
   "APPLY_AND_REBOOT": "Aplicar configuracao e reiniciar",
   "RISK_ACKNOWLEDGED": "Compreendo os riscos e desejo aplicar as alteracoes",
   "RISK_ACKNOWLEDGED_DOC": "AVISO: Modificar as configuracoes EEPROM pode impedir que seu Raspberry Pi inicialize. Certifique-se de ter revisado todas as configuracoes preparadas acima e ter um cartao SD de backup ou metodo de recuperacao disponivel. As alteracoes exigem uma reinicializacao para entrar em vigor.",
-  "SAVE_CONFIGURATION": "Salvar configuracao e reiniciar"
+  "SAVE_CONFIGURATION": "Salvar configuracao e reiniciar",
+  "RTC_BATTERY_CHARGING": "Carregamento da bateria RTC",
+  "RTC_BATTERY_CHARGING_DOC": "Ativar carregamento da bateria de backup RTC quando o Pi estiver ligado (apenas Raspberry Pi 5 / 500+ / CM5). Utiliza o conector oficial de bateria RTC. Nota: alguns utilizadores reportam problemas com a RTC ao ativar; se a RTC deixar de funcionar, desative esta opcao. A definicao e guardada em userconfig.txt (mantida em atualizacoes OTA)."
 }

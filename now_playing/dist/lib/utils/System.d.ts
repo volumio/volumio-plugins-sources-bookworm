@@ -8,7 +8,7 @@ export interface PluginInfo {
 export declare function fileExists(path: string): boolean;
 export declare function dirExists(path: string): boolean;
 export declare function findInFile(path: string, str: string): boolean;
-export declare function replaceInFile(path: string, search: string, replace: string): Buffer;
+export declare function replaceInFile(path: string, search: string, replace: string): NonSharedBuffer;
 export declare function copyFile(src: string, dest: string, opts?: {
     asRoot?: boolean;
     createDestDirIfNotExists?: boolean;

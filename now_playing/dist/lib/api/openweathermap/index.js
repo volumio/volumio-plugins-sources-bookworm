@@ -13,7 +13,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _OpenWeatherMapAPI_instances, _OpenWeatherMapAPI_apiKey, _OpenWeatherMapAPI_configuredApiKey, _OpenWeatherMapAPI_apiKeyPromise, _OpenWeatherMapAPI_coordinates, _OpenWeatherMapAPI_lang, _OpenWeatherMapAPI_units, _OpenWeatherMapAPI_getApiKey, _OpenWeatherMapAPI_createApiUrl, _OpenWeatherMapAPI_parseLocation, _OpenWeatherMapAPI_parseCurrent, _OpenWeatherMapAPI_parseDaily, _OpenWeatherMapAPI_parseHourly;
+var _OpenWeatherMapAPI_instances, _OpenWeatherMapAPI_apiKey, _OpenWeatherMapAPI_configuredApiKey, _OpenWeatherMapAPI_coordinates, _OpenWeatherMapAPI_lang, _OpenWeatherMapAPI_units, _OpenWeatherMapAPI_getApiKey, _OpenWeatherMapAPI_createApiUrl, _OpenWeatherMapAPI_parseLocation, _OpenWeatherMapAPI_parseCurrent, _OpenWeatherMapAPI_parseDaily, _OpenWeatherMapAPI_parseHourly;
 Object.defineProperty(exports, "__esModule", { value: true });
 const NowPlayingContext_1 = __importDefault(require("../../NowPlayingContext"));
 const BASE_URL = 'https://openweathermap.org';
@@ -39,13 +39,11 @@ class OpenWeatherMapAPI {
         _OpenWeatherMapAPI_instances.add(this);
         _OpenWeatherMapAPI_apiKey.set(this, void 0);
         _OpenWeatherMapAPI_configuredApiKey.set(this, void 0);
-        _OpenWeatherMapAPI_apiKeyPromise.set(this, void 0);
         _OpenWeatherMapAPI_coordinates.set(this, void 0);
         _OpenWeatherMapAPI_lang.set(this, void 0);
         _OpenWeatherMapAPI_units.set(this, void 0);
         __classPrivateFieldSet(this, _OpenWeatherMapAPI_apiKey, null, "f");
         __classPrivateFieldSet(this, _OpenWeatherMapAPI_configuredApiKey, null, "f");
-        __classPrivateFieldSet(this, _OpenWeatherMapAPI_apiKeyPromise, null, "f");
         __classPrivateFieldSet(this, _OpenWeatherMapAPI_coordinates, null, "f");
         __classPrivateFieldSet(this, _OpenWeatherMapAPI_lang, null, "f");
         __classPrivateFieldSet(this, _OpenWeatherMapAPI_units, null, "f");
@@ -113,39 +111,14 @@ class OpenWeatherMapAPI {
         return result;
     }
 }
-_OpenWeatherMapAPI_apiKey = new WeakMap(), _OpenWeatherMapAPI_configuredApiKey = new WeakMap(), _OpenWeatherMapAPI_apiKeyPromise = new WeakMap(), _OpenWeatherMapAPI_coordinates = new WeakMap(), _OpenWeatherMapAPI_lang = new WeakMap(), _OpenWeatherMapAPI_units = new WeakMap(), _OpenWeatherMapAPI_instances = new WeakSet(), _OpenWeatherMapAPI_getApiKey = async function _OpenWeatherMapAPI_getApiKey() {
+_OpenWeatherMapAPI_apiKey = new WeakMap(), _OpenWeatherMapAPI_configuredApiKey = new WeakMap(), _OpenWeatherMapAPI_coordinates = new WeakMap(), _OpenWeatherMapAPI_lang = new WeakMap(), _OpenWeatherMapAPI_units = new WeakMap(), _OpenWeatherMapAPI_instances = new WeakSet(), _OpenWeatherMapAPI_getApiKey = async function _OpenWeatherMapAPI_getApiKey() {
     if (__classPrivateFieldGet(this, _OpenWeatherMapAPI_configuredApiKey, "f")) {
         return __classPrivateFieldGet(this, _OpenWeatherMapAPI_configuredApiKey, "f");
     }
     if (__classPrivateFieldGet(this, _OpenWeatherMapAPI_apiKey, "f")) {
         return __classPrivateFieldGet(this, _OpenWeatherMapAPI_apiKey, "f");
     }
-    if (__classPrivateFieldGet(this, _OpenWeatherMapAPI_apiKeyPromise, "f")) {
-        return __classPrivateFieldGet(this, _OpenWeatherMapAPI_apiKeyPromise, "f");
-    }
-    const doGet = async () => {
-        NowPlayingContext_1.default.getLogger().info('[now-playing] Fetching API key...');
-        const widgetPathRegExp = /<script(?:\s+)src=['"]((?:.+)weather-app.(?:.+).js)['"]><\/script>/gm;
-        const appIdRegExp = /appid:"(.+?)"/gm;
-        const page = await fetchPage(BASE_URL);
-        const widgetPath = page ? widgetPathRegExp.exec(page)?.[1] : null;
-        const widgetSrc = widgetPath ? await fetchPage(new URL(widgetPath, BASE_URL).toString()) : Promise.resolve(null);
-        const appId = widgetSrc ? appIdRegExp.exec(widgetSrc)?.[1] : null;
-        if (!appId) {
-            throw Error('Could not obtain API key');
-        }
-        return appId;
-    };
-    __classPrivateFieldSet(this, _OpenWeatherMapAPI_apiKeyPromise, doGet()
-        .then((appId) => {
-        __classPrivateFieldSet(this, _OpenWeatherMapAPI_apiKey, appId, "f");
-        NowPlayingContext_1.default.getLogger().info('[now-playing] OpenWeatherMap API key obtained.');
-        return appId;
-    })
-        .finally(() => {
-        __classPrivateFieldSet(this, _OpenWeatherMapAPI_apiKeyPromise, null, "f");
-    }), "f");
-    return __classPrivateFieldGet(this, _OpenWeatherMapAPI_apiKeyPromise, "f");
+    throw Error(NowPlayingContext_1.default.getI18n('NOW_PLAYING_ERR_WEATHER_API_KEY_NOT_CONFIGURED'));
 }, _OpenWeatherMapAPI_createApiUrl = async function _OpenWeatherMapAPI_createApiUrl(path = ONECALL_PATH) {
     if (!__classPrivateFieldGet(this, _OpenWeatherMapAPI_coordinates, "f")) {
         throw Error('No coordinates specified');

@@ -60,8 +60,10 @@ class WeatherAPI {
         __classPrivateFieldGet(this, _WeatherAPI_cache, "f").clear();
     }
     setConfig(opts) {
-        const { coordinates, units, apiKey } = opts;
+        const { coordinates, units, apiKey, cacheMinutes } = opts;
         __classPrivateFieldGet(this, _WeatherAPI_api, "f").setApiKey(apiKey ?? null);
+        const minutes = Math.min(1440, Math.max(10, cacheMinutes ?? 10));
+        __classPrivateFieldGet(this, _WeatherAPI_cache, "f").setTTL('weather', minutes * 60);
         const coord = ConfigHelper_1.default.parseCoordinates(coordinates);
         let configChanged = false;
         const { coordinates: currentCoordinates, units: currentUnits } = __classPrivateFieldGet(this, _WeatherAPI_config, "f");
@@ -93,7 +95,9 @@ class WeatherAPI {
     async fetchInfo() {
         const config = __classPrivateFieldGet(this, _WeatherAPI_config, "f");
         if (!__classPrivateFieldGet(this, _WeatherAPI_instances, "m", _WeatherAPI_isConfigValid).call(this, config)) {
-            throw Error(NowPlayingContext_1.default.getI18n('NOW_PLAYING_ERR_WEATHER_MISCONFIG'));
+            const err = new Error(NowPlayingContext_1.default.getI18n('NOW_PLAYING_ERR_WEATHER_MISCONFIG'));
+            err.code = 'WEATHER_NOT_CONFIGURED';
+            throw err;
         }
         try {
             const cacheKey = (0, md5_1.default)(JSON.stringify(__classPrivateFieldGet(this, _WeatherAPI_config, "f")));
@@ -101,7 +105,13 @@ class WeatherAPI {
         }
         catch (e) {
             const msg = NowPlayingContext_1.default.getI18n('NOW_PLAYING_ERR_WEATHER_FETCH') + (e.message ? `: ${e.message}` : '');
-            throw Error(msg);
+            const err = new Error(msg);
+            const notConfigured = e?.code === 'WEATHER_NOT_CONFIGURED' ||
+                (typeof e?.message === 'string' && (e.message.includes('not configured') || e.message.includes('not set up') || e.message.includes('missing geographic')));
+            if (notConfigured) {
+                err.code = 'WEATHER_NOT_CONFIGURED';
+            }
+            throw err;
         }
     }
 }

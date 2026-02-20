@@ -201,5 +201,9 @@
   "MUTE_RIGHT_DOC": "Dempen rechterkanaal",
   "MUTE_RIGHT": "Dempen rechts",
   "TILT_GAIN_RANGE": "Tilt versterking moet een getal zijn tussen -100 en 100 in ",
-  "TILT_ONLY_GAIN": "Tilt vereist alleen versterkingswaarde (dB) in "
+  "TILT_ONLY_GAIN": "Tilt vereist alleen versterkingswaarde (dB) in ",
+  "SHOW_PEQ_CURVE": "Frequentierespons tonen",
+  "SHOW_PEQ_CURVE_DOC": "PEQ frequentierespons grafiek openen (automatisch bijwerken)",
+  "RESET_PEQ": "PEQ resetten",
+  "RESET_PEQ_DOC": "Terugkeren naar de laatst opgeslagen PEQ-instellingen"
 }

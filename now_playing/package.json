@@ -1,6 +1,6 @@
 {
 	"name": "now_playing",
-	"version": "1.0.4",
+	"version": "1.0.6",
 	"description": "Provides a 'Now Playing' screen for your Volumio device.",
 	"main": "./dist/index.js",
 	"scripts": {
@@ -24,7 +24,7 @@
 		"icon": "fa-play-circle",
 		"boot_priority": 10,
 		"details": "Provides a 'Now Playing' screen for your Volumio device.",
-		"changelog": "",
+		"changelog": "Weather cache dropdown, improved weather error handling",
 		"architectures": [
 			"amd64",
 			"armhf"
@@ -48,6 +48,7 @@
 		"@typescript-eslint/eslint-plugin": "^8.6.0",
 		"@typescript-eslint/parser": "^8.6.0",
 		"eslint": "^9.10.0",
+		"geo-tz": "^8.1.4",
 		"typescript": "^5.5.4",
 		"typescript-eslint": "^8.6.0",
 		"winston": "^3.8.2"
@@ -60,7 +61,6 @@
 		"escape-html": "^1.0.3",
 		"express": "^4.21.1",
 		"genius-fetch": "^1.0.0",
-		"geo-tz": "^8.1.4",
 		"install": "^0.13.0",
 		"jsonfile": "^6.1.0",
 		"kew": "^0.7.0",

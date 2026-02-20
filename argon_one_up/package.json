@@ -1,0 +1,37 @@
+{
+  "name": "argon_one_up",
+  "version": "1.1.1",
+  "description": "UPS battery monitoring, fan control, and power management for Argon ONE UP case",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Just a Nerd",
+  "license": "GPL-3.0",
+  "repository": "https://github.com/foonerd/volumio-plugin-argon-one-up",
+  "volumio_info": {
+    "prettyName": "Argon ONE UP",
+    "icon": "fa-battery-full",
+    "plugin_type": "system_hardware",
+    "boot_priority": 5,
+    "os": [
+      "bookworm"
+    ],
+    "architectures": [
+      "armhf"
+    ],
+    "has_configuration": true,
+    "details": "Provides UPS battery monitoring, automatic fan control, power button handling, and lid close detection for Argon ONE UP case. Supports Raspberry Pi 4 and Pi 5. Configures EEPROM PSU_MAX_CURRENT for proper UPS operation on Pi 5.",
+    "changelog": "1.1.1: Fix CPU temp/fan speed display using Pi 5 native PWM fan (dtoverlay=cooling_fan). 1.1.0: Keyboard handler with configurable volume (off by default for triggerhappy), custom script support, brightness, battery key. 1.0.1: Config persistence fix, UI load from disk, EEPROM/type coercion. 1.0.0: Initial release"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "@iiot2k/gpiox": "^2.1.4",
+    "fs-extra": "^11.2.0",
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.3"
+  }
+}
