@@ -1,0 +1,372 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_CONFIGURATION"
+  },
+  "sections": [
+   {
+      "id": "httpcaller",
+      "element": "section",
+      "label": "httpcaller",
+      "icon": "fa-rss",
+      "onSave": {"type":"controller", "endpoint":"system_controller/httpcaller", "method":"saveSettings"},
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+            "browseMenuTitle",
+            "button1Enabled",
+            "button1Call",
+            "button1Action",
+            "button2Enabled",
+            "button2Call",
+            "button2Action",
+            "button3Enabled",
+            "button3Call",
+            "button3Action",
+            "button4Enabled",
+            "button4Call",
+            "button4Action",
+            "button5Enabled",
+            "button5Call",
+            "button5Action",
+            "button6Enabled",
+            "button6Call",
+            "button6Action",
+            "button7Enabled",
+            "button7Call",
+            "button7Action",
+            "button8Enabled",
+            "button8Call",
+            "button8Action",
+            "button9Enabled",
+            "button9Call",
+            "button9Action",
+            "button10Enabled",
+            "button10Call",
+            "button10Action",
+            "button11Enabled",
+            "button11Call",
+            "button11Action",
+            "button12Enabled",
+            "button12Call",
+            "button12Action"
+        ]
+      },
+      "content": [
+        {
+          "id": "browseMenuTitle",
+          "type":"text",
+          "element": "input",
+          "doc": "TRANSLATE.MENUNAME_DOC",
+          "label": "TRANSLATE.MENUNAME_LBL",
+          "attributes": [ {"placeholder": "HTTP Caller"} ],
+          "value": ""
+        },
+          {
+            "id": "button1Enabled",
+            "element": "switch",
+            "label": "TRANSLATE.ENABLE1_LBL",
+            "doc": "TRANSLATE.ENABLE_DOC",
+            "value": false
+          },
+          {
+            "id": "button1Call",
+            "type": "text",
+            "element": "input",
+            "label": "TRANSLATE.CALL_LBL",
+            "doc": "TRANSLATE.CALL_DOC",
+            "attributes": [ {"placeholder": "e.g.192.168.1.xxx/V"} ],
+            "value": "",
+            "visibleIf": {"field": "button1Enabled", "value": true}
+          },
+          {
+            "id": "button1Action",
+            "type": "text",
+            "element": "input",
+            "label": "TRANSLATE.ACTION_LBL",
+            "doc": "TRANSLATE.ACTION_DOC",
+            "attributes": [ {"placeholder": "e.g. Volume UP"} ],
+            "value": "",
+            "visibleIf": {"field": "button1Enabled", "value": true}
+          },
+ {
+           "id": "button2Enabled",
+           "element": "switch",
+           "label": "TRANSLATE.ENABLE2_LBL",
+           "doc": "TRANSLATE.ENABLE_DOC",
+           "value": false
+        },
+        {
+           "id": "button2Call",
+           "type": "text", 
+           "element": "input",
+           "label": "TRANSLATE.CALL_LBL",
+           "doc": "TRANSLATE.CALL_DOC",
+           "value": "",
+           "visibleIf": {"field": "button2Enabled", "value": true}
+        },
+        {
+           "id": "button2Action",
+           "type": "text",
+           "element": "input",
+           "label": "TRANSLATE.ACTION_LBL",
+           "doc": "TRANSLATE.ACTION_DOC",
+           "value": "",
+           "visibleIf": {"field": "button2Enabled", "value": true}
+        },
+        {
+           "id": "button3Enabled",
+           "element": "switch",
+           "label": "TRANSLATE.ENABLE3_LBL",
+           "doc": "TRANSLATE.ENABLE_DOC",
+           "value": false
+        },
+        {
+           "id": "button3Call",
+           "type": "text",
+           "element": "input",
+           "label": "TRANSLATE.CALL_LBL",
+           "doc": "TRANSLATE.CALL_DOC",
+           "value": "",
+           "visibleIf": {"field": "button3Enabled", "value": true}
+        },
+        {
+           "id": "button3Action",
+           "type": "text",
+           "element": "input",
+           "label": "TRANSLATE.ACTION_LBL",
+           "doc": "TRANSLATE.ACTION_DOC",
+           "value": "",
+           "visibleIf": {"field": "button3Enabled", "value": true}
+        },
+        {
+           "id": "button4Enabled",
+           "element": "switch",
+           "label": "TRANSLATE.ENABLE4_LBL",
+           "doc": "TRANSLATE.ENABLE_DOC",
+           "value": false
+        },
+        {
+           "id": "button4Call",
+           "type": "text", 
+           "element": "input",
+           "label": "TRANSLATE.CALL_LBL",
+           "doc": "TRANSLATE.CALL_DOC",
+           "value": "",
+           "visibleIf": {"field": "button4Enabled", "value": true}
+        },
+        {
+           "id": "button4Action",
+           "type": "text",
+           "element": "input",
+           "label": "TRANSLATE.ACTION_LBL",
+           "doc": "TRANSLATE.ACTION_DOC",
+           "value": "",
+           "visibleIf": {"field": "button4Enabled", "value": true}
+        },
+        {        
+           "id": "button5Enabled",
+           "element": "switch",
+           "label": "TRANSLATE.ENABLE5_LBL",
+           "doc": "TRANSLATE.ENABLE_DOC",
+           "value": false
+        },
+        {
+           "id": "button5Call",
+           "type": "text", 
+           "element": "input",
+           "label": "TRANSLATE.CALL_LBL",
+           "doc": "TRANSLATE.CALL_DOC",
+           "value": "",
+           "visibleIf": {"field": "button5Enabled", "value": true}
+        },
+        {
+           "id": "button5Action",
+           "type": "text",
+           "element": "input",
+           "label": "TRANSLATE.ACTION_LBL",
+           "doc": "TRANSLATE.ACTION_DOC",
+           "value": "",
+           "visibleIf": {"field": "button5Enabled", "value": true}
+        },
+        {
+           "id": "button6Enabled",
+           "element": "switch",
+           "label": "TRANSLATE.ENABLE6_LBL",
+           "doc": "TRANSLATE.ENABLE_DOC",
+           "value": false
+        },
+        {
+           "id": "button6Call",
+           "type": "text", 
+           "element": "input",
+           "label": "TRANSLATE.CALL_LBL",
+           "doc": "TRANSLATE.CALL_DOC",
+           "value": "",
+           "visibleIf": {"field": "button6Enabled", "value": true}
+        },
+        {
+           "id": "button6Action",
+           "type": "text",
+           "element": "input",
+           "label": "TRANSLATE.ACTION_LBL",
+           "doc": "TRANSLATE.ACTION_DOC",
+           "value": "",
+           "visibleIf": {"field": "button6Enabled", "value": true}
+        },
+        {
+           "id": "button7Enabled",
+           "element": "switch",
+           "label": "TRANSLATE.ENABLE7_LBL",
+           "doc": "TRANSLATE.ENABLE_DOC",
+           "value": false
+        },
+        {
+           "id": "button7Call",
+           "type": "text", 
+           "element": "input",
+           "label": "TRANSLATE.CALL_LBL",
+           "doc": "TRANSLATE.CALL_DOC",
+           "value": "",
+           "visibleIf": {"field": "button7Enabled", "value": true}
+        },
+        {
+           "id": "button7Action",
+           "type": "text",
+           "element": "input",
+           "label": "TRANSLATE.ACTION_LBL",
+           "doc": "TRANSLATE.ACTION_DOC",
+           "value": "",
+           "visibleIf": {"field": "button7Enabled", "value": true}
+        },
+        {
+           "id": "button8Enabled",
+           "element": "switch",
+           "label": "TRANSLATE.ENABLE8_LBL",
+           "doc": "TRANSLATE.ENABLE_DOC",
+           "value": false
+        },
+        {
+           "id": "button8Call",
+           "type": "text", 
+           "element": "input",
+           "label": "TRANSLATE.CALL_LBL",
+           "doc": "TRANSLATE.CALL_DOC",
+           "value": "",
+           "visibleIf": {"field": "button8Enabled", "value": true}
+        },
+        {
+           "id": "button8Action",
+           "type": "text",
+           "element": "input",
+           "label": "TRANSLATE.ACTION_LBL",
+           "doc": "TRANSLATE.ACTION_DOC",
+           "value": "",
+           "visibleIf": {"field": "button8Enabled", "value": true}
+        },
+        {
+           "id": "button9Enabled",
+           "element": "switch",
+           "label": "TRANSLATE.ENABLE9_LBL",
+           "doc": "TRANSLATE.ENABLE_DOC",
+           "value": false
+        },
+        {
+           "id": "button9Call",
+           "type": "text", 
+           "element": "input",
+           "label": "TRANSLATE.CALL_LBL",
+           "doc": "TRANSLATE.CALL_DOC",
+           "value": "",
+           "visibleIf": {"field": "button9Enabled", "value": true}
+        },
+        {
+           "id": "button9Action",
+           "type": "text",
+           "element": "input",
+           "label": "TRANSLATE.ACTION_LBL",
+           "doc": "TRANSLATE.ACTION_DOC",
+           "value": "",
+           "visibleIf": {"field": "button9Enabled", "value": true}
+        },
+        {
+           "id": "button10Enabled",
+           "element": "switch",
+           "label": "TRANSLATE.ENABLE10_LBL",
+           "doc": "TRANSLATE.ENABLE_DOC",
+           "value": false
+        },
+        {
+           "id": "button10Call",
+           "type": "text", 
+           "element": "input",
+           "label": "TRANSLATE.CALL_LBL",
+           "doc": "TRANSLATE.CALL_DOC",
+           "value": "",
+           "visibleIf": {"field": "button10Enabled", "value": true}
+        },
+        {
+           "id": "button10Action",
+           "type": "text",
+           "element": "input",
+           "label": "TRANSLATE.ACTION_LBL",
+           "doc": "TRANSLATE.ACTION_DOC",
+           "value": "",
+           "visibleIf": {"field": "button10Enabled", "value": true}
+        },
+    {
+           "id": "button11Enabled",
+           "element": "switch",
+           "label": "TRANSLATE.ENABLE11_LBL",
+           "doc": "TRANSLATE.ENABLE_DOC",
+           "value": false
+        },
+        {
+           "id": "button11Call",
+           "type": "text", 
+           "element": "input",
+           "label": "TRANSLATE.CALL_LBL",
+           "doc": "TRANSLATE.CALL_DOC",
+           "value": "",
+           "visibleIf": {"field": "button11Enabled", "value": true}
+        },
+        {
+           "id": "button11Action",
+           "type": "text",
+           "element": "input",
+           "label": "TRANSLATE.ACTION_LBL",
+           "doc": "TRANSLATE.ACTION_DOC",
+           "value": "",
+           "visibleIf": {"field": "button11Enabled", "value": true}
+        },
+        {
+           "id": "button12Enabled",
+           "element": "switch",
+           "label": "TRANSLATE.ENABLE12_LBL",
+           "doc": "TRANSLATE.ENABLE_DOC",
+           "value": false
+        },
+        {
+           "id": "button12Call",
+           "type": "text", 
+           "element": "input",
+           "label": "TRANSLATE.CALL_LBL",
+           "doc": "TRANSLATE.CALL_DOC",
+           "value": "",
+           "visibleIf": {"field": "button12Enabled", "value": true}
+        },
+        {
+           "id": "button12Action",
+           "type": "text",
+           "element": "input",
+           "label": "TRANSLATE.ACTION_LBL",
+           "doc": "TRANSLATE.ACTION_DOC",
+           "value": "",
+           "visibleIf": {"field": "button12Enabled", "value": true}
+        }
+      ]
+   }
+  ]
+}
+
+
+
