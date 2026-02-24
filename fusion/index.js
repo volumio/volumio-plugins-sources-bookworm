@@ -3201,17 +3201,18 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
 
   };
 
-  // Compute peak of the combined frequency response (not just individual filter max)
-  var combinedPeakDb = computePeakCombinedGain(self.config.get('mergedeq'), hcurrentsamplerate || 44100);
-  // Add loudness gain conservatively (it stacks on top of EQ in the pipeline)
-  gainresult = combinedPeakDb + Math.max(Number(loudnessGain) || 0, 0);
-
-  const withNegativeValues = gainmaxused.split(',').some((val) => val < 0);
-
-  //    self.logger.info(logPrefix + ' gainmaxused ' + gainmaxused + ' ' + typeof (withNegativeValues) + withNegativeValues)
   let monooutput = self.config.get('monooutput')
 
   if (effect) {
+
+    // Compute peak of the combined frequency response (not just individual filter max)
+    var combinedPeakDb = computePeakCombinedGain(self.config.get('mergedeq'), hcurrentsamplerate || 44100);
+    // Add loudness gain conservatively (it stacks on top of EQ in the pipeline)
+    gainresult = combinedPeakDb + Math.max(Number(loudnessGain) || 0, 0);
+
+    const withNegativeValues = gainmaxused.split(',').some((val) => val < 0);
+
+    //    self.logger.info(logPrefix + ' gainmaxused ' + gainmaxused + ' ' + typeof (withNegativeValues) + withNegativeValues)
 
     if (+gainresult == 0 && !withNegativeValues) {
       gainclipfree = -0.005
