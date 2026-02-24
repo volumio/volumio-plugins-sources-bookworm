@@ -356,7 +356,7 @@
     <button class="header-btn" id="btn-add-filter">+ Add Filter</button>
     <button class="header-btn" id="btn-reset">Reset</button>
     <button class="header-btn save-btn" id="btn-save">Save</button>
-    <div id="info">Sample rate: <span id="samplerate">--</span> Hz</div>
+    <div id="info">Sample rate: <span id="samplerate">--</span> Hz <span id="peakgain-info" style="margin-left: 12px;"></span></div>
   </div>
 </div>
 <div id="canvas-container">
@@ -396,6 +396,7 @@
   var statusMsg = document.getElementById('status-msg');
   var hasUnsavedChanges = false;
   var showL = true, showR = true;
+  var currentPeakGain = 0;
   var btnToggleLeft = document.getElementById('btn-toggle-left');
   var btnToggleRight = document.getElementById('btn-toggle-right');
 
@@ -1394,6 +1395,21 @@
     };
   }
 
+  function computePeakFromResponses(responses) {
+    if (!responses) return 0;
+    var peak = 0;
+    var curves = [];
+    if (responses.combinedLR) curves.push(responses.combinedLR);
+    if (responses.combinedL) curves.push(responses.combinedL);
+    if (responses.combinedR) curves.push(responses.combinedR);
+    for (var i = 0; i < curves.length; i++) {
+      for (var j = 0; j < curves[i].length; j++) {
+        if (curves[i][j] > peak) peak = curves[i][j];
+      }
+    }
+    return peak;
+  }
+
   // ========== Canvas rendering ==========
 
   function resizeCanvas() {
@@ -1538,6 +1554,26 @@
       ctx.lineTo(w - margin.right, y0);
       ctx.stroke();
       return;
+    }
+
+    // Draw peak gain line
+    if (currentPeakGain > 0) {
+      var peakY = dbToY(currentPeakGain, dbMin, dbMax);
+      if (peakY >= margin.top && peakY <= h - margin.bottom) {
+        ctx.strokeStyle = '#e9a645';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(margin.left, peakY);
+        ctx.lineTo(w - margin.right, peakY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // Y-axis label
+        ctx.fillStyle = '#e9a645';
+        ctx.textAlign = 'right';
+        ctx.font = '10px Lato, sans-serif';
+        ctx.fillText('+' + currentPeakGain.toFixed(1), margin.left - 8, peakY + 4);
+      }
     }
 
     // Draw individual filter curves
@@ -2261,6 +2297,15 @@
           updateChannelToggleVisibility(responses);
           updateLegend(responses);
           updateOctaveTable(responses);
+          var peakGainEl = document.getElementById('peakgain-info');
+          currentPeakGain = computePeakFromResponses(responses);
+          if (currentPeakGain > 0) {
+            peakGainEl.textContent = '| Peak: +' + currentPeakGain.toFixed(1) + ' dB';
+            peakGainEl.style.color = '#e9a645';
+          } else {
+            peakGainEl.textContent = '| Peak: ' + currentPeakGain.toFixed(1) + ' dB';
+            peakGainEl.style.color = '#AAA';
+          }
           resizeCanvas();
           render(responses);
           lastDbMin = render.dbMin || -15;

@@ -825,7 +825,7 @@ function configureAdvancedSettings(self, uiconf, selectedsp) {
       id: 'autoatt',
       element: 'switch',
       doc: self.commandRouter.getI18nString('AUTO_ATT_DOC'),
-      label: self.commandRouter.getI18nString('AUTO_ATT'),
+      label: self.commandRouter.getI18nString('AUTO_ATT') + ' (' + (Number(self.config.get('gainapplied')) || 0) + ' dB)',
       value: self.config.get('autoatt'),
       visibleIf: { field: 'showeq', value: true }
     }] : []),
