@@ -288,6 +288,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-wrap: wrap;
   }
   .header-btn {
     padding: 5px 14px;
@@ -349,13 +350,13 @@
   <div id="header-controls">
     <span id="status-msg"></span>
     <span id="unsaved-dot" title="Unsaved changes"></span>
+    <button class="header-btn" id="btn-add-filter">+ Add Filter</button>
+    <button class="header-btn" id="btn-reset">Reset</button>
+    <button class="header-btn save-btn" id="btn-save">Save</button>
     <button class="header-btn" id="btn-toggle-legend">Legend</button>
     <button class="header-btn" id="btn-toggle-octave">1/3 Oct</button>
     <button class="header-btn channel-toggle active" id="btn-toggle-left" style="display:none;">L</button>
     <button class="header-btn channel-toggle active" id="btn-toggle-right" style="display:none;">R</button>
-    <button class="header-btn" id="btn-add-filter">+ Add Filter</button>
-    <button class="header-btn" id="btn-reset">Reset</button>
-    <button class="header-btn save-btn" id="btn-save">Save</button>
     <div id="info">Sample rate: <span id="samplerate">--</span> Hz <span id="peakgain-info" style="margin-left: 12px;"></span></div>
   </div>
 </div>
@@ -1459,8 +1460,8 @@
 
     // Determine dB range
     var isEQ15Mode = (currentMode === 'EQ15' || currentMode === '2XEQ15');
-    var dbMin = isEQ15Mode ? -10 : -15;
-    var dbMax = isEQ15Mode ? 10 : 15;
+    var dbMin = isEQ15Mode ? -10 : -9;
+    var dbMax = isEQ15Mode ? 10 : 9;
     if (responses) {
       var allCurves = [];
       for (var i = 0; i < responses.individual.length; i++) {
@@ -1482,14 +1483,14 @@
         }
       }
       // Add padding and ensure minimum range
-      var minRange = isEQ15Mode ? 20 : 30;
+      var minRange = isEQ15Mode ? 20 : 18;
       var range = dbMax - dbMin;
       if (range < minRange) {
         var mid = (dbMax + dbMin) / 2;
         dbMin = mid - minRange / 2;
         dbMax = mid + minRange / 2;
       }
-      var padDb = isEQ15Mode ? 2 : 6;
+      var padDb = isEQ15Mode ? 2 : 0;
       dbMin = Math.floor(dbMin / 6) * 6 - padDb;
       dbMax = Math.ceil(dbMax / 6) * 6 + padDb;
     }
