@@ -44,6 +44,8 @@ const peqGraphPort = 10015;
 let configReloadDebounceTimeout = null;
 const configReloadDebounceMs = 250;
 
+const { computePeakCombinedGain } = require('./biquad-utils');
+
 // Define the Parameq class
 module.exports = FusionDsp;
 
@@ -3199,10 +3201,12 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
 
   };
 
-  gainmaxused += ',' + loudnessGain
+  // Compute peak of the combined frequency response (not just individual filter max)
+  var combinedPeakDb = computePeakCombinedGain(self.config.get('mergedeq'), hcurrentsamplerate || 44100);
+  // Add loudness gain conservatively (it stacks on top of EQ in the pipeline)
+  gainresult = combinedPeakDb + Math.max(Number(loudnessGain) || 0, 0);
 
   const withNegativeValues = gainmaxused.split(',').some((val) => val < 0);
-  gainresult = (gainmaxused.toString().split(',').slice(1).sort((a, b) => a - b)).pop();
 
   //    self.logger.info(logPrefix + ' gainmaxused ' + gainmaxused + ' ' + typeof (withNegativeValues) + withNegativeValues)
   let monooutput = self.config.get('monooutput')
