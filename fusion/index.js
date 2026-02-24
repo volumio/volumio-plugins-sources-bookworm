@@ -3216,10 +3216,10 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
     if (+gainresult == 0 && !withNegativeValues) {
       gainclipfree = -0.005
     } else if (+gainresult == 0 && withNegativeValues) {
-      gainclipfree = -2.5
+      gainclipfree = -1
       self.logger.info(logPrefix + ' else 1  ' + gainclipfree)
     } else if (+gainresult > 0 && (selectedsp != "convfir")) {
-      gainclipfree = ('-' + ((parseFloat(Number(gainresult).toFixed(2))) + 2.5))
+      gainclipfree = ('-' + ((parseFloat(Number(gainresult).toFixed(2))) + 1))
     } else if (+gainresult > 0 && (selectedsp == "convfir")) {
       gainclipfree = ('-' + (parseFloat(Number(gainresult))))
     }
