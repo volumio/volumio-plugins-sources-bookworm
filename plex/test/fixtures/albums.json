@@ -1,0 +1,23 @@
+{
+  "MediaContainer": {
+    "size": 2,
+    "Metadata": [
+      {
+        "ratingKey": "1001",
+        "key": "/library/metadata/1001/children",
+        "title": "OK Computer",
+        "parentTitle": "Radiohead",
+        "thumb": "/library/metadata/1001/thumb/1609459200",
+        "year": 1997,
+        "addedAt": 1609459200
+      },
+      {
+        "ratingKey": "1002",
+        "key": "/library/metadata/1002/children",
+        "title": "Unknown Album",
+        "parentTitle": "Various Artists",
+        "addedAt": 1609459300
+      }
+    ]
+  }
+}

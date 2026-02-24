@@ -1,0 +1,43 @@
+{
+  "name": "plex",
+  "version": "1.0.0",
+  "description": "Volumio plugin for Plex Music",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "author": "Mochan Shrestha",
+  "license": "ISC",
+  "repository": "https://github.com/mochan-b/plex-volumio.git",
+  "volumio_info": {
+    "prettyName": "Plex",
+    "plugin_type": "music_service",
+    "icon": "fa-server",
+    "architectures": [
+      "amd64",
+      "armhf"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "details": "Play music from Plex media server.",
+    "changelog": "Plex plugin"
+  },
+  "keywords": ["plex"],
+  "engines": {
+    "node": ">=14",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}
