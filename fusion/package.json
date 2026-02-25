@@ -5,7 +5,7 @@
   "main": "index.js",
   "repository": "https://github.com/balbuze/volumio-plugins/tree/alsa_modular/plugins/audio_interface/FusionDsp",
   "scripts": {
-    "test": "node --test 'test/**/*.test.js'"
+    "test": "node --test test/*.test.js"
   },
   "author": "Balbuze",
   "license": "GPL-3.0",
