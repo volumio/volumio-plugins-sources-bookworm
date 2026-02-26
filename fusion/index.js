@@ -640,6 +640,20 @@ function configureEq15Section(self, uiconf, selectedsp) {
     onClick: { type: 'plugin', endpoint: 'audio_interface/fusiondsp', method: 'reseteq', data: [] },
     visibleIf: { field: 'showeq', value: true }
   });
+
+  uiconf.sections[1].content.push({
+    id: 'showpeqcurve',
+    element: 'button',
+    label: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
+    doc: self.commandRouter.getI18nString('SHOW_PEQ_CURVE_DOC'),
+    onClick: {
+      type: 'plugin',
+      endpoint: 'audio_interface/fusiondsp',
+      method: 'showPeqGraph',
+      data: []
+    },
+    visibleIf: { field: 'showeq', value: true }
+  });
 }
 
 function configureEq3Section(self, uiconf) {
@@ -1244,6 +1258,7 @@ FusionDsp.prototype.startPeqGraphServer = function () {
 
       var result = {
         sampleRate: sampleRate,
+        mode: self.config.get('selectedsp'),
         filters: filters
       };
 
@@ -1262,7 +1277,8 @@ FusionDsp.prototype.startPeqGraphServer = function () {
           'Access-Control-Allow-Origin': '*'
         };
 
-        if (self.config.get('selectedsp') !== 'PEQ') {
+        var mode = self.config.get('selectedsp');
+        if (mode !== 'PEQ' && mode !== 'EQ15' && mode !== '2XEQ15') {
           res.writeHead(400, corsHeaders);
           res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
           return;
@@ -1309,11 +1325,15 @@ FusionDsp.prototype.startPeqGraphServer = function () {
             return;
           }
 
-          // Find matching slot by index number
+          // Find matching slot by index number (and matchScope for disambiguation in 2XEQ15)
           var slotIdx = -1;
+          var matchScope = upd.matchScope || null;
           for (var si = 0; si < slots.length; si++) {
             var m = slots[si].label.match(/\d+/);
-            if (m && parseInt(m[0]) === idx) { slotIdx = si; break; }
+            if (m && parseInt(m[0]) === idx) {
+              if (matchScope && slots[si].scope !== matchScope) continue;
+              slotIdx = si; break;
+            }
           }
           if (slotIdx === -1) {
             res.writeHead(400, corsHeaders);
@@ -1321,15 +1341,38 @@ FusionDsp.prototype.startPeqGraphServer = function () {
             return;
           }
 
+          // In EQ15/2XEQ15 mode, only gain (params[1]) can be changed
+          if (mode === 'EQ15' || mode === '2XEQ15') {
+            if (upd.type) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Cannot change filter type in EQ15 mode' }));
+              return;
+            }
+            if (upd.scope) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Cannot change scope in EQ15 mode' }));
+              return;
+            }
+            var originalParams = slots[slotIdx].paramStr.split(',').map(Number);
+            newParams[0] = originalParams[0];
+            if (newParams.length > 2) newParams[2] = originalParams[2];
+            upd.params = newParams;
+          }
+
           // Allow type change if provided
           if (upd.type && typeof upd.type === 'string') {
             slots[slotIdx].type = upd.type;
           }
 
+          // Allow scope change if provided
+          if (upd.scope && ['L+R', 'L', 'R'].indexOf(upd.scope) !== -1) {
+            slots[slotIdx].scope = upd.scope;
+          }
+
           var typer = slots[slotIdx].type;
 
-          // Validate frequency (param 0 for all types except None)
-          if (typer !== 'None') {
+          // Validate frequency (param 0 for all types except None and Tilt)
+          if (typer !== 'None' && typer !== 'Tilt') {
             var freq = Number(newParams[0]);
             if (!isFinite(freq) || freq <= 0 || freq >= 22050) {
               res.writeHead(400, corsHeaders);
@@ -1342,9 +1385,11 @@ FusionDsp.prototype.startPeqGraphServer = function () {
           if (typer === 'Peaking' || typer === 'Peaking2' || typer === 'Highshelf' || typer === 'Highshelf2' ||
               typer === 'Lowshelf' || typer === 'Lowshelf2' || typer === 'LowshelfFO' || typer === 'HighshelfFO') {
             var g = Number(newParams[1]);
-            if (!isFinite(g) || g <= -20.1 || g >= 20.1) {
+            var gainLimit = (mode === 'EQ15' || mode === '2XEQ15') ? 10.1 : 20.1;
+            if (!isFinite(g) || g <= -gainLimit || g >= gainLimit) {
+              var limitLabel = (mode === 'EQ15' || mode === '2XEQ15') ? '10' : '20';
               res.writeHead(400, corsHeaders);
-              res.end(JSON.stringify({ error: 'Gain out of range for Eq' + idx }));
+              res.end(JSON.stringify({ error: 'Gain must be between -' + limitLabel + ' and ' + limitLabel + ' dB for Eq' + idx }));
               return;
             }
           }
@@ -1426,6 +1471,16 @@ FusionDsp.prototype.startPeqGraphServer = function () {
             }
           }
 
+          // Validate Tilt
+          if (typer === 'Tilt') {
+            var g = Number(newParams[0]);
+            if (!isFinite(g) || g <= -100.1 || g >= 100.1) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Tilt gain out of range for Eq' + idx }));
+              return;
+            }
+          }
+
           // Patch the slot params
           slots[slotIdx].paramStr = newParams.join(',');
         }
@@ -1437,6 +1492,25 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         }
 
         self.config.set('mergedeq', newMergedeq);
+
+        // Sync geq15/x2geq15 config from updated mergedeq so UI sliders stay in sync
+        if (mode === 'EQ15' || mode === '2XEQ15') {
+          var updatedSlots = newMergedeq.split('|');
+          var lGains = [];
+          var rGains = [];
+          for (var si = 0; si + 3 < updatedSlots.length; si += 4) {
+            var scope = updatedSlots[si + 2];
+            var gain = updatedSlots[si + 3].split(',')[1] || '0';
+            if (scope === 'L+R' || scope === 'L') lGains.push(gain);
+            if (scope === 'R') rGains.push(gain);
+          }
+          if (mode === 'EQ15') {
+            self.config.set('geq15', lGains.join(','));
+          } else {
+            self.config.set('geq15', lGains.join(','));
+            self.config.set('x2geq15', rGains.join(','));
+          }
+        }
 
         setTimeout(function () {
           self.refreshUI();
@@ -1491,50 +1565,64 @@ FusionDsp.prototype.startPeqGraphServer = function () {
       res.end(JSON.stringify({ ok: true }));
 
     } else if (req.method === 'POST' && req.url === '/api/peq/add') {
-      var corsHeaders = {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      };
+      var body = '';
+      req.on('data', function (chunk) { body += chunk; });
+      req.on('end', function () {
+        var corsHeaders = {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        };
 
-      if (self.config.get('selectedsp') !== 'PEQ') {
-        res.writeHead(400, corsHeaders);
-        res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
-        return;
-      }
-
-      var nbreq = self.config.get('nbreq');
-      if (nbreq >= tnbreq) {
-        res.writeHead(400, corsHeaders);
-        res.end(JSON.stringify({ error: 'Maximum number of filters reached' }));
-        return;
-      }
-
-      var mergedeq = (self.config.get('mergedeq') || '').toString();
-      var rawParts = mergedeq.split('|');
-
-      // Find the max EqN index in existing slots
-      var maxIndex = 0;
-      for (var si = 0; si + 3 < rawParts.length; si += 4) {
-        var m = rawParts[si].match(/\d+/);
-        if (m) {
-          var idx = parseInt(m[0]);
-          if (idx > maxIndex) maxIndex = idx;
+        if (self.config.get('selectedsp') !== 'PEQ') {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
+          return;
         }
-      }
 
-      var newIndex = maxIndex + 1;
-      mergedeq += 'Eq' + newIndex + '|Peaking|L+R|1000,0,1|';
-      self.config.set('mergedeq', mergedeq);
-      self.config.set('nbreq', nbreq + 1);
-      self.config.set('effect', true);
+        var nbreq = self.config.get('nbreq');
+        if (nbreq >= tnbreq) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Maximum number of filters reached' }));
+          return;
+        }
 
-      setTimeout(function () {
-        self.createCamilladspfile();
-        self.refreshUI();
-      }, 100);
+        var scope = 'L+R';
+        try {
+          var payload = JSON.parse(body);
+          if (payload.scope && ['L+R', 'L', 'R'].indexOf(payload.scope) !== -1) {
+            scope = payload.scope;
+          }
+        } catch (e) {
+          // ignore parse errors, use defaults
+        }
 
-      res.writeHead(200, corsHeaders);
-      res.end(JSON.stringify({ ok: true }));
+        var mergedeq = (self.config.get('mergedeq') || '').toString();
+        var rawParts = mergedeq.split('|');
+
+        // Find the max EqN index in existing slots
+        var maxIndex = 0;
+        for (var si = 0; si + 3 < rawParts.length; si += 4) {
+          var m = rawParts[si].match(/\d+/);
+          if (m) {
+            var idx = parseInt(m[0]);
+            if (idx > maxIndex) maxIndex = idx;
+          }
+        }
+
+        var newIndex = maxIndex + 1;
+        mergedeq += 'Eq' + newIndex + '|Peaking|' + scope + '|1000,0,1|';
+        self.config.set('mergedeq', mergedeq);
+        self.config.set('nbreq', nbreq + 1);
+        self.config.set('effect', true);
+
+        setTimeout(function () {
+          self.createCamilladspfile();
+          self.refreshUI();
+        }, 100);
+
+        res.writeHead(200, corsHeaders);
+        res.end(JSON.stringify({ ok: true }));
+      });
 
     } else if (req.method === 'POST' && req.url === '/api/peq/remove') {
       var body = '';
@@ -1545,7 +1633,8 @@ FusionDsp.prototype.startPeqGraphServer = function () {
           'Access-Control-Allow-Origin': '*'
         };
 
-        if (self.config.get('selectedsp') !== 'PEQ') {
+        var mode = self.config.get('selectedsp');
+        if (mode !== 'PEQ' && mode !== 'EQ15' && mode !== '2XEQ15') {
           res.writeHead(400, corsHeaders);
           res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
           return;
@@ -1746,6 +1835,7 @@ FusionDsp.prototype.reseteq = function () {
     self.config.set("savedgeq15", defaultEQ15);
     self.config.set('nbreq', 15);
     self.config.set('mergedeq', defaultMergedEQ15);
+    self.config.set('savedmergedgeq15', defaultMergedEQ15);
   } else if (selectedsp === '2XEQ15') {
     self.config.set(`${selectedsp}preset`, 'no preset used');
     self.config.set('usethispreset', 'no preset used');
@@ -1753,6 +1843,9 @@ FusionDsp.prototype.reseteq = function () {
     self.config.set("geq15", defaultEQ15);
     self.config.set('nbreq', 30);
     self.config.set('mergedeq', defaultMerged2XEQ15);
+    self.config.set('savedmergedeqx2geq15', defaultMerged2XEQ15);
+    self.config.set('savedx2geq15l', defaultEQ15);
+    self.config.set('savedx2geq15r', defaultEQ15);
   }
 
   setTimeout(() => {

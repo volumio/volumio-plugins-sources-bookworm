@@ -1,0 +1,28 @@
+{
+  "MediaContainer": {
+    "size": 3,
+    "Directory": [
+      {
+        "key": "1",
+        "title": "Music",
+        "type": "artist",
+        "agent": "tv.plex.agents.music",
+        "scanner": "Plex Music"
+      },
+      {
+        "key": "2",
+        "title": "Movies",
+        "type": "movie",
+        "agent": "tv.plex.agents.movie",
+        "scanner": "Plex Movie"
+      },
+      {
+        "key": "3",
+        "title": "Podcasts",
+        "type": "artist",
+        "agent": "tv.plex.agents.music",
+        "scanner": "Plex Music"
+      }
+    ]
+  }
+}
