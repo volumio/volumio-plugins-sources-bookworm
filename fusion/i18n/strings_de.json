@@ -205,7 +205,7 @@
   "SHOW_PEQ_CURVE": "Frequenzgang anzeigen",
   "SHOW_PEQ_CURVE_DOC": "PEQ-Frequenzgang-Diagramm öffnen (automatische Aktualisierung)",
   "RESET_PEQ": "PEQ zurücksetzen",
-  "RESET_PEQ_DOC": "Auf die zuletzt gespeicherten PEQ-Einstellungen zurücksetzen"
+  "RESET_PEQ_DOC": "Auf die zuletzt gespeicherten PEQ-Einstellungen zurücksetzen",
   "MANAGE_PRESETS": "Voreinstellung verwalten",
   "PRESET_ACTIONS": "Voreinstellungsaktionen",
   "DUPLICATE_PRESET": "Voreinstellung duplizieren",

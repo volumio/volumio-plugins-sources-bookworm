@@ -205,7 +205,7 @@
   "SHOW_PEQ_CURVE": "Mostra risposta in frequenza",
   "SHOW_PEQ_CURVE_DOC": "Apri il grafico della risposta in frequenza PEQ (aggiornamento automatico)",
   "RESET_PEQ": "Ripristina PEQ",
-  "RESET_PEQ_DOC": "Ripristina le ultime impostazioni PEQ salvate"
+  "RESET_PEQ_DOC": "Ripristina le ultime impostazioni PEQ salvate",
   "MANAGE_PRESETS": "Gestisci preset",
   "PRESET_ACTIONS": "Azioni preset",
   "DUPLICATE_PRESET": "Duplica preset",

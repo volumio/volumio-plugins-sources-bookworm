@@ -205,7 +205,7 @@
   "SHOW_PEQ_CURVE": "Frequentierespons tonen",
   "SHOW_PEQ_CURVE_DOC": "PEQ frequentierespons grafiek openen (automatisch bijwerken)",
   "RESET_PEQ": "PEQ resetten",
-  "RESET_PEQ_DOC": "Terugkeren naar de laatst opgeslagen PEQ-instellingen"
+  "RESET_PEQ_DOC": "Terugkeren naar de laatst opgeslagen PEQ-instellingen",
   "MANAGE_PRESETS": "Voorkeuze beheren",
   "PRESET_ACTIONS": "Voorkeuze-acties",
   "DUPLICATE_PRESET": "Voorkeuze dupliceren",
