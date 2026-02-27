@@ -3207,8 +3207,8 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
 
     // Compute peak of the combined frequency response (not just individual filter max)
     var combinedPeakDb = computePeakCombinedGain(self.config.get('mergedeq'), hcurrentsamplerate || 44100);
-    // Add loudness gain conservatively (it stacks on top of EQ in the pipeline)
-    gainresult = combinedPeakDb + Math.max(Number(loudnessGain) || 0, 0);
+    // Use the greater of EQ peak and loudness gain (they don't stack linearly across all frequencies)
+    gainresult = Math.max(combinedPeakDb, Math.max(Number(loudnessGain) || 0, 0));
 
     const withNegativeValues = gainmaxused.split(',').some((val) => val < 0);
 
