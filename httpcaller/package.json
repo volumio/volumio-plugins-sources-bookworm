@@ -1,6 +1,6 @@
 {
 	"name": "httpcaller",
-	"version": "2.0.0",
+	"version": "1.0.0",
 	"description": "Make http calls from within Volumio",
 	"main": "index.js",
 	"scripts": {
@@ -8,10 +8,10 @@
 	},
 	"author": "Redlawd",
 	"license": "ISC",
-	"repository": "https://github.com/yourname/yourrepo",
+	"repository": "https://github.com/Redlawd/Redlawd3/volumio-plugins-sources-bookworm",
 	"volumio_info": {
 		"prettyName": "httpcaller",
-		"icon": "fa-lightbulb-o",
+		"icon": "fa-rss",
 		"plugin_type": "system_controller",
 		"architectures": [
 			"amd64",
@@ -20,7 +20,7 @@
 		"os": [
 			"bookworm"
 		],
-		"details": "Lorem ipsum",
+		"details": "Make http:// calls from within Volumio",
 		"changelog": "Lorem ipsum"
 	},
 	"engines": {
