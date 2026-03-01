@@ -31,6 +31,10 @@ httpcaller.prototype.onVolumioStart = function()
     return libQ.resolve();
 }
 
+httpcaller.prototype.getConfigurationFiles = function () {
+return ['config.json'];
+};
+
 httpcaller.prototype.onStart = function() {
     var self = this;
 	var defer=libQ.defer();
