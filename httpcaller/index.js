@@ -16,10 +16,7 @@ function httpcaller(context) {
 	this.commandRouter = this.context.coreCommand;
 	this.logger = this.context.logger;
 	this.configManager = this.context.configManager;
-
 }
-
-
 
 httpcaller.prototype.onVolumioStart = function()
 {
@@ -30,10 +27,6 @@ httpcaller.prototype.onVolumioStart = function()
 
     return libQ.resolve();
 }
-
-httpcaller.prototype.getConfigurationFiles = function () {
-return ['config.json'];
-};
 
 httpcaller.prototype.onStart = function() {
     var self = this;
@@ -299,6 +292,10 @@ httpcaller.prototype.http_call_twelve = function() {
 
 
 // Configuration Methods -----------------------------------------------------------------------------
+
+httpcaller.prototype.getConfigurationFiles = function () {
+    return ['config.json'];
+};
 
 httpcaller.prototype.load18nStrings = function () {
     var self = this;
