@@ -1,0 +1,77 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_NAME"
+  },
+  "sections": [
+    {
+      "id": "keepalive_settings",
+      "element": "section",
+      "label": "TRANSLATE.SETTINGS_TITLE",
+      "icon": "fa-plug",
+      "description": "TRANSLATE.SETTINGS_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "audio_interface/audio_keepalive",
+        "method": "saveSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "keepalive_enabled",
+          "buffer_time",
+          "period_time",
+          "stop_dsd_silence"
+        ]
+      },
+      "content": [
+        {
+          "id": "keepalive_enabled",
+          "element": "switch",
+          "label": "TRANSLATE.KEEPALIVE_ENABLED",
+          "doc": "TRANSLATE.KEEPALIVE_ENABLED_DESC",
+          "value": false
+        },
+        {
+          "id": "buffer_time",
+          "element": "select",
+          "label": "TRANSLATE.BUFFER_TIME",
+          "doc": "TRANSLATE.BUFFER_TIME_DESC",
+          "value": {
+            "value": "",
+            "label": "TRANSLATE.DEFAULT"
+          },
+          "options": [
+            { "value": "", "label": "TRANSLATE.DEFAULT" },
+            { "value": "500000", "label": "500 ms" },
+            { "value": "1000000", "label": "1 second" },
+            { "value": "2000000", "label": "2 seconds" },
+            { "value": "4000000", "label": "4 seconds" }
+          ]
+        },
+        {
+          "id": "period_time",
+          "element": "select",
+          "label": "TRANSLATE.PERIOD_TIME",
+          "doc": "TRANSLATE.PERIOD_TIME_DESC",
+          "value": {
+            "value": "",
+            "label": "TRANSLATE.DEFAULT"
+          },
+          "options": [
+            { "value": "", "label": "TRANSLATE.DEFAULT" },
+            { "value": "125000", "label": "125 ms" },
+            { "value": "250000", "label": "250 ms" },
+            { "value": "500000", "label": "500 ms" }
+          ]
+        },
+        {
+          "id": "stop_dsd_silence",
+          "element": "switch",
+          "label": "TRANSLATE.STOP_DSD_SILENCE",
+          "doc": "TRANSLATE.STOP_DSD_SILENCE_DESC",
+          "value": false
+        }
+      ]
+    }
+  ]
+}
