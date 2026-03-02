@@ -17,9 +17,9 @@
   "ENABLE10_LBL":"Enable http Call 10",
   "ENABLE11_LBL":"Enable http Call 11",
   "ENABLE12_LBL":"Enable http Call 12",
-  "ENABLE_DOC":"Enable to reveal the Address & Call entry elements. Disable to remove it from the options list.  Note: Both the CALL & ACTION fields need to be filled.",
+  "ENABLE_DOC":"Enable to reveal the Address & Call entry elements. Disable to remove it from the options list.  --- NOTE: Both the CALL & ACTION fields need to be filled.",
   "CALL_LBL":"http address to call",
-  "CALL_DOC":"Enter the address you want to call. eg. http://192.168.1.100/V NOTE: No checking can be done.  Be sure you are correct.",
+  "CALL_DOC":"Enter the address you want to call. eg. http://192.168.1.100/V --- NOTE: No checking can be done.  Be sure you are correct.",
   "ACTION_LBL":"Action to be Performed.",
   "ACTION_DOC":"Enter the label you want the action to be known by.   e.g. Volume UP."
 }
