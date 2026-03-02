@@ -1,6 +1,6 @@
 {
   "name": "storage_manager",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Manage additional storage disks: init, partition, format, label, and filesystem check.",
   "main": "index.js",
   "scripts": {
@@ -16,7 +16,7 @@
     "architectures": ["amd64", "armhf"],
     "os": ["bookworm"],
     "details": "Detect non-boot disks and offer: init disk (with warning), new partition with format, set Volumio label, or run filesystem check/repair. Operations run in background with progress and unmount/remount as needed.",
-    "changelog": "Initial release."
+    "changelog": "1.0.1: Fix missing sudoers entries for tune2fs, blockdev, e2fsck, resize2fs causing PAM auth failures. 1.0.0: Initial release."
   },
   "engines": {
     "node": ">=20",
