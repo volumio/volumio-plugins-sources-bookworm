@@ -17,22 +17,40 @@ SUDOERS_FILE="/etc/sudoers.d/volumio-user-storage_manager"
 echo "Creating sudoers entry for storage_manager..."
 cat > "${SUDOERS_FILE}" << 'EOF'
 # Storage Manager plugin - disk and partition operations
+#
+# Query / inspect
 volumio ALL=(ALL) NOPASSWD: /usr/bin/lsblk
 volumio ALL=(ALL) NOPASSWD: /usr/sbin/blkid
+volumio ALL=(ALL) NOPASSWD: /usr/sbin/blockdev
+volumio ALL=(ALL) NOPASSWD: /usr/sbin/tune2fs
+#
+# Mount / unmount
 volumio ALL=(ALL) NOPASSWD: /bin/mount
 volumio ALL=(ALL) NOPASSWD: /usr/bin/mount
 volumio ALL=(ALL) NOPASSWD: /bin/umount
 volumio ALL=(ALL) NOPASSWD: /usr/bin/umount
+#
+# Partition table
 volumio ALL=(ALL) NOPASSWD: /usr/sbin/parted
+#
+# ext2/3/4
 volumio ALL=(ALL) NOPASSWD: /usr/sbin/mkfs.ext4
 volumio ALL=(ALL) NOPASSWD: /usr/sbin/e2label
+volumio ALL=(ALL) NOPASSWD: /usr/sbin/e2fsck
+volumio ALL=(ALL) NOPASSWD: /usr/sbin/resize2fs
+volumio ALL=(ALL) NOPASSWD: /usr/sbin/fsck
+#
+# FAT / vfat
 volumio ALL=(ALL) NOPASSWD: /usr/sbin/mkfs.vfat
 volumio ALL=(ALL) NOPASSWD: /usr/sbin/fatlabel
-volumio ALL=(ALL) NOPASSWD: /usr/sbin/fsck
 volumio ALL=(ALL) NOPASSWD: /usr/sbin/fsck.vfat
+#
+# NTFS
 volumio ALL=(ALL) NOPASSWD: /usr/sbin/mkfs.ntfs
 volumio ALL=(ALL) NOPASSWD: /usr/sbin/ntfslabel
 volumio ALL=(ALL) NOPASSWD: /usr/bin/ntfsfix
+#
+# exFAT
 volumio ALL=(ALL) NOPASSWD: /usr/sbin/mkfs.exfat
 volumio ALL=(ALL) NOPASSWD: /usr/sbin/exfatlabel
 volumio ALL=(ALL) NOPASSWD: /usr/sbin/exfatfsck
