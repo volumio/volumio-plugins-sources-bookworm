@@ -1,0 +1,23 @@
+{
+  "RP2_CONFIGURATION": "Radio Paradise (RP2) Plugin Settings",
+  "RP2_RP": "Radio Paradise",
+  "RP2_SECTION_GENERAL": "General",
+  "RP2_QUALITY": "Audio quality",
+  "RP2_LOW": "Low",
+  "RP2_MED": "Medium",
+  "RP2_HIGH": "High",
+  "RP2_ULTRA": "Ultra",
+  "RP2_FLAC": "FLAC",
+  "RP2_PERSIST_SESSION": "Persist Session Data",
+  "RP2_SUPPORT_RP": "Support Radio Paradise",
+  "RP2_PROJECT_HOME": "Project Homepage",
+  "RP2_SAVE": "Save",
+  "RP2_SETTINGS_SAVED": "Settings saved",
+  "RP2_CHANNELS": "Channels",
+  "RP2_STARTING_PLAYER": "Starting {} for playback...",
+  "RP2_ERR_PLAYER_START": "Failed to start {}: {}",
+  "RP2_ERR_PLAYER_QUIT": "Failed to quit {}: {}",
+  "RP2_ERR_PLAYER_GONE": "Player gone",
+  "RP2_ERR_OP_NOT_SUPPORTED": "Operation not supported",
+  "RP2_PLAYER_CLOSED_UNEXPECTEDLY": "{} closed unexpectedly"
+}

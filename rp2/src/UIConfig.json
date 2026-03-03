@@ -1,0 +1,61 @@
+{
+  "page": {
+    "label": "TRANSLATE.RP2_CONFIGURATION"
+  },
+  "sections": [
+    {
+      "id": "section_general",
+      "element": "section",
+      "label": "TRANSLATE.RP2_SECTION_GENERAL",
+      "icon": "fa-cogs",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/rp2",
+        "method": "configSaveGeneralSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.RP2_SAVE",
+        "data": [
+          "audioQuality",
+          "persistSession"
+        ]
+      },
+      "content": [
+        {
+          "id": "audioQuality",
+          "element": "select",
+          "label": "TRANSLATE.RP2_QUALITY",
+          "value": {
+            "label": "",
+            "value": ""
+          },
+          "options": []
+        },
+        {
+          "id": "persistSession",
+          "element": "switch",
+          "label": "TRANSLATE.RP2_PERSIST_SESSION",
+          "value": true
+        },
+        {
+          "id": "supportRP",
+          "element": "button",
+          "label": "TRANSLATE.RP2_SUPPORT_RP",
+          "onClick": {
+            "type": "openUrl",
+            "url": "https://radioparadise.com/donate"
+          }
+        },
+        {
+          "id": "projectHome",
+          "element": "button",
+          "label": "TRANSLATE.RP2_PROJECT_HOME",
+          "onClick": {
+            "type": "openUrl",
+            "url": "https://github.com/patrickkfkan/volumio-rp2"
+          }
+        }
+      ]
+    }
+  ]
+}
