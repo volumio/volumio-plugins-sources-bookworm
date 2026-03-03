@@ -1,0 +1,16 @@
+{
+  "PLUGIN_NAME": "Audio Keepalive",
+  "SETTINGS_TITLE": "Configuración de Audio Keepalive",
+  "SETTINGS_DESC": "Mantener el dispositivo de salida de audio activo para evitar retrasos de negociación, clics y chasquidos en salidas HDMI, SPDIF y DAC USB.",
+  "KEEPALIVE_ENABLED": "Mantener dispositivo de audio activo",
+  "KEEPALIVE_ENABLED_DESC": "Mantiene el dispositivo de salida ALSA abierto permanentemente. Evita que los receptores HDMI/SPDIF y los DAC USB pierdan el bloqueo de señal durante la inactividad, eliminando el retraso al reanudar la reproducción.",
+  "BUFFER_TIME": "Tiempo de búfer de salida",
+  "BUFFER_TIME_DESC": "Aumente para absorber las transiciones de frecuencia de muestreo y reducir los clics al cambiar entre pistas de diferentes formatos. Deje en Predeterminado a menos que experimente problemas.",
+  "PERIOD_TIME": "Tiempo de período de salida",
+  "PERIOD_TIME_DESC": "Ajuste el tiempo de período ALSA. Valores más pequeños reducen la latencia, valores más grandes mejoran la estabilidad durante las transiciones de formato. Deje en Predeterminado a menos que experimente problemas.",
+  "STOP_DSD_SILENCE": "Silencio antes de detener DSD",
+  "STOP_DSD_SILENCE_DESC": "Reproducir un breve silencio antes de detener la reproducción DSD para evitar el ruido que algunos DAC emiten cuando un flujo DSD se detiene abruptamente.",
+  "DEFAULT": "Predeterminado",
+  "SETTINGS_SAVED": "Configuración de Audio Keepalive aplicada",
+  "SAVE": "Guardar"
+}

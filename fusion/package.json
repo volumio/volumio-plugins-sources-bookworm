@@ -16,7 +16,7 @@
     "os": [
       "bookworm"
     ],
-    "changelog": "PEQ graph: fix curve accuracy, add EQ15 support, octave table, and UX improvements",
+    "changelog": "Preset rename and delete functionality",
     "details": "Multimode Dsp, with graphic equalizer, parametric equalizer, FIR filters, Loudness, AutoEq profile for headphone and more",
     "architectures": [
       "armhf",

@@ -1,7 +1,7 @@
 {
 	"name": "spop",
-	"version": "4.4.0",
-	"description": "Spotify plugin for Volumio3",
+	"version": "4.4.1",
+	"description": "Spotify plugin for Volumio4",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"

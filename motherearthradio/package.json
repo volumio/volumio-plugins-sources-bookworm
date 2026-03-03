@@ -1,6 +1,6 @@
 {
   "name": "motherearthradio",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Mother Earth Radio - High Resolution Radio",
   "main": "index.js",
   "scripts": {
@@ -20,8 +20,8 @@
     "os": [
       "bookworm"
     ],
-    "details": "Mother Earth Radio is a free HD music station without advertising. Best audio quality, selected tracks, audiophile only. Stream now!",
-    "changelog": "1.5.0 Added FLAC 192kHz Mono streams. Fixed SSE connection leak. Fixed Jazz AAC stream URL. Removed High Latency Mode (use Volumio's built-in audio buffer settings instead)."
+    "details": "High Resolution Radio - Mother Earth Radio is the world's first station streaming exclusively in lossless FLAC quality up to 192 kHz / 24-bit. Carefully curated classical, jazz, and instrumental music – handpicked for audiophile listeners. Hi Res Audio & Vinyl, no advertising, no compression, no compromises. Stream now.",
+    "changelog": "1.5.1 migrated to new server"
   },
   "engines": {
     "node": ">=20",

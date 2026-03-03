@@ -1,0 +1,30 @@
+{
+  "name": "storage_manager",
+  "version": "1.0.1",
+  "description": "Manage additional storage disks: init, partition, format, label, and filesystem check.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Just a Nerd",
+  "license": "GPL-3.0-or-later",
+  "repository": "https://github.com/volumio/volumio-plugins-sources-bookworm",
+  "volumio_info": {
+    "prettyName": "Storage Manager",
+    "icon": "fa-hdd-o",
+    "plugin_type": "system_hardware",
+    "architectures": ["amd64", "armhf"],
+    "os": ["bookworm"],
+    "details": "Detect non-boot disks and offer: init disk (with warning), new partition with format, set Volumio label, or run filesystem check/repair. Operations run in background with progress and unmount/remount as needed.",
+    "changelog": "1.0.1: Fix missing sudoers entries for tune2fs, blockdev, e2fsck, resize2fs causing PAM auth failures. 1.0.0: Initial release."
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "fs-extra": "^0.28.0",
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.2"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "keepalive_enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "buffer_time": {
+    "type": "string",
+    "value": ""
+  },
+  "period_time": {
+    "type": "string",
+    "value": ""
+  },
+  "stop_dsd_silence": {
+    "type": "boolean",
+    "value": false
+  }
+}
