@@ -3223,19 +3223,25 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
 
   if (effect) {
 
-    // Build combined EQ string including loudness filters for accurate peak computation
-    var eqForPeak = self.config.get('mergedeq') || '';
-    if (self.config.get('loudness') && Number(loudnessGain) > 0) {
-      var lg = Number(loudnessGain);
-      eqForPeak += 'Lhs|Highshelf2|L+R|10620,' + (lg * 0.2811168954093706).toFixed(2) + ',1.38|';
-      eqForPeak += 'Lls|LowshelfFO|L+R|120,' + lg + '|';
-      eqForPeak += 'Lp1|Peaking|L+R|2000,' + (lg * -0.061050638902035).toFixed(2) + ',0.6|';
-      eqForPeak += 'Lp2|Peaking|L+R|4000,' + (lg * -0.0274491244675816).toFixed(2) + ',0.8|';
-      eqForPeak += 'Lp3|Peaking|L+R|8000,' + (lg * 0.0709891150023663).toFixed(2) + ',2.13|';
+    if (selectedsp == "convfir") {
+      // FIR convolution: attenuation is stored in gainmaxused, not computable via biquad math
+      gainmaxused += ',' + (Number(loudnessGain) || 0);
+      gainresult = Number((gainmaxused.toString().split(',').slice(1).sort((a, b) => a - b)).pop()) || 0;
+    } else {
+      // Build combined EQ string including loudness filters for accurate peak computation
+      var eqForPeak = self.config.get('mergedeq') || '';
+      if (self.config.get('loudness') && Number(loudnessGain) > 0) {
+        var lg = Number(loudnessGain);
+        eqForPeak += 'Lhs|Highshelf2|L+R|10620,' + (lg * 0.2811168954093706).toFixed(2) + ',1.38|';
+        eqForPeak += 'Lls|LowshelfFO|L+R|120,' + lg + '|';
+        eqForPeak += 'Lp1|Peaking|L+R|2000,' + (lg * -0.061050638902035).toFixed(2) + ',0.6|';
+        eqForPeak += 'Lp2|Peaking|L+R|4000,' + (lg * -0.0274491244675816).toFixed(2) + ',0.8|';
+        eqForPeak += 'Lp3|Peaking|L+R|8000,' + (lg * 0.0709891150023663).toFixed(2) + ',2.13|';
+      }
+      // Compute peak of the combined frequency response (EQ + loudness filters)
+      var combinedPeakDb = computePeakCombinedGain(eqForPeak, hcurrentsamplerate || 44100);
+      gainresult = combinedPeakDb;
     }
-    // Compute peak of the combined frequency response (EQ + loudness filters)
-    var combinedPeakDb = computePeakCombinedGain(eqForPeak, hcurrentsamplerate || 44100);
-    gainresult = combinedPeakDb;
 
     const withNegativeValues = gainmaxused.split(',').some((val) => val < 0);
 
