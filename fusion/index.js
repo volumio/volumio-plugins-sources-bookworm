@@ -44,6 +44,8 @@ const peqGraphPort = 10015;
 let configReloadDebounceTimeout = null;
 const configReloadDebounceMs = 250;
 
+const { computePeakCombinedGain } = require('./biquad-utils');
+
 // Define the Parameq class
 module.exports = FusionDsp;
 
@@ -827,7 +829,7 @@ function configureAdvancedSettings(self, uiconf, selectedsp) {
       id: 'autoatt',
       element: 'switch',
       doc: self.commandRouter.getI18nString('AUTO_ATT_DOC'),
-      label: self.commandRouter.getI18nString('AUTO_ATT'),
+      label: self.commandRouter.getI18nString('AUTO_ATT') + ' (' + (Number(self.config.get('gainapplied')) || 0) + ' dB)',
       value: self.config.get('autoatt'),
       visibleIf: { field: 'showeq', value: true }
     }] : []),
@@ -3217,23 +3219,41 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
 
   };
 
-  gainmaxused += ',' + loudnessGain
-
-  const withNegativeValues = gainmaxused.split(',').some((val) => val < 0);
-  gainresult = (gainmaxused.toString().split(',').slice(1).sort((a, b) => a - b)).pop();
-
-  //    self.logger.info(logPrefix + ' gainmaxused ' + gainmaxused + ' ' + typeof (withNegativeValues) + withNegativeValues)
   let monooutput = self.config.get('monooutput')
 
   if (effect) {
 
+    if (selectedsp == "convfir") {
+      // FIR convolution: attenuation is stored in gainmaxused, not computable via biquad math
+      gainmaxused += ',' + (Number(loudnessGain) || 0);
+      gainresult = Number((gainmaxused.toString().split(',').slice(1).sort((a, b) => a - b)).pop()) || 0;
+    } else {
+      // Build combined EQ string including loudness filters for accurate peak computation
+      var eqForPeak = self.config.get('mergedeq') || '';
+      if (self.config.get('loudness') && Number(loudnessGain) > 0) {
+        var lg = Number(loudnessGain);
+        eqForPeak += 'Lhs|Highshelf2|L+R|10620,' + (lg * 0.2811168954093706).toFixed(2) + ',1.38|';
+        eqForPeak += 'Lls|LowshelfFO|L+R|120,' + lg + '|';
+        eqForPeak += 'Lp1|Peaking|L+R|2000,' + (lg * -0.061050638902035).toFixed(2) + ',0.6|';
+        eqForPeak += 'Lp2|Peaking|L+R|4000,' + (lg * -0.0274491244675816).toFixed(2) + ',0.8|';
+        eqForPeak += 'Lp3|Peaking|L+R|8000,' + (lg * 0.0709891150023663).toFixed(2) + ',2.13|';
+      }
+      // Compute peak of the combined frequency response (EQ + loudness filters)
+      var combinedPeakDb = computePeakCombinedGain(eqForPeak, hcurrentsamplerate || 44100);
+      gainresult = combinedPeakDb;
+    }
+
+    const withNegativeValues = gainmaxused.split(',').some((val) => val < 0);
+
+    //    self.logger.info(logPrefix + ' gainmaxused ' + gainmaxused + ' ' + typeof (withNegativeValues) + withNegativeValues)
+
     if (+gainresult == 0 && !withNegativeValues) {
       gainclipfree = -0.005
     } else if (+gainresult == 0 && withNegativeValues) {
-      gainclipfree = -2.5
+      gainclipfree = -1
       self.logger.info(logPrefix + ' else 1  ' + gainclipfree)
     } else if (+gainresult > 0 && (selectedsp != "convfir")) {
-      gainclipfree = ('-' + ((parseFloat(Number(gainresult).toFixed(2))) + 2.5))
+      gainclipfree = ('-' + ((parseFloat(Number(gainresult).toFixed(2))) + 1))
     } else if (+gainresult > 0 && (selectedsp == "convfir")) {
       gainclipfree = ('-' + (parseFloat(Number(gainresult))))
     }
