@@ -38,8 +38,8 @@ class TrackModel extends BaseModel_1.default {
         // Unlike other resources, tracks are mapped to TrackEntity objects before being cached.
         return SoundCloudContext_1.default.getCache().getOrSet(this.getCacheKeyForFetch('track', { trackId }), () => __classPrivateFieldGet(this, _TrackModel_instances, "m", _TrackModel_doGetTrack).call(this, trackId));
     }
-    getStreamingUrl(transcodingUrl) {
-        return this.getSoundCloudAPI().getStreamingUrl(transcodingUrl);
+    async getStreamingUrl(transcodingUrl, trackAuthorization) {
+        return (await this.getSoundCloudAPI().getStreamingData({ transcodingUrl, trackAuthorization }))?.url;
     }
 }
 _TrackModel_instances = new WeakSet(), _TrackModel_getTracksFetchPromise = async function _TrackModel_getTracksFetchPromise(params) {
@@ -73,7 +73,15 @@ _TrackModel_instances = new WeakSet(), _TrackModel_getTracksFetchPromise = async
             topFeatured: true,
             ...queryParams
         };
-        return SoundCloudContext_1.default.getCache().getOrSet(this.getCacheKeyForFetch('tracks', cacheKeyParams), () => api.getTopFeaturedTracks(queryParams));
+        return SoundCloudContext_1.default.getCache().getOrSet(this.getCacheKeyForFetch('tracks', cacheKeyParams), async () => {
+            const collection = await api.getTopFeaturedTracks(queryParams);
+            // This doesn't contain playlist / artist info now.
+            // Fetch them again using getTracks().
+            const trackIds = collection.items.map((track) => track.id).filter((id) => id !== undefined);
+            const fullTracks = await api.getTracks(trackIds);
+            collection.items = fullTracks;
+            return collection;
+        });
     }
     throw Error('Missing or invalid criteria for tracks');
 }, _TrackModel_convertFetchedTrackToEntity = function _TrackModel_convertFetchedTrackToEntity(data) {

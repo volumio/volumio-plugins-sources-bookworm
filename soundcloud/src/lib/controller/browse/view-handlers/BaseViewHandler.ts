@@ -89,6 +89,9 @@ export default class BaseViewHandler<V extends View> implements ViewHandler {
         case ModelType.Me:
           model = Model.getInstance(ModelType.Me);
           break;
+        case ModelType.Feed:
+          model = Model.getInstance(ModelType.Feed);
+          break;
         default:
           throw Error(`Unknown model type: ${type}`);
       }

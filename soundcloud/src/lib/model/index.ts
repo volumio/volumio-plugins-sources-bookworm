@@ -1,5 +1,6 @@
 import AlbumModel from './AlbumModel';
 import BaseModel from './BaseModel';
+import FeedModel from './FeedModel';
 import HistoryModel from './HistoryModel';
 import MeModel from './MeModel';
 import PlaylistModel from './PlaylistModel';
@@ -14,7 +15,8 @@ export enum ModelType {
   Track = 'Track',
   User = 'User',
   History = 'History',
-  Me = 'Me'
+  Me = 'Me',
+  Feed = 'Feed'
 }
 
 export type ModelOf<T extends ModelType> =
@@ -25,6 +27,7 @@ export type ModelOf<T extends ModelType> =
   T extends ModelType.User ? UserModel :
   T extends ModelType.History ? HistoryModel :
   T extends ModelType.Me ? MeModel :
+  T extends ModelType.Feed ? FeedModel :
   never;
 
 const MODEL_TYPE_TO_CLASS: Record<ModelType, any> = {
@@ -34,7 +37,8 @@ const MODEL_TYPE_TO_CLASS: Record<ModelType, any> = {
   [ModelType.Track]: TrackModel,
   [ModelType.User]: UserModel,
   [ModelType.History]: HistoryModel,
-  [ModelType.Me]: MeModel
+  [ModelType.Me]: MeModel,
+  [ModelType.Feed]: FeedModel
 };
 
 export default class Model {
@@ -43,11 +47,15 @@ export default class Model {
     if (MODEL_TYPE_TO_CLASS[type]) {
       return new MODEL_TYPE_TO_CLASS[type]();
     }
-    throw Error(`Model not found for type ${String(type)}`);
+    throw Error(`Model not found for type ${type}`);
   }
 
   static setAccessToken(value: string) {
     BaseModel.setAccessToken(value);
+  }
+
+  static setCookie(value: string) {
+    BaseModel.setCookie(value);
   }
 
   static setLocale(value: string) {

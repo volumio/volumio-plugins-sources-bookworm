@@ -24,7 +24,9 @@ export default abstract class BaseModel {
     static queryMaxLimit: number;
     protected getSoundCloudAPI(): SoundCloud;
     static setAccessToken(value: string): void;
+    static setCookie(value: string): void;
     hasAccessToken(): boolean;
+    hasCookie(): boolean;
     static setLocale(value: string): void;
     loopFetch<R, I, C extends LoopFetchCallbackParams, E, F extends LoopFetchResult<E>>(params: LoopFetchParams<R, I, C, E, F>): Promise<F>;
     protected getCacheKeyForFetch(resourceName: string, cacheKeyParams: Record<string, any>): string;

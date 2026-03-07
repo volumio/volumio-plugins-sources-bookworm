@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const AlbumViewHandler_1 = __importDefault(require("./AlbumViewHandler"));
+const FeedViewHandler_1 = __importDefault(require("./FeedViewHandler"));
 const HistoryViewHandler_1 = __importDefault(require("./HistoryViewHandler"));
 const LibraryViewHandler_1 = __importDefault(require("./LibraryViewHandler"));
 const PlaylistViewHandler_1 = __importDefault(require("./PlaylistViewHandler"));
@@ -21,7 +22,8 @@ const VIEW_NAME_TO_CLASS = {
     'tracks': TrackViewHandler_1.default,
     'track': TrackViewHandler_1.default,
     'history': HistoryViewHandler_1.default,
-    'library': LibraryViewHandler_1.default
+    'library': LibraryViewHandler_1.default,
+    'feed': FeedViewHandler_1.default
 };
 class ViewHandlerFactory {
     static getHandler(uri) {
