@@ -75,6 +75,8 @@
   "LOUDNESS_DOC": "Abilita volume volume",
   "LOUDNESS_THRESHOLD": "Soglia del volume di sonorità",
   "LOUDNESS_THRESHOLD_DOC": "Sotto questa soglia, viene applicata una sonorità progressiva",
+  "LOUDNESS_STRENGTH": "Intensità della sonorità",
+  "LOUDNESS_STRENGTH_DOC": "Imposta l’intensità dell’effetto di sonorità.",
   "APPLICA": "Applica",
   "VALUE_SAVED_APPLIED": "Valori salvati e applicati",
   "CHOOSE_PRESET": "Scegli un preset",

@@ -75,6 +75,8 @@
   "LOUDNESS_DOC": "Schakel volume in",
   "LOUDNESS_THRESHOLD": "Drempel voor Loudness volume",
   "LOUDNESS_THRESHOLD_DOC": "Onder deze drempel wordt een progressieve Loudness toegepast",
+  "LOUDNESS_STRENGTH": "Loudness-intensiteit",
+  "LOUDNESS_STRENGTH_DOC": "Stelt de intensiteit van het loudness-effect in.",
   "TOEPASSEN": "Toepassen",
   "VALUE_SAVED_APPLIED": "Waarden zijn opgeslagen en toegepast",
   "CHOOSE_PRESET": "Kies een voorkeuze",

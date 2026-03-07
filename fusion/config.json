@@ -129,6 +129,10 @@
         "type": "number",
         "value": 50
     },
+      "loudnessstrength": {
+        "type": "number",
+        "value": 2
+    },
     "showeq": {
         "type": "boolean",
         "value": true

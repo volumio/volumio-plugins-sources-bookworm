@@ -1,6 +1,6 @@
 /*--------------------
-// FusionDsp plugin for volumio 3. By balbuze Febuary 2026
-contribution : Nerd, Paolo Sabatino
+// FusionDsp plugin for volumio 3. By balbuze March 2026
+contribution : Nerd, Paolo Sabatino, squadgazzz
 Multi Dsp features
 Based on CamillaDsp
 ----------------------
@@ -843,7 +843,10 @@ function configureAdvancedSettings(self, uiconf, selectedsp) {
   if (self.config.get('showloudness')) {
     controls.push(
       { id: 'loudness', element: 'switch', doc: self.commandRouter.getI18nString('LOUDNESS_DOC'), label: self.commandRouter.getI18nString('LOUDNESS'), value: self.config.get('loudness'), visibleIf: { field: 'showeq', value: true } },
-      { id: 'loudnessthreshold', element: 'equalizer', label: self.commandRouter.getI18nString('LOUDNESS_THRESHOLD'), doc: self.commandRouter.getI18nString('LOUDNESS_THRESHOLD_DOC'), visibleIf: { field: 'showeq', value: true }, config: { orientation: 'horizontal', bars: [{ min: 10, max: 100, step: '1', value: self.config.get('loudnessthreshold'), ticksLabels: ['%'], tooltip: 'always' }] } }
+      { id: 'loudnessthreshold', element: 'equalizer', label: self.commandRouter.getI18nString('LOUDNESS_THRESHOLD'), doc: self.commandRouter.getI18nString('LOUDNESS_THRESHOLD_DOC'), visibleIf: { field: 'showeq', value: true }, config: { orientation: 'horizontal', bars: [{ min: 10, max: 100, step: '1', value: self.config.get('loudnessthreshold'), ticksLabels: ['%'], tooltip: 'always' }] } },
+      //{ id: 'loudnessstrength', element: 'equalizer', label: self.commandRouter.getI18nString('LOUDNESS_STRENGTH'), doc: self.commandRouter.getI18nString('LOUDNESS_STRENGTH_DOC'), visibleIf: { field: 'showeq', value: true }, config: { orientation: 'horizontal', bars: [{ min: 0, max: 2, step: '1', value: self.config.get('loudnessstrength'), ticks: [0, 1, 2], ticksLabels: ['Min', 'Medium', 'Max'], tooltip: 'show' }] } }
+      { id: 'loudnessstrength', element: 'equalizer', label: self.commandRouter.getI18nString('LOUDNESS_STRENGTH'), doc: self.commandRouter.getI18nString('LOUDNESS_STRENGTH_DOC'), visibleIf: { field: 'showeq', value: true }, config: { orientation: 'horizontal', bars: [{ value: self.config.get('loudnessstrength'), ticks: [0, 1, 2], ticksLabels: ['Min', 'Medium', 'Max'], tooltip: 'hide' }] } }
+
     );
   }
 
@@ -939,7 +942,7 @@ function configureFinalSettings(self, uiconf) {
   });
 
   const saveData = ['autoatt', 'leftlevel', 'rightlevel', 'crossfeed', 'monooutput', 'muteleft', 'muteright', 'permutchannel', 'showeq'];
-  if (self.config.get('showloudness')) saveData.push('loudness', 'loudnessthreshold');
+  if (self.config.get('showloudness')) saveData.push('loudness', 'loudnessthreshold', 'loudnessstrength');
   uiconf.sections[1].saveButton.data.push(...saveData);
 }
 
@@ -950,7 +953,7 @@ function configurePresetSelection(self, uiconf, selectedsp) {
 
   self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.value', value);
   self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.label', plabel);
-  if ((selectedsp != 'EQ3'&& selectedsp != 'purecgui')) {
+  if ((selectedsp != 'EQ3' && selectedsp != 'purecgui')) {
     try {
       const items = fs.readdirSync(pFolder);
       const itemsf = items.map(item => item.replace(/^\./, '').replace(/\.json$/, ''));
@@ -1127,6 +1130,7 @@ FusionDsp.prototype.choosedsp = function (data) {
     self.config.set('monooutput', false)
     self.config.set('loudness', false)
     self.config.set('loudnessthreshold', 50)
+    self.config.set('loudnessstrength', 2)
     self.config.set('leftlevel', 0)
     self.config.set('rightlevel', 0)
     self.config.set('delay', 0)
@@ -1183,7 +1187,7 @@ FusionDsp.prototype.getIP = function () {
   const self = this;
   var address
   var iPAddresses = self.commandRouter.executeOnPlugin('system_controller', 'network', 'getCachedIPAddresses', '');
-  self.logger.info(logPrefix+'--'+iPAddresses);
+  self.logger.info(logPrefix + '--' + iPAddresses);
   if (iPAddresses && iPAddresses.eth0 && iPAddresses.eth0 != '') {
     address = iPAddresses.eth0;
   } else if (iPAddresses && iPAddresses.wlan0 && iPAddresses.wlan0 != '' && iPAddresses.wlan0 !== '192.168.211.1') {
@@ -1385,7 +1389,7 @@ FusionDsp.prototype.startPeqGraphServer = function () {
 
           // Validate gain for types that have it at param index 1
           if (typer === 'Peaking' || typer === 'Peaking2' || typer === 'Highshelf' || typer === 'Highshelf2' ||
-              typer === 'Lowshelf' || typer === 'Lowshelf2' || typer === 'LowshelfFO' || typer === 'HighshelfFO') {
+            typer === 'Lowshelf' || typer === 'Lowshelf2' || typer === 'LowshelfFO' || typer === 'HighshelfFO') {
             var g = Number(newParams[1]);
             var gainLimit = (mode === 'EQ15' || mode === '2XEQ15') ? 10.1 : 20.1;
             if (!isFinite(g) || g <= -gainLimit || g >= gainLimit) {
@@ -4076,7 +4080,8 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
           muteright: data['muteright'] || false, // Default: false
           ldistance: data['ldistance'] || 0, // Default: 0
           rdistance: data['rdistance'] || 0, // Default: 0
-          permutchannel: data['permutchannel'] || false // Default: false
+          permutchannel: data['permutchannel'] || false, // Default: false
+          loudnessstrength: data['loudnessstrength']
         };
         self.config.set("state4Clipping", state4Clipping)
         self.logger.info(logPrefix + ' State4Clipping saved: ' + JSON.stringify(state4Clipping, null, 2));
@@ -4161,6 +4166,14 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
     let loudness = data["loudness"]
     if (loudness) {
       self.config.set('loudnessthreshold', data.loudnessthreshold)
+      /*
+      let loudnessstrength = data.loudnessstrength
+
+      while (Array.isArray(loudnessstrength)) loudnessstrength = loudnessstrength[0]
+
+      self.config.set('loudnessstrength', [0, 1, 2].includes(loudnessstrength) ? loudnessstrength : 2)
+      */
+      self.config.set('loudnessstrength', data.loudnessstrength)
       self.socket.emit('volume', '+')
       setTimeout(function () {
 
@@ -4270,7 +4283,8 @@ FusionDsp.prototype.saveequalizerpresetv = function (data) {
     self.config.get('muteright'),
     self.config.get('ldistance'),
     self.config.get('rdistance'),
-    self.config.get('permutchannel')
+    self.config.get('permutchannel'),
+    self.config.get('loudnessstrength', 2)
   ];
 
   var nbreq = self.config.get('nbreq');
@@ -4567,6 +4581,8 @@ FusionDsp.prototype.usethispreset = function (data) {
         self.config.set('rdistance', state4preset[12]);
       }
       self.config.set('permutchannel', state4preset[13]);
+      self.config.set('loudnessstrength', state4preset[14])
+
       self.config.set(selectedsp + "preset", preset);
       self.commandRouter.pushToastMessage('info', preset.replace(".json", "").replace(/^\./, "") + self.commandRouter.getI18nString('PRESET_LOADED_USED'))
 
@@ -5205,6 +5221,12 @@ FusionDsp.prototype.sendvolumelevel = function () {
     let ratio = loudnessMaxGain / loudnessRange
     let loudnessGain
 
+    let loudnessstrength = self.config.get('loudnessstrength')
+    loudnessstrength = [0, 1, 2].includes(loudnessstrength) ? loudnessstrength : 2
+
+    const profiles = [0.5, 0.75, 1]
+    let profile = profiles[loudnessstrength]
+
     if (data.volume > loudnessLowThreshold && data.volume < loudnessVolumeThreshold) {
       loudnessGain = ratio * (loudnessVolumeThreshold - data.volume)
     } else if (data.volume <= loudnessLowThreshold) {
@@ -5213,8 +5235,8 @@ FusionDsp.prototype.sendvolumelevel = function () {
       loudnessGain = 0
     }
 
-    self.logger.info(logPrefix + 'volume level for loudness ' + data.volume + ' gain applied ' + Number.parseFloat(loudnessGain).toFixed(2))
-    self.config.set('loudnessGain', Number.parseFloat(loudnessGain).toFixed(2))
+    self.logger.info(logPrefix + 'volume level for loudness ' + data.volume + ' gain applied ' + Number.parseFloat(loudnessGain).toFixed(2) * profile)
+    self.config.set('loudnessGain', Number.parseFloat(loudnessGain).toFixed(2) * profile)
     self.createCamilladspfile()
   })
 }

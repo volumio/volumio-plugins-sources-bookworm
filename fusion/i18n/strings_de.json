@@ -75,6 +75,8 @@
   "LOUDNESS_DOC": "Loudness aktivieren",
   "LOUDNESS_THRESHOLD": "Lautstärkenschwelle",
   "LOUDNESS_THRESHOLD_DOC": "Unterhalb dieser Schwelle wird eine progressive Loudness angewendet",
+  "LOUDNESS_STRENGTH": "Lautstärkeverstärkung",
+  "LOUDNESS_STRENGTH_DOC": "Legt die Intensität des Loudness-Effekts fest.",
   "BEWERBEN": "Bewerben",
   "VALUE_SAVED_APPLIED": "Werte gespeichert und übernommen",
   "CHOOSE_PRESET": "Wähle eine Voreinstellung",

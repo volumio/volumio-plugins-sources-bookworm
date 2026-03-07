@@ -189,6 +189,8 @@
   "DIFF_FILTER_TYPE_TITLE": "Types de filtre differents",
   "DOC_TOOLS_FILE_TO_PLAY": "Choisissez un fichier. Doit être dans le dossier /INTERNAL/FusionDsp/tools/",
   "LOUDNESS_THRESHOLD_DOC": "En dessous de ce seuil,un Loudness progressif est appliqué",
+  "LOUDNESS_STRENGTH": "Intensité de la sonie",
+  "LOUDNESS_STRENGTH_DOC": "Définit l’intensité de l’effet de sonie.",
   "CLICK_TO_UPDATE_LIST_DESC": "Mettre à jour la listes des casques depuis AutoEq",
   "PERMUT_CHANNEL": "Permuter L&R",
   "PERMUT_CHANNEL_DOC": "Permuter L&R",

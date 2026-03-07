@@ -75,6 +75,8 @@
   "LOUDNESS_DOC": "Enable volume loudness",
   "LOUDNESS_THRESHOLD": "Loudness volume threshold",
   "LOUDNESS_THRESHOLD_DOC": "Below this threshold, a progressiv Loudness is applied",
+  "LOUDNESS_STRENGTH": "Loudness strength",
+  "LOUDNESS_STRENGTH_DOC": "Set the intensity of loudness effect.",
   "APPLY": "Apply",
   "VALUE_SAVED_APPLIED": "Values saved and applied",
   "CHOOSE_PRESET": "Choose a preset",

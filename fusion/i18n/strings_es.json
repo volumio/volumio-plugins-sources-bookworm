@@ -75,6 +75,8 @@
   "LOUDNESS_DOC": "Habilitar volumen alto",
   "LOUDNESS_THRESHOLD": "Umbral de volumen de sonoridad",
   "LOUDNESS_THRESHOLD_DOC": "Por debajo de este umbral, se aplica un Loudness progresivo",
+  "LOUDNESS_STRENGTH": "Intensidad de sonoridad",
+  "LOUDNESS_STRENGTH_DOC": "Establece la intensidad del efecto de sonoridad.",
   "APLICAR": "Aplicar",
   "VALUE_SAVED_APPLIED": "Valores guardados y aplicados",
   "CHOOSE_PRESET": "Elige un preajuste",
