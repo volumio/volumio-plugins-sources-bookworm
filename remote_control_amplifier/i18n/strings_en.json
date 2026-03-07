@@ -1,0 +1,30 @@
+{
+  "ON": "On",
+  "OFF": "Off",
+  "PLUGIN_CONFIGURATION": "Amplifier IR Control Configuration",
+  "PLUGIN_DESCRIPTION": "Control Amplifier with IR using Volumio Events",
+  "SAVE": "Save",
+  "SETTINGS_SAVED": "Settings have been saved",
+
+  "DEVICE_NAME": "LIRC Device Name",
+  "DEVICE_NAME_DOC": "LIRC device name where IR commands will be sent (e.g., 'receiver')",
+
+  "START_BUTTON": "Start Button",
+  "START_BUTTON_DOC": "LIRC key name to send to switch the device on (e.g., KEY_POWER)",
+  "STOP_BUTTON": "Stop Button",
+  "STOP_BUTTON_DOC": "LIRC key name to send to switch the device off (e.g., KEY_POWER2)",
+
+  "VOL_UP_BUTTON": "Volume Up Button",
+  "VOL_UP_BUTTON_DOC": "LIRC key name used to increase volume",
+  "VOL_DOWN_BUTTON": "Volume Down Button",
+  "VOL_DOWN_BUTTON_DOC": "LIRC key name used to decrease volume",
+
+  "POWER_ON_ON_PLAY": "Power on on Play",
+  "POWER_ON_ON_PLAY_DOC": "Turn the amplifier on when playback starts",
+  "POWER_OFF_ON_STOP": "Power off on Stop",
+  "POWER_OFF_ON_STOP_DOC": "Turn the amplifier off when playback stops",
+  "POWER_OFF_ON_PAUSE": "Power off on Pause",
+  "POWER_OFF_ON_PAUSE_DOC": "Turn the amplifier off when playback is paused",
+  "POWER_OFF_DELAY": "Power-off Delay (s)",
+  "POWER_OFF_DELAY_DOC": "Seconds to wait before powering off after stop/pause"
+}
