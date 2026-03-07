@@ -1,0 +1,21 @@
+{
+  "PLUGIN_NAME": "Ovládanie podsvietenia LCD",
+  "GENERAL_SETTINGS": "Všeobecné nastavenia",
+  "MEASUREMENT_INTERVAL": "Merací interval (sekundy)",
+  "MEASUREMENT_INTERVAL_DOC": "Čas medzi odčítaním hodnôt zo svetelného senzora. Nižšie hodnoty poskytujú citlivejšie zmeny jasu, ale môžu zvýšiť zaťaženie CPU.",
+  "MIN_BACKLIGHT": "Minimálny jas",
+  "MIN_BACKLIGHT_DOC": "Najnižšia úroveň jasu, ktorú displej dosiahne (0-255). Zabraňuje tomu, aby sa obrazovka stala príliš tmavou.",
+  "MAX_BACKLIGHT": "Maximálny jas",
+  "MAX_BACKLIGHT_DOC": "Najvyššia úroveň jasu, ktorú displej dosiahne (0-255). Môže byť znížená na úsporu energie.",
+  "LUX_MULTIPLIER": "Násobič luxov",
+  "LUX_MULTIPLIER_DOC": "Kalibračný násobič pre senzor VEML7700. Zvýšte pre jasnejšiu odozvu, znížte pre tmavšiu odozvu.",
+  "SMOOTHING_FACTOR": "Faktor vyhladenia",
+  "SMOOTHING_FACTOR_DOC": "Ovláda rýchlosť prechodu jasu (0.0-1.0). Nižšie hodnoty vytvárajú pomalšie, plynulejšie prechody.",
+  "PLAYBACK_BOOST": "Zvýšenie jasu pri prehrávaní",
+  "PLAYBACK_BOOST_DOC": "Dodatočný jas pridaný počas prehrávania hudby (0-255). Nastavte na 0 pre vypnutie tejto funkcie.",
+  "PLAYBACK_BOOST_DURATION": "Trvanie zvýšenia po prehrávaní (sekundy)",
+  "PLAYBACK_BOOST_DURATION_DOC": "Ako dlho udržať zvýšený jas po zastavení prehrávania (0-300 sekúnd). Odporúčané: 30 sekúnd.",
+  "SAVE": "Uložiť nastavenia",
+  "SAVE_SUCCESS": "Konfigurácia úspešne uložená",
+  "SAVE_ERROR": "Chyba pri ukladaní konfigurácie"
+}
