@@ -1,3 +1,7 @@
+interface APIKey {
+    value: string;
+    targetVersion: 'web' | '3.0';
+}
 export interface OpenWeatherMapAPIConstructorOptions {
     lat?: number;
     lon?: number;
@@ -43,7 +47,8 @@ export default class OpenWeatherMapAPI {
     setCoordinates(lat: number, lon: number): void;
     setLang(lang: string): void;
     setUnits(units: string): void;
-    setApiKey(apiKey: string | null): void;
+    setApiKey(apiKey: string | null, targetVersion?: APIKey['targetVersion']): void;
     getWeather(): Promise<OpenWeatherMapAPIGetWeatherResult>;
 }
+export {};
 //# sourceMappingURL=index.d.ts.map
