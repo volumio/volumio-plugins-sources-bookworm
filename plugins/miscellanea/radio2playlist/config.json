@@ -1,0 +1,22 @@
+{
+  "enabled": {
+    "type": "boolean",
+    "value": true
+  },
+  "favoritePlaylistName": {
+    "type": "string",
+    "value": "Radio Favoriten"
+  },
+  "autoEnabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "autoPlaylistName": {
+    "type": "string",
+    "value": "Radio Favoriten"
+  },
+  "lastUsedPlaylist": {
+    "type": "string",
+    "value": ""
+  }
+}
