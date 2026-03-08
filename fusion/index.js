@@ -4435,17 +4435,32 @@ FusionDsp.prototype.deletepresetconfirm = function () {
   const self = this;
   const selectedsp = self.config.get('selectedsp');
   const preset = self.config.get(selectedsp + 'preset');
+
+  // Prevent deleting factory presets
+  if (!preset || preset.startsWith('.')) {
+    self.commandRouter.pushToastMessage(
+      'error',
+      'NOT_POSSIBLE_DELETE_FACTORY_PRESET'
+    );
+    return libQ.resolve();
+  }
+
   const filePath = presetFolder + selectedsp + '/' + preset;
 
   try {
     fs.unlinkSync(filePath);
     self.config.set(selectedsp + 'preset', '');
-    self.commandRouter.pushToastMessage('success', self.commandRouter.getI18nString('PRESET_DELETED'));
+    self.commandRouter.pushToastMessage(
+      'success',
+      self.commandRouter.getI18nString('PRESET_DELETED')
+    );
     setTimeout(function () { self.refreshUI(); }, 500);
+
   } catch (e) {
     self.logger.error(logPrefix + ' failed to delete preset: ' + e);
     self.commandRouter.pushToastMessage('error', 'Failed to delete preset');
   }
+
   return libQ.resolve();
 };
 
@@ -4605,7 +4620,7 @@ FusionDsp.prototype.usethispreset = function (data) {
         self.config.set('rdistance', state4preset[12]);
       }
       self.config.set('permutchannel', state4preset[13]);
-      self.config.set('loudnessstrength', state4preset[14])
+      self.config.set('loudnessstrength', state4preset[14]??0)
 
       self.config.set(selectedsp + "preset", preset);
       self.commandRouter.pushToastMessage('info', preset.replace(".json", "").replace(/^\./, "") + self.commandRouter.getI18nString('PRESET_LOADED_USED'))
