@@ -31,7 +31,25 @@ const presetFolder = "/data/INTERNAL/FusionDsp/presets/";
 const eq15range = [25, 40, 63, 100, 160, 250, 400, 630, 1000, 1600, 2500, 4000, 6300, 10000, 16000]//freq for graphic eq
 const baseQ = 1.4
 //const coefQ = [baseQ + 0.5, baseQ + 0.5, baseQ + 0.5, baseQ + 0.5, baseQ + 0.5, baseQ + 0.40, baseQ + 0.40, baseQ + 0.28, baseQ + 0.28, baseQ + 0.38, baseQ + 0.38, baseQ + 0.38, baseQ + 0.49, baseQ + 0.49, baseQ + 0.49]//Q for graphic EQ
-const coefQ = [1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85]
+//const coefQ = [1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85]
+//const coefQ = [1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.56, 1.5, 1.21, 1, 0.7]
+const coefQ = [
+  1.5, // 25
+  1.5, // 40
+  1.5, // 63
+  1.5, // 100
+  1.5, // 160
+  1.5, // 250
+  1.5, // 400
+  1.5, // 630
+  1.5, // 1k
+  1.5, // 1.6k
+  1.45,// 2.5k
+  1.35,// 4k
+  1.2, // 6.3k
+  1.0, // 10k
+  0.8  // 16k
+]//to get a smooth curve
 const eq3range = [185, 1300, 5500]// freq for Eq3
 const coefQ3 = [0.82, 0.4, 0.82]//Q for graphic EQ3
 const eq3type = ["Lowshelf2", "Peaking", "Highshelf2"] //Filter type for EQ3
