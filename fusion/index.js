@@ -4440,7 +4440,7 @@ FusionDsp.prototype.deletepresetconfirm = function () {
   if (!preset || preset.startsWith('.')) {
     self.commandRouter.pushToastMessage(
       'error',
-      'NOT_POSSIBLE_DELETE_FACTORY_PRESET'
+      self.commandRouter.getI18nString('NOT_POSSIBLE_DELETE_FACTORY_PRESET')
     );
     return libQ.resolve();
   }
@@ -4469,16 +4469,32 @@ FusionDsp.prototype.renamepreset = function (data) {
   const selectedsp = self.config.get('selectedsp');
   const preset = self.config.get(selectedsp + 'preset');
 
+  // No preset selected
   if (!preset || preset === 'nopreset' || preset === 'no preset' || preset === 'no preset used' || preset === 'Choose a preset') {
     self.commandRouter.pushToastMessage('warning', self.commandRouter.getI18nString('NO_PRESET_USED'));
     return libQ.resolve();
   }
 
+  // Prevent renaming factory presets
+  if (preset.trim().startsWith('.')) {
+    self.commandRouter.pushToastMessage(
+      'error',
+      self.commandRouter.getI18nString('NOT_POSSIBLE_RENAME_FACTORY_PRESET')
+    );
+    return libQ.resolve();
+  }
+
   const newName = data['newpresetname'];
+
   if (!newName || newName.trim() === '') {
     self.commandRouter.pushToastMessage('warning', self.commandRouter.getI18nString('RENAME_PRESET_EMPTY'));
     return libQ.resolve();
   }
+
+  if (newName.trim().startsWith('.')) {
+  self.commandRouter.pushToastMessage('warning', 'Preset name cannot start with "."');
+  return libQ.resolve();
+}
 
   const oldPath = presetFolder + selectedsp + '/' + preset;
   const newFileName = newName.trim() + '.json';
@@ -4487,13 +4503,19 @@ FusionDsp.prototype.renamepreset = function (data) {
   try {
     fs.renameSync(oldPath, newPath);
     self.config.set(selectedsp + 'preset', newFileName);
-    self.commandRouter.pushToastMessage('success',
-      self.commandRouter.getI18nString('PRESET_RENAMED').replace('{0}', newName.trim()));
+
+    self.commandRouter.pushToastMessage(
+      'success',
+      self.commandRouter.getI18nString('PRESET_RENAMED').replace('{0}', newName.trim())
+    );
+
     setTimeout(function () { self.refreshUI(); }, 500);
+
   } catch (e) {
     self.logger.error(logPrefix + ' failed to rename preset: ' + e);
     self.commandRouter.pushToastMessage('error', 'Failed to rename preset');
   }
+
   return libQ.resolve();
 };
 
