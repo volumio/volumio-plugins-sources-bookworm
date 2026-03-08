@@ -34,6 +34,11 @@ const baseQ = 1.4
 //const coefQ = [1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85]
 //const coefQ = [1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.56, 1.5, 1.21, 1, 0.7]
 const coefQ = [
+  1.45,1.45,1.45,1.45,1.45,
+  1.45,1.45,1.45,1.45,1.45,
+  1.40,1.35,1.25,1.10,0.90
+]/*
+const coefQ = [
   1.5, // 25
   1.5, // 40
   1.5, // 63
@@ -49,7 +54,7 @@ const coefQ = [
   1.2, // 6.3k
   1.0, // 10k
   0.8  // 16k
-]//to get a smooth curve
+]//to get a smooth curve*/
 const eq3range = [185, 1300, 5500]// freq for Eq3
 const coefQ3 = [0.82, 0.4, 0.82]//Q for graphic EQ3
 const eq3type = ["Lowshelf2", "Peaking", "Highshelf2"] //Filter type for EQ3
@@ -847,7 +852,8 @@ function configureAdvancedSettings(self, uiconf, selectedsp) {
       id: 'autoatt',
       element: 'switch',
       doc: self.commandRouter.getI18nString('AUTO_ATT_DOC'),
-      label: self.commandRouter.getI18nString('AUTO_ATT') + ' (' + (Number(self.config.get('gainapplied')) || 0) + ' dB)',
+   label: self.commandRouter.getI18nString('AUTO_ATT') + ' (' + ((Number(self.config.get('gainapplied')) || 0).toFixed(1)) + '\u200CdB)',
+     // label: self.commandRouter.getI18nString('AUTO_ATT') + ' (' + (Number(self.config.get('gainapplied')) || 0) + ' dB)',
       value: self.config.get('autoatt'),
       visibleIf: { field: 'showeq', value: true }
     }] : []),
