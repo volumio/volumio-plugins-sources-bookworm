@@ -45,8 +45,9 @@ export class PlexService {
     libraryKey: string,
     offset: number,
     limit: number,
+    sort?: string,
   ): Promise<PaginatedResult<Artist>> {
-    const raw = await this.apiClient.getArtists(libraryKey, { offset, limit });
+    const raw = await this.apiClient.getArtists(libraryKey, { offset, limit }, sort);
     return {
       items: parseArtists(raw),
       totalSize: raw.MediaContainer.totalSize ?? raw.MediaContainer.size,
@@ -74,8 +75,9 @@ export class PlexService {
     libraryKey: string,
     offset: number,
     limit: number,
+    sort?: string,
   ): Promise<PaginatedResult<Album>> {
-    const raw = await this.apiClient.getAlbums(libraryKey, { offset, limit });
+    const raw = await this.apiClient.getAlbums(libraryKey, { offset, limit }, sort);
     return {
       items: parseAlbums(raw),
       totalSize: raw.MediaContainer.totalSize ?? raw.MediaContainer.size,
