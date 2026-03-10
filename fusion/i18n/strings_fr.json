@@ -222,5 +222,9 @@
   "CANCEL": "Annuler",
   "PRESET_DELETED": "Pré réglage supprimé avec succès",
   "PRESET_RENAMED": "Pré réglage renommé en \"{0}\"",
-  "RENAME_PRESET_EMPTY": "Veuillez saisir un nouveau nom pour le pré réglage"
+  "RENAME_PRESET_EMPTY": "Veuillez saisir un nouveau nom pour le pré réglage",
+  "NOT_POSSIBLE_DELETE_FACTORY_PRESET": "Impossible de supprimer un preset d’usine !",
+  "FAIL_RENAME_PRESET": "Impossible de renommer le preset",
+  "FAIL_TO_DEL_PRESET": "Impossible de supprimer le preset",
+  "WRONG_PRESET_NAME": "Le nom du preset ne peut pas commencer par '.'"
 }

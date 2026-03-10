@@ -34,9 +34,9 @@ const baseQ = 1.4
 //const coefQ = [1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85]
 //const coefQ = [1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.56, 1.5, 1.21, 1, 0.7]
 const coefQ = [
-  1.45,1.45,1.45,1.45,1.45,
-  1.45,1.45,1.45,1.45,1.45,
-  1.40,1.35,1.25,1.10,0.90
+  1.45, 1.45, 1.45, 1.45, 1.45,
+  1.45, 1.45, 1.45, 1.45, 1.45,
+  1.40, 1.35, 1.25, 1.10, 0.90
 ]/*
 const coefQ = [
   1.5, // 25
@@ -852,8 +852,8 @@ function configureAdvancedSettings(self, uiconf, selectedsp) {
       id: 'autoatt',
       element: 'switch',
       doc: self.commandRouter.getI18nString('AUTO_ATT_DOC'),
-   label: self.commandRouter.getI18nString('AUTO_ATT') + ' (' + ((Number(self.config.get('gainapplied')) || 0).toFixed(1)) + '\u200CdB)',
-     // label: self.commandRouter.getI18nString('AUTO_ATT') + ' (' + (Number(self.config.get('gainapplied')) || 0) + ' dB)',
+      label: self.commandRouter.getI18nString('AUTO_ATT') + ' (' + ((Number(self.config.get('gainapplied')) || 0).toFixed(1)) + '\u200CdB)',
+      // label: self.commandRouter.getI18nString('AUTO_ATT') + ' (' + (Number(self.config.get('gainapplied')) || 0) + ' dB)',
       value: self.config.get('autoatt'),
       visibleIf: { field: 'showeq', value: true }
     }] : []),
@@ -4458,8 +4458,8 @@ FusionDsp.prototype.deletepresetconfirm = function () {
 
   } catch (e) {
     self.logger.error(logPrefix + ' failed to delete preset: ' + e);
-    self.commandRouter.pushToastMessage('error', 'Failed to delete preset');
-  }
+    self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('FAIL_TO_DEL_PRESET'));
+  };
 
   return libQ.resolve();
 };
@@ -4492,9 +4492,9 @@ FusionDsp.prototype.renamepreset = function (data) {
   }
 
   if (newName.trim().startsWith('.')) {
-  self.commandRouter.pushToastMessage('warning', 'Preset name cannot start with "."');
-  return libQ.resolve();
-}
+    self.commandRouter.pushToastMessage('warning', self.commandRouter.getI18nString('WRONG_PRESET_NAME'));
+    return libQ.resolve();
+  }
 
   const oldPath = presetFolder + selectedsp + '/' + preset;
   const newFileName = newName.trim() + '.json';
@@ -4513,7 +4513,7 @@ FusionDsp.prototype.renamepreset = function (data) {
 
   } catch (e) {
     self.logger.error(logPrefix + ' failed to rename preset: ' + e);
-    self.commandRouter.pushToastMessage('error', 'Failed to rename preset');
+    self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('FAIL_RENAME_PRESET'));
   }
 
   return libQ.resolve();
@@ -4642,7 +4642,7 @@ FusionDsp.prototype.usethispreset = function (data) {
         self.config.set('rdistance', state4preset[12]);
       }
       self.config.set('permutchannel', state4preset[13]);
-      self.config.set('loudnessstrength', state4preset[14]??0)
+      self.config.set('loudnessstrength', state4preset[14] ?? 0)
 
       self.config.set(selectedsp + "preset", preset);
       self.commandRouter.pushToastMessage('info', preset.replace(".json", "").replace(/^\./, "") + self.commandRouter.getI18nString('PRESET_LOADED_USED'))
