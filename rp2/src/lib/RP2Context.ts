@@ -10,6 +10,7 @@ import {
 import { RadioParadise } from '@patrickkfkan/rp.js';
 import { MPVPlayer } from './playback/MPVPlayer';
 import { StateTransformer } from './playback/StateTransformer';
+import { Cache, CacheKey, CacheRecord } from './Cache';
 
 export type I18nKey = keyof typeof I18nSchema;
 
@@ -24,6 +25,7 @@ class RP2Context {
   #data: Record<string, any>;
   #pluginContext?: any;
   #pluginConfig?: any;
+  #cache: Cache;
 
   #i18n: Record<string, string | Record<string, string>>;
   #i18nDefaults: Record<string, string | Record<string, string>>;
@@ -32,6 +34,7 @@ class RP2Context {
   constructor() {
     this.#singletons = {};
     this.#data = {};
+    this.#cache = new Cache();
     this.#i18n = {};
     this.#i18nDefaults = {};
     this.#i18CallbackRegistered = false;
@@ -146,6 +149,13 @@ class RP2Context {
     this.#pluginConfig.set(key, schema.json ? JSON.stringify(value) : value);
   }
 
+  cacheOrGet<K extends CacheKey>(
+    key: K,
+    get: () => CacheRecord<K>
+  ): CacheRecord<K> {
+    return this.#cache.cacheOrGet(key, get);
+  }
+
   getRpjsLib() {
     let rpjs = this.get<RadioParadise>(STORE_KEYS['rp.js']);
     const logger = this.getLogger();
@@ -233,6 +243,7 @@ class RP2Context {
     this.#pluginConfig = null;
     this.#singletons = {};
     this.#data = {};
+    this.#cache.clear();
   }
 
   #getSingleton(key: string, getValue: () => any): any {

@@ -1,5 +1,5 @@
 {
-  "include": ["./**/*.ts", "../tests/oldCode/TS/AlbumViewHandler.ts.old", "lib/controller/browse/view-handlers/PlaylistViewHandler.ts.old"],
+  "include": ["./**/*.ts"],
   "compilerOptions": {
     "rootDir": ".",
     "target": "es2020",

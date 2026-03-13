@@ -8,6 +8,7 @@ import { LRUCache } from 'lru-cache';
 import { convert } from 'html-to-text';
 import rp2 from '../RP2Context';
 import {
+  Episode,
   type AlbumInfo,
   type ArtistInfo,
   type SongInfo
@@ -16,85 +17,98 @@ import {
 type CacheKey =
   | `song-info-${string}`
   | `artist-info-${string}`
-  | `album-info-${string}`;
+  | `album-info-${string}`
+  | `episode-${string}`;
 type CacheRecord<K extends CacheKey> =
   K extends `song-info-${string}` ? Promise<SongInfo | null>
   : K extends `artist-info-${string}` ? Promise<ArtistInfo | null>
   : K extends `album-info-${string}` ? Promise<AlbumInfo | null>
+  : K extends `episode-${string}` ? Promise<Episode | null>
   : never;
-type CacheValue = Promise<SongInfo | ArtistInfo | AlbumInfo | null>;
+type CacheValue = Promise<SongInfo | ArtistInfo | AlbumInfo | Episode | null>;
 
 export class RP2NowPlayingMetadataProvider implements NowPlayingMetadataProvider {
   version: '1.0.0';
 
-  #cache: LRUCache<CacheKey, CacheValue>;
-
   constructor() {
     this.version = '1.0.0';
-    this.#cache = new LRUCache({
-      max: 100,
-      ttl: 600000 // 10mins
-    });
-  }
-
-  #cacheOrGet<K extends CacheKey>(
-    key: K,
-    get: () => CacheRecord<K>
-  ): CacheRecord<K> {
-    let v = this.#cache.get(key) as CacheRecord<K> | undefined;
-    if (v !== undefined) {
-      return v;
-    }
-    v = get();
-    this.#cache.set(key, v);
-    return v;
   }
 
   async #rpGetSongInfo() {
     const rp = rp2.getRpjsLib();
     const track = rp.getStatus().track;
-    const trackId = track?.id;
-    // Metadata only available for track type 'M' (music)
-    if (!track || !trackId || track.type !== 'M') {
-      return null;
+    if (track && track.type === 'M' && track.id) {
+      const trackId = track.id;
+      return {
+        type: 'song' as const,
+        info: await rp2.cacheOrGet(`song-info-${trackId}`, () =>
+          rp.getSongInfo({ songId: trackId })
+        )
+      };
     }
-    return await this.#cacheOrGet(`song-info-${trackId}`, () =>
-      rp.getSongInfo({ song_id: trackId })
-    );
+    if (track && track.type === 'T' && track.episodeId) {
+      const episodeId = track.episodeId;
+      return {
+        type: 'episode' as const,
+        info: await rp2.cacheOrGet(`episode-${episodeId}`, () =>
+          rp.getEpisode({ episodeId: episodeId })
+        )
+      };
+    }
+    return null;
   }
 
   async getSongInfo(songTitle: string): Promise<MetadataSongInfo | null> {
     try {
-      const info = await this.#rpGetSongInfo();
+      const { type: infoType, info } = await this.#rpGetSongInfo() || {};
       if (!info) {
         return null;
       }
-      const song: MetadataSongInfo = {
-        title: info.title || songTitle,
-        image: info.cover,
-        artist:
-          info.artist?.name ? await this.getArtistInfo(info.artist.name) : null,
-        album:
-          info.album?.name ?
-            await this.getAlbumInfo(info.album.name, info.artist?.name)
-          : null,
-        description: info.wiki_html ? this.#htmlToText(info.wiki_html) : null
-      };
-      if (info.timed_lyrics && info.timed_lyrics.length > 0) {
-        song.lyrics = {
-          type: 'synced',
-          lines: info.timed_lyrics.map(({ text, time }) => ({
-            text,
-            start: time
-          }))
-        };
-      } else if (info.lyrics) {
-        song.lyrics = {
-          type: 'html',
-          lines: info.lyrics
-        };
+      switch (infoType) {
+        case 'song': {
+          const song: MetadataSongInfo = {
+            title: info.title || songTitle,
+            image: info.cover,
+            artist:
+              info.artist?.name ? await this.getArtistInfo(info.artist.name) : null,
+            album:
+              info.album?.name ?
+                await this.getAlbumInfo(info.album.name, info.artist?.name)
+              : null,
+            description: info.wikiHtml ? this.#htmlToText(info.wikiHtml) : null
+          };
+          if (info.timedLyrics && info.timedLyrics.length > 0) {
+            song.lyrics = {
+              type: 'synced',
+              lines: info.timedLyrics.map(({ text, time }) => ({
+                text,
+                start: time
+              }))
+            };
+          } else if (info.lyrics) {
+            song.lyrics = {
+              type: 'html',
+              lines: info.lyrics
+            };
+          }
+          return song;        
+        }
+        case 'episode': {
+          const episode: MetadataSongInfo = {
+            title: info.title,
+            image: info.episodeImage.large,
+            artist: {
+              name: info.guests.map((guest) => guest.name).join(', '),
+              image: info.bioImage.large,
+              description: info.guestBio ? this.#htmlToText(info.guestBio) : null
+            },
+            description: info.overview ? this.#htmlToText(info.overview) : null
+          }
+          return episode;
+        }
+        default:
+          return null;
       }
-      return song;
     } catch (error: unknown) {
       rp2
         .getLogger()
@@ -109,24 +123,30 @@ export class RP2NowPlayingMetadataProvider implements NowPlayingMetadataProvider
   ): Promise<MetadataAlbumInfo | null> {
     try {
       const rp = rp2.getRpjsLib();
-      const songInfo = await this.#rpGetSongInfo();
-      const albumId = songInfo?.album?.id;
-      if (!albumId) {
-        return null;
+      const { type: infoType, info } = await this.#rpGetSongInfo() || {};
+      switch (infoType) {
+        case 'song': {
+          const albumId = info?.album?.id;
+          if (!albumId) {
+            return null;
+          }
+          const albumInfo = await rp2.cacheOrGet(`album-info-${albumId}`, () =>
+            rp.getAlbumInfo({ albumId: albumId })
+          );
+          if (!albumInfo) {
+            return null;
+          }
+          const album: MetadataAlbumInfo = {
+            title: albumInfo.name || albumTitle,
+            image: albumInfo.cover,
+            artist: artistName ? await this.getArtistInfo(artistName) : null,
+            releaseDate: albumInfo.releaseDate
+          };
+          return album;
+        }
+        default:
+          return null;
       }
-      const albumInfo = await this.#cacheOrGet(`album-info-${albumId}`, () =>
-        rp.getAlbumInfo({ album_id: albumId })
-      );
-      if (!albumInfo) {
-        return null;
-      }
-      const album: MetadataAlbumInfo = {
-        title: albumInfo.name || albumTitle,
-        image: albumInfo.cover,
-        artist: artistName ? await this.getArtistInfo(artistName) : null,
-        releaseDate: albumInfo.release_date
-      };
-      return album;
     } catch (error: unknown) {
       rp2
         .getLogger()
@@ -138,23 +158,40 @@ export class RP2NowPlayingMetadataProvider implements NowPlayingMetadataProvider
   async getArtistInfo(artistName: string): Promise<MetadataArtistInfo | null> {
     try {
       const rp = rp2.getRpjsLib();
-      const songInfo = await this.#rpGetSongInfo();
-      const artistId = songInfo?.artist?.id;
-      if (!artistId) {
-        return null;
+      const { type: infoType, info } = await this.#rpGetSongInfo() || {};
+      switch (infoType) {
+        case 'song': {
+          const artistId = info?.artist?.id;
+          if (!artistId) {
+            return null;
+          }
+          const artistInfo = await rp2.cacheOrGet(`artist-info-${artistId}`, () =>
+            rp.getArtistInfo({ artistId })
+          );
+          if (!artistInfo) {
+            return null;
+          }
+          const artist: MetadataArtistInfo = {
+            name: artistInfo.name || artistName,
+            image: artistInfo.images?.default,
+            description: artistInfo.bio ? this.#htmlToText(artistInfo.bio) : null
+          };
+          return artist;
+        }
+        case 'episode': {
+          if (!info) {
+            return null;
+          }
+          return {
+            name: info.guests.map((guest) => guest.name).join(', '),
+            image: info.bioImage.large,
+            description: info.guestBio ? this.#htmlToText(info.guestBio) : null
+          };
+        }
+        default:
+          return null;
       }
-      const artistInfo = await this.#cacheOrGet(`artist-info-${artistId}`, () =>
-        rp.getArtistInfo({ artist_id: artistId })
-      );
-      if (!artistInfo) {
-        return null;
-      }
-      const artist: MetadataArtistInfo = {
-        name: artistInfo.name || artistName,
-        image: artistInfo.images?.default,
-        description: artistInfo.bio ? this.#htmlToText(artistInfo.bio) : null
-      };
-      return artist;
+      
     } catch (error: unknown) {
       rp2
         .getLogger()
@@ -174,9 +211,5 @@ export class RP2NowPlayingMetadataProvider implements NowPlayingMetadataProvider
     return text
       .replace(/\n\s*\n\s*\n+/g, '\n\n') // Collapses 2+ blank lines into 1
       .trim();
-  }
-
-  reset() {
-    this.#cache.clear();
   }
 }

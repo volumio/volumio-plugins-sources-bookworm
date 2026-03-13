@@ -4,7 +4,7 @@ import libQ from 'kew';
 
 export interface View {
   name: string;
-  params: Record<string, string>;
+  params: Record<string, string | undefined>;
 }
 
 /**
@@ -13,7 +13,8 @@ export interface View {
  * @returns
  */
 export function parseUri(uri: string) {
-  if (!uri.startsWith('rp2/')) {
+  const splitted = uri.split('/');
+  if (splitted[0] !== 'rp2') {
     return [];
   }
   const views = uri.split('/').reduce<View[]>((result, segment, i) => {

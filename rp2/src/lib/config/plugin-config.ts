@@ -14,12 +14,14 @@ export interface PluginConfigSchema {
   audioQuality: PluginConfigSchemaEntry<AudioQuality>;
   persistSession: PluginConfigSchemaEntry<boolean>;
   sessionData: PluginConfigSchemaEntry<string | null>;
+  showChannel: PluginConfigSchemaEntry<boolean>;
 }
 
 export const PLUGIN_CONFIG_SCHEMA: PluginConfigSchema = {
   audioQuality: { defaultValue: AudioQuality.Flac, json: false },
   persistSession: { defaultValue: true, json: false },
-  sessionData: { defaultValue: null, json: false }
+  sessionData: { defaultValue: null, json: false },
+  showChannel: { defaultValue: true, json: false }
 };
 
 export function getAudioQualityOptions() {

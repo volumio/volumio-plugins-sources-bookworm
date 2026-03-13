@@ -1,6 +1,6 @@
 {
   "name": "rp2",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Play Radio Paradise channels with the ability to pause, seek and skip tracks.",
   "main": "./dist/index.js",
   "scripts": {
@@ -53,7 +53,7 @@
     "winston": "^3.8.2"
   },
   "dependencies": {
-    "@patrickkfkan/rp.js": "^1.0.0",
+    "@patrickkfkan/rp.js": "^2.0.0",
     "html-to-text": "^9.0.5",
     "kew": "^0.7.0",
     "lru-cache": "^11.2.6",

@@ -7,12 +7,11 @@ function getQueueItems(uri) {
     if (!view) {
         throw Error(`Invalid URI "${uri}"`);
     }
-    const { name: viewName, params } = view;
-    if (viewName !== 'channel' || !params.qi) {
+    if (!view.params.qi) {
         throw Error(`Invalid URI "${uri}"`);
     }
     try {
-        const queueItem = JSON.parse(params.qi);
+        const queueItem = JSON.parse(view.params.qi);
         return Promise.resolve([queueItem]);
     }
     catch (error) {

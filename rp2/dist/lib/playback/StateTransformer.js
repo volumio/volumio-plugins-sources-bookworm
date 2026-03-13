@@ -64,6 +64,14 @@ class StateTransformer {
             transformed.bitrate = undefined;
             transformed.bitdepth = undefined;
         }
+        if (RP2Context_1.default.getConfigValue('showChannel')) {
+            if (!transformed.samplerate) {
+                transformed.samplerate = channel.title;
+            }
+            else {
+                transformed.samplerate = `${transformed.samplerate} - ${channel.title}`;
+            }
+        }
         return transformed;
     }
 }

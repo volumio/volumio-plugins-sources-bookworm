@@ -10,15 +10,28 @@ class PlayController {
     /**
      * track.uri:
      * rp2/channel@id=...
+     * rp2/episode@id=...@channel=...
+     * rp2/episodes@channel=...
      */
     async clearAddPlayTrack(track) {
         RP2Context_1.default.getLogger().info(`[rp2] clearAddPlayTrack: ${track.uri}`);
         const view = (0, util_1.parseUri)(track.uri).pop();
-        if (!view || view.name !== 'channel' || !view.params.id) {
+        if (!view) {
             throw Error(`Invalid URI "${track.uri}`);
         }
         const rpjs = RP2Context_1.default.getRpjsLib();
-        await rpjs.play(view.params.id);
+        if (view.name === 'channel' && view.params.id) {
+            await rpjs.play(view.params.id);
+        }
+        else if (view.name === 'episode' && view.params.id && view.params.channel) {
+            await rpjs.play(view.params.channel, view.params.id);
+        }
+        else if (view.name === 'episodes' && view.params.channel) {
+            await rpjs.play(view.params.channel);
+        }
+        else {
+            throw Error(`Invalid URI "${track.uri}`);
+        }
         if (RP2Context_1.default.getConfigValue('persistSession')) {
             RP2Context_1.default.setConfigValue('sessionData', rpjs.getSessionData());
         }
