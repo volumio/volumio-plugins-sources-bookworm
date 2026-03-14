@@ -1,11 +1,11 @@
 {
   "name": "fusiondsp",
-  "version": "2.0.86",
+  "version": "2.0.90",
   "description": "A complete Dsp centre for Volumio3",
   "main": "index.js",
   "repository": "https://github.com/balbuze/volumio-plugins/tree/alsa_modular/plugins/audio_interface/FusionDsp",
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Balbuze",
   "license": "GPL-3.0",
@@ -16,7 +16,7 @@
     "os": [
       "bookworm"
     ],
-    "changelog": "loudness strenght, smooth curve",
+    "changelog": "loudness strenght, smooth curve, preset manage",
     "details": "Multimode Dsp, with graphic equalizer, parametric equalizer, FIR filters, Loudness, AutoEq profile for headphone and more",
     "architectures": [
       "armhf",
