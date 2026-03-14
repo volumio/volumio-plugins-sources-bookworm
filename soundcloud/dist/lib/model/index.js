@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ModelType = void 0;
 const AlbumModel_1 = __importDefault(require("./AlbumModel"));
 const BaseModel_1 = __importDefault(require("./BaseModel"));
+const FeedModel_1 = __importDefault(require("./FeedModel"));
 const HistoryModel_1 = __importDefault(require("./HistoryModel"));
 const MeModel_1 = __importDefault(require("./MeModel"));
 const PlaylistModel_1 = __importDefault(require("./PlaylistModel"));
@@ -21,6 +22,7 @@ var ModelType;
     ModelType["User"] = "User";
     ModelType["History"] = "History";
     ModelType["Me"] = "Me";
+    ModelType["Feed"] = "Feed";
 })(ModelType || (exports.ModelType = ModelType = {}));
 const MODEL_TYPE_TO_CLASS = {
     [ModelType.Album]: AlbumModel_1.default,
@@ -29,17 +31,21 @@ const MODEL_TYPE_TO_CLASS = {
     [ModelType.Track]: TrackModel_1.default,
     [ModelType.User]: UserModel_1.default,
     [ModelType.History]: HistoryModel_1.default,
-    [ModelType.Me]: MeModel_1.default
+    [ModelType.Me]: MeModel_1.default,
+    [ModelType.Feed]: FeedModel_1.default
 };
 class Model {
     static getInstance(type) {
         if (MODEL_TYPE_TO_CLASS[type]) {
             return new MODEL_TYPE_TO_CLASS[type]();
         }
-        throw Error(`Model not found for type ${String(type)}`);
+        throw Error(`Model not found for type ${type}`);
     }
     static setAccessToken(value) {
         BaseModel_1.default.setAccessToken(value);
+    }
+    static setCookie(value) {
+        BaseModel_1.default.setCookie(value);
     }
     static setLocale(value) {
         BaseModel_1.default.setLocale(value);

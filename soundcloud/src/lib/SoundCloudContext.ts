@@ -3,7 +3,7 @@ import format from 'string-format';
 import fs from 'fs-extra';
 import type winston from 'winston';
 import Cache from './util/Cache';
-import { PLUGIN_CONFIG_SCHEMA, type PluginConfigKey, type PluginConfigValue } from './PluginConfig';
+import { PLUGIN_CONFIG_SCHEMA, type PluginConfigKey, type PluginConfigValue } from './config/PluginConfig';
 
 export type I18nKey = keyof typeof I18nSchema;
 
@@ -71,7 +71,7 @@ class SoundCloudContext {
 
   getErrorMessage(message: string, error: any, stack = true): string {
     let result = message;
-    if (typeof error == 'object') {
+    if (error && typeof error == 'object') {
       if (error.message) {
         result += ` ${error.message}`;
       }
@@ -81,6 +81,9 @@ class SoundCloudContext {
     }
     else if (typeof error == 'string') {
       result += ` ${error}`;
+    }
+    else if (error) {
+      result += ` ${String(error)}`;
     }
     return result.trim();
   }
