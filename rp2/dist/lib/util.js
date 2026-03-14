@@ -15,7 +15,8 @@ const kew_1 = __importDefault(require("kew"));
  * @returns
  */
 function parseUri(uri) {
-    if (!uri.startsWith('rp2/')) {
+    const splitted = uri.split('/');
+    if (splitted[0] !== 'rp2') {
         return [];
     }
     const views = uri.split('/').reduce((result, segment, i) => {

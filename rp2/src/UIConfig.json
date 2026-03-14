@@ -17,7 +17,8 @@
         "label": "TRANSLATE.RP2_SAVE",
         "data": [
           "audioQuality",
-          "persistSession"
+          "persistSession",
+          "showChannel"
         ]
       },
       "content": [
@@ -35,6 +36,12 @@
           "id": "persistSession",
           "element": "switch",
           "label": "TRANSLATE.RP2_PERSIST_SESSION",
+          "value": true
+        },
+        {
+          "id": "showChannel",
+          "element": "switch",
+          "label": "TRANSLATE.RP2_SHOW_CHANNEL",
           "value": true
         },
         {

@@ -50,6 +50,7 @@ class ControllerRP2 {
     }
     async configSaveGeneralSettings(data) {
         RP2Context_1.default.setConfigValue('persistSession', !!data['persistSession']);
+        RP2Context_1.default.setConfigValue('showChannel', !!data['showChannel']);
         const audioQuality = data['audioQuality']?.value;
         if (audioQuality) {
             RP2Context_1.default.setConfigValue('audioQuality', audioQuality);
@@ -73,7 +74,6 @@ class ControllerRP2 {
     onStop() {
         __classPrivateFieldGet(this, _ControllerRP2_commandRouter, "f").volumioRemoveToBrowseSources(SERVICE_NAME);
         __classPrivateFieldSet(this, _ControllerRP2_playController, null, "f");
-        __classPrivateFieldGet(this, _ControllerRP2_nowPlayingMetadataProvider, "f")?.reset();
         __classPrivateFieldSet(this, _ControllerRP2_nowPlayingMetadataProvider, null, "f");
         return (0, util_1.jsPromiseToKew)((async () => {
             //await this.#playController?.reset();
@@ -164,6 +164,8 @@ _ControllerRP2_context = new WeakMap(), _ControllerRP2_config = new WeakMap(), _
     };
     generalUIConf.content.persistSession.value =
         RP2Context_1.default.getConfigValue('persistSession');
+    generalUIConf.content.showChannel.value =
+        RP2Context_1.default.getConfigValue('showChannel');
     return uiconf;
 }, _ControllerRP2_addToBrowseSources = function _ControllerRP2_addToBrowseSources() {
     const source = {

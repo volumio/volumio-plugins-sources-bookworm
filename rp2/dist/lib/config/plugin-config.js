@@ -10,7 +10,8 @@ const RP2Context_1 = __importDefault(require("../RP2Context"));
 exports.PLUGIN_CONFIG_SCHEMA = {
     audioQuality: { defaultValue: rp_js_1.AudioQuality.Flac, json: false },
     persistSession: { defaultValue: true, json: false },
-    sessionData: { defaultValue: null, json: false }
+    sessionData: { defaultValue: null, json: false },
+    showChannel: { defaultValue: true, json: false }
 };
 function getAudioQualityOptions() {
     return [

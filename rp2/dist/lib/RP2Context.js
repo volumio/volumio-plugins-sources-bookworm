@@ -13,7 +13,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _RP2Context_instances, _RP2Context_singletons, _RP2Context_data, _RP2Context_pluginContext, _RP2Context_pluginConfig, _RP2Context_i18n, _RP2Context_i18nDefaults, _RP2Context_i18CallbackRegistered, _RP2Context_getPlayer, _RP2Context_getSingleton, _RP2Context_loadI18n, _RP2Context_onSystemLanguageChanged;
+var _RP2Context_instances, _RP2Context_singletons, _RP2Context_data, _RP2Context_pluginContext, _RP2Context_pluginConfig, _RP2Context_cache, _RP2Context_i18n, _RP2Context_i18nDefaults, _RP2Context_i18CallbackRegistered, _RP2Context_getPlayer, _RP2Context_getSingleton, _RP2Context_loadI18n, _RP2Context_onSystemLanguageChanged;
 Object.defineProperty(exports, "__esModule", { value: true });
 const string_format_1 = __importDefault(require("string-format"));
 const fs_extra_1 = __importDefault(require("fs-extra"));
@@ -21,6 +21,7 @@ const plugin_config_1 = require("./config/plugin-config");
 const rp_js_1 = require("@patrickkfkan/rp.js");
 const MPVPlayer_1 = require("./playback/MPVPlayer");
 const StateTransformer_1 = require("./playback/StateTransformer");
+const Cache_1 = require("./Cache");
 const STORE_KEYS = {
     'rp.js': 'rp.js',
     player: 'player',
@@ -33,11 +34,13 @@ class RP2Context {
         _RP2Context_data.set(this, void 0);
         _RP2Context_pluginContext.set(this, void 0);
         _RP2Context_pluginConfig.set(this, void 0);
+        _RP2Context_cache.set(this, void 0);
         _RP2Context_i18n.set(this, void 0);
         _RP2Context_i18nDefaults.set(this, void 0);
         _RP2Context_i18CallbackRegistered.set(this, void 0);
         __classPrivateFieldSet(this, _RP2Context_singletons, {}, "f");
         __classPrivateFieldSet(this, _RP2Context_data, {}, "f");
+        __classPrivateFieldSet(this, _RP2Context_cache, new Cache_1.Cache(), "f");
         __classPrivateFieldSet(this, _RP2Context_i18n, {}, "f");
         __classPrivateFieldSet(this, _RP2Context_i18nDefaults, {}, "f");
         __classPrivateFieldSet(this, _RP2Context_i18CallbackRegistered, false, "f");
@@ -127,6 +130,9 @@ class RP2Context {
         const schema = plugin_config_1.PLUGIN_CONFIG_SCHEMA[key];
         __classPrivateFieldGet(this, _RP2Context_pluginConfig, "f").set(key, schema.json ? JSON.stringify(value) : value);
     }
+    cacheOrGet(key, get) {
+        return __classPrivateFieldGet(this, _RP2Context_cache, "f").cacheOrGet(key, get);
+    }
     getRpjsLib() {
         let rpjs = this.get(STORE_KEYS['rp.js']);
         const logger = this.getLogger();
@@ -187,6 +193,7 @@ class RP2Context {
         __classPrivateFieldSet(this, _RP2Context_pluginConfig, null, "f");
         __classPrivateFieldSet(this, _RP2Context_singletons, {}, "f");
         __classPrivateFieldSet(this, _RP2Context_data, {}, "f");
+        __classPrivateFieldGet(this, _RP2Context_cache, "f").clear();
     }
     getI18n(key, ...formatValues) {
         let str;
@@ -210,7 +217,7 @@ class RP2Context {
         return __classPrivateFieldGet(this, _RP2Context_pluginContext, "f")?.coreCommand || null;
     }
 }
-_RP2Context_singletons = new WeakMap(), _RP2Context_data = new WeakMap(), _RP2Context_pluginContext = new WeakMap(), _RP2Context_pluginConfig = new WeakMap(), _RP2Context_i18n = new WeakMap(), _RP2Context_i18nDefaults = new WeakMap(), _RP2Context_i18CallbackRegistered = new WeakMap(), _RP2Context_instances = new WeakSet(), _RP2Context_getPlayer = function _RP2Context_getPlayer() {
+_RP2Context_singletons = new WeakMap(), _RP2Context_data = new WeakMap(), _RP2Context_pluginContext = new WeakMap(), _RP2Context_pluginConfig = new WeakMap(), _RP2Context_cache = new WeakMap(), _RP2Context_i18n = new WeakMap(), _RP2Context_i18nDefaults = new WeakMap(), _RP2Context_i18CallbackRegistered = new WeakMap(), _RP2Context_instances = new WeakSet(), _RP2Context_getPlayer = function _RP2Context_getPlayer() {
     let player = this.get(STORE_KEYS['player']);
     if (!player) {
         player = new MPVPlayer_1.MPVPlayer();

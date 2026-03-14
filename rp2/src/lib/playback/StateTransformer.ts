@@ -55,6 +55,13 @@ export class StateTransformer implements VolumioStateTranformer {
       transformed.bitrate = undefined;
       transformed.bitdepth = undefined;
     }
+    if (rp2.getConfigValue('showChannel')) {
+      if (!transformed.samplerate) {
+        transformed.samplerate = channel.title;
+      } else {
+        transformed.samplerate = `${transformed.samplerate} - ${channel.title}`;
+      }
+    }
     return transformed;
   }
 }
