@@ -1,7 +1,7 @@
 {
   "name": "fusiondsp",
   "version": "2.0.91",
-  "description": "A complete Dsp centre for Volumio4",
+  "description": "A complete Dsp centre for Volumio",
   "main": "index.js",
   "repository": "https://github.com/balbuze/volumio-plugins/tree/alsa_modular/plugins/audio_interface/FusionDsp",
   "scripts": {
@@ -28,6 +28,7 @@
     "child_process": "*",
     "fs-extra": "^8.1.0",
     "kew": "^0.7.0",
+    "msgpack-lite": "^0.1.26",
     "socket.io": "^2.3.0",
     "socket.io-client": "^1.7.4",
     "v-conf": "^1.4.3",
