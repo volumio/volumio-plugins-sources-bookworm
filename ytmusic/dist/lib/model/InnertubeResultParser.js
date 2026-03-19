@@ -1653,4 +1653,3 @@ _a = InnertubeResultParser, _InnertubeResultParser_parseWatchContinuationEndpoin
     return ['is', 'as', 'hasKey', 'key'].every((fn) => Reflect.has(el, fn) && typeof el[fn] === 'function');
 };
 exports.default = InnertubeResultParser;
-//# sourceMappingURL=InnertubeResultParser.js.map

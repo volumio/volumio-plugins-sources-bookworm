@@ -36,4 +36,3 @@ class Model {
     }
 }
 exports.default = Model;
-//# sourceMappingURL=index.js.map

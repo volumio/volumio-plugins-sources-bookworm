@@ -85,6 +85,9 @@ class YTMusicContext {
             if (error.message) {
                 result += ` ${error.message}`;
             }
+            if (error.info) { // InnertubeError has this
+                result += `: ${error.info}`;
+            }
             if (stack && error.stack) {
                 result += ` ${error.stack}`;
             }
@@ -186,4 +189,3 @@ _YTMusicContext_singletons = new WeakMap(), _YTMusicContext_data = new WeakMap()
     __classPrivateFieldGet(this, _YTMusicContext_instances, "m", _YTMusicContext_loadI18n).call(this);
 };
 exports.default = new YTMusicContext();
-//# sourceMappingURL=YTMusicContext.js.map

@@ -108,12 +108,9 @@ export default class PlayController {
     await this.#doPlay(safeStreamUrl, track);
 
     if (ytmusic.getConfigValue('addToHistory')) {
-      try {
-        void playbackInfo.addToHistory();
-      }
-      catch (error) {
-        ytmusic.getLogger().error(ytmusic.getErrorMessage(`[ytmusic-play] Error: could not add to history (${videoId}): `, error));
-      }
+      playbackInfo.addToHistory().catch((error: unknown) => {
+        ytmusic.getLogger().error(ytmusic.getErrorMessage(`[ytmusic] Error: could not add to history (videoId: ${videoId}): `, error));
+      });
     }
   }
 
@@ -167,7 +164,7 @@ export default class PlayController {
     return ytmusic.getStateMachine().previous();
   }
 
-  static async getPlaybackInfoFromUri(uri: QueueItem['uri'], signal?: AbortSignal): Promise<{videoId: string; info: MusicItemPlaybackInfo | null}> {
+  static async getPlaybackInfoFromUri(uri: QueueItem['uri'], isPrefetch = false, skipStream = false, signal?: AbortSignal): Promise<{videoId: string; info: MusicItemPlaybackInfo | null}> {
     const endpoint = ExplodeHelper.getExplodedTrackInfoFromUri(uri)?.endpoint;
     const videoId = endpoint?.payload?.videoId;
 
@@ -178,7 +175,7 @@ export default class PlayController {
     const model = Model.getInstance(ModelType.MusicItem);
     return {
       videoId,
-      info: await model.getPlaybackInfo(endpoint, signal)
+      info: await model.getPlaybackInfo(endpoint, isPrefetch, skipStream, signal)
     };
   }
 
@@ -289,7 +286,7 @@ export default class PlayController {
 
     if (autoplayItems.length === 0) {
       // Fetch from radio endpoint as last resort.
-      const playbackInfo = await PlayController.getPlaybackInfoFromUri(lastPlaybackInfo.track.uri);
+      const playbackInfo = await PlayController.getPlaybackInfoFromUri(lastPlaybackInfo.track.uri, false, true);
       const radioEndpoint = playbackInfo.info?.radioEndpoint;
       if (radioEndpoint && (!autoplayContext || radioEndpoint.payload.playlistId !== autoplayContext.fetchEndpoint.payload.playlistId)) {
         const radioContents = await endpointModel.getContents(radioEndpoint);
@@ -344,7 +341,7 @@ export default class PlayController {
     this.#prefetchAborter = new AbortController();
     const signal = this.#prefetchAborter.signal;
     try {
-      const { videoId, info: playbackInfo } = await PlayController.getPlaybackInfoFromUri(track.uri, signal);
+      const { videoId, info: playbackInfo } = await PlayController.getPlaybackInfoFromUri(track.uri, true, false, signal);
       streamUrl = playbackInfo?.stream?.url;
       if (!streamUrl || !playbackInfo) {
         throw Error(`Stream not found for: '${videoId}'`);
@@ -385,7 +382,7 @@ export default class PlayController {
   }
 
   async getGotoUri(type: 'album' | 'artist', uri: QueueItem['uri']): Promise<string | null> {
-    const playbackInfo = (await PlayController.getPlaybackInfoFromUri(uri))?.info;
+    const playbackInfo = (await PlayController.getPlaybackInfoFromUri(uri, false, true))?.info;
     if (!playbackInfo) {
       return null;
     }
@@ -452,6 +449,7 @@ class PrefetchPlaybackStateFixer extends EventEmitter {
     super();
     this.#positionAtPrefetch = -1;
     this.#prefetchedTrack = null;
+    this.#volumioPushStateListener = null;
   }
 
   reset() {

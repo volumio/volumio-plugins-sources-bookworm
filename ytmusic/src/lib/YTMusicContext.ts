@@ -96,6 +96,9 @@ class YTMusicContext {
       if (error.message) {
         result += ` ${error.message}`;
       }
+      if (error.info) { // InnertubeError has this
+        result += `: ${error.info}`;
+      }
       if (stack && error.stack) {
         result += ` ${error.stack}`;
       }

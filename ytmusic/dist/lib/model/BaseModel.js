@@ -10,7 +10,7 @@ const MAX_APPEND_SECTIONS_COUNT = 10;
 class BaseModel {
     async getInnertube() {
         return {
-            innertube: await (await InnertubeLoader_1.default.getInstance()).getInnertube()
+            innertube: (await InnertubeLoader_1.default.getInstance()).getInnertube()
         };
     }
     async expandSectionList(response, url) {
@@ -40,4 +40,3 @@ class BaseModel {
     }
 }
 exports.BaseModel = BaseModel;
-//# sourceMappingURL=BaseModel.js.map

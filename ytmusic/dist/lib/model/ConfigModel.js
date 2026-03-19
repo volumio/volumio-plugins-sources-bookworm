@@ -31,7 +31,9 @@ exports.PLUGIN_CONFIG_SCHEMA = {
     prefetch: { defaultValue: true, json: false },
     preferOpus: { defaultValue: false, json: false },
     cookie: { defaultValue: '', json: false },
-    activeChannelHandle: { defaultValue: '', json: false }
+    activeChannelHandle: { defaultValue: '', json: false },
+    useYtDlp: { defaultValue: false, json: false },
+    ytDlpVersion: { defaultValue: null, json: false }
 };
 class ConfigModel extends BaseModel_1.BaseModel {
     constructor() {
@@ -137,4 +139,3 @@ _ConfigModel_instances = new WeakSet(), _ConfigModel_fetchSettingsPage = async f
     return null;
 };
 exports.default = ConfigModel;
-//# sourceMappingURL=ConfigModel.js.map

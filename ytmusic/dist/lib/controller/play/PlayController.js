@@ -137,12 +137,9 @@ class PlayController {
         const safeStreamUrl = stream.url.replace(/"/g, '\\"');
         await __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_doPlay).call(this, safeStreamUrl, track);
         if (YTMusicContext_1.default.getConfigValue('addToHistory')) {
-            try {
-                void playbackInfo.addToHistory();
-            }
-            catch (error) {
-                YTMusicContext_1.default.getLogger().error(YTMusicContext_1.default.getErrorMessage(`[ytmusic-play] Error: could not add to history (${videoId}): `, error));
-            }
+            playbackInfo.addToHistory().catch((error) => {
+                YTMusicContext_1.default.getLogger().error(YTMusicContext_1.default.getErrorMessage(`[ytmusic] Error: could not add to history (videoId: ${videoId}): `, error));
+            });
         }
     }
     // Returns kew promise!
@@ -176,7 +173,7 @@ class PlayController {
         YTMusicContext_1.default.getStateMachine().setConsumeUpdateService(undefined);
         return YTMusicContext_1.default.getStateMachine().previous();
     }
-    static async getPlaybackInfoFromUri(uri, signal) {
+    static async getPlaybackInfoFromUri(uri, isPrefetch = false, skipStream = false, signal) {
         const endpoint = ExplodeHelper_1.default.getExplodedTrackInfoFromUri(uri)?.endpoint;
         const videoId = endpoint?.payload?.videoId;
         if (!videoId) {
@@ -185,7 +182,7 @@ class PlayController {
         const model = model_1.default.getInstance(model_1.ModelType.MusicItem);
         return {
             videoId,
-            info: await model.getPlaybackInfo(endpoint, signal)
+            info: await model.getPlaybackInfo(endpoint, isPrefetch, skipStream, signal)
         };
     }
     async prefetch(track) {
@@ -215,7 +212,7 @@ class PlayController {
         __classPrivateFieldSet(this, _PlayController_prefetchAborter, new AbortController(), "f");
         const signal = __classPrivateFieldGet(this, _PlayController_prefetchAborter, "f").signal;
         try {
-            const { videoId, info: playbackInfo } = await _a.getPlaybackInfoFromUri(track.uri, signal);
+            const { videoId, info: playbackInfo } = await _a.getPlaybackInfoFromUri(track.uri, true, false, signal);
             streamUrl = playbackInfo?.stream?.url;
             if (!streamUrl || !playbackInfo) {
                 throw Error(`Stream not found for: '${videoId}'`);
@@ -245,7 +242,7 @@ class PlayController {
         return res;
     }
     async getGotoUri(type, uri) {
-        const playbackInfo = (await _a.getPlaybackInfoFromUri(uri))?.info;
+        const playbackInfo = (await _a.getPlaybackInfoFromUri(uri, false, true))?.info;
         if (!playbackInfo) {
             return null;
         }
@@ -388,7 +385,7 @@ _a = PlayController, _PlayController_mpdPlugin = new WeakMap(), _PlayController_
     }
     if (autoplayItems.length === 0) {
         // Fetch from radio endpoint as last resort.
-        const playbackInfo = await _a.getPlaybackInfoFromUri(lastPlaybackInfo.track.uri);
+        const playbackInfo = await _a.getPlaybackInfoFromUri(lastPlaybackInfo.track.uri, false, true);
         const radioEndpoint = playbackInfo.info?.radioEndpoint;
         if (radioEndpoint && (!autoplayContext || radioEndpoint.payload.playlistId !== autoplayContext.fetchEndpoint.payload.playlistId)) {
             const radioContents = await endpointModel.getContents(radioEndpoint);
@@ -441,6 +438,7 @@ class PrefetchPlaybackStateFixer extends events_1.default {
         _PrefetchPlaybackStateFixer_volumioPushStateListener.set(this, void 0);
         __classPrivateFieldSet(this, _PrefetchPlaybackStateFixer_positionAtPrefetch, -1, "f");
         __classPrivateFieldSet(this, _PrefetchPlaybackStateFixer_prefetchedTrack, null, "f");
+        __classPrivateFieldSet(this, _PrefetchPlaybackStateFixer_volumioPushStateListener, null, "f");
     }
     reset() {
         __classPrivateFieldGet(this, _PrefetchPlaybackStateFixer_instances, "m", _PrefetchPlaybackStateFixer_removePushStateListener).call(this);
@@ -501,4 +499,3 @@ _PrefetchPlaybackStateFixer_positionAtPrefetch = new WeakMap(), _PrefetchPlaybac
         }
     }
 };
-//# sourceMappingURL=PlayController.js.map

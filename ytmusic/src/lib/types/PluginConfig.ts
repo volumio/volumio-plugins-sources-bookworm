@@ -17,7 +17,9 @@ export interface PluginConfigSchema {
   prefetch: PluginConfigSchemaEntry<boolean>;
   preferOpus: PluginConfigSchemaEntry<boolean>;
   cookie: PluginConfigSchemaEntry<string>;
-  activeChannelHandle: PluginConfigSchemaEntry<string>
+  activeChannelHandle: PluginConfigSchemaEntry<string>;
+  useYtDlp: PluginConfigSchemaEntry<boolean>;
+  ytDlpVersion: PluginConfigSchemaEntry<string | null>;
 }
 
 export interface I18nOptions {

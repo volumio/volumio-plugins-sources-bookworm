@@ -48,7 +48,7 @@ class YTMusicNowPlayingMetadataProvider {
     async getSongInfo(songTitle, albumTitle, artistName, uri) {
         YTMusicContext_1.default.getLogger().info(`[ytmusic] Fetch song info for Now Playing plugin. URI: ${uri}`);
         // URI: ytmusic/[song/video]@explodeTrackData={...}
-        const { videoId, info: playbackInfo } = (uri ? await PlayController_1.default.getPlaybackInfoFromUri(uri) : null) || { videoId: null, info: null };
+        const { videoId, info: playbackInfo } = (uri ? await PlayController_1.default.getPlaybackInfoFromUri(uri, false, true) : null) || { videoId: null, info: null };
         if (!playbackInfo) {
             YTMusicContext_1.default.getLogger().error('[ytmusic] Error fetching song info for Now Playing plugin: no playback info from URI');
             return null;
@@ -163,4 +163,3 @@ class YTMusicNowPlayingMetadataProvider {
     }
 }
 exports.default = YTMusicNowPlayingMetadataProvider;
-//# sourceMappingURL=YTMusicNowPlayingMetadataProvider.js.map

@@ -108,6 +108,13 @@
           "value": ""
         },
         {
+          "id": "activeChannelHandle",
+          "element": "select",
+          "label": "TRANSLATE.YTMUSIC_ACTIVE_CHANNEL",
+          "value": {},
+          "options": []
+        },
+        {
           "id": "cookieGuide",
           "element": "button",
           "label": "TRANSLATE.YTMUSIC_COOKIE_GUIDE",
@@ -194,7 +201,8 @@
           "id": "prefetch",
           "element": "switch",
           "label": "TRANSLATE.YTMUSIC_PREFETCH_NEXT_TRACK",
-          "value": true
+          "value": true,
+          "doc": "TRANSLATE.YTMUSIC_DOC_PREFETCH"
         },
         {
           "id": "preferOpus",
@@ -205,6 +213,50 @@
           "visibleIf": {
             "field": "prefetch",
             "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_yt_dlp",
+      "element": "section",
+      "label": "TRANSLATE.YTMUSIC_SECTION_YT_DLP",
+      "icon": "fa-download",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/ytmusic",
+        "method": "configSaveYtDlp"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.YTMUSIC_SAVE",
+        "data": [
+          "useYtDlp",
+          "ytDlpVersion"
+        ]
+      },
+      "content": [
+        {
+          "id": "useYtDlp",
+          "element": "switch",
+          "label": "TRANSLATE.YTMUSIC_ENABLE_YT_DLP",
+          "value": false,
+          "doc": "TRANSLATE.YTMUSIC_DOC_USE_YT_DLP"
+        },
+        {
+          "id": "ytDlpVersion",
+          "element": "select",
+          "label": "TRANSLATE.YTMUSIC_YT_DLP_VERSION",
+          "options": [],
+          "value": {}
+        },
+        {
+          "id": "installLatestYtDlp",
+          "element": "button",
+          "label": "TRANSLATE.YTMUSIC_INSTALL_LATEST",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "music_service/ytmusic",
+            "method": "installLatestYtDlp"
           }
         }
       ]
