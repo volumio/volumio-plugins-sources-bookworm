@@ -1,0 +1,35 @@
+{
+	"name": "roseaudiosys",
+	"version": "0.2.0",
+	"description": "System Plugin for Rose Audio Devices",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Stephane Lelong",
+	"license": "ISC",
+	"repository": "https://github.com/lelsteph/volumio-plugins-sources-bookworm",
+	"volumio_info": {
+		"prettyName": "RoseAudioSys",
+		"icon": "fa-microchip",
+		"plugin_type": "system_hardware",
+		"architectures": [
+			"armhf"
+		],
+		"os": [
+			"bookworm"
+		],
+		"details": "Lorem ipsum",
+		"changelog": "Lorem ipsum"
+	},
+	"engines": {
+		"node": ">=20.5.1 <21.0.0",
+		"volumio": ">=4.73.0 <5.0.0"
+	},
+	"dependencies": {
+		"@iiot2k/gpiox": "^2.1.4",
+		"fs-extra": "^0.28.0",
+		"kew": "^0.7.0",
+		"v-conf": "^1.4.0"
+	}
+}

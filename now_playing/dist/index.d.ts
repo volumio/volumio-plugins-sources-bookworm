@@ -24,6 +24,7 @@ declare class ControllerNowPlaying {
     configSaveDockedWeatherSettings(data: Record<string, any>): void;
     configSaveDockedMediaFormatSettings(data: Record<string, any>): void;
     configSaveLocalizationSettings(data: Record<string, any>): void;
+    configSaveWeatherServiceSettings(data: Record<string, any>): void;
     configSaveMetadataServiceSettings(data: Record<string, any>): void;
     configSaveIdleScreenSettings(data: Record<string, any>): void;
     configSaveExtraScreenSettings(data: Record<string, any>): void;

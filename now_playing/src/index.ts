@@ -6,7 +6,7 @@ import libQ from 'kew';
 import vconf from 'v-conf';
 
 import geoTZ from 'geo-tz';
-import np from './lib/NowPlayingContext';
+import np, { type I18nKey } from './lib/NowPlayingContext';
 import { jsPromiseToKew, kewToJSPromise, getVolumioBackgrounds } from './lib/utils/Misc';
 import * as App from './app';
 import CommonSettingsLoader from './lib/config/CommonSettingsLoader';
@@ -57,6 +57,7 @@ class ControllerNowPlaying {
     const daemonUIConf = uiconf.section_daemon;
     const localizationUIConf = uiconf.section_localization;
     const metadataServiceUIConf = uiconf.section_metadata_service;
+    const weatherServiceUIConf = uiconf.section_weather_service;
     const startupOptionsUIConf = uiconf.section_startup_options;
     const contentRegionUIConf = uiconf.section_content_region;
     const layoutsUIConf = uiconf.section_layouts;
@@ -157,6 +158,27 @@ class ControllerNowPlaying {
     const metadataServiceOptions = np.getConfigValue('metadataService');
     metadataServiceUIConf.content.geniusAccessToken.value = metadataServiceOptions.geniusAccessToken;
     metadataServiceUIConf.content.excludeParenthesized.value = metadataServiceOptions.excludeParenthesized;
+
+    /**
+     * Weather Service conf
+     */
+    const weatherOptions = np.getConfigValue('weather');
+    weatherServiceUIConf.content.openWeatherMapApiKey.value = weatherOptions?.openWeatherMapApiKey ?? '';
+    const weatherCacheOptions = [
+      { value: 10, labelKey: 'NOW_PLAYING_WEATHER_CACHE_10_MIN' },
+      { value: 30, labelKey: 'NOW_PLAYING_WEATHER_CACHE_30_MIN' },
+      { value: 60, labelKey: 'NOW_PLAYING_WEATHER_CACHE_1_H' },
+      { value: 120, labelKey: 'NOW_PLAYING_WEATHER_CACHE_2_H' },
+      { value: 360, labelKey: 'NOW_PLAYING_WEATHER_CACHE_6_H' },
+      { value: 720, labelKey: 'NOW_PLAYING_WEATHER_CACHE_12_H' },
+      { value: 1440, labelKey: 'NOW_PLAYING_WEATHER_CACHE_24_H' }
+    ];
+    const allowedCacheValues = [10, 30, 60, 120, 360, 720, 1440];
+    const savedCacheMinutes = weatherOptions?.cacheMinutes ?? 10;
+    const resolvedCacheMinutes = allowedCacheValues.includes(savedCacheMinutes) ? savedCacheMinutes : 10;
+    const matchedCacheOption = weatherCacheOptions.find((o) => o.value === resolvedCacheMinutes) ?? weatherCacheOptions[0];
+    weatherServiceUIConf.content.weatherCacheMinutes.value = { value: String(matchedCacheOption.value), label: np.getI18n(matchedCacheOption.labelKey as I18nKey) };
+    weatherServiceUIConf.content.weatherCacheMinutes.options = weatherCacheOptions.map((o) => ({ value: String(o.value), label: np.getI18n(o.labelKey as I18nKey) }));
     metadataServiceUIConf.content.parenthesisType.value = {
       value: metadataServiceOptions.parenthesisType,
       label: ''
@@ -1085,6 +1107,7 @@ class ControllerNowPlaying {
         break;
     }
     idleScreenUIConf.content.waitTime.value = idleScreen.waitTime;
+    idleScreenUIConf.content.showClock.value = idleScreen.showClock;
     idleScreenUIConf.content.showLocation.value = idleScreen.showLocation;
     idleScreenUIConf.content.showWeather.value = idleScreen.showWeather;
     idleScreenUIConf.content.mainAlignment.value = {
@@ -1877,10 +1900,27 @@ class ControllerNowPlaying {
 
   #configureWeatherApi() {
     const localization = CommonSettingsLoader.get(CommonSettingsCategory.Localization);
+    const weather = np.getConfigValue('weather');
     weatherAPI.setConfig({
       coordinates: localization.geoCoordinates,
-      units: localization.unitSystem
+      units: localization.unitSystem,
+      apiKey: weather?.openWeatherMapApiKey ?? '',
+      cacheMinutes: weather?.cacheMinutes ?? 10
     });
+  }
+
+  configSaveWeatherServiceSettings(data: Record<string, any>) {
+    const raw = data['weatherCacheMinutes']?.value ?? data['weatherCacheMinutes'];
+    const num = typeof raw === 'number' ? raw : parseInt(raw, 10);
+    const allowedCacheValues = [10, 30, 60, 120, 360, 720, 1440];
+    const cacheMinutes = (Number.isInteger(num) && allowedCacheValues.includes(num)) ? num : 10;
+    const settings = {
+      openWeatherMapApiKey: (data['openWeatherMapApiKey'] ?? '').trim(),
+      cacheMinutes
+    };
+    np.setConfigValue('weather', settings);
+    this.#configureWeatherApi();
+    np.toast('success', np.getI18n('NOW_PLAYING_SETTINGS_SAVED'));
   }
 
   configSaveMetadataServiceSettings(data: Record<string, any>) {

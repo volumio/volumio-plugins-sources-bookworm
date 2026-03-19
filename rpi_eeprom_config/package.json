@@ -1,6 +1,6 @@
 {
   "name": "rpi_eeprom_config",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Comprehensive EEPROM configuration manager for Raspberry Pi 4/400/5/500/500+ and CM4/CM5.",
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,7 @@
     "icon": "fa-microchip",
     "plugin_type": "system_controller",
     "details": "Configure Raspberry Pi bootloader EEPROM parameters including boot order, power management, USB settings, and debug options without command-line access.",
-    "changelog": "Fix for Unicode time character set.",
+    "changelog": "Add RTC battery charging option for Pi 5/500+/CM5; store in userconfig.txt (survives OTA). i18n for all languages.",
     "categories": [
       "system_hardware"
     ],

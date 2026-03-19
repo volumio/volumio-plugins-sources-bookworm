@@ -65,5 +65,7 @@
   "APPLY_AND_REBOOT": "Configuratie toepassen & Herstarten",
   "RISK_ACKNOWLEDGED": "Ik begrijp de risico's en wil de wijzigingen toepassen",
   "RISK_ACKNOWLEDGED_DOC": "WAARSCHUWING: Het wijzigen van EEPROM-instellingen kan voorkomen dat uw Raspberry Pi opstart. Zorg ervoor dat u alle hierboven voorbereide instellingen hebt beoordeeld en een back-up SD-kaart of herstelmethode beschikbaar heeft. Wijzigingen vereisen een herstart om effect te hebben.",
-  "SAVE_CONFIGURATION": "Configuratie opslaan en herstarten"
+  "SAVE_CONFIGURATION": "Configuratie opslaan en herstarten",
+  "RTC_BATTERY_CHARGING": "RTC-batterij laden",
+  "RTC_BATTERY_CHARGING_DOC": "Laadfunctie voor de onboard RTC-back-upbatterij inschakelen wanneer de Pi van stroom wordt voorzien (alleen Raspberry Pi 5 / 500+ / CM5). Gebruikt de officiele RTC-batterijconnector. Let op: sommige gebruikers melden RTC-problemen bij inschakelen; als de RTC stopt met werken, schakel deze optie uit. Instelling wordt opgeslagen in userconfig.txt (blijft behouden bij OTA-updates)."
 }

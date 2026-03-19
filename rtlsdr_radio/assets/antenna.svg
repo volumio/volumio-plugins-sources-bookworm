@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Radio tower/antenna -->
+  <path fill="#FFFFFF" d="M240 80 L240 400 L272 400 L272 80 Z"/>
+  <path fill="#FFFFFF" d="M220 400 L292 400 L292 440 L220 440 Z"/>
+  <circle fill="#FFFFFF" cx="256" cy="60" r="20"/>
+  
+  <!-- Inner wave (closest to tower) -->
+  <path fill="none" stroke="#FFFFFF" stroke-width="12" 
+        d="M 200 180 Q 180 220 200 260"/>
+  <path fill="none" stroke="#FFFFFF" stroke-width="12" 
+        d="M 312 180 Q 332 220 312 260"/>
+  
+  <!-- Middle wave -->
+  <path fill="none" stroke="#FFFFFF" stroke-width="12" 
+        d="M 160 140 Q 130 220 160 300"/>
+  <path fill="none" stroke="#FFFFFF" stroke-width="12" 
+        d="M 352 140 Q 382 220 352 300"/>
+  
+  <!-- Outer wave (furthest from tower) -->
+  <path fill="none" stroke="#FFFFFF" stroke-width="12" 
+        d="M 120 100 Q 80 220 120 340"/>
+  <path fill="none" stroke="#FFFFFF" stroke-width="12" 
+        d="M 392 100 Q 432 220 392 340"/>
+</svg>

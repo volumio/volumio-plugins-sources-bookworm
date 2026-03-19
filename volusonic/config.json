@@ -42,5 +42,9 @@
 	"salt": {
 		"type": "boolean",
 		"value": true
+	},
+	"experimentalFeatures": {
+		"type": "boolean",
+		"value": false
 	}
 }

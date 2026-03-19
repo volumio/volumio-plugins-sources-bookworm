@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/static/css/main.0118dff9.css",
-    "main.js": "/static/js/main.ea52d89e.js",
-    "static/js/503.b030544e.chunk.js": "/static/js/503.b030544e.chunk.js",
+    "main.js": "/static/js/main.7d4aaf05.js",
+    "static/js/503.61f6b844.chunk.js": "/static/js/503.61f6b844.chunk.js",
     "static/js/258.81933191.chunk.js": "/static/js/258.81933191.chunk.js",
     "static/js/424.9f61a770.chunk.js": "/static/js/424.9f61a770.chunk.js",
     "static/js/661.5a726ab2.chunk.js": "/static/js/661.5a726ab2.chunk.js",
@@ -17,12 +17,12 @@
     "static/media/volumio-icon.png": "/static/media/volumio-icon.3204cd4ee69f030fda73.png",
     "index.html": "/index.html",
     "main.0118dff9.css.map": "/static/css/main.0118dff9.css.map",
-    "main.ea52d89e.js.map": "/static/js/main.ea52d89e.js.map",
-    "503.b030544e.chunk.js.map": "/static/js/503.b030544e.chunk.js.map",
+    "main.7d4aaf05.js.map": "/static/js/main.7d4aaf05.js.map",
+    "503.61f6b844.chunk.js.map": "/static/js/503.61f6b844.chunk.js.map",
     "536.51fc2df2.chunk.js.map": "/static/js/536.51fc2df2.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.0118dff9.css",
-    "static/js/main.ea52d89e.js"
+    "static/js/main.7d4aaf05.js"
   ]
 }

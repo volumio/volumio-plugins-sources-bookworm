@@ -1,0 +1,111 @@
+{
+    "page": {
+        "label": "TRANSLATE.GPIO_BUTTON_LED.PLUGIN_NAME"
+    },
+    "sections": [
+        {
+            "id": "button_settings",
+            "element": "section",
+            "label": "TRANSLATE.GPIO_BUTTON_LED.BUTTON_SECTION",
+            "description": "TRANSLATE.GPIO_BUTTON_LED.BUTTON_SECTION_DESC",
+            "icon": "fa-hand-pointer-o",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/gpio_button_led",
+                "method": "saveButtonConfig"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.GPIO_BUTTON_LED.SAVE_BUTTON",
+                "data": [
+                    "button_pin",
+                    "button_type",
+                    "button_debounce"
+                ]
+            },
+            "content": [
+                {
+                    "id": "button_pin",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.GPIO_BUTTON_LED.BUTTON_PIN",
+                    "doc": "TRANSLATE.GPIO_BUTTON_LED.BUTTON_PIN_DOC",
+                    "description": "TRANSLATE.GPIO_BUTTON_LED.BUTTON_PIN_DESC",
+                    "value": 17
+                },
+                {
+                    "id": "button_type",
+                    "element": "select",
+                    "label": "TRANSLATE.GPIO_BUTTON_LED.BUTTON_TYPE",
+                    "doc": "TRANSLATE.GPIO_BUTTON_LED.BUTTON_TYPE_DOC",
+                    "description": "TRANSLATE.GPIO_BUTTON_LED.BUTTON_TYPE_DESC",
+                    "value": {"value": "NO", "label": "NO"},
+                    "options": [
+                        {"value": "NO", "label": "NO"},
+                        {"value": "NC", "label": "NC"}
+                    ]
+                },
+                {
+                    "id": "button_debounce",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.GPIO_BUTTON_LED.BUTTON_DEBOUNCE",
+                    "doc": "TRANSLATE.GPIO_BUTTON_LED.BUTTON_DEBOUNCE_DOC",
+                    "description": "TRANSLATE.GPIO_BUTTON_LED.BUTTON_DEBOUNCE_DESC",
+                    "value": 100
+                }
+            ]
+        },
+        {
+            "id": "led_settings",
+            "element": "section",
+            "label": "TRANSLATE.GPIO_BUTTON_LED.LED_SECTION",
+            "description": "TRANSLATE.GPIO_BUTTON_LED.LED_SECTION_DESC",
+            "icon": "fa-lightbulb-o",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/gpio_button_led",
+                "method": "saveLedConfig"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.GPIO_BUTTON_LED.SAVE_LED",
+                "data": [
+                    "led_pos_pin",
+                    "led_neg_pin",
+                    "led_polarity"
+                ]
+            },
+            "content": [
+                {
+                    "id": "led_pos_pin",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.GPIO_BUTTON_LED.LED_POS_PIN",
+                    "doc": "TRANSLATE.GPIO_BUTTON_LED.LED_POS_PIN_DOC",
+                    "description": "TRANSLATE.GPIO_BUTTON_LED.LED_POS_PIN_DESC",
+                    "value": 22
+                },
+                {
+                    "id": "led_neg_pin",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.GPIO_BUTTON_LED.LED_NEG_PIN",
+                    "doc": "TRANSLATE.GPIO_BUTTON_LED.LED_NEG_PIN_DOC",
+                    "description": "TRANSLATE.GPIO_BUTTON_LED.LED_NEG_PIN_DESC",
+                    "value": 4
+                },
+                {
+                    "id": "led_polarity",
+                    "element": "select",
+                    "label": "TRANSLATE.GPIO_BUTTON_LED.LED_POLARITY",
+                    "doc": "TRANSLATE.GPIO_BUTTON_LED.LED_POLARITY_DOC",
+                    "description": "TRANSLATE.GPIO_BUTTON_LED.LED_POLARITY_DESC",
+                    "value": {"value": "normal", "label": "Normal"},
+                    "options": [
+                        {"value": "normal", "label": "Normal"},
+                        {"value": "reversed", "label": "Reversed"}
+                    ]
+                }
+            ]
+        }
+    ]
+}

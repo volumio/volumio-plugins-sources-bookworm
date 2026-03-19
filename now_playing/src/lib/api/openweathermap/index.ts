@@ -2,7 +2,8 @@ import np from '../../NowPlayingContext';
 
 const BASE_URL = 'https://openweathermap.org';
 const API_URL = 'https://api.openweathermap.org';
-const ONECALL_PATH = '/data/2.5/onecall';
+/** One Call API 3.0 (2.5 was retired June 2024; 2.5 returns 401) */
+const ONECALL_PATH = '/data/3.0/onecall';
 const WEATHER_PATH = '/data/2.5/weather';
 
 async function fetchPage(url: string, json = false) {
@@ -63,14 +64,14 @@ export interface OpenWeatherMapAPIGetWeatherResult {
 export default class OpenWeatherMapAPI {
 
   #apiKey: string | null;
-  #apiKeyPromise: Promise<any> | null;
+  #configuredApiKey: string | null;
   #coordinates: { lat: number, lon: number } | null;
   #lang: string | null;
   #units: string | null;
 
   constructor(args?: OpenWeatherMapAPIConstructorOptions) {
     this.#apiKey = null;
-    this.#apiKeyPromise = null;
+    this.#configuredApiKey = null;
     this.#coordinates = null;
     this.#lang = null;
     this.#units = null;
@@ -103,43 +104,21 @@ export default class OpenWeatherMapAPI {
     this.#units = units;
   }
 
+  setApiKey(apiKey: string | null) {
+    this.#configuredApiKey = (apiKey && apiKey.trim()) ? apiKey.trim() : null;
+    if (this.#configuredApiKey) {
+      this.#apiKey = this.#configuredApiKey;
+    }
+  }
+
   async #getApiKey() {
+    if (this.#configuredApiKey) {
+      return this.#configuredApiKey;
+    }
     if (this.#apiKey) {
       return this.#apiKey;
     }
-
-    if (this.#apiKeyPromise) {
-      return this.#apiKeyPromise;
-    }
-
-    const doGet = async () => {
-      np.getLogger().info('[now-playing] Fetching API key...');
-      const widgetPathRegExp = /<script(?:\s+)src=['"]((?:.+)weather-app.(?:.+).js)['"]><\/script>/gm;
-      const appIdRegExp = /appid:"(.+?)"/gm;
-
-      const page = await fetchPage(BASE_URL);
-      const widgetPath = page ? widgetPathRegExp.exec(page)?.[1] : null;
-      const widgetSrc = widgetPath ? await fetchPage(new URL(widgetPath, BASE_URL).toString()) : Promise.resolve(null);
-      const appId = widgetSrc ? appIdRegExp.exec(widgetSrc)?.[1] : null;
-
-      if (!appId) {
-        throw Error('Could not obtain API key');
-      }
-
-      return appId;
-    };
-
-    this.#apiKeyPromise = doGet()
-      .then((appId) => {
-        this.#apiKey = appId;
-        np.getLogger().info('[now-playing] OpenWeatherMap API key obtained.');
-        return appId;
-      })
-      .finally(() => {
-        this.#apiKeyPromise = null;
-      });
-
-    return this.#apiKeyPromise;
+    throw Error(np.getI18n('NOW_PLAYING_ERR_WEATHER_API_KEY_NOT_CONFIGURED'));
   }
 
   async getWeather(): Promise<OpenWeatherMapAPIGetWeatherResult> {

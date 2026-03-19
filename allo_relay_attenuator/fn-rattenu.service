@@ -1,0 +1,17 @@
+[Unit]
+Description=Allo Relay Attenuator Daemon
+After=local-fs.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/fn-rattenu -l
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=fn-rattenu
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target

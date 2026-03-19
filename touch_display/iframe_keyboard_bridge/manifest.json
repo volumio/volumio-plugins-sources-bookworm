@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Volumio Iframe Keyboard Bridge",
+  "version": "1.0",
+  "description": "Enables onscreen keyboard for inputs inside iframes",
+  "content_scripts": [
+    {
+      "matches": ["http://localhost:3000/*", "http://*/iframe-page/*"],
+      "js": ["content.js"],
+      "run_at": "document_end",
+      "all_frames": false
+    }
+  ]
+}

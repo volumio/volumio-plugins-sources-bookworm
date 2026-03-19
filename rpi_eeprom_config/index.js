@@ -193,6 +193,97 @@ RpiEepromConfig.prototype.ensureBackupDirectory = function() {
   }
 };
 
+// RTC battery charging (Pi 5+): userconfig.txt (survives OTA; config.txt/volumioconfig.txt are overwritten). Volumio layout: /boot only.
+RpiEepromConfig.prototype.getUserconfigPath = function() {
+  return '/boot/userconfig.txt';
+};
+
+RpiEepromConfig.prototype.getRtcChargingFromConfigTxt = function() {
+  const self = this;
+  const line = 'dtparam=rtc_bbat_vchg=3000000';
+  function hasParam(content) {
+    return content && content.indexOf(line) !== -1;
+  }
+  const userconfigPath = self.getUserconfigPath();
+  if (userconfigPath) {
+    try {
+      if (fs.existsSync(userconfigPath)) {
+        const content = fs.readFileSync(userconfigPath, 'utf8');
+        if (hasParam(content)) return true;
+      }
+    } catch (e) {
+      self.logger.warn('[RpiEepromConfig] Could not read userconfig.txt for RTC: ' + e);
+    }
+    const configPath = '/boot/config.txt';
+    try {
+      if (fs.existsSync(configPath)) {
+        const content = fs.readFileSync(configPath, 'utf8');
+        if (hasParam(content)) return true;
+      }
+    } catch (e) {
+      self.logger.warn('[RpiEepromConfig] Could not read config.txt for RTC: ' + e);
+    }
+  }
+  return false;
+};
+
+RpiEepromConfig.prototype.setRtcChargingInConfigTxt = function(enabled) {
+  const self = this;
+  const userconfigPath = self.getUserconfigPath();
+  const defer = libQ.defer();
+  const line = 'dtparam=rtc_bbat_vchg=3000000';
+  let content = '';
+  try {
+    if (fs.existsSync(userconfigPath)) {
+      content = fs.readFileSync(userconfigPath, 'utf8');
+    }
+  } catch (e) {
+    self.logger.warn('[RpiEepromConfig] Could not read userconfig.txt: ' + e);
+  }
+  const lines = content.split('\n');
+  const hadLine = content.indexOf(line) !== -1;
+  if (enabled && !hadLine) {
+    const newContent = content.trimEnd() + '\n' + line + '\n';
+    const tmpFile = '/tmp/rpi-eeprom-config-rtc.txt';
+    fs.writeFileSync(tmpFile, newContent);
+    exec('sudo /bin/cp "' + tmpFile + '" "' + userconfigPath + '"', function(error, stdout, stderr) {
+      try { fs.unlinkSync(tmpFile); } catch (e) {}
+      if (error) {
+        self.logger.error('[RpiEepromConfig] Failed to write userconfig.txt for RTC: ' + error);
+        defer.reject(error);
+      } else {
+        self.logger.info('[RpiEepromConfig] RTC battery charging enabled in userconfig.txt (survives OTA)');
+        defer.resolve();
+      }
+    });
+  } else if (!enabled && hadLine) {
+    const newLines = lines.map(function(l) {
+      const trimmed = l.trim().replace(/#.*$/, '').trim();
+      if (trimmed === line) return null;
+      if (l.indexOf(line) !== -1) return l.replace(line, '').trim();
+      return l;
+    }).filter(function(l) {
+      return l != null && l !== '';
+    });
+    const newContent = newLines.join('\n') + '\n';
+    const tmpFile = '/tmp/rpi-eeprom-config-rtc.txt';
+    fs.writeFileSync(tmpFile, newContent);
+    exec('sudo /bin/cp "' + tmpFile + '" "' + userconfigPath + '"', function(error, stdout, stderr) {
+      try { fs.unlinkSync(tmpFile); } catch (e) {}
+      if (error) {
+        self.logger.error('[RpiEepromConfig] Failed to write userconfig.txt for RTC: ' + error);
+        defer.reject(error);
+      } else {
+        self.logger.info('[RpiEepromConfig] RTC battery charging disabled in userconfig.txt');
+        defer.resolve();
+      }
+    });
+  } else {
+    defer.resolve();
+  }
+  return defer.promise;
+};
+
 // Get available boot orders based on hardware capabilities
 RpiEepromConfig.prototype.getAvailableBootOrders = function() {
   const self = this;
@@ -759,6 +850,19 @@ RpiEepromConfig.prototype.populateUIConfig = function(uiconf, currentConfig) {
       self.logger.info('[RpiEepromConfig] Removed Pi 5+ fields for ' + self.detectedModel);
     }
 
+    // RTC battery charging: Pi 5 / 500 / 500+ / CM5 only (boards with onboard RTC)
+    const rtcModels = ['Raspberry Pi 5', 'Raspberry Pi 500', 'Raspberry Pi 500+', 'Compute Module 5'];
+    const hasRtcOption = rtcModels.includes(self.detectedModel);
+    if (!hasRtcOption) {
+      uiconf.sections[0].content = uiconf.sections[0].content.filter(function(item) {
+        return item.id !== 'rtc_battery_charging';
+      });
+      uiconf.sections[0].saveButton.data = uiconf.sections[0].saveButton.data.filter(function(id) {
+        return id !== 'rtc_battery_charging';
+      });
+      self.logger.info('[RpiEepromConfig] Removed RTC option for ' + self.detectedModel);
+    }
+
     // Filter NVMe-specific fields (PCIE_PROBE)
     if (!hasNvmeSupport) {
       uiconf.sections[0].content = uiconf.sections[0].content.filter(function(item) {
@@ -883,6 +987,14 @@ RpiEepromConfig.prototype.populateUIConfig = function(uiconf, currentConfig) {
         basicSection[psuEnableIndex].value = false;
         basicSection[psuCurrentIndex].value = 5000;
       }
+    }
+
+    // RTC battery charging (Pi 5+): read from userconfig.txt
+    const rtcIndex = basicSection.findIndex(function(item) {
+      return item.id === 'rtc_battery_charging';
+    });
+    if (rtcIndex !== -1 && hasRtcOption) {
+      basicSection[rtcIndex].value = self.getRtcChargingFromConfigTxt();
     }
 
     // Section 1: Advanced Settings
@@ -1045,7 +1157,8 @@ RpiEepromConfig.prototype.confirmBasicSettings = function(data) {
       boot_uart: data.boot_uart,
       uart_baud: (typeof data.uart_baud === 'object' && data.uart_baud.value) ? data.uart_baud.value : data.uart_baud,
       psu_max_current_enable: data.psu_max_current_enable,
-      psu_max_current: data.psu_max_current
+      psu_max_current: data.psu_max_current,
+      rtc_battery_charging: data.rtc_battery_charging
     };
 
     // Store as JSON string to avoid v-conf object type issues
@@ -1197,20 +1310,28 @@ RpiEepromConfig.prototype.applyConfiguration = function(data) {
       return self.applyEepromConfig(newConfig);
     })
     .then(function() {
-      // Clear temp storage after successful apply
-      self.config.delete('temp_basic_json');
-      self.config.delete('temp_advanced_json');
-      self.config.delete('temp_debug_json');
-      
-      self.logger.info('[RpiEepromConfig] EEPROM configuration applied successfully');
-      self.commandRouter.pushToastMessage('success', 'Configuration Applied', 'EEPROM configuration updated. System will reboot in 5 seconds...');
-      
-      // Reboot after 5 seconds
-      setTimeout(function() {
-        self.rebootSystem();
-      }, 5000);
-      
-      defer.resolve();
+      // Apply RTC battery charging (userconfig.txt) if staged (Pi 5+ only has this in UI)
+      function finishApply() {
+        self.config.delete('temp_basic_json');
+        self.config.delete('temp_advanced_json');
+        self.config.delete('temp_debug_json');
+        self.logger.info('[RpiEepromConfig] EEPROM configuration applied successfully');
+        self.commandRouter.pushToastMessage('success', 'Configuration Applied', 'EEPROM configuration updated. System will reboot in 5 seconds...');
+        setTimeout(function() { self.rebootSystem(); }, 5000);
+        defer.resolve();
+      }
+      if (tempBasic.hasOwnProperty('rtc_battery_charging')) {
+        const rtcEnabled = tempBasic.rtc_battery_charging === true;
+        self.setRtcChargingInConfigTxt(rtcEnabled)
+          .then(finishApply)
+          .fail(function(rtcErr) {
+            self.logger.warn('[RpiEepromConfig] RTC userconfig.txt update failed (EEPROM was applied): ' + rtcErr);
+            self.commandRouter.pushToastMessage('warning', 'RTC Setting', 'EEPROM was applied but RTC battery charging could not be updated in userconfig.txt. You can add dtparam=rtc_bbat_vchg=3000000 to /boot/userconfig.txt manually if needed.');
+            finishApply();
+          });
+      } else {
+        finishApply();
+      }
     })
     .fail(function(error) {
       self.logger.error('[RpiEepromConfig] Failed to apply EEPROM configuration: ' + error);
