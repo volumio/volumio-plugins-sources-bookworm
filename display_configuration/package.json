@@ -1,0 +1,35 @@
+{
+  "name": "display_configuration",
+  "version": "0.0.41",
+  "description": "Configure the local display, touchscreen, screensaver...",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Balbuze,Nerd",
+  "license": "ISC",
+  "repository": "https://github.com/balbuze/volumio4-x86-kiosk-settings",
+  "volumio_info": {
+    "prettyName": "Display configuration",
+    "plugin_type": "user_interface",
+    "icon": "fa-desktop",
+    "architectures": [
+      "amd64"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "details": "Display configuration for Volumio x86",
+    "changelog": "diagnostics"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "fs-extra": "*",
+    "kew": "*",
+    "v-conf": "*",
+    "socket.io-client": "2.3.0"
+  }
+}

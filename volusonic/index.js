@@ -124,6 +124,7 @@ ControllerVolusonic.prototype.getUIConfig = function() {
       uiconf.sections[1].content[4].value = self.config.get('ID3');
       uiconf.sections[1].content[5].value = self.config.get('metas');
       uiconf.sections[1].content[6].value = self.config.get('path');
+      uiconf.sections[1].content[7].value = self.config.get('experimentalFeatures') || false;
       /*
       	tracks in searchx
       	show similar artists not present in subso
@@ -222,6 +223,7 @@ ControllerVolusonic.prototype.savePluginOptions = function(data) {
   self.config.set('ID3', data['ID3']);
   self.config.set('metas', data['metas']);
   self.config.set('path', data['path']);
+  self.config.set('experimentalFeatures', data['experimentalFeatures']);
 
   self.commandRouter.pushToastMessage('success', self.commandRouter.getI18nString('VOLUSONIC_OPTIONS'), self.commandRouter.getI18nString('SAVED') + " !");
 
@@ -305,7 +307,38 @@ ControllerVolusonic.prototype.handleBrowseUri = function(curUri) {
                       album: '',
                       icon: 'fa fa-newspaper-o',
                       uri: 'volusonic/newest'
-                    },
+                    }
+                  ]
+                }]
+              }
+            });
+
+            // Add experimental features if enabled
+            if (self.config.get('experimentalFeatures')) {
+              nav.navigation.lists[0].items.push(
+                {
+                  service: 'volusonic',
+                  type: 'item-no-menu',
+                  title: self.commandRouter.getI18nString('RECENTLY_PLAYED_ALBUMS'),
+                  artist: '',
+                  album: '',
+                  icon: 'fa fa-history',
+                  uri: 'volusonic/recent'
+                },
+                {
+                  service: 'volusonic',
+                  type: 'item-no-menu',
+                  title: self.commandRouter.getI18nString('MOST_PLAYED_ALBUMS'),
+                  artist: '',
+                  album: '',
+                  icon: 'fa fa-bar-chart',
+                  uri: 'volusonic/frequent'
+                }
+              );
+            }
+
+            // Add remaining standard menu items
+            nav.navigation.lists[0].items.push(
                     {
                       service: 'volusonic',
                       type: 'item-no-menu',
@@ -342,10 +375,7 @@ ControllerVolusonic.prototype.handleBrowseUri = function(curUri) {
                       icon: 'fa fa-star',
                       uri: 'volusonic/favorites'
                     }
-                  ]
-                }]
-              }
-            });
+            );
             if (semver.satisfies(ApiVersion, '>=1.11.0')) {
               nav.navigation['lists'][0]['items'].push({
                 service: 'volusonic',
@@ -384,6 +414,18 @@ ControllerVolusonic.prototype.handleBrowseUri = function(curUri) {
             }
           } else if (curUri.startsWith('volusonic/newest')) {
             if (curUri === 'volusonic/newest') {
+              response = self.listAlbums(uriParts, curUri);
+            } else {
+              response = self.listTracks(uriParts, curUri);
+            }
+          } else if (curUri.startsWith('volusonic/recent')) {
+            if (curUri === 'volusonic/recent') {
+              response = self.listAlbums(uriParts, curUri);
+            } else {
+              response = self.listTracks(uriParts, curUri);
+            }
+          } else if (curUri.startsWith('volusonic/frequent')) {
+            if (curUri === 'volusonic/frequent') {
               response = self.listAlbums(uriParts, curUri);
             } else {
               response = self.listTracks(uriParts, curUri);
@@ -965,10 +1007,17 @@ ControllerVolusonic.prototype.listAlbums = function(uriParts, curUri) {
 
   var items = self.getAlbumPages(items, getList, id, params, offset, curUri)
     .then(function(items) {
+      // Handle empty results gracefully for experimental features
+      if (items.length === 0 && (id === 'recent' || id === 'frequent')) {
+        self.commandRouter.pushToastMessage('info', 'Volusonic', 'No ' + id + ' albums found. This feature may not be supported by your server.');
+      }
       defer.resolve(self._formatNav(uriParts[uriParts.length - 1].charAt(0).toUpperCase() + uriParts[uriParts.length - 1].slice(1), 'folder', self._getIcon(uriParts[1]), ['list', 'grid'], items, self._prevUri(curUri)));
     })
-    .fail(function(items) {
-      defer.reject(new Error('listAlbums'));
+    .fail(function(error) {
+      // Graceful degradation - return empty list instead of error
+      self.commandRouter.pushToastMessage('warning', 'Volusonic', 'Failed to load albums. This feature may not be supported by your server.');
+      self.logger.error('listAlbums error: ' + error);
+      defer.resolve(self._formatNav(uriParts[uriParts.length - 1].charAt(0).toUpperCase() + uriParts[uriParts.length - 1].slice(1), 'folder', self._getIcon(uriParts[1]), ['list', 'grid'], [], self._prevUri(curUri)));
     });
   return defer.promise;
 }

@@ -15,13 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
@@ -370,6 +380,19 @@ class ControllerNowPlaying {
         __classPrivateFieldGet(this, _ControllerNowPlaying_instances, "m", _ControllerNowPlaying_configureWeatherApi).call(this);
         __classPrivateFieldGet(this, _ControllerNowPlaying_instances, "m", _ControllerNowPlaying_notifyCommonSettingsUpdated).call(this, now_playing_common_1.CommonSettingsCategory.Localization);
     }
+    configSaveWeatherServiceSettings(data) {
+        const raw = data['weatherCacheMinutes']?.value ?? data['weatherCacheMinutes'];
+        const num = typeof raw === 'number' ? raw : parseInt(raw, 10);
+        const allowedCacheValues = [10, 30, 60, 120, 360, 720, 1440];
+        const cacheMinutes = (Number.isInteger(num) && allowedCacheValues.includes(num)) ? num : 10;
+        const settings = {
+            openWeatherMapApiKey: (data['openWeatherMapApiKey'] ?? '').trim(),
+            cacheMinutes
+        };
+        NowPlayingContext_1.default.setConfigValue('weather', settings);
+        __classPrivateFieldGet(this, _ControllerNowPlaying_instances, "m", _ControllerNowPlaying_configureWeatherApi).call(this);
+        NowPlayingContext_1.default.toast('success', NowPlayingContext_1.default.getI18n('NOW_PLAYING_SETTINGS_SAVED'));
+    }
     configSaveMetadataServiceSettings(data) {
         const token = data['geniusAccessToken'].trim();
         const settings = {
@@ -553,6 +576,7 @@ _ControllerNowPlaying_context = new WeakMap(), _ControllerNowPlaying_config = ne
     const daemonUIConf = uiconf.section_daemon;
     const localizationUIConf = uiconf.section_localization;
     const metadataServiceUIConf = uiconf.section_metadata_service;
+    const weatherServiceUIConf = uiconf.section_weather_service;
     const startupOptionsUIConf = uiconf.section_startup_options;
     const contentRegionUIConf = uiconf.section_content_region;
     const layoutsUIConf = uiconf.section_layouts;
@@ -644,6 +668,26 @@ _ControllerNowPlaying_context = new WeakMap(), _ControllerNowPlaying_config = ne
     const metadataServiceOptions = NowPlayingContext_1.default.getConfigValue('metadataService');
     metadataServiceUIConf.content.geniusAccessToken.value = metadataServiceOptions.geniusAccessToken;
     metadataServiceUIConf.content.excludeParenthesized.value = metadataServiceOptions.excludeParenthesized;
+    /**
+     * Weather Service conf
+     */
+    const weatherOptions = NowPlayingContext_1.default.getConfigValue('weather');
+    weatherServiceUIConf.content.openWeatherMapApiKey.value = weatherOptions?.openWeatherMapApiKey ?? '';
+    const weatherCacheOptions = [
+        { value: 10, labelKey: 'NOW_PLAYING_WEATHER_CACHE_10_MIN' },
+        { value: 30, labelKey: 'NOW_PLAYING_WEATHER_CACHE_30_MIN' },
+        { value: 60, labelKey: 'NOW_PLAYING_WEATHER_CACHE_1_H' },
+        { value: 120, labelKey: 'NOW_PLAYING_WEATHER_CACHE_2_H' },
+        { value: 360, labelKey: 'NOW_PLAYING_WEATHER_CACHE_6_H' },
+        { value: 720, labelKey: 'NOW_PLAYING_WEATHER_CACHE_12_H' },
+        { value: 1440, labelKey: 'NOW_PLAYING_WEATHER_CACHE_24_H' }
+    ];
+    const allowedCacheValues = [10, 30, 60, 120, 360, 720, 1440];
+    const savedCacheMinutes = weatherOptions?.cacheMinutes ?? 10;
+    const resolvedCacheMinutes = allowedCacheValues.includes(savedCacheMinutes) ? savedCacheMinutes : 10;
+    const matchedCacheOption = weatherCacheOptions.find((o) => o.value === resolvedCacheMinutes) ?? weatherCacheOptions[0];
+    weatherServiceUIConf.content.weatherCacheMinutes.value = { value: String(matchedCacheOption.value), label: NowPlayingContext_1.default.getI18n(matchedCacheOption.labelKey) };
+    weatherServiceUIConf.content.weatherCacheMinutes.options = weatherCacheOptions.map((o) => ({ value: String(o.value), label: NowPlayingContext_1.default.getI18n(o.labelKey) }));
     metadataServiceUIConf.content.parenthesisType.value = {
         value: metadataServiceOptions.parenthesisType,
         label: ''
@@ -1529,6 +1573,7 @@ _ControllerNowPlaying_context = new WeakMap(), _ControllerNowPlaying_config = ne
             break;
     }
     idleScreenUIConf.content.waitTime.value = idleScreen.waitTime;
+    idleScreenUIConf.content.showClock.value = idleScreen.showClock;
     idleScreenUIConf.content.showLocation.value = idleScreen.showLocation;
     idleScreenUIConf.content.showWeather.value = idleScreen.showWeather;
     idleScreenUIConf.content.mainAlignment.value = {
@@ -1971,9 +2016,12 @@ _ControllerNowPlaying_context = new WeakMap(), _ControllerNowPlaying_config = ne
     }
 }, _ControllerNowPlaying_configureWeatherApi = function _ControllerNowPlaying_configureWeatherApi() {
     const localization = CommonSettingsLoader_1.default.get(now_playing_common_1.CommonSettingsCategory.Localization);
+    const weather = NowPlayingContext_1.default.getConfigValue('weather');
     WeatherAPI_1.default.setConfig({
         coordinates: localization.geoCoordinates,
-        units: localization.unitSystem
+        units: localization.unitSystem,
+        apiKey: weather?.openWeatherMapApiKey ?? '',
+        cacheMinutes: weather?.cacheMinutes ?? 10
     });
 }, _ControllerNowPlaying_broadcastPluginInfo = function _ControllerNowPlaying_broadcastPluginInfo() {
     const { message, payload } = this.getPluginInfo();

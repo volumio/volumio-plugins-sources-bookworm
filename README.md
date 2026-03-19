@@ -1,4 +1,4 @@
-# volumio-plugins-sources-bookworm
+# volumio-plugins-sources-bookworm (volumio 4.xxx)
 
 The repo for Volumio Bookworm plugins.
 
@@ -6,8 +6,7 @@ Bookworm version of Volumio required some adjustement for plugins due to new nod
 To learn more how to write a plugin for Volumio, [see](https://developers.volumio.com/plugins/submission-checklist)
 
 ## Volumio Bookworm 
-Public Beta is open. Please follow [Volumio Community thread](https://community.volumio.com/t/public-beta-test-audio-without-compromise-refining-the-future-of-volumio-on-bookworm/72576/).
-
+This is the current [version](https://volumio.com/get-started/)
 ---
 
 ## Steps to create/modify a plugin

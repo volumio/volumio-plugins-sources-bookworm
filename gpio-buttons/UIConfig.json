@@ -4,778 +4,692 @@
   },
   "sections": [
     {
-      "id": "gpio_setup",
+      "id": "button1_section",
       "element": "section",
-      "label": "Setup your GPIO button actions",
-      "icon": "fa-plug",
+      "label": "Button 1",
+      "icon": "fa-circle",
       "onSave": {"type":"controller", "endpoint":"system_hardware/gpio-buttons", "method":"saveConfig"},
       "saveButton": {
         "label": "Save",
         "data": [
-          "playPauseEnabled",
-          "playPausePin",
-          "volumeUpEnabled",
-          "volumeUpPin",
-          "volumeDownEnabled",
-          "volumeDownPin",
-          "previousEnabled",
-          "previousPin",
-          "nextEnabled",
-          "nextPin",
-          "shutdownEnabled",
-          "shutdownPin"
+          "button1Enabled",
+          "button1Pin",
+          "button1Action",
+          "button1EmitCommand",
+          "button1EmitEndpoint",
+          "button1EmitMethod",
+          "button1EmitData"
         ]
       },
       "content": [
         {
-          "id": "playPauseEnabled",
+          "id": "button1Enabled",
           "element": "switch",
-          "label": "Enable Play/pause",
+          "label": "Enable Button 1",
           "value": false
         },
         {
-          "id": "playPausePin",
+          "id": "button1Pin",
           "element": "select",
           "label": "GPIO Pin",
-          "value": {"value": 0,
-                    "label": "0"
-          },
-
+          "value": {"value": 17, "label": "17"},
           "options": [
-            {
-              "value": 2,
-              "label": "2"
-            },
-            {
-              "value": 3,
-              "label": "3"
-            },
-            {
-              "value": 4,
-              "label": "4"
-            },
-            {
-              "value": 5,
-              "label": "5"
-            },
-            {
-              "value": 6,
-              "label": "6"
-            },
-            {
-              "value": 7,
-              "label": "7"
-            },
-            {
-              "value": 8,
-              "label": "8"
-            },
-            {
-              "value": 9,
-              "label": "9"
-            },
-            {
-              "value": 10,
-              "label": "10"
-            },
-            {
-              "value": 11,
-              "label": "11"
-            },
-            {
-              "value": 12,
-              "label": "12"
-            },
-            {
-              "value": 13,
-              "label": "13"
-            },
-            {
-              "value": 14,
-              "label": "14"
-            },
-            {
-              "value": 15,
-              "label": "15"
-            },
-            {
-              "value": 16,
-              "label": "16"
-            },
-            {
-              "value": 17,
-              "label": "17"
-            },
-            {
-              "value": 18,
-              "label": "18"
-            },
-            {
-              "value": 19,
-              "label": "19"
-            },
-            {
-              "value": 20,
-              "label": "20"
-            },
-            {
-              "value": 21,
-              "label": "21"
-            },
-            {
-              "value": 22,
-              "label": "22"
-            },
-            {
-              "value": 23,
-              "label": "23"
-            },
-            {
-              "value": 24,
-              "label": "24"
-            },
-            {
-              "value": 25,
-              "label": "25"
-            },
-            {
-              "value": 26,
-              "label": "26"
-            },
-            {
-              "value": 27,
-              "label": "27"
-            }
+            {"value": 2, "label": "2"},
+            {"value": 3, "label": "3"},
+            {"value": 4, "label": "4"},
+            {"value": 5, "label": "5"},
+            {"value": 6, "label": "6"},
+            {"value": 7, "label": "7"},
+            {"value": 8, "label": "8"},
+            {"value": 9, "label": "9"},
+            {"value": 10, "label": "10"},
+            {"value": 11, "label": "11"},
+            {"value": 12, "label": "12"},
+            {"value": 13, "label": "13"},
+            {"value": 14, "label": "14"},
+            {"value": 15, "label": "15"},
+            {"value": 16, "label": "16"},
+            {"value": 17, "label": "17"},
+            {"value": 18, "label": "18"},
+            {"value": 19, "label": "19"},
+            {"value": 20, "label": "20"},
+            {"value": 21, "label": "21"},
+            {"value": 22, "label": "22"},
+            {"value": 23, "label": "23"},
+            {"value": 24, "label": "24"},
+            {"value": 25, "label": "25"},
+            {"value": 26, "label": "26"},
+            {"value": 27, "label": "27"}
           ],
-          "visibleIf": {
-            "field": "playPauseEnabled",
-            "value": true
-          }
+          "visibleIf": {"field": "button1Enabled", "value": true}
         },
         {
-          "id": "volumeUpEnabled",
+          "id": "button1Action",
+          "element": "select",
+          "label": "Action",
+          "doc": "Select the action to perform when button is pressed. Choose 'Custom Emit' to call any plugin method.",
+          "value": {"value": "playPause", "label": "Play/Pause"},
+          "options": [
+            {"value": "playPause", "label": "Play/Pause"},
+            {"value": "volumeUp", "label": "Volume Up"},
+            {"value": "volumeDown", "label": "Volume Down"},
+            {"value": "previous", "label": "Previous Track"},
+            {"value": "next", "label": "Next Track"},
+            {"value": "shutdown", "label": "Shutdown"},
+            {"value": "emit", "label": "Custom Emit"}
+          ],
+          "visibleIf": {"field": "button1Enabled", "value": true}
+        },
+        {
+          "id": "button1EmitCommand",
+          "element": "input",
+          "type": "text",
+          "label": "Socket Command",
+          "doc": "WebSocket command to emit. Use 'callMethod' to call plugin methods.",
+          "value": "callMethod",
+          "visibleIf": {"field": "button1Action", "value": "emit"}
+        },
+        {
+          "id": "button1EmitEndpoint",
+          "element": "input",
+          "type": "text",
+          "label": "Plugin Endpoint",
+          "doc": "Plugin endpoint path, e.g., 'user_interface/randomizer' or 'music_service/mpd'",
+          "value": "",
+          "visibleIf": {"field": "button1Action", "value": "emit"}
+        },
+        {
+          "id": "button1EmitMethod",
+          "element": "input",
+          "type": "text",
+          "label": "Method Name",
+          "doc": "Method to call on the plugin, e.g., 'randomAlbum' or 'clearQueue'",
+          "value": "",
+          "visibleIf": {"field": "button1Action", "value": "emit"}
+        },
+        {
+          "id": "button1EmitData",
+          "element": "input",
+          "type": "text",
+          "label": "Data (JSON)",
+          "doc": "Additional data as JSON string, e.g., {} or {\"key\":\"value\"}",
+          "value": "{}",
+          "visibleIf": {"field": "button1Action", "value": "emit"}
+        }
+      ]
+    },
+    {
+      "id": "button2_section",
+      "element": "section",
+      "label": "Button 2",
+      "icon": "fa-circle",
+      "onSave": {"type":"controller", "endpoint":"system_hardware/gpio-buttons", "method":"saveConfig"},
+      "saveButton": {
+        "label": "Save",
+        "data": [
+          "button2Enabled",
+          "button2Pin",
+          "button2Action",
+          "button2EmitCommand",
+          "button2EmitEndpoint",
+          "button2EmitMethod",
+          "button2EmitData"
+        ]
+      },
+      "content": [
+        {
+          "id": "button2Enabled",
           "element": "switch",
-          "label": "Enable Vol+",
+          "label": "Enable Button 2",
           "value": false
         },
         {
-          "id": "volumeUpPin",
+          "id": "button2Pin",
           "element": "select",
           "label": "GPIO Pin",
-          "value": {"value": 0,
-                    "label": "0"
-          },
-
+          "value": {"value": 18, "label": "18"},
           "options": [
-            {
-              "value": 2,
-              "label": "2"
-            },
-            {
-              "value": 3,
-              "label": "3"
-            },
-            {
-              "value": 4,
-              "label": "4"
-            },
-            {
-              "value": 5,
-              "label": "5"
-            },
-            {
-              "value": 6,
-              "label": "6"
-            },
-            {
-              "value": 7,
-              "label": "7"
-            },
-            {
-              "value": 8,
-              "label": "8"
-            },
-            {
-              "value": 9,
-              "label": "9"
-            },
-            {
-              "value": 10,
-              "label": "10"
-            },
-            {
-              "value": 11,
-              "label": "11"
-            },
-            {
-              "value": 12,
-              "label": "12"
-            },
-            {
-              "value": 13,
-              "label": "13"
-            },
-            {
-              "value": 14,
-              "label": "14"
-            },
-            {
-              "value": 15,
-              "label": "15"
-            },
-            {
-              "value": 16,
-              "label": "16"
-            },
-            {
-              "value": 17,
-              "label": "17"
-            },
-            {
-              "value": 18,
-              "label": "18"
-            },
-            {
-              "value": 19,
-              "label": "19"
-            },
-            {
-              "value": 20,
-              "label": "20"
-            },
-            {
-              "value": 21,
-              "label": "21"
-            },
-            {
-              "value": 22,
-              "label": "22"
-            },
-            {
-              "value": 23,
-              "label": "23"
-            },
-            {
-              "value": 24,
-              "label": "24"
-            },
-            {
-              "value": 25,
-              "label": "25"
-            },
-            {
-              "value": 26,
-              "label": "26"
-            },
-            {
-              "value": 27,
-              "label": "27"
-            }
+            {"value": 2, "label": "2"},
+            {"value": 3, "label": "3"},
+            {"value": 4, "label": "4"},
+            {"value": 5, "label": "5"},
+            {"value": 6, "label": "6"},
+            {"value": 7, "label": "7"},
+            {"value": 8, "label": "8"},
+            {"value": 9, "label": "9"},
+            {"value": 10, "label": "10"},
+            {"value": 11, "label": "11"},
+            {"value": 12, "label": "12"},
+            {"value": 13, "label": "13"},
+            {"value": 14, "label": "14"},
+            {"value": 15, "label": "15"},
+            {"value": 16, "label": "16"},
+            {"value": 17, "label": "17"},
+            {"value": 18, "label": "18"},
+            {"value": 19, "label": "19"},
+            {"value": 20, "label": "20"},
+            {"value": 21, "label": "21"},
+            {"value": 22, "label": "22"},
+            {"value": 23, "label": "23"},
+            {"value": 24, "label": "24"},
+            {"value": 25, "label": "25"},
+            {"value": 26, "label": "26"},
+            {"value": 27, "label": "27"}
           ],
-          "visibleIf": {
-            "field": "volumeUpEnabled",
-            "value": true
-          }
+          "visibleIf": {"field": "button2Enabled", "value": true}
         },
         {
-          "id": "volumeDownEnabled",
+          "id": "button2Action",
+          "element": "select",
+          "label": "Action",
+          "doc": "Select the action to perform when button is pressed. Choose 'Custom Emit' to call any plugin method.",
+          "value": {"value": "volumeUp", "label": "Volume Up"},
+          "options": [
+            {"value": "playPause", "label": "Play/Pause"},
+            {"value": "volumeUp", "label": "Volume Up"},
+            {"value": "volumeDown", "label": "Volume Down"},
+            {"value": "previous", "label": "Previous Track"},
+            {"value": "next", "label": "Next Track"},
+            {"value": "shutdown", "label": "Shutdown"},
+            {"value": "emit", "label": "Custom Emit"}
+          ],
+          "visibleIf": {"field": "button2Enabled", "value": true}
+        },
+        {
+          "id": "button2EmitCommand",
+          "element": "input",
+          "type": "text",
+          "label": "Socket Command",
+          "doc": "WebSocket command to emit. Use 'callMethod' to call plugin methods.",
+          "value": "callMethod",
+          "visibleIf": {"field": "button2Action", "value": "emit"}
+        },
+        {
+          "id": "button2EmitEndpoint",
+          "element": "input",
+          "type": "text",
+          "label": "Plugin Endpoint",
+          "doc": "Plugin endpoint path, e.g., 'user_interface/randomizer' or 'music_service/mpd'",
+          "value": "",
+          "visibleIf": {"field": "button2Action", "value": "emit"}
+        },
+        {
+          "id": "button2EmitMethod",
+          "element": "input",
+          "type": "text",
+          "label": "Method Name",
+          "doc": "Method to call on the plugin, e.g., 'randomAlbum' or 'clearQueue'",
+          "value": "",
+          "visibleIf": {"field": "button2Action", "value": "emit"}
+        },
+        {
+          "id": "button2EmitData",
+          "element": "input",
+          "type": "text",
+          "label": "Data (JSON)",
+          "doc": "Additional data as JSON string, e.g., {} or {\"key\":\"value\"}",
+          "value": "{}",
+          "visibleIf": {"field": "button2Action", "value": "emit"}
+        }
+      ]
+    },
+    {
+      "id": "button3_section",
+      "element": "section",
+      "label": "Button 3",
+      "icon": "fa-circle",
+      "onSave": {"type":"controller", "endpoint":"system_hardware/gpio-buttons", "method":"saveConfig"},
+      "saveButton": {
+        "label": "Save",
+        "data": [
+          "button3Enabled",
+          "button3Pin",
+          "button3Action",
+          "button3EmitCommand",
+          "button3EmitEndpoint",
+          "button3EmitMethod",
+          "button3EmitData"
+        ]
+      },
+      "content": [
+        {
+          "id": "button3Enabled",
           "element": "switch",
-          "label": "Enable Vol-",
+          "label": "Enable Button 3",
           "value": false
         },
         {
-          "id": "volumeDownPin",
+          "id": "button3Pin",
           "element": "select",
           "label": "GPIO Pin",
-          "value": {"value": 0,
-                    "label": "0"
-          },
-
+          "value": {"value": 22, "label": "22"},
           "options": [
-            {
-              "value": 2,
-              "label": "2"
-            },
-            {
-              "value": 3,
-              "label": "3"
-            },
-            {
-              "value": 4,
-              "label": "4"
-            },
-            {
-              "value": 5,
-              "label": "5"
-            },
-            {
-              "value": 6,
-              "label": "6"
-            },
-            {
-              "value": 7,
-              "label": "7"
-            },
-            {
-              "value": 8,
-              "label": "8"
-            },
-            {
-              "value": 9,
-              "label": "9"
-            },
-            {
-              "value": 10,
-              "label": "10"
-            },
-            {
-              "value": 11,
-              "label": "11"
-            },
-            {
-              "value": 12,
-              "label": "12"
-            },
-            {
-              "value": 13,
-              "label": "13"
-            },
-            {
-              "value": 14,
-              "label": "14"
-            },
-            {
-              "value": 15,
-              "label": "15"
-            },
-            {
-              "value": 16,
-              "label": "16"
-            },
-            {
-              "value": 17,
-              "label": "17"
-            },
-            {
-              "value": 18,
-              "label": "18"
-            },
-            {
-              "value": 19,
-              "label": "19"
-            },
-            {
-              "value": 20,
-              "label": "20"
-            },
-            {
-              "value": 21,
-              "label": "21"
-            },
-            {
-              "value": 22,
-              "label": "22"
-            },
-            {
-              "value": 23,
-              "label": "23"
-            },
-            {
-              "value": 24,
-              "label": "24"
-            },
-            {
-              "value": 25,
-              "label": "25"
-            },
-            {
-              "value": 26,
-              "label": "26"
-            },
-            {
-              "value": 27,
-              "label": "27"
-            }
+            {"value": 2, "label": "2"},
+            {"value": 3, "label": "3"},
+            {"value": 4, "label": "4"},
+            {"value": 5, "label": "5"},
+            {"value": 6, "label": "6"},
+            {"value": 7, "label": "7"},
+            {"value": 8, "label": "8"},
+            {"value": 9, "label": "9"},
+            {"value": 10, "label": "10"},
+            {"value": 11, "label": "11"},
+            {"value": 12, "label": "12"},
+            {"value": 13, "label": "13"},
+            {"value": 14, "label": "14"},
+            {"value": 15, "label": "15"},
+            {"value": 16, "label": "16"},
+            {"value": 17, "label": "17"},
+            {"value": 18, "label": "18"},
+            {"value": 19, "label": "19"},
+            {"value": 20, "label": "20"},
+            {"value": 21, "label": "21"},
+            {"value": 22, "label": "22"},
+            {"value": 23, "label": "23"},
+            {"value": 24, "label": "24"},
+            {"value": 25, "label": "25"},
+            {"value": 26, "label": "26"},
+            {"value": 27, "label": "27"}
           ],
-          "visibleIf": {
-            "field": "volumeDownEnabled",
-            "value": true
-          }
+          "visibleIf": {"field": "button3Enabled", "value": true}
         },
         {
-          "id": "previousEnabled",
+          "id": "button3Action",
+          "element": "select",
+          "label": "Action",
+          "doc": "Select the action to perform when button is pressed. Choose 'Custom Emit' to call any plugin method.",
+          "value": {"value": "volumeDown", "label": "Volume Down"},
+          "options": [
+            {"value": "playPause", "label": "Play/Pause"},
+            {"value": "volumeUp", "label": "Volume Up"},
+            {"value": "volumeDown", "label": "Volume Down"},
+            {"value": "previous", "label": "Previous Track"},
+            {"value": "next", "label": "Next Track"},
+            {"value": "shutdown", "label": "Shutdown"},
+            {"value": "emit", "label": "Custom Emit"}
+          ],
+          "visibleIf": {"field": "button3Enabled", "value": true}
+        },
+        {
+          "id": "button3EmitCommand",
+          "element": "input",
+          "type": "text",
+          "label": "Socket Command",
+          "doc": "WebSocket command to emit. Use 'callMethod' to call plugin methods.",
+          "value": "callMethod",
+          "visibleIf": {"field": "button3Action", "value": "emit"}
+        },
+        {
+          "id": "button3EmitEndpoint",
+          "element": "input",
+          "type": "text",
+          "label": "Plugin Endpoint",
+          "doc": "Plugin endpoint path, e.g., 'user_interface/randomizer' or 'music_service/mpd'",
+          "value": "",
+          "visibleIf": {"field": "button3Action", "value": "emit"}
+        },
+        {
+          "id": "button3EmitMethod",
+          "element": "input",
+          "type": "text",
+          "label": "Method Name",
+          "doc": "Method to call on the plugin, e.g., 'randomAlbum' or 'clearQueue'",
+          "value": "",
+          "visibleIf": {"field": "button3Action", "value": "emit"}
+        },
+        {
+          "id": "button3EmitData",
+          "element": "input",
+          "type": "text",
+          "label": "Data (JSON)",
+          "doc": "Additional data as JSON string, e.g., {} or {\"key\":\"value\"}",
+          "value": "{}",
+          "visibleIf": {"field": "button3Action", "value": "emit"}
+        }
+      ]
+    },
+    {
+      "id": "button4_section",
+      "element": "section",
+      "label": "Button 4",
+      "icon": "fa-circle",
+      "onSave": {"type":"controller", "endpoint":"system_hardware/gpio-buttons", "method":"saveConfig"},
+      "saveButton": {
+        "label": "Save",
+        "data": [
+          "button4Enabled",
+          "button4Pin",
+          "button4Action",
+          "button4EmitCommand",
+          "button4EmitEndpoint",
+          "button4EmitMethod",
+          "button4EmitData"
+        ]
+      },
+      "content": [
+        {
+          "id": "button4Enabled",
           "element": "switch",
-          "label": "Enable Previous",
+          "label": "Enable Button 4",
           "value": false
         },
         {
-          "id": "previousPin",
+          "id": "button4Pin",
           "element": "select",
           "label": "GPIO Pin",
-          "value": {"value": 0,
-                    "label": "0"
-          },
-
+          "value": {"value": 23, "label": "23"},
           "options": [
-            {
-              "value": 2,
-              "label": "2"
-            },
-            {
-              "value": 3,
-              "label": "3"
-            },
-            {
-              "value": 4,
-              "label": "4"
-            },
-            {
-              "value": 5,
-              "label": "5"
-            },
-            {
-              "value": 6,
-              "label": "6"
-            },
-            {
-              "value": 7,
-              "label": "7"
-            },
-            {
-              "value": 8,
-              "label": "8"
-            },
-            {
-              "value": 9,
-              "label": "9"
-            },
-            {
-              "value": 10,
-              "label": "10"
-            },
-            {
-              "value": 11,
-              "label": "11"
-            },
-            {
-              "value": 12,
-              "label": "12"
-            },
-            {
-              "value": 13,
-              "label": "13"
-            },
-            {
-              "value": 14,
-              "label": "14"
-            },
-            {
-              "value": 15,
-              "label": "15"
-            },
-            {
-              "value": 16,
-              "label": "16"
-            },
-            {
-              "value": 17,
-              "label": "17"
-            },
-            {
-              "value": 18,
-              "label": "18"
-            },
-            {
-              "value": 19,
-              "label": "19"
-            },
-            {
-              "value": 20,
-              "label": "20"
-            },
-            {
-              "value": 21,
-              "label": "21"
-            },
-            {
-              "value": 22,
-              "label": "22"
-            },
-            {
-              "value": 23,
-              "label": "23"
-            },
-            {
-              "value": 24,
-              "label": "24"
-            },
-            {
-              "value": 25,
-              "label": "25"
-            },
-            {
-              "value": 26,
-              "label": "26"
-            },
-            {
-              "value": 27,
-              "label": "27"
-            }
+            {"value": 2, "label": "2"},
+            {"value": 3, "label": "3"},
+            {"value": 4, "label": "4"},
+            {"value": 5, "label": "5"},
+            {"value": 6, "label": "6"},
+            {"value": 7, "label": "7"},
+            {"value": 8, "label": "8"},
+            {"value": 9, "label": "9"},
+            {"value": 10, "label": "10"},
+            {"value": 11, "label": "11"},
+            {"value": 12, "label": "12"},
+            {"value": 13, "label": "13"},
+            {"value": 14, "label": "14"},
+            {"value": 15, "label": "15"},
+            {"value": 16, "label": "16"},
+            {"value": 17, "label": "17"},
+            {"value": 18, "label": "18"},
+            {"value": 19, "label": "19"},
+            {"value": 20, "label": "20"},
+            {"value": 21, "label": "21"},
+            {"value": 22, "label": "22"},
+            {"value": 23, "label": "23"},
+            {"value": 24, "label": "24"},
+            {"value": 25, "label": "25"},
+            {"value": 26, "label": "26"},
+            {"value": 27, "label": "27"}
           ],
-          "visibleIf": {
-            "field": "previousEnabled",
-            "value": true
-          }
+          "visibleIf": {"field": "button4Enabled", "value": true}
         },
         {
-          "id": "nextEnabled",
+          "id": "button4Action",
+          "element": "select",
+          "label": "Action",
+          "doc": "Select the action to perform when button is pressed. Choose 'Custom Emit' to call any plugin method.",
+          "value": {"value": "previous", "label": "Previous Track"},
+          "options": [
+            {"value": "playPause", "label": "Play/Pause"},
+            {"value": "volumeUp", "label": "Volume Up"},
+            {"value": "volumeDown", "label": "Volume Down"},
+            {"value": "previous", "label": "Previous Track"},
+            {"value": "next", "label": "Next Track"},
+            {"value": "shutdown", "label": "Shutdown"},
+            {"value": "emit", "label": "Custom Emit"}
+          ],
+          "visibleIf": {"field": "button4Enabled", "value": true}
+        },
+        {
+          "id": "button4EmitCommand",
+          "element": "input",
+          "type": "text",
+          "label": "Socket Command",
+          "doc": "WebSocket command to emit. Use 'callMethod' to call plugin methods.",
+          "value": "callMethod",
+          "visibleIf": {"field": "button4Action", "value": "emit"}
+        },
+        {
+          "id": "button4EmitEndpoint",
+          "element": "input",
+          "type": "text",
+          "label": "Plugin Endpoint",
+          "doc": "Plugin endpoint path, e.g., 'user_interface/randomizer' or 'music_service/mpd'",
+          "value": "",
+          "visibleIf": {"field": "button4Action", "value": "emit"}
+        },
+        {
+          "id": "button4EmitMethod",
+          "element": "input",
+          "type": "text",
+          "label": "Method Name",
+          "doc": "Method to call on the plugin, e.g., 'randomAlbum' or 'clearQueue'",
+          "value": "",
+          "visibleIf": {"field": "button4Action", "value": "emit"}
+        },
+        {
+          "id": "button4EmitData",
+          "element": "input",
+          "type": "text",
+          "label": "Data (JSON)",
+          "doc": "Additional data as JSON string, e.g., {} or {\"key\":\"value\"}",
+          "value": "{}",
+          "visibleIf": {"field": "button4Action", "value": "emit"}
+        }
+      ]
+    },
+    {
+      "id": "button5_section",
+      "element": "section",
+      "label": "Button 5",
+      "icon": "fa-circle",
+      "onSave": {"type":"controller", "endpoint":"system_hardware/gpio-buttons", "method":"saveConfig"},
+      "saveButton": {
+        "label": "Save",
+        "data": [
+          "button5Enabled",
+          "button5Pin",
+          "button5Action",
+          "button5EmitCommand",
+          "button5EmitEndpoint",
+          "button5EmitMethod",
+          "button5EmitData"
+        ]
+      },
+      "content": [
+        {
+          "id": "button5Enabled",
           "element": "switch",
-          "label": "Enable Next",
+          "label": "Enable Button 5",
           "value": false
         },
         {
-          "id": "nextPin",
+          "id": "button5Pin",
           "element": "select",
           "label": "GPIO Pin",
-          "value": {"value": 0,
-                    "label": "0"
-          },
-
+          "value": {"value": 24, "label": "24"},
           "options": [
-            {
-              "value": 2,
-              "label": "2"
-            },
-            {
-              "value": 3,
-              "label": "3"
-            },
-            {
-              "value": 4,
-              "label": "4"
-            },
-            {
-              "value": 5,
-              "label": "5"
-            },
-            {
-              "value": 6,
-              "label": "6"
-            },
-            {
-              "value": 7,
-              "label": "7"
-            },
-            {
-              "value": 8,
-              "label": "8"
-            },
-            {
-              "value": 9,
-              "label": "9"
-            },
-            {
-              "value": 10,
-              "label": "10"
-            },
-            {
-              "value": 11,
-              "label": "11"
-            },
-            {
-              "value": 12,
-              "label": "12"
-            },
-            {
-              "value": 13,
-              "label": "13"
-            },
-            {
-              "value": 14,
-              "label": "14"
-            },
-            {
-              "value": 15,
-              "label": "15"
-            },
-            {
-              "value": 16,
-              "label": "16"
-            },
-            {
-              "value": 17,
-              "label": "17"
-            },
-            {
-              "value": 18,
-              "label": "18"
-            },
-            {
-              "value": 19,
-              "label": "19"
-            },
-            {
-              "value": 20,
-              "label": "20"
-            },
-            {
-              "value": 21,
-              "label": "21"
-            },
-            {
-              "value": 22,
-              "label": "22"
-            },
-            {
-              "value": 23,
-              "label": "23"
-            },
-            {
-              "value": 24,
-              "label": "24"
-            },
-            {
-              "value": 25,
-              "label": "25"
-            },
-            {
-              "value": 26,
-              "label": "26"
-            },
-            {
-              "value": 27,
-              "label": "27"
-            }
+            {"value": 2, "label": "2"},
+            {"value": 3, "label": "3"},
+            {"value": 4, "label": "4"},
+            {"value": 5, "label": "5"},
+            {"value": 6, "label": "6"},
+            {"value": 7, "label": "7"},
+            {"value": 8, "label": "8"},
+            {"value": 9, "label": "9"},
+            {"value": 10, "label": "10"},
+            {"value": 11, "label": "11"},
+            {"value": 12, "label": "12"},
+            {"value": 13, "label": "13"},
+            {"value": 14, "label": "14"},
+            {"value": 15, "label": "15"},
+            {"value": 16, "label": "16"},
+            {"value": 17, "label": "17"},
+            {"value": 18, "label": "18"},
+            {"value": 19, "label": "19"},
+            {"value": 20, "label": "20"},
+            {"value": 21, "label": "21"},
+            {"value": 22, "label": "22"},
+            {"value": 23, "label": "23"},
+            {"value": 24, "label": "24"},
+            {"value": 25, "label": "25"},
+            {"value": 26, "label": "26"},
+            {"value": 27, "label": "27"}
           ],
-          "visibleIf": {
-            "field": "nextEnabled",
-            "value": true
-          }
+          "visibleIf": {"field": "button5Enabled", "value": true}
         },
         {
-          "id": "shutdownEnabled",
+          "id": "button5Action",
+          "element": "select",
+          "label": "Action",
+          "doc": "Select the action to perform when button is pressed. Choose 'Custom Emit' to call any plugin method.",
+          "value": {"value": "next", "label": "Next Track"},
+          "options": [
+            {"value": "playPause", "label": "Play/Pause"},
+            {"value": "volumeUp", "label": "Volume Up"},
+            {"value": "volumeDown", "label": "Volume Down"},
+            {"value": "previous", "label": "Previous Track"},
+            {"value": "next", "label": "Next Track"},
+            {"value": "shutdown", "label": "Shutdown"},
+            {"value": "emit", "label": "Custom Emit"}
+          ],
+          "visibleIf": {"field": "button5Enabled", "value": true}
+        },
+        {
+          "id": "button5EmitCommand",
+          "element": "input",
+          "type": "text",
+          "label": "Socket Command",
+          "doc": "WebSocket command to emit. Use 'callMethod' to call plugin methods.",
+          "value": "callMethod",
+          "visibleIf": {"field": "button5Action", "value": "emit"}
+        },
+        {
+          "id": "button5EmitEndpoint",
+          "element": "input",
+          "type": "text",
+          "label": "Plugin Endpoint",
+          "doc": "Plugin endpoint path, e.g., 'user_interface/randomizer' or 'music_service/mpd'",
+          "value": "",
+          "visibleIf": {"field": "button5Action", "value": "emit"}
+        },
+        {
+          "id": "button5EmitMethod",
+          "element": "input",
+          "type": "text",
+          "label": "Method Name",
+          "doc": "Method to call on the plugin, e.g., 'randomAlbum' or 'clearQueue'",
+          "value": "",
+          "visibleIf": {"field": "button5Action", "value": "emit"}
+        },
+        {
+          "id": "button5EmitData",
+          "element": "input",
+          "type": "text",
+          "label": "Data (JSON)",
+          "doc": "Additional data as JSON string, e.g., {} or {\"key\":\"value\"}",
+          "value": "{}",
+          "visibleIf": {"field": "button5Action", "value": "emit"}
+        }
+      ]
+    },
+    {
+      "id": "button6_section",
+      "element": "section",
+      "label": "Button 6",
+      "icon": "fa-circle",
+      "onSave": {"type":"controller", "endpoint":"system_hardware/gpio-buttons", "method":"saveConfig"},
+      "saveButton": {
+        "label": "Save",
+        "data": [
+          "button6Enabled",
+          "button6Pin",
+          "button6Action",
+          "button6EmitCommand",
+          "button6EmitEndpoint",
+          "button6EmitMethod",
+          "button6EmitData"
+        ]
+      },
+      "content": [
+        {
+          "id": "button6Enabled",
           "element": "switch",
-          "label": "Enable Shutdown",
+          "label": "Enable Button 6",
           "value": false
         },
         {
-          "id": "shutdownPin",
+          "id": "button6Pin",
           "element": "select",
           "label": "GPIO Pin",
-          "value": {"value": 0,
-                    "label": "0"
-          },
-
+          "value": {"value": 3, "label": "3"},
           "options": [
-            {
-              "value": 2,
-              "label": "2"
-            },
-            {
-              "value": 3,
-              "label": "3"
-            },
-            {
-              "value": 4,
-              "label": "4"
-            },
-            {
-              "value": 5,
-              "label": "5"
-            },
-            {
-              "value": 6,
-              "label": "6"
-            },
-            {
-              "value": 7,
-              "label": "7"
-            },
-            {
-              "value": 8,
-              "label": "8"
-            },
-            {
-              "value": 9,
-              "label": "9"
-            },
-            {
-              "value": 10,
-              "label": "10"
-            },
-            {
-              "value": 11,
-              "label": "11"
-            },
-            {
-              "value": 12,
-              "label": "12"
-            },
-            {
-              "value": 13,
-              "label": "13"
-            },
-            {
-              "value": 14,
-              "label": "14"
-            },
-            {
-              "value": 15,
-              "label": "15"
-            },
-            {
-              "value": 16,
-              "label": "16"
-            },
-            {
-              "value": 17,
-              "label": "17"
-            },
-            {
-              "value": 18,
-              "label": "18"
-            },
-            {
-              "value": 19,
-              "label": "19"
-            },
-            {
-              "value": 20,
-              "label": "20"
-            },
-            {
-              "value": 21,
-              "label": "21"
-            },
-            {
-              "value": 22,
-              "label": "22"
-            },
-            {
-              "value": 23,
-              "label": "23"
-            },
-            {
-              "value": 24,
-              "label": "24"
-            },
-            {
-              "value": 25,
-              "label": "25"
-            },
-            {
-              "value": 26,
-              "label": "26"
-            },
-            {
-              "value": 27,
-              "label": "27"
-            }
+            {"value": 2, "label": "2"},
+            {"value": 3, "label": "3"},
+            {"value": 4, "label": "4"},
+            {"value": 5, "label": "5"},
+            {"value": 6, "label": "6"},
+            {"value": 7, "label": "7"},
+            {"value": 8, "label": "8"},
+            {"value": 9, "label": "9"},
+            {"value": 10, "label": "10"},
+            {"value": 11, "label": "11"},
+            {"value": 12, "label": "12"},
+            {"value": 13, "label": "13"},
+            {"value": 14, "label": "14"},
+            {"value": 15, "label": "15"},
+            {"value": 16, "label": "16"},
+            {"value": 17, "label": "17"},
+            {"value": 18, "label": "18"},
+            {"value": 19, "label": "19"},
+            {"value": 20, "label": "20"},
+            {"value": 21, "label": "21"},
+            {"value": 22, "label": "22"},
+            {"value": 23, "label": "23"},
+            {"value": 24, "label": "24"},
+            {"value": 25, "label": "25"},
+            {"value": 26, "label": "26"},
+            {"value": 27, "label": "27"}
           ],
-          "visibleIf": {
-            "field": "shutdownEnabled",
-            "value": true
-          }
+          "visibleIf": {"field": "button6Enabled", "value": true}
+        },
+        {
+          "id": "button6Action",
+          "element": "select",
+          "label": "Action",
+          "doc": "Select the action to perform when button is pressed. Choose 'Custom Emit' to call any plugin method.",
+          "value": {"value": "shutdown", "label": "Shutdown"},
+          "options": [
+            {"value": "playPause", "label": "Play/Pause"},
+            {"value": "volumeUp", "label": "Volume Up"},
+            {"value": "volumeDown", "label": "Volume Down"},
+            {"value": "previous", "label": "Previous Track"},
+            {"value": "next", "label": "Next Track"},
+            {"value": "shutdown", "label": "Shutdown"},
+            {"value": "emit", "label": "Custom Emit"}
+          ],
+          "visibleIf": {"field": "button6Enabled", "value": true}
+        },
+        {
+          "id": "button6EmitCommand",
+          "element": "input",
+          "type": "text",
+          "label": "Socket Command",
+          "doc": "WebSocket command to emit. Use 'callMethod' to call plugin methods.",
+          "value": "callMethod",
+          "visibleIf": {"field": "button6Action", "value": "emit"}
+        },
+        {
+          "id": "button6EmitEndpoint",
+          "element": "input",
+          "type": "text",
+          "label": "Plugin Endpoint",
+          "doc": "Plugin endpoint path, e.g., 'user_interface/randomizer' or 'music_service/mpd'",
+          "value": "",
+          "visibleIf": {"field": "button6Action", "value": "emit"}
+        },
+        {
+          "id": "button6EmitMethod",
+          "element": "input",
+          "type": "text",
+          "label": "Method Name",
+          "doc": "Method to call on the plugin, e.g., 'randomAlbum' or 'clearQueue'",
+          "value": "",
+          "visibleIf": {"field": "button6Action", "value": "emit"}
+        },
+        {
+          "id": "button6EmitData",
+          "element": "input",
+          "type": "text",
+          "label": "Data (JSON)",
+          "doc": "Additional data as JSON string, e.g., {} or {\"key\":\"value\"}",
+          "value": "{}",
+          "visibleIf": {"field": "button6Action", "value": "emit"}
         }
       ]
     }

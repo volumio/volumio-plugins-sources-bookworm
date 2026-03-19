@@ -1,7 +1,7 @@
 {
   "name": "fusiondsp",
-  "version": "2.0.74",
-  "description": "A complete Dsp centre for Volumio3",
+  "version": "2.0.91",
+  "description": "A complete Dsp centre for Volumio",
   "main": "index.js",
   "repository": "https://github.com/balbuze/volumio-plugins/tree/alsa_modular/plugins/audio_interface/FusionDsp",
   "scripts": {
@@ -16,7 +16,7 @@
     "os": [
       "bookworm"
     ],
-    "changelog": "camilla 3.0.1",
+    "changelog": "loudness strenght, smooth curve, preset manage",
     "details": "Multimode Dsp, with graphic equalizer, parametric equalizer, FIR filters, Loudness, AutoEq profile for headphone and more",
     "architectures": [
       "armhf",
@@ -30,12 +30,12 @@
     "kew": "^0.7.0",
     "msgpack-lite": "^0.1.26",
     "socket.io": "^2.3.0",
-    "socket.io-client": "^2.3.0",
+    "socket.io-client": "^1.7.4",
     "v-conf": "^1.4.3",
     "ws": "*"
   },
   "engines": {
-    "node": ">=8",
-    "volumio": ">=0"
+    "node": ">=20",
+    "volumio": ">=4"
   }
 }

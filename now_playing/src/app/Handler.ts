@@ -101,10 +101,17 @@ export async function api(apiName: string, method: string, params: Record<string
       });
     }
     catch (e: any) {
-      np.getLogger().error(np.getErrorMessage(`[now-playing] API endpoint ${apiName}/${method} returned error:`, e, true));
+      const isWeatherNotConfigured = e?.code === 'WEATHER_NOT_CONFIGURED';
+      if (isWeatherNotConfigured) {
+        np.getLogger().info(`[now-playing] Weather not configured: ${e.message || e}`);
+      }
+      else {
+        np.getLogger().error(np.getErrorMessage(`[now-playing] API endpoint ${apiName}/${method} returned error:`, e, true));
+      }
       res.json({
         success: false,
-        error: e.message || e
+        error: e.message || e,
+        code: e?.code ?? null
       });
     }
   }

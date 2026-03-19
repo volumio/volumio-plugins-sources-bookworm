@@ -1,0 +1,189 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_NAME"
+  },
+  "sections": [
+    {
+      "id": "plex_login",
+      "element": "section",
+      "label": "TRANSLATE.PLEX_LOGIN",
+      "icon": "fa-sign-in",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/plex",
+        "method": "applyPlexServer"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.PLEX_APPLY_SERVER",
+        "data": ["plexServer"]
+      },
+      "content": [
+        {
+          "id": "plex_login_btn",
+          "element": "button",
+          "label": "TRANSLATE.PLEX_LOGIN_BTN",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/plex",
+              "method": "startPlexLogin"
+            }
+          }
+        },
+        {
+          "id": "plexAuthUrl",
+          "type": "text",
+          "element": "input",
+          "doc": "TRANSLATE.PLEX_AUTH_URL_DOC",
+          "label": "TRANSLATE.PLEX_AUTH_URL",
+          "value": ""
+        },
+        {
+          "id": "plex_check_btn",
+          "element": "button",
+          "label": "TRANSLATE.PLEX_CHECK_LOGIN",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/plex",
+              "method": "checkPlexLogin"
+            }
+          }
+        },
+        {
+          "id": "plexServer",
+          "element": "select",
+          "label": "TRANSLATE.PLEX_SERVER_SELECT",
+          "value": { "value": "", "label": "" },
+          "options": []
+        }
+      ]
+    },
+    {
+      "id": "plex_connection",
+      "element": "section",
+      "label": "TRANSLATE.PLEX_CONNECTION",
+      "icon": "fa-server",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/plex",
+        "method": "saveConfig"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["host", "port", "token", "https"]
+      },
+      "content": [
+        {
+          "id": "host",
+          "type": "text",
+          "element": "input",
+          "doc": "TRANSLATE.PLEX_HOST_DOC",
+          "label": "TRANSLATE.PLEX_HOST",
+          "value": ""
+        },
+        {
+          "id": "port",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.PLEX_PORT_DOC",
+          "label": "TRANSLATE.PLEX_PORT",
+          "value": ""
+        },
+        {
+          "id": "token",
+          "type": "password",
+          "element": "input",
+          "doc": "TRANSLATE.PLEX_TOKEN_DOC",
+          "label": "TRANSLATE.PLEX_TOKEN",
+          "value": ""
+        },
+        {
+          "id": "https",
+          "type": "switch",
+          "element": "switch",
+          "doc": "TRANSLATE.PLEX_HTTPS_DOC",
+          "label": "TRANSLATE.PLEX_HTTPS",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": "plex_browse",
+      "element": "section",
+      "label": "TRANSLATE.PLEX_BROWSE",
+      "icon": "fa-music",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/plex",
+        "method": "saveBrowseOptions"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["shuffle", "pageSize"]
+      },
+      "content": [
+        {
+          "id": "shuffle",
+          "type": "switch",
+          "element": "switch",
+          "doc": "TRANSLATE.PLEX_SHUFFLE_DOC",
+          "label": "TRANSLATE.PLEX_SHUFFLE",
+          "value": false
+        },
+        {
+          "id": "pageSize",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.PLEX_PAGE_SIZE_DOC",
+          "label": "TRANSLATE.PLEX_PAGE_SIZE",
+          "value": 100
+        }
+      ]
+    },
+    {
+      "id": "plex_playback",
+      "element": "section",
+      "label": "TRANSLATE.PLEX_PLAYBACK",
+      "icon": "fa-play",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/plex",
+        "method": "savePlaybackOptions"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["gaplessPlayback", "crossfadeEnabled", "crossfadeDuration"]
+      },
+      "content": [
+        {
+          "id": "gaplessPlayback",
+          "type": "switch",
+          "element": "switch",
+          "doc": "TRANSLATE.PLEX_GAPLESS_PLAYBACK_DOC",
+          "label": "TRANSLATE.PLEX_GAPLESS_PLAYBACK",
+          "value": true
+        },
+        {
+          "id": "crossfadeEnabled",
+          "type": "switch",
+          "element": "switch",
+          "doc": "TRANSLATE.PLEX_CROSSFADE_ENABLED_DOC",
+          "label": "TRANSLATE.PLEX_CROSSFADE_ENABLED",
+          "value": false
+        },
+        {
+          "id": "crossfadeDuration",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.PLEX_CROSSFADE_DURATION_DOC",
+          "label": "TRANSLATE.PLEX_CROSSFADE_DURATION",
+          "value": 5,
+          "visibleIf": { "field": "crossfadeEnabled", "value": true }
+        }
+      ]
+    }
+  ]
+}

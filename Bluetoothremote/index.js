@@ -1,4 +1,4 @@
-//b@lbuze 2025 July
+//b@lbuze November 2025
 
 'use strict';
 
@@ -41,7 +41,7 @@ Bluetooth_Remote.prototype.onStart = function () {
     setTimeout(() => {
         //        self.scanBT()
         self.reconnectTrustedDevices();
-       // self.pairBtDevice();
+        // self.pairBtDevice();
         self.clearDeviceList();
 
         //  self.connect()
@@ -295,20 +295,47 @@ Bluetooth_Remote.prototype.stopScan = function () {
     });
 };
 
-
 Bluetooth_Remote.prototype.scanBT = function () {
     const self = this;
-    const DEVICE_TIMEOUT_MS = 60000; // 1 minute timeout for stale devices
-    const REFRESH_INFO_INTERVAL = 10000;
-    const PRUNE_INTERVAL = 10000;
-    const SCAN_DURATION_MS = 60000;
-    self.scanTimeout = null;
+    const REFRESHINFOINTERVAL = 2000;
+    const PRUNEINTERVAL = 5000; // prune every 5s
+    const SCANDURATIONMS = 25000;
+    const DEVICE_TIMEOUT = 10000; // prune devices unseen for >10s
+
+    // --- state ---
     self.discoveredDevices = {};
     self.scanningActive = true;
+    self.scanStartTime = Date.now();
+    self.lastModalMessage = '';
+    self.lastModalSent = 0;
 
-    let refreshInterval, pruneInterval;
+    // --- modal helper ---
+    function showOrUpdateModal(title, message) {
+        const now = Date.now();
+        if (message !== self.lastModalMessage || now - self.lastModalSent > 1000) {
+            self.commandRouter.broadcastMessage('openModal', { title, message, size: 'lg' });
+            self.lastModalMessage = message;
+            self.lastModalSent = now;
+        }
+    }
+    function isValidNamedDevice(d) {
+        if (!d.name || !d.address) return false;
+
+        // Normalize both name and address to only alphanumeric uppercase (no : or -)
+        const nameNorm = d.name.replace(/[^A-F0-9]/gi, '').toUpperCase();
+        const addrNorm = d.address.replace(/[^A-F0-9]/gi, '').toUpperCase();
+
+        // If the normalized name looks like the address, skip it
+        if (nameNorm === addrNorm) return false;
+
+        // Some devices show the first or last part of the address as name
+        if (addrNorm.includes(nameNorm) || nameNorm.includes(addrNorm)) return false;
+
+        return true;
+    }
 
 
+    // --- decode + classify helpers ---
     function decodeBlobData(data) {
         let decodedData = data.toString('utf8');
         decodedData = decodedData.replace(/\x1B\[[0-?9;]*[mK]/g, '');
@@ -331,135 +358,126 @@ Bluetooth_Remote.prototype.scanBT = function () {
         );
     }
 
-    function saveRemoteDevices() {
-        const filePath = path.join(__dirname, 'remote_devices.json');
-        exec('bluetoothctl devices', (err, stdout, stderr) => {
-            if (err || !stdout) {
-                const errorMsg = stderr || (err ? err.message : 'Unknown error');
-                self.logger.error(logPrefix + 'Failed to list bluetooth devices: ' + errorMsg);
-                return;
+    // --- live modal update ---
+    const modalInterval = setInterval(() => {
+        if (!self.scanningActive) return clearInterval(modalInterval);
+        const remaining = Math.max(0, Math.round((SCANDURATIONMS - (Date.now() - self.scanStartTime)) / 1000));
+
+        // Deduplicate names
+        const allDevices = Object.values(self.discoveredDevices)
+            .filter(d => isValidNamedDevice(d))
+            .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+
+
+        const displayList = [];
+
+        allDevices.forEach(d => {
+            if (isInputDevice(d.rawInfo)) {
+                displayList.push(`✅ ${d.name}`);
+            } else if (!d.rawInfo) {
+                displayList.push(`⏳ ${d.name} (detecting type...)`);
             }
-
-            const lines = stdout.trim().split('\n');
-            const devices = [];
-            let pending = lines.length;
-            if (pending === 0) return writeDevices([]);
-
-            lines.forEach(line => {
-                const match = line.match(/^Device\s+([0-9A-F:]+)\s+(.+)$/i);
-                if (!match) {
-                    if (--pending === 0) writeDevices(devices);
-                    return;
-                }
-
-                const address = match[1];
-                const name = match[2];
-
-                exec(`bluetoothctl info ${address}`, (infoErr, infoOut) => {
-                    if (!infoErr && isInputDevice(infoOut)) {
-                        devices.push({ address, name });
-                    }
-                    if (--pending === 0) writeDevices(devices);
-                });
-            });
         });
 
-        function writeDevices(devices) {
-            // ✅ Prevent writing if scanning was already stopped
-            if (!self.scanningActive) {
-                self.logger.info(logPrefix + 'writeDevices skipped: scan already stopped.');
-                return;
-            }
 
-            const filePath = path.join(__dirname, 'remote_devices.json');
-
-            if (devices.length === 0) {
-                devices.push({
-                    address: 'xx',
-                    name: 'No input device found. Please scan again.'
-                });
-                self.config.set('BT_device', {
-                    name: 'No BT remote control device found',
-                    address: 'xx'
-                });
-            }
-
-            try {
-                fs.writeFileSync(filePath, JSON.stringify(devices, null, 2));
-                self.logger.info(logPrefix + `Saved ${devices.length} input-capable devices to ${filePath}`);
-            } catch (err) {
-                self.logger.error(logPrefix + `Failed to write remote_devices.json: ${err.message}`);
-            }
-
-            self.refreshUI();
+        let msg = `🔄 Scanning...Ensure your device is in pairing mode. (${remaining}s left)<br><br>`;
+        if (displayList.length > 0) {
+            msg += displayList.join('<br>');
+            self.config.set('BT_device', {
+                name: 'Choose a device',
+                address: 'xx'
+            });
+        } else {
+            msg += '(No devices detected yet)<br>Ensure your device is in pairing mode.';
         }
 
+        showOrUpdateModal('🔍 Bluetooth Scan 🔍', msg);
+    }, 1000);
+
+    // --- save results ---
+    function saveRemoteDevices() {
+        const filePath = '/data/plugins/system_hardware/Bluetoothremote/remote_devices.json';
+        const devices = Object.values(self.discoveredDevices)
+            .filter(d => d.rawInfo && isValidNamedDevice(d) && isInputDevice(d.rawInfo))
+            .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+            .map(d => ({ address: d.address, name: d.name }));
+
+
+        if (devices.length === 0) {
+            devices.push({ address: 'xx', name: 'No input device found. Please scan again.' });
+            self.config.set('BT_device', { name: 'No BT remote control device found', address: 'xx' });
+        }
+
+        try {
+            fs.writeFileSync(filePath, JSON.stringify(devices, null, 2));
+            self.logger.info(logPrefix + `Saved ${devices.length} input-capable devices to ${filePath}`);
+        } catch (err) {
+            self.logger.error(logPrefix + `Failed to write remote_devices.json: ${err.message}`);
+        }
+
+        self.refreshUI();
     }
 
-    function executeBluetoothctlCommand(commands) {
+    // --- prune stale devices ---
+    const pruneInterval = setInterval(() => {
+        const now = Date.now();
+        let removed = 0;
+        Object.keys(self.discoveredDevices).forEach(addr => {
+            if (now - self.discoveredDevices[addr].lastSeen > DEVICE_TIMEOUT) {
+                delete self.discoveredDevices[addr];
+                removed++;
+            }
+        });
+        if (removed > 0) self.logger.info(logPrefix + `Pruned ${removed} stale devices`);
+        saveRemoteDevices();
+    }, PRUNEINTERVAL);
+
+    // --- scanning ---
+    async function executeBluetoothctlCommand(commands) {
         return new Promise((resolve, reject) => {
             const bluetoothctl = spawn('bluetoothctl');
             self.btctl = bluetoothctl;
 
-            bluetoothctl.stdout.on('data', (data) => {
+            bluetoothctl.stdout.on('data', data => {
                 const response = decodeBlobData(data);
                 self.logger.info(logPrefix + response);
-
-                if (response.includes('DeviceSet') && response.includes('not available')) {
-                    const addrMatch = response.match(/DeviceSet\s+([0-9A-F:]+)/);
-                    if (addrMatch) {
-                        delete self.discoveredDevices[addrMatch[1]];
-                    }
-                    return;
-                }
-
-                if (response.includes('Device') && response.includes('not available')) {
-                    const addrMatch = response.match(/Device\s+([0-9A-F:]+)/);
-                    if (addrMatch) {
-                        delete self.discoveredDevices[addrMatch[1]];
-                    }
-                    return;
-                }
 
                 const newDeviceMatch = response.match(/\[NEW\] Device ([0-9A-F:]+) (.+)/);
                 if (newDeviceMatch) {
                     const addr = newDeviceMatch[1];
                     const name = newDeviceMatch[2];
-                    self.discoveredDevices[addr] = {
-                        address: addr,
-                        name: name,
-                        lastSeen: Date.now(),
-                        rawInfo: ''
-                    };
-                    bluetoothctl.stdin.write(`info ${addr}\n`);
+                    if (!self.discoveredDevices[addr]) {
+                        self.discoveredDevices[addr] = { address: addr, name, lastSeen: Date.now(), rawInfo: '' };
+                        bluetoothctl.stdin.write(`info ${addr}\n`);
+                    } else {
+                        self.discoveredDevices[addr].lastSeen = Date.now();
+                        if (name && name !== self.discoveredDevices[addr].name)
+                            self.discoveredDevices[addr].name = name;
+                    }
                 }
 
-                const nameMatch = response.match(/Name:\s+(.+)/);
                 const addrMatch = response.match(/Device ([0-9A-F:]+)/);
                 if (addrMatch) {
                     const addr = addrMatch[1];
                     if (self.discoveredDevices[addr]) {
-                        if (nameMatch) {
-                            self.discoveredDevices[addr].name = nameMatch[1];
-                        }
                         self.discoveredDevices[addr].rawInfo += response + '\n';
                         self.discoveredDevices[addr].lastSeen = Date.now();
                     }
                 }
             });
 
-            bluetoothctl.stderr.on('data', (data) => {
+            bluetoothctl.stderr.on('data', data => {
                 self.logger.error(logPrefix + `[stderr]: ${decodeBlobData(data)}`);
             });
 
-            bluetoothctl.on('close', (code) => {
+            bluetoothctl.on('close', code => {
                 self.logger.info(logPrefix + `bluetoothctl exited with code ${code}`);
                 self.scanningActive = false;
                 resolve();
             });
 
-            bluetoothctl.on('error', (err) => {
-                self.logger.error(logPrefix + 'bluetoothctl error: ', err);
+            bluetoothctl.on('error', err => {
+                self.logger.error(logPrefix + 'bluetoothctl error: ' + err.message);
                 reject(err);
             });
 
@@ -467,34 +485,46 @@ Bluetooth_Remote.prototype.scanBT = function () {
         });
     }
 
+    // --- stop scanning ---
     function stopScan() {
-        self.scanningActive = false; // Set early to avoid race conditions
+        self.scanningActive = false;
+        clearInterval(modalInterval);
+        clearInterval(pruneInterval);
+        clearTimeout(self.scanTimeout);
 
         if (self.btctl && self.btctl.stdin.writable) {
             self.logger.info(logPrefix + 'Stopping Bluetooth scan after timeout...');
-            self.commandRouter.pushToastMessage('info', 'Bluetooth Remote', 'Scan terminated! Re scan if needed!');
             self.btctl.stdin.write('scan off\n');
             self.btctl.stdin.end();
-            self.clearDeviceList();
         }
 
-        if (refreshInterval) clearInterval(refreshInterval);
-        if (pruneInterval) clearInterval(pruneInterval);
+        saveRemoteDevices();
+        const devices = Object.values(self.discoveredDevices)
+            .filter(d => isValidNamedDevice(d) && isInputDevice(d.rawInfo))
+            .map(d => d.name)
+            .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+
+        const msg = devices.length
+            ? '📱 Input devices found:<br>' + devices.map(n => '• ' + n).join('<br>')
+            : 'No input devices found.<br>Please scan again.';
+        showOrUpdateModal('✅ Scan Complete! Choose your device in the list', msg);
+
+        setTimeout(() => self.commandRouter.closeModals(), 3000);
     }
 
+    // --- run scan ---
     async function runBluetoothScan() {
         try {
             self.logger.info(logPrefix + 'Starting Bluetooth scan...');
-            self.commandRouter.pushToastMessage('info', 'Bluetooth Remote', 'Scan in progress for 60 seconds...🔥, Set your device on Pairing mode!, Open the list (may take 10sec)');
+            showOrUpdateModal('🔄 Bluetooth Scan', 'Starting scan...<br>Set your device in pairing mode.');
             await executeBluetoothctlCommand(['power on', 'scan on']);
         } catch (error) {
             self.logger.error(logPrefix + 'Bluetooth scan failed: ' + error.message);
+            showOrUpdateModal('❌ Scan Error', `Bluetooth scan failed: ${error.message}`);
         }
     }
 
-    runBluetoothScan();
-
-    // Refresh device info
+    // --- refresh info periodically ---
     self.refreshInterval = setInterval(() => {
         if (self.btctl && self.btctl.stdin.writable) {
             Object.keys(self.discoveredDevices).forEach(addr => {
@@ -502,20 +532,17 @@ Bluetooth_Remote.prototype.scanBT = function () {
                 self.btctl.stdin.write(`info ${addr}\n`);
             });
         }
-    }, REFRESH_INFO_INTERVAL);
+    }, REFRESHINFOINTERVAL);
 
-    // Prune and save device list
-    self.pruneInterval = setInterval(() => {
-        saveRemoteDevices();
-    }, PRUNE_INTERVAL);
-
-    // Auto-stop scan after 60s
-
+    // --- timeout ---
     self.scanTimeout = setTimeout(() => {
         stopScan();
-        self.logger.info(logPrefix + 'Bluetooth scan ended after 60 seconds.');
-    }, SCAN_DURATION_MS);
+        self.logger.info(logPrefix + 'Bluetooth scan ended after timeout.');
+    }, SCANDURATIONMS);
+
+    runBluetoothScan();
 };
+
 
 Bluetooth_Remote.prototype.disconnectBT = function (data) {
     const self = this;
@@ -545,11 +572,12 @@ Bluetooth_Remote.prototype.disconnectBT = function (data) {
             // ✅ Refresh UI AFTER successful disconnect
             setTimeout(() => {
                 self.refreshUI();
-            }, 2300); // delay slightly after disconnect
+            }, 1000); // delay slightly after disconnect
 
             defer.resolve();
         }
     });
+    self.refreshUI();
 
     return defer.promise;
 };
@@ -663,6 +691,11 @@ Bluetooth_Remote.prototype.pairBtDevice = function () {
             self.logger.info(logPrefix + `✅ Connection confirmed: ${target.name} (${address})`);
             self.config.set('Connected_BT_device', { name: target.name, address: address });
         }
+        if (msg.includes('Request authorization') || msg.includes('[agent] Accept pairing')) {
+            self.logger.info(logPrefix + 'Auto-accepting Bluetooth pairing request');
+            bluetoothctl.stdin.write('yes\n');
+        }
+
     });
 
     bluetoothctl.stderr.on('data', (data) => {
@@ -695,15 +728,32 @@ Bluetooth_Remote.prototype.pairBtDevice = function () {
         self.logger.error(logPrefix + `bluetoothctl error: ${err.message}`);
         defer.reject(err);
     });
-
     (async () => {
         for (const cmd of commands) {
             await sendCommand(cmd);
         }
-        setTimeout(() => {
-            bluetoothctl.stdin.write('quit\n');
-        }, 1000);
+
+        let connected = false;
+        let waited = 0;
+
+        self.logger.info(logPrefix + 'Waiting for device to confirm connection...');
+
+        while (!connected && waited < 15000) { // max 15s wait
+            if (output.includes('Connection successful') || output.includes('Device is already connected')) {
+                connected = true;
+                break;
+            }
+            await new Promise(r => setTimeout(r, 1000));
+            waited += 1000;
+        }
+
+        if (!connected) {
+            self.logger.warn(logPrefix + 'Connection not confirmed after waiting period.');
+        }
+
+        bluetoothctl.stdin.write('quit\n');
     })();
+
 
     return defer.promise;
 };
@@ -724,7 +774,7 @@ Bluetooth_Remote.prototype.refreshUI = function () {
         respconfig.then(function (config) {
             self.commandRouter.broadcastMessage('pushUiConfig', config);
         });
-        self.commandRouter.closeModals();
+        // self.commandRouter.closeModals();
     }, 510);
 };
 
@@ -734,8 +784,8 @@ Bluetooth_Remote.prototype.clearDeviceList = function () {
     var path = '/data/plugins/system_hardware/Bluetoothremote/remote_devices.json';
     const placeholder = [
         {
-            address: "Press scan to detect BT device",
-            name: "xx"
+            address: "xx",
+            name: "Press scan to detect BT device"
         }
     ];
 
