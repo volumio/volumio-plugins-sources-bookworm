@@ -1,0 +1,62 @@
+{
+  "port": {
+    "type": "number",
+    "value": 3339
+  },
+  "playerType": {
+    "type": "string",
+    "value": "albumArt"
+  },
+  "latitude": {
+    "type": "string",
+    "value": ""
+  },
+  "longitude": {
+    "type": "string",
+    "value": ""
+  },
+  "weatherApiKey": {
+    "type": "string",
+    "value": ""
+  },
+  "unitSystem": {
+    "type": "string",
+    "value": "metric"
+  },
+  "idleScreen": {
+    "type": "string",
+    "value": "analogClock"
+  },
+  "idleTimeout": {
+    "type": "number",
+    "value": 5
+  },
+  "showWeatherInClock": {
+    "type": "boolean",
+    "value": true
+  },
+  "unsplashApiKey": {
+    "type": "string",
+    "value": ""
+  },
+  "wallpaperUrl": {
+    "type": "string",
+    "value": ""
+  },
+  "wallpaperShowTime": {
+    "type": "boolean",
+    "value": true
+  },
+  "wallpaperShowSeconds": {
+    "type": "boolean",
+    "value": false
+  },
+  "wallpaperShowWeather": {
+    "type": "boolean",
+    "value": true
+  },
+  "slideshowInterval": {
+    "type": "number",
+    "value": 30
+  }
+}

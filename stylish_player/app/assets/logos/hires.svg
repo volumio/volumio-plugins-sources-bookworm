@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40">
+  <rect x="2" y="2" width="96" height="36" rx="0" ry="0" fill="currentColor" stroke="none"/>
+  <text x="50" y="23" text-anchor="middle" font-family="'Michroma', 'Arial Black', sans-serif" font-weight="900"
+        font-size="16" letter-spacing="1" fill="var(--bg-color, #fff)">Hi-Res
+  </text>
+  <text x="50" y="34" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="8" letter-spacing="3"
+        fill="var(--bg-color, #fff)">AUDIO
+  </text>
+</svg>

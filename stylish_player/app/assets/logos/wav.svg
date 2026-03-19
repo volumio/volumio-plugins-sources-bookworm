@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40">
+  <rect x="2" y="2" width="96" height="36" rx="4" ry="4" fill="none" stroke="currentColor" stroke-width="3"/>
+  <text x="50" y="27" text-anchor="middle" font-family="Arial, sans-serif" font-weight="900" font-size="22"
+        fill="currentColor">WAV
+  </text>
+</svg>
