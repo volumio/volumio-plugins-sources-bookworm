@@ -3,11 +3,20 @@
 var libQ = require('kew');
 var fs = require('fs-extra');
 var path = require('path');
+var spawn = require('child_process').spawn;
+// Must match Volumio socket.io server (v1.7.4) to avoid parser/protocol mismatch; see gpio-buttons.
+var io = require('socket.io-client');
 
 var mpdConfPath = '/etc/mpd.conf';
 var SENTINEL_BEGIN = '    # audio_keepalive_begin';
 var SENTINEL_END = '    # audio_keepalive_end';
 var LOG_PREFIX = 'AudioKeepalive: ';
+var FEEDER_KILL_TIMEOUT_MS = 3000;
+var FEEDER_RESTART_INITIAL_MS = 5000;
+var FEEDER_RESTART_MAX_MS = 60000;
+var STATE_PLAYING = 'play';
+var STATE_PAUSED = 'pause';
+var STATE_STOPPED = 'stop';
 
 module.exports = AudioKeepalive;
 
@@ -15,6 +24,14 @@ function AudioKeepalive(context) {
     this.context = context;
     this.commandRouter = this.context.coreCommand;
     this.logger = this.context.logger;
+
+    this._feederPid = null;
+    this._feederState = 'stopped';
+    this._originalVolumioPlay = null;
+    this._idleTimer = null;
+    this._stateSocket = null;
+    this._feederRestartTimer = null;
+    this._feederRestartDelayMs = FEEDER_RESTART_INITIAL_MS;
 }
 
 // ---------------------------------------------------------------------------
@@ -34,10 +51,16 @@ AudioKeepalive.prototype.getConfigurationFiles = function () {
 
 AudioKeepalive.prototype.onStart = function () {
     var self = this;
+    var mode = self.config.get('keepalive_mode') || 'mpd_config';
 
     self.commandRouter.sharedVars.registerCallback('alsa.outputdevice', self.onAlsaConfigChange.bind(self));
     self.commandRouter.sharedVars.registerCallback('alsa.outputdevicemixer', self.onAlsaConfigChange.bind(self));
     self.commandRouter.sharedVars.registerCallback('alsa.device', self.onAlsaConfigChange.bind(self));
+
+    if (mode === 'silence_feeder' && self.config.get('keepalive_enabled')) {
+        self._installVolumioPlayWrapper();
+        self._registerPushStateListener();
+    }
 
     self.waitForSystemReadyAndPatch();
 
@@ -47,20 +70,218 @@ AudioKeepalive.prototype.onStart = function () {
 AudioKeepalive.prototype.onStop = function () {
     var self = this;
     var defer = libQ.defer();
+    var mode = self.config.get('keepalive_mode') || 'mpd_config';
 
-    self.removePatch()
-        .then(function () {
-            defer.resolve();
-        })
-        .fail(function () {
-            defer.resolve();
-        });
+    if (self._idleTimer) {
+        clearTimeout(self._idleTimer);
+        self._idleTimer = null;
+    }
+    if (mode === 'silence_feeder') {
+        if (self._feederRestartTimer) {
+            clearTimeout(self._feederRestartTimer);
+            self._feederRestartTimer = null;
+        }
+        self._killFeederAndWait()
+            .then(function () {
+                self._restoreVolumioPlay();
+                if (self._stateSocket) {
+                    self._stateSocket.removeAllListeners('pushState');
+                    self._stateSocket.removeAllListeners('connect');
+                    self._stateSocket.removeAllListeners('connect_error');
+                    self._stateSocket.removeAllListeners('disconnect');
+                    self._stateSocket.disconnect();
+                    self._stateSocket = null;
+                }
+                return self.removePatch();
+            })
+            .then(function () {
+                defer.resolve();
+            })
+            .fail(function () {
+                defer.resolve();
+            });
+    } else {
+        self.removePatch()
+            .then(function () {
+                defer.resolve();
+            })
+            .fail(function () {
+                defer.resolve();
+            });
+    }
 
     return defer.promise;
 };
 
 AudioKeepalive.prototype.onRestart = function () {
     this.patchMpd();
+};
+
+// ---------------------------------------------------------------------------
+// Silence feeder (Mode 2: HDMI)
+// ---------------------------------------------------------------------------
+
+AudioKeepalive.prototype._installVolumioPlayWrapper = function () {
+    var self = this;
+    if (this.commandRouter.volumioPlay && !this._originalVolumioPlay) {
+        this._originalVolumioPlay = this.commandRouter.volumioPlay.bind(this.commandRouter);
+        this.commandRouter.volumioPlay = function () {
+            var args = arguments;
+            if (self._idleTimer) {
+                clearTimeout(self._idleTimer);
+                self._idleTimer = null;
+            }
+            if (self._feederRestartTimer) {
+                clearTimeout(self._feederRestartTimer);
+                self._feederRestartTimer = null;
+            }
+            return self._killFeederAndWait().then(function () {
+                return self._originalVolumioPlay.apply(self.commandRouter, args);
+            });
+        };
+        this.logger.info(LOG_PREFIX + 'volumioPlay wrapper installed');
+    }
+};
+
+AudioKeepalive.prototype._restoreVolumioPlay = function () {
+    if (this._originalVolumioPlay) {
+        this.commandRouter.volumioPlay = this._originalVolumioPlay;
+        this._originalVolumioPlay = null;
+        this.logger.info(LOG_PREFIX + 'volumioPlay wrapper removed');
+    }
+};
+
+AudioKeepalive.prototype._killFeeder = function () {
+    if (this._feederPid == null) return;
+    try {
+        process.kill(this._feederPid, 'SIGTERM');
+    } catch (e) {
+        this.logger.debug(LOG_PREFIX + 'Feeder kill: ' + e.message);
+    }
+    this._feederPid = null;
+    this._feederState = 'stopped';
+};
+
+AudioKeepalive.prototype._killFeederAndWait = function () {
+    var self = this;
+    var defer = libQ.defer();
+    if (this._feederPid == null) {
+        defer.resolve();
+        return defer.promise;
+    }
+
+    var pid = this._feederPid;
+    this._feederPid = null;
+    this._feederState = 'stopped';
+    try {
+        process.kill(pid, 'SIGTERM');
+    } catch (e) {
+        self.logger.debug(LOG_PREFIX + 'Feeder kill: ' + e.message);
+        defer.resolve();
+        return defer.promise;
+    }
+
+    var deadline = Date.now() + FEEDER_KILL_TIMEOUT_MS;
+    function poll() {
+        if (Date.now() > deadline) {
+            try { process.kill(pid, 'SIGKILL'); } catch (e) {}
+            defer.resolve();
+            return;
+        }
+        try {
+            process.kill(pid, 0);
+        } catch (e) {
+            defer.resolve();
+            return;
+        }
+        setTimeout(poll, 50);
+    }
+    setTimeout(poll, 50);
+    return defer.promise;
+};
+
+AudioKeepalive.prototype._startFeeder = function () {
+    var self = this;
+    if (this._feederPid != null) return;
+    if (this._feederRestartTimer) {
+        clearTimeout(this._feederRestartTimer);
+        this._feederRestartTimer = null;
+    }
+
+    var device = (this.config.get('feeder_alsa_device') || 'volumioOutput').trim() || 'volumioOutput';
+    var args = ['-D', device, '-f', 'S16_LE', '-r', '44100', '-c', '2', '-t', 'raw', '/dev/zero'];
+
+    var child = spawn('aplay', args, { stdio: 'ignore' });
+    this._feederPid = child.pid;
+    this._feederState = 'running';
+    this._feederRestartDelayMs = FEEDER_RESTART_INITIAL_MS;
+
+    child.on('error', function (err) {
+        self.logger.error(LOG_PREFIX + 'Feeder aplay error: ' + err.message);
+    });
+    child.on('exit', function (code, signal) {
+        if (self._feederPid === child.pid) {
+            var wasRunning = self._feederState === 'running';
+            self._feederPid = null;
+            self._feederState = 'stopped';
+            if (wasRunning && self._feederRestartTimer == null) {
+                var delay = self._feederRestartDelayMs;
+                self._feederRestartDelayMs = Math.min(self._feederRestartDelayMs * 2, FEEDER_RESTART_MAX_MS);
+                self._feederRestartTimer = setTimeout(function () {
+                    self._feederRestartTimer = null;
+                    if (!self.config.get('keepalive_enabled')) return;
+                    if ((self.config.get('keepalive_mode') || 'mpd_config') !== 'silence_feeder') return;
+                    self._startFeeder();
+                }, delay);
+                self.logger.info(LOG_PREFIX + 'Feeder exited unexpectedly, restart in ' + delay + ' ms');
+            }
+        }
+    });
+
+    this.logger.info(LOG_PREFIX + 'Silence feeder started (PID ' + this._feederPid + ', device: ' + device + ')');
+};
+
+AudioKeepalive.prototype._registerPushStateListener = function () {
+    var self = this;
+    if (this._stateSocket) return;
+
+    this._stateSocket = io.connect('http://localhost:3000');
+    this._stateSocket.on('connect', function () {
+        self.logger.info(LOG_PREFIX + 'State socket connected');
+    });
+    this._stateSocket.on('connect_error', function (err) {
+        self.logger.error(LOG_PREFIX + 'State socket error: ' + (err && err.message ? err.message : err));
+    });
+    this._stateSocket.on('disconnect', function (reason) {
+        self.logger.warn(LOG_PREFIX + 'State socket disconnected: ' + reason);
+    });
+    this._stateSocket.on('pushState', function (state) {
+        if (!self.config.get('keepalive_enabled')) return;
+        if ((self.config.get('keepalive_mode') || 'mpd_config') !== 'silence_feeder') return;
+
+        var status = (state && state.status) ? state.status : '';
+        if (status === STATE_PLAYING) {
+            if (self._idleTimer) {
+                clearTimeout(self._idleTimer);
+                self._idleTimer = null;
+            }
+            if (self._feederRestartTimer) {
+                clearTimeout(self._feederRestartTimer);
+                self._feederRestartTimer = null;
+            }
+            self._killFeeder();
+            return;
+        }
+        if (status === STATE_PAUSED || status === STATE_STOPPED) {
+            if (self._idleTimer) clearTimeout(self._idleTimer);
+            var delay = Math.max(0, parseInt(self.config.get('idle_delay_ms'), 10) || 1000);
+            self._idleTimer = setTimeout(function () {
+                self._idleTimer = null;
+                self._startFeeder();
+            }, delay);
+        }
+    });
+    this.logger.info(LOG_PREFIX + 'Push state listener registered');
 };
 
 // ---------------------------------------------------------------------------
@@ -97,6 +318,7 @@ AudioKeepalive.prototype.waitForSystemReadyAndPatch = function () {
 
 AudioKeepalive.prototype.onAlsaConfigChange = function () {
     var self = this;
+    if ((self.config.get('keepalive_mode') || 'mpd_config') === 'silence_feeder') return;
     self.logger.info(LOG_PREFIX + 'ALSA config changed, re-patching after delay');
     setTimeout(function () {
         self.patchMpd();
@@ -127,21 +349,29 @@ AudioKeepalive.prototype.getUIConfig = function () {
         __dirname + '/i18n/strings_en.json',
         __dirname + '/UIConfig.json'
     ).then(function (uiconf) {
-        uiconf.sections[0].content[0].value = self.config.get('keepalive_enabled');
+        var c = uiconf.sections[0].content;
+        c[0].value = self.config.get('keepalive_enabled');
+
+        var mode = self.config.get('keepalive_mode') || 'mpd_config';
+        c[1].value.value = mode;
+        c[1].value.label = self.getLabelForSelect(c[1].options, mode);
+
+        var idleDelay = self.config.get('idle_delay_ms');
+        var idleStr = (idleDelay !== undefined && idleDelay !== null) ? String(idleDelay) : '1000';
+        c[2].value.value = idleStr;
+        c[2].value.label = self.getLabelForSelect(c[2].options, idleStr);
+
+        c[3].value = (self.config.get('feeder_alsa_device') || 'volumioOutput').trim() || 'volumioOutput';
 
         var bufferTime = self.config.get('buffer_time') || '';
-        uiconf.sections[0].content[1].value.value = bufferTime;
-        uiconf.sections[0].content[1].value.label = self.getLabelForSelect(
-            uiconf.sections[0].content[1].options, bufferTime
-        );
+        c[4].value.value = bufferTime;
+        c[4].value.label = self.getLabelForSelect(c[4].options, bufferTime);
 
         var periodTime = self.config.get('period_time') || '';
-        uiconf.sections[0].content[2].value.value = periodTime;
-        uiconf.sections[0].content[2].value.label = self.getLabelForSelect(
-            uiconf.sections[0].content[2].options, periodTime
-        );
+        c[5].value.value = periodTime;
+        c[5].value.label = self.getLabelForSelect(c[5].options, periodTime);
 
-        uiconf.sections[0].content[3].value = self.config.get('stop_dsd_silence');
+        c[6].value = self.config.get('stop_dsd_silence');
 
         defer.resolve(uiconf);
     }).fail(function (e) {
@@ -168,11 +398,49 @@ AudioKeepalive.prototype.getLabelForSelect = function (options, key) {
 AudioKeepalive.prototype.saveSettings = function (data) {
     var self = this;
     var defer = libQ.defer();
+    var prevMode = self.config.get('keepalive_mode') || 'mpd_config';
+    var prevEnabled = self.config.get('keepalive_enabled');
 
     self.config.set('keepalive_enabled', data.keepalive_enabled);
+    self.config.set('keepalive_mode', data.keepalive_mode ? (data.keepalive_mode.value || data.keepalive_mode) : 'mpd_config');
+    var idleMs = data.idle_delay_ms;
+    if (idleMs != null) {
+        var v = idleMs.value !== undefined ? idleMs.value : idleMs;
+        self.config.set('idle_delay_ms', parseInt(v, 10) || 1000);
+    }
+    self.config.set('feeder_alsa_device', (data.feeder_alsa_device || 'volumioOutput').trim() || 'volumioOutput');
     self.config.set('buffer_time', data.buffer_time ? data.buffer_time.value : '');
     self.config.set('period_time', data.period_time ? data.period_time.value : '');
     self.config.set('stop_dsd_silence', data.stop_dsd_silence);
+
+    var nextMode = self.config.get('keepalive_mode') || 'mpd_config';
+    var nextEnabled = self.config.get('keepalive_enabled');
+    var wasFeederActive = prevMode === 'silence_feeder' && prevEnabled;
+    var isFeederActive = nextMode === 'silence_feeder' && nextEnabled;
+
+    if (wasFeederActive && !isFeederActive) {
+        if (self._idleTimer) {
+            clearTimeout(self._idleTimer);
+            self._idleTimer = null;
+        }
+        if (self._feederRestartTimer) {
+            clearTimeout(self._feederRestartTimer);
+            self._feederRestartTimer = null;
+        }
+        self._killFeederAndWait();
+        self._restoreVolumioPlay();
+        if (self._stateSocket) {
+            self._stateSocket.removeAllListeners('pushState');
+            self._stateSocket.removeAllListeners('connect');
+            self._stateSocket.removeAllListeners('connect_error');
+            self._stateSocket.removeAllListeners('disconnect');
+            self._stateSocket.disconnect();
+            self._stateSocket = null;
+        }
+    } else if (isFeederActive && !wasFeederActive) {
+        self._installVolumioPlayWrapper();
+        self._registerPushStateListener();
+    }
 
     self.patchMpd()
         .then(function () {
@@ -195,7 +463,9 @@ AudioKeepalive.prototype.saveSettings = function (data) {
 
 AudioKeepalive.prototype.buildConfigString = function () {
     var lines = [];
-
+    if ((this.config.get('keepalive_mode') || 'mpd_config') === 'silence_feeder') {
+        return '';
+    }
     if (this.config.get('keepalive_enabled')) {
         lines.push('    always_on       "yes"');
         lines.push('    close_on_pause  "no"');

@@ -18,6 +18,9 @@
         "label": "TRANSLATE.SAVE",
         "data": [
           "keepalive_enabled",
+          "keepalive_mode",
+          "idle_delay_ms",
+          "feeder_alsa_device",
           "buffer_time",
           "period_time",
           "stop_dsd_silence"
@@ -30,6 +33,43 @@
           "label": "TRANSLATE.KEEPALIVE_ENABLED",
           "doc": "TRANSLATE.KEEPALIVE_ENABLED_DESC",
           "value": false
+        },
+        {
+          "id": "keepalive_mode",
+          "element": "select",
+          "label": "TRANSLATE.KEEPALIVE_MODE",
+          "doc": "TRANSLATE.KEEPALIVE_MODE_DESC",
+          "value": {
+            "value": "mpd_config",
+            "label": "TRANSLATE.MODE_MPD_CONFIG"
+          },
+          "options": [
+            { "value": "mpd_config", "label": "TRANSLATE.MODE_MPD_CONFIG" },
+            { "value": "silence_feeder", "label": "TRANSLATE.MODE_SILENCE_FEEDER" }
+          ]
+        },
+        {
+          "id": "idle_delay_ms",
+          "element": "select",
+          "label": "TRANSLATE.IDLE_DELAY_MS",
+          "doc": "TRANSLATE.IDLE_DELAY_MS_DESC",
+          "value": {
+            "value": "1000",
+            "label": "1 s"
+          },
+          "options": [
+            { "value": "500", "label": "500 ms" },
+            { "value": "1000", "label": "1 s" },
+            { "value": "2000", "label": "2 s" },
+            { "value": "3000", "label": "3 s" }
+          ]
+        },
+        {
+          "id": "feeder_alsa_device",
+          "element": "input",
+          "label": "TRANSLATE.FEEDER_ALSA_DEVICE",
+          "doc": "TRANSLATE.FEEDER_ALSA_DEVICE_DESC",
+          "value": "volumioOutput"
         },
         {
           "id": "buffer_time",

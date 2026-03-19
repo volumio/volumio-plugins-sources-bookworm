@@ -3,6 +3,18 @@
     "type": "boolean",
     "value": false
   },
+  "keepalive_mode": {
+    "type": "string",
+    "value": "mpd_config"
+  },
+  "idle_delay_ms": {
+    "type": "number",
+    "value": 1000
+  },
+  "feeder_alsa_device": {
+    "type": "string",
+    "value": "volumioOutput"
+  },
   "buffer_time": {
     "type": "string",
     "value": ""
