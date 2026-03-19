@@ -107,7 +107,7 @@ class ExplodeHelper {
         // Conversion from pre v1.0
         if (view.name === 'video' && view.videoId) {
             const model = model_1.default.getInstance(model_1.ModelType.Video);
-            const playbackInfo = await model.getPlaybackInfo(view.videoId);
+            const playbackInfo = await model.getPlaybackInfo(view.videoId, false, true);
             const videoInfo = { ...playbackInfo };
             if (playbackInfo) {
                 videoInfo.endpoint = {
@@ -191,4 +191,3 @@ _a = ExplodeHelper, _ExplodeHelper_getUriFromExplodedTrackInfo = function _Explo
     return `youtube2/${ViewHelper_1.default.constructUriSegmentFromView(targetView)}`;
 };
 exports.default = ExplodeHelper;
-//# sourceMappingURL=ExplodeHelper.js.map

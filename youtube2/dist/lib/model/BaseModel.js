@@ -9,7 +9,7 @@ const YouTube2Context_1 = __importDefault(require("../YouTube2Context"));
 class BaseModel {
     async getInnertube() {
         return {
-            innertube: await (await InnertubeLoader_1.default.getInstance()).getInnertube()
+            innertube: (await InnertubeLoader_1.default.getInstance()).getInnertube()
         };
     }
     async fetchAccountMenu() {
@@ -34,4 +34,3 @@ class BaseModel {
     }
 }
 exports.BaseModel = BaseModel;
-//# sourceMappingURL=BaseModel.js.map

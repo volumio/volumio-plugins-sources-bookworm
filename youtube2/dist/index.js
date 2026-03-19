@@ -46,7 +46,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _ControllerYouTube2_instances, _ControllerYouTube2_context, _ControllerYouTube2_config, _ControllerYouTube2_commandRouter, _ControllerYouTube2_browseController, _ControllerYouTube2_searchController, _ControllerYouTube2_playController, _ControllerYouTube2_nowPlayingMetadataProvider, _ControllerYouTube2_getConfigI18nOptions, _ControllerYouTube2_getConfigAccountInfo, _ControllerYouTube2_configCheckAutoplay, _ControllerYouTube2_addToBrowseSources;
+var _ControllerYouTube2_instances, _ControllerYouTube2_context, _ControllerYouTube2_config, _ControllerYouTube2_commandRouter, _ControllerYouTube2_browseController, _ControllerYouTube2_searchController, _ControllerYouTube2_playController, _ControllerYouTube2_nowPlayingMetadataProvider, _ControllerYouTube2_doGetUIConfig, _ControllerYouTube2_getConfigI18nOptions, _ControllerYouTube2_getConfigAccountInfo, _ControllerYouTube2_configCheckAutoplay, _ControllerYouTube2_addToBrowseSources;
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 const kew_1 = __importDefault(require("kew"));
@@ -64,117 +64,28 @@ const InnertubeLoader_1 = __importDefault(require("./lib/model/InnertubeLoader")
 const YouTube2NowPlayingMetadataProvider_1 = __importDefault(require("./lib/util/YouTube2NowPlayingMetadataProvider"));
 const innertube_1 = require("volumio-yt-support/dist/innertube");
 const fs_1 = require("fs");
+const UIConfigHelper_1 = __importDefault(require("./config/UIConfigHelper"));
+const YtDlp_1 = require("./lib/util/YtDlp");
 class ControllerYouTube2 {
     constructor(context) {
         _ControllerYouTube2_instances.add(this);
         _ControllerYouTube2_context.set(this, void 0);
         _ControllerYouTube2_config.set(this, void 0);
         _ControllerYouTube2_commandRouter.set(this, void 0);
-        _ControllerYouTube2_browseController.set(this, void 0);
-        _ControllerYouTube2_searchController.set(this, void 0);
-        _ControllerYouTube2_playController.set(this, void 0);
-        _ControllerYouTube2_nowPlayingMetadataProvider.set(this, void 0);
+        _ControllerYouTube2_browseController.set(this, null);
+        _ControllerYouTube2_searchController.set(this, null);
+        _ControllerYouTube2_playController.set(this, null);
+        _ControllerYouTube2_nowPlayingMetadataProvider.set(this, null);
         __classPrivateFieldSet(this, _ControllerYouTube2_context, context, "f");
         __classPrivateFieldSet(this, _ControllerYouTube2_commandRouter, context.coreCommand, "f");
     }
     getUIConfig() {
-        const defer = kew_1.default.defer();
-        const hasAcceptedDisclaimer = YouTube2Context_1.default.getConfigValue('hasAcceptedDisclaimer');
-        const langCode = __classPrivateFieldGet(this, _ControllerYouTube2_commandRouter, "f").sharedVars.get('language_code');
-        const loadConfigPromises = [
-            (0, util_1.kewToJSPromise)(__classPrivateFieldGet(this, _ControllerYouTube2_commandRouter, "f").i18nJson(`${__dirname}/i18n/strings_${langCode}.json`, `${__dirname}/i18n/strings_en.json`, `${__dirname}/UIConfig.json`)),
-            hasAcceptedDisclaimer ? __classPrivateFieldGet(this, _ControllerYouTube2_instances, "m", _ControllerYouTube2_getConfigI18nOptions).call(this) : Promise.resolve(null),
-            hasAcceptedDisclaimer ? __classPrivateFieldGet(this, _ControllerYouTube2_instances, "m", _ControllerYouTube2_getConfigAccountInfo).call(this) : Promise.resolve(null)
-        ];
-        const configModel = model_1.default.getInstance(model_1.ModelType.Config);
-        Promise.all(loadConfigPromises)
-            .then(([uiconf, i18nOptions, account]) => {
-            const disclaimerUIConf = uiconf.sections[0];
-            const i18nUIConf = uiconf.sections[1];
-            const accountUIConf = uiconf.sections[2];
-            const browseUIConf = uiconf.sections[3];
-            const playbackUIConf = uiconf.sections[4];
-            const ytPlaybackModeConf = uiconf.sections[5];
-            // Disclaimer
-            disclaimerUIConf.content[1].value = hasAcceptedDisclaimer;
-            if (!hasAcceptedDisclaimer) {
-                // hasAcceptedDisclaimer is false
-                uiconf.sections = [disclaimerUIConf];
-                return defer.resolve(uiconf);
-            }
-            // I18n
-            // -- region
-            i18nUIConf.content[0].label = i18nOptions.options.region?.label;
-            i18nUIConf.content[0].options = i18nOptions.options.region?.optionValues;
-            i18nUIConf.content[0].value = i18nOptions.selected.region;
-            i18nUIConf.content[1].label = i18nOptions.options.language?.label;
-            i18nUIConf.content[1].options = i18nOptions.options.language?.optionValues;
-            i18nUIConf.content[1].value = i18nOptions.selected.language;
-            // Account
-            const cookie = YouTube2Context_1.default.getConfigValue('cookie');
-            let authStatusDescription;
-            if (account?.isSignedIn && account.active) {
-                authStatusDescription = YouTube2Context_1.default.getI18n('YOUTUBE2_AUTH_STATUS_SIGNED_IN_AS', account.active.name);
-                if (account.list.length > 1) {
-                    const accountSelect = {
-                        id: 'activeChannelHandle',
-                        element: 'select',
-                        label: YouTube2Context_1.default.getI18n('YOUTUBE2_ACTIVE_CHANNEL'),
-                        value: {
-                            label: account.active.name,
-                            value: account.active.handle
-                        },
-                        options: account.list.map((ac) => ({
-                            label: ac.name,
-                            value: ac.handle
-                        }))
-                    };
-                    accountUIConf.content = [
-                        accountUIConf.content[0],
-                        accountSelect,
-                        ...accountUIConf.content.slice(1)
-                    ];
-                    accountUIConf.saveButton.data.push('activeChannelHandle');
-                }
-            }
-            else if (cookie) {
-                authStatusDescription = YouTube2Context_1.default.getI18n('YOUTUBE2_AUTH_STATUS_SIGNED_OUT');
-            }
-            accountUIConf.description = authStatusDescription;
-            accountUIConf.content[0].value = cookie;
-            // Browse
-            const rootContentType = YouTube2Context_1.default.getConfigValue('rootContentType');
-            const rootContentTypeOptions = configModel.getRootContentTypeOptions();
-            const loadFullPlaylists = YouTube2Context_1.default.getConfigValue('loadFullPlaylists');
-            browseUIConf.content[0].options = rootContentTypeOptions;
-            browseUIConf.content[0].value = rootContentTypeOptions.find((o) => o.value === rootContentType);
-            browseUIConf.content[1].value = loadFullPlaylists;
-            // Playback
-            const autoplay = YouTube2Context_1.default.getConfigValue('autoplay');
-            const autoplayClearQueue = YouTube2Context_1.default.getConfigValue('autoplayClearQueue');
-            const autoplayPrefMixRelated = YouTube2Context_1.default.getConfigValue('autoplayPrefMixRelated');
-            const addToHistory = YouTube2Context_1.default.getConfigValue('addToHistory');
-            const liveStreamQuality = YouTube2Context_1.default.getConfigValue('liveStreamQuality');
-            const liveStreamQualityOptions = configModel.getLiveStreamQualityOptions();
-            const prefetchEnabled = YouTube2Context_1.default.getConfigValue('prefetch');
-            playbackUIConf.content[0].value = autoplay;
-            playbackUIConf.content[1].value = autoplayClearQueue;
-            playbackUIConf.content[2].value = autoplayPrefMixRelated;
-            playbackUIConf.content[3].value = addToHistory;
-            playbackUIConf.content[4].options = liveStreamQualityOptions;
-            playbackUIConf.content[4].value = liveStreamQualityOptions.find((o) => o.value === liveStreamQuality);
-            playbackUIConf.content[5].value = prefetchEnabled;
-            // YouTube Playback Mode
-            const ytPlaybackMode = YouTube2Context_1.default.getConfigValue('ytPlaybackMode');
-            ytPlaybackModeConf.content[0].value = ytPlaybackMode.feedVideos;
-            ytPlaybackModeConf.content[1].value = ytPlaybackMode.playlistVideos;
-            defer.resolve(uiconf);
-        })
-            .catch((error) => {
-            YouTube2Context_1.default.getLogger().error(YouTube2Context_1.default.getErrorMessage(`[youtube2] getUIConfig(): Cannot populate YouTube2 configuration:`, error));
-            defer.reject(Error());
+        return (0, util_1.jsPromiseToKew)(__classPrivateFieldGet(this, _ControllerYouTube2_instances, "m", _ControllerYouTube2_doGetUIConfig).call(this)).fail((error) => {
+            YouTube2Context_1.default
+                .getLogger()
+                .error(`[youtube2] getUIConfig(): Cannot populate configuration - ${error}`);
+            throw error;
         });
-        return defer.promise;
     }
     onVolumioStart() {
         const configFile = __classPrivateFieldGet(this, _ControllerYouTube2_commandRouter, "f").pluginManager.getConfigurationFile(__classPrivateFieldGet(this, _ControllerYouTube2_context, "f"), 'config.json');
@@ -201,7 +112,6 @@ class ControllerYouTube2 {
         __classPrivateFieldSet(this, _ControllerYouTube2_nowPlayingMetadataProvider, null, "f");
         return (0, util_1.jsPromiseToKew)(InnertubeLoader_1.default.reset()
             .then(() => YouTube2Context_1.default.reset()));
-        return kew_1.default.resolve();
     }
     getConfigurationFiles() {
         return ['config.json'];
@@ -282,6 +192,7 @@ class ControllerYouTube2 {
             YouTube2Context_1.default.setConfigValue('activeChannelHandle', activeChannelHandle);
             resetInnertube = true;
         }
+        YtDlp_1.YtDlpWrapper.refresh();
         YouTube2Context_1.default.toast('success', YouTube2Context_1.default.getI18n('YOUTUBE2_SETTINGS_SAVED'));
         if (resetInnertube) {
             await InnertubeLoader_1.default.reset();
@@ -302,6 +213,35 @@ class ControllerYouTube2 {
         YouTube2Context_1.default.setConfigValue('prefetch', data.prefetch);
         YouTube2Context_1.default.toast('success', YouTube2Context_1.default.getI18n('YOUTUBE2_SETTINGS_SAVED'));
         __classPrivateFieldGet(this, _ControllerYouTube2_instances, "m", _ControllerYouTube2_configCheckAutoplay).call(this);
+    }
+    configSaveYtDlp(data) {
+        const useYtDlp = data.useYtDlp;
+        if (useYtDlp) {
+            const installed = YtDlp_1.YtDlpWrapper.getInstance().getInstalled();
+            if (installed.length === 0) {
+                YouTube2Context_1.default.toast('error', YouTube2Context_1.default.getI18n('YOUTUBE2_ERR_USE_YT_DLP_BUT_NONE_INSTALLED'));
+                YouTube2Context_1.default.setConfigValue('useYtDlp', false);
+                return YouTube2Context_1.default.refreshUIConfig();
+            }
+        }
+        YouTube2Context_1.default.setConfigValue('useYtDlp', useYtDlp);
+        const ytDlpVersion = data.ytDlpVersion.value || null;
+        YouTube2Context_1.default.setConfigValue('ytDlpVersion', ytDlpVersion);
+        YouTube2Context_1.default.toast('success', YouTube2Context_1.default.getI18n('YOUTUBE2_SETTINGS_SAVED'));
+    }
+    async installLatestYtDlp() {
+        const ytDlp = YtDlp_1.YtDlpWrapper.getInstance();
+        YouTube2Context_1.default.toast('info', YouTube2Context_1.default.getI18n('YOUTUBE2_YT_DLP_INSTALLING'));
+        try {
+            const result = await ytDlp.install();
+            YouTube2Context_1.default.toast('success', YouTube2Context_1.default.getI18n('YOUTUBE2_YT_DLP_INSTALLED', result.version));
+            YouTube2Context_1.default.setConfigValue('ytDlpVersion', result.version);
+            YouTube2Context_1.default.refreshUIConfig();
+        }
+        catch (error) {
+            YouTube2Context_1.default.getLogger().log('error', YouTube2Context_1.default.getErrorMessage('Error installing yt-dlp:', error));
+            YouTube2Context_1.default.toast('error', YouTube2Context_1.default.getErrorMessage('Failed to install yt-dlp:', error, false));
+        }
     }
     configEnableAddToHistory() {
         YouTube2Context_1.default.setConfigValue('addToHistory', true);
@@ -431,7 +371,121 @@ class ControllerYouTube2 {
         return __classPrivateFieldGet(this, _ControllerYouTube2_nowPlayingMetadataProvider, "f");
     }
 }
-_ControllerYouTube2_context = new WeakMap(), _ControllerYouTube2_config = new WeakMap(), _ControllerYouTube2_commandRouter = new WeakMap(), _ControllerYouTube2_browseController = new WeakMap(), _ControllerYouTube2_searchController = new WeakMap(), _ControllerYouTube2_playController = new WeakMap(), _ControllerYouTube2_nowPlayingMetadataProvider = new WeakMap(), _ControllerYouTube2_instances = new WeakSet(), _ControllerYouTube2_getConfigI18nOptions = async function _ControllerYouTube2_getConfigI18nOptions() {
+_ControllerYouTube2_context = new WeakMap(), _ControllerYouTube2_config = new WeakMap(), _ControllerYouTube2_commandRouter = new WeakMap(), _ControllerYouTube2_browseController = new WeakMap(), _ControllerYouTube2_searchController = new WeakMap(), _ControllerYouTube2_playController = new WeakMap(), _ControllerYouTube2_nowPlayingMetadataProvider = new WeakMap(), _ControllerYouTube2_instances = new WeakSet(), _ControllerYouTube2_doGetUIConfig = async function _ControllerYouTube2_doGetUIConfig() {
+    const hasAcceptedDisclaimer = YouTube2Context_1.default.getConfigValue('hasAcceptedDisclaimer');
+    const langCode = __classPrivateFieldGet(this, _ControllerYouTube2_commandRouter, "f").sharedVars.get('language_code');
+    const _uiconf = await (0, util_1.kewToJSPromise)(__classPrivateFieldGet(this, _ControllerYouTube2_commandRouter, "f").i18nJson(`${__dirname}/i18n/strings_${langCode}.json`, `${__dirname}/i18n/strings_en.json`, `${__dirname}/UIConfig.json`));
+    const i18nOptions = hasAcceptedDisclaimer ? await __classPrivateFieldGet(this, _ControllerYouTube2_instances, "m", _ControllerYouTube2_getConfigI18nOptions).call(this) : null;
+    const account = hasAcceptedDisclaimer ? await __classPrivateFieldGet(this, _ControllerYouTube2_instances, "m", _ControllerYouTube2_getConfigAccountInfo).call(this) : null;
+    const configModel = model_1.default.getInstance(model_1.ModelType.Config);
+    const uiconf = UIConfigHelper_1.default.observe(_uiconf);
+    const disclaimerUIConf = uiconf.section_disclaimer;
+    const i18nUIConf = uiconf.section_i18n;
+    const accountUIConf = uiconf.section_account;
+    const browseUIConf = uiconf.section_browse;
+    const playbackUIConf = uiconf.section_playback;
+    const ytPlaybackModeConf = uiconf.section_yt_playback_mode;
+    const ytDlpUIConf = uiconf.section_yt_dlp;
+    // Disclaimer
+    disclaimerUIConf.content.hasAcceptedDisclaimer.value = hasAcceptedDisclaimer;
+    if (!hasAcceptedDisclaimer) {
+        // hasAcceptedDisclaimer is false
+        uiconf.sections = [disclaimerUIConf];
+        return uiconf;
+    }
+    // I18n
+    // -- region
+    i18nUIConf.content.region.label = i18nOptions.options.region?.label || '';
+    i18nUIConf.content.region.options = i18nOptions.options.region?.optionValues || [];
+    i18nUIConf.content.region.value = i18nOptions.selected.region;
+    i18nUIConf.content.language.label = i18nOptions.options.language?.label || '';
+    i18nUIConf.content.language.options = i18nOptions.options.language?.optionValues || [];
+    i18nUIConf.content.language.value = i18nOptions.selected.language;
+    // Account
+    const cookie = YouTube2Context_1.default.getConfigValue('cookie');
+    let authStatusDescription;
+    if (!account?.isSignedIn || !account.active || account.list.length <= 1) {
+        accountUIConf.content.activeChannelHandle.hidden = true;
+    }
+    if (account?.isSignedIn && account.active) {
+        authStatusDescription = YouTube2Context_1.default.getI18n('YOUTUBE2_AUTH_STATUS_SIGNED_IN_AS', account.active.name);
+        if (account.list.length > 1) {
+            accountUIConf.content.activeChannelHandle.value = {
+                label: account.active.name,
+                value: account.active.handle
+            };
+            accountUIConf.content.activeChannelHandle.options = account.list.map((ac) => ({
+                label: ac.name,
+                value: ac.handle
+            }));
+            accountUIConf.saveButton.data.push('activeChannelHandle');
+        }
+    }
+    else if (cookie) {
+        authStatusDescription = YouTube2Context_1.default.getI18n('YOUTUBE2_AUTH_STATUS_SIGNED_OUT');
+    }
+    accountUIConf.description = authStatusDescription;
+    accountUIConf.content.cookie.value = cookie;
+    // Browse
+    const rootContentType = YouTube2Context_1.default.getConfigValue('rootContentType');
+    const rootContentTypeOptions = configModel.getRootContentTypeOptions();
+    const loadFullPlaylists = YouTube2Context_1.default.getConfigValue('loadFullPlaylists');
+    browseUIConf.content.rootContentType.options = rootContentTypeOptions;
+    browseUIConf.content.rootContentType.value = rootContentTypeOptions.find((o) => o.value === rootContentType) || rootContentTypeOptions[0];
+    browseUIConf.content.loadFullPlaylists.value = loadFullPlaylists;
+    // Playback
+    const autoplay = YouTube2Context_1.default.getConfigValue('autoplay');
+    const autoplayClearQueue = YouTube2Context_1.default.getConfigValue('autoplayClearQueue');
+    const autoplayPrefMixRelated = YouTube2Context_1.default.getConfigValue('autoplayPrefMixRelated');
+    const addToHistory = YouTube2Context_1.default.getConfigValue('addToHistory');
+    const liveStreamQuality = YouTube2Context_1.default.getConfigValue('liveStreamQuality');
+    const liveStreamQualityOptions = configModel.getLiveStreamQualityOptions();
+    const prefetchEnabled = YouTube2Context_1.default.getConfigValue('prefetch');
+    playbackUIConf.content.autoplay.value = autoplay;
+    playbackUIConf.content.autoplayClearQueue.value = autoplayClearQueue;
+    playbackUIConf.content.autoplayPrefMixRelated.value = autoplayPrefMixRelated;
+    playbackUIConf.content.addToHistory.value = addToHistory;
+    playbackUIConf.content.liveStreamQuality.options = liveStreamQualityOptions;
+    playbackUIConf.content.liveStreamQuality.value = liveStreamQualityOptions.find((o) => o.value === liveStreamQuality) || liveStreamQualityOptions[0];
+    playbackUIConf.content.prefetch.value = prefetchEnabled;
+    playbackUIConf.content.prefetch.hidden = !account?.isSignedIn;
+    // YouTube Playback Mode
+    const ytPlaybackMode = YouTube2Context_1.default.getConfigValue('ytPlaybackMode');
+    ytPlaybackModeConf.content.feedVideos.value = ytPlaybackMode.feedVideos;
+    ytPlaybackModeConf.content.playlistVideos.value = ytPlaybackMode.playlistVideos;
+    // yt-dlp
+    ytDlpUIConf.content.useYtDlp.value = YouTube2Context_1.default.getConfigValue('useYtDlp');
+    const ytDlpVersion = YouTube2Context_1.default.getConfigValue('ytDlpVersion');
+    const ytDlp = YtDlp_1.YtDlpWrapper.getInstance();
+    const installedYDlpVersions = ytDlp.getInstalled();
+    const ytDlpVersionOptions = installedYDlpVersions.length > 0 ? installedYDlpVersions.map(({ version }, i) => ({
+        label: i === 0 ? YouTube2Context_1.default.getI18n('YOUTUBE2_VERSION_LATEST', version) : version,
+        value: version
+    })) : [{
+            label: YouTube2Context_1.default.getI18n('YOUTUBE2_NONE_INSTALLED'),
+            value: ''
+        }];
+    const selectedYtDlpVersionOption = (ytDlpVersion && ytDlpVersionOptions.length > 1 ? ytDlpVersionOptions.find(({ value }) => value === ytDlpVersion) : null) || ytDlpVersionOptions[0];
+    ytDlpUIConf.content.ytDlpVersion.options = ytDlpVersionOptions;
+    ytDlpUIConf.content.ytDlpVersion.value = selectedYtDlpVersionOption;
+    let latestAvailable;
+    try {
+        latestAvailable = await ytDlp.getLatestVersion();
+    }
+    catch (error) {
+        YouTube2Context_1.default.getLogger().error(YouTube2Context_1.default.getErrorMessage('[youtube2] Failed to get latest yt-dlp version:', error));
+        YouTube2Context_1.default.toast('error', YouTube2Context_1.default.getI18n('YOUTUBE2_ERR_GET_LATEST_YT_DLP_VER'));
+        latestAvailable = null;
+    }
+    const latestInstalled = installedYDlpVersions[0]?.version || null;
+    if (latestInstalled && latestAvailable && (new Date(latestAvailable).getTime() - new Date(latestInstalled).getTime() > 0)) {
+        ytDlpUIConf.description = YouTube2Context_1.default.getI18n('YOUTUBE2_YT_DLP_NEWER_AVAIL', latestAvailable);
+    }
+    if (!latestAvailable || latestInstalled === latestAvailable) {
+        ytDlpUIConf.content.installLatestYtDlp.hidden = true;
+    }
+    return uiconf;
+}, _ControllerYouTube2_getConfigI18nOptions = async function _ControllerYouTube2_getConfigI18nOptions() {
     const model = model_1.default.getInstance(model_1.ModelType.Config);
     const selected = {
         region: { label: '', value: '' },
@@ -505,4 +559,3 @@ _ControllerYouTube2_context = new WeakMap(), _ControllerYouTube2_config = new We
     __classPrivateFieldGet(this, _ControllerYouTube2_commandRouter, "f").volumioAddToBrowseSources(source);
 };
 module.exports = ControllerYouTube2;
-//# sourceMappingURL=index.js.map

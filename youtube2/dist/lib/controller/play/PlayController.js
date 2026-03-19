@@ -137,12 +137,9 @@ class PlayController {
         const safeStreamUrl = stream.url.replace(/"/g, '\\"');
         await __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_doPlay).call(this, safeStreamUrl, track);
         if (YouTube2Context_1.default.getConfigValue('addToHistory')) {
-            try {
-                void playbackInfo.addToHistory();
-            }
-            catch (error) {
+            playbackInfo.addToHistory().catch((error) => {
                 YouTube2Context_1.default.getLogger().error(YouTube2Context_1.default.getErrorMessage(`[youtube2-play] Error: could not add to history (videoId: ${videoId}): `, error));
-            }
+            });
         }
     }
     // Returns kew promise!
@@ -176,7 +173,7 @@ class PlayController {
         YouTube2Context_1.default.getStateMachine().setConsumeUpdateService(undefined);
         return YouTube2Context_1.default.getStateMachine().previous();
     }
-    static async getPlaybackInfoFromUri(uri, signal) {
+    static async getPlaybackInfoFromUri(uri, isPrefetch = false, skipStream = false, signal) {
         const watchEndpoint = ExplodeHelper_1.default.getExplodedTrackInfoFromUri(uri)?.endpoint;
         const videoId = watchEndpoint?.payload?.videoId;
         if (!videoId) {
@@ -185,7 +182,7 @@ class PlayController {
         const model = model_1.default.getInstance(model_1.ModelType.Video);
         return {
             videoId,
-            info: await model.getPlaybackInfo(videoId, undefined, signal)
+            info: await model.getPlaybackInfo(videoId, isPrefetch, skipStream, signal)
         };
     }
     async getGotoUri(type, uri) {
@@ -208,7 +205,7 @@ class PlayController {
             const videoId = ExplodeHelper_1.default.getExplodedTrackInfoFromUri(uri)?.endpoint?.payload?.videoId;
             if (videoId) {
                 const model = model_1.default.getInstance(model_1.ModelType.Video);
-                const playbackInfo = await model.getPlaybackInfo(videoId);
+                const playbackInfo = await model.getPlaybackInfo(videoId, false, true);
                 const channelId = playbackInfo?.author?.channelId;
                 if (channelId) {
                     const targetView = {
@@ -253,7 +250,7 @@ class PlayController {
         __classPrivateFieldSet(this, _PlayController_prefetchAborter, new AbortController(), "f");
         const signal = __classPrivateFieldGet(this, _PlayController_prefetchAborter, "f").signal;
         try {
-            const { videoId, info: playbackInfo } = await PlayController.getPlaybackInfoFromUri(track.uri, signal);
+            const { videoId, info: playbackInfo } = await PlayController.getPlaybackInfoFromUri(track.uri, true, false, signal);
             streamUrl = playbackInfo?.stream?.url;
             if (!streamUrl || !playbackInfo) {
                 throw Error(`Stream not found for videoId '${videoId}'`);
@@ -292,6 +289,7 @@ _PlayController_mpdPlugin = new WeakMap(), _PlayController_prefetchPlaybackState
     if (playbackInfo.stream?.bitrate) {
         track.samplerate = playbackInfo.stream.bitrate;
     }
+    track.bitdepth = '';
     return track;
 }, _PlayController_doPlay = function _PlayController_doPlay(streamUrl, track) {
     const mpdPlugin = __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f");
@@ -406,7 +404,7 @@ _PlayController_mpdPlugin = new WeakMap(), _PlayController_prefetchPlaybackState
     if (autoplayItems.length === 0 && contents?.autoplay?.payload?.videoId) {
         const videoModel = model_1.default.getInstance(model_1.ModelType.Video);
         // Contents.autoplay is just an endpoint, so we need to get video info (title, author...) from it
-        const playbackInfo = await videoModel.getPlaybackInfo(contents.autoplay.payload.videoId);
+        const playbackInfo = await videoModel.getPlaybackInfo(contents.autoplay.payload.videoId, false, true);
         if (playbackInfo && playbackInfo.title && playbackInfo.author?.name) {
             autoplayItems.push({
                 title: playbackInfo.title,
@@ -453,6 +451,7 @@ class PrefetchPlaybackStateFixer extends events_1.default {
         _PrefetchPlaybackStateFixer_volumioPushStateListener.set(this, void 0);
         __classPrivateFieldSet(this, _PrefetchPlaybackStateFixer_positionAtPrefetch, -1, "f");
         __classPrivateFieldSet(this, _PrefetchPlaybackStateFixer_prefetchedTrack, null, "f");
+        __classPrivateFieldSet(this, _PrefetchPlaybackStateFixer_volumioPushStateListener, null, "f");
     }
     reset() {
         __classPrivateFieldGet(this, _PrefetchPlaybackStateFixer_instances, "m", _PrefetchPlaybackStateFixer_removePushStateListener).call(this);
@@ -502,7 +501,9 @@ _PrefetchPlaybackStateFixer_positionAtPrefetch = new WeakMap(), _PrefetchPlaybac
         const pf = __classPrivateFieldGet(this, _PrefetchPlaybackStateFixer_prefetchedTrack, "f");
         __classPrivateFieldGet(this, _PrefetchPlaybackStateFixer_instances, "m", _PrefetchPlaybackStateFixer_removePushStateListener).call(this);
         if (track && state && pf && track.service === 'youtube2' && pf.uri === track.uri) {
+            YouTube2Context_1.default.getLogger().verbose('[youtube2] PrefetchPlaybackStateFixer: detected playback of prefetched track');
             if (state.uri !== track.uri) {
+                YouTube2Context_1.default.getLogger().verbose('[youtube2] PrefetchPlaybackStateFixer: force pushState to rectify Volumio state');
                 const mpdPlugin = YouTube2Context_1.default.getMpdPlugin();
                 mpdPlugin.getState().then((st) => mpdPlugin.pushState(st));
             }
@@ -513,4 +514,3 @@ _PrefetchPlaybackStateFixer_positionAtPrefetch = new WeakMap(), _PrefetchPlaybac
         }
     }
 };
-//# sourceMappingURL=PlayController.js.map

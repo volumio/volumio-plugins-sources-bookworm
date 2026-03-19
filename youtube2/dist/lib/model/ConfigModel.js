@@ -26,7 +26,9 @@ exports.PLUGIN_CONFIG_SCHEMA = {
             playlistVideos: false
         }, json: true },
     cookie: { defaultValue: '', json: false },
-    activeChannelHandle: { defaultValue: '', json: false }
+    activeChannelHandle: { defaultValue: '', json: false },
+    useYtDlp: { defaultValue: false, json: false },
+    ytDlpVersion: { defaultValue: null, json: false }
 };
 class ConfigModel extends BaseModel_1.BaseModel {
     async getI18nOptions() {
@@ -173,4 +175,3 @@ class ConfigModel extends BaseModel_1.BaseModel {
     }
 }
 exports.default = ConfigModel;
-//# sourceMappingURL=ConfigModel.js.map

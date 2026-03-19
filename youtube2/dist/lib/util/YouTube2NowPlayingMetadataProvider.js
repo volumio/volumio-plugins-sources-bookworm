@@ -48,7 +48,7 @@ class YouTube2NowPlayingMetadataProvider {
     async getSongInfo(songTitle, _albumTitle, artistName, uri) {
         YouTube2Context_1.default.getLogger().info(`[youtube2] Fetch song info for Now Playing plugin. URI: ${uri}`);
         // URI: youtube2/[song/video]@explodeTrackData={...}
-        const { info: playbackInfo } = (uri ? await PlayController_1.default.getPlaybackInfoFromUri(uri) : null) || { videoId: null, info: null };
+        const { info: playbackInfo } = (uri ? await PlayController_1.default.getPlaybackInfoFromUri(uri, false, true) : null) || { videoId: null, info: null };
         if (!playbackInfo) {
             YouTube2Context_1.default.getLogger().error('[youtube2] Error fetching song info for Now Playing plugin: no playback info from URI');
             return null;
@@ -112,4 +112,3 @@ class YouTube2NowPlayingMetadataProvider {
     }
 }
 exports.default = YouTube2NowPlayingMetadataProvider;
-//# sourceMappingURL=YouTube2NowPlayingMetadataProvider.js.map

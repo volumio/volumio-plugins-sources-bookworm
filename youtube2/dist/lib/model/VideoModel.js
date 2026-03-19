@@ -7,13 +7,13 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _VideoModel_instances, _VideoModel_sleep, _VideoModel_head, _VideoModel_chooseFormat, _VideoModel_parseStreamData, _VideoModel_getStreamUrlFromHLS;
+var _VideoModel_instances, _VideoModel_doGetPlaybackInfo, _VideoModel_sleep, _VideoModel_head, _VideoModel_chooseFormat, _VideoModel_parseStreamData, _VideoModel_getStreamUrlFromHLS;
 Object.defineProperty(exports, "__esModule", { value: true });
-const innertube_1 = require("volumio-yt-support/dist/innertube");
 const YouTube2Context_1 = __importDefault(require("../YouTube2Context"));
 const BaseModel_1 = require("./BaseModel");
 const InnertubeResultParser_1 = __importDefault(require("./InnertubeResultParser"));
 const InnertubeLoader_1 = __importDefault(require("./InnertubeLoader"));
+const YtDlp_1 = require("../util/YtDlp");
 // https://gist.github.com/sidneys/7095afe4da4ae58694d128b1034e01e2
 const ITAG_TO_BITRATE = {
     '139': '48',
@@ -29,119 +29,219 @@ const BEST_AUDIO_FORMAT = {
     format: 'any',
     quality: 'best'
 };
+// Clients:
+// WEB_EMBEDDED now throws "This video is unavailable" error.
+// ANDROID_VR, MWEB and TV work, but:
+// - MWEB URLs have a 4-second delay before they become valid;
+// - TV requires sign-in.
+const CLIENTS_WHEN_SIGNED_IN = [
+    'WEB',
+    'ANDROID_VR',
+    'TV',
+    'MWEB'
+];
+const CLIENTS_WHEN_SIGNED_IN_AND_PREFETCH = [
+    'WEB',
+    'ANDROID_VR',
+    'TV'
+    // No MWEB here, because of the 4-second delay.
+    // This delay coupled with the actual fetch time is enough to screw up
+    // prefetching in Volumio.
+];
+const CLIENTS_WHEN_SIGNED_OUT = [
+    'WEB',
+    'ANDROID_VR',
+    'MWEB'
+];
+const CLIENTS_WHEN_SIGNED_OUT_AND_PREFETCH = [
+    'WEB',
+    'ANDROID_VR',
+    // No MWEB here, for same reason stated above.
+];
 class VideoModel extends BaseModel_1.BaseModel {
     constructor() {
         super(...arguments);
         _VideoModel_instances.add(this);
     }
-    async getPlaybackInfo(videoId, client, signal) {
-        const { innertube } = await this.getInnertube();
+    async getPlaybackInfo(videoId, isPrefetch = false, skipStream = false, signal) {
+        const useYtDlp = YouTube2Context_1.default.getConfigValue('useYtDlp');
+        if (useYtDlp && isPrefetch) {
+            throw Error(`Cannot prefetch with yt-dlp as time taken will exceed Volumio's limit`);
+        }
+        if (!skipStream && useYtDlp) {
+            const [info, url] = await Promise.all([
+                __classPrivateFieldGet(this, _VideoModel_instances, "m", _VideoModel_doGetPlaybackInfo).call(this, videoId, isPrefetch, true, undefined, signal),
+                YtDlp_1.YtDlpWrapper.getInstance().getStreamingUrl(`https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`, YouTube2Context_1.default.getConfigValue('ytDlpVersion') ?? undefined).catch((error) => {
+                    YouTube2Context_1.default.getLogger().error(YouTube2Context_1.default.getErrorMessage('Failed to get streaming URL with yt-dlp:', error, false));
+                    return null;
+                })
+            ]);
+            if (info && url) {
+                const itag = new URL(url).searchParams.get('itag');
+                const bitrate = itag ? ITAG_TO_BITRATE[itag] : null;
+                info.stream = {
+                    url,
+                    bitrate: bitrate ? `${bitrate} kbps` : undefined
+                };
+            }
+            return info;
+        }
+        return __classPrivateFieldGet(this, _VideoModel_instances, "m", _VideoModel_doGetPlaybackInfo).call(this, videoId, isPrefetch, skipStream, undefined, signal);
+    }
+}
+_VideoModel_instances = new WeakSet(), _VideoModel_doGetPlaybackInfo = async function _VideoModel_doGetPlaybackInfo(videoId, isPrefetch = false, skipStream = false, client, signal) {
+    const { innertube } = await this.getInnertube();
+    let availableClients;
+    if (innertube.session.logged_in) {
+        availableClients = isPrefetch ? CLIENTS_WHEN_SIGNED_IN_AND_PREFETCH : CLIENTS_WHEN_SIGNED_IN;
+    }
+    else {
+        availableClients = isPrefetch ? CLIENTS_WHEN_SIGNED_OUT_AND_PREFETCH : CLIENTS_WHEN_SIGNED_OUT;
+    }
+    let isLive = false;
+    try {
+        client = client ?? availableClients[0];
+        const __tryNextClientOnError = async (error, obtainedInfo) => {
+            if (obtainedInfo) {
+                YouTube2Context_1.default.getLogger().warn(`[youtube2] Error getting playback info with ${client} client. The playability status of the target is: ${JSON.stringify(obtainedInfo.playability_status, null, 2)}`);
+            }
+            else {
+                YouTube2Context_1.default.getLogger().warn(`[youtube2] Error getting playback info with ${client} client`);
+            }
+            const clientIndex = availableClients.indexOf(client);
+            if (clientIndex < availableClients.length - 1) {
+                const nextClient = availableClients[clientIndex + 1];
+                YouTube2Context_1.default.getLogger().warn(YouTube2Context_1.default.getErrorMessage(`[youtube2] Got error in VideoModel.getPlaybackInfo(${videoId}):`, error, false));
+                YouTube2Context_1.default.getLogger().warn(`[youtube2] Going to retry with '${nextClient}' client`);
+                return await __classPrivateFieldGet(this, _VideoModel_instances, "m", _VideoModel_doGetPlaybackInfo).call(this, videoId, isPrefetch, skipStream, nextClient, signal);
+            }
+            throw error;
+        };
+        let contentPoToken = undefined;
         try {
-            client = client ?? 'WEB';
-            const contentPoToken = (await InnertubeLoader_1.default.generatePoToken(videoId)).poToken;
-            YouTube2Context_1.default.getLogger().info(`[ytmusic] Obtained PO token for video #${videoId}: ${contentPoToken}`);
-            const info = await innertube.getBasicInfo(videoId, { client, po_token: contentPoToken });
-            if (signal?.aborted) {
-                throw Error('Aborted');
+            contentPoToken = (await InnertubeLoader_1.default.generatePoToken(videoId)).poToken;
+            YouTube2Context_1.default.getLogger().info(`[youtube2] Obtained PO token for video #${videoId}: ${contentPoToken}`);
+        }
+        catch (error) {
+            YouTube2Context_1.default.getLogger().error(YouTube2Context_1.default.getErrorMessage(`[youtube2] Error obtaining PO token for video #${videoId}:`, error, false));
+        }
+        let sessionPoToken;
+        try {
+            sessionPoToken = (await (await InnertubeLoader_1.default.getInstance()).getSessionPoToken())?.poToken;
+        }
+        catch (error) {
+            YouTube2Context_1.default.getLogger().error(YouTube2Context_1.default.getErrorMessage(`[youtube2] Error obtaining PO token for session:`, error, false));
+            sessionPoToken = undefined;
+        }
+        let info;
+        try {
+            info = await innertube.getBasicInfo(videoId, { client, po_token: sessionPoToken });
+        }
+        catch (error) {
+            // Sometimes getBasicInfo() directly throws error when video is unavailable.
+            // Retry with next client if possible.
+            return await __tryNextClientOnError(error);
+        }
+        if (signal?.aborted) {
+            throw Error('Aborted');
+        }
+        const basicInfo = info.basic_info;
+        isLive = !!basicInfo.is_live;
+        if (!isLive && client === 'WEB') {
+            // For non-live videos, WEB client returns SABR streams which Volumio doesn't support.
+            // Proceed to the next client.
+            return await __classPrivateFieldGet(this, _VideoModel_instances, "m", _VideoModel_doGetPlaybackInfo).call(this, videoId, isPrefetch, skipStream, availableClients[1], signal);
+        }
+        const result = {
+            type: 'video',
+            title: basicInfo.title,
+            author: {
+                channelId: basicInfo.channel_id,
+                name: basicInfo.author
+            },
+            description: basicInfo.short_description,
+            thumbnail: InnertubeResultParser_1.default.parseThumbnail(basicInfo.thumbnail) || '',
+            isLive,
+            duration: basicInfo.duration,
+            addToHistory: () => {
+                return info?.addToWatchHistory();
             }
-            const basicInfo = info.basic_info;
-            if (!basicInfo.is_live &&
-                client === 'WEB') {
-                // For non-live videos, WEB client returns SABR streams which Innertube can't decipher.
-                // We need to switch to WEB_EMBEDDED client wih TV as fallback.
-                return await this.getPlaybackInfo(videoId, 'WEB_EMBEDDED', signal);
-            }
-            const result = {
-                type: 'video',
-                title: basicInfo.title,
-                author: {
-                    channelId: basicInfo.channel_id,
-                    name: basicInfo.author
-                },
-                description: basicInfo.short_description,
-                thumbnail: InnertubeResultParser_1.default.parseThumbnail(basicInfo.thumbnail) || '',
-                isLive: !!basicInfo.is_live,
-                duration: basicInfo.duration,
-                addToHistory: () => {
-                    return info?.addToWatchHistory();
-                }
-            };
-            if (info.playability_status?.status === 'UNPLAYABLE') {
-                // Check if this video has a trailer (non-purchased movies / films)
-                if (info.has_trailer) {
-                    const trailerInfo = info.getTrailerInfo();
-                    if (trailerInfo) {
-                        result.stream = await __classPrivateFieldGet(this, _VideoModel_instances, "m", _VideoModel_chooseFormat).call(this, innertube, trailerInfo);
-                    }
-                }
-                else {
-                    throw Error(info.playability_status.reason);
-                }
-            }
-            else if (!result.isLive) {
-                try {
-                    result.stream = await __classPrivateFieldGet(this, _VideoModel_instances, "m", _VideoModel_chooseFormat).call(this, innertube, info);
-                }
-                catch (error) {
-                    if (error instanceof innertube_1.Utils.PlayerError && client !== 'TV') {
-                        // Error with WEB_EMBEDDED client - retry with TV
-                        YouTube2Context_1.default.getLogger().warn(`[youtube2] Error getting stream with ${client} client in VideoModel.getInfo(${videoId}): ${error.message} - retry with 'TV' client.`);
-                        return await this.getPlaybackInfo(videoId, 'TV', signal);
-                    }
-                    throw error;
+        };
+        if (skipStream === true) {
+            return result;
+        }
+        if (info.playability_status?.status === 'UNPLAYABLE') {
+            // Check if this video has a trailer (non-purchased movies / films)
+            if (info.has_trailer) {
+                const trailerInfo = info.getTrailerInfo();
+                if (trailerInfo) {
+                    result.stream = await __classPrivateFieldGet(this, _VideoModel_instances, "m", _VideoModel_chooseFormat).call(this, innertube, trailerInfo);
                 }
             }
             else {
-                const hlsManifestUrl = info.streaming_data?.hls_manifest_url;
-                const streamUrlFromHLS = hlsManifestUrl ? await __classPrivateFieldGet(this, _VideoModel_instances, "m", _VideoModel_getStreamUrlFromHLS).call(this, hlsManifestUrl, YouTube2Context_1.default.getConfigValue('liveStreamQuality')) : null;
-                result.stream = streamUrlFromHLS ? { url: streamUrlFromHLS } : null;
+                return await __tryNextClientOnError(new Error(info.playability_status.reason), info);
             }
-            if (result.stream && !result.isLive) {
-                // Innertube sets `pot` searchParam of URL to session-bound PO token.
-                // Seems YT now requires `pot` to be the *content-bound* token, otherwise we'll get 403.
-                // See: https://github.com/TeamNewPipe/NewPipeExtractor/issues/1392
-                const urlObj = new URL(result.stream.url);
+        }
+        else if (!isLive) {
+            try {
+                result.stream = await __classPrivateFieldGet(this, _VideoModel_instances, "m", _VideoModel_chooseFormat).call(this, innertube, info);
+            }
+            catch (error) {
+                return await __tryNextClientOnError(error, info);
+            }
+        }
+        else {
+            const hlsManifestUrl = info.streaming_data?.hls_manifest_url;
+            const streamUrlFromHLS = hlsManifestUrl ? await __classPrivateFieldGet(this, _VideoModel_instances, "m", _VideoModel_getStreamUrlFromHLS).call(this, hlsManifestUrl, YouTube2Context_1.default.getConfigValue('liveStreamQuality')) : null;
+            result.stream = streamUrlFromHLS ? { url: streamUrlFromHLS } : null;
+        }
+        if (result.stream && !isLive) {
+            // Innertube sets `pot` searchParam of URL to session-bound PO token.
+            // Seems YT now requires `pot` to be the *content-bound* token, otherwise we'll get 403.
+            // See: https://github.com/TeamNewPipe/NewPipeExtractor/issues/1392
+            const urlObj = new URL(result.stream.url);
+            if (contentPoToken) {
                 urlObj.searchParams.set('pot', contentPoToken);
-                result.stream.url = urlObj.toString();
             }
-            // Might need to wait a few seconds before stream becomes accessible (instead of getting 403 Forbidden).
-            // We add a test routine here and sleep for a while between retries
-            // See: https://github.com/yt-dlp/yt-dlp/issues/14097
-            if (result.stream) {
-                const startTime = new Date().getTime();
-                YouTube2Context_1.default.getLogger().info(`[youtube2] VideoModel.getInfo(${videoId}): validating stream URL "${result.stream.url}"...`);
-                let tries = 0;
-                let testStreamResult = await __classPrivateFieldGet(this, _VideoModel_instances, "m", _VideoModel_head).call(this, result.stream.url, signal);
-                while (!testStreamResult.ok && tries < 3) {
-                    if (signal?.aborted) {
-                        throw Error('Aborted');
-                    }
-                    YouTube2Context_1.default.getLogger().warn(`[youtube2] VideoModel.getInfo(${videoId}): stream validation failed (${testStreamResult.status} - ${testStreamResult.statusText}); retrying after 2s...`);
-                    await __classPrivateFieldGet(this, _VideoModel_instances, "m", _VideoModel_sleep).call(this, 2000);
-                    tries++;
-                    testStreamResult = await __classPrivateFieldGet(this, _VideoModel_instances, "m", _VideoModel_head).call(this, result.stream.url);
-                }
-                const endTime = new Date().getTime();
-                const timeTaken = (endTime - startTime) / 1000;
-                if (tries === 3) {
-                    YouTube2Context_1.default.getLogger().warn(`[youtube2] VideoModel.getInfo(${videoId}): failed to validate stream URL "${result.stream.url}" (retried ${tries} times in ${timeTaken}s).`);
-                }
-                else {
-                    YouTube2Context_1.default.getLogger().info(`[youtube2] VideoModel.getInfo(${videoId}): stream validated in ${timeTaken}s.`);
-                }
-            }
-            if (signal?.aborted) {
-                throw Error('Aborted');
-            }
-            return result;
+            result.stream.url = urlObj.toString();
         }
-        catch (error) {
-            YouTube2Context_1.default.getLogger().error(YouTube2Context_1.default.getErrorMessage(`[youtube2] Error in VideoModel.getInfo(${videoId}): `, error));
-            return null;
+        // Might need to wait a few seconds before stream becomes accessible (instead of getting 403 Forbidden).
+        // We add a test routine here and sleep for a while between retries
+        // See: https://github.com/yt-dlp/yt-dlp/issues/14097
+        if (result.stream) {
+            YouTube2Context_1.default.getLogger().info(`[youtube2] Got stream with ${client} client`);
+            const startTime = new Date().getTime();
+            YouTube2Context_1.default.getLogger().info(`[youtube2] VideoModel.getPlaybackInfo(${videoId}): validating stream URL "${result.stream.url}"...`);
+            let tries = 0;
+            let testStreamResult = await __classPrivateFieldGet(this, _VideoModel_instances, "m", _VideoModel_head).call(this, result.stream.url, signal);
+            while (!testStreamResult.ok && tries < 3) {
+                if (signal?.aborted) {
+                    throw Error('Aborted');
+                }
+                YouTube2Context_1.default.getLogger().warn(`[youtube2] VideoModel.getPlaybackInfo(${videoId}): stream validation failed (${testStreamResult.status} - ${testStreamResult.statusText}); retrying after 2s...`);
+                await __classPrivateFieldGet(this, _VideoModel_instances, "m", _VideoModel_sleep).call(this, 2000);
+                tries++;
+                testStreamResult = await __classPrivateFieldGet(this, _VideoModel_instances, "m", _VideoModel_head).call(this, result.stream.url);
+            }
+            const endTime = new Date().getTime();
+            const timeTaken = (endTime - startTime) / 1000;
+            if (tries === 3) {
+                YouTube2Context_1.default.getLogger().warn(`[youtube2] VideoModel.getPlaybackInfo(${videoId}): failed to validate stream URL "${result.stream.url}" (retried ${tries} times in ${timeTaken}s).`);
+            }
+            else {
+                YouTube2Context_1.default.getLogger().info(`[youtube2] VideoModel.getPlaybackInfo(${videoId}): stream validated in ${timeTaken}s.`);
+            }
         }
+        if (signal?.aborted) {
+            throw Error('Aborted');
+        }
+        return result;
     }
-}
-_VideoModel_instances = new WeakSet(), _VideoModel_sleep = function _VideoModel_sleep(ms) {
+    catch (error) {
+        YouTube2Context_1.default.getLogger().error(YouTube2Context_1.default.getErrorMessage(`[youtube2] Error in VideoModel.getPlaybackInfo(${videoId}): `, error));
+        throw error;
+    }
+}, _VideoModel_sleep = function _VideoModel_sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }, _VideoModel_head = async function _VideoModel_head(url, signal) {
     const res = await fetch(url, { method: 'HEAD', signal });
@@ -207,4 +307,3 @@ _VideoModel_instances = new WeakSet(), _VideoModel_sleep = function _VideoModel_
     return closest?.variant.url || playlistVariants[0]?.url || null;
 };
 exports.default = VideoModel;
-//# sourceMappingURL=VideoModel.js.map
