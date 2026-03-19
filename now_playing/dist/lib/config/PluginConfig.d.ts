@@ -19,9 +19,15 @@ export interface PluginConfigSchema {
     theme: PluginConfigSchemaEntry<ThemeSettings, true>;
     performance: PluginConfigSchemaEntry<PerformanceSettings, true>;
     localization: PluginConfigSchemaEntry<LocalizationSettings, true>;
+    weather: PluginConfigSchemaEntry<WeatherOptions, true>;
     kioskDisplay: PluginConfigSchemaEntry<'default' | 'nowPlaying'>;
     configVersion: PluginConfigSchemaEntry<string | null>;
 }
+export interface WeatherOptions {
+    openWeatherMapApiKey: string;
+    cacheMinutes: number;
+}
+export declare const DefaultWeatherOptions: WeatherOptions;
 export interface MetadataServiceOptions {
     geniusAccessToken: string;
     excludeParenthesized: boolean;

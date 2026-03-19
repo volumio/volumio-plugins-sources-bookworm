@@ -1,0 +1,26 @@
+{
+    "button_pin": {
+        "value": 17,
+        "type": "number"
+    },
+    "button_type": {
+        "value": "NO",
+        "type": "string"
+    },
+    "button_debounce": {
+        "value": 100,
+        "type": "number"
+    },
+    "led_pos_pin": {
+        "value": 22,
+        "type": "number"
+    },
+    "led_neg_pin": {
+        "value": 4,
+        "type": "number"
+    },
+    "led_polarity": {
+        "value": "normal",
+        "type": "string"
+    }
+}

@@ -129,6 +129,10 @@
         "type": "number",
         "value": 50
     },
+      "loudnessstrength": {
+        "type": "number",
+        "value": 2
+    },
     "showeq": {
         "type": "boolean",
         "value": true
@@ -272,7 +276,7 @@
     },
     "resamplingq": {
         "type": "string",
-        "value": "++"
+        "value": "+++"
     },
     "resamplingset": {
         "type": "string",
@@ -314,5 +318,9 @@
         "type": "string",
         "value": "Raw"
     },
-    "state4Clipping": {}
+    "state4Clipping": {},
+    "newpresetname": {
+        "type": "string",
+        "value": ""
+    }
 }

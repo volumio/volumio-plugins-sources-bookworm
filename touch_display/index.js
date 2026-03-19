@@ -63,6 +63,7 @@ TouchDisplay.prototype.onStart = function () {
   const defer = libQ.defer();
 
   self.commandRouter.loadI18nStrings();
+  self.installIframeKeyboardBridge(); // Install keyboard bridge extension
   self.checkConfigJson();
   self.commandRouter.executeOnPlugin('system_controller', 'system', 'getSystemVersion', '')
     .then(infos => {
@@ -132,6 +133,29 @@ TouchDisplay.prototype.onStop = function () {
       defer.resolve();
     });
   return defer.promise;
+};
+
+TouchDisplay.prototype.installIframeKeyboardBridge = function () {
+  const self = this;
+  const extensionDir = '/data/volumiokioskextensions/IframeKeyboardBridge';
+  const sourceDir = path.join(__dirname, 'iframe_keyboard_bridge');
+  
+  // Create extension directory if it doesn't exist
+  exec('/bin/echo volumio | /usr/bin/sudo -S /bin/mkdir -p ' + extensionDir, { uid: 1000, gid: 1000 }, (error) => {
+    if (error) {
+      self.logger.error(self.pluginName + ': Failed to create IframeKeyboardBridge directory: ' + error);
+      return;
+    }
+    
+    // Copy extension files
+    exec('/bin/echo volumio | /usr/bin/sudo -S /bin/cp -r ' + sourceDir + '/* ' + extensionDir + '/', { uid: 1000, gid: 1000 }, (error) => {
+      if (error) {
+        self.logger.error(self.pluginName + ': Failed to install IframeKeyboardBridge extension: ' + error);
+      } else {
+        self.logger.info(self.pluginName + ': IframeKeyboardBridge extension installed successfully');
+      }
+    });
+  });
 };
 
 // Configuration Methods -----------------------------------------------------------------------------
@@ -795,7 +819,7 @@ TouchDisplay.prototype.saveScaleConf = function (confData) {
 TouchDisplay.prototype.saveVirtualKeyboardConf = function (confData) {
   const self = this;
   const defer = libQ.defer();
-  const extensionPath = confData.virtualKeyboard ? "'\\/data\\/volumiokioskextensions\\/VirtualKeyboard\\/'" : '';
+  const extensionPath = confData.virtualKeyboard ? "'\\/data\\/volumiokioskextensions\\/VirtualKeyboard\\/,\\/data\\/volumiokioskextensions\\/IframeKeyboardBridge\\/'" : '';
 
   if (self.config.get('virtualKeyboard') !== confData.virtualKeyboard) {
     fs.stat('/tmp/.X11-unix/X' + displayNumber, (err, stats) => {
@@ -1663,53 +1687,91 @@ TouchDisplay.prototype.getVideoOuts = function () {
 TouchDisplay.prototype.detectHDMIPorts = function () {
   const self = this;
   const defer = libQ.defer();
-  const hdmiPorts = [];
 
-  fs.readdir('/sys/class/drm/', (err, items) => {
-    if (err !== null) {
-      self.logger.error(self.pluginName + ': Error reading /sys/class/drm/: ' + err);
-      defer.reject(err);
+  fs.stat('/tmp/.X11-unix/X' + displayNumber, (err, stats) => {
+    if (err !== null || !stats.isSocket()) {
+      self.logger.info(self.pluginName + ': X server not ready, cannot detect HDMI ports yet.');
+      defer.resolve([]);
     } else {
-      items.forEach(item => {
-        if (/^card[0-9]+-HDMI/i.test(item)) {
-          let portNum = 0;
-          let xrandrName = item.replace(/^card[0-9]+-/, '');
+      exec('export DISPLAY=:0 && /usr/bin/xrandr --verbose', { encoding: 'utf8', uid: 1000, gid: 1000 }, (error, stdout, stderr) => {
+        if (error !== null) {
+          self.logger.error(self.pluginName + ': Error running xrandr: ' + error);
+          defer.reject(error);
+        } else {
+          const hdmiPorts = [];
+          const xrandrMap = {};
           
-          // Try multiple patterns for extracting port number
-          // Pattern 1: HDMI-A-1, HDMI-B-2, etc. (Type + Number)
-          let match = item.match(/HDMI-[A-Z]+-([0-9]+)$/i);
-          if (match) {
-            portNum = parseInt(match[1], 10) - 1;
-          } else {
-            // Pattern 2: HDMI-1, HDMI-2, etc. (Direct number)
-            match = item.match(/HDMI-([0-9]+)$/i);
-            if (match) {
-              portNum = parseInt(match[1], 10) - 1;
-            } else {
-              // Pattern 3: HDMI with no number suffix - use sequential index
-              // Will be assigned based on order found
-              portNum = hdmiPorts.length;
+          // Parse xrandr output to map CONNECTOR_ID to xrandr name
+          const lines = stdout.split('\n');
+          let currentOutput = null;
+          
+          for (const line of lines) {
+            const outputMatch = line.match(/^(HDMI[^\s]+)\s+(connected|disconnected)/);
+            if (outputMatch) {
+              currentOutput = outputMatch[1];
+            } else if (currentOutput && line.includes('CONNECTOR_ID:')) {
+              const idMatch = line.match(/CONNECTOR_ID:\s+(\d+)/);
+              if (idMatch) {
+                xrandrMap[idMatch[1]] = currentOutput;
+              }
             }
           }
           
-          hdmiPorts.push({
-            xrandrName: xrandrName,
-            displayName: 'HDMI ' + portNum,
-            sysName: item
+          // Read /sys/class/drm/ to find HDMI connectors and their IDs
+          fs.readdir('/sys/class/drm/', (err, items) => {
+            if (err !== null) {
+              self.logger.error(self.pluginName + ': Error reading /sys/class/drm/: ' + err);
+              defer.reject(err);
+            } else {
+              let pending = 0;
+              
+              items.forEach(item => {
+                if (/^card[0-9]+-HDMI/i.test(item)) {
+                  pending++;
+                  fs.readFile('/sys/class/drm/' + item + '/connector_id', 'utf8', (err, connectorId) => {
+                    pending--;
+                    if (!err) {
+                      connectorId = connectorId.trim();
+                      const xrandrName = xrandrMap[connectorId];
+                      
+                      if (xrandrName) {
+                        hdmiPorts.push({
+                          xrandrName: xrandrName,
+                          displayName: 'HDMI ' + (hdmiPorts.length),
+                          sysName: item,
+                          connectorId: connectorId
+                        });
+                      }
+                    }
+                    
+                    if (pending === 0) {
+                      hdmiPorts.sort((a, b) => a.xrandrName.localeCompare(b.xrandrName));
+                      
+                      // Renumber displayName sequentially after sorting
+                      hdmiPorts.forEach((port, index) => {
+                        port.displayName = 'HDMI ' + index;
+                      });
+                      
+                      if (hdmiPorts.length === 0) {
+                        self.logger.info(self.pluginName + ': No HDMI ports detected.');
+                        defer.resolve([]);
+                      } else {
+                        self.logger.info(self.pluginName + ': Detected HDMI ports: ' + hdmiPorts.map(p => p.displayName + ' (' + p.xrandrName + ')').join(', '));
+                        defer.resolve(hdmiPorts);
+                      }
+                    }
+                  });
+                }
+              });
+              
+              if (pending === 0) {
+                self.logger.info(self.pluginName + ': No HDMI ports detected.');
+                defer.resolve([]);
+              }
+            }
           });
         }
       });
-      
-      // Sort by xrandrName to ensure consistent ordering
-      hdmiPorts.sort((a, b) => a.xrandrName.localeCompare(b.xrandrName));
-      
-      if (hdmiPorts.length === 0) {
-        self.logger.info(self.pluginName + ': No HDMI ports detected in /sys/class/drm/.');
-        defer.resolve([]);
-      } else {
-        self.logger.info(self.pluginName + ': Detected HDMI ports: ' + hdmiPorts.map(p => p.displayName + ' (' + p.xrandrName + ')').join(', '));
-        defer.resolve(hdmiPorts);
-      }
     }
   });
   

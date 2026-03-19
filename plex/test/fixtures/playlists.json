@@ -1,0 +1,31 @@
+{
+  "MediaContainer": {
+    "size": 3,
+    "Metadata": [
+      {
+        "ratingKey": "5001",
+        "key": "/playlists/5001/items",
+        "title": "Chill Vibes",
+        "playlistType": "audio",
+        "leafCount": 25,
+        "smart": false
+      },
+      {
+        "ratingKey": "5002",
+        "key": "/playlists/5002/items",
+        "title": "Movie Night",
+        "playlistType": "video",
+        "leafCount": 10,
+        "smart": false
+      },
+      {
+        "ratingKey": "5003",
+        "key": "/playlists/5003/items",
+        "title": "Road Trip",
+        "playlistType": "audio",
+        "leafCount": 42,
+        "smart": true
+      }
+    ]
+  }
+}

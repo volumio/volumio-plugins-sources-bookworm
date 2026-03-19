@@ -1,0 +1,39 @@
+{
+    "GPIO_BUTTON_LED": {
+        "PLUGIN_NAME": "GPIO Button LED",
+        
+        "BUTTON_SECTION": "Button Configuration",
+        "BUTTON_SECTION_DESC": "Configure shutdown button GPIO. Triggers shutdown when Pi is running. For wake-from-halt, GPIO3 with diode circuit required (see README). Changes require reboot.",
+        
+        "BUTTON_PIN": "Button GPIO",
+        "BUTTON_PIN_DOC": "GPIO pin number for shutdown button. Only triggers shutdown when Pi is running.",
+        "BUTTON_PIN_DESC": "Default = 17. Set to 0 to disable.",
+        
+        "BUTTON_TYPE": "Button Type",
+        "BUTTON_TYPE_DOC": "NO = Normally Open (most common), NC = Normally Closed",
+        "BUTTON_TYPE_DESC": "Select based on your button wiring.",
+        
+        "BUTTON_DEBOUNCE": "Debounce (ms)",
+        "BUTTON_DEBOUNCE_DOC": "Debounce time in milliseconds to prevent false triggers from button contact bounce.",
+        "BUTTON_DEBOUNCE_DESC": "Default = 100. Increase if button triggers multiple times per press.",
+        
+        "SAVE_BUTTON": "Save Button Settings",
+        
+        "LED_SECTION": "LED Configuration",
+        "LED_SECTION_DESC": "Configure LED indicator GPIOs. LED is wired between two GPIO pins. IMPORTANT: Use 330-470 ohm resistor in series! Changes apply immediately.",
+        
+        "LED_POS_PIN": "LED+ GPIO",
+        "LED_POS_PIN_DOC": "GPIO pin for LED positive (anode) connection.",
+        "LED_POS_PIN_DESC": "Default = 22. Set to 0 to disable.",
+        
+        "LED_NEG_PIN": "LED- GPIO",
+        "LED_NEG_PIN_DOC": "GPIO pin for LED negative (cathode) connection.",
+        "LED_NEG_PIN_DESC": "Default = 4. Set to 0 to disable.",
+        
+        "LED_POLARITY": "LED Polarity",
+        "LED_POLARITY_DOC": "Reverse polarity if LED lights when it should be off.",
+        "LED_POLARITY_DESC": "Normal: LED+ HIGH = ON. Reversed: LED+ LOW = ON.",
+        
+        "SAVE_LED": "Save LED Settings"
+    }
+}

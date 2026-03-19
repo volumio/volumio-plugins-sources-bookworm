@@ -1,0 +1,21 @@
+{
+  "include": ["./**/*.ts"],
+  "compilerOptions": {
+    "rootDir": ".",
+    "target": "es2020",
+    "module": "commonjs",
+    "outDir": "../dist/",
+    "declaration": false,
+    "declarationMap": false,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "sourceMap": false,
+    "strict": true,
+    "strictPropertyInitialization": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true
+  },
+  "references": [
+    { "path": "../" }
+  ]
+}

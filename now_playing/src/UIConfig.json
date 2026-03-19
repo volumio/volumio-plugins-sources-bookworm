@@ -234,7 +234,46 @@
       "label": "TRANSLATE.NOW_PLAYING_WEATHER_SERVICE",
       "description": "TRANSLATE.NOW_PLAYING_WEATHER_SERVICE_DESC",
       "icon": "fa-sun-o",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "user_interface/now_playing",
+        "method": "configSaveWeatherServiceSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.NOW_PLAYING_SAVE",
+        "data": [
+          "openWeatherMapApiKey",
+          "weatherCacheMinutes"
+        ]
+      },
       "content": [
+        {
+          "id": "openWeatherMapApiKey",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.NOW_PLAYING_OPENWEATHERMAP_API_KEY",
+          "doc": "TRANSLATE.NOW_PLAYING_OPENWEATHERMAP_API_KEY_DESC",
+          "value": ""
+        },
+        {
+          "id": "weatherCacheMinutes",
+          "element": "select",
+          "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_MINUTES",
+          "doc": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_MINUTES_DESC",
+          "value": {
+            "value": 10,
+            "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_10_MIN"
+          },
+          "options": [
+            { "value": 10, "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_10_MIN" },
+            { "value": 30, "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_30_MIN" },
+            { "value": 60, "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_1_H" },
+            { "value": 120, "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_2_H" },
+            { "value": 360, "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_6_H" },
+            { "value": 720, "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_12_H" },
+            { "value": 1440, "label": "TRANSLATE.NOW_PLAYING_WEATHER_CACHE_24_H" }
+          ]
+        },
         {
           "id": "clearWeatherCache",
           "element": "button",
@@ -3370,6 +3409,7 @@
         "data": [
           "enabled",
           "waitTime",
+          "showClock",
           "showLocation",
           "showWeather",
           "mainAlignment",
@@ -3460,6 +3500,12 @@
           "doc": "TRANSLATE.NOW_PLAYING_DOC_IDLE_SCREEN_WAIT_TIME",
           "label": "TRANSLATE.NOW_PLAYING_WAIT_TIME",
           "value": 30
+        },
+        {
+          "id": "showClock",
+          "element": "switch",
+          "label": "TRANSLATE.NOW_PLAYING_SHOW_CLOCK",
+          "value": true
         },
         {
           "id": "showLocation",

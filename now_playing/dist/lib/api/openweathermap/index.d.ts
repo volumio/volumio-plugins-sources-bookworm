@@ -43,6 +43,7 @@ export default class OpenWeatherMapAPI {
     setCoordinates(lat: number, lon: number): void;
     setLang(lang: string): void;
     setUnits(units: string): void;
+    setApiKey(apiKey: string | null): void;
     getWeather(): Promise<OpenWeatherMapAPIGetWeatherResult>;
 }
 //# sourceMappingURL=index.d.ts.map

@@ -26,6 +26,13 @@ The [Jellyfin SDK]((https://github.com/patrickkfkan/jellyfin-sdk-typescript/)) u
   
 #### Changelog
 
+2.1.0
+- [Changed] Update Jellyfin SDK dependency to v0.13.0. As a result, support moved to server version v10.11.x.
+- [Fixed] Playlists not listed ([#12](https://github.com/patrickkfkan/volumio-jellyfin/issues/12))
+
+2.0.1
+- [Fixed] Playlist songs get added to play queue in wrong order ([#11](https://github.com/patrickkfkan/volumio-jellyfin/issues/11))
+
 2.0.0
 - Preliminary release for Bookworm-based, alpha-stage Volumio
 - [Added] Option to test connection first before adding server
@@ -35,7 +42,7 @@ The [Jellyfin SDK]((https://github.com/patrickkfkan/jellyfin-sdk-typescript/)) u
 - [Fixed] Missing dependency
 
 1.1.0
-- [Changed] Bump Jellyfin SDK v0.10.0. As a result, support moved to server version 10.9.x.
+- [Changed] Update Jellyfin SDK dependency to v0.10.0. As a result, support moved to server version 10.9.x.
 - [Added] Provide metadata to Now Playing plugin
 
 1.0.9

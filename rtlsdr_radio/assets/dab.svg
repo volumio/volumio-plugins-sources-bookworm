@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(256, 256) scale(0.75) translate(-290, -280)">
+    <!-- Radio body (rounded rectangle) -->
+    <rect x="100" y="160" width="380" height="240" rx="15" ry="15" 
+          fill="none" stroke="#FFFFFF" stroke-width="12"/>
+    
+    <!-- Speaker grill (right side circles) - webradio position -->
+    <circle cx="385" cy="255" r="70" fill="none" stroke="#FFFFFF" stroke-width="10"/>
+    <circle cx="385" cy="255" r="50" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+    <circle cx="385" cy="255" r="35" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+    
+    <!-- Control knobs (symmetrically under speaker, near bottom) -->
+    <circle cx="365" cy="378" r="12" fill="#FFFFFF"/>
+    <circle cx="405" cy="378" r="12" fill="#FFFFFF"/>
+    
+    <!-- Antenna -->
+    <line x1="470" y1="160" x2="495" y2="100" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="495" cy="100" r="8" fill="#FFFFFF"/>
+    
+    <!-- DAB text (centered) -->
+    <text x="190" y="295" font-family="Arial, sans-serif" font-size="50" 
+          font-weight="bold" fill="#FFFFFF" text-anchor="middle">DAB</text>
+  </g>
+</svg>

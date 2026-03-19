@@ -1,0 +1,123 @@
+# Audiophonics Remote to Volumio Command Mappings
+# For RaspDacMini LCD Plugin
+
+# Play/Pause toggle
+begin
+  prog = irexec
+  button = play
+  config = /usr/local/bin/volumio toggle &
+  delay = 2
+  repeat = 3
+end
+
+# Seek backward (hold button)
+begin
+  prog = irexec
+  button = playleft
+  config = /usr/local/bin/volumio seek minus &
+  delay = 2
+  repeat = 3
+end
+
+# Seek forward (hold button)
+begin
+  prog = irexec
+  button = playright
+  config = /usr/local/bin/volumio seek plus &
+  delay = 2
+  repeat = 3
+end
+
+# Previous track
+begin
+  prog = irexec
+  button = left
+  config = /usr/local/bin/volumio previous &
+end
+
+# Next track
+begin
+  prog = irexec
+  button = right
+  config = /usr/local/bin/volumio next &
+end
+
+# Volume up
+begin
+  prog = irexec
+  button = volplus
+  config = /usr/local/bin/volumio volume plus &
+  repeat = 1
+end
+
+# Volume down
+begin
+  prog = irexec
+  button = volminus
+  config = /usr/local/bin/volumio volume minus &
+  repeat = 1
+end
+
+# Mute toggle
+begin
+  prog = irexec
+  button = mute
+  config = /usr/local/bin/volumio volume toggle &
+end
+
+# Stop playback
+begin
+  prog = irexec
+  button = ok
+  config = /usr/local/bin/volumio stop &
+end
+
+# Toggle DAC input (I2S/SPDIF)
+begin
+  prog = irexec
+  button = input
+  config = curl -s -m 1 localhost:4153/toggle_input &
+  repeat = 0
+end
+
+# Toggle repeat mode (short press on option)
+begin
+  prog = irexec
+  button = option
+  config = curl -s -m 1 localhost:4153/toggle_repeat &
+  repeat = 0
+end
+
+# Toggle shuffle mode (long press on option)
+begin
+  prog = irexec
+  button = option
+  config = curl -s -m 1 localhost:4153/toggle_shuffle &
+  delay = 5
+  repeat = 0
+end
+
+# Cycle DAC filters
+begin
+  prog = irexec
+  button = up
+  config = curl -s -m 1 localhost:4153/next_filter &
+  repeat = 0
+end
+
+# Switch display view (toggle metadata scroll)
+begin
+  prog = irexec
+  button = down
+  config = curl -s -m 1 localhost:4153/switch_view &
+  repeat = 0
+end
+
+# System shutdown
+begin
+  prog = irexec
+  button = poweroff
+  config = /sbin/shutdown -h now
+  repeat = 0
+end
+

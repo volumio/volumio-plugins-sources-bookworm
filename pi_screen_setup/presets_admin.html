@@ -1,0 +1,2724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preset Manager - Pi Screen Setup</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #1c1c1c;
+      color: #e0e0e0;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .header {
+      background: #282828;
+      border-bottom: 1px solid #404040;
+      padding: 15px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header-content {
+      flex: 1;
+    }
+    
+    .header h1 {
+      font-size: 20px;
+      font-weight: 500;
+      color: #fff;
+      margin-bottom: 5px;
+    }
+    
+    .header .subtitle {
+      font-size: 13px;
+      color: #999;
+    }
+    
+    .header-close-btn {
+      background: #d32f2f;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-left: 20px;
+      white-space: nowrap;
+    }
+    
+    .header-close-btn:hover {
+      background: #b71c1c;
+    }
+    
+    .header-close-btn:active {
+      background: #8b0000;
+    }
+    
+    .header-close-btn.hidden {
+      display: none;
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+    
+    .config-fields {
+      margin-top: 10px;
+    }
+    
+    .config-fields .form-row {
+      margin-bottom: 10px;
+    }
+    
+    .field-help {
+      font-size: 11px;
+      color: #666;
+      margin-top: 4px;
+      font-family: monospace;
+    }
+    
+    .field-help .example {
+      color: #888;
+    }
+    
+    .config-section-title {
+      font-size: 13px;
+      color: #54b948;
+      margin: 15px 0 10px 0;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #333;
+    }
+    
+    .config-section-title:first-child {
+      margin-top: 0;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      padding-bottom: 20px;
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #404040;
+      flex-wrap: wrap;
+    }
+    
+    .tab {
+      padding: 12px 24px;
+      background: transparent;
+      border: none;
+      color: #999;
+      cursor: pointer;
+      font-size: 15px;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .tab:hover {
+      color: #fff;
+    }
+    
+    .tab.active {
+      color: #54b948;
+      border-bottom-color: #54b948;
+    }
+    
+    .tab .fa {
+      font-size: 14px;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* Section styling - matches radio manager */
+    .section {
+      background: #282828;
+      border-radius: 4px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .section-title {
+      color: #54b948;
+      font-size: 18px;
+      font-weight: 500;
+      margin: 0 0 15px 0;
+    }
+    
+    .section h3 {
+      color: #999;
+      font-size: 12px;
+      margin: 0 0 15px 0;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .subsection-title {
+      color: #54b948;
+      font-size: 16px;
+      margin: 25px 0 15px 0;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #404040;
+    }
+    
+    .subsection-title:first-of-type {
+      margin-top: 0;
+    }
+    
+    /* Form styling */
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 5px;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      background: #1c1c1c;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      color: #e0e0e0;
+      font-size: 14px;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #54b948;
+    }
+    
+    .form-group textarea {
+      min-height: 120px;
+      font-family: monospace;
+      resize: vertical;
+    }
+    
+    .form-group input[readonly] {
+      background: #333;
+      color: #888;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    
+    /* Button styling - matches radio manager */
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: inherit;
+    }
+    
+    .btn .fa {
+      font-size: 13px;
+    }
+    
+    .btn-primary {
+      background: #54b948;
+      color: #fff;
+      border: 1px solid #54b948;
+      font-weight: 500;
+    }
+    
+    .btn-primary:hover {
+      background: #449a39;
+      border-color: #449a39;
+    }
+    
+    .btn-primary:disabled {
+      background: #333;
+      border-color: #404040;
+      color: #666;
+      cursor: not-allowed;
+    }
+    
+    .btn-secondary {
+      background: #666;
+      color: #fff;
+      border: 1px solid #666;
+    }
+    
+    .btn-secondary:hover {
+      background: #555;
+      border-color: #555;
+    }
+    
+    .btn-danger {
+      background: #e74c3c;
+      color: #fff;
+      border: 1px solid #e74c3c;
+    }
+    
+    .btn-danger:hover {
+      background: #c0392b;
+      border-color: #c0392b;
+    }
+    
+    .btn-warning {
+      background: transparent;
+      color: #f39c12;
+      border: 1px solid #f39c12;
+    }
+    
+    .btn-warning:hover {
+      background: #f39c12;
+      color: #fff;
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    /*
+     * BUTTON ROW STYLING
+     * Default: buttons spread across full width (justify-content: space-between)
+     * Use .btn-row.left for left-aligned buttons
+     * Use .btn-row.center for center-aligned buttons
+     * This matches the rtlsdr_radio manager pattern
+     */
+    .btn-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+    
+    .btn-row.left {
+      justify-content: flex-start;
+    }
+    
+    .btn-row.center {
+      justify-content: center;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    /* Info box - matches radio manager tool box */
+    .info-box {
+      background: #1c1c1c;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .info-box p {
+      margin: 8px 0;
+      color: #ccc;
+    }
+    
+    .info-box strong {
+      color: #54b948;
+    }
+    
+    .info-box .fa-info-circle {
+      color: #54b948;
+      margin-right: 8px;
+    }
+    
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #333;
+    }
+    
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    
+    .info-label {
+      color: #999;
+      font-size: 13px;
+    }
+    
+    .info-value {
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .info-value.modified {
+      color: #f39c12;
+    }
+    
+    /* Preset details box */
+    .preset-details {
+      background: #1c1c1c;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      padding: 15px;
+      margin: 15px 0;
+    }
+    
+    .preset-details h4 {
+      color: #54b948;
+      margin-bottom: 10px;
+    }
+    
+    .preset-details pre {
+      background: #282828;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 12px;
+      color: #54b948;
+    }
+    
+    /* Warning and success boxes */
+    .warning-box {
+      background: rgba(211, 47, 47, 0.1);
+      border: 1px solid #d32f2f;
+      border-radius: 4px;
+      padding: 15px;
+      margin: 15px 0;
+      color: #ff6b6b;
+    }
+    
+    .warning-box .fa {
+      margin-right: 8px;
+    }
+    
+    .success-box {
+      background: rgba(84, 185, 72, 0.1);
+      border: 1px solid #54b948;
+      border-radius: 4px;
+      padding: 15px;
+      margin: 15px 0;
+      color: #54b948;
+    }
+    
+    /* Backup list */
+    .backup-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .backup-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #333;
+    }
+    
+    .backup-item:hover {
+      background: #333;
+    }
+    
+    .backup-info {
+      flex: 1;
+    }
+    
+    .backup-name {
+      color: #fff;
+      font-size: 13px;
+    }
+    
+    .backup-date {
+      color: #999;
+      font-size: 12px;
+    }
+    
+    .backup-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    /* Version bump row */
+    .version-bump {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 15px 0;
+      padding: 10px;
+      background: #1c1c1c;
+      border-radius: 4px;
+    }
+    
+    .version-bump label {
+      color: #999;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    
+    .version-bump input {
+      width: 100px;
+      padding: 6px 10px;
+      background: #282828;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      color: #e0e0e0;
+      font-size: 14px;
+    }
+    
+    .version-bump input:focus {
+      outline: none;
+      border-color: #54b948;
+    }
+    
+    .version-bump .suggestion {
+      color: #666;
+      font-size: 12px;
+    }
+    
+    /* File input */
+    .file-input-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    
+    /* Toast messages */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 14px;
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+    }
+    
+    .toast.success {
+      background: #54b948;
+    }
+    
+    .toast.error {
+      background: #d32f2f;
+    }
+    
+    .toast.info {
+      background: #2196f3;
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    /* Horizontal rule */
+    hr {
+      border: none;
+      border-top: 1px solid #404040;
+      margin: 20px 0;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 15px;
+      }
+      
+      .btn-row {
+        justify-content: flex-start;
+      }
+      
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-content">
+      <h1 id="page-title">Preset Manager</h1>
+      <div class="subtitle" id="page-subtitle">Pi Screen Setup - Display Presets Database</div>
+    </div>
+    <button id="close-window-btn" class="header-close-btn hidden">
+      <i class="fa fa-times"></i> <span id="btn-close-text">Close</span>
+    </button>
+  </div>
+  
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" data-tab="manage">
+        <i class="fa fa-pencil"></i> <span id="tab-manage-text">Manage Presets</span>
+      </button>
+      <button class="tab" data-tab="add">
+        <i class="fa fa-plus"></i> <span id="tab-add-text">Add New</span>
+      </button>
+      <button class="tab" data-tab="delete">
+        <i class="fa fa-trash"></i> <span id="tab-delete-text">Delete</span>
+      </button>
+      <button class="tab" data-tab="database">
+        <i class="fa fa-database"></i> <span id="tab-database-text">Database File</span>
+      </button>
+    </div>
+    
+    <!-- Tab 1: Manage Presets -->
+    <div id="manage-tab" class="tab-content active">
+      <div class="section">
+        <div class="section-title" id="section-db-status">Database Status</div>
+        
+        <div class="info-box">
+          <div class="info-row">
+            <span class="info-label" id="label-active-version">Active Version</span>
+            <span class="info-value" id="info-local-version">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label" id="label-total-presets">Total Presets</span>
+            <span class="info-value" id="info-preset-count">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label" id="label-source">Source</span>
+            <span class="info-value" id="info-source">-</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title" id="section-edit-preset">Edit Existing Preset</div>
+        
+        <div class="form-group">
+          <label id="label-select-preset">Select Preset</label>
+          <select id="manage-preset-select">
+            <option value="">-- Select a preset --</option>
+          </select>
+        </div>
+        
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="loadPreset()">
+            <i class="fa fa-download"></i> <span id="btn-load-text">Load Selected</span>
+          </button>
+        </div>
+      </div>
+      
+      <div id="manage-form" class="section" style="display: none;">
+        <div class="section-title" id="section-edit-details">Edit Preset Details</div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label id="label-preset-id">Preset ID</label>
+            <input type="text" id="manage-id" readonly>
+          </div>
+          <div class="form-group">
+            <label id="label-display-name">Display Name</label>
+            <input type="text" id="manage-name" placeholder="Display name">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label id="label-connection-type">Connection Type</label>
+            <select id="manage-type">
+              <option value="hdmi">HDMI</option>
+              <option value="dsi">DSI</option>
+              <option value="dpi">DPI</option>
+              <option value="composite">Composite</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label id="label-description">Description</label>
+            <input type="text" id="manage-desc" placeholder="Brief description">
+          </div>
+        </div>
+        
+        <!-- Configuration Fields by Type -->
+        <div class="form-group">
+          <label id="label-configuration">Configuration</label>
+          
+          <!-- HDMI Configuration Fields -->
+          <div id="manage-config-hdmi" class="config-fields">
+            <div class="config-section-title" id="m-cfg-hdmi-title">HDMI Output Settings</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label id="m-label-hdmi-group">HDMI Group</label>
+                <select id="manage-cfg-hdmi-group">
+                  <option value="" id="m-opt-not-set">-- Not Set --</option>
+                  <option value="1">1 - CEA (TV)</option>
+                  <option value="2">2 - DMT (Monitor)</option>
+                </select>
+                <div class="field-help" id="m-help-hdmi-group">CEA for TVs, DMT for computer monitors</div>
+              </div>
+              <div class="form-group">
+                <label id="m-label-hdmi-mode">HDMI Mode</label>
+                <input type="number" id="manage-cfg-hdmi-mode" placeholder="e.g., 87 for custom">
+                <div class="field-help" id="m-help-hdmi-mode">Mode 87 = custom timing. See RPi docs for standard modes.</div>
+              </div>
+            </div>
+            
+            <div class="config-section-title" id="m-cfg-timing-title">Timing Configuration</div>
+            <div class="form-group">
+              <label id="m-label-timing-format">Timing Format</label>
+              <select id="manage-cfg-timing-format">
+                <option value="none" id="m-opt-no-timing">-- No Custom Timing --</option>
+                <option value="hdmi_timings">Custom Timings (hdmi_timings)</option>
+                <option value="hdmi_cvt">CVT Mode (hdmi_cvt)</option>
+              </select>
+            </div>
+            <div id="manage-timing-hdmi_timings" class="hidden">
+              <div class="form-group">
+                <label>hdmi_timings</label>
+                <input type="text" id="manage-cfg-hdmi-timings" placeholder="320 0 80 16 32 1480 0 16 4 12 0 0 0 60 0 42000000 3">
+                <div class="field-help" id="m-help-hdmi-timings">Format: h_active h_fp h_sync h_bp v_active v_fp v_sync v_bp v_sync_pol h_sync_pol interlace pixel_rep framerate aspect pixel_freq clock_mode flags</div>
+              </div>
+            </div>
+            <div id="manage-timing-hdmi_cvt" class="hidden">
+              <div class="form-group">
+                <label>hdmi_cvt</label>
+                <input type="text" id="manage-cfg-hdmi-cvt" placeholder="800 480 60">
+                <div class="field-help" id="m-help-hdmi-cvt">Format: width height framerate [aspect margins interlace rb]</div>
+              </div>
+            </div>
+            
+            <div class="config-section-title" id="m-cfg-fb-title">Framebuffer Settings</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label id="m-label-max-fb-height">Max Framebuffer Height</label>
+                <input type="number" id="manage-cfg-max-fb-height" placeholder="e.g., 1480">
+                <div class="field-help" id="m-help-max-fb-height">For portrait displays taller than wide</div>
+              </div>
+              <div class="form-group">
+                <label id="m-label-max-fb-width">Max Framebuffer Width</label>
+                <input type="number" id="manage-cfg-max-fb-width" placeholder="e.g., 1920">
+                <div class="field-help" id="m-help-max-fb-width">For unusual aspect ratios</div>
+              </div>
+            </div>
+            
+            <div class="config-section-title" id="m-cfg-advanced-title">Advanced HDMI Options</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label id="m-label-pixel-freq">Pixel Frequency Limit</label>
+                <input type="number" id="manage-cfg-hdmi-pixel-freq" placeholder="e.g., 356000000">
+                <div class="field-help" id="m-help-pixel-freq">Override pixel clock limit in Hz</div>
+              </div>
+              <div class="form-group">
+                <label id="m-label-hdmi-boost">HDMI Boost</label>
+                <input type="number" id="manage-cfg-hdmi-boost" min="0" max="11" placeholder="0-11">
+                <div class="field-help" id="m-help-hdmi-boost">Signal strength boost (0-11). Try 4-7 for long cables.</div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label id="m-label-gpu-mem">GPU Memory (MB)</label>
+                <input type="number" id="manage-cfg-gpu-mem" placeholder="e.g., 256 or 512">
+                <div class="field-help" id="m-help-gpu-mem">Override GPU memory allocation</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- DSI Configuration Fields -->
+          <div id="manage-config-dsi" class="config-fields hidden">
+            <div class="config-section-title" id="m-cfg-dsi-title">DSI Display Settings</div>
+            <div class="form-group">
+              <label id="m-label-dsi-overlay">Primary Overlay (dtoverlay)</label>
+              <input type="text" id="manage-cfg-dsi-dtoverlay" placeholder="e.g., vc4-kms-dsi-7inch">
+              <div class="field-help" id="m-help-dsi-overlay">Main DSI overlay. Can include parameters after comma.</div>
+            </div>
+            <div class="form-group">
+              <label id="m-label-dsi-overlay2">Secondary Overlay (dtoverlay_2)</label>
+              <input type="text" id="manage-cfg-dsi-dtoverlay2" placeholder="e.g., waveshare_35DSI">
+              <div class="field-help" id="m-help-dsi-overlay2">Optional secondary overlay for touch or special features</div>
+            </div>
+          </div>
+          
+          <!-- DPI Configuration Fields -->
+          <div id="manage-config-dpi" class="config-fields hidden">
+            <div class="config-section-title" id="m-cfg-dpi-title">DPI Display Settings</div>
+            <div class="form-group">
+              <label id="m-label-dpi-overlay">Base Overlay (dtoverlay)</label>
+              <input type="text" id="manage-cfg-dpi-dtoverlay" placeholder="e.g., vc4-kms-v3d">
+              <div class="field-help" id="m-help-dpi-overlay">Usually vc4-kms-v3d for DPI displays</div>
+            </div>
+            <div class="config-section-title" id="m-cfg-dpi-model-title">Pi Model-Specific Overlays</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label id="m-label-dpi-overlay2">Pi 2/3 Overlay (dtoverlay_2)</label>
+                <input type="text" id="manage-cfg-dpi-dtoverlay2" placeholder="e.g., vc4-kms-dpi-2inch8">
+                <div class="field-help" id="m-help-dpi-overlay2">Overlay for Pi 2 and Pi 3 boards</div>
+              </div>
+              <div class="form-group">
+                <label id="m-label-dpi-overlay3">Pi 3B Overlay (dtoverlay_3)</label>
+                <input type="text" id="manage-cfg-dpi-dtoverlay3" placeholder="e.g., waveshare-28dpi-3b-4b">
+                <div class="field-help" id="m-help-dpi-overlay3">Optional: Pi 3B specific variant</div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label id="m-label-dpi-overlay4">Pi 4/5 Overlay (dtoverlay_4)</label>
+                <input type="text" id="manage-cfg-dpi-dtoverlay4" placeholder="e.g., waveshare-touch-28dpi">
+                <div class="field-help" id="m-help-dpi-overlay4">Overlay for Pi 4 and Pi 5 boards</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Composite Configuration Fields -->
+          <div id="manage-config-composite" class="config-fields hidden">
+            <div class="config-section-title" id="m-cfg-composite-title">Composite Video Settings</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label id="m-label-sdtv-mode">Video Standard (sdtv_mode)</label>
+                <select id="manage-cfg-sdtv-mode">
+                  <option value="">-- Not Set --</option>
+                  <option value="0">0 - NTSC (US/Japan)</option>
+                  <option value="1">1 - NTSC-J (Japan)</option>
+                  <option value="2">2 - PAL (Europe/Australia)</option>
+                  <option value="3">3 - PAL-M (Brazil)</option>
+                </select>
+                <div class="field-help" id="m-help-sdtv-mode">Select video standard for your region</div>
+              </div>
+              <div class="form-group">
+                <label id="m-label-sdtv-aspect">Aspect Ratio (sdtv_aspect)</label>
+                <select id="manage-cfg-sdtv-aspect">
+                  <option value="">-- Not Set --</option>
+                  <option value="1">1 - 4:3</option>
+                  <option value="2">2 - 14:9</option>
+                  <option value="3">3 - 16:9</option>
+                </select>
+                <div class="field-help" id="m-help-sdtv-aspect">Aspect ratio for composite output</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label id="m-label-enable-tvout">Enable TV Out</label>
+              <select id="manage-cfg-enable-tvout">
+                <option value="">-- Not Set --</option>
+                <option value="1">1 - Enabled</option>
+                <option value="0">0 - Disabled</option>
+              </select>
+              <div class="field-help" id="m-help-enable-tvout">Required for Pi 4/5 composite output</div>
+            </div>
+          </div>
+          
+          <!-- Additional Parameters (for unknown/advanced keys) -->
+          <div class="config-section-title" id="m-cfg-additional-title" style="margin-top: 20px;">Additional Parameters</div>
+          <div class="form-group">
+            <label id="m-label-extra-config">Extra Config (JSON)</label>
+            <textarea id="manage-cfg-additional" rows="3" placeholder='{"custom_key": "value"}'></textarea>
+            <div class="field-help" id="m-help-extra-config">For advanced or unusual config keys not covered above. Must be valid JSON object.</div>
+          </div>
+        </div>
+        
+        <div class="version-bump">
+          <label id="m-label-new-version">New Version:</label>
+          <input type="text" id="manage-version" placeholder="1.1.5">
+          <span class="suggestion" id="manage-version-suggestion"></span>
+        </div>
+        
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="savePreset()">
+            <i class="fa fa-save"></i> <span id="btn-save-text">Save Changes</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tab 2: Add New Preset -->
+    <div id="add-tab" class="tab-content">
+      <div class="section">
+        <div class="section-title" id="section-create-preset">Create New Preset</div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label id="a-label-preset-id">Preset ID (unique identifier)</label>
+            <input type="text" id="add-id" placeholder="e.g., my-custom-display">
+          </div>
+          <div class="form-group">
+            <label id="a-label-display-name">Display Name</label>
+            <input type="text" id="add-name" placeholder="e.g., My Custom Display">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label id="a-label-connection-type">Connection Type</label>
+            <select id="add-type">
+              <option value="hdmi">HDMI</option>
+              <option value="dsi">DSI</option>
+              <option value="dpi">DPI</option>
+              <option value="composite">Composite</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label id="a-label-description">Description</label>
+            <input type="text" id="add-desc" placeholder="Brief description">
+          </div>
+        </div>
+        
+        <!-- Configuration Fields by Type -->
+        <div class="form-group">
+          <label id="a-label-configuration">Configuration</label>
+          
+          <!-- HDMI Configuration Fields -->
+          <div id="add-config-hdmi" class="config-fields">
+            <div class="config-section-title" id="a-cfg-hdmi-title">HDMI Output Settings</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label id="a-label-hdmi-group">HDMI Group</label>
+                <select id="add-cfg-hdmi-group">
+                  <option value="">-- Not Set --</option>
+                  <option value="1">1 - CEA (TV)</option>
+                  <option value="2">2 - DMT (Monitor)</option>
+                </select>
+                <div class="field-help" id="a-help-hdmi-group">CEA for TVs, DMT for computer monitors</div>
+              </div>
+              <div class="form-group">
+                <label id="a-label-hdmi-mode">HDMI Mode</label>
+                <input type="number" id="add-cfg-hdmi-mode" placeholder="e.g., 87 for custom">
+                <div class="field-help" id="a-help-hdmi-mode">Mode 87 = custom timing. See RPi docs for standard modes.</div>
+              </div>
+            </div>
+            
+            <div class="config-section-title" id="a-cfg-timing-title">Timing Configuration</div>
+            <div class="form-group">
+              <label id="a-label-timing-format">Timing Format</label>
+              <select id="add-cfg-timing-format">
+                <option value="none">-- No Custom Timing --</option>
+                <option value="hdmi_timings">Custom Timings (hdmi_timings)</option>
+                <option value="hdmi_cvt">CVT Mode (hdmi_cvt)</option>
+              </select>
+            </div>
+            <div id="add-timing-hdmi_timings" class="hidden">
+              <div class="form-group">
+                <label id="a-label-hdmi-timings">hdmi_timings</label>
+                <input type="text" id="add-cfg-hdmi-timings" placeholder="320 0 80 16 32 1480 0 16 4 12 0 0 0 60 0 42000000 3">
+                <div class="field-help" id="a-help-hdmi-timings">Format: h_active h_fp h_sync h_bp v_active v_fp v_sync v_bp v_sync_pol h_sync_pol interlace pixel_rep framerate aspect pixel_freq clock_mode flags</div>
+              </div>
+            </div>
+            <div id="add-timing-hdmi_cvt" class="hidden">
+              <div class="form-group">
+                <label id="a-label-hdmi-cvt">hdmi_cvt</label>
+                <input type="text" id="add-cfg-hdmi-cvt" placeholder="800 480 60">
+                <div class="field-help" id="a-help-hdmi-cvt">Format: width height framerate [aspect margins interlace rb]</div>
+              </div>
+            </div>
+            
+            <div class="config-section-title" id="a-cfg-fb-title">Framebuffer Settings</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label id="a-label-max-fb-height">Max Framebuffer Height</label>
+                <input type="number" id="add-cfg-max-fb-height" placeholder="e.g., 1480">
+                <div class="field-help" id="a-help-max-fb-height">For portrait displays taller than wide</div>
+              </div>
+              <div class="form-group">
+                <label id="a-label-max-fb-width">Max Framebuffer Width</label>
+                <input type="number" id="add-cfg-max-fb-width" placeholder="e.g., 1920">
+                <div class="field-help" id="a-help-max-fb-width">For unusual aspect ratios</div>
+              </div>
+            </div>
+            
+            <div class="config-section-title" id="a-cfg-advanced-title">Advanced HDMI Options</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label id="a-label-pixel-freq">Pixel Frequency Limit</label>
+                <input type="number" id="add-cfg-hdmi-pixel-freq" placeholder="e.g., 356000000">
+                <div class="field-help" id="a-help-pixel-freq">Override pixel clock limit in Hz</div>
+              </div>
+              <div class="form-group">
+                <label id="a-label-hdmi-boost">HDMI Boost</label>
+                <input type="number" id="add-cfg-hdmi-boost" min="0" max="11" placeholder="0-11">
+                <div class="field-help" id="a-help-hdmi-boost">Signal strength boost (0-11). Try 4-7 for long cables.</div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label id="a-label-gpu-mem">GPU Memory (MB)</label>
+                <input type="number" id="add-cfg-gpu-mem" placeholder="e.g., 256 or 512">
+                <div class="field-help" id="a-help-gpu-mem">Override GPU memory allocation</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- DSI Configuration Fields -->
+          <div id="add-config-dsi" class="config-fields hidden">
+            <div class="config-section-title" id="a-cfg-dsi-title">DSI Display Settings</div>
+            <div class="form-group">
+              <label id="a-label-dsi-overlay">Primary Overlay (dtoverlay)</label>
+              <input type="text" id="add-cfg-dsi-dtoverlay" placeholder="e.g., vc4-kms-dsi-7inch">
+              <div class="field-help" id="a-help-dsi-overlay">Main DSI overlay. Can include parameters after comma.</div>
+            </div>
+            <div class="form-group">
+              <label id="a-label-dsi-overlay2">Secondary Overlay (dtoverlay_2)</label>
+              <input type="text" id="add-cfg-dsi-dtoverlay2" placeholder="e.g., waveshare_35DSI">
+              <div class="field-help" id="a-help-dsi-overlay2">Optional secondary overlay for touch or special features</div>
+            </div>
+          </div>
+          
+          <!-- DPI Configuration Fields -->
+          <div id="add-config-dpi" class="config-fields hidden">
+            <div class="config-section-title" id="a-cfg-dpi-title">DPI Display Settings</div>
+            <div class="form-group">
+              <label id="a-label-dpi-overlay">Base Overlay (dtoverlay)</label>
+              <input type="text" id="add-cfg-dpi-dtoverlay" placeholder="e.g., vc4-kms-v3d">
+              <div class="field-help" id="a-help-dpi-overlay">Usually vc4-kms-v3d for DPI displays</div>
+            </div>
+            <div class="config-section-title" id="a-cfg-dpi-model-title">Pi Model-Specific Overlays</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label id="a-label-dpi-overlay2">Pi 2/3 Overlay (dtoverlay_2)</label>
+                <input type="text" id="add-cfg-dpi-dtoverlay2" placeholder="e.g., vc4-kms-dpi-2inch8">
+                <div class="field-help" id="a-help-dpi-overlay2">Overlay for Pi 2 and Pi 3 boards</div>
+              </div>
+              <div class="form-group">
+                <label id="a-label-dpi-overlay3">Pi 3B Overlay (dtoverlay_3)</label>
+                <input type="text" id="add-cfg-dpi-dtoverlay3" placeholder="e.g., waveshare-28dpi-3b-4b">
+                <div class="field-help" id="a-help-dpi-overlay3">Optional: Pi 3B specific variant</div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label id="a-label-dpi-overlay4">Pi 4/5 Overlay (dtoverlay_4)</label>
+                <input type="text" id="add-cfg-dpi-dtoverlay4" placeholder="e.g., waveshare-touch-28dpi">
+                <div class="field-help" id="a-help-dpi-overlay4">Overlay for Pi 4 and Pi 5 boards</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Composite Configuration Fields -->
+          <div id="add-config-composite" class="config-fields hidden">
+            <div class="config-section-title" id="a-cfg-composite-title">Composite Video Settings</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label id="a-label-sdtv-mode">Video Standard (sdtv_mode)</label>
+                <select id="add-cfg-sdtv-mode">
+                  <option value="">-- Not Set --</option>
+                  <option value="0">0 - NTSC (US/Japan)</option>
+                  <option value="1">1 - NTSC-J (Japan)</option>
+                  <option value="2">2 - PAL (Europe/Australia)</option>
+                  <option value="3">3 - PAL-M (Brazil)</option>
+                </select>
+                <div class="field-help" id="a-help-sdtv-mode">Select video standard for your region</div>
+              </div>
+              <div class="form-group">
+                <label id="a-label-sdtv-aspect">Aspect Ratio (sdtv_aspect)</label>
+                <select id="add-cfg-sdtv-aspect">
+                  <option value="">-- Not Set --</option>
+                  <option value="1">1 - 4:3</option>
+                  <option value="2">2 - 14:9</option>
+                  <option value="3">3 - 16:9</option>
+                </select>
+                <div class="field-help" id="a-help-sdtv-aspect">Aspect ratio for composite output</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label id="a-label-enable-tvout">Enable TV Out</label>
+              <select id="add-cfg-enable-tvout">
+                <option value="">-- Not Set --</option>
+                <option value="1">1 - Enabled</option>
+                <option value="0">0 - Disabled</option>
+              </select>
+              <div class="field-help" id="a-help-enable-tvout">Required for Pi 4/5 composite output</div>
+            </div>
+          </div>
+          
+          <!-- Additional Parameters (for unknown/advanced keys) -->
+          <div class="config-section-title" id="a-cfg-additional-title" style="margin-top: 20px;">Additional Parameters</div>
+          <div class="form-group">
+            <label id="a-label-extra-config">Extra Config (JSON)</label>
+            <textarea id="add-cfg-additional" rows="3" placeholder='{"custom_key": "value"}'></textarea>
+            <div class="field-help" id="a-help-extra-config">For advanced or unusual config keys not covered above. Must be valid JSON object.</div>
+          </div>
+        </div>
+        
+        <div class="version-bump">
+          <label id="a-label-new-version">New Version:</label>
+          <input type="text" id="add-version" placeholder="1.1.5">
+          <span class="suggestion" id="add-version-suggestion"></span>
+        </div>
+        
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="addPreset()">
+            <i class="fa fa-plus"></i> <span id="btn-add-text">Add Preset</span>
+          </button>
+          <button class="btn btn-secondary" onclick="clearAddForm()">
+            <i class="fa fa-eraser"></i> <span id="btn-clear-text">Clear Form</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tab 3: Delete Preset -->
+    <div id="delete-tab" class="tab-content">
+      <div class="section">
+        <div class="section-title" id="section-remove-preset">Remove Preset</div>
+        
+        <div class="form-group">
+          <label id="label-select-delete">Select Preset to Delete</label>
+          <select id="delete-preset-select">
+            <option value="">-- Select a preset --</option>
+          </select>
+        </div>
+        
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="loadDeletePreview()">
+            <i class="fa fa-eye"></i> <span id="btn-preview-text">Preview</span>
+          </button>
+        </div>
+      </div>
+      
+      <div id="delete-preview" class="section" style="display: none;">
+        <div class="section-title" id="section-delete-preview">Preset to be Deleted</div>
+        
+        <div class="warning-box">
+          <i class="fa fa-exclamation-triangle"></i>
+          <span id="warning-delete-text">This action cannot be undone. Please verify this is the correct preset.</span>
+        </div>
+        
+        <div class="preset-details">
+          <h4 id="delete-preview-name">-</h4>
+          <div class="info-row">
+            <span class="info-label" id="label-delete-id">ID</span>
+            <span class="info-value" id="delete-preview-id">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label" id="label-delete-type">Type</span>
+            <span class="info-value" id="delete-preview-type">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label" id="label-delete-desc">Description</span>
+            <span class="info-value" id="delete-preview-desc">-</span>
+          </div>
+          <h4 style="margin-top: 15px;" id="label-delete-config">Configuration</h4>
+          <pre id="delete-preview-config">{}</pre>
+        </div>
+        
+        <div class="version-bump">
+          <label id="d-label-new-version">New Version:</label>
+          <input type="text" id="delete-version" placeholder="1.1.5">
+          <span class="suggestion" id="delete-version-suggestion"></span>
+        </div>
+        
+        <div class="btn-row">
+          <button class="btn btn-danger" onclick="confirmDelete()">
+            <i class="fa fa-trash"></i> <span id="btn-confirm-delete-text">Confirm Delete</span>
+          </button>
+          <button class="btn btn-secondary" onclick="cancelDelete()">
+            <i class="fa fa-times"></i> <span id="btn-cancel-text">Cancel</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tab 4: Database File -->
+    <div id="database-tab" class="tab-content">
+      <div class="section">
+        <div class="section-title" id="section-import">Import Database</div>
+        
+        <h3 id="label-import-url">From Remote URL</h3>
+        <div class="form-group">
+          <input type="text" id="import-url" placeholder="https://raw.githubusercontent.com/...">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="importFromUrl()">
+            <i class="fa fa-cloud-download"></i> <span id="btn-import-url-text">Fetch from URL</span>
+          </button>
+        </div>
+        
+        <hr>
+        
+        <h3 id="label-import-path">From Local Device Path</h3>
+        <div class="form-group">
+          <input type="text" id="import-path" placeholder="/data/INTERNAL/display_presets.json">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="importFromPath()">
+            <i class="fa fa-folder-open"></i> <span id="btn-import-path-text">Load from Path</span>
+          </button>
+        </div>
+        
+        <hr>
+        
+        <h3 id="label-upload-file">Upload from Browser</h3>
+        <div class="btn-row">
+          <div class="file-input-wrapper">
+            <button class="btn btn-secondary">
+              <i class="fa fa-upload"></i> <span id="btn-choose-file-text">Choose File</span>
+            </button>
+            <input type="file" id="import-file" accept=".json" onchange="handleFileUpload(this)">
+          </div>
+          <span id="upload-filename" style="color: #999;"></span>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title" id="section-export">Export / Download</div>
+        
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="downloadDatabase()">
+            <i class="fa fa-download"></i> <span id="btn-download-text">Download Current Database</span>
+          </button>
+          <button class="btn btn-secondary" onclick="exportForPR()">
+            <i class="fa fa-github"></i> <span id="btn-export-pr-text">Export for GitHub PR</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title" id="section-db-ops">Database Operations</div>
+        
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="publishToCache()">
+            <i class="fa fa-save"></i> <span id="btn-save-cache-text">Save to Cache (Persist)</span>
+          </button>
+          <button class="btn btn-warning" onclick="revertToBundled()">
+            <i class="fa fa-undo"></i> <span id="btn-revert-text">Revert to Bundled</span>
+          </button>
+          <button class="btn btn-secondary" onclick="reloadFromCache()">
+            <i class="fa fa-refresh"></i> <span id="btn-reload-text">Reload from Cache</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title" id="section-backups">Backups</div>
+        
+        <div class="btn-row" style="margin-bottom: 15px; margin-top: 0;">
+          <button class="btn btn-primary" onclick="createBackup()">
+            <i class="fa fa-plus"></i> <span id="btn-create-backup-text">Create Backup</span>
+          </button>
+          <div class="file-input-wrapper">
+            <button class="btn btn-secondary">
+              <i class="fa fa-upload"></i> <span id="btn-upload-backup-text">Upload Backup</span>
+            </button>
+            <input type="file" id="backup-file" accept=".json" onchange="handleBackupUpload(this)">
+          </div>
+        </div>
+        
+        <div id="backup-list" class="backup-list">
+          <p style="color: #666; text-align: center; padding: 20px;" id="loading-backups-text">Loading backups...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // ===== GLOBAL STATE =====
+    var presets = {};
+    var databaseInfo = {
+      localVersion: '-',
+      remoteVersion: '-',
+      presetCount: 0,
+      source: '-'
+    };
+    var i18n = {};
+    
+    // ===== i18n FUNCTIONS =====
+    function t(key) {
+      var args = Array.prototype.slice.call(arguments, 1);
+      var str = i18n[key] || key;
+      args.forEach(function(arg, index) {
+        str = str.replace('{' + index + '}', arg);
+      });
+      return str;
+    }
+    
+    function loadTranslations() {
+      // Fetch current Volumio language setting from server
+      return fetch('/api/language')
+        .then(function(res) { return res.json(); })
+        .then(function(langData) {
+          var lang = langData.language || 'en';
+          // Fetch translations for that language
+          return fetch('/api/i18n/' + lang);
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          i18n = data;
+          updateUIText();
+        })
+        .catch(function(error) {
+          console.error('Failed to load translations:', error);
+          // Fallback to English on error
+          return fetch('/api/i18n/en')
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+              i18n = data;
+              updateUIText();
+            });
+        });
+    }
+    
+    function updateUIText() {
+      // Helper to set text content safely
+      function setText(id, key) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = t(key);
+      }
+      
+      // Header and tabs
+      setText('page-title', 'PM_TITLE');
+      setText('page-subtitle', 'PM_SUBTITLE');
+      setText('btn-close-text', 'PM_BTN_CLOSE');
+      setText('tab-manage-text', 'PM_TAB_MANAGE');
+      setText('tab-add-text', 'PM_TAB_ADD');
+      setText('tab-delete-text', 'PM_TAB_DELETE');
+      setText('tab-database-text', 'PM_TAB_DATABASE');
+      
+      // Database Status section
+      setText('section-db-status', 'PM_SECTION_DB_STATUS');
+      setText('label-active-version', 'PM_LABEL_ACTIVE_VERSION');
+      setText('label-total-presets', 'PM_LABEL_TOTAL_PRESETS');
+      setText('label-source', 'PM_LABEL_SOURCE');
+      
+      // Edit Existing Preset section
+      setText('section-edit-preset', 'PM_SECTION_EDIT_PRESET');
+      setText('label-select-preset', 'PM_LABEL_SELECT_PRESET');
+      setText('btn-load-text', 'PM_BTN_LOAD');
+      
+      // Edit Preset Details section
+      setText('section-edit-details', 'PM_SECTION_EDIT_DETAILS');
+      setText('label-preset-id', 'PM_LABEL_PRESET_ID');
+      setText('label-display-name', 'PM_LABEL_DISPLAY_NAME');
+      setText('label-connection-type', 'PM_LABEL_CONNECTION_TYPE');
+      setText('label-description', 'PM_LABEL_DESCRIPTION');
+      setText('label-configuration', 'PM_LABEL_CONFIGURATION');
+      
+      // HDMI Config - Edit form
+      setText('m-cfg-hdmi-title', 'PM_CFG_HDMI_TITLE');
+      setText('m-label-hdmi-group', 'PM_LABEL_HDMI_GROUP');
+      setText('m-help-hdmi-group', 'PM_HELP_HDMI_GROUP');
+      setText('m-label-hdmi-mode', 'PM_LABEL_HDMI_MODE');
+      setText('m-help-hdmi-mode', 'PM_HELP_HDMI_MODE');
+      setText('m-cfg-timing-title', 'PM_CFG_TIMING_TITLE');
+      setText('m-label-timing-format', 'PM_LABEL_TIMING_FORMAT');
+      setText('m-label-hdmi-timings', 'PM_LABEL_HDMI_TIMINGS');
+      setText('m-help-hdmi-timings', 'PM_HELP_HDMI_TIMINGS');
+      setText('m-label-hdmi-cvt', 'PM_LABEL_HDMI_CVT');
+      setText('m-help-hdmi-cvt', 'PM_HELP_HDMI_CVT');
+      setText('m-cfg-fb-title', 'PM_CFG_FB_TITLE');
+      setText('m-label-max-fb-height', 'PM_LABEL_MAX_FB_HEIGHT');
+      setText('m-help-max-fb-height', 'PM_HELP_MAX_FB_HEIGHT');
+      setText('m-label-max-fb-width', 'PM_LABEL_MAX_FB_WIDTH');
+      setText('m-help-max-fb-width', 'PM_HELP_MAX_FB_WIDTH');
+      setText('m-cfg-advanced-title', 'PM_CFG_ADVANCED_TITLE');
+      setText('m-label-pixel-freq', 'PM_LABEL_PIXEL_FREQ');
+      setText('m-help-pixel-freq', 'PM_HELP_PIXEL_FREQ');
+      setText('m-label-hdmi-boost', 'PM_LABEL_HDMI_BOOST');
+      setText('m-help-hdmi-boost', 'PM_HELP_HDMI_BOOST');
+      setText('m-label-gpu-mem', 'PM_LABEL_GPU_MEM');
+      setText('m-help-gpu-mem', 'PM_HELP_GPU_MEM');
+      
+      // DSI Config - Edit form
+      setText('m-cfg-dsi-title', 'PM_CFG_DSI_TITLE');
+      setText('m-label-dsi-overlay', 'PM_LABEL_DSI_OVERLAY');
+      setText('m-help-dsi-overlay', 'PM_HELP_DSI_OVERLAY');
+      setText('m-label-dsi-overlay2', 'PM_LABEL_DSI_OVERLAY2');
+      setText('m-help-dsi-overlay2', 'PM_HELP_DSI_OVERLAY2');
+      
+      // DPI Config - Edit form
+      setText('m-cfg-dpi-title', 'PM_CFG_DPI_TITLE');
+      setText('m-label-dpi-overlay', 'PM_LABEL_DPI_OVERLAY');
+      setText('m-help-dpi-overlay', 'PM_HELP_DPI_OVERLAY');
+      setText('m-cfg-dpi-model-title', 'PM_CFG_DPI_MODEL_TITLE');
+      setText('m-label-dpi-overlay2', 'PM_LABEL_DPI_OVERLAY2');
+      setText('m-help-dpi-overlay2', 'PM_HELP_DPI_OVERLAY2');
+      setText('m-label-dpi-overlay3', 'PM_LABEL_DPI_OVERLAY3');
+      setText('m-help-dpi-overlay3', 'PM_HELP_DPI_OVERLAY3');
+      setText('m-label-dpi-overlay4', 'PM_LABEL_DPI_OVERLAY4');
+      setText('m-help-dpi-overlay4', 'PM_HELP_DPI_OVERLAY4');
+      
+      // Composite Config - Edit form
+      setText('m-cfg-composite-title', 'PM_CFG_COMPOSITE_TITLE');
+      setText('m-label-sdtv-mode', 'PM_LABEL_SDTV_MODE');
+      setText('m-help-sdtv-mode', 'PM_HELP_SDTV_MODE');
+      setText('m-label-sdtv-aspect', 'PM_LABEL_SDTV_ASPECT');
+      setText('m-help-sdtv-aspect', 'PM_HELP_SDTV_ASPECT');
+      setText('m-label-enable-tvout', 'PM_LABEL_ENABLE_TVOUT');
+      setText('m-help-enable-tvout', 'PM_HELP_ENABLE_TVOUT');
+      
+      // Additional Parameters - Edit form
+      setText('m-cfg-additional-title', 'PM_CFG_ADDITIONAL_TITLE');
+      setText('m-label-extra-config', 'PM_LABEL_EXTRA_CONFIG');
+      setText('m-help-extra-config', 'PM_HELP_EXTRA_CONFIG');
+      
+      // Version and Save - Edit form
+      setText('m-label-new-version', 'PM_LABEL_NEW_VERSION');
+      setText('btn-save-text', 'PM_BTN_SAVE');
+      
+      // Add New Preset tab - labels (reuse same keys as edit form where applicable)
+      setText('section-create-preset', 'PM_SECTION_CREATE_PRESET');
+      setText('a-label-preset-id', 'PM_LABEL_PRESET_ID_UNIQUE');
+      setText('a-label-display-name', 'PM_LABEL_DISPLAY_NAME');
+      setText('a-label-connection-type', 'PM_LABEL_CONNECTION_TYPE');
+      setText('a-label-description', 'PM_LABEL_DESCRIPTION');
+      setText('a-label-configuration', 'PM_LABEL_CONFIGURATION');
+      
+      // HDMI Config - Add form
+      setText('a-cfg-hdmi-title', 'PM_CFG_HDMI_TITLE');
+      setText('a-label-hdmi-group', 'PM_LABEL_HDMI_GROUP');
+      setText('a-help-hdmi-group', 'PM_HELP_HDMI_GROUP');
+      setText('a-label-hdmi-mode', 'PM_LABEL_HDMI_MODE');
+      setText('a-help-hdmi-mode', 'PM_HELP_HDMI_MODE');
+      setText('a-cfg-timing-title', 'PM_CFG_TIMING_TITLE');
+      setText('a-label-timing-format', 'PM_LABEL_TIMING_FORMAT');
+      setText('a-label-hdmi-timings', 'PM_LABEL_HDMI_TIMINGS');
+      setText('a-help-hdmi-timings', 'PM_HELP_HDMI_TIMINGS');
+      setText('a-label-hdmi-cvt', 'PM_LABEL_HDMI_CVT');
+      setText('a-help-hdmi-cvt', 'PM_HELP_HDMI_CVT');
+      setText('a-cfg-fb-title', 'PM_CFG_FB_TITLE');
+      setText('a-label-max-fb-height', 'PM_LABEL_MAX_FB_HEIGHT');
+      setText('a-help-max-fb-height', 'PM_HELP_MAX_FB_HEIGHT');
+      setText('a-label-max-fb-width', 'PM_LABEL_MAX_FB_WIDTH');
+      setText('a-help-max-fb-width', 'PM_HELP_MAX_FB_WIDTH');
+      setText('a-cfg-advanced-title', 'PM_CFG_ADVANCED_TITLE');
+      setText('a-label-pixel-freq', 'PM_LABEL_PIXEL_FREQ');
+      setText('a-help-pixel-freq', 'PM_HELP_PIXEL_FREQ');
+      setText('a-label-hdmi-boost', 'PM_LABEL_HDMI_BOOST');
+      setText('a-help-hdmi-boost', 'PM_HELP_HDMI_BOOST');
+      setText('a-label-gpu-mem', 'PM_LABEL_GPU_MEM');
+      setText('a-help-gpu-mem', 'PM_HELP_GPU_MEM');
+      
+      // DSI Config - Add form
+      setText('a-cfg-dsi-title', 'PM_CFG_DSI_TITLE');
+      setText('a-label-dsi-overlay', 'PM_LABEL_DSI_OVERLAY');
+      setText('a-help-dsi-overlay', 'PM_HELP_DSI_OVERLAY');
+      setText('a-label-dsi-overlay2', 'PM_LABEL_DSI_OVERLAY2');
+      setText('a-help-dsi-overlay2', 'PM_HELP_DSI_OVERLAY2');
+      
+      // DPI Config - Add form
+      setText('a-cfg-dpi-title', 'PM_CFG_DPI_TITLE');
+      setText('a-label-dpi-overlay', 'PM_LABEL_DPI_OVERLAY');
+      setText('a-help-dpi-overlay', 'PM_HELP_DPI_OVERLAY');
+      setText('a-cfg-dpi-model-title', 'PM_CFG_DPI_MODEL_TITLE');
+      setText('a-label-dpi-overlay2', 'PM_LABEL_DPI_OVERLAY2');
+      setText('a-help-dpi-overlay2', 'PM_HELP_DPI_OVERLAY2');
+      setText('a-label-dpi-overlay3', 'PM_LABEL_DPI_OVERLAY3');
+      setText('a-help-dpi-overlay3', 'PM_HELP_DPI_OVERLAY3');
+      setText('a-label-dpi-overlay4', 'PM_LABEL_DPI_OVERLAY4');
+      setText('a-help-dpi-overlay4', 'PM_HELP_DPI_OVERLAY4');
+      
+      // Composite Config - Add form
+      setText('a-cfg-composite-title', 'PM_CFG_COMPOSITE_TITLE');
+      setText('a-label-sdtv-mode', 'PM_LABEL_SDTV_MODE');
+      setText('a-help-sdtv-mode', 'PM_HELP_SDTV_MODE');
+      setText('a-label-sdtv-aspect', 'PM_LABEL_SDTV_ASPECT');
+      setText('a-help-sdtv-aspect', 'PM_HELP_SDTV_ASPECT');
+      setText('a-label-enable-tvout', 'PM_LABEL_ENABLE_TVOUT');
+      setText('a-help-enable-tvout', 'PM_HELP_ENABLE_TVOUT');
+      
+      // Additional Parameters - Add form
+      setText('a-cfg-additional-title', 'PM_CFG_ADDITIONAL_TITLE');
+      setText('a-label-extra-config', 'PM_LABEL_EXTRA_CONFIG');
+      setText('a-help-extra-config', 'PM_HELP_EXTRA_CONFIG');
+      
+      // Version and buttons - Add form
+      setText('a-label-new-version', 'PM_LABEL_NEW_VERSION');
+      setText('btn-add-text', 'PM_BTN_ADD');
+      setText('btn-clear-text', 'PM_BTN_CLEAR');
+      
+      // Delete tab
+      setText('section-remove-preset', 'PM_SECTION_REMOVE_PRESET');
+      setText('label-select-delete', 'PM_LABEL_SELECT_DELETE');
+      setText('btn-preview-text', 'PM_BTN_PREVIEW');
+      setText('section-delete-preview', 'PM_SECTION_DELETE_PREVIEW');
+      setText('warning-delete-text', 'PM_WARNING_DELETE');
+      setText('label-delete-id', 'PM_LABEL_ID');
+      setText('label-delete-type', 'PM_LABEL_TYPE');
+      setText('label-delete-desc', 'PM_LABEL_DESC');
+      setText('d-label-new-version', 'PM_LABEL_NEW_VERSION');
+      setText('btn-confirm-delete-text', 'PM_BTN_CONFIRM_DELETE');
+      setText('btn-cancel-text', 'PM_BTN_CANCEL');
+      
+      // Database tab - Import section
+      setText('section-import', 'PM_SECTION_IMPORT');
+      setText('label-import-url', 'PM_LABEL_IMPORT_URL');
+      setText('btn-import-url-text', 'PM_BTN_IMPORT_URL');
+      setText('label-import-path', 'PM_LABEL_IMPORT_PATH');
+      setText('btn-import-path-text', 'PM_BTN_IMPORT_PATH');
+      setText('label-upload-file', 'PM_LABEL_UPLOAD_FILE');
+      setText('btn-choose-file-text', 'PM_BTN_CHOOSE_FILE');
+      
+      // Database tab - Export section
+      setText('section-export', 'PM_SECTION_EXPORT');
+      setText('btn-download-text', 'PM_BTN_DOWNLOAD');
+      setText('btn-export-pr-text', 'PM_BTN_EXPORT_PR');
+      
+      // Database tab - Operations section
+      setText('section-db-ops', 'PM_SECTION_DB_OPS');
+      setText('btn-save-cache-text', 'PM_BTN_SAVE_CACHE');
+      setText('btn-revert-text', 'PM_BTN_REVERT');
+      setText('btn-reload-text', 'PM_BTN_RELOAD');
+      
+      // Backups section
+      setText('section-backups', 'PM_SECTION_BACKUPS');
+      setText('btn-create-backup-text', 'PM_BTN_CREATE_BACKUP');
+      setText('btn-upload-backup-text', 'PM_BTN_UPLOAD_BACKUP');
+      setText('loading-backups-text', 'PM_LOADING_BACKUPS');
+      setText('label-delete-config', 'PM_LABEL_CONFIGURATION');
+      
+      // Update select option placeholders
+      var selects = [
+        { id: 'manage-preset-select', optIdx: 0, key: 'PM_OPT_SELECT_PRESET' },
+        { id: 'delete-preset-select', optIdx: 0, key: 'PM_OPT_SELECT_PRESET' }
+      ];
+      selects.forEach(function(s) {
+        var sel = document.getElementById(s.id);
+        if (sel && sel.options[s.optIdx]) {
+          sel.options[s.optIdx].textContent = t(s.key);
+        }
+      });
+      
+      // Update HDMI group options (both forms)
+      ['manage-cfg-hdmi-group', 'add-cfg-hdmi-group'].forEach(function(id) {
+        var sel = document.getElementById(id);
+        if (sel) {
+          if (sel.options[0]) sel.options[0].textContent = t('PM_OPT_NOT_SET');
+          if (sel.options[1]) sel.options[1].textContent = t('PM_OPT_CEA');
+          if (sel.options[2]) sel.options[2].textContent = t('PM_OPT_DMT');
+        }
+      });
+      
+      // Update timing format options (both forms)
+      ['manage-cfg-timing-format', 'add-cfg-timing-format'].forEach(function(id) {
+        var sel = document.getElementById(id);
+        if (sel) {
+          if (sel.options[0]) sel.options[0].textContent = t('PM_OPT_NO_TIMING');
+          if (sel.options[1]) sel.options[1].textContent = t('PM_OPT_TIMING_HDMI');
+          if (sel.options[2]) sel.options[2].textContent = t('PM_OPT_TIMING_CVT');
+        }
+      });
+      
+      // Update SDTV mode options (both forms)
+      ['manage-cfg-sdtv-mode', 'add-cfg-sdtv-mode'].forEach(function(id) {
+        var sel = document.getElementById(id);
+        if (sel) {
+          if (sel.options[0]) sel.options[0].textContent = t('PM_OPT_NOT_SET');
+          if (sel.options[1]) sel.options[1].textContent = t('PM_OPT_NTSC');
+          if (sel.options[2]) sel.options[2].textContent = t('PM_OPT_NTSCJ');
+          if (sel.options[3]) sel.options[3].textContent = t('PM_OPT_PAL');
+          if (sel.options[4]) sel.options[4].textContent = t('PM_OPT_PALM');
+        }
+      });
+      
+      // Update SDTV aspect options (both forms)
+      ['manage-cfg-sdtv-aspect', 'add-cfg-sdtv-aspect'].forEach(function(id) {
+        var sel = document.getElementById(id);
+        if (sel) {
+          if (sel.options[0]) sel.options[0].textContent = t('PM_OPT_NOT_SET');
+          if (sel.options[1]) sel.options[1].textContent = t('PM_OPT_ASPECT_4_3');
+          if (sel.options[2]) sel.options[2].textContent = t('PM_OPT_ASPECT_14_9');
+          if (sel.options[3]) sel.options[3].textContent = t('PM_OPT_ASPECT_16_9');
+        }
+      });
+      
+      // Update enable_tvout options (both forms)
+      ['manage-cfg-enable-tvout', 'add-cfg-enable-tvout'].forEach(function(id) {
+        var sel = document.getElementById(id);
+        if (sel) {
+          if (sel.options[0]) sel.options[0].textContent = t('PM_OPT_NOT_SET');
+          if (sel.options[1]) sel.options[1].textContent = t('PM_OPT_ENABLED');
+          if (sel.options[2]) sel.options[2].textContent = t('PM_OPT_DISABLED');
+        }
+      });
+    }
+    
+    // ===== INITIALIZATION =====
+    document.addEventListener('DOMContentLoaded', function() {
+      initTabs();
+      initCloseButton();
+      initConfigFieldToggles();
+      
+      // Load translations first, then initialize data
+      loadTranslations().then(function() {
+        loadDatabaseInfo();
+        loadPresetList();
+        loadBackupList();
+        fetchRemoteVersion();
+      });
+    });
+    
+    function initTabs() {
+      document.querySelectorAll('.tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+          document.querySelectorAll('.tab').forEach(function(t) {
+            t.classList.remove('active');
+          });
+          document.querySelectorAll('.tab-content').forEach(function(c) {
+            c.classList.remove('active');
+          });
+          
+          tab.classList.add('active');
+          var tabId = tab.dataset.tab + '-tab';
+          document.getElementById(tabId).classList.add('active');
+        });
+      });
+    }
+    
+    function initCloseButton() {
+      var closeBtn = document.getElementById('close-window-btn');
+      if (window.parent === window) {
+        closeBtn.classList.remove('hidden');
+      } else {
+        closeBtn.classList.add('hidden');
+      }
+      
+      closeBtn.addEventListener('click', closeWindow);
+    }
+    
+    function closeWindow() {
+      window.close();
+      
+      setTimeout(function() {
+        if (!window.closed) {
+          if (window.history.length > 1) {
+            window.history.back();
+          } else {
+            window.location.href = '/';
+          }
+        }
+      }, 100);
+    }
+    
+    // ===== CONFIG FIELD TOGGLE LOGIC =====
+    function initConfigFieldToggles() {
+      // Edit form: type dropdown changes config fields visibility
+      var manageType = document.getElementById('manage-type');
+      if (manageType) {
+        manageType.addEventListener('change', function() {
+          showConfigFieldsForType('manage', this.value);
+        });
+      }
+      
+      // Add form: type dropdown changes config fields visibility
+      var addType = document.getElementById('add-type');
+      if (addType) {
+        addType.addEventListener('change', function() {
+          showConfigFieldsForType('add', this.value);
+        });
+      }
+      
+      // Edit form: timing format dropdown (hdmi_timings vs hdmi_cvt)
+      var manageTimingFormat = document.getElementById('manage-cfg-timing-format');
+      if (manageTimingFormat) {
+        manageTimingFormat.addEventListener('change', function() {
+          showTimingFieldsForFormat('manage', this.value);
+        });
+      }
+      
+      // Add form: timing format dropdown (hdmi_timings vs hdmi_cvt)
+      var addTimingFormat = document.getElementById('add-cfg-timing-format');
+      if (addTimingFormat) {
+        addTimingFormat.addEventListener('change', function() {
+          showTimingFieldsForFormat('add', this.value);
+        });
+      }
+    }
+    
+    /**
+     * Show/hide config field containers based on connection type
+     * @param {string} prefix - 'manage' or 'add'
+     * @param {string} type - 'hdmi', 'dsi', 'dpi', or 'composite'
+     */
+    function showConfigFieldsForType(prefix, type) {
+      var types = ['hdmi', 'dsi', 'dpi', 'composite'];
+      
+      types.forEach(function(t) {
+        var container = document.getElementById(prefix + '-config-' + t);
+        if (container) {
+          if (t === type) {
+            container.classList.remove('hidden');
+          } else {
+            container.classList.add('hidden');
+          }
+        }
+      });
+    }
+    
+    /**
+     * Show/hide timing input fields based on timing format selection
+     * @param {string} prefix - 'manage' or 'add'
+     * @param {string} format - 'none', 'hdmi_timings', or 'hdmi_cvt'
+     */
+    function showTimingFieldsForFormat(prefix, format) {
+      var timingsContainer = document.getElementById(prefix + '-timing-hdmi_timings');
+      var cvtContainer = document.getElementById(prefix + '-timing-hdmi_cvt');
+      
+      if (timingsContainer) {
+        if (format === 'hdmi_timings') {
+          timingsContainer.classList.remove('hidden');
+        } else {
+          timingsContainer.classList.add('hidden');
+        }
+      }
+      
+      if (cvtContainer) {
+        if (format === 'hdmi_cvt') {
+          cvtContainer.classList.remove('hidden');
+        } else {
+          cvtContainer.classList.add('hidden');
+        }
+      }
+    }
+    
+    /**
+     * Clear all config fields for a form
+     * @param {string} prefix - 'manage' or 'add'
+     */
+    function clearConfigFields(prefix) {
+      // HDMI fields
+      var hdmiGroup = document.getElementById(prefix + '-cfg-hdmi-group');
+      if (hdmiGroup) hdmiGroup.value = '';
+      var hdmiMode = document.getElementById(prefix + '-cfg-hdmi-mode');
+      if (hdmiMode) hdmiMode.value = '';
+      var timingFormat = document.getElementById(prefix + '-cfg-timing-format');
+      if (timingFormat) timingFormat.value = 'none';
+      var hdmiTimings = document.getElementById(prefix + '-cfg-hdmi-timings');
+      if (hdmiTimings) hdmiTimings.value = '';
+      var hdmiCvt = document.getElementById(prefix + '-cfg-hdmi-cvt');
+      if (hdmiCvt) hdmiCvt.value = '';
+      var maxFbHeight = document.getElementById(prefix + '-cfg-max-fb-height');
+      if (maxFbHeight) maxFbHeight.value = '';
+      var maxFbWidth = document.getElementById(prefix + '-cfg-max-fb-width');
+      if (maxFbWidth) maxFbWidth.value = '';
+      var pixelFreq = document.getElementById(prefix + '-cfg-hdmi-pixel-freq');
+      if (pixelFreq) pixelFreq.value = '';
+      var hdmiBoost = document.getElementById(prefix + '-cfg-hdmi-boost');
+      if (hdmiBoost) hdmiBoost.value = '';
+      var gpuMem = document.getElementById(prefix + '-cfg-gpu-mem');
+      if (gpuMem) gpuMem.value = '';
+      
+      // DSI fields
+      var dsiOverlay = document.getElementById(prefix + '-cfg-dsi-dtoverlay');
+      if (dsiOverlay) dsiOverlay.value = '';
+      var dsiOverlay2 = document.getElementById(prefix + '-cfg-dsi-dtoverlay2');
+      if (dsiOverlay2) dsiOverlay2.value = '';
+      
+      // DPI fields
+      var dpiOverlay = document.getElementById(prefix + '-cfg-dpi-dtoverlay');
+      if (dpiOverlay) dpiOverlay.value = '';
+      var dpiOverlay2 = document.getElementById(prefix + '-cfg-dpi-dtoverlay2');
+      if (dpiOverlay2) dpiOverlay2.value = '';
+      var dpiOverlay3 = document.getElementById(prefix + '-cfg-dpi-dtoverlay3');
+      if (dpiOverlay3) dpiOverlay3.value = '';
+      var dpiOverlay4 = document.getElementById(prefix + '-cfg-dpi-dtoverlay4');
+      if (dpiOverlay4) dpiOverlay4.value = '';
+      
+      // Composite fields
+      var sdtvMode = document.getElementById(prefix + '-cfg-sdtv-mode');
+      if (sdtvMode) sdtvMode.value = '';
+      var sdtvAspect = document.getElementById(prefix + '-cfg-sdtv-aspect');
+      if (sdtvAspect) sdtvAspect.value = '';
+      var enableTvout = document.getElementById(prefix + '-cfg-enable-tvout');
+      if (enableTvout) enableTvout.value = '';
+      
+      // Additional parameters
+      var additional = document.getElementById(prefix + '-cfg-additional');
+      if (additional) additional.value = '';
+      
+      // Hide timing sub-fields
+      showTimingFieldsForFormat(prefix, 'none');
+    }
+    
+    /**
+     * Populate form fields from a config object
+     * @param {string} prefix - 'manage' or 'add'
+     * @param {string} type - 'hdmi', 'dsi', 'dpi', or 'composite'
+     * @param {object} config - The config object from the preset
+     */
+    function populateFieldsFromConfig(prefix, type, config) {
+      // Clear all fields first
+      clearConfigFields(prefix);
+      
+      if (!config || typeof config !== 'object') {
+        return;
+      }
+      
+      // Define known keys per type
+      var knownKeys = {
+        hdmi: ['hdmi_group', 'hdmi_mode', 'hdmi_timings', 'hdmi_cvt', 
+               'max_framebuffer_height', 'max_framebuffer_width',
+               'hdmi_pixel_freq_limit', 'config_hdmi_boost', 'gpu_mem'],
+        dsi: ['dtoverlay', 'dtoverlay_2'],
+        dpi: ['dtoverlay', 'dtoverlay_2', 'dtoverlay_3', 'dtoverlay_4'],
+        composite: ['sdtv_mode', 'sdtv_aspect', 'enable_tvout']
+      };
+      
+      var handledKeys = [];
+      
+      if (type === 'hdmi') {
+        // HDMI Group
+        if (config.hdmi_group !== undefined) {
+          var hdmiGroup = document.getElementById(prefix + '-cfg-hdmi-group');
+          if (hdmiGroup) hdmiGroup.value = String(config.hdmi_group);
+          handledKeys.push('hdmi_group');
+        }
+        
+        // HDMI Mode
+        if (config.hdmi_mode !== undefined) {
+          var hdmiMode = document.getElementById(prefix + '-cfg-hdmi-mode');
+          if (hdmiMode) hdmiMode.value = config.hdmi_mode;
+          handledKeys.push('hdmi_mode');
+        }
+        
+        // Timing format and values (mutually exclusive)
+        var timingFormat = document.getElementById(prefix + '-cfg-timing-format');
+        if (config.hdmi_timings) {
+          if (timingFormat) timingFormat.value = 'hdmi_timings';
+          var hdmiTimings = document.getElementById(prefix + '-cfg-hdmi-timings');
+          if (hdmiTimings) hdmiTimings.value = config.hdmi_timings;
+          showTimingFieldsForFormat(prefix, 'hdmi_timings');
+          handledKeys.push('hdmi_timings');
+        } else if (config.hdmi_cvt) {
+          if (timingFormat) timingFormat.value = 'hdmi_cvt';
+          var hdmiCvt = document.getElementById(prefix + '-cfg-hdmi-cvt');
+          if (hdmiCvt) hdmiCvt.value = config.hdmi_cvt;
+          showTimingFieldsForFormat(prefix, 'hdmi_cvt');
+          handledKeys.push('hdmi_cvt');
+        } else {
+          if (timingFormat) timingFormat.value = 'none';
+        }
+        
+        // Framebuffer settings
+        if (config.max_framebuffer_height !== undefined) {
+          var maxFbHeight = document.getElementById(prefix + '-cfg-max-fb-height');
+          if (maxFbHeight) maxFbHeight.value = config.max_framebuffer_height;
+          handledKeys.push('max_framebuffer_height');
+        }
+        if (config.max_framebuffer_width !== undefined) {
+          var maxFbWidth = document.getElementById(prefix + '-cfg-max-fb-width');
+          if (maxFbWidth) maxFbWidth.value = config.max_framebuffer_width;
+          handledKeys.push('max_framebuffer_width');
+        }
+        
+        // Advanced options
+        if (config.hdmi_pixel_freq_limit !== undefined) {
+          var pixelFreq = document.getElementById(prefix + '-cfg-hdmi-pixel-freq');
+          if (pixelFreq) pixelFreq.value = config.hdmi_pixel_freq_limit;
+          handledKeys.push('hdmi_pixel_freq_limit');
+        }
+        if (config.config_hdmi_boost !== undefined) {
+          var hdmiBoost = document.getElementById(prefix + '-cfg-hdmi-boost');
+          if (hdmiBoost) hdmiBoost.value = config.config_hdmi_boost;
+          handledKeys.push('config_hdmi_boost');
+        }
+        if (config.gpu_mem !== undefined) {
+          var gpuMem = document.getElementById(prefix + '-cfg-gpu-mem');
+          if (gpuMem) gpuMem.value = config.gpu_mem;
+          handledKeys.push('gpu_mem');
+        }
+        
+      } else if (type === 'dsi') {
+        // DSI overlay
+        if (config.dtoverlay !== undefined) {
+          var dsiOverlay = document.getElementById(prefix + '-cfg-dsi-dtoverlay');
+          if (dsiOverlay) dsiOverlay.value = config.dtoverlay;
+          handledKeys.push('dtoverlay');
+        }
+        if (config.dtoverlay_2 !== undefined) {
+          var dsiOverlay2 = document.getElementById(prefix + '-cfg-dsi-dtoverlay2');
+          if (dsiOverlay2) dsiOverlay2.value = config.dtoverlay_2;
+          handledKeys.push('dtoverlay_2');
+        }
+        
+      } else if (type === 'dpi') {
+        // DPI overlays
+        if (config.dtoverlay !== undefined) {
+          var dpiOverlay = document.getElementById(prefix + '-cfg-dpi-dtoverlay');
+          if (dpiOverlay) dpiOverlay.value = config.dtoverlay;
+          handledKeys.push('dtoverlay');
+        }
+        if (config.dtoverlay_2 !== undefined) {
+          var dpiOverlay2 = document.getElementById(prefix + '-cfg-dpi-dtoverlay2');
+          if (dpiOverlay2) dpiOverlay2.value = config.dtoverlay_2;
+          handledKeys.push('dtoverlay_2');
+        }
+        if (config.dtoverlay_3 !== undefined) {
+          var dpiOverlay3 = document.getElementById(prefix + '-cfg-dpi-dtoverlay3');
+          if (dpiOverlay3) dpiOverlay3.value = config.dtoverlay_3;
+          handledKeys.push('dtoverlay_3');
+        }
+        if (config.dtoverlay_4 !== undefined) {
+          var dpiOverlay4 = document.getElementById(prefix + '-cfg-dpi-dtoverlay4');
+          if (dpiOverlay4) dpiOverlay4.value = config.dtoverlay_4;
+          handledKeys.push('dtoverlay_4');
+        }
+        
+      } else if (type === 'composite') {
+        // Composite settings
+        if (config.sdtv_mode !== undefined) {
+          var sdtvMode = document.getElementById(prefix + '-cfg-sdtv-mode');
+          if (sdtvMode) sdtvMode.value = String(config.sdtv_mode);
+          handledKeys.push('sdtv_mode');
+        }
+        if (config.sdtv_aspect !== undefined) {
+          var sdtvAspect = document.getElementById(prefix + '-cfg-sdtv-aspect');
+          if (sdtvAspect) sdtvAspect.value = String(config.sdtv_aspect);
+          handledKeys.push('sdtv_aspect');
+        }
+        if (config.enable_tvout !== undefined) {
+          var enableTvout = document.getElementById(prefix + '-cfg-enable-tvout');
+          if (enableTvout) enableTvout.value = String(config.enable_tvout);
+          handledKeys.push('enable_tvout');
+        }
+      }
+      
+      // Collect unknown keys into additional parameters
+      var unknownConfig = {};
+      var configKeys = Object.keys(config);
+      var typeKnownKeys = knownKeys[type] || [];
+      
+      for (var i = 0; i < configKeys.length; i++) {
+        var key = configKeys[i];
+        if (handledKeys.indexOf(key) === -1 && typeKnownKeys.indexOf(key) === -1) {
+          unknownConfig[key] = config[key];
+        }
+      }
+      
+      // If there are unknown keys, populate the additional textarea
+      if (Object.keys(unknownConfig).length > 0) {
+        var additional = document.getElementById(prefix + '-cfg-additional');
+        if (additional) {
+          additional.value = JSON.stringify(unknownConfig, null, 2);
+        }
+      }
+    }
+    
+    /**
+     * Build a config object from form fields
+     * @param {string} prefix - 'manage' or 'add'
+     * @param {string} type - 'hdmi', 'dsi', 'dpi', or 'composite'
+     * @returns {object} The config object for the preset
+     */
+    function buildConfigFromFields(prefix, type) {
+      var config = {};
+      
+      if (type === 'hdmi') {
+        // HDMI Group
+        var hdmiGroup = document.getElementById(prefix + '-cfg-hdmi-group');
+        if (hdmiGroup && hdmiGroup.value !== '') {
+          config.hdmi_group = parseInt(hdmiGroup.value, 10);
+        }
+        
+        // HDMI Mode
+        var hdmiMode = document.getElementById(prefix + '-cfg-hdmi-mode');
+        if (hdmiMode && hdmiMode.value !== '') {
+          config.hdmi_mode = parseInt(hdmiMode.value, 10);
+        }
+        
+        // Timing values (mutually exclusive)
+        var timingFormat = document.getElementById(prefix + '-cfg-timing-format');
+        if (timingFormat) {
+          if (timingFormat.value === 'hdmi_timings') {
+            var hdmiTimings = document.getElementById(prefix + '-cfg-hdmi-timings');
+            if (hdmiTimings && hdmiTimings.value.trim() !== '') {
+              config.hdmi_timings = hdmiTimings.value.trim();
+            }
+          } else if (timingFormat.value === 'hdmi_cvt') {
+            var hdmiCvt = document.getElementById(prefix + '-cfg-hdmi-cvt');
+            if (hdmiCvt && hdmiCvt.value.trim() !== '') {
+              config.hdmi_cvt = hdmiCvt.value.trim();
+            }
+          }
+        }
+        
+        // Framebuffer settings
+        var maxFbHeight = document.getElementById(prefix + '-cfg-max-fb-height');
+        if (maxFbHeight && maxFbHeight.value !== '') {
+          config.max_framebuffer_height = parseInt(maxFbHeight.value, 10);
+        }
+        var maxFbWidth = document.getElementById(prefix + '-cfg-max-fb-width');
+        if (maxFbWidth && maxFbWidth.value !== '') {
+          config.max_framebuffer_width = parseInt(maxFbWidth.value, 10);
+        }
+        
+        // Advanced options
+        var pixelFreq = document.getElementById(prefix + '-cfg-hdmi-pixel-freq');
+        if (pixelFreq && pixelFreq.value !== '') {
+          config.hdmi_pixel_freq_limit = parseInt(pixelFreq.value, 10);
+        }
+        var hdmiBoost = document.getElementById(prefix + '-cfg-hdmi-boost');
+        if (hdmiBoost && hdmiBoost.value !== '') {
+          config.config_hdmi_boost = parseInt(hdmiBoost.value, 10);
+        }
+        var gpuMem = document.getElementById(prefix + '-cfg-gpu-mem');
+        if (gpuMem && gpuMem.value !== '') {
+          config.gpu_mem = parseInt(gpuMem.value, 10);
+        }
+        
+      } else if (type === 'dsi') {
+        // DSI overlays
+        var dsiOverlay = document.getElementById(prefix + '-cfg-dsi-dtoverlay');
+        if (dsiOverlay && dsiOverlay.value.trim() !== '') {
+          config.dtoverlay = dsiOverlay.value.trim();
+        }
+        var dsiOverlay2 = document.getElementById(prefix + '-cfg-dsi-dtoverlay2');
+        if (dsiOverlay2 && dsiOverlay2.value.trim() !== '') {
+          config.dtoverlay_2 = dsiOverlay2.value.trim();
+        }
+        
+      } else if (type === 'dpi') {
+        // DPI overlays
+        var dpiOverlay = document.getElementById(prefix + '-cfg-dpi-dtoverlay');
+        if (dpiOverlay && dpiOverlay.value.trim() !== '') {
+          config.dtoverlay = dpiOverlay.value.trim();
+        }
+        var dpiOverlay2 = document.getElementById(prefix + '-cfg-dpi-dtoverlay2');
+        if (dpiOverlay2 && dpiOverlay2.value.trim() !== '') {
+          config.dtoverlay_2 = dpiOverlay2.value.trim();
+        }
+        var dpiOverlay3 = document.getElementById(prefix + '-cfg-dpi-dtoverlay3');
+        if (dpiOverlay3 && dpiOverlay3.value.trim() !== '') {
+          config.dtoverlay_3 = dpiOverlay3.value.trim();
+        }
+        var dpiOverlay4 = document.getElementById(prefix + '-cfg-dpi-dtoverlay4');
+        if (dpiOverlay4 && dpiOverlay4.value.trim() !== '') {
+          config.dtoverlay_4 = dpiOverlay4.value.trim();
+        }
+        
+      } else if (type === 'composite') {
+        // Composite settings
+        var sdtvMode = document.getElementById(prefix + '-cfg-sdtv-mode');
+        if (sdtvMode && sdtvMode.value !== '') {
+          config.sdtv_mode = parseInt(sdtvMode.value, 10);
+        }
+        var sdtvAspect = document.getElementById(prefix + '-cfg-sdtv-aspect');
+        if (sdtvAspect && sdtvAspect.value !== '') {
+          config.sdtv_aspect = parseInt(sdtvAspect.value, 10);
+        }
+        var enableTvout = document.getElementById(prefix + '-cfg-enable-tvout');
+        if (enableTvout && enableTvout.value !== '') {
+          config.enable_tvout = parseInt(enableTvout.value, 10);
+        }
+      }
+      
+      // Merge additional parameters from textarea
+      var additional = document.getElementById(prefix + '-cfg-additional');
+      if (additional && additional.value.trim() !== '') {
+        try {
+          var additionalConfig = JSON.parse(additional.value.trim());
+          if (additionalConfig && typeof additionalConfig === 'object') {
+            // Merge additional keys into config (additional params take precedence)
+            var addKeys = Object.keys(additionalConfig);
+            for (var i = 0; i < addKeys.length; i++) {
+              var key = addKeys[i];
+              config[key] = additionalConfig[key];
+            }
+          }
+        } catch (e) {
+          // Invalid JSON in additional params - will be caught during save validation
+          console.warn('Invalid JSON in additional parameters: ' + e.message);
+        }
+      }
+      
+      return config;
+    }
+    
+    // ===== API CALLS =====
+    function apiGet(endpoint) {
+      return fetch('/api' + endpoint)
+        .then(function(res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        });
+    }
+    
+    function apiPost(endpoint, data) {
+      return fetch('/api' + endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(function(res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      });
+    }
+    
+    function apiDelete(endpoint) {
+      return fetch('/api' + endpoint, {
+        method: 'DELETE'
+      })
+      .then(function(res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      });
+    }
+    
+    // ===== NATURAL SORT HELPER =====
+    // Handles numeric values properly: "2.8 inch" < "10.1 inch"
+    function naturalSortCompare(a, b) {
+      var reChunk = /(\d+\.?\d*|\D+)/g;
+      var chunksA = (a || '').toLowerCase().match(reChunk) || [];
+      var chunksB = (b || '').toLowerCase().match(reChunk) || [];
+      
+      var len = Math.max(chunksA.length, chunksB.length);
+      for (var i = 0; i < len; i++) {
+        var chunkA = chunksA[i] || '';
+        var chunkB = chunksB[i] || '';
+        
+        var numA = parseFloat(chunkA);
+        var numB = parseFloat(chunkB);
+        var isNumA = !isNaN(numA);
+        var isNumB = !isNaN(numB);
+        
+        if (isNumA && isNumB) {
+          if (numA !== numB) return numA - numB;
+        } else if (isNumA) {
+          return -1;
+        } else if (isNumB) {
+          return 1;
+        } else {
+          var cmp = chunkA.localeCompare(chunkB);
+          if (cmp !== 0) return cmp;
+        }
+      }
+      return 0;
+    }
+    
+    // ===== TOAST NOTIFICATIONS =====
+    function showToast(message, type) {
+      type = type || 'info';
+      var toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(function() {
+        toast.remove();
+      }, 3000);
+    }
+    
+    // ===== DATABASE INFO =====
+    function loadDatabaseInfo() {
+      apiGet('/database/info')
+        .then(function(data) {
+          databaseInfo = data;
+          databaseInfo.localVersion = data.localVersion || '-';
+          databaseInfo.remoteVersion = data.remoteVersion || '-';
+          document.getElementById('info-local-version').textContent = data.localVersion || '-';
+          document.getElementById('info-preset-count').textContent = data.presetCount || 0;
+          document.getElementById('info-source').textContent = data.source || '-';
+          
+          // Update version suggestions
+          updateVersionSuggestions();
+        })
+        .catch(function(err) {
+          showToast('Failed to load database info: ' + err.message, 'error');
+        });
+    }
+    
+    // Fetch remote version from GitHub to enable accurate version suggestions
+    function fetchRemoteVersion() {
+      var remoteUrl = 'https://raw.githubusercontent.com/volumio/volumio-plugins-sources/master/pi_screen_setup/display_presets.json';
+      
+      fetch(remoteUrl)
+        .then(function(res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function(data) {
+          if (data && data.version) {
+            databaseInfo.remoteVersion = data.version;
+            updateVersionSuggestions();
+          }
+        })
+        .catch(function(err) {
+          // Silent fail - remote version is optional
+          console.log('Could not fetch remote version: ' + err.message);
+        });
+    }
+    
+    // Compare two semver strings, returns: 1 if a > b, -1 if a < b, 0 if equal
+    function compareVersions(a, b) {
+      if (!a || a === '-') return -1;
+      if (!b || b === '-') return 1;
+      
+      var partsA = a.split('.').map(function(x) { return parseInt(x) || 0; });
+      var partsB = b.split('.').map(function(x) { return parseInt(x) || 0; });
+      
+      for (var i = 0; i < 3; i++) {
+        var valA = partsA[i] || 0;
+        var valB = partsB[i] || 0;
+        if (valA > valB) return 1;
+        if (valA < valB) return -1;
+      }
+      return 0;
+    }
+    
+    function updateVersionSuggestions() {
+      // Use whichever version is greater: local or remote
+      var localVer = databaseInfo.localVersion || '1.0.0';
+      var remoteVer = databaseInfo.remoteVersion || '1.0.0';
+      
+      var baseVersion = (compareVersions(localVer, remoteVer) >= 0) ? localVer : remoteVer;
+      if (baseVersion === '-') baseVersion = '1.0.0';
+      
+      var parts = baseVersion.split('.');
+      var suggestion = parts[0] + '.' + parts[1] + '.' + (parseInt(parts[2] || 0) + 1);
+      
+      document.getElementById('manage-version').placeholder = suggestion;
+      document.getElementById('manage-version-suggestion').textContent = 'Suggestion: ' + suggestion + ' (based on max of local/remote)';
+      document.getElementById('add-version').placeholder = suggestion;
+      document.getElementById('add-version-suggestion').textContent = 'Suggestion: ' + suggestion;
+      document.getElementById('delete-version').placeholder = suggestion;
+      document.getElementById('delete-version-suggestion').textContent = 'Suggestion: ' + suggestion;
+    }
+    
+    // ===== PRESET LIST =====
+    function loadPresetList() {
+      apiGet('/presets')
+        .then(function(data) {
+          presets = data.presets || {};
+          databaseInfo.localVersion = data.version;
+          document.getElementById('info-local-version').textContent = data.version || '-';
+          document.getElementById('info-preset-count').textContent = Object.keys(presets).length;
+          populatePresetDropdowns();
+        })
+        .catch(function(err) {
+          showToast('Failed to load presets: ' + err.message, 'error');
+        });
+    }
+    
+    function populatePresetDropdowns() {
+      var manageSelect = document.getElementById('manage-preset-select');
+      var deleteSelect = document.getElementById('delete-preset-select');
+      
+      // Clear existing options
+      manageSelect.innerHTML = '<option value="">-- Select a preset --</option>';
+      deleteSelect.innerHTML = '<option value="">-- Select a preset --</option>';
+      
+      // Filter out _comment_ entries and sort by type then name (natural sort)
+      var sortedIds = Object.keys(presets)
+        .filter(function(id) {
+          return !id.startsWith('_comment');
+        })
+        .sort(function(a, b) {
+          var pa = presets[a] || {};
+          var pb = presets[b] || {};
+          var typeA = (pa.type || 'zzz').toLowerCase();
+          var typeB = (pb.type || 'zzz').toLowerCase();
+          if (typeA !== typeB) return typeA.localeCompare(typeB);
+          // Use natural sort for names (handles "2.8 inch" < "10.1 inch")
+          var nameA = pa.name || a;
+          var nameB = pb.name || b;
+          return naturalSortCompare(nameA, nameB);
+        });
+      
+      sortedIds.forEach(function(id) {
+        var preset = presets[id] || {};
+        var label = '[' + (preset.type || 'unknown').toUpperCase() + '] ' + (preset.name || id);
+        
+        var opt1 = document.createElement('option');
+        opt1.value = id;
+        opt1.textContent = label;
+        manageSelect.appendChild(opt1);
+        
+        var opt2 = document.createElement('option');
+        opt2.value = id;
+        opt2.textContent = label;
+        deleteSelect.appendChild(opt2);
+      });
+    }
+    
+    function loadBackupList() {
+      apiGet('/backups')
+        .then(function(data) {
+          var container = document.getElementById('backup-list');
+          var backups = data.backups || [];
+          
+          if (backups.length === 0) {
+            container.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">No backups found</p>';
+            return;
+          }
+          
+          container.innerHTML = '';
+          backups.forEach(function(backup) {
+            var item = document.createElement('div');
+            item.className = 'backup-item';
+            item.innerHTML = 
+              '<div class="backup-info">' +
+                '<div class="backup-name">' + backup.name + '</div>' +
+                '<div class="backup-date">' + backup.date + '</div>' +
+              '</div>' +
+              '<div class="backup-actions">' +
+                '<button class="btn btn-secondary" onclick="downloadBackup(\'' + backup.name + '\')">' +
+                  '<i class="fa fa-download"></i>' +
+                '</button>' +
+                '<button class="btn btn-warning" onclick="restoreBackup(\'' + backup.name + '\')">' +
+                  '<i class="fa fa-undo"></i>' +
+                '</button>' +
+                '<button class="btn btn-danger" onclick="deleteBackup(\'' + backup.name + '\')">' +
+                  '<i class="fa fa-trash"></i>' +
+                '</button>' +
+              '</div>';
+            container.appendChild(item);
+          });
+        })
+        .catch(function(err) {
+          document.getElementById('backup-list').innerHTML = 
+            '<p style="color: #d32f2f; text-align: center; padding: 20px;">Failed to load backups</p>';
+        });
+    }
+    
+    // ===== MANAGE PRESETS TAB =====
+    function loadPreset() {
+      var select = document.getElementById('manage-preset-select');
+      var id = select.value;
+      
+      if (!id) {
+        showToast('Please select a preset first', 'error');
+        return;
+      }
+      
+      var preset = presets[id];
+      if (!preset) {
+        showToast('Preset not found', 'error');
+        return;
+      }
+      
+      var type = preset.type || 'hdmi';
+      
+      document.getElementById('manage-form').style.display = 'block';
+      document.getElementById('manage-id').value = id;
+      document.getElementById('manage-name').value = preset.name || '';
+      document.getElementById('manage-type').value = type;
+      document.getElementById('manage-desc').value = preset.description || '';
+      
+      // Show correct config fields for this type and populate them
+      showConfigFieldsForType('manage', type);
+      populateFieldsFromConfig('manage', type, preset.config || {});
+      
+      showToast('Preset loaded: ' + (preset.name || id), 'success');
+    }
+    
+    function savePreset() {
+      var id = document.getElementById('manage-id').value;
+      var name = document.getElementById('manage-name').value;
+      var type = document.getElementById('manage-type').value;
+      var desc = document.getElementById('manage-desc').value;
+      var version = document.getElementById('manage-version').value;
+      
+      if (!id) {
+        showToast('No preset loaded', 'error');
+        return;
+      }
+      
+      // Validate additional parameters JSON before building config
+      var additional = document.getElementById('manage-cfg-additional');
+      if (additional && additional.value.trim() !== '') {
+        try {
+          var parsed = JSON.parse(additional.value.trim());
+          if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+            showToast('Additional parameters must be a JSON object', 'error');
+            return;
+          }
+        } catch (e) {
+          showToast('Invalid JSON in additional parameters: ' + e.message, 'error');
+          return;
+        }
+      }
+      
+      // Build config from form fields
+      var config = buildConfigFromFields('manage', type);
+      
+      var data = {
+        name: name,
+        type: type,
+        description: desc,
+        config: config
+      };
+      
+      if (version) {
+        data.version = version;
+      }
+      
+      apiPost('/presets/' + id, data)
+        .then(function(result) {
+          showToast('Preset saved successfully', 'success');
+          loadPresetList();
+          loadDatabaseInfo();
+        })
+        .catch(function(err) {
+          showToast('Failed to save: ' + err.message, 'error');
+        });
+    }
+    
+    // ===== ADD PRESET TAB =====
+    function addPreset() {
+      var id = document.getElementById('add-id').value.trim();
+      var name = document.getElementById('add-name').value.trim();
+      var type = document.getElementById('add-type').value;
+      var desc = document.getElementById('add-desc').value;
+      var version = document.getElementById('add-version').value;
+      
+      if (!id) {
+        showToast('Preset ID is required', 'error');
+        return;
+      }
+      
+      if (!name) {
+        showToast('Display name is required', 'error');
+        return;
+      }
+      
+      if (presets[id]) {
+        showToast('A preset with this ID already exists', 'error');
+        return;
+      }
+      
+      // Validate additional parameters JSON before building config
+      var additional = document.getElementById('add-cfg-additional');
+      if (additional && additional.value.trim() !== '') {
+        try {
+          var parsed = JSON.parse(additional.value.trim());
+          if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+            showToast('Additional parameters must be a JSON object', 'error');
+            return;
+          }
+        } catch (e) {
+          showToast('Invalid JSON in additional parameters: ' + e.message, 'error');
+          return;
+        }
+      }
+      
+      // Build config from form fields
+      var config = buildConfigFromFields('add', type);
+      
+      var data = {
+        id: id,
+        name: name,
+        type: type,
+        description: desc,
+        config: config
+      };
+      
+      if (version) {
+        data.version = version;
+      }
+      
+      apiPost('/presets', data)
+        .then(function(result) {
+          showToast('Preset added successfully', 'success');
+          clearAddForm();
+          loadPresetList();
+          loadDatabaseInfo();
+        })
+        .catch(function(err) {
+          showToast('Failed to add: ' + err.message, 'error');
+        });
+    }
+    
+    function clearAddForm() {
+      document.getElementById('add-id').value = '';
+      document.getElementById('add-name').value = '';
+      document.getElementById('add-type').value = 'hdmi';
+      document.getElementById('add-desc').value = '';
+      document.getElementById('add-version').value = '';
+      
+      // Clear all config fields and show HDMI fields (default type)
+      clearConfigFields('add');
+      showConfigFieldsForType('add', 'hdmi');
+    }
+    
+    // ===== DELETE PRESET TAB =====
+    function loadDeletePreview() {
+      var select = document.getElementById('delete-preset-select');
+      var id = select.value;
+      
+      if (!id) {
+        showToast('Please select a preset first', 'error');
+        return;
+      }
+      
+      var preset = presets[id];
+      if (!preset) {
+        showToast('Preset not found', 'error');
+        return;
+      }
+      
+      document.getElementById('delete-preview').style.display = 'block';
+      document.getElementById('delete-preview-id').textContent = id;
+      document.getElementById('delete-preview-name').textContent = preset.name || id;
+      document.getElementById('delete-preview-type').textContent = (preset.type || 'hdmi').toUpperCase();
+      document.getElementById('delete-preview-desc').textContent = preset.description || '-';
+      document.getElementById('delete-preview-config').textContent = JSON.stringify(preset.config || {}, null, 2);
+    }
+    
+    function confirmDelete() {
+      var id = document.getElementById('delete-preview-id').textContent;
+      var version = document.getElementById('delete-version').value;
+      
+      if (!id || id === '-') {
+        showToast('No preset selected', 'error');
+        return;
+      }
+      
+      var endpoint = '/presets/' + id;
+      if (version) {
+        endpoint += '?version=' + encodeURIComponent(version);
+      }
+      
+      apiDelete(endpoint)
+        .then(function(result) {
+          showToast('Preset deleted successfully', 'success');
+          cancelDelete();
+          loadPresetList();
+          loadDatabaseInfo();
+        })
+        .catch(function(err) {
+          showToast('Failed to delete: ' + err.message, 'error');
+        });
+    }
+    
+    function cancelDelete() {
+      document.getElementById('delete-preview').style.display = 'none';
+      document.getElementById('delete-preset-select').value = '';
+    }
+    
+    // ===== DATABASE TAB =====
+    function importFromUrl() {
+      var url = document.getElementById('import-url').value.trim();
+      if (!url) {
+        showToast('Please enter a URL', 'error');
+        return;
+      }
+      
+      showToast('Fetching from URL...', 'info');
+      
+      apiPost('/database/import-url', { url: url })
+        .then(function(result) {
+          showToast('Imported ' + result.count + ' presets (v' + result.version + ')', 'success');
+          loadPresetList();
+          loadDatabaseInfo();
+        })
+        .catch(function(err) {
+          showToast('Import failed: ' + err.message, 'error');
+        });
+    }
+    
+    function importFromPath() {
+      var path = document.getElementById('import-path').value.trim();
+      if (!path) {
+        showToast('Please enter a file path', 'error');
+        return;
+      }
+      
+      apiPost('/database/import-path', { path: path })
+        .then(function(result) {
+          showToast('Imported ' + result.count + ' presets (v' + result.version + ')', 'success');
+          loadPresetList();
+          loadDatabaseInfo();
+        })
+        .catch(function(err) {
+          showToast('Import failed: ' + err.message, 'error');
+        });
+    }
+    
+    function handleFileUpload(input) {
+      var file = input.files[0];
+      if (!file) return;
+      
+      document.getElementById('upload-filename').textContent = file.name;
+      
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          var data = JSON.parse(e.target.result);
+          
+          apiPost('/database/import-data', data)
+            .then(function(result) {
+              showToast('Imported ' + result.count + ' presets (v' + result.version + ')', 'success');
+              loadPresetList();
+              loadDatabaseInfo();
+            })
+            .catch(function(err) {
+              showToast('Import failed: ' + err.message, 'error');
+            });
+        } catch (err) {
+          showToast('Invalid JSON file', 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+    
+    function downloadDatabase() {
+      window.location.href = '/api/database/export';
+    }
+    
+    function exportForPR() {
+      apiPost('/database/export-pr', {})
+        .then(function(result) {
+          showToast('Exported to: ' + result.path, 'success');
+        })
+        .catch(function(err) {
+          showToast('Export failed: ' + err.message, 'error');
+        });
+    }
+    
+    function publishToCache() {
+      apiPost('/database/publish', {})
+        .then(function(result) {
+          showToast('Published to cache successfully', 'success');
+          loadDatabaseInfo();
+        })
+        .catch(function(err) {
+          showToast('Publish failed: ' + err.message, 'error');
+        });
+    }
+    
+    function revertToBundled() {
+      if (!confirm('Revert to bundled database? Any custom changes will be lost.')) {
+        return;
+      }
+      
+      apiPost('/database/revert', {})
+        .then(function(result) {
+          showToast('Reverted to bundled database', 'success');
+          loadPresetList();
+          loadDatabaseInfo();
+        })
+        .catch(function(err) {
+          showToast('Revert failed: ' + err.message, 'error');
+        });
+    }
+    
+    function reloadFromCache() {
+      apiPost('/database/reload-cache', {})
+        .then(function(result) {
+          showToast('Reloaded from cache', 'success');
+          loadPresetList();
+          loadDatabaseInfo();
+        })
+        .catch(function(err) {
+          showToast('Reload failed: ' + err.message, 'error');
+        });
+    }
+    
+    // ===== BACKUP FUNCTIONS =====
+    function createBackup() {
+      apiPost('/backups', {})
+        .then(function(result) {
+          showToast('Backup created: ' + result.name, 'success');
+          loadBackupList();
+        })
+        .catch(function(err) {
+          showToast('Backup failed: ' + err.message, 'error');
+        });
+    }
+    
+    function downloadBackup(name) {
+      window.location.href = '/api/backups/' + encodeURIComponent(name);
+    }
+    
+    function restoreBackup(name) {
+      if (!confirm('Restore from backup "' + name + '"? Current database will be replaced.')) {
+        return;
+      }
+      
+      apiPost('/backups/restore', { name: name })
+        .then(function(result) {
+          showToast('Backup restored successfully', 'success');
+          loadPresetList();
+          loadDatabaseInfo();
+        })
+        .catch(function(err) {
+          showToast('Restore failed: ' + err.message, 'error');
+        });
+    }
+    
+    function deleteBackup(name) {
+      if (!confirm('Delete backup "' + name + '"?')) {
+        return;
+      }
+      
+      apiDelete('/backups/' + encodeURIComponent(name))
+        .then(function(result) {
+          showToast('Backup deleted', 'success');
+          loadBackupList();
+        })
+        .catch(function(err) {
+          showToast('Delete failed: ' + err.message, 'error');
+        });
+    }
+    
+    function handleBackupUpload(input) {
+      var file = input.files[0];
+      if (!file) return;
+      
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          var data = JSON.parse(e.target.result);
+          
+          apiPost('/backups/upload', { name: file.name, data: data })
+            .then(function(result) {
+              showToast('Backup uploaded: ' + result.name, 'success');
+              loadBackupList();
+            })
+            .catch(function(err) {
+              showToast('Upload failed: ' + err.message, 'error');
+            });
+        } catch (err) {
+          showToast('Invalid JSON file', 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+  </script>
+</body>
+</html>

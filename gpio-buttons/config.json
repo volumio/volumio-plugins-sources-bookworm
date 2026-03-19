@@ -1,32 +1,56 @@
 {
-  "playPause":{
+  "button1": {
     "enabled": {"value": false, "type": "boolean"},
-    "pin": {"value": 17,"type":"number"},
-    "value": {"value": 0, "type": "number"}
+    "pin": {"value": 17, "type": "number"},
+    "action": {"value": "playPause", "type": "string"},
+    "emitCommand": {"value": "callMethod", "type": "string"},
+    "emitEndpoint": {"value": "", "type": "string"},
+    "emitMethod": {"value": "", "type": "string"},
+    "emitData": {"value": "{}", "type": "string"}
   },
-  "volumeUp":{
+  "button2": {
     "enabled": {"value": false, "type": "boolean"},
-    "pin": {"value": 18,"type":"number"},
-    "value": {"value": 0, "type": "number"}
+    "pin": {"value": 18, "type": "number"},
+    "action": {"value": "volumeUp", "type": "string"},
+    "emitCommand": {"value": "callMethod", "type": "string"},
+    "emitEndpoint": {"value": "", "type": "string"},
+    "emitMethod": {"value": "", "type": "string"},
+    "emitData": {"value": "{}", "type": "string"}
   },
-  "volumeDown":{
+  "button3": {
     "enabled": {"value": false, "type": "boolean"},
-    "pin": {"value": 22,"type":"number"},
-    "value": {"value": 0, "type": "number"}
+    "pin": {"value": 22, "type": "number"},
+    "action": {"value": "volumeDown", "type": "string"},
+    "emitCommand": {"value": "callMethod", "type": "string"},
+    "emitEndpoint": {"value": "", "type": "string"},
+    "emitMethod": {"value": "", "type": "string"},
+    "emitData": {"value": "{}", "type": "string"}
   },
-  "previous":{
+  "button4": {
     "enabled": {"value": false, "type": "boolean"},
-    "pin": {"value": 23,"type":"number"},
-    "value": {"value": 0, "type": "number"}
+    "pin": {"value": 23, "type": "number"},
+    "action": {"value": "previous", "type": "string"},
+    "emitCommand": {"value": "callMethod", "type": "string"},
+    "emitEndpoint": {"value": "", "type": "string"},
+    "emitMethod": {"value": "", "type": "string"},
+    "emitData": {"value": "{}", "type": "string"}
   },
-  "next":{
+  "button5": {
     "enabled": {"value": false, "type": "boolean"},
-    "pin": {"value": 24,"type":"number"},
-    "value": {"value": 0, "type": "number"}
+    "pin": {"value": 24, "type": "number"},
+    "action": {"value": "next", "type": "string"},
+    "emitCommand": {"value": "callMethod", "type": "string"},
+    "emitEndpoint": {"value": "", "type": "string"},
+    "emitMethod": {"value": "", "type": "string"},
+    "emitData": {"value": "{}", "type": "string"}
   },
-  "shutdown":{
+  "button6": {
     "enabled": {"value": false, "type": "boolean"},
-    "pin": {"value": 3,"type":"number"},
-    "value": {"value": 0, "type": "number"}
+    "pin": {"value": 3, "type": "number"},
+    "action": {"value": "shutdown", "type": "string"},
+    "emitCommand": {"value": "callMethod", "type": "string"},
+    "emitEndpoint": {"value": "", "type": "string"},
+    "emitMethod": {"value": "", "type": "string"},
+    "emitData": {"value": "{}", "type": "string"}
   }
 }

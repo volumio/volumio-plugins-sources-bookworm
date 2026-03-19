@@ -1,0 +1,436 @@
+{
+  "page": {
+    "label": "ES9018K2M DAC Control"
+  },
+  "sections": [
+    {
+      "id": "prerequisites",
+      "element": "section",
+      "label": "TRANSLATE.PREREQUISITES",
+      "icon": "fa-info-circle",
+      "description": "TRANSLATE.PREREQUISITES_DESC",
+      "content": []
+    },
+    {
+      "id": "device_detection",
+      "element": "section",
+      "label": "TRANSLATE.DEVICE_DETECTION",
+      "icon": "fa-microchip",
+      "description": "",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/es9018k2m",
+        "method": "saveDeviceDetection"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["i2cBus", "i2cAddress", "debugLogging"]
+      },
+      "content": [
+        {
+          "id": "i2cBus",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.I2C_BUS",
+          "doc": "TRANSLATE.I2C_BUS_DOC",
+          "value": 1,
+          "attributes": [
+            { "placeholder": "1" },
+            { "min": 0 },
+            { "max": 10 }
+          ]
+        },
+        {
+          "id": "i2cAddress",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.I2C_ADDRESS",
+          "doc": "TRANSLATE.I2C_ADDRESS_DOC",
+          "value": "0x48",
+          "attributes": [
+            { "placeholder": "0x48" }
+          ]
+        },
+        {
+          "id": "debugLogging",
+          "element": "switch",
+          "label": "TRANSLATE.DEBUG_LOGGING",
+          "doc": "TRANSLATE.DEBUG_LOGGING_DOC",
+          "value": false
+        },
+        {
+          "id": "check_device",
+          "element": "button",
+          "label": "TRANSLATE.CHECK_DEVICE",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_hardware/es9018k2m",
+              "method": "checkDeviceStatus",
+              "data": ""
+            }
+          }
+        },
+        {
+          "id": "reset_device",
+          "element": "button",
+          "label": "TRANSLATE.RESET_DEVICE",
+          "doc": "TRANSLATE.RESET_DEVICE_DOC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "askForConfirm": {
+              "title": "TRANSLATE.CONFIRM",
+              "message": "TRANSLATE.CONFIRM_RESET"
+            },
+            "data": {
+              "endpoint": "system_hardware/es9018k2m",
+              "method": "resetDevice",
+              "data": ""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "volume_control",
+      "element": "section",
+      "label": "TRANSLATE.VOLUME_CONTROL",
+      "icon": "fa-sliders",
+      "description": "TRANSLATE.EXTERNAL_VOLUME_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/es9018k2m",
+        "method": "saveVolumeControl"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["externalVolume", "volumeMode", "cardNumber", "startMuted", "safeStartupEnabled", "safeStartupVolume", "rememberLastVolume"]
+      },
+      "content": [
+        {
+          "id": "externalVolume",
+          "element": "switch",
+          "label": "TRANSLATE.EXTERNAL_VOLUME_ENABLED",
+          "doc": "TRANSLATE.EXTERNAL_VOLUME_ENABLED_DOC",
+          "value": false
+        },
+        {
+          "id": "volumeMode",
+          "element": "select",
+          "label": "TRANSLATE.VOLUME_MODE",
+          "doc": "TRANSLATE.VOLUME_MODE_DOC",
+          "value": { "value": "hardware", "label": "Hardware (Override)" },
+          "visibleIf": {
+            "field": "externalVolume",
+            "value": false
+          },
+          "options": [
+            { "value": "hardware", "label": "TRANSLATE.VOLUME_MODE_HARDWARE" },
+            { "value": "software", "label": "TRANSLATE.VOLUME_MODE_SOFTWARE" }
+          ]
+        },
+        {
+          "id": "cardNumber",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.CARD_NUMBER",
+          "doc": "TRANSLATE.CARD_NUMBER_DOC",
+          "value": "auto",
+          "visibleIf": {
+            "field": "externalVolume",
+            "value": false
+          },
+          "attributes": [
+            { "placeholder": "auto" }
+          ]
+        },
+        {
+          "id": "startMuted",
+          "element": "switch",
+          "label": "TRANSLATE.START_MUTED",
+          "doc": "TRANSLATE.START_MUTED_DOC",
+          "value": false,
+          "visibleIf": {
+            "field": "externalVolume",
+            "value": false
+          }
+        },
+        {
+          "id": "safeStartupEnabled",
+          "element": "switch",
+          "label": "TRANSLATE.SAFE_STARTUP_ENABLED",
+          "doc": "TRANSLATE.SAFE_STARTUP_ENABLED_DOC",
+          "value": false,
+          "visibleIf": {
+            "field": "externalVolume",
+            "value": false
+          }
+        },
+        {
+          "id": "safeStartupVolume",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.SAFE_STARTUP_VOLUME",
+          "doc": "TRANSLATE.SAFE_STARTUP_VOLUME_DOC",
+          "value": 25,
+          "visibleIf": {
+            "field": "externalVolume",
+            "value": false
+          },
+          "attributes": [
+            { "placeholder": "25" },
+            { "min": 0 },
+            { "max": 100 }
+          ]
+        },
+        {
+          "id": "rememberLastVolume",
+          "element": "switch",
+          "label": "TRANSLATE.REMEMBER_LAST_VOLUME",
+          "doc": "TRANSLATE.REMEMBER_LAST_VOLUME_DOC",
+          "value": false,
+          "visibleIf": {
+            "field": "externalVolume",
+            "value": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "mute_transitions",
+      "element": "section",
+      "label": "TRANSLATE.MUTE_TRANSITIONS",
+      "icon": "fa-volume-off",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/es9018k2m",
+        "method": "saveMuteSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["seekMuteMs", "gracefulSteps", "gracefulTransitions", "gracefulVolume"]
+      },
+      "content": [
+        {
+          "id": "seekMuteMs",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.SEEK_MUTE_MS",
+          "doc": "TRANSLATE.SEEK_MUTE_MS_DOC",
+          "value": 150,
+          "attributes": [
+            { "placeholder": "150" },
+            { "min": 0 },
+            { "max": 2000 }
+          ]
+        },
+        {
+          "id": "gracefulSteps",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.GRACEFUL_STEPS",
+          "doc": "TRANSLATE.GRACEFUL_STEPS_DOC",
+          "value": 3,
+          "attributes": [
+            { "placeholder": "3" },
+            { "min": 1 },
+            { "max": 5 }
+          ]
+        },
+        {
+          "id": "gracefulTransitions",
+          "element": "switch",
+          "label": "TRANSLATE.GRACEFUL_TRANSITIONS",
+          "doc": "TRANSLATE.GRACEFUL_TRANSITIONS_DOC",
+          "value": true
+        },
+        {
+          "id": "gracefulVolume",
+          "element": "switch",
+          "label": "TRANSLATE.GRACEFUL_VOLUME",
+          "doc": "TRANSLATE.GRACEFUL_VOLUME_DOC",
+          "value": true,
+          "visibleIf": {
+            "field": "externalVolume",
+            "value": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "balance_settings",
+      "element": "section",
+      "label": "TRANSLATE.BALANCE",
+      "icon": "fa-balance-scale",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/es9018k2m",
+        "method": "saveBalanceSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["balance"]
+      },
+      "content": [
+        {
+          "id": "balance",
+          "element": "equalizer",
+          "label": "TRANSLATE.BALANCE_ADJUST",
+          "doc": "TRANSLATE.BALANCE_DOC",
+          "config": {
+            "orientation": "horizontal",
+            "bars": [
+              {
+                "min": -40,
+                "max": 40,
+                "step": 1,
+                "value": 0,
+                "tooltip": "always"
+              }
+            ]
+          }
+        },
+        {
+          "id": "reset_balance",
+          "element": "button",
+          "label": "TRANSLATE.RESET_BALANCE",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_hardware/es9018k2m",
+              "method": "resetBalance",
+              "data": ""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "filter_settings",
+      "element": "section",
+      "label": "TRANSLATE.DIGITAL_FILTERS",
+      "icon": "fa-filter",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/es9018k2m",
+        "method": "saveFilterSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["fir", "iir", "deemphasis"]
+      },
+      "content": [
+        {
+          "id": "fir",
+          "element": "select",
+          "label": "TRANSLATE.FIR_FILTER",
+          "doc": "TRANSLATE.FIR_DOC",
+          "value": { "value": 1, "label": "Fast Roll-Off" },
+          "options": [
+            { "value": 0, "label": "Slow Roll-Off" },
+            { "value": 1, "label": "Fast Roll-Off" },
+            { "value": 2, "label": "Minimum Phase" },
+            { "value": 3, "label": "Bypass" }
+          ]
+        },
+        {
+          "id": "iir",
+          "element": "select",
+          "label": "TRANSLATE.IIR_FILTER",
+          "doc": "TRANSLATE.IIR_DOC",
+          "value": { "value": 0, "label": "47K (PCM)" },
+          "options": [
+            { "value": 0, "label": "47K (PCM)" },
+            { "value": 1, "label": "50K (DSD)" },
+            { "value": 2, "label": "60K (DSD)" },
+            { "value": 3, "label": "70K (DSD)" },
+            { "value": 4, "label": "Bypass" }
+          ]
+        },
+        {
+          "id": "deemphasis",
+          "element": "select",
+          "label": "TRANSLATE.DEEMPHASIS",
+          "doc": "TRANSLATE.DEEMPHASIS_DOC",
+          "value": { "value": 74, "label": "Off" },
+          "options": [
+            { "value": 74, "label": "Off" },
+            { "value": 10, "label": "32 kHz" },
+            { "value": 26, "label": "44.1 kHz" },
+            { "value": 42, "label": "48 kHz" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dpll_settings",
+      "element": "section",
+      "label": "TRANSLATE.DPLL",
+      "icon": "fa-signal",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/es9018k2m",
+        "method": "saveDpllSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["i2sDpll", "dsdDpll"]
+      },
+      "content": [
+        {
+          "id": "i2sDpll",
+          "element": "select",
+          "label": "TRANSLATE.I2S_DPLL",
+          "doc": "TRANSLATE.I2S_DPLL_DOC",
+          "value": { "value": 80, "label": "5" },
+          "options": [
+            { "value": 0, "label": "Off" },
+            { "value": 16, "label": "1 (lowest)" },
+            { "value": 32, "label": "2" },
+            { "value": 48, "label": "3" },
+            { "value": 64, "label": "4" },
+            { "value": 80, "label": "5" },
+            { "value": 96, "label": "6" },
+            { "value": 112, "label": "7" },
+            { "value": 128, "label": "8" },
+            { "value": 144, "label": "9" },
+            { "value": 160, "label": "10" },
+            { "value": 176, "label": "11" },
+            { "value": 192, "label": "12" },
+            { "value": 208, "label": "13" },
+            { "value": 224, "label": "14" },
+            { "value": 240, "label": "15 (highest)" }
+          ]
+        },
+        {
+          "id": "dsdDpll",
+          "element": "select",
+          "label": "TRANSLATE.DSD_DPLL",
+          "doc": "TRANSLATE.DSD_DPLL_DOC",
+          "value": { "value": 10, "label": "10" },
+          "options": [
+            { "value": 0, "label": "Off" },
+            { "value": 1, "label": "1 (lowest)" },
+            { "value": 2, "label": "2" },
+            { "value": 3, "label": "3" },
+            { "value": 4, "label": "4" },
+            { "value": 5, "label": "5" },
+            { "value": 6, "label": "6" },
+            { "value": 7, "label": "7" },
+            { "value": 8, "label": "8" },
+            { "value": 9, "label": "9" },
+            { "value": 10, "label": "10" },
+            { "value": 11, "label": "11" },
+            { "value": 12, "label": "12" },
+            { "value": 13, "label": "13" },
+            { "value": 14, "label": "14" },
+            { "value": 15, "label": "15 (highest)" }
+          ]
+        }
+      ]
+    }
+  ]
+}

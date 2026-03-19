@@ -6,6 +6,7 @@ Volumio plugin for configuring Raspberry Pi bootloader EEPROM parameters.
 
 - Configure boot order with presets or custom priority
 - Power management settings
+- **RTC battery charging** (Pi 5 / 500 / 500+ / CM5): enable charging of the onboard RTC backup battery; stored in `userconfig.txt` (survives OTA updates)
 - USB configuration and timeouts
 - Serial console debugging
 - Network console debugging (advanced)
@@ -53,6 +54,7 @@ Install via Volumio Plugin Manager or manually from the plugin repository.
 - System will automatically reboot after saving
 - Changes take effect after reboot
 - Keep bootloader firmware up to date
+- **RTC battery charging** is stored in `/boot/userconfig.txt` so it survives OTA updates; `config.txt` and `volumioconfig.txt` are overwritten on OTA.
 
 ## Author
 

@@ -1,0 +1,102 @@
+{
+  "enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "broker_host": {
+    "type": "string",
+    "value": "localhost"
+  },
+  "broker_port": {
+    "type": "number",
+    "value": 1883
+  },
+  "broker_username": {
+    "type": "string",
+    "value": ""
+  },
+  "broker_password": {
+    "type": "string",
+    "value": ""
+  },
+  "base_topic": {
+    "type": "string",
+    "value": "volumio"
+  },
+  "device_id": {
+    "type": "string",
+    "value": ""
+  },
+  "publish_full_state": {
+    "type": "boolean",
+    "value": true
+  },
+  "publish_individual_topics": {
+    "type": "boolean",
+    "value": true
+  },
+  "state_update_interval": {
+    "type": "number",
+    "value": 10
+  },
+  "retain_state": {
+    "type": "boolean",
+    "value": true
+  },
+  "qos_state": {
+    "type": "number",
+    "value": 0
+  },
+  "qos_command": {
+    "type": "number",
+    "value": 1
+  },
+  "tls_enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "tls_ca_cert": {
+    "type": "string",
+    "value": ""
+  },
+  "tls_client_cert": {
+    "type": "string",
+    "value": ""
+  },
+  "tls_client_key": {
+    "type": "string",
+    "value": ""
+  },
+  "tls_reject_unauthorized": {
+    "type": "boolean",
+    "value": true
+  },
+  "client_id": {
+    "type": "string",
+    "value": ""
+  },
+  "keepalive": {
+    "type": "number",
+    "value": 60
+  },
+  "reconnect_interval": {
+    "type": "number",
+    "value": 5000
+  },
+  "group_topic_enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "group_id": {
+    "type": "string",
+    "value": "all"
+  },
+  "debug_enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "protocol_version": {
+    "type": "number",
+    "value": 4
+  }
+}
