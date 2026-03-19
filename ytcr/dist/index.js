@@ -105,6 +105,7 @@ class ControllerYTCR {
         __classPrivateFieldSet(this, _ControllerYTCR_player, null, "f");
         __classPrivateFieldSet(this, _ControllerYTCR_volumeControl, null, "f");
         __classPrivateFieldSet(this, _ControllerYTCR_receiver, null, "f");
+        __classPrivateFieldSet(this, _ControllerYTCR_nowPlayingMetadataProvider, null, "f");
         __classPrivateFieldSet(this, _ControllerYTCR_serviceName, 'ytcr', "f");
     }
     getUIConfig() {
@@ -401,7 +402,7 @@ class ControllerYTCR {
         }
     }
     acceptDisclaimer() {
-        this.configSaveDisclaimer({
+        return this.configSaveDisclaimer({
             hasAcceptedDisclaimer: true
         });
     }
@@ -450,7 +451,7 @@ class ControllerYTCR {
         if (oldRegion !== region || oldLanguage !== language) {
             YTCRContext_js_1.default.setConfigValue('region', region);
             YTCRContext_js_1.default.setConfigValue('language', language);
-            if (__classPrivateFieldGet(this, _ControllerYTCR_player, "f")) {
+            if (__classPrivateFieldGet(this, _ControllerYTCR_player, "f") && __classPrivateFieldGet(this, _ControllerYTCR_player, "f").videoLoader) {
                 await __classPrivateFieldGet(this, _ControllerYTCR_player, "f").videoLoader.refreshI18nConfig();
             }
         }
@@ -655,4 +656,3 @@ _ControllerYTCR_serviceName = new WeakMap(), _ControllerYTCR_context = new WeakM
     }
 };
 module.exports = ControllerYTCR;
-//# sourceMappingURL=index.js.map

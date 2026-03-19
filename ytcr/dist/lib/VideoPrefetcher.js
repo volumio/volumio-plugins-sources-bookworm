@@ -87,4 +87,3 @@ _VideoPrefetcher_videoLoader = new WeakMap(), _VideoPrefetcher_startPrefetchTime
     }
 };
 exports.default = VideoPrefetcher;
-//# sourceMappingURL=VideoPrefetcher.js.map

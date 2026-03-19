@@ -158,4 +158,3 @@ _YTCRContext_singletons = new WeakMap(), _YTCRContext_data = new WeakMap(), _YTC
     __classPrivateFieldGet(this, _YTCRContext_instances, "m", _YTCRContext_loadI18n).call(this);
 };
 exports.default = new YTCRContext();
-//# sourceMappingURL=YTCRContext.js.map

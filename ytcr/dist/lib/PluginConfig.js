@@ -17,4 +17,3 @@ exports.PLUGIN_CONFIG_SCHEMA = {
     dataStoreLastModified: { defaultValue: null, json: false },
     debug: { defaultValue: false, json: false }
 };
-//# sourceMappingURL=PluginConfig.js.map

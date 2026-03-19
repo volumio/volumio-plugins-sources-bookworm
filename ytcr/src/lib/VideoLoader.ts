@@ -3,6 +3,7 @@ import { DataError, type Video } from 'yt-cast-receiver';
 import ytcr from './YTCRContext.js';
 import InnertubeLoader from './InnertubeLoader.js';
 import type Logger from './Logger.js';
+import { getErrorMessage } from './Utils.js';
 
 type InnertubeVideoInfo = InnertubeLib.YT.VideoInfo;
 type Format = InnertubeLib.Misc.Format;
@@ -65,7 +66,7 @@ export default class VideoLoader {
   }
 
   async #getInnertube() {
-    return await (await InnertubeLoader.getInstance()).getInnertube();
+    return (await InnertubeLoader.getInstance()).getInnertube();
   }
 
   async refreshI18nConfig() {
@@ -87,7 +88,14 @@ export default class VideoLoader {
 
     this.#logger.debug(`[ytcr] VideoLoader.getInfo: ${video.id}`);
 
-    const contentPoToken = (await InnertubeLoader.generatePoToken(video.id)).poToken;
+    let contentPoToken: string | undefined = undefined;
+    try {
+      contentPoToken = (await InnertubeLoader.generatePoToken(video.id)).poToken;
+      this.#logger.info(`[ytcr] Obtained PO token for video #${video.id}: ${contentPoToken}`);
+    }
+    catch (error: unknown) {
+      this.#logger.error(getErrorMessage(`[ytcr] Error obtaining PO token for video #${video.id}:`,error, false));
+    }
 
     checkAbortSignal();
 
@@ -188,14 +196,13 @@ export default class VideoLoader {
         payload.client = 'YTMUSIC';
       }
       else if (basicInfo.isLive) {
-        // Do not use TV client for live streams, because it will only return DASH manifest URL.
-        // Use default WEB client instead, which will return HLS manifest URL.
+        // WEB client returns HLS manifest URL which can be consumed by MPD.
         payload.client = 'WEB';
       }
       else {
-        // Use TV client for regular videos. TV_EMBEDDED should also work.
-        // Anything else will likely give stream URLs that return 403 Forbidden.
-        payload.client = 'TV';
+        // Use ANDROID_VR client for regular videos.
+        // TV client used to be the preferred choice, but no longer works.
+        payload.client = 'ANDROID_VR';
       }
       
       let innertubeVideoInfo = await this.#fetchInnertubeVideoInfo(payload, cpn);
@@ -249,7 +256,7 @@ export default class VideoLoader {
     return new InnertubeLib.YT.VideoInfo([ playerResponse ], innertube.actions, cpn);
   }
 
-  async #getAndValidateStreamInfo(videoInfo: InnertubeVideoInfo, basicInfo: BasicInfo, contentPoToken: string, abortSignal: AbortSignal, checkAbort: () => void, validationRetries = 3) {
+  async #getAndValidateStreamInfo(videoInfo: InnertubeVideoInfo, basicInfo: BasicInfo, contentPoToken: string | undefined, abortSignal: AbortSignal, checkAbort: () => void, validationRetries = 3) {
     // Retrieve stream info
     const isLive = !!videoInfo.basic_info.is_live;
     let playable = false;
@@ -287,7 +294,7 @@ export default class VideoLoader {
     
     // Validate
     if (streamInfo?.url) {
-      if (!isLive) {
+      if (!isLive && contentPoToken) {
         // Innertube sets `pot` searchParam of URL to session-bound PO token.
         // Seems YT now requires `pot` to be the *content-bound* token, otherwise we'll get 403.
         // See: https://github.com/TeamNewPipe/NewPipeExtractor/issues/1392
@@ -366,6 +373,7 @@ export default class VideoLoader {
     }
 
     const streamUrl = format ? await format.decipher(innertube.session.player) : null;
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread
     const streamData = format ? { ...format, url: streamUrl } as Format : null;
     if (streamData) {
       return this.#parseStreamData(streamData);

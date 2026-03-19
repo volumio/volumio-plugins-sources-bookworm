@@ -52,6 +52,7 @@ const InnertubeLib = __importStar(require("volumio-yt-support/dist/innertube.js"
 const yt_cast_receiver_1 = require("yt-cast-receiver");
 const YTCRContext_js_1 = __importDefault(require("./YTCRContext.js"));
 const InnertubeLoader_js_1 = __importDefault(require("./InnertubeLoader.js"));
+const Utils_js_1 = require("./Utils.js");
 // https://gist.github.com/sidneys/7095afe4da4ae58694d128b1034e01e2
 const ITAG_TO_BITRATE = {
     '139': '48',
@@ -91,7 +92,14 @@ class VideoLoader {
             }
         };
         __classPrivateFieldGet(this, _VideoLoader_logger, "f").debug(`[ytcr] VideoLoader.getInfo: ${video.id}`);
-        const contentPoToken = (await InnertubeLoader_js_1.default.generatePoToken(video.id)).poToken;
+        let contentPoToken = undefined;
+        try {
+            contentPoToken = (await InnertubeLoader_js_1.default.generatePoToken(video.id)).poToken;
+            __classPrivateFieldGet(this, _VideoLoader_logger, "f").info(`[ytcr] Obtained PO token for video #${video.id}: ${contentPoToken}`);
+        }
+        catch (error) {
+            __classPrivateFieldGet(this, _VideoLoader_logger, "f").error((0, Utils_js_1.getErrorMessage)(`[ytcr] Error obtaining PO token for video #${video.id}:`, error, false));
+        }
         checkAbortSignal();
         const payload = {
             videoId: video.id,
@@ -180,14 +188,13 @@ class VideoLoader {
                 payload.client = 'YTMUSIC';
             }
             else if (basicInfo.isLive) {
-                // Do not use TV client for live streams, because it will only return DASH manifest URL.
-                // Use default WEB client instead, which will return HLS manifest URL.
+                // WEB client returns HLS manifest URL which can be consumed by MPD.
                 payload.client = 'WEB';
             }
             else {
-                // Use TV client for regular videos. TV_EMBEDDED should also work.
-                // Anything else will likely give stream URLs that return 403 Forbidden.
-                payload.client = 'TV';
+                // Use ANDROID_VR client for regular videos.
+                // TV client used to be the preferred choice, but no longer works.
+                payload.client = 'ANDROID_VR';
             }
             let innertubeVideoInfo = await __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_fetchInnertubeVideoInfo).call(this, payload, cpn);
             checkAbortSignal();
@@ -230,7 +237,7 @@ class VideoLoader {
     }
 }
 _VideoLoader_logger = new WeakMap(), _VideoLoader_instances = new WeakSet(), _VideoLoader_getInnertube = async function _VideoLoader_getInnertube() {
-    return await (await InnertubeLoader_js_1.default.getInstance()).getInnertube();
+    return (await InnertubeLoader_js_1.default.getInstance()).getInnertube();
 }, _VideoLoader_fetchInnertubeVideoInfo = async function _VideoLoader_fetchInnertubeVideoInfo(payload, cpn) {
     const innertube = await __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_getInnertube).call(this);
     __classPrivateFieldGet(this, _VideoLoader_logger, "f").info(`[ytcr] (${payload.videoId}) fetching player data using ${payload.client || innertube.session.context.client.clientName} client...`);
@@ -270,7 +277,7 @@ _VideoLoader_logger = new WeakMap(), _VideoLoader_instances = new WeakSet(), _Vi
     checkAbort();
     // Validate
     if (streamInfo?.url) {
-        if (!isLive) {
+        if (!isLive && contentPoToken) {
             // Innertube sets `pot` searchParam of URL to session-bound PO token.
             // Seems YT now requires `pot` to be the *content-bound* token, otherwise we'll get 403.
             // See: https://github.com/TeamNewPipe/NewPipeExtractor/issues/1392
@@ -342,6 +349,7 @@ _VideoLoader_logger = new WeakMap(), _VideoLoader_instances = new WeakSet(), _Vi
         }
     }
     const streamUrl = format ? await format.decipher(innertube.session.player) : null;
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread
     const streamData = format ? { ...format, url: streamUrl } : null;
     if (streamData) {
         return __classPrivateFieldGet(this, _VideoLoader_instances, "m", _VideoLoader_parseStreamData).call(this, streamData);
@@ -401,4 +409,3 @@ _VideoLoader_logger = new WeakMap(), _VideoLoader_instances = new WeakSet(), _Vi
     };
 };
 exports.default = VideoLoader;
-//# sourceMappingURL=VideoLoader.js.map

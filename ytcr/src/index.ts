@@ -62,6 +62,7 @@ class ControllerYTCR implements NowPlayingPluginSupport {
     this.#player = null;
     this.#volumeControl = null;
     this.#receiver = null;
+    this.#nowPlayingMetadataProvider = null;
     this.#serviceName = 'ytcr';
   }
 
@@ -411,7 +412,7 @@ class ControllerYTCR implements NowPlayingPluginSupport {
   }
 
   acceptDisclaimer() {
-    this.configSaveDisclaimer({
+    return this.configSaveDisclaimer({
       hasAcceptedDisclaimer: true
     });
   }
@@ -470,7 +471,7 @@ class ControllerYTCR implements NowPlayingPluginSupport {
       ytcr.setConfigValue('region', region);
       ytcr.setConfigValue('language', language);
 
-      if (this.#player) {
+      if (this.#player && this.#player.videoLoader) {
         await this.#player.videoLoader.refreshI18nConfig();
       }
     }
