@@ -1,7 +1,7 @@
 {
   "name": "audio_keepalive",
-  "version": "1.0.1",
-  "description": "Keep audio output device active to prevent HDMI/SPDIF/USB DAC negotiation delays and clicks",
+  "version": "1.1.0",
+  "description": "Maintains continuous audio output to prevent HDMI/SPDIF/USB signal loss during idle",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -15,17 +15,17 @@
     "os": [
       "bookworm"
     ],
-    "details": "Keeps audio output device active to prevent negotiation delays, pops, and clicks on HDMI, SPDIF, and USB DAC outputs",
-    "changelog": "Initial release",
+    "details": "Feeds silence to the audio output during idle to prevent HDMI receivers, SPDIF decoders, and USB DACs from losing signal lock",
+    "changelog": "v1.1.0: Complete rewrite using ALSA ioplug proxy via AAMPP contribution.",
     "architectures": [
       "amd64",
       "armhf"
-    ]
+    ],
+    "has_alsa_contribution": true
   },
   "dependencies": {
     "fs-extra": "^0.28.0",
     "kew": "^0.7.0",
-    "socket.io-client": "1.7.4",
     "v-conf": "^1.4.2"
   },
   "engines": {

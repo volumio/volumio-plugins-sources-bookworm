@@ -2,29 +2,5 @@
   "keepalive_enabled": {
     "type": "boolean",
     "value": false
-  },
-  "keepalive_mode": {
-    "type": "string",
-    "value": "mpd_config"
-  },
-  "idle_delay_ms": {
-    "type": "number",
-    "value": 1000
-  },
-  "feeder_alsa_device": {
-    "type": "string",
-    "value": "volumioOutput"
-  },
-  "buffer_time": {
-    "type": "string",
-    "value": ""
-  },
-  "period_time": {
-    "type": "string",
-    "value": ""
-  },
-  "stop_dsd_silence": {
-    "type": "boolean",
-    "value": false
   }
 }
