@@ -9,6 +9,7 @@ export interface PluginConfigSchemaEntry<T, U = false> {
 }
 
 export interface PluginConfigSchema {
+  hasAcceptedDisclaimer: PluginConfigSchemaEntry<boolean>;
   region: PluginConfigSchemaEntry<string>;
   language: PluginConfigSchemaEntry<string>;
   rootContentType: PluginConfigSchemaEntry<'full' | 'simple'>,
@@ -21,7 +22,9 @@ export interface PluginConfigSchema {
   prefetch: PluginConfigSchemaEntry<boolean>;
   ytPlaybackMode: PluginConfigSchemaEntry<YouTubePlaybackMode, true>;
   cookie: PluginConfigSchemaEntry<string>;
-  activeChannelHandle: PluginConfigSchemaEntry<string>
+  activeChannelHandle: PluginConfigSchemaEntry<string>;
+  useYtDlp: PluginConfigSchemaEntry<boolean>;
+  ytDlpVersion: PluginConfigSchemaEntry<string | null>;
 }
 
 export interface YouTubePlaybackMode {
