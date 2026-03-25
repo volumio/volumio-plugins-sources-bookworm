@@ -1,10 +1,10 @@
 {
   "name": "soundcloud",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Browse and play SoundCloud tracks",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "rm -rf dist && npx tsc --build src && bash fixup.sh",
+    "build": "rimraf ./dist && npx tsc --build src && bash fixup.sh",
     "lint": "npx eslint ./src",
     "lint:fix": "npx eslint ./src --fix"
   },
@@ -26,30 +26,34 @@
     "changelog": "",
     "architectures": [
       "amd64",
-      "armhf"    ]
+      "armhf"
+    ]
   },
   "engines": {
     "node": ">=20",
-		"volumio": ">=0"
+    "volumio": ">=0"
   },
   "devDependencies": {
     "@types/fs-extra": "^8.1.2",
     "@types/md5": "^2.3.2",
     "@types/node": "^20.5.1",
     "@types/string-format": "^2.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.6.0",
-		"@typescript-eslint/parser": "^8.6.0",
-		"eslint": "^9.10.0",
-		"typescript": "^5.5.4",
-		"typescript-eslint": "^8.6.0",
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+		"@typescript-eslint/parser": "^8.54.0",
+		"eslint": "^9.39.2",
+		"eslint-plugin-unused-imports": "^4.3.0",
+    "rimraf": "^6.1.2",
+		"typescript": "^5.9.3",
+		"typescript-eslint": "^8.54.0",
     "winston": "^3.8.2"
   },
   "dependencies": {
     "kew": "^0.7.0",
     "md5": "^2.3.0",
     "node-cache": "^5.1.2",
-    "soundcloud-fetch": "^1.0.2",
+    "soundcloud-fetch": "^1.2.0",
     "string-format": "^2.0.0",
-    "v-conf": "^1.4.2"
+    "v-conf": "^1.4.2",
+    "volumio-ext-players": "file:dep/volumio-ext-players-1.0.0.tgz"
   }
 }

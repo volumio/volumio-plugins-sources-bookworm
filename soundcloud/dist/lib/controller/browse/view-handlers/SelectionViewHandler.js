@@ -9,11 +9,11 @@ const BaseViewHandler_1 = __importDefault(require("./BaseViewHandler"));
 const renderers_1 = require("./renderers");
 class SelectionViewHandler extends BaseViewHandler_1.default {
     async browse() {
-        const { selectionId, pageRef } = this.currentView;
+        const { type, selectionId, pageRef } = this.currentView;
         const selections = await this.getModel(model_1.ModelType.Selection).getSelections({
-            mixed: true
+            type
         });
-        const selection = selections.items.find((s) => s.id === selectionId);
+        const selection = selections.find((s) => s.id === selectionId);
         if (!selection) {
             throw Error('Failed to fetch selection');
         }

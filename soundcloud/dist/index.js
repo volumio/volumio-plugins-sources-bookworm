@@ -13,7 +13,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _ControllerSoundCloud_instances, _ControllerSoundCloud_context, _ControllerSoundCloud_config, _ControllerSoundCloud_commandRouter, _ControllerSoundCloud_browseController, _ControllerSoundCloud_searchController, _ControllerSoundCloud_playController, _ControllerSoundCloud_configGetLocaleOptions, _ControllerSoundCloud_addToBrowseSources;
+var _ControllerSoundCloud_instances, _ControllerSoundCloud_context, _ControllerSoundCloud_config, _ControllerSoundCloud_commandRouter, _ControllerSoundCloud_browseController, _ControllerSoundCloud_searchController, _ControllerSoundCloud_playController, _ControllerSoundCloud_doGetUIConfig, _ControllerSoundCloud_configGetLocaleOptions, _ControllerSoundCloud_addToBrowseSources;
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 const kew_1 = __importDefault(require("kew"));
@@ -27,7 +27,7 @@ const PlayController_1 = __importDefault(require("./lib/controller/play/PlayCont
 const Misc_1 = require("./lib/util/Misc");
 const locales_json_1 = __importDefault(require("./assets/locales.json"));
 const model_1 = __importDefault(require("./lib/model"));
-const PluginConfig_1 = require("./lib/PluginConfig");
+const UIConfigHelper_1 = __importDefault(require("./lib/config/UIConfigHelper"));
 class ControllerSoundCloud {
     constructor(context) {
         _ControllerSoundCloud_instances.add(this);
@@ -41,62 +41,11 @@ class ControllerSoundCloud {
         __classPrivateFieldSet(this, _ControllerSoundCloud_commandRouter, context.coreCommand, "f");
     }
     getUIConfig() {
-        const defer = kew_1.default.defer();
-        const langCode = __classPrivateFieldGet(this, _ControllerSoundCloud_commandRouter, "f").sharedVars.get('language_code');
-        __classPrivateFieldGet(this, _ControllerSoundCloud_commandRouter, "f").i18nJson(`${__dirname}/i18n/strings_${langCode}.json`, `${__dirname}/i18n/strings_en.json`, `${__dirname}/UIConfig.json`)
-            .then((uiconf) => {
-            const generalUIConf = uiconf.sections[0];
-            const playbackConf = uiconf.sections[1];
-            const cacheUIConf = uiconf.sections[2];
-            // General
-            const localeOptions = __classPrivateFieldGet(this, _ControllerSoundCloud_instances, "m", _ControllerSoundCloud_configGetLocaleOptions).call(this);
-            const accessToken = SoundCloudContext_1.default.getConfigValue('accessToken');
-            generalUIConf.content[0].value = accessToken;
-            generalUIConf.content[2].value = localeOptions.selected;
-            generalUIConf.content[2].options = localeOptions.options;
-            generalUIConf.content[3].value = SoundCloudContext_1.default.getConfigValue('itemsPerPage');
-            generalUIConf.content[4].value = SoundCloudContext_1.default.getConfigValue('itemsPerSection');
-            generalUIConf.content[5].value = SoundCloudContext_1.default.getConfigValue('combinedSearchResults');
-            generalUIConf.content[6].value = SoundCloudContext_1.default.getConfigValue('loadFullPlaylistAlbum');
-            // Playback
-            const longStreamFormat = SoundCloudContext_1.default.getConfigValue('longStreamFormat');
-            playbackConf.content[0].value = SoundCloudContext_1.default.getConfigValue('skipPreviewTracks');
-            playbackConf.content[1].value = SoundCloudContext_1.default.getConfigValue('addPlayedToHistory');
-            playbackConf.content[1].hidden = !accessToken;
-            playbackConf.content[2].options = [
-                {
-                    value: PluginConfig_1.LongStreamFormat.Opus,
-                    label: SoundCloudContext_1.default.getI18n('SOUNDCLOUD_LSF_HLS_OPUS')
-                },
-                {
-                    value: PluginConfig_1.LongStreamFormat.MP3,
-                    label: SoundCloudContext_1.default.getI18n('SOUNDCLOUD_LSF_HLS_MP3')
-                }
-            ];
-            switch (longStreamFormat) {
-                case PluginConfig_1.LongStreamFormat.Opus:
-                    playbackConf.content[2].value = playbackConf.content[2].options[0];
-                    break;
-                case PluginConfig_1.LongStreamFormat.MP3:
-                    playbackConf.content[2].value = playbackConf.content[2].options[1];
-                    break;
-            }
-            // Soundcloud-testing
-            playbackConf.content[3].value = SoundCloudContext_1.default.getConfigValue('logTranscodings');
-            // Cache
-            const cacheMaxEntries = SoundCloudContext_1.default.getConfigValue('cacheMaxEntries');
-            const cacheTTL = SoundCloudContext_1.default.getConfigValue('cacheTTL');
-            const cacheEntryCount = SoundCloudContext_1.default.getCache().getEntryCount();
-            cacheUIConf.content[0].value = cacheMaxEntries;
-            cacheUIConf.content[1].value = cacheTTL;
-            cacheUIConf.description = cacheEntryCount > 0 ? SoundCloudContext_1.default.getI18n('SOUNDCLOUD_CACHE_STATS', cacheEntryCount, Math.round(SoundCloudContext_1.default.getCache().getMemoryUsageInKB()).toLocaleString()) : SoundCloudContext_1.default.getI18n('SOUNDCLOUD_CACHE_EMPTY');
-            defer.resolve(uiconf);
-        })
+        return (0, Misc_1.jsPromiseToKew)(__classPrivateFieldGet(this, _ControllerSoundCloud_instances, "m", _ControllerSoundCloud_doGetUIConfig).call(this))
             .fail((error) => {
-            SoundCloudContext_1.default.getLogger().error(`[soundcloud] getUIConfig(): Cannot populate SoundCloud configuration - ${error}`);
-            defer.reject(Error());
+            SoundCloudContext_1.default.getLogger().error(`[soundcloud] getUIConfig(): Cannot populate configuration - ${error}`);
+            throw error;
         });
-        return defer.promise;
     }
     configSaveGeneralSettings(data) {
         const itemsPerPage = parseInt(data['itemsPerPage'], 10);
@@ -114,26 +63,41 @@ class ControllerSoundCloud {
             SoundCloudContext_1.default.toast('error', SoundCloudContext_1.default.getI18n('SOUNDCLOUD_SETTINGS_ERR_COMBINED_SEARCH_RESULTS'));
             return;
         }
+        const oldCredentialsType = SoundCloudContext_1.default.getConfigValue('credentialsType');
+        const newCredentialsType = data['credentialsType'].value;
         const oldAccessToken = SoundCloudContext_1.default.getConfigValue('accessToken');
         const newAccessToken = data['accessToken'].trim();
+        const oldCookie = SoundCloudContext_1.default.getConfigValue('cookie');
+        const newCookie = data['cookie'].trim();
         const oldLocale = SoundCloudContext_1.default.getConfigValue('locale');
         const newLocale = data['locale'].value;
+        const credentialsTypeChanged = oldCredentialsType !== newCredentialsType;
         const accessTokenChanged = oldAccessToken !== newAccessToken;
+        const cookieChanged = oldCookie !== newCookie;
         const localeChanged = oldLocale !== newLocale;
+        SoundCloudContext_1.default.setConfigValue('credentialsType', newCredentialsType);
         SoundCloudContext_1.default.setConfigValue('accessToken', newAccessToken);
+        SoundCloudContext_1.default.setConfigValue('cookie', newCookie);
         SoundCloudContext_1.default.setConfigValue('locale', newLocale);
         SoundCloudContext_1.default.setConfigValue('itemsPerPage', itemsPerPage);
         SoundCloudContext_1.default.setConfigValue('itemsPerSection', itemsPerSection);
         SoundCloudContext_1.default.setConfigValue('combinedSearchResults', combinedSearchResults);
         SoundCloudContext_1.default.setConfigValue('loadFullPlaylistAlbum', !!data['loadFullPlaylistAlbum']);
-        if (accessTokenChanged || localeChanged) {
+        if (credentialsTypeChanged ||
+            (oldCredentialsType === 'accessToken' && accessTokenChanged) ||
+            (oldCredentialsType === 'cookie' && cookieChanged) ||
+            localeChanged) {
             SoundCloudContext_1.default.getCache().clear();
         }
         if (localeChanged) {
             model_1.default.setLocale(newLocale);
         }
-        if (accessTokenChanged) {
+        if (newCredentialsType === 'accessToken' && (credentialsTypeChanged || accessTokenChanged)) {
             model_1.default.setAccessToken(newAccessToken);
+            SoundCloudContext_1.default.refreshUIConfig();
+        }
+        else if (newCredentialsType === 'cookie' && (credentialsTypeChanged || cookieChanged)) {
+            model_1.default.setCookie(newCookie);
             SoundCloudContext_1.default.refreshUIConfig();
         }
         SoundCloudContext_1.default.toast('success', SoundCloudContext_1.default.getI18n('SOUNDCLOUD_SETTINGS_SAVED'));
@@ -161,10 +125,6 @@ class ControllerSoundCloud {
         SoundCloudContext_1.default.setConfigValue('addPlayedToHistory', !!data['addPlayedToHistory']);
         // Soundcloud-testing
         SoundCloudContext_1.default.setConfigValue('logTranscodings', !!data['logTranscodings']);
-        const longStreamFormat = data['longStreamFormat'].value;
-        if (longStreamFormat === PluginConfig_1.LongStreamFormat.Opus || longStreamFormat === PluginConfig_1.LongStreamFormat.MP3) {
-            SoundCloudContext_1.default.setConfigValue('longStreamFormat', longStreamFormat);
-        }
         SoundCloudContext_1.default.toast('success', SoundCloudContext_1.default.getI18n('SOUNDCLOUD_SETTINGS_SAVED'));
     }
     configClearCache() {
@@ -183,9 +143,22 @@ class ControllerSoundCloud {
         __classPrivateFieldSet(this, _ControllerSoundCloud_browseController, new BrowseController_1.default(), "f");
         __classPrivateFieldSet(this, _ControllerSoundCloud_searchController, new SearchController_1.default(), "f");
         __classPrivateFieldSet(this, _ControllerSoundCloud_playController, new PlayController_1.default(), "f");
-        const accessToken = SoundCloudContext_1.default.getConfigValue('accessToken');
-        if (accessToken) {
-            model_1.default.setAccessToken(accessToken);
+        const credentialsType = SoundCloudContext_1.default.getConfigValue('credentialsType');
+        switch (credentialsType) {
+            case 'accessToken': {
+                const accessToken = SoundCloudContext_1.default.getConfigValue('accessToken');
+                if (accessToken) {
+                    model_1.default.setAccessToken(accessToken);
+                }
+                break;
+            }
+            case 'cookie': {
+                const cookie = SoundCloudContext_1.default.getConfigValue('cookie');
+                if (cookie) {
+                    model_1.default.setCookie(cookie);
+                }
+                break;
+            }
         }
         model_1.default.setLocale(SoundCloudContext_1.default.getConfigValue('locale'));
         __classPrivateFieldGet(this, _ControllerSoundCloud_instances, "m", _ControllerSoundCloud_addToBrowseSources).call(this);
@@ -193,11 +166,13 @@ class ControllerSoundCloud {
     }
     onStop() {
         __classPrivateFieldGet(this, _ControllerSoundCloud_commandRouter, "f").volumioRemoveToBrowseSources('SoundCloud');
-        __classPrivateFieldSet(this, _ControllerSoundCloud_browseController, null, "f");
-        __classPrivateFieldSet(this, _ControllerSoundCloud_searchController, null, "f");
-        __classPrivateFieldSet(this, _ControllerSoundCloud_playController, null, "f");
-        SoundCloudContext_1.default.reset();
-        return kew_1.default.resolve();
+        return (0, Misc_1.jsPromiseToKew)((async () => {
+            await __classPrivateFieldGet(this, _ControllerSoundCloud_playController, "f")?.reset();
+            __classPrivateFieldSet(this, _ControllerSoundCloud_browseController, null, "f");
+            __classPrivateFieldSet(this, _ControllerSoundCloud_searchController, null, "f");
+            __classPrivateFieldSet(this, _ControllerSoundCloud_playController, null, "f");
+            SoundCloudContext_1.default.reset();
+        })());
     }
     getConfigurationFiles() {
         return ['config.json'];
@@ -238,6 +213,12 @@ class ControllerSoundCloud {
         }
         return __classPrivateFieldGet(this, _ControllerSoundCloud_playController, "f").resume();
     }
+    play() {
+        if (!__classPrivateFieldGet(this, _ControllerSoundCloud_playController, "f")) {
+            return kew_1.default.reject('SoundCloud plugin is not started');
+        }
+        return __classPrivateFieldGet(this, _ControllerSoundCloud_playController, "f").play();
+    }
     seek(position) {
         if (!__classPrivateFieldGet(this, _ControllerSoundCloud_playController, "f")) {
             return kew_1.default.reject('SoundCloud plugin is not started');
@@ -262,6 +243,18 @@ class ControllerSoundCloud {
         }
         return (0, Misc_1.jsPromiseToKew)(__classPrivateFieldGet(this, _ControllerSoundCloud_searchController, "f").search(query));
     }
+    random(value) {
+        if (!__classPrivateFieldGet(this, _ControllerSoundCloud_playController, "f")) {
+            return kew_1.default.reject('SoundCloud plugin is not started');
+        }
+        return __classPrivateFieldGet(this, _ControllerSoundCloud_playController, "f").setRandom(value);
+    }
+    repeat(value, repeatSingle) {
+        if (!__classPrivateFieldGet(this, _ControllerSoundCloud_playController, "f")) {
+            return kew_1.default.reject('SoundCloud plugin is not started');
+        }
+        return __classPrivateFieldGet(this, _ControllerSoundCloud_playController, "f").setRepeat(value, repeatSingle);
+    }
     goto(data) {
         if (!__classPrivateFieldGet(this, _ControllerSoundCloud_playController, "f")) {
             return kew_1.default.reject('SoundCloud plugin is not started');
@@ -281,13 +274,56 @@ class ControllerSoundCloud {
         return defer.promise;
     }
 }
-_ControllerSoundCloud_context = new WeakMap(), _ControllerSoundCloud_config = new WeakMap(), _ControllerSoundCloud_commandRouter = new WeakMap(), _ControllerSoundCloud_browseController = new WeakMap(), _ControllerSoundCloud_searchController = new WeakMap(), _ControllerSoundCloud_playController = new WeakMap(), _ControllerSoundCloud_instances = new WeakSet(), _ControllerSoundCloud_configGetLocaleOptions = function _ControllerSoundCloud_configGetLocaleOptions() {
+_ControllerSoundCloud_context = new WeakMap(), _ControllerSoundCloud_config = new WeakMap(), _ControllerSoundCloud_commandRouter = new WeakMap(), _ControllerSoundCloud_browseController = new WeakMap(), _ControllerSoundCloud_searchController = new WeakMap(), _ControllerSoundCloud_playController = new WeakMap(), _ControllerSoundCloud_instances = new WeakSet(), _ControllerSoundCloud_doGetUIConfig = async function _ControllerSoundCloud_doGetUIConfig() {
+    const langCode = __classPrivateFieldGet(this, _ControllerSoundCloud_commandRouter, "f").sharedVars.get('language_code');
+    const _uiconf = await (0, Misc_1.kewToJSPromise)(__classPrivateFieldGet(this, _ControllerSoundCloud_commandRouter, "f").i18nJson(`${__dirname}/i18n/strings_${langCode}.json`, `${__dirname}/i18n/strings_en.json`, `${__dirname}/UIConfig.json`));
+    const uiconf = UIConfigHelper_1.default.observe(_uiconf);
+    const generalUIConf = uiconf.section_general;
+    const playbackConf = uiconf.section_playback;
+    const cacheUIConf = uiconf.section_cache;
+    // General
+    const localeOptions = __classPrivateFieldGet(this, _ControllerSoundCloud_instances, "m", _ControllerSoundCloud_configGetLocaleOptions).call(this);
+    const credentialsType = SoundCloudContext_1.default.getConfigValue('credentialsType');
+    const accessToken = SoundCloudContext_1.default.getConfigValue('accessToken');
+    const cookie = SoundCloudContext_1.default.getConfigValue('cookie');
+    generalUIConf.content.credentialsType.value = {
+        value: credentialsType,
+        label: credentialsType === 'accessToken' ? SoundCloudContext_1.default.getI18n('SOUNDCLOUD_ACCESS_TOKEN') : SoundCloudContext_1.default.getI18n('SOUNDCLOUD_COOKIE')
+    };
+    generalUIConf.content.accessToken.value = accessToken;
+    generalUIConf.content.cookie.value = cookie;
+    generalUIConf.content.locale.value = localeOptions.selected;
+    generalUIConf.content.locale.options = localeOptions.options;
+    generalUIConf.content.itemsPerPage.value = SoundCloudContext_1.default.getConfigValue('itemsPerPage');
+    generalUIConf.content.itemsPerSection.value = SoundCloudContext_1.default.getConfigValue('itemsPerSection');
+    generalUIConf.content.combinedSearchResults.value = SoundCloudContext_1.default.getConfigValue('combinedSearchResults');
+    generalUIConf.content.loadFullPlaylistAlbum.value = SoundCloudContext_1.default.getConfigValue('loadFullPlaylistAlbum');
+    // Playback
+    playbackConf.content.skipPreviewTracks.value = SoundCloudContext_1.default.getConfigValue('skipPreviewTracks');
+    playbackConf.content.addPlayedToHistory.value = SoundCloudContext_1.default.getConfigValue('addPlayedToHistory');
+    playbackConf.content.addPlayedToHistory.hidden = credentialsType === 'accessToken' || !cookie;
+    // Soundcloud-testing
+    playbackConf.content.logTranscodings.value = SoundCloudContext_1.default.getConfigValue('logTranscodings');
+    // Cache
+    const cacheMaxEntries = SoundCloudContext_1.default.getConfigValue('cacheMaxEntries');
+    const cacheTTL = SoundCloudContext_1.default.getConfigValue('cacheTTL');
+    const cacheEntryCount = SoundCloudContext_1.default.getCache().getEntryCount();
+    cacheUIConf.content.cacheMaxEntries.value = cacheMaxEntries;
+    cacheUIConf.content.cacheTTL.value = cacheTTL;
+    cacheUIConf.description = cacheEntryCount > 0 ?
+        SoundCloudContext_1.default.getI18n('SOUNDCLOUD_CACHE_STATS', cacheEntryCount, Math.round(SoundCloudContext_1.default.getCache().getMemoryUsageInKB()).toLocaleString())
+        : SoundCloudContext_1.default.getI18n('SOUNDCLOUD_CACHE_EMPTY');
+    return uiconf;
+}, _ControllerSoundCloud_configGetLocaleOptions = function _ControllerSoundCloud_configGetLocaleOptions() {
     const options = locales_json_1.default.map((data) => ({
         value: data.locale,
         label: data.name
     }));
     const configValue = SoundCloudContext_1.default.getConfigValue('locale');
-    const selected = options.find((option) => option.value === configValue);
+    const selected = options.find((option) => option.value === configValue) || {
+        value: '',
+        label: ''
+    };
     return {
         options,
         selected

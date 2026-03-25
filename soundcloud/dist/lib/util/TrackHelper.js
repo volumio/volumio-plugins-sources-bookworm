@@ -3,8 +3,85 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const PluginConfig_1 = require("../PluginConfig");
 const SoundCloudContext_1 = __importDefault(require("../SoundCloudContext"));
+/**
+ * Known formats:
+ *    preset + protocol | mime type | bitrate
+ * 1. aac_160k + hls | audio/mp4 | 160kbps
+ * 2. mp3_0_0 + hls | audio/mpeg | 128kbps (URL: https://.../playlist/<uuid>.128.mp3/playlist.m3u8...)
+ * 3. mp3_0_0 + progressive (http) | audio/mpeg | 128kbps (URL: https://.../<uuid>.128.mp3?...)
+ * 4. opus_0_0 + hls | audio/ogg | 64kbps (URL: https://.../playlist/<uuid>.64.opus//playlist.m3u8...)
+ *
+ * Preview stream formats:
+ * 1. mp3_1_0 + hls | audio/mpeg | 128kbps
+ * 2. mp3_1_0 + progressive (http) | audio/mpeg | 128kbps
+ *
+ * There is also supposedly aac+hls/96kbps and aac+hls/256kbps (Go+), but would need
+ * to see how they're actually presented in the API response.
+ *
+ * According to https://developers.soundcloud.com/blog/api-streaming-urls,
+ * the AAC HLS streams will replace all others. Preview (30s) tracks will
+ * remain the same (mp3 128kbps progressive).
+ */
+const STREAM_FORMATS = [
+    'aac_160k+hls',
+    'mp3_0_0+http',
+    'opus_0_0+hls',
+    'mp3_0_0+hls',
+    'mp3_1_0+http',
+    'mp3_1_0+hls'
+];
+const PREFERRED_STANDARD_STREAM_FORMATS = [
+    'aac_160k+hls',
+    'mp3_0_0+http',
+    'opus_0_0+hls',
+    'mp3_0_0+hls',
+    'mp3_1_0+http',
+    'mp3_1_0+hls'
+];
+// Long streams are those >= 30 mins
+const PREFERRED_LONG_STREAM_FORMAT = [
+    'aac_160k+hls',
+    'opus_0_0+hls',
+    'mp3_0_0+hls',
+    'mp3_1_0+hls',
+    // http streams have ridiculously short expiry
+    // time (~30 mins), so last resort only.
+    'mp3_0_0+http',
+    'mp3_1_0+http',
+];
+const STREAM_FORMAT_DETAILS = {
+    'aac_160k+hls': {
+        codec: 'aac',
+        protocol: 'hls',
+        bitrate: '160 kbps'
+    },
+    'mp3_0_0+http': {
+        codec: 'mp3',
+        protocol: 'http',
+        bitrate: '128 kbps'
+    },
+    'opus_0_0+hls': {
+        codec: 'opus',
+        protocol: 'hls',
+        bitrate: '64 kbps'
+    },
+    'mp3_0_0+hls': {
+        codec: 'mp3',
+        protocol: 'hls',
+        bitrate: '128 kbps'
+    },
+    'mp3_1_0+http': {
+        codec: 'mp3',
+        protocol: 'http',
+        bitrate: '128 kbps'
+    },
+    'mp3_1_0+hls': {
+        codec: 'mp3',
+        protocol: 'hls',
+        bitrate: '128 kbps'
+    }
+};
 class TrackHelper {
     static cacheTracks(tracks, cacheKeyGen) {
         const cache = SoundCloudContext_1.default.getCache();
@@ -14,72 +91,42 @@ class TrackHelper {
             cache.put(key, track);
         });
     }
-    static getPreferredTranscoding(track) {
-        /**
-         * // soundcloud-testing
-         * I do not know whether the transcodings returned for a SoundCloud Go+
-         * account would include high-quality ('hq') ones and if so, their protocols
-         * and mimeTypes - not to mention the format of the actual streaming URLs
-         * obtained from these transcodings. First step would be to dump all
-         * transcodings to log so I can inspect them...
-         */
-        if (SoundCloudContext_1.default.getConfigValue('logTranscodings')) {
-            SoundCloudContext_1.default.getLogger().info(`[soundcloud-testing] Transcodings for ${track.id} - ${track.title}`);
-            SoundCloudContext_1.default.getLogger().info(JSON.stringify(track.transcodings));
-        }
-        const longStreamFormat = SoundCloudContext_1.default.getConfigValue('longStreamFormat');
+    static getPreferredStream(track) {
         const isLongStream = track.playableState === 'allowed' && track.duration && (track.duration / 1000) > 1800;
-        let transcodingUrl = null;
-        /**
-         * Primary filter is 'protocol' + 'quality'.
-         * Secondary filter is 'format', which is an array of strings to match, in order of preference, against a transcoding's mimeType.
-         * 'format' is optional - we return from primary filter results even if no match.
-         */
-        let preferred;
-        if (isLongStream) {
-            const format = longStreamFormat === PluginConfig_1.LongStreamFormat.Opus ? ['ogg', 'mpeg'] : ['mpeg', 'ogg'];
-            preferred = [
-                { protocol: 'hls', format, quality: 'sq' },
-                /**
-                 * Progressive stream URLs have a ridiculously short expiry period (around 30 minutes),
-                 * so playback of longer streams will end prematurely with 403 Forbidden error.
-                 */
-                { protocol: 'progressive', format: ['mpeg'], quality: 'sq' }
-            ];
+        if (SoundCloudContext_1.default.getConfigValue('logTranscodings')) {
+            SoundCloudContext_1.default.getLogger().info(`[soundcloud-testing] Available transcodings: ${JSON.stringify(track.transcodings)}`);
         }
-        else {
-            preferred = [
-                //{ protocol: 'progressive', format: [ 'mp4' ], quality: 'hq' },
-                //{ protocol: 'hls', format: [ 'mp4' ], quality: 'hq' },
-                { protocol: 'progressive', format: ['mpeg'], quality: 'sq' },
-                // Despite having higher bitrates, 'hls' + 'mpeg' streams have seeking problems. So 'ogg' preferred.
-                { protocol: 'hls', format: ['ogg', 'mpeg'], quality: 'sq' }
-            ];
-        }
-        while (transcodingUrl === null && preferred.length > 0) {
-            const p = preferred.shift();
-            if (p) {
-                const primary = track.transcodings.filter((t) => t.protocol === p.protocol && t.quality === p.quality);
-                if (primary.length > 0) {
-                    let secondary;
-                    for (const format of p.format) {
-                        const secondaryFiltered = primary.filter((t) => t.mimeType && t.mimeType.includes(format));
-                        if (secondaryFiltered.length > 0) {
-                            secondary = secondaryFiltered[0];
-                            break;
-                        }
-                    }
-                    if (!secondary) {
-                        secondary = primary[0];
-                    }
-                    transcodingUrl = secondary.url || null;
-                    if (SoundCloudContext_1.default.getConfigValue('logTranscodings')) {
-                        SoundCloudContext_1.default.getLogger().info(`[soundcloud-testing] Chosen transcoding: ${JSON.stringify(secondary)}`);
-                    }
-                }
+        const availableFormats = track.transcodings.reduce((result, t) => {
+            const protocol = t.protocol === 'progressive' ? 'http' : t.protocol;
+            const sf = `${t.preset}+${protocol}`;
+            if (STREAM_FORMATS.includes(sf)) {
+                result[sf] = t;
+            }
+            return result;
+        }, {});
+        let selectedStream = null;
+        const targetFormats = isLongStream ? PREFERRED_LONG_STREAM_FORMAT : PREFERRED_STANDARD_STREAM_FORMATS;
+        for (const pf of targetFormats) {
+            if (availableFormats[pf]) {
+                selectedStream = {
+                    format: pf,
+                    transcoding: availableFormats[pf]
+                };
+                break;
             }
         }
-        return transcodingUrl;
+        let result = null;
+        if (selectedStream && selectedStream.transcoding.url) {
+            result = {
+                format: selectedStream.format,
+                ...STREAM_FORMAT_DETAILS[selectedStream.format],
+                transcodingUrl: selectedStream.transcoding.url
+            };
+        }
+        if (SoundCloudContext_1.default.getConfigValue('logTranscodings')) {
+            SoundCloudContext_1.default.getLogger().info(`[soundcloud-testing] Chosen transcoding: ${JSON.stringify(result)}`);
+        }
+        return result;
     }
 }
 exports.default = TrackHelper;
