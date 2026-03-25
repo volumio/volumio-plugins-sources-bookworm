@@ -20,14 +20,12 @@
 		"changelog": "",
 		"architectures": [
 			"amd64",
-			"armhf",
-			"arm64",
-			"i386"
+			"armhf"
 		]
 	},
 	"engines": {
 		"node": ">=14",
-		"volumio": ">=3"
+		"volumio": ">=4"
 	},
 	"dependencies": {
 		"kew": "^0.7.0",
