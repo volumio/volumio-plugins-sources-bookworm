@@ -4,28 +4,8 @@ import {
   type MetadataSongInfo,
   type NowPlayingMetadataProvider
 } from 'now-playing-common';
-import { LRUCache } from 'lru-cache';
 import { convert } from 'html-to-text';
 import rp2 from '../RP2Context';
-import {
-  Episode,
-  type AlbumInfo,
-  type ArtistInfo,
-  type SongInfo
-} from '@patrickkfkan/rp.js';
-
-type CacheKey =
-  | `song-info-${string}`
-  | `artist-info-${string}`
-  | `album-info-${string}`
-  | `episode-${string}`;
-type CacheRecord<K extends CacheKey> =
-  K extends `song-info-${string}` ? Promise<SongInfo | null>
-  : K extends `artist-info-${string}` ? Promise<ArtistInfo | null>
-  : K extends `album-info-${string}` ? Promise<AlbumInfo | null>
-  : K extends `episode-${string}` ? Promise<Episode | null>
-  : never;
-type CacheValue = Promise<SongInfo | ArtistInfo | AlbumInfo | Episode | null>;
 
 export class RP2NowPlayingMetadataProvider implements NowPlayingMetadataProvider {
   version: '1.0.0';
@@ -60,7 +40,7 @@ export class RP2NowPlayingMetadataProvider implements NowPlayingMetadataProvider
 
   async getSongInfo(songTitle: string): Promise<MetadataSongInfo | null> {
     try {
-      const { type: infoType, info } = await this.#rpGetSongInfo() || {};
+      const { type: infoType, info } = (await this.#rpGetSongInfo()) || {};
       if (!info) {
         return null;
       }
@@ -70,7 +50,9 @@ export class RP2NowPlayingMetadataProvider implements NowPlayingMetadataProvider
             title: info.title || songTitle,
             image: info.cover,
             artist:
-              info.artist?.name ? await this.getArtistInfo(info.artist.name) : null,
+              info.artist?.name ?
+                await this.getArtistInfo(info.artist.name)
+              : null,
             album:
               info.album?.name ?
                 await this.getAlbumInfo(info.album.name, info.artist?.name)
@@ -91,7 +73,7 @@ export class RP2NowPlayingMetadataProvider implements NowPlayingMetadataProvider
               lines: info.lyrics
             };
           }
-          return song;        
+          return song;
         }
         case 'episode': {
           const episode: MetadataSongInfo = {
@@ -100,10 +82,11 @@ export class RP2NowPlayingMetadataProvider implements NowPlayingMetadataProvider
             artist: {
               name: info.guests.map((guest) => guest.name).join(', '),
               image: info.bioImage.large,
-              description: info.guestBio ? this.#htmlToText(info.guestBio) : null
+              description:
+                info.guestBio ? this.#htmlToText(info.guestBio) : null
             },
             description: info.overview ? this.#htmlToText(info.overview) : null
-          }
+          };
           return episode;
         }
         default:
@@ -123,7 +106,7 @@ export class RP2NowPlayingMetadataProvider implements NowPlayingMetadataProvider
   ): Promise<MetadataAlbumInfo | null> {
     try {
       const rp = rp2.getRpjsLib();
-      const { type: infoType, info } = await this.#rpGetSongInfo() || {};
+      const { type: infoType, info } = (await this.#rpGetSongInfo()) || {};
       switch (infoType) {
         case 'song': {
           const albumId = info?.album?.id;
@@ -158,15 +141,16 @@ export class RP2NowPlayingMetadataProvider implements NowPlayingMetadataProvider
   async getArtistInfo(artistName: string): Promise<MetadataArtistInfo | null> {
     try {
       const rp = rp2.getRpjsLib();
-      const { type: infoType, info } = await this.#rpGetSongInfo() || {};
+      const { type: infoType, info } = (await this.#rpGetSongInfo()) || {};
       switch (infoType) {
         case 'song': {
           const artistId = info?.artist?.id;
           if (!artistId) {
             return null;
           }
-          const artistInfo = await rp2.cacheOrGet(`artist-info-${artistId}`, () =>
-            rp.getArtistInfo({ artistId })
+          const artistInfo = await rp2.cacheOrGet(
+            `artist-info-${artistId}`,
+            () => rp.getArtistInfo({ artistId })
           );
           if (!artistInfo) {
             return null;
@@ -174,7 +158,8 @@ export class RP2NowPlayingMetadataProvider implements NowPlayingMetadataProvider
           const artist: MetadataArtistInfo = {
             name: artistInfo.name || artistName,
             image: artistInfo.images?.default,
-            description: artistInfo.bio ? this.#htmlToText(artistInfo.bio) : null
+            description:
+              artistInfo.bio ? this.#htmlToText(artistInfo.bio) : null
           };
           return artist;
         }
@@ -191,7 +176,6 @@ export class RP2NowPlayingMetadataProvider implements NowPlayingMetadataProvider
         default:
           return null;
       }
-      
     } catch (error: unknown) {
       rp2
         .getLogger()

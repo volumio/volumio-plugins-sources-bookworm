@@ -11,7 +11,9 @@ async function getPage(uri) {
             if (!view.params.channel) {
                 throw Error(`Invalid URI: ${uri}`);
             }
-            return await (0, episodes_1.getEpisodesPage)(view.params.channel, view.params.p && !isNaN(Number(view.params.p)) ? Number(view.params.p) : undefined);
+            return await (0, episodes_1.getEpisodesPage)(view.params.channel, view.params.p && !isNaN(Number(view.params.p)) ?
+                Number(view.params.p)
+                : undefined);
         case 'root':
             return await (0, channels_1.getChannelsPage)();
         default:

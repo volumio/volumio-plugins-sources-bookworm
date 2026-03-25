@@ -1,9 +1,9 @@
 // Auto-generated from ./src/UIConfig.json
 
 import {
-  UIConfigButton,
-  UIConfigSelect,
-  UIConfigSwitch
+  type UIConfigButton,
+  type UIConfigSelect,
+  type UIConfigSwitch
 } from './ui-config-types';
 export type UIConfigSectionKey = 'section_general';
 

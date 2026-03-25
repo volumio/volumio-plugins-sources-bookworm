@@ -103,7 +103,15 @@ _MPVPlayer_service = new WeakMap(), _MPVPlayer_instances = new WeakSet(), _MPVPl
                     RP2Context_1.default.toast('warning', RP2Context_1.default.getI18n('RP2_PLAYER_CLOSED_UNEXPECTEDLY', 'mpv'));
                 }
                 RP2Context_1.default.getLogger().info(`[rp2] mpv process closed`);
+                __classPrivateFieldGet(this, _MPVPlayer_service, "f")?.removeAllListeners();
                 __classPrivateFieldSet(this, _MPVPlayer_service, null, "f");
+            });
+            p.on('unsetVolatile', () => {
+                console.log('MPVPlayer onunsetVolatile called');
+                if (this.onUnsetVolatile) {
+                    console.log('MPVPlayer calling onunsetVolatile callbacks');
+                    this.onUnsetVolatile();
+                }
             });
             __classPrivateFieldSet(this, _MPVPlayer_service, p, "f");
             return p;
