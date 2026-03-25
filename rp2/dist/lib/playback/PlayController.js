@@ -23,7 +23,9 @@ class PlayController {
         if (view.name === 'channel' && view.params.id) {
             await rpjs.play(view.params.id);
         }
-        else if (view.name === 'episode' && view.params.id && view.params.channel) {
+        else if (view.name === 'episode' &&
+            view.params.id &&
+            view.params.channel) {
             await rpjs.play(view.params.channel, view.params.id);
         }
         else if (view.name === 'episodes' && view.params.channel) {

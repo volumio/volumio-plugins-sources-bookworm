@@ -1,7 +1,6 @@
 import { type Display } from './types';
 import rp2 from '../RP2Context';
 import { type QueueItem } from '../playback/types';
-import { Channel } from '@patrickkfkan/rp.js';
 
 export async function getChannelsPage(): Promise<Display.Page> {
   const rpjs = rp2.getRpjsLib();
@@ -15,8 +14,7 @@ export async function getChannelsPage(): Promise<Display.Page> {
       if (channel.isEpisodicRadio) {
         qiUri = `rp2/episodes@channel=${encodeURIComponent(channel.id)}`;
         type = 'folder';
-      }
-      else {
+      } else {
         qiUri = `rp2/channel@id=${encodeURIComponent(channel.id)}`;
         type = 'mywebradio';
       }
@@ -30,8 +28,7 @@ export async function getChannelsPage(): Promise<Display.Page> {
       } satisfies QueueItem);
       if (channel.isEpisodicRadio) {
         liUri = `rp2/episodes@channel=${encodeURIComponent(channel.id)}@qi=${encodeURIComponent(qi)}`;
-      }
-      else {
+      } else {
         liUri = `rp2/channel@qi=${encodeURIComponent(qi)}`;
       }
       const item: Display.ListItem = {

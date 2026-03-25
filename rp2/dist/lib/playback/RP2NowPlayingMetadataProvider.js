@@ -19,7 +19,7 @@ class RP2NowPlayingMetadataProvider {
     }
     async getSongInfo(songTitle) {
         try {
-            const { type: infoType, info } = await __classPrivateFieldGet(this, _RP2NowPlayingMetadataProvider_instances, "m", _RP2NowPlayingMetadataProvider_rpGetSongInfo).call(this) || {};
+            const { type: infoType, info } = (await __classPrivateFieldGet(this, _RP2NowPlayingMetadataProvider_instances, "m", _RP2NowPlayingMetadataProvider_rpGetSongInfo).call(this)) || {};
             if (!info) {
                 return null;
             }
@@ -28,7 +28,9 @@ class RP2NowPlayingMetadataProvider {
                     const song = {
                         title: info.title || songTitle,
                         image: info.cover,
-                        artist: info.artist?.name ? await this.getArtistInfo(info.artist.name) : null,
+                        artist: info.artist?.name ?
+                            await this.getArtistInfo(info.artist.name)
+                            : null,
                         album: info.album?.name ?
                             await this.getAlbumInfo(info.album.name, info.artist?.name)
                             : null,
@@ -78,7 +80,7 @@ class RP2NowPlayingMetadataProvider {
     async getAlbumInfo(albumTitle, artistName) {
         try {
             const rp = RP2Context_1.default.getRpjsLib();
-            const { type: infoType, info } = await __classPrivateFieldGet(this, _RP2NowPlayingMetadataProvider_instances, "m", _RP2NowPlayingMetadataProvider_rpGetSongInfo).call(this) || {};
+            const { type: infoType, info } = (await __classPrivateFieldGet(this, _RP2NowPlayingMetadataProvider_instances, "m", _RP2NowPlayingMetadataProvider_rpGetSongInfo).call(this)) || {};
             switch (infoType) {
                 case 'song': {
                     const albumId = info?.album?.id;
@@ -111,7 +113,7 @@ class RP2NowPlayingMetadataProvider {
     async getArtistInfo(artistName) {
         try {
             const rp = RP2Context_1.default.getRpjsLib();
-            const { type: infoType, info } = await __classPrivateFieldGet(this, _RP2NowPlayingMetadataProvider_instances, "m", _RP2NowPlayingMetadataProvider_rpGetSongInfo).call(this) || {};
+            const { type: infoType, info } = (await __classPrivateFieldGet(this, _RP2NowPlayingMetadataProvider_instances, "m", _RP2NowPlayingMetadataProvider_rpGetSongInfo).call(this)) || {};
             switch (infoType) {
                 case 'song': {
                     const artistId = info?.artist?.id;

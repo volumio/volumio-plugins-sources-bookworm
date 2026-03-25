@@ -164,8 +164,7 @@ _ControllerRP2_context = new WeakMap(), _ControllerRP2_config = new WeakMap(), _
     };
     generalUIConf.content.persistSession.value =
         RP2Context_1.default.getConfigValue('persistSession');
-    generalUIConf.content.showChannel.value =
-        RP2Context_1.default.getConfigValue('showChannel');
+    generalUIConf.content.showChannel.value = RP2Context_1.default.getConfigValue('showChannel');
     return uiconf;
 }, _ControllerRP2_addToBrowseSources = function _ControllerRP2_addToBrowseSources() {
     const source = {

@@ -17,6 +17,10 @@ This project is an independent work and is not affiliated with, endorsed by, or 
 
 ### Changelog
 
+1.1.1
+- Fix placement of channel title in now playing info.
+- Fix playback resuming despite having switched to another music service.
+
 1.1.0
 - Update underlying [rp.js](https://github.com/patrickkfkan/rp.js) lib which includes fixes and improvements to track monitoring and handling.
 - Add support for browsing and playing individual episodes.
