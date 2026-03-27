@@ -661,17 +661,6 @@ function configureEq15Section(self, uiconf, selectedsp) {
   });
 
   uiconf.sections[1].content.push({
-    id: 'eqbypass',
-    element: 'button',
-    label: self.config.get('eqbypass')
-      ? self.commandRouter.getI18nString('EQ_ENABLE')
-      : self.commandRouter.getI18nString('EQ_BYPASS'),
-    doc: self.commandRouter.getI18nString('EQ_BYPASS_DOC'),
-    onClick: { type: 'plugin', endpoint: 'audio_interface/fusiondsp', method: 'toggleEqBypass', data: [] },
-    visibleIf: { field: 'showeq', value: true }
-  });
-
-  uiconf.sections[1].content.push({
     id: 'reset',
     element: 'button',
     label: self.commandRouter.getI18nString('RESETEQ'),
@@ -715,16 +704,6 @@ function configureEq3Section(self, uiconf) {
     config: { orientation: 'vertical', bars }
   });
   uiconf.sections[1].saveButton.data.push('geq3');
-
-  uiconf.sections[1].content.push({
-    id: 'eqbypass',
-    element: 'button',
-    label: self.config.get('eqbypass')
-      ? self.commandRouter.getI18nString('EQ_ENABLE')
-      : self.commandRouter.getI18nString('EQ_BYPASS'),
-    doc: self.commandRouter.getI18nString('EQ_BYPASS_DOC'),
-    onClick: { type: 'plugin', endpoint: 'audio_interface/fusiondsp', method: 'toggleEqBypass', data: [] }
-  });
 }
 function configureConvfirSection(self, uiconf) {
   // self.logger.info(logPrefix + 'Configuring convfir section');
@@ -1281,7 +1260,7 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.end(data);
       });
-    } else if (req.method === 'OPTIONS' && (req.url === '/api/peq' || req.url === '/api/peq/reset' || req.url === '/api/peq/save' || req.url === '/api/peq/add' || req.url === '/api/peq/remove')) {
+    } else if (req.method === 'OPTIONS' && (req.url === '/api/peq' || req.url === '/api/peq/reset' || req.url === '/api/peq/save' || req.url === '/api/peq/add' || req.url === '/api/peq/remove' || req.url === '/api/peq/mute' || req.url === '/api/peq/bypass')) {
       res.writeHead(204, {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -1294,6 +1273,19 @@ FusionDsp.prototype.startPeqGraphServer = function () {
       var mergedeq = self.config.get('mergedeq') || '';
       var parts = mergedeq.toString().split('|');
       var filters = [];
+      var mode = self.config.get('selectedsp');
+
+      // Load mute state for graphic EQ modes
+      var mutedBands = null;
+      var mutedBandsR = null;
+      if (mode === 'EQ15') {
+        mutedBands = (self.config.get('geq15mute') || '').split(',');
+      } else if (mode === '2XEQ15') {
+        mutedBands = (self.config.get('geq15mute') || '').split(',');
+        mutedBandsR = (self.config.get('x2geq15mute') || '').split(',');
+      } else if (mode === 'EQ3') {
+        mutedBands = (self.config.get('geq3mute') || '').split(',');
+      }
 
       for (var i = 0; i + 3 < parts.length; i += 4) {
         var indexMatch = parts[i].match(/\d+/);
@@ -1303,17 +1295,27 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         var paramStr = parts[i + 3];
         if (!type || type === 'None' || type === 'undefined') continue;
         var params = paramStr.split(',').map(Number);
-        filters.push({
+        var filterObj = {
           index: filterIndex,
           type: type,
           scope: scope,
           params: params
-        });
+        };
+        // Add muted state for graphic EQ modes
+        if (mutedBands) {
+          if (mode === '2XEQ15' && scope === 'R') {
+            filterObj.muted = (mutedBandsR && mutedBandsR[filterIndex] === '1');
+          } else {
+            filterObj.muted = (mutedBands[filterIndex] === '1');
+          }
+        }
+        filters.push(filterObj);
       }
 
       var result = {
         sampleRate: sampleRate,
-        mode: self.config.get('selectedsp'),
+        mode: mode,
+        eqbypass: self.config.get('eqbypass') || false,
         filters: filters
       };
 
@@ -1764,6 +1766,95 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         res.writeHead(200, corsHeaders);
         res.end(JSON.stringify({ ok: true }));
       });
+
+    } else if (req.method === 'POST' && req.url === '/api/peq/mute') {
+      var body = '';
+      req.on('data', function (chunk) { body += chunk; });
+      req.on('end', function () {
+        var corsHeaders = {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        };
+
+        var mode = self.config.get('selectedsp');
+        if (mode !== 'EQ15' && mode !== '2XEQ15' && mode !== 'EQ3') {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Mute is only available in graphic EQ modes' }));
+          return;
+        }
+
+        var payload;
+        try {
+          payload = JSON.parse(body);
+        } catch (e) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Invalid JSON' }));
+          return;
+        }
+
+        var bandIndex = payload.bandIndex;
+        var scope = payload.scope || 'L';
+
+        var muteKey, nbands;
+        if (mode === 'EQ3') {
+          muteKey = 'geq3mute';
+          nbands = 3;
+        } else if (mode === 'EQ15') {
+          muteKey = 'geq15mute';
+          nbands = 15;
+        } else if (mode === '2XEQ15') {
+          muteKey = (scope === 'R') ? 'x2geq15mute' : 'geq15mute';
+          nbands = 15;
+        }
+
+        var defaultMute = Array(nbands).fill('0').join(',');
+        var mutes = (self.config.get(muteKey) || defaultMute).split(',');
+
+        if (bandIndex < 0 || bandIndex >= mutes.length) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Band index out of range' }));
+          return;
+        }
+
+        mutes[bandIndex] = mutes[bandIndex] === '1' ? '0' : '1';
+        self.config.set(muteKey, mutes.join(','));
+
+        self.rebuildGraphicEqMergedeq();
+
+        setTimeout(function () {
+          self.createCamilladspfile();
+          self.refreshUI();
+        }, 100);
+
+        res.writeHead(200, corsHeaders);
+        res.end(JSON.stringify({ ok: true, muted: mutes[bandIndex] === '1' }));
+      });
+
+    } else if (req.method === 'POST' && req.url === '/api/peq/bypass') {
+      var corsHeaders = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      };
+
+      var mode = self.config.get('selectedsp');
+      if (mode !== 'EQ15' && mode !== '2XEQ15' && mode !== 'EQ3') {
+        res.writeHead(400, corsHeaders);
+        res.end(JSON.stringify({ error: 'Bypass is only available in graphic EQ modes' }));
+        return;
+      }
+
+      var bypassed = !self.config.get('eqbypass');
+      self.config.set('eqbypass', bypassed);
+
+      self.rebuildGraphicEqMergedeq();
+
+      setTimeout(function () {
+        self.createCamilladspfile();
+        self.refreshUI();
+      }, 100);
+
+      res.writeHead(200, corsHeaders);
+      res.end(JSON.stringify({ ok: true, bypassed: bypassed }));
 
     } else {
       res.writeHead(404, { 'Content-Type': 'text/plain' });
