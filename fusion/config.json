@@ -68,6 +68,22 @@
         "type": "string",
         "value": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
     },
+    "geq15mute": {
+        "type": "string",
+        "value": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+    },
+    "x2geq15mute": {
+        "type": "string",
+        "value": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+    },
+    "geq3mute": {
+        "type": "string",
+        "value": "0,0,0"
+    },
+    "eqbypass": {
+        "type": "boolean",
+        "value": false
+    },
     "savedgeqx3": {
         "type": "string",
         "value": "0,0,0"

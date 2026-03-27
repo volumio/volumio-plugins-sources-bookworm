@@ -636,13 +636,16 @@ function configureEq15Section(self, uiconf, selectedsp) {
   listeq.forEach((eq, i) => {
     const neq = eqtext.split(',')[i];
     const geq15 = self.config.get(eq).split(',');
+    const muteKey = eq === 'x2geq15' ? 'x2geq15mute' : 'geq15mute';
+    const mutedBands = (self.config.get(muteKey) || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
     const bars = eq15range.map((label, idx) => ({
       min: -10,
       max: 10,
       step: '0.5',
       value: geq15[idx],
       ticksLabels: [label],
-      tooltip: 'show'
+      tooltip: 'show',
+      muted: mutedBands[idx] === '1'
     }));
 
     uiconf.sections[1].content.push({
@@ -655,6 +658,17 @@ function configureEq15Section(self, uiconf, selectedsp) {
       config: { orientation: 'vertical', bars }
     });
     uiconf.sections[1].saveButton.data.push(eq);
+  });
+
+  uiconf.sections[1].content.push({
+    id: 'eqbypass',
+    element: 'button',
+    label: self.config.get('eqbypass')
+      ? self.commandRouter.getI18nString('EQ_ENABLE')
+      : self.commandRouter.getI18nString('EQ_BYPASS'),
+    doc: self.commandRouter.getI18nString('EQ_BYPASS_DOC'),
+    onClick: { type: 'plugin', endpoint: 'audio_interface/fusiondsp', method: 'toggleEqBypass', data: [] },
+    visibleIf: { field: 'showeq', value: true }
   });
 
   uiconf.sections[1].content.push({
@@ -685,10 +699,11 @@ function configureEq3Section(self, uiconf) {
   for (let i = 2; i <= 10; i++) uiconf.sections[i].hidden = true;
 
   const geq3 = self.config.get('geq3').split(',');
+  const mutedBands = (self.config.get('geq3mute') || '0,0,0').split(',');
   const bars = [
-    { min: -10, max: 10, step: '0.5', value: geq3[0], ticksLabels: [self.commandRouter.getI18nString('EQ3_LOW')], tooltip: 'show' },
-    { min: -10, max: 10, step: '0.5', value: geq3[1], ticksLabels: [self.commandRouter.getI18nString('EQ3_MID')], tooltip: 'show' },
-    { min: -10, max: 10, step: '0.5', value: geq3[2], ticksLabels: [self.commandRouter.getI18nString('EQ3_HIGH')], tooltip: 'show' }
+    { min: -10, max: 10, step: '0.5', value: geq3[0], ticksLabels: [self.commandRouter.getI18nString('EQ3_LOW')], tooltip: 'show', muted: mutedBands[0] === '1' },
+    { min: -10, max: 10, step: '0.5', value: geq3[1], ticksLabels: [self.commandRouter.getI18nString('EQ3_MID')], tooltip: 'show', muted: mutedBands[1] === '1' },
+    { min: -10, max: 10, step: '0.5', value: geq3[2], ticksLabels: [self.commandRouter.getI18nString('EQ3_HIGH')], tooltip: 'show', muted: mutedBands[2] === '1' }
   ];
 
   uiconf.sections[1].content.push({
@@ -700,6 +715,16 @@ function configureEq3Section(self, uiconf) {
     config: { orientation: 'vertical', bars }
   });
   uiconf.sections[1].saveButton.data.push('geq3');
+
+  uiconf.sections[1].content.push({
+    id: 'eqbypass',
+    element: 'button',
+    label: self.config.get('eqbypass')
+      ? self.commandRouter.getI18nString('EQ_ENABLE')
+      : self.commandRouter.getI18nString('EQ_BYPASS'),
+    doc: self.commandRouter.getI18nString('EQ_BYPASS_DOC'),
+    onClick: { type: 'plugin', endpoint: 'audio_interface/fusiondsp', method: 'toggleEqBypass', data: [] }
+  });
 }
 function configureConvfirSection(self, uiconf) {
   // self.logger.info(logPrefix + 'Configuring convfir section');
@@ -1858,11 +1883,14 @@ FusionDsp.prototype.reseteq = function () {
   const defaultMergedEQ15 = "Eq0|Peaking|L+R|25,0,1.85|Eq1|Peaking|L+R|40,0,1.85|Eq2|Peaking|L+R|63,0,1.85|Eq3|Peaking|L+R|100,0,1.85|Eq4|Peaking|L+R|160,0,1.85|Eq5|Peaking|L+R|250,0,1.85|Eq6|Peaking|L+R|400,0,1.85|Eq7|Peaking|L+R|630,0,1.85|Eq8|Peaking|L+R|1000,0,1.85|Eq9|Peaking|L+R|1600,0,1.85|Eq10|Peaking|L+R|2500,0,1.85|Eq11|Peaking|L+R|4000,0,1.85|Eq12|Peaking|L+R|6300,0,1.85|Eq13|Peaking|L+R|10000,0,1.85|Eq14|Peaking|L+R|16000,0,1.85";
   const defaultMerged2XEQ15 = "Eq0|Peaking|L|25,0,1.85|Eq1|Peaking|L|40,0,1.85|Eq2|Peaking|L|63,0,1.85|Eq3|Peaking|L|100,0,1.85|Eq4|Peaking|L|160,0,1.85|Eq5|Peaking|L|250,0,1.85|Eq6|Peaking|L|400,0,1.85|Eq7|Peaking|L|630,0,1.85|Eq8|Peaking|L|1000,0,1.85|Eq9|Peaking|L|1600,0,1.85|Eq10|Peaking|L|2500,0,1.85|Eq11|Peaking|L|4000,0,1.85|Eq12|Peaking|L|6300,0,1.85|Eq13|Peaking|L|10000,0,1.85|Eq14|Peaking|L|16000,0,1.85|undefinedEq0|Peaking|R|25,0,1.85|Eq1|Peaking|R|40,0,1.85|Eq2|Peaking|R|63,0,1.85|Eq3|Peaking|R|100,0,1.85|Eq4|Peaking|R|160,0,1.85|Eq5|Peaking|R|250,0,1.85|Eq6|Peaking|R|400,0,1.85|Eq7|Peaking|R|630,0,1.85|Eq8|Peaking|R|1000,0,1.85|Eq9|Peaking|R|1600,0,1.85|Eq10|Peaking|R|2500,0,1.85|Eq11|Peaking|R|4000,0,1.85|Eq12|Peaking|R|6300,0,1.85|Eq13|Peaking|R|10000,0,1.85|Eq14|Peaking|R|16000,0,1.85";
 
+  self.config.set('eqbypass', false);
+
   if (selectedsp === 'EQ15') {
     self.config.set('usethispreset', 'no preset used');
     self.config.set(`${selectedsp}preset`, 'no preset used');
     self.config.set("geq15", defaultEQ15);
     self.config.set("savedgeq15", defaultEQ15);
+    self.config.set("geq15mute", defaultEQ15);
     self.config.set('nbreq', 15);
     self.config.set('mergedeq', defaultMergedEQ15);
     self.config.set('savedmergedgeq15', defaultMergedEQ15);
@@ -1871,6 +1899,8 @@ FusionDsp.prototype.reseteq = function () {
     self.config.set('usethispreset', 'no preset used');
     self.config.set("x2geq15", defaultEQ15);
     self.config.set("geq15", defaultEQ15);
+    self.config.set("geq15mute", defaultEQ15);
+    self.config.set("x2geq15mute", defaultEQ15);
     self.config.set('nbreq', 30);
     self.config.set('mergedeq', defaultMerged2XEQ15);
     self.config.set('savedmergedeqx2geq15', defaultMerged2XEQ15);
@@ -1885,6 +1915,105 @@ FusionDsp.prototype.reseteq = function () {
   self.refreshUI();
 };
 
+
+FusionDsp.prototype.toggleMuteBand = function (data) {
+  const self = this;
+  const selectedsp = self.config.get('selectedsp');
+  const bandIndex = data.bandIndex;
+  const channel = data.channel || 'L'; // 'L' or 'R', only relevant for 2XEQ15
+
+  let muteKey, gainsKey, nbands;
+  if (selectedsp === 'EQ3') {
+    muteKey = 'geq3mute';
+    gainsKey = 'geq3';
+    nbands = 3;
+  } else if (selectedsp === 'EQ15') {
+    muteKey = 'geq15mute';
+    gainsKey = 'geq15';
+    nbands = 15;
+  } else if (selectedsp === '2XEQ15') {
+    muteKey = channel === 'R' ? 'x2geq15mute' : 'geq15mute';
+    gainsKey = channel === 'R' ? 'x2geq15' : 'geq15';
+    nbands = 15;
+  } else {
+    return;
+  }
+
+  const defaultMute = Array(nbands).fill('0').join(',');
+  const mutes = (self.config.get(muteKey) || defaultMute).split(',');
+  if (bandIndex < 0 || bandIndex >= mutes.length) return;
+
+  mutes[bandIndex] = mutes[bandIndex] === '1' ? '0' : '1';
+  self.config.set(muteKey, mutes.join(','));
+
+  // Rebuild mergedeq from stored gains + updated mute state
+  self.rebuildGraphicEqMergedeq();
+
+  setTimeout(function () {
+    self.createCamilladspfile();
+  }, 100);
+  self.refreshUI();
+};
+
+FusionDsp.prototype.toggleEqBypass = function () {
+  const self = this;
+  const bypassed = !self.config.get('eqbypass');
+  self.config.set('eqbypass', bypassed);
+
+  self.rebuildGraphicEqMergedeq();
+
+  setTimeout(function () {
+    self.createCamilladspfile();
+  }, 100);
+  self.refreshUI();
+};
+
+FusionDsp.prototype.rebuildGraphicEqMergedeq = function () {
+  const self = this;
+  const selectedsp = self.config.get('selectedsp');
+  const eqbypass = self.config.get('eqbypass');
+  let test = '';
+
+  if (selectedsp === 'EQ3') {
+    const geq3 = self.config.get('geq3').split(',');
+    const mutes = (self.config.get('geq3mute') || '0,0,0').split(',');
+    for (let o = 0; o < geq3.length; o++) {
+      let eqval = (eqbypass || mutes[o] === '1') ? 0 : geq3[o];
+      test += ('Eq' + o + '|' + eq3type[o] + '|L+R|' + eq3range[o] + ',' + eqval + ',' + coefQ3[o] + '|');
+    }
+    self.config.set('mergedeq', test);
+    self.config.set('savedmergedgeqx3', test);
+
+  } else if (selectedsp === 'EQ15') {
+    const geq15 = self.config.get('geq15').split(',');
+    const mutes = (self.config.get('geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
+    for (let o = 0; o < geq15.length; o++) {
+      let eqval = (eqbypass || mutes[o] === '1') ? 0 : geq15[o];
+      test += ('Eq' + o + '|Peaking|L+R|' + eq15range[o] + ',' + eqval + ',' + coefQ[o] + '|');
+    }
+    self.config.set('mergedeq', test);
+    self.config.set('savedmergedgeq15', test);
+
+  } else if (selectedsp === '2XEQ15') {
+    const geq15 = self.config.get('geq15').split(',');
+    const x2geq15 = self.config.get('x2geq15').split(',');
+    const lmutes = (self.config.get('geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
+    const rmutes = (self.config.get('x2geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
+    let ltest = '';
+    let rtest = '';
+    for (let o = 0; o < geq15.length; o++) {
+      let eqval = (eqbypass || lmutes[o] === '1') ? 0 : geq15[o];
+      ltest += ('Eq' + o + '|Peaking|L|' + eq15range[o] + ',' + eqval + ',' + coefQ[o] + '|');
+    }
+    for (let v = 0; v < x2geq15.length; v++) {
+      let eqval = (eqbypass || rmutes[v] === '1') ? 0 : x2geq15[v];
+      rtest += ('Eq' + v + '|Peaking|R|' + eq15range[v] + ',' + eqval + ',' + coefQ[v] + '|');
+    }
+    test = ltest + rtest;
+    self.config.set('mergedeq', test);
+    self.config.set('savedmergedeqx2geq15', test);
+  }
+};
 
 FusionDsp.prototype.moresettings = function () {
   const self = this;
@@ -3970,16 +4099,13 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
     let geq3 = (data['geq3'])
     self.config.set('geq3', geq3);
 
+    const eqbypass = self.config.get('eqbypass');
+    const geq3mute = (self.config.get('geq3mute') || '0,0,0').split(',');
     eqr = geq3
     //self.logger.info(logPrefix + ' setting EQ3 values ' + eqr)
     for (let o in eqr) {
-      // for(let q in coefQ3){
-      //   let qa =coefQ3[q]
-      // let ceq3type = eq3type[o]
-
-      let eqval = geq3[o]
+      let eqval = (eqbypass || geq3mute[o] === '1') ? 0 : geq3[o];
       test += ('Eq' + o + '|' + eq3type[o] + '|L+R|' + eq3range[o] + ',' + eqval + ',' + coefQ3[o] + '|');
-      // }
     }
     self.config.set('savedmergedgeqx3', test)
     self.config.set('savedgeq3', self.config.get('geq3'))
@@ -3989,10 +4115,12 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
     self.config.set('geq15', geq15);
     self.config.set('x2geq15', geq15);
 
+    const eqbypass = self.config.get('eqbypass');
+    const geq15mute = (self.config.get('geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
     eqr = geq15
     //self.logger.info(logPrefix + ' setting EQ15 values ' + eqr)
     for (let o in eqr) {
-      let eqval = geq15[o]
+      let eqval = (eqbypass || geq15mute[o] === '1') ? 0 : geq15[o];
       test += ('Eq' + o + '|Peaking|L+R|' + eq15range[o] + ',' + eqval + ',' + coefQ[o] + '|');
     }
     self.config.set('savedmergedgeq15', test)
@@ -4004,12 +4132,15 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
     let ltest, rtest
     self.config.set('geq15', geq15);
     self.config.set('x2geq15', x2geq15);
+    const eqbypass = self.config.get('eqbypass');
+    const geq15mute = (self.config.get('geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
+    const x2geq15mute = (self.config.get('x2geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
     for (let o in geq15) {
-      var eqval = geq15[o]
+      var eqval = (eqbypass || geq15mute[o] === '1') ? 0 : geq15[o];
       ltest += ('Eq' + o + '|Peaking|L|' + eq15range[o] + ',' + eqval + ',' + coefQ[o] + '|');
     }
     for (let v in x2geq15) {
-      var eqval = x2geq15[v]
+      var eqval = (eqbypass || x2geq15mute[v] === '1') ? 0 : x2geq15[v];
       rtest += ('Eq' + v + '|Peaking|R|' + eq15range[v] + ',' + eqval + ',' + coefQ[v] + '|');
     }
     test = ltest + rtest
@@ -4599,6 +4730,10 @@ FusionDsp.prototype.usethispreset = function (data) {
       if ((selectedsp == 'EQ15') || (selectedsp == '2XEQ15')) {
         self.config.set('geq15', eqrx)
         self.config.set('x2geq15', x2eqrx);
+        // Reset mute state when loading a preset
+        const defaultMute15 = '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0';
+        self.config.set('geq15mute', defaultMute15);
+        self.config.set('x2geq15mute', defaultMute15);
 
       } else if (selectedsp == 'PEQ') {
         var nbreqc = value.spreset;
