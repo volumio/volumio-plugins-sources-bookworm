@@ -6,6 +6,9 @@ Credit goes to the [YouTube.js](https://github.com/LuanRT/YouTube.js) project. T
 
 ## Changelog
 
+2.5.2
+- Fix "Active profile" setting not applied.
+
 2.5.1
 - No changes. Version increment to work around Volumio plugin backend issue.
 
