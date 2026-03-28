@@ -9,7 +9,12 @@ export async function getPage(uri: string) {
       if (!view.params.channel) {
         throw Error(`Invalid URI: ${uri}`);
       }
-      return await getEpisodesPage(view.params.channel, view.params.p && !isNaN(Number(view.params.p)) ? Number(view.params.p) : undefined);
+      return await getEpisodesPage(
+        view.params.channel,
+        view.params.p && !isNaN(Number(view.params.p)) ?
+          Number(view.params.p)
+        : undefined
+      );
     case 'root':
       return await getChannelsPage();
     default:

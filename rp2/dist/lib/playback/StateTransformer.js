@@ -52,12 +52,13 @@ class StateTransformer {
                 undefined,
             seek: positionInTrack,
             duration: track.duration ? track.duration / 1000 : 0,
-            trackType: track.format ?? state.trackType,
+            codec: track.format ?? state.trackType,
             bitrate: track.bitrate ?? state.bitrate,
             stream: !track.duration,
             random: false,
             repeat: false
         };
+        transformed.codec = track.format ?? state.trackType;
         if (transformed.bitrate) {
             // The following ensures the bitrate will be shown.
             transformed.samplerate = transformed.bitrate;
@@ -65,12 +66,11 @@ class StateTransformer {
             transformed.bitdepth = undefined;
         }
         if (RP2Context_1.default.getConfigValue('showChannel')) {
-            if (!transformed.samplerate) {
-                transformed.samplerate = channel.title;
-            }
-            else {
-                transformed.samplerate = `${transformed.samplerate} - ${channel.title}`;
-            }
+            const separator = transformed.samplerate ? ' - ' : '';
+            transformed.trackType = `${channel.title}${separator}`;
+        }
+        else {
+            transformed.trackType = undefined;
         }
         return transformed;
     }

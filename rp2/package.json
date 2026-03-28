@@ -1,6 +1,6 @@
 {
   "name": "rp2",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Play Radio Paradise channels with the ability to pause, seek and skip tracks.",
   "main": "./dist/index.js",
   "scripts": {
@@ -53,13 +53,13 @@
     "winston": "^3.8.2"
   },
   "dependencies": {
-    "@patrickkfkan/rp.js": "^2.0.0",
+    "@patrickkfkan/rp.js": "^2.0.1",
     "html-to-text": "^9.0.5",
     "kew": "^0.7.0",
     "lru-cache": "^11.2.6",
     "now-playing-common": "github:patrickkfkan/volumio-now-playing-common#v0.3.4",
     "string-format": "^2.0.0",
     "v-conf": "^1.4.2",
-    "volumio-ext-players": "^1.1.0"
+    "volumio-ext-players": "^1.2.0"
   }
 }

@@ -141,7 +141,7 @@ class RP2Context {
                 this.getConfigValue('sessionData') || undefined
                 : undefined;
             const player = __classPrivateFieldGet(this, _RP2Context_instances, "m", _RP2Context_getPlayer).call(this);
-            rpjs = new rp_js_1.RadioParadise({
+            const _rpjs = (rpjs = new rp_js_1.RadioParadise({
                 player,
                 quality: this.getConfigValue('audioQuality'),
                 logger: {
@@ -151,11 +151,16 @@ class RP2Context {
                     error: (msg) => logger.error(`[rp2] ${msg}`)
                 },
                 sessionData
-            });
+            }));
             rpjs.on('status', (status) => {
                 this.getStateTransformer().setRpjsStatus(status);
                 player.pushState();
             });
+            player.onUnsetVolatile = () => {
+                _rpjs.stop().catch((error) => {
+                    this.getLogger().error(this.getErrorMessage('Error stopping rpjs on unset volatile:', error));
+                });
+            };
             this.set(STORE_KEYS['rp.js'], rpjs);
         }
         return rpjs;

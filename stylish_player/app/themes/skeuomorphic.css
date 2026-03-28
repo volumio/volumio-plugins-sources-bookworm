@@ -1,0 +1,5613 @@
+@charset "UTF-8";
+@import url("https://fonts.googleapis.com/css2?family=Michroma&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto+Mono:wght@400;500&display=swap");
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Orange) ────────────────────────────────────────────── */
+  --color-primary: #ff4500;
+  --color-primary-light: #ff7043;
+  --color-primary-dark: #d84315;
+  --color-primary-deep: #bf360c;
+  /* ─── Neutrals (Grays) ────────────────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #050505;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #4d4d4d;
+  --color-gray-500: #555555;
+  --color-gray-400: #666666;
+  --color-gray-300: #888888;
+  --color-gray-250: #999999;
+  --color-gray-200: #aaaaaa;
+  --color-gray-150: #bbbbbb;
+  --color-gray-100: #cccccc;
+  --color-gray-075: #d0d0d0;
+  --color-gray-050: #e0e0e0;
+  --color-gray-025: #f0f0f0;
+  --color-gray-010: #f5f5f5;
+  --color-white: #ffffff;
+  /* ─── Warm Neutrals (Browns/Taupes) ───────────────────────────────── */
+  --color-taupe-dark: #55433c;
+  --color-taupe-light: #bda69e;
+  --color-taupe-medium: #8a7166;
+  /* ─── Secondary (Neutral/Gray) ────────────────────────────────────── */
+  --color-secondary: #666666;
+  --color-secondary-light: #888888;
+  --color-secondary-dark: #444444;
+  /* ─── Success/Green ────────────────────────────────────────────────── */
+  --color-success: #00a300;
+  --color-success-dark: #006d00;
+  --color-success-light: #33b833;
+  /* ─── Warning/Amber ────────────────────────────────────────────────── */
+  --color-warning: #ff9800;
+  --color-warning-dark: #f57c00;
+  --color-warning-light: #ffb74d;
+  /* ─── Danger/Alert (Red) ──────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #b71c1c;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #552222;
+  /* ─── Info/Blue ────────────────────────────────────────────────────── */
+  --color-info: #2196f3;
+  --color-info-dark: #1976d2;
+  --color-info-light: #64b5f6;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-050);
+  --text-secondary: var(--color-gray-300);
+  --text-light: var(--color-white);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success-dark);
+  --text-warning: var(--color-warning-dark);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info-dark);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: var(--color-gray-900);
+  --panel-bg-dark: var(--color-gray-950);
+  --device-surface: var(--color-gray-100);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: #202020;
+  --btn-bg-light: #e6e6e6;
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 163, 0, 0.12);
+  --alert-bg-warning: rgba(255, 152, 0, 0.12);
+  --alert-bg-danger: rgba(255, 51, 51, 0.12);
+  --alert-bg-info: rgba(33, 150, 243, 0.12);
+  --alert-border-success: var(--color-success);
+  --alert-border-warning: var(--color-warning);
+  --alert-border-danger: var(--color-danger);
+  --alert-border-info: var(--color-info);
+  /* ─── UI Components ────────────────────────────────────────────────── */
+  --list-item-bg: #252525;
+  --list-item-bg-hover: var(--color-gray-750);
+  --border-dark: var(--color-gray-900);
+  --border-light: var(--color-gray-300);
+  --border-warm: var(--color-taupe-medium);
+  --border-primary: var(--color-primary);
+  --border-secondary: var(--color-secondary);
+  --border-success: var(--color-success);
+  --border-warning: var(--color-warning);
+  --border-danger: var(--color-danger);
+  --border-info: var(--color-info);
+  /* ─── Status & Indicators ──────────────────────────────────────────── */
+  --led-on: var(--color-danger);
+  --led-off: var(--color-danger-muted);
+  --indicator-success: var(--color-success);
+  --indicator-warning: var(--color-warning);
+  --indicator-danger: var(--color-danger);
+  --indicator-info: var(--color-info);
+  --indicator-error: var(--color-danger);
+  /* ─── Gradients ────────────────────────────────────────────────────── */
+  --grad-primary: linear-gradient(
+      90deg,
+      var(--color-primary-light),
+      var(--color-primary-dark)
+  );
+  --grad-metallic: linear-gradient(180deg, var(--color-gray-050), #bdbdbd);
+  --grad-warm: linear-gradient(
+      135deg,
+      var(--color-taupe-light),
+      var(--color-taupe-dark)
+  );
+  /* ─── Button Gradients ─────────────────────────────────────────────── */
+  --btn-black-top: var(--color-gray-700);
+  --btn-black-btm: var(--color-gray-800);
+  --btn-white-top: #eaeaea;
+  --btn-white-btm: #cdcdcd;
+  --btn-primary-top: #ff6622;
+  --btn-primary-btm: #e64a19;
+  --btn-secondary-top: var(--color-secondary-light);
+  --btn-secondary-btm: var(--color-secondary-dark);
+  --btn-success-top: var(--color-success-light);
+  --btn-success-btm: var(--color-success-dark);
+  --btn-warning-top: var(--color-warning-light);
+  --btn-warning-btm: var(--color-warning-dark);
+  --btn-danger-top: var(--color-danger-light);
+  --btn-danger-btm: var(--color-danger-dark);
+  --btn-info-top: var(--color-info-light);
+  --btn-info-btm: var(--color-info-dark);
+  /* ═══════════════════════════════════════════════════════════════════════
+     SHADOW & HIGHLIGHT OVERLAYS
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Shadow Overlays (Black with alpha) ──────────────────────────── */
+  --shadow-02: rgba(0, 0, 0, 0.02);
+  --shadow-03: rgba(0, 0, 0, 0.03);
+  --shadow-05: rgba(0, 0, 0, 0.05);
+  --shadow-10: rgba(0, 0, 0, 0.1);
+  --shadow-15: rgba(0, 0, 0, 0.15);
+  --shadow-20: rgba(0, 0, 0, 0.2);
+  --shadow-30: rgba(0, 0, 0, 0.3);
+  --shadow-40: rgba(0, 0, 0, 0.4);
+  --shadow-50: rgba(0, 0, 0, 0.5);
+  --shadow-60: rgba(0, 0, 0, 0.6);
+  --shadow-80: rgba(0, 0, 0, 0.8);
+  --shadow-90: rgba(0, 0, 0, 0.9);
+  /* ─── Highlight Overlays (White with alpha) ───────────────────────── */
+  --highlight-03: rgba(255, 255, 255, 0.03);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
+  --highlight-60: rgba(255, 255, 255, 0.6);
+  /* ─── Glow Effects ─────────────────────────────────────────────────── */
+  --glow-primary: rgba(255, 69, 0, 0.4);
+  --glow-success: rgba(0, 163, 0, 0.4);
+  --glow-warning: rgba(255, 152, 0, 0.4);
+  --glow-danger: rgba(255, 51, 51, 0.4);
+  --glow-info: rgba(33, 150, 243, 0.4);
+  /* ═══════════════════════════════════════════════════════════════════════
+     TYPOGRAPHY
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Font Families ────────────────────────────────────────────────── */
+  --font-body: 'Roboto', sans-serif;
+  --font-label: 'Roboto', sans-serif;
+  --font-tech: 'Michroma', sans-serif;
+  --font-display: 'Michroma', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+  /* ─── Type Scale ───────────────────────────────────────────────────── */
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  /* ─── Line Heights ─────────────────────────────────────────────────── */
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  /* ─── Letter Spacing ───────────────────────────────────────────────── */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+  /* ═══════════════════════════════════════════════════════════════════════
+     BACKWARD COMPATIBILITY ALIASES
+     (Legacy variable names → New semantic names)
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Legacy Orange ────────────────────────────────────────────────── */
+  --color-orange-vivid: var(--color-primary);
+  --color-orange-light: var(--color-primary-light);
+  --color-orange-dark: var(--color-primary-dark);
+  --color-orange-deep: var(--color-primary-deep);
+  /* ─── Legacy Red/Alert ─────────────────────────────────────────────── */
+  --color-red-vivid: var(--color-danger);
+  --color-red-deep: var(--color-danger-dark);
+  --color-red-dark: var(--color-danger-muted);
+  --color-alert: var(--color-danger);
+  --color-alert-dark: var(--color-danger-dark);
+  --color-alert-muted: var(--color-danger-muted);
+  /* ─── Legacy Text ──────────────────────────────────────────────────── */
+  --text-dark: var(--text-primary);
+  --text-dim: var(--text-secondary);
+  --text-orange: var(--text-accent);
+  /* ─── Legacy Buttons ───────────────────────────────────────────────── */
+  --btn-bg-orange: var(--btn-bg-primary);
+  --btn-orange-top: var(--btn-primary-top);
+  --btn-orange-btm: var(--btn-primary-btm);
+  /* ─── Legacy Indicators ────────────────────────────────────────────── */
+  --led-red-on: var(--led-on);
+  --led-red-off: var(--led-off);
+  /* ─── Legacy Gradients ─────────────────────────────────────────────── */
+  --grad-orange-vivid: var(--grad-primary);
+  --glow-orange-40: var(--glow-primary);
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Orange) ────────────────────────────────────────────── */
+  --color-primary: #ff4500;
+  --color-primary-light: #ff7043;
+  --color-primary-dark: #d84315;
+  --color-primary-deep: #bf360c;
+  /* ─── Neutrals (Grays) ────────────────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #050505;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #4d4d4d;
+  --color-gray-500: #555555;
+  --color-gray-400: #666666;
+  --color-gray-300: #888888;
+  --color-gray-250: #999999;
+  --color-gray-200: #aaaaaa;
+  --color-gray-150: #bbbbbb;
+  --color-gray-100: #cccccc;
+  --color-gray-075: #d0d0d0;
+  --color-gray-050: #e0e0e0;
+  --color-gray-025: #f0f0f0;
+  --color-gray-010: #f5f5f5;
+  --color-white: #ffffff;
+  /* ─── Warm Neutrals (Browns/Taupes) ───────────────────────────────── */
+  --color-taupe-dark: #55433c;
+  --color-taupe-light: #bda69e;
+  --color-taupe-medium: #8a7166;
+  /* ─── Secondary (Neutral/Gray) ────────────────────────────────────── */
+  --color-secondary: #666666;
+  --color-secondary-light: #888888;
+  --color-secondary-dark: #444444;
+  /* ─── Success/Green ────────────────────────────────────────────────── */
+  --color-success: #00a300;
+  --color-success-dark: #006d00;
+  --color-success-light: #33b833;
+  /* ─── Warning/Amber ────────────────────────────────────────────────── */
+  --color-warning: #ff9800;
+  --color-warning-dark: #f57c00;
+  --color-warning-light: #ffb74d;
+  /* ─── Danger/Alert (Red) ──────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #b71c1c;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #552222;
+  /* ─── Info/Blue ────────────────────────────────────────────────────── */
+  --color-info: #2196f3;
+  --color-info-dark: #1976d2;
+  --color-info-light: #64b5f6;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-050);
+  --text-secondary: var(--color-gray-300);
+  --text-light: var(--color-white);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success-dark);
+  --text-warning: var(--color-warning-dark);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info-dark);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: var(--color-gray-900);
+  --panel-bg-dark: var(--color-gray-950);
+  --device-surface: var(--color-gray-100);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: #202020;
+  --btn-bg-light: #e6e6e6;
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 163, 0, 0.12);
+  --alert-bg-warning: rgba(255, 152, 0, 0.12);
+  --alert-bg-danger: rgba(255, 51, 51, 0.12);
+  --alert-bg-info: rgba(33, 150, 243, 0.12);
+  --alert-border-success: var(--color-success);
+  --alert-border-warning: var(--color-warning);
+  --alert-border-danger: var(--color-danger);
+  --alert-border-info: var(--color-info);
+  /* ─── UI Components ────────────────────────────────────────────────── */
+  --list-item-bg: #252525;
+  --list-item-bg-hover: var(--color-gray-750);
+  --border-dark: var(--color-gray-900);
+  --border-light: var(--color-gray-300);
+  --border-warm: var(--color-taupe-medium);
+  --border-primary: var(--color-primary);
+  --border-secondary: var(--color-secondary);
+  --border-success: var(--color-success);
+  --border-warning: var(--color-warning);
+  --border-danger: var(--color-danger);
+  --border-info: var(--color-info);
+  /* ─── Status & Indicators ──────────────────────────────────────────── */
+  --led-on: var(--color-danger);
+  --led-off: var(--color-danger-muted);
+  --indicator-success: var(--color-success);
+  --indicator-warning: var(--color-warning);
+  --indicator-danger: var(--color-danger);
+  --indicator-info: var(--color-info);
+  --indicator-error: var(--color-danger);
+  /* ─── Gradients ────────────────────────────────────────────────────── */
+  --grad-primary: linear-gradient(
+      90deg,
+      var(--color-primary-light),
+      var(--color-primary-dark)
+  );
+  --grad-metallic: linear-gradient(180deg, var(--color-gray-050), #bdbdbd);
+  --grad-warm: linear-gradient(
+      135deg,
+      var(--color-taupe-light),
+      var(--color-taupe-dark)
+  );
+  /* ─── Button Gradients ─────────────────────────────────────────────── */
+  --btn-black-top: var(--color-gray-700);
+  --btn-black-btm: var(--color-gray-800);
+  --btn-white-top: #eaeaea;
+  --btn-white-btm: #cdcdcd;
+  --btn-primary-top: #ff6622;
+  --btn-primary-btm: #e64a19;
+  --btn-secondary-top: var(--color-secondary-light);
+  --btn-secondary-btm: var(--color-secondary-dark);
+  --btn-success-top: var(--color-success-light);
+  --btn-success-btm: var(--color-success-dark);
+  --btn-warning-top: var(--color-warning-light);
+  --btn-warning-btm: var(--color-warning-dark);
+  --btn-danger-top: var(--color-danger-light);
+  --btn-danger-btm: var(--color-danger-dark);
+  --btn-info-top: var(--color-info-light);
+  --btn-info-btm: var(--color-info-dark);
+  /* ═══════════════════════════════════════════════════════════════════════
+     SHADOW & HIGHLIGHT OVERLAYS
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Shadow Overlays (Black with alpha) ──────────────────────────── */
+  --shadow-02: rgba(0, 0, 0, 0.02);
+  --shadow-03: rgba(0, 0, 0, 0.03);
+  --shadow-05: rgba(0, 0, 0, 0.05);
+  --shadow-10: rgba(0, 0, 0, 0.1);
+  --shadow-15: rgba(0, 0, 0, 0.15);
+  --shadow-20: rgba(0, 0, 0, 0.2);
+  --shadow-30: rgba(0, 0, 0, 0.3);
+  --shadow-40: rgba(0, 0, 0, 0.4);
+  --shadow-50: rgba(0, 0, 0, 0.5);
+  --shadow-60: rgba(0, 0, 0, 0.6);
+  --shadow-80: rgba(0, 0, 0, 0.8);
+  --shadow-90: rgba(0, 0, 0, 0.9);
+  /* ─── Highlight Overlays (White with alpha) ───────────────────────── */
+  --highlight-03: rgba(255, 255, 255, 0.03);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
+  --highlight-60: rgba(255, 255, 255, 0.6);
+  /* ─── Glow Effects ─────────────────────────────────────────────────── */
+  --glow-primary: rgba(255, 69, 0, 0.4);
+  --glow-success: rgba(0, 163, 0, 0.4);
+  --glow-warning: rgba(255, 152, 0, 0.4);
+  --glow-danger: rgba(255, 51, 51, 0.4);
+  --glow-info: rgba(33, 150, 243, 0.4);
+  /* ═══════════════════════════════════════════════════════════════════════
+     TYPOGRAPHY
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Font Families ────────────────────────────────────────────────── */
+  --font-body: 'Roboto', sans-serif;
+  --font-label: 'Roboto', sans-serif;
+  --font-tech: 'Michroma', sans-serif;
+  --font-display: 'Michroma', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+  /* ─── Type Scale ───────────────────────────────────────────────────── */
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  /* ─── Line Heights ─────────────────────────────────────────────────── */
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  /* ─── Letter Spacing ───────────────────────────────────────────────── */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+  /* ═══════════════════════════════════════════════════════════════════════
+     BACKWARD COMPATIBILITY ALIASES
+     (Legacy variable names → New semantic names)
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Legacy Orange ────────────────────────────────────────────────── */
+  --color-orange-vivid: var(--color-primary);
+  --color-orange-light: var(--color-primary-light);
+  --color-orange-dark: var(--color-primary-dark);
+  --color-orange-deep: var(--color-primary-deep);
+  /* ─── Legacy Red/Alert ─────────────────────────────────────────────── */
+  --color-red-vivid: var(--color-danger);
+  --color-red-deep: var(--color-danger-dark);
+  --color-red-dark: var(--color-danger-muted);
+  --color-alert: var(--color-danger);
+  --color-alert-dark: var(--color-danger-dark);
+  --color-alert-muted: var(--color-danger-muted);
+  /* ─── Legacy Text ──────────────────────────────────────────────────── */
+  --text-dark: var(--text-primary);
+  --text-dim: var(--text-secondary);
+  --text-orange: var(--text-accent);
+  /* ─── Legacy Buttons ───────────────────────────────────────────────── */
+  --btn-bg-orange: var(--btn-bg-primary);
+  --btn-orange-top: var(--btn-primary-top);
+  --btn-orange-btm: var(--btn-primary-btm);
+  /* ─── Legacy Indicators ────────────────────────────────────────────── */
+  --led-red-on: var(--led-on);
+  --led-red-off: var(--led-off);
+  /* ─── Legacy Gradients ─────────────────────────────────────────────── */
+  --grad-orange-vivid: var(--grad-primary);
+  --glow-orange-40: var(--glow-primary);
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  font-weight: 400;
+  line-height: var(--leading-normal);
+  color: var(--text-dark);
+  background-color: var(--bg-color);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-dark);
+  margin-top: 0;
+  margin-bottom: 0.5em;
+  text-shadow: 0 1px 0 var(--highlight-50), 0 -1px 0 var(--shadow-20);
+}
+
+h1 {
+  font-size: var(--text-4xl);
+  letter-spacing: var(--tracking-widest);
+}
+
+h2 {
+  font-size: var(--text-3xl);
+  letter-spacing: var(--tracking-wider);
+}
+
+h3 {
+  font-size: var(--text-2xl);
+  letter-spacing: var(--tracking-wider);
+}
+
+h4 {
+  font-size: var(--text-xl);
+}
+
+h5 {
+  font-size: var(--text-lg);
+}
+
+h6 {
+  font-size: var(--text-base);
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
+}
+
+.display-heading {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: 400;
+  color: var(--text-light);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  text-shadow: 0 0 20px var(--glow-orange-40), 0 2px 4px var(--shadow-80);
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  line-height: var(--leading-relaxed);
+}
+
+.lead {
+  font-size: var(--text-lg);
+  font-weight: 300;
+  line-height: var(--leading-relaxed);
+  color: var(--text-dim);
+}
+
+a {
+  color: var(--text-orange);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+a:hover {
+  color: var(--color-orange-light);
+  text-decoration: underline;
+}
+a:active {
+  color: var(--color-orange-dark);
+}
+
+.label-tech {
+  font-family: var(--font-tech);
+  font-size: var(--text-xs);
+  font-weight: 400;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  line-height: var(--leading-tight);
+}
+
+.label-ui {
+  font-family: var(--font-label);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-dark);
+}
+
+.readout {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: 500;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-light);
+  background-color: var(--panel-bg-dark);
+  padding: 0.25em 0.5em;
+  border-radius: 3px;
+  box-shadow: inset 2px 2px 4px var(--shadow-80), inset -1px -1px 2px var(--highlight-05), 0 1px 0 var(--highlight-20);
+}
+
+.readout-orange {
+  color: var(--color-orange-light);
+  text-shadow: 0 0 8px var(--glow-orange-40);
+}
+
+.section-title {
+  font-family: var(--font-tech);
+  font-size: var(--text-base);
+  font-weight: 400;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding-bottom: 0.5em;
+  margin-bottom: 1em;
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: 0 1px 0 var(--highlight-40);
+}
+
+code,
+kbd,
+samp {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-orange-light);
+  background-color: var(--panel-bg-dark);
+  padding: 0.15em 0.4em;
+  border-radius: 2px;
+}
+
+pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-light);
+  background-color: var(--panel-bg-dark);
+  padding: 1rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+  box-shadow: inset 2px 2px 5px var(--shadow-80), 0 1px 0 var(--highlight-10);
+}
+pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+blockquote {
+  margin: 0 0 1rem;
+  padding: 0.75em 1em;
+  border-left: 3px solid var(--color-orange-vivid);
+  background-color: var(--list-item-bg);
+  color: var(--text-light);
+  font-style: italic;
+  box-shadow: inset 1px 0 0 var(--highlight-05);
+}
+
+hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-light), transparent);
+  margin: 1.5rem 0;
+  box-shadow: 0 1px 0 var(--highlight-30);
+}
+
+ul,
+ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+ul li,
+ol li {
+  margin-bottom: 0.25em;
+  line-height: var(--leading-relaxed);
+}
+
+.text-orange {
+  color: var(--text-orange) !important;
+}
+
+.text-light {
+  color: var(--text-light) !important;
+}
+
+.text-dark {
+  color: var(--text-dark) !important;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.text-dim {
+  color: var(--text-dim) !important;
+}
+
+.text-accent {
+  color: var(--color-orange-vivid) !important;
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Orange) ────────────────────────────────────────────── */
+  --color-primary: #ff4500;
+  --color-primary-light: #ff7043;
+  --color-primary-dark: #d84315;
+  --color-primary-deep: #bf360c;
+  /* ─── Neutrals (Grays) ────────────────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #050505;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #4d4d4d;
+  --color-gray-500: #555555;
+  --color-gray-400: #666666;
+  --color-gray-300: #888888;
+  --color-gray-250: #999999;
+  --color-gray-200: #aaaaaa;
+  --color-gray-150: #bbbbbb;
+  --color-gray-100: #cccccc;
+  --color-gray-075: #d0d0d0;
+  --color-gray-050: #e0e0e0;
+  --color-gray-025: #f0f0f0;
+  --color-gray-010: #f5f5f5;
+  --color-white: #ffffff;
+  /* ─── Warm Neutrals (Browns/Taupes) ───────────────────────────────── */
+  --color-taupe-dark: #55433c;
+  --color-taupe-light: #bda69e;
+  --color-taupe-medium: #8a7166;
+  /* ─── Secondary (Neutral/Gray) ────────────────────────────────────── */
+  --color-secondary: #666666;
+  --color-secondary-light: #888888;
+  --color-secondary-dark: #444444;
+  /* ─── Success/Green ────────────────────────────────────────────────── */
+  --color-success: #00a300;
+  --color-success-dark: #006d00;
+  --color-success-light: #33b833;
+  /* ─── Warning/Amber ────────────────────────────────────────────────── */
+  --color-warning: #ff9800;
+  --color-warning-dark: #f57c00;
+  --color-warning-light: #ffb74d;
+  /* ─── Danger/Alert (Red) ──────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #b71c1c;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #552222;
+  /* ─── Info/Blue ────────────────────────────────────────────────────── */
+  --color-info: #2196f3;
+  --color-info-dark: #1976d2;
+  --color-info-light: #64b5f6;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-050);
+  --text-secondary: var(--color-gray-300);
+  --text-light: var(--color-white);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success-dark);
+  --text-warning: var(--color-warning-dark);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info-dark);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: var(--color-gray-900);
+  --panel-bg-dark: var(--color-gray-950);
+  --device-surface: var(--color-gray-100);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: #202020;
+  --btn-bg-light: #e6e6e6;
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 163, 0, 0.12);
+  --alert-bg-warning: rgba(255, 152, 0, 0.12);
+  --alert-bg-danger: rgba(255, 51, 51, 0.12);
+  --alert-bg-info: rgba(33, 150, 243, 0.12);
+  --alert-border-success: var(--color-success);
+  --alert-border-warning: var(--color-warning);
+  --alert-border-danger: var(--color-danger);
+  --alert-border-info: var(--color-info);
+  /* ─── UI Components ────────────────────────────────────────────────── */
+  --list-item-bg: #252525;
+  --list-item-bg-hover: var(--color-gray-750);
+  --border-dark: var(--color-gray-900);
+  --border-light: var(--color-gray-300);
+  --border-warm: var(--color-taupe-medium);
+  --border-primary: var(--color-primary);
+  --border-secondary: var(--color-secondary);
+  --border-success: var(--color-success);
+  --border-warning: var(--color-warning);
+  --border-danger: var(--color-danger);
+  --border-info: var(--color-info);
+  /* ─── Status & Indicators ──────────────────────────────────────────── */
+  --led-on: var(--color-danger);
+  --led-off: var(--color-danger-muted);
+  --indicator-success: var(--color-success);
+  --indicator-warning: var(--color-warning);
+  --indicator-danger: var(--color-danger);
+  --indicator-info: var(--color-info);
+  --indicator-error: var(--color-danger);
+  /* ─── Gradients ────────────────────────────────────────────────────── */
+  --grad-primary: linear-gradient(
+      90deg,
+      var(--color-primary-light),
+      var(--color-primary-dark)
+  );
+  --grad-metallic: linear-gradient(180deg, var(--color-gray-050), #bdbdbd);
+  --grad-warm: linear-gradient(
+      135deg,
+      var(--color-taupe-light),
+      var(--color-taupe-dark)
+  );
+  /* ─── Button Gradients ─────────────────────────────────────────────── */
+  --btn-black-top: var(--color-gray-700);
+  --btn-black-btm: var(--color-gray-800);
+  --btn-white-top: #eaeaea;
+  --btn-white-btm: #cdcdcd;
+  --btn-primary-top: #ff6622;
+  --btn-primary-btm: #e64a19;
+  --btn-secondary-top: var(--color-secondary-light);
+  --btn-secondary-btm: var(--color-secondary-dark);
+  --btn-success-top: var(--color-success-light);
+  --btn-success-btm: var(--color-success-dark);
+  --btn-warning-top: var(--color-warning-light);
+  --btn-warning-btm: var(--color-warning-dark);
+  --btn-danger-top: var(--color-danger-light);
+  --btn-danger-btm: var(--color-danger-dark);
+  --btn-info-top: var(--color-info-light);
+  --btn-info-btm: var(--color-info-dark);
+  /* ═══════════════════════════════════════════════════════════════════════
+     SHADOW & HIGHLIGHT OVERLAYS
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Shadow Overlays (Black with alpha) ──────────────────────────── */
+  --shadow-02: rgba(0, 0, 0, 0.02);
+  --shadow-03: rgba(0, 0, 0, 0.03);
+  --shadow-05: rgba(0, 0, 0, 0.05);
+  --shadow-10: rgba(0, 0, 0, 0.1);
+  --shadow-15: rgba(0, 0, 0, 0.15);
+  --shadow-20: rgba(0, 0, 0, 0.2);
+  --shadow-30: rgba(0, 0, 0, 0.3);
+  --shadow-40: rgba(0, 0, 0, 0.4);
+  --shadow-50: rgba(0, 0, 0, 0.5);
+  --shadow-60: rgba(0, 0, 0, 0.6);
+  --shadow-80: rgba(0, 0, 0, 0.8);
+  --shadow-90: rgba(0, 0, 0, 0.9);
+  /* ─── Highlight Overlays (White with alpha) ───────────────────────── */
+  --highlight-03: rgba(255, 255, 255, 0.03);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
+  --highlight-60: rgba(255, 255, 255, 0.6);
+  /* ─── Glow Effects ─────────────────────────────────────────────────── */
+  --glow-primary: rgba(255, 69, 0, 0.4);
+  --glow-success: rgba(0, 163, 0, 0.4);
+  --glow-warning: rgba(255, 152, 0, 0.4);
+  --glow-danger: rgba(255, 51, 51, 0.4);
+  --glow-info: rgba(33, 150, 243, 0.4);
+  /* ═══════════════════════════════════════════════════════════════════════
+     TYPOGRAPHY
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Font Families ────────────────────────────────────────────────── */
+  --font-body: 'Roboto', sans-serif;
+  --font-label: 'Roboto', sans-serif;
+  --font-tech: 'Michroma', sans-serif;
+  --font-display: 'Michroma', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+  /* ─── Type Scale ───────────────────────────────────────────────────── */
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  /* ─── Line Heights ─────────────────────────────────────────────────── */
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  /* ─── Letter Spacing ───────────────────────────────────────────────── */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+  /* ═══════════════════════════════════════════════════════════════════════
+     BACKWARD COMPATIBILITY ALIASES
+     (Legacy variable names → New semantic names)
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Legacy Orange ────────────────────────────────────────────────── */
+  --color-orange-vivid: var(--color-primary);
+  --color-orange-light: var(--color-primary-light);
+  --color-orange-dark: var(--color-primary-dark);
+  --color-orange-deep: var(--color-primary-deep);
+  /* ─── Legacy Red/Alert ─────────────────────────────────────────────── */
+  --color-red-vivid: var(--color-danger);
+  --color-red-deep: var(--color-danger-dark);
+  --color-red-dark: var(--color-danger-muted);
+  --color-alert: var(--color-danger);
+  --color-alert-dark: var(--color-danger-dark);
+  --color-alert-muted: var(--color-danger-muted);
+  /* ─── Legacy Text ──────────────────────────────────────────────────── */
+  --text-dark: var(--text-primary);
+  --text-dim: var(--text-secondary);
+  --text-orange: var(--text-accent);
+  /* ─── Legacy Buttons ───────────────────────────────────────────────── */
+  --btn-bg-orange: var(--btn-bg-primary);
+  --btn-orange-top: var(--btn-primary-top);
+  --btn-orange-btm: var(--btn-primary-btm);
+  /* ─── Legacy Indicators ────────────────────────────────────────────── */
+  --led-red-on: var(--led-on);
+  --led-red-off: var(--led-off);
+  /* ─── Legacy Gradients ─────────────────────────────────────────────── */
+  --grad-orange-vivid: var(--grad-primary);
+  --glow-orange-40: var(--glow-primary);
+}
+
+.bg-dark {
+  background-color: var(--panel-bg-dark) !important;
+}
+
+.bg-surface {
+  background-color: var(--device-surface) !important;
+}
+
+.bg-app {
+  background-color: var(--bg-color) !important;
+}
+
+.bg-list-item {
+  background-color: var(--list-item-bg) !important;
+}
+
+.bg-orange {
+  background: var(--grad-orange-vivid) !important;
+}
+
+.bg-metallic {
+  background: var(--grad-metallic) !important;
+}
+
+.border-dark {
+  border-color: var(--border-dark) !important;
+}
+
+.border-light {
+  border-color: var(--border-light) !important;
+}
+
+.border-orange {
+  border-color: var(--color-orange-vivid) !important;
+}
+
+.panel {
+  background-color: var(--panel-bg-dark);
+  border-radius: 4px;
+  box-shadow: inset 2px 2px 5px var(--shadow-80), 0 1px 0 var(--highlight-10);
+}
+
+.surface {
+  background: var(--grad-metallic);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px var(--shadow-20), inset 0 1px 0 var(--highlight-50);
+}
+
+.device-chrome {
+  background-color: var(--device-surface);
+  box-shadow: inset 0 1px 0 var(--highlight-40), 0 2px 8px var(--shadow-30);
+}
+
+.inset-well {
+  background-color: var(--color-gray-900);
+  border-radius: 3px;
+  box-shadow: inset 2px 2px 6px var(--shadow-90), inset -1px -1px 2px var(--highlight-05), 0 1px 0 var(--highlight-20);
+}
+
+.divider {
+  border: none;
+  height: 1px;
+  background-color: var(--border-dark);
+  box-shadow: 0 1px 0 var(--highlight-30);
+  margin: 0.75rem 0;
+}
+
+.list-item {
+  background-color: var(--list-item-bg);
+  border-bottom: 1px solid var(--border-dark);
+  box-shadow: 0 1px 0 var(--highlight-05);
+  transition: background-color 0.15s;
+}
+.list-item:hover {
+  background-color: var(--list-item-bg-hover);
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Orange) ────────────────────────────────────────────── */
+  --color-primary: #ff4500;
+  --color-primary-light: #ff7043;
+  --color-primary-dark: #d84315;
+  --color-primary-deep: #bf360c;
+  /* ─── Neutrals (Grays) ────────────────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #050505;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #4d4d4d;
+  --color-gray-500: #555555;
+  --color-gray-400: #666666;
+  --color-gray-300: #888888;
+  --color-gray-250: #999999;
+  --color-gray-200: #aaaaaa;
+  --color-gray-150: #bbbbbb;
+  --color-gray-100: #cccccc;
+  --color-gray-075: #d0d0d0;
+  --color-gray-050: #e0e0e0;
+  --color-gray-025: #f0f0f0;
+  --color-gray-010: #f5f5f5;
+  --color-white: #ffffff;
+  /* ─── Warm Neutrals (Browns/Taupes) ───────────────────────────────── */
+  --color-taupe-dark: #55433c;
+  --color-taupe-light: #bda69e;
+  --color-taupe-medium: #8a7166;
+  /* ─── Secondary (Neutral/Gray) ────────────────────────────────────── */
+  --color-secondary: #666666;
+  --color-secondary-light: #888888;
+  --color-secondary-dark: #444444;
+  /* ─── Success/Green ────────────────────────────────────────────────── */
+  --color-success: #00a300;
+  --color-success-dark: #006d00;
+  --color-success-light: #33b833;
+  /* ─── Warning/Amber ────────────────────────────────────────────────── */
+  --color-warning: #ff9800;
+  --color-warning-dark: #f57c00;
+  --color-warning-light: #ffb74d;
+  /* ─── Danger/Alert (Red) ──────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #b71c1c;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #552222;
+  /* ─── Info/Blue ────────────────────────────────────────────────────── */
+  --color-info: #2196f3;
+  --color-info-dark: #1976d2;
+  --color-info-light: #64b5f6;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-050);
+  --text-secondary: var(--color-gray-300);
+  --text-light: var(--color-white);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success-dark);
+  --text-warning: var(--color-warning-dark);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info-dark);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: var(--color-gray-900);
+  --panel-bg-dark: var(--color-gray-950);
+  --device-surface: var(--color-gray-100);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: #202020;
+  --btn-bg-light: #e6e6e6;
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 163, 0, 0.12);
+  --alert-bg-warning: rgba(255, 152, 0, 0.12);
+  --alert-bg-danger: rgba(255, 51, 51, 0.12);
+  --alert-bg-info: rgba(33, 150, 243, 0.12);
+  --alert-border-success: var(--color-success);
+  --alert-border-warning: var(--color-warning);
+  --alert-border-danger: var(--color-danger);
+  --alert-border-info: var(--color-info);
+  /* ─── UI Components ────────────────────────────────────────────────── */
+  --list-item-bg: #252525;
+  --list-item-bg-hover: var(--color-gray-750);
+  --border-dark: var(--color-gray-900);
+  --border-light: var(--color-gray-300);
+  --border-warm: var(--color-taupe-medium);
+  --border-primary: var(--color-primary);
+  --border-secondary: var(--color-secondary);
+  --border-success: var(--color-success);
+  --border-warning: var(--color-warning);
+  --border-danger: var(--color-danger);
+  --border-info: var(--color-info);
+  /* ─── Status & Indicators ──────────────────────────────────────────── */
+  --led-on: var(--color-danger);
+  --led-off: var(--color-danger-muted);
+  --indicator-success: var(--color-success);
+  --indicator-warning: var(--color-warning);
+  --indicator-danger: var(--color-danger);
+  --indicator-info: var(--color-info);
+  --indicator-error: var(--color-danger);
+  /* ─── Gradients ────────────────────────────────────────────────────── */
+  --grad-primary: linear-gradient(
+      90deg,
+      var(--color-primary-light),
+      var(--color-primary-dark)
+  );
+  --grad-metallic: linear-gradient(180deg, var(--color-gray-050), #bdbdbd);
+  --grad-warm: linear-gradient(
+      135deg,
+      var(--color-taupe-light),
+      var(--color-taupe-dark)
+  );
+  /* ─── Button Gradients ─────────────────────────────────────────────── */
+  --btn-black-top: var(--color-gray-700);
+  --btn-black-btm: var(--color-gray-800);
+  --btn-white-top: #eaeaea;
+  --btn-white-btm: #cdcdcd;
+  --btn-primary-top: #ff6622;
+  --btn-primary-btm: #e64a19;
+  --btn-secondary-top: var(--color-secondary-light);
+  --btn-secondary-btm: var(--color-secondary-dark);
+  --btn-success-top: var(--color-success-light);
+  --btn-success-btm: var(--color-success-dark);
+  --btn-warning-top: var(--color-warning-light);
+  --btn-warning-btm: var(--color-warning-dark);
+  --btn-danger-top: var(--color-danger-light);
+  --btn-danger-btm: var(--color-danger-dark);
+  --btn-info-top: var(--color-info-light);
+  --btn-info-btm: var(--color-info-dark);
+  /* ═══════════════════════════════════════════════════════════════════════
+     SHADOW & HIGHLIGHT OVERLAYS
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Shadow Overlays (Black with alpha) ──────────────────────────── */
+  --shadow-02: rgba(0, 0, 0, 0.02);
+  --shadow-03: rgba(0, 0, 0, 0.03);
+  --shadow-05: rgba(0, 0, 0, 0.05);
+  --shadow-10: rgba(0, 0, 0, 0.1);
+  --shadow-15: rgba(0, 0, 0, 0.15);
+  --shadow-20: rgba(0, 0, 0, 0.2);
+  --shadow-30: rgba(0, 0, 0, 0.3);
+  --shadow-40: rgba(0, 0, 0, 0.4);
+  --shadow-50: rgba(0, 0, 0, 0.5);
+  --shadow-60: rgba(0, 0, 0, 0.6);
+  --shadow-80: rgba(0, 0, 0, 0.8);
+  --shadow-90: rgba(0, 0, 0, 0.9);
+  /* ─── Highlight Overlays (White with alpha) ───────────────────────── */
+  --highlight-03: rgba(255, 255, 255, 0.03);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
+  --highlight-60: rgba(255, 255, 255, 0.6);
+  /* ─── Glow Effects ─────────────────────────────────────────────────── */
+  --glow-primary: rgba(255, 69, 0, 0.4);
+  --glow-success: rgba(0, 163, 0, 0.4);
+  --glow-warning: rgba(255, 152, 0, 0.4);
+  --glow-danger: rgba(255, 51, 51, 0.4);
+  --glow-info: rgba(33, 150, 243, 0.4);
+  /* ═══════════════════════════════════════════════════════════════════════
+     TYPOGRAPHY
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Font Families ────────────────────────────────────────────────── */
+  --font-body: 'Roboto', sans-serif;
+  --font-label: 'Roboto', sans-serif;
+  --font-tech: 'Michroma', sans-serif;
+  --font-display: 'Michroma', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+  /* ─── Type Scale ───────────────────────────────────────────────────── */
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  /* ─── Line Heights ─────────────────────────────────────────────────── */
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  /* ─── Letter Spacing ───────────────────────────────────────────────── */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+  /* ═══════════════════════════════════════════════════════════════════════
+     BACKWARD COMPATIBILITY ALIASES
+     (Legacy variable names → New semantic names)
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Legacy Orange ────────────────────────────────────────────────── */
+  --color-orange-vivid: var(--color-primary);
+  --color-orange-light: var(--color-primary-light);
+  --color-orange-dark: var(--color-primary-dark);
+  --color-orange-deep: var(--color-primary-deep);
+  /* ─── Legacy Red/Alert ─────────────────────────────────────────────── */
+  --color-red-vivid: var(--color-danger);
+  --color-red-deep: var(--color-danger-dark);
+  --color-red-dark: var(--color-danger-muted);
+  --color-alert: var(--color-danger);
+  --color-alert-dark: var(--color-danger-dark);
+  --color-alert-muted: var(--color-danger-muted);
+  /* ─── Legacy Text ──────────────────────────────────────────────────── */
+  --text-dark: var(--text-primary);
+  --text-dim: var(--text-secondary);
+  --text-orange: var(--text-accent);
+  /* ─── Legacy Buttons ───────────────────────────────────────────────── */
+  --btn-bg-orange: var(--btn-bg-primary);
+  --btn-orange-top: var(--btn-primary-top);
+  --btn-orange-btm: var(--btn-primary-btm);
+  /* ─── Legacy Indicators ────────────────────────────────────────────── */
+  --led-red-on: var(--led-on);
+  --led-red-off: var(--led-off);
+  /* ─── Legacy Gradients ─────────────────────────────────────────────── */
+  --grad-orange-vivid: var(--grad-primary);
+  --glow-orange-40: var(--glow-primary);
+}
+
+/* Base Button Style */
+.btn {
+  border-radius: 4px;
+  /* Slight rounding */
+  border: none;
+  position: relative;
+  cursor: pointer;
+  font-family: var(--font-label, "Roboto", sans-serif);
+  /* For the button label */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  user-select: none;
+  transition: all 0.1s;
+  /* Default text color — dark, contrasts with default light button bg */
+  color: var(--color-gray-600, #444);
+  /* Box Shadow creates the height feel */
+  box-shadow: 0 4px 6px var(--shadow-30), inset 0 1px 0 var(--highlight-20), inset 1px 0 0 var(--highlight-10), inset -1px 0 0 var(--shadow-10);
+}
+
+.btn:active,
+.btn.active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 3px var(--shadow-20), inset 0 2px 5px var(--shadow-20);
+  /* Pressed in shadow */
+}
+
+/* Button Colors */
+.btn-black {
+  background: linear-gradient(180deg, var(--btn-black-top, #333) 0%, var(--btn-black-btm, #222) 100%);
+  color: var(--color-gray-100, #ccc);
+  border-bottom: 2px solid var(--color-gray-900, #111);
+}
+
+.btn-white {
+  background: linear-gradient(180deg, var(--btn-white-top, #eaeaea) 0%, var(--btn-white-btm, #cdcdcd) 100%);
+  color: var(--color-gray-500, #555);
+  border-bottom: 2px solid var(--color-gray-250, #999);
+  box-shadow: 0 4px 6px var(--shadow-15), inset 0 1px 0 var(--color-white, #fff);
+}
+
+.btn-white:active {
+  background: var(--btn-white-btm, #cdcdcd);
+  color: var(--color-gray-600, #444);
+}
+
+.btn-primary, .btn-orange {
+  background: linear-gradient(180deg, var(--btn-primary-top, #ff6622) 0%, var(--btn-primary-btm, #e64a19) 100%);
+  color: var(--color-white, #fff);
+  border-bottom: 2px solid var(--color-danger-dark, #b71c1c);
+  text-shadow: 0 1px 2px var(--shadow-30);
+}
+
+.btn-primary:active, .btn-orange:active {
+  background: var(--btn-primary-btm, #e64a19);
+  box-shadow: inset 0 2px 5px var(--shadow-30);
+}
+
+/* Backward compatibility alias */
+.btn-secondary {
+  background: linear-gradient(180deg, var(--btn-secondary-top, #888) 0%, var(--btn-secondary-btm, #444) 100%);
+  color: var(--color-white, #fff);
+  border-bottom: 2px solid var(--color-gray-900, #111);
+  text-shadow: 0 1px 2px var(--shadow-30);
+}
+
+.btn-secondary:active {
+  background: var(--btn-secondary-btm, #444);
+  box-shadow: inset 0 2px 5px var(--shadow-30);
+}
+
+.btn-success {
+  background: linear-gradient(180deg, var(--btn-success-top, #33b833) 0%, var(--btn-success-btm, #006d00) 100%);
+  color: var(--color-white, #fff);
+  border-bottom: 2px solid var(--color-success-dark, #006d00);
+  text-shadow: 0 1px 2px var(--shadow-30);
+}
+
+.btn-success:active {
+  background: var(--btn-success-btm, #006d00);
+  box-shadow: inset 0 2px 5px var(--shadow-30);
+}
+
+.btn-warning {
+  background: linear-gradient(180deg, var(--btn-warning-top, #ffb74d) 0%, var(--btn-warning-btm, #f57c00) 100%);
+  color: var(--color-white, #fff);
+  border-bottom: 2px solid var(--color-warning-dark, #f57c00);
+  text-shadow: 0 1px 2px var(--shadow-30);
+}
+
+.btn-warning:active {
+  background: var(--btn-warning-btm, #f57c00);
+  box-shadow: inset 0 2px 5px var(--shadow-30);
+}
+
+.btn-danger {
+  background: linear-gradient(180deg, var(--btn-danger-top, #ff6666) 0%, var(--btn-danger-btm, #b71c1c) 100%);
+  color: var(--color-white, #fff);
+  border-bottom: 2px solid var(--color-danger-dark, #b71c1c);
+  text-shadow: 0 1px 2px var(--shadow-30);
+}
+
+.btn-danger:active {
+  background: var(--btn-danger-btm, #b71c1c);
+  box-shadow: inset 0 2px 5px var(--shadow-30);
+}
+
+.btn-info {
+  background: linear-gradient(180deg, var(--btn-info-top, #64b5f6) 0%, var(--btn-info-btm, #1976d2) 100%);
+  color: var(--color-white, #fff);
+  border-bottom: 2px solid var(--color-info-dark, #1976d2);
+  text-shadow: 0 1px 2px var(--shadow-30);
+}
+
+.btn-info:active {
+  background: var(--btn-info-btm, #1976d2);
+  box-shadow: inset 0 2px 5px var(--shadow-30);
+}
+
+/* Text inside button */
+.btn .primary-text {
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.btn .secondary-text {
+  font-size: 10px;
+  opacity: 0.7;
+  align-self: flex-start;
+}
+
+/* Different button sizes */
+.btn-rect-small {
+  width: 70px;
+  height: 35px;
+  /* Half height */
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-rect-medium {
+  width: 70px;
+  height: 45px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Round Button Style */
+.btn-round {
+  width: 60px;
+  height: 60px;
+  /* Default round size in DS */
+  border-radius: 50%;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+}
+
+.btn-round .primary-text {
+  font-size: 14px;
+  /* Slightly smaller for round buttons usually */
+}
+
+/* Square Button Style - extracted from media-player.html as it seems to be a variation of btn-white but specific size */
+.btn-square {
+  width: 50px;
+  height: 50px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--btn-white-top, #eaeaea) 0%, var(--btn-white-btm, #cdcdcd) 100%);
+  color: var(--color-gray-600, #444);
+  border-bottom: 2px solid var(--color-gray-250, #999);
+  box-shadow: 0 4px 6px var(--shadow-20), inset 0 1px 0 var(--color-white, #fff);
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.1s;
+  position: relative;
+}
+
+.btn-square:active,
+.btn-square.active {
+  background: var(--btn-white-btm, #cdcdcd);
+  transform: translateY(2px);
+  box-shadow: inset 0 2px 4px var(--shadow-20);
+  border-bottom: 0;
+}
+
+.btn-square.active {
+  background: var(--color-gray-150);
+  color: var(--color-gray-800, #222);
+  box-shadow: inset 0 2px 4px var(--shadow-30), 0 0 5px var(--highlight-20);
+}
+
+/* Icon-only Button — ghost style for secondary actions (shuffle, repeat, playlist, etc.)
+   Transparent background, subtle hover/active feedback, inherits icon color. */
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-gray-300, #bbb);
+  border: none;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s, color 0.15s;
+  box-shadow: none;
+}
+
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-gray-100, #eee);
+}
+
+.btn-icon:active {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--color-white, #fff);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Active/toggled state — highlighted accent */
+.btn-icon.active {
+  color: var(--btn-primary-top, #ff6622);
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-icon.active:hover {
+  background: rgba(255, 102, 34, 0.12);
+}
+
+/* LED Indicator simulating part of panel */
+.led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--led-red-off, #552222);
+  /* Off state */
+  box-shadow: inset 1px 1px 2px var(--shadow-80);
+  margin-bottom: 5px;
+  position: absolute;
+  top: -15px;
+  /* Place it above button like in the image */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.led.on {
+  background-color: var(--led-red-on, #ff3333);
+  box-shadow: 0 0 5px var(--led-red-on, #ff3300), inset 1px 1px 2px var(--highlight-50);
+}
+
+.button-group {
+  position: relative;
+  /* For LED positioning relative to button */
+  display: inline-block;
+}
+
+.label-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Orange) ────────────────────────────────────────────── */
+  --color-primary: #ff4500;
+  --color-primary-light: #ff7043;
+  --color-primary-dark: #d84315;
+  --color-primary-deep: #bf360c;
+  /* ─── Neutrals (Grays) ────────────────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #050505;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #4d4d4d;
+  --color-gray-500: #555555;
+  --color-gray-400: #666666;
+  --color-gray-300: #888888;
+  --color-gray-250: #999999;
+  --color-gray-200: #aaaaaa;
+  --color-gray-150: #bbbbbb;
+  --color-gray-100: #cccccc;
+  --color-gray-075: #d0d0d0;
+  --color-gray-050: #e0e0e0;
+  --color-gray-025: #f0f0f0;
+  --color-gray-010: #f5f5f5;
+  --color-white: #ffffff;
+  /* ─── Warm Neutrals (Browns/Taupes) ───────────────────────────────── */
+  --color-taupe-dark: #55433c;
+  --color-taupe-light: #bda69e;
+  --color-taupe-medium: #8a7166;
+  /* ─── Secondary (Neutral/Gray) ────────────────────────────────────── */
+  --color-secondary: #666666;
+  --color-secondary-light: #888888;
+  --color-secondary-dark: #444444;
+  /* ─── Success/Green ────────────────────────────────────────────────── */
+  --color-success: #00a300;
+  --color-success-dark: #006d00;
+  --color-success-light: #33b833;
+  /* ─── Warning/Amber ────────────────────────────────────────────────── */
+  --color-warning: #ff9800;
+  --color-warning-dark: #f57c00;
+  --color-warning-light: #ffb74d;
+  /* ─── Danger/Alert (Red) ──────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #b71c1c;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #552222;
+  /* ─── Info/Blue ────────────────────────────────────────────────────── */
+  --color-info: #2196f3;
+  --color-info-dark: #1976d2;
+  --color-info-light: #64b5f6;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-050);
+  --text-secondary: var(--color-gray-300);
+  --text-light: var(--color-white);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success-dark);
+  --text-warning: var(--color-warning-dark);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info-dark);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: var(--color-gray-900);
+  --panel-bg-dark: var(--color-gray-950);
+  --device-surface: var(--color-gray-100);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: #202020;
+  --btn-bg-light: #e6e6e6;
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 163, 0, 0.12);
+  --alert-bg-warning: rgba(255, 152, 0, 0.12);
+  --alert-bg-danger: rgba(255, 51, 51, 0.12);
+  --alert-bg-info: rgba(33, 150, 243, 0.12);
+  --alert-border-success: var(--color-success);
+  --alert-border-warning: var(--color-warning);
+  --alert-border-danger: var(--color-danger);
+  --alert-border-info: var(--color-info);
+  /* ─── UI Components ────────────────────────────────────────────────── */
+  --list-item-bg: #252525;
+  --list-item-bg-hover: var(--color-gray-750);
+  --border-dark: var(--color-gray-900);
+  --border-light: var(--color-gray-300);
+  --border-warm: var(--color-taupe-medium);
+  --border-primary: var(--color-primary);
+  --border-secondary: var(--color-secondary);
+  --border-success: var(--color-success);
+  --border-warning: var(--color-warning);
+  --border-danger: var(--color-danger);
+  --border-info: var(--color-info);
+  /* ─── Status & Indicators ──────────────────────────────────────────── */
+  --led-on: var(--color-danger);
+  --led-off: var(--color-danger-muted);
+  --indicator-success: var(--color-success);
+  --indicator-warning: var(--color-warning);
+  --indicator-danger: var(--color-danger);
+  --indicator-info: var(--color-info);
+  --indicator-error: var(--color-danger);
+  /* ─── Gradients ────────────────────────────────────────────────────── */
+  --grad-primary: linear-gradient(
+      90deg,
+      var(--color-primary-light),
+      var(--color-primary-dark)
+  );
+  --grad-metallic: linear-gradient(180deg, var(--color-gray-050), #bdbdbd);
+  --grad-warm: linear-gradient(
+      135deg,
+      var(--color-taupe-light),
+      var(--color-taupe-dark)
+  );
+  /* ─── Button Gradients ─────────────────────────────────────────────── */
+  --btn-black-top: var(--color-gray-700);
+  --btn-black-btm: var(--color-gray-800);
+  --btn-white-top: #eaeaea;
+  --btn-white-btm: #cdcdcd;
+  --btn-primary-top: #ff6622;
+  --btn-primary-btm: #e64a19;
+  --btn-secondary-top: var(--color-secondary-light);
+  --btn-secondary-btm: var(--color-secondary-dark);
+  --btn-success-top: var(--color-success-light);
+  --btn-success-btm: var(--color-success-dark);
+  --btn-warning-top: var(--color-warning-light);
+  --btn-warning-btm: var(--color-warning-dark);
+  --btn-danger-top: var(--color-danger-light);
+  --btn-danger-btm: var(--color-danger-dark);
+  --btn-info-top: var(--color-info-light);
+  --btn-info-btm: var(--color-info-dark);
+  /* ═══════════════════════════════════════════════════════════════════════
+     SHADOW & HIGHLIGHT OVERLAYS
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Shadow Overlays (Black with alpha) ──────────────────────────── */
+  --shadow-02: rgba(0, 0, 0, 0.02);
+  --shadow-03: rgba(0, 0, 0, 0.03);
+  --shadow-05: rgba(0, 0, 0, 0.05);
+  --shadow-10: rgba(0, 0, 0, 0.1);
+  --shadow-15: rgba(0, 0, 0, 0.15);
+  --shadow-20: rgba(0, 0, 0, 0.2);
+  --shadow-30: rgba(0, 0, 0, 0.3);
+  --shadow-40: rgba(0, 0, 0, 0.4);
+  --shadow-50: rgba(0, 0, 0, 0.5);
+  --shadow-60: rgba(0, 0, 0, 0.6);
+  --shadow-80: rgba(0, 0, 0, 0.8);
+  --shadow-90: rgba(0, 0, 0, 0.9);
+  /* ─── Highlight Overlays (White with alpha) ───────────────────────── */
+  --highlight-03: rgba(255, 255, 255, 0.03);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
+  --highlight-60: rgba(255, 255, 255, 0.6);
+  /* ─── Glow Effects ─────────────────────────────────────────────────── */
+  --glow-primary: rgba(255, 69, 0, 0.4);
+  --glow-success: rgba(0, 163, 0, 0.4);
+  --glow-warning: rgba(255, 152, 0, 0.4);
+  --glow-danger: rgba(255, 51, 51, 0.4);
+  --glow-info: rgba(33, 150, 243, 0.4);
+  /* ═══════════════════════════════════════════════════════════════════════
+     TYPOGRAPHY
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Font Families ────────────────────────────────────────────────── */
+  --font-body: 'Roboto', sans-serif;
+  --font-label: 'Roboto', sans-serif;
+  --font-tech: 'Michroma', sans-serif;
+  --font-display: 'Michroma', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+  /* ─── Type Scale ───────────────────────────────────────────────────── */
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  /* ─── Line Heights ─────────────────────────────────────────────────── */
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  /* ─── Letter Spacing ───────────────────────────────────────────────── */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+  /* ═══════════════════════════════════════════════════════════════════════
+     BACKWARD COMPATIBILITY ALIASES
+     (Legacy variable names → New semantic names)
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Legacy Orange ────────────────────────────────────────────────── */
+  --color-orange-vivid: var(--color-primary);
+  --color-orange-light: var(--color-primary-light);
+  --color-orange-dark: var(--color-primary-dark);
+  --color-orange-deep: var(--color-primary-deep);
+  /* ─── Legacy Red/Alert ─────────────────────────────────────────────── */
+  --color-red-vivid: var(--color-danger);
+  --color-red-deep: var(--color-danger-dark);
+  --color-red-dark: var(--color-danger-muted);
+  --color-alert: var(--color-danger);
+  --color-alert-dark: var(--color-danger-dark);
+  --color-alert-muted: var(--color-danger-muted);
+  /* ─── Legacy Text ──────────────────────────────────────────────────── */
+  --text-dark: var(--text-primary);
+  --text-dim: var(--text-secondary);
+  --text-orange: var(--text-accent);
+  /* ─── Legacy Buttons ───────────────────────────────────────────────── */
+  --btn-bg-orange: var(--btn-bg-primary);
+  --btn-orange-top: var(--btn-primary-top);
+  --btn-orange-btm: var(--btn-primary-btm);
+  /* ─── Legacy Indicators ────────────────────────────────────────────── */
+  --led-red-on: var(--led-on);
+  --led-red-off: var(--led-off);
+  /* ─── Legacy Gradients ─────────────────────────────────────────────── */
+  --grad-orange-vivid: var(--grad-primary);
+  --glow-orange-40: var(--glow-primary);
+}
+
+.settings-panel {
+  width: 100%;
+  max-width: 800px;
+  background-color: var(--device-surface);
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 20px 20px 40px rgba(0, 0, 0, 0.2), -5px -5px 15px rgba(255, 255, 255, 0.5), inset 1px 1px 0 rgba(255, 255, 255, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  /* Industrial Texture */
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.03)), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23000000' fill-opacity='0.03' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'/%3E%3C/svg%3E");
+}
+
+.panel-header {
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+  padding-bottom: 15px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* --- Form Groups --- */
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.section-title {
+  font-family: var(--font-tech);
+  font-size: 12px;
+  color: var(--text-orange);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+}
+
+.form-group {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+  align-items: center;
+}
+
+.form-group.stacked {
+  grid-template-columns: 1fr;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+label {
+  font-family: "Roboto", sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: #444;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.input-desc {
+  font-size: 11px;
+  color: #666;
+  margin-top: 4px;
+  display: block;
+  text-transform: none;
+  font-weight: 400;
+}
+
+/* --- Input Elements --- */
+/* 1. Text Inputs & Textareas */
+.input-field {
+  width: 100%;
+  background-color: #222;
+  border: none;
+  border-radius: 4px;
+  padding: 12px 15px;
+  color: #0f0;
+  /* Green terminal text */
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.8), inset -1px -1px 1px rgba(255, 255, 255, 0.1), 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.input-field:focus {
+  outline: none;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.9), 0 0 0 2px var(--btn-bg-primary);
+  background-color: #1a1a1a;
+}
+
+.input-field::placeholder {
+  color: #445;
+  opacity: 0.7;
+}
+
+/* 2. Select Dropdown */
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.select-field {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  background-color: #e0e0e0;
+  /* Lighter look for selects, physical knob feel */
+  border: none;
+  border-radius: 4px;
+  padding: 12px 15px;
+  color: #333;
+  font-family: "Roboto", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.15), -2px -2px 6px rgba(255, 255, 255, 0.6), inset 1px 1px 0 rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.select-field:active {
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2), inset -1px -1px 2px rgba(255, 255, 255, 0.5);
+  transform: translateY(1px);
+}
+
+.select-field:focus {
+  outline: none;
+  border: 1px solid #aaa;
+}
+
+/* Custom Arrow */
+.select-arrow {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #555;
+  font-size: 20px;
+}
+
+/* 3. Checkboxes (Toggle Switch style) */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 30px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #2b2b2b;
+  /* Dark track */
+  transition: 0.4s;
+  border-radius: 30px;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.7), 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 4px;
+  bottom: 4px;
+  background: linear-gradient(180deg, #d0d0d0 0%, #a0a0a0 100%);
+  transition: 0.4s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Active State */
+input:checked + .slider {
+  background-color: #1a1a1a;
+}
+
+input:checked + .slider:before {
+  transform: translateX(30px);
+  background: linear-gradient(180deg, #ff5722 0%, #d84315 100%);
+  /* Orange glow */
+  box-shadow: 0 0 10px rgba(255, 87, 34, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Optional ON/OFF text inside */
+.slider:after {
+  content: "OFF";
+  color: #555;
+  font-size: 8px;
+  position: absolute;
+  right: 8px;
+  top: 9px;
+  font-family: var(--font-tech);
+}
+
+input:checked + .slider:after {
+  content: "ON";
+  color: #d84315;
+  left: 8px;
+  right: auto;
+  text-shadow: 0 0 5px rgba(216, 67, 21, 0.5);
+}
+
+/* 4. Radio Buttons (Circular Push Buttons) */
+.radio-group {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.radio-option {
+  position: relative;
+  cursor: pointer;
+  padding-left: 35px;
+  line-height: 24px;
+  color: #444;
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  user-select: none;
+}
+
+.radio-option input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* The Custom Radio Circle */
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 24px;
+  width: 24px;
+  background-color: #e0e0e0;
+  border-radius: 50%;
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2), -1px -1px 3px rgba(255, 255, 255, 0.7), inset 1px 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Checkmark Indicator (The Light) */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 7px;
+  top: 7px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff4500;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3), 0 0 6px #ff4500;
+}
+
+/* Active/Checked State */
+.radio-option input:checked ~ .checkmark {
+  background-color: #dcdcdc;
+  /* Pressed in slightly */
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2), inset -1px -1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.radio-option input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* 5. Button Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.btn-submit {
+  background: linear-gradient(180deg, #ff6622 0%, #e64a19 100%);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  font-family: var(--font-tech);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: transform 0.1s;
+  border-bottom: 2px solid #bf360c;
+}
+
+.btn-submit:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  border-bottom: 0;
+  margin-bottom: 2px;
+  /* Compensate for lost border */
+}
+
+.btn-cancel {
+  background: linear-gradient(180deg, #e0e0e0 0%, #bdbdbd 100%);
+  color: #444;
+  border: none;
+  padding: 12px 25px;
+  font-family: var(--font-tech);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 4px;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  border-bottom: 2px solid #9e9e9e;
+}
+
+.btn-cancel:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  border-bottom: 0px;
+  margin-bottom: 2px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+  .form-group {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    align-items: start;
+  }
+  .settings-panel {
+    padding: 20px;
+  }
+}
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Orange) ────────────────────────────────────────────── */
+  --color-primary: #ff4500;
+  --color-primary-light: #ff7043;
+  --color-primary-dark: #d84315;
+  --color-primary-deep: #bf360c;
+  /* ─── Neutrals (Grays) ────────────────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #050505;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #4d4d4d;
+  --color-gray-500: #555555;
+  --color-gray-400: #666666;
+  --color-gray-300: #888888;
+  --color-gray-250: #999999;
+  --color-gray-200: #aaaaaa;
+  --color-gray-150: #bbbbbb;
+  --color-gray-100: #cccccc;
+  --color-gray-075: #d0d0d0;
+  --color-gray-050: #e0e0e0;
+  --color-gray-025: #f0f0f0;
+  --color-gray-010: #f5f5f5;
+  --color-white: #ffffff;
+  /* ─── Warm Neutrals (Browns/Taupes) ───────────────────────────────── */
+  --color-taupe-dark: #55433c;
+  --color-taupe-light: #bda69e;
+  --color-taupe-medium: #8a7166;
+  /* ─── Secondary (Neutral/Gray) ────────────────────────────────────── */
+  --color-secondary: #666666;
+  --color-secondary-light: #888888;
+  --color-secondary-dark: #444444;
+  /* ─── Success/Green ────────────────────────────────────────────────── */
+  --color-success: #00a300;
+  --color-success-dark: #006d00;
+  --color-success-light: #33b833;
+  /* ─── Warning/Amber ────────────────────────────────────────────────── */
+  --color-warning: #ff9800;
+  --color-warning-dark: #f57c00;
+  --color-warning-light: #ffb74d;
+  /* ─── Danger/Alert (Red) ──────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #b71c1c;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #552222;
+  /* ─── Info/Blue ────────────────────────────────────────────────────── */
+  --color-info: #2196f3;
+  --color-info-dark: #1976d2;
+  --color-info-light: #64b5f6;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-050);
+  --text-secondary: var(--color-gray-300);
+  --text-light: var(--color-white);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success-dark);
+  --text-warning: var(--color-warning-dark);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info-dark);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: var(--color-gray-900);
+  --panel-bg-dark: var(--color-gray-950);
+  --device-surface: var(--color-gray-100);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: #202020;
+  --btn-bg-light: #e6e6e6;
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 163, 0, 0.12);
+  --alert-bg-warning: rgba(255, 152, 0, 0.12);
+  --alert-bg-danger: rgba(255, 51, 51, 0.12);
+  --alert-bg-info: rgba(33, 150, 243, 0.12);
+  --alert-border-success: var(--color-success);
+  --alert-border-warning: var(--color-warning);
+  --alert-border-danger: var(--color-danger);
+  --alert-border-info: var(--color-info);
+  /* ─── UI Components ────────────────────────────────────────────────── */
+  --list-item-bg: #252525;
+  --list-item-bg-hover: var(--color-gray-750);
+  --border-dark: var(--color-gray-900);
+  --border-light: var(--color-gray-300);
+  --border-warm: var(--color-taupe-medium);
+  --border-primary: var(--color-primary);
+  --border-secondary: var(--color-secondary);
+  --border-success: var(--color-success);
+  --border-warning: var(--color-warning);
+  --border-danger: var(--color-danger);
+  --border-info: var(--color-info);
+  /* ─── Status & Indicators ──────────────────────────────────────────── */
+  --led-on: var(--color-danger);
+  --led-off: var(--color-danger-muted);
+  --indicator-success: var(--color-success);
+  --indicator-warning: var(--color-warning);
+  --indicator-danger: var(--color-danger);
+  --indicator-info: var(--color-info);
+  --indicator-error: var(--color-danger);
+  /* ─── Gradients ────────────────────────────────────────────────────── */
+  --grad-primary: linear-gradient(
+      90deg,
+      var(--color-primary-light),
+      var(--color-primary-dark)
+  );
+  --grad-metallic: linear-gradient(180deg, var(--color-gray-050), #bdbdbd);
+  --grad-warm: linear-gradient(
+      135deg,
+      var(--color-taupe-light),
+      var(--color-taupe-dark)
+  );
+  /* ─── Button Gradients ─────────────────────────────────────────────── */
+  --btn-black-top: var(--color-gray-700);
+  --btn-black-btm: var(--color-gray-800);
+  --btn-white-top: #eaeaea;
+  --btn-white-btm: #cdcdcd;
+  --btn-primary-top: #ff6622;
+  --btn-primary-btm: #e64a19;
+  --btn-secondary-top: var(--color-secondary-light);
+  --btn-secondary-btm: var(--color-secondary-dark);
+  --btn-success-top: var(--color-success-light);
+  --btn-success-btm: var(--color-success-dark);
+  --btn-warning-top: var(--color-warning-light);
+  --btn-warning-btm: var(--color-warning-dark);
+  --btn-danger-top: var(--color-danger-light);
+  --btn-danger-btm: var(--color-danger-dark);
+  --btn-info-top: var(--color-info-light);
+  --btn-info-btm: var(--color-info-dark);
+  /* ═══════════════════════════════════════════════════════════════════════
+     SHADOW & HIGHLIGHT OVERLAYS
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Shadow Overlays (Black with alpha) ──────────────────────────── */
+  --shadow-02: rgba(0, 0, 0, 0.02);
+  --shadow-03: rgba(0, 0, 0, 0.03);
+  --shadow-05: rgba(0, 0, 0, 0.05);
+  --shadow-10: rgba(0, 0, 0, 0.1);
+  --shadow-15: rgba(0, 0, 0, 0.15);
+  --shadow-20: rgba(0, 0, 0, 0.2);
+  --shadow-30: rgba(0, 0, 0, 0.3);
+  --shadow-40: rgba(0, 0, 0, 0.4);
+  --shadow-50: rgba(0, 0, 0, 0.5);
+  --shadow-60: rgba(0, 0, 0, 0.6);
+  --shadow-80: rgba(0, 0, 0, 0.8);
+  --shadow-90: rgba(0, 0, 0, 0.9);
+  /* ─── Highlight Overlays (White with alpha) ───────────────────────── */
+  --highlight-03: rgba(255, 255, 255, 0.03);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
+  --highlight-60: rgba(255, 255, 255, 0.6);
+  /* ─── Glow Effects ─────────────────────────────────────────────────── */
+  --glow-primary: rgba(255, 69, 0, 0.4);
+  --glow-success: rgba(0, 163, 0, 0.4);
+  --glow-warning: rgba(255, 152, 0, 0.4);
+  --glow-danger: rgba(255, 51, 51, 0.4);
+  --glow-info: rgba(33, 150, 243, 0.4);
+  /* ═══════════════════════════════════════════════════════════════════════
+     TYPOGRAPHY
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Font Families ────────────────────────────────────────────────── */
+  --font-body: 'Roboto', sans-serif;
+  --font-label: 'Roboto', sans-serif;
+  --font-tech: 'Michroma', sans-serif;
+  --font-display: 'Michroma', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+  /* ─── Type Scale ───────────────────────────────────────────────────── */
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  /* ─── Line Heights ─────────────────────────────────────────────────── */
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  /* ─── Letter Spacing ───────────────────────────────────────────────── */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+  /* ═══════════════════════════════════════════════════════════════════════
+     BACKWARD COMPATIBILITY ALIASES
+     (Legacy variable names → New semantic names)
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Legacy Orange ────────────────────────────────────────────────── */
+  --color-orange-vivid: var(--color-primary);
+  --color-orange-light: var(--color-primary-light);
+  --color-orange-dark: var(--color-primary-dark);
+  --color-orange-deep: var(--color-primary-deep);
+  /* ─── Legacy Red/Alert ─────────────────────────────────────────────── */
+  --color-red-vivid: var(--color-danger);
+  --color-red-deep: var(--color-danger-dark);
+  --color-red-dark: var(--color-danger-muted);
+  --color-alert: var(--color-danger);
+  --color-alert-dark: var(--color-danger-dark);
+  --color-alert-muted: var(--color-danger-muted);
+  /* ─── Legacy Text ──────────────────────────────────────────────────── */
+  --text-dark: var(--text-primary);
+  --text-dim: var(--text-secondary);
+  --text-orange: var(--text-accent);
+  /* ─── Legacy Buttons ───────────────────────────────────────────────── */
+  --btn-bg-orange: var(--btn-bg-primary);
+  --btn-orange-top: var(--btn-primary-top);
+  --btn-orange-btm: var(--btn-primary-btm);
+  /* ─── Legacy Indicators ────────────────────────────────────────────── */
+  --led-red-on: var(--led-on);
+  --led-red-off: var(--led-off);
+  /* ─── Legacy Gradients ─────────────────────────────────────────────── */
+  --grad-orange-vivid: var(--grad-primary);
+  --glow-orange-40: var(--glow-primary);
+}
+
+.progress-group {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  width: 250px;
+}
+
+/* 1: LED Segment Style */
+.led-bar-container {
+  display: flex;
+  gap: 4px;
+  background-color: var(--panel-bg-dark);
+  padding: 4px;
+  border-radius: 4px;
+  box-shadow: inset 1px 1px 3px var(--shadow-50), 0 1px 0 var(--highlight-10);
+}
+
+.led-segment {
+  flex: 1;
+  height: 10px;
+  background-color: var(--led-red-off);
+  border-radius: 1px;
+  box-shadow: inset 0 0 2px var(--shadow-80);
+}
+
+.led-segment.on {
+  background-color: var(--led-red-on);
+  box-shadow: 0 0 4px var(--led-red-on);
+}
+
+/* 2: Smooth recessed bar */
+.smooth-bar-track {
+  height: 8px;
+  width: 100%;
+  background-color: var(--color-gray-700);
+  border-radius: 4px;
+  box-shadow: inset 1px 1px 2px var(--shadow-60), 0 1px 0 var(--highlight-15);
+  overflow: hidden;
+  position: relative;
+}
+
+.smooth-bar-fill {
+  height: 100%;
+  width: 60%;
+  background: var(--grad-orange-vivid);
+  box-shadow: 2px 0 5px var(--shadow-40);
+  border-radius: 4px;
+  position: relative;
+}
+
+/* Highlight on the bar */
+.smooth-bar-fill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, var(--highlight-30), transparent);
+}
+
+.slider-group {
+  display: flex;
+  gap: 60px;
+  align-items: center;
+}
+
+/* The vertical track */
+.fader-track {
+  width: 12px;
+  height: 200px;
+  background-color: var(--color-gray-850, #1a1a1a);
+  border-radius: 6px;
+  box-shadow: inset 2px 2px 4px var(--shadow-80), inset -1px -1px 2px var(--highlight-10), 0 0 0 1px var(--highlight-05);
+  /* Outer edge highlight */
+  position: relative;
+  margin: 0 20px;
+}
+
+/* The cap/knob */
+.fader-cap {
+  width: 50px;
+  /* Wide cap like the image */
+  height: 30px;
+  background: linear-gradient(135deg, var(--color-gray-600, #444), var(--color-gray-750, #2a2a2a));
+  border-radius: 4px;
+  position: absolute;
+  left: 50%;
+  /* Default position */
+  transform: translate(-50%, -50%);
+  box-shadow: 0 4px 6px var(--shadow-40), 0 1px 2px var(--shadow-30), inset 1px 1px 1px var(--highlight-20), inset -1px -1px 1px var(--shadow-50);
+  cursor: ns-resize;
+  /* Texture or center line */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.fader-cap::after {
+  content: "";
+  width: 100%;
+  height: 2px;
+  background-color: var(--color-gray-900, #111);
+  box-shadow: 0 1px 0 var(--highlight-10);
+}
+
+.fader-cap:hover {
+  background: linear-gradient(135deg, var(--color-gray-550, #4d4d4d), var(--color-gray-700, #333));
+}
+
+/* Tick marks for scale */
+.scale {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -20px;
+  width: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: var(--color-gray-400, #777);
+  font-size: 10px;
+  font-family: var(--font-tech);
+}
+
+.scale-mark {
+  width: 8px;
+  height: 1px;
+  background-color: var(--color-gray-250, #999);
+}
+
+.scale-mark.long {
+  width: 14px;
+  background-color: var(--color-gray-500, #555);
+}
+
+.knob-container {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.knob-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Base Knob */
+.knob {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  position: relative;
+  box-shadow: 0 10px 15px var(--shadow-30), 0 2px 4px var(--shadow-20), inset 0 1px 0 var(--highlight-20);
+  /* Top edge light */
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: grab;
+}
+
+.knob:active {
+  cursor: grabbing;
+}
+
+/* Dimple / Indicator */
+.knob::after {
+  content: "";
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--shadow-20);
+  /* Indentation shadow */
+  box-shadow: inset 1px 1px 2px var(--shadow-40), inset -1px -1px 1px var(--highlight-10);
+  /* Inner highlight */
+}
+
+/* White Knob (Volume) */
+.knob-white {
+  background: radial-gradient(circle at 30% 30%, var(--color-gray-010, #f5f5f5), var(--color-gray-075, #d0d0d0));
+  /* Subtle texture */
+  background-image: radial-gradient(circle at 30% 30%, transparent 0%, var(--shadow-05) 100%), conic-gradient(var(--color-gray-025, #f0f0f0) 0%, var(--color-gray-050, #e0e0e0) 25%, var(--color-gray-025, #f0f0f0) 50%, var(--color-gray-050, #e0e0e0) 75%, var(--color-gray-025, #f0f0f0) 100%);
+}
+
+/* Orange Knob (BPM) */
+.knob-orange {
+  background: radial-gradient(circle at 30% 30%, var(--color-orange-light, #ff7043), var(--color-orange-dark, #d84315));
+  border: 1px solid var(--color-orange-deep, #bf360c);
+}
+
+.knob-orange::after {
+  background-color: var(--shadow-30);
+}
+
+/* Black Knob (Metronome) */
+.knob-black {
+  background: radial-gradient(circle at 30% 30%, var(--color-gray-600, #444), var(--color-gray-850, #1a1a1a));
+  border: 1px solid var(--color-black, #000);
+}
+
+.knob-black::after {
+  background-color: var(--shadow-60);
+  box-shadow: inset 1px 1px 2px var(--shadow-90), inset -1px -1px 1px var(--highlight-05);
+}
+
+/* Ticks/Marks around the knob */
+.ticks {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  border-radius: 50%;
+  z-index: -1;
+  /* Example ticks using conic gradient - simple version */
+  background: conic-gradient(from 220deg, transparent 0deg, transparent 10deg, var(--color-gray-200, #aaa) 10.5deg, transparent 11deg, transparent 20deg);
+  opacity: 0.5;
+  display: none;
+  /* Hidden for now as it overrides clean look */
+}
+
+/* Range Indicators (UI around the knob) */
+.range-indicator {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  /* border-top-color: orange; */
+  transform: rotate(-135deg);
+  pointer-events: none;
+}
+
+/* Label styles */
+.knob-label {
+  font-family: var(--font-tech, "Michroma", sans-serif);
+  font-size: 10px;
+  color: var(--color-gray-400, #666);
+  margin-top: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Orange) ────────────────────────────────────────────── */
+  --color-primary: #ff4500;
+  --color-primary-light: #ff7043;
+  --color-primary-dark: #d84315;
+  --color-primary-deep: #bf360c;
+  /* ─── Neutrals (Grays) ────────────────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #050505;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #4d4d4d;
+  --color-gray-500: #555555;
+  --color-gray-400: #666666;
+  --color-gray-300: #888888;
+  --color-gray-250: #999999;
+  --color-gray-200: #aaaaaa;
+  --color-gray-150: #bbbbbb;
+  --color-gray-100: #cccccc;
+  --color-gray-075: #d0d0d0;
+  --color-gray-050: #e0e0e0;
+  --color-gray-025: #f0f0f0;
+  --color-gray-010: #f5f5f5;
+  --color-white: #ffffff;
+  /* ─── Warm Neutrals (Browns/Taupes) ───────────────────────────────── */
+  --color-taupe-dark: #55433c;
+  --color-taupe-light: #bda69e;
+  --color-taupe-medium: #8a7166;
+  /* ─── Secondary (Neutral/Gray) ────────────────────────────────────── */
+  --color-secondary: #666666;
+  --color-secondary-light: #888888;
+  --color-secondary-dark: #444444;
+  /* ─── Success/Green ────────────────────────────────────────────────── */
+  --color-success: #00a300;
+  --color-success-dark: #006d00;
+  --color-success-light: #33b833;
+  /* ─── Warning/Amber ────────────────────────────────────────────────── */
+  --color-warning: #ff9800;
+  --color-warning-dark: #f57c00;
+  --color-warning-light: #ffb74d;
+  /* ─── Danger/Alert (Red) ──────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #b71c1c;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #552222;
+  /* ─── Info/Blue ────────────────────────────────────────────────────── */
+  --color-info: #2196f3;
+  --color-info-dark: #1976d2;
+  --color-info-light: #64b5f6;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-050);
+  --text-secondary: var(--color-gray-300);
+  --text-light: var(--color-white);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success-dark);
+  --text-warning: var(--color-warning-dark);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info-dark);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: var(--color-gray-900);
+  --panel-bg-dark: var(--color-gray-950);
+  --device-surface: var(--color-gray-100);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: #202020;
+  --btn-bg-light: #e6e6e6;
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 163, 0, 0.12);
+  --alert-bg-warning: rgba(255, 152, 0, 0.12);
+  --alert-bg-danger: rgba(255, 51, 51, 0.12);
+  --alert-bg-info: rgba(33, 150, 243, 0.12);
+  --alert-border-success: var(--color-success);
+  --alert-border-warning: var(--color-warning);
+  --alert-border-danger: var(--color-danger);
+  --alert-border-info: var(--color-info);
+  /* ─── UI Components ────────────────────────────────────────────────── */
+  --list-item-bg: #252525;
+  --list-item-bg-hover: var(--color-gray-750);
+  --border-dark: var(--color-gray-900);
+  --border-light: var(--color-gray-300);
+  --border-warm: var(--color-taupe-medium);
+  --border-primary: var(--color-primary);
+  --border-secondary: var(--color-secondary);
+  --border-success: var(--color-success);
+  --border-warning: var(--color-warning);
+  --border-danger: var(--color-danger);
+  --border-info: var(--color-info);
+  /* ─── Status & Indicators ──────────────────────────────────────────── */
+  --led-on: var(--color-danger);
+  --led-off: var(--color-danger-muted);
+  --indicator-success: var(--color-success);
+  --indicator-warning: var(--color-warning);
+  --indicator-danger: var(--color-danger);
+  --indicator-info: var(--color-info);
+  --indicator-error: var(--color-danger);
+  /* ─── Gradients ────────────────────────────────────────────────────── */
+  --grad-primary: linear-gradient(
+      90deg,
+      var(--color-primary-light),
+      var(--color-primary-dark)
+  );
+  --grad-metallic: linear-gradient(180deg, var(--color-gray-050), #bdbdbd);
+  --grad-warm: linear-gradient(
+      135deg,
+      var(--color-taupe-light),
+      var(--color-taupe-dark)
+  );
+  /* ─── Button Gradients ─────────────────────────────────────────────── */
+  --btn-black-top: var(--color-gray-700);
+  --btn-black-btm: var(--color-gray-800);
+  --btn-white-top: #eaeaea;
+  --btn-white-btm: #cdcdcd;
+  --btn-primary-top: #ff6622;
+  --btn-primary-btm: #e64a19;
+  --btn-secondary-top: var(--color-secondary-light);
+  --btn-secondary-btm: var(--color-secondary-dark);
+  --btn-success-top: var(--color-success-light);
+  --btn-success-btm: var(--color-success-dark);
+  --btn-warning-top: var(--color-warning-light);
+  --btn-warning-btm: var(--color-warning-dark);
+  --btn-danger-top: var(--color-danger-light);
+  --btn-danger-btm: var(--color-danger-dark);
+  --btn-info-top: var(--color-info-light);
+  --btn-info-btm: var(--color-info-dark);
+  /* ═══════════════════════════════════════════════════════════════════════
+     SHADOW & HIGHLIGHT OVERLAYS
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Shadow Overlays (Black with alpha) ──────────────────────────── */
+  --shadow-02: rgba(0, 0, 0, 0.02);
+  --shadow-03: rgba(0, 0, 0, 0.03);
+  --shadow-05: rgba(0, 0, 0, 0.05);
+  --shadow-10: rgba(0, 0, 0, 0.1);
+  --shadow-15: rgba(0, 0, 0, 0.15);
+  --shadow-20: rgba(0, 0, 0, 0.2);
+  --shadow-30: rgba(0, 0, 0, 0.3);
+  --shadow-40: rgba(0, 0, 0, 0.4);
+  --shadow-50: rgba(0, 0, 0, 0.5);
+  --shadow-60: rgba(0, 0, 0, 0.6);
+  --shadow-80: rgba(0, 0, 0, 0.8);
+  --shadow-90: rgba(0, 0, 0, 0.9);
+  /* ─── Highlight Overlays (White with alpha) ───────────────────────── */
+  --highlight-03: rgba(255, 255, 255, 0.03);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
+  --highlight-60: rgba(255, 255, 255, 0.6);
+  /* ─── Glow Effects ─────────────────────────────────────────────────── */
+  --glow-primary: rgba(255, 69, 0, 0.4);
+  --glow-success: rgba(0, 163, 0, 0.4);
+  --glow-warning: rgba(255, 152, 0, 0.4);
+  --glow-danger: rgba(255, 51, 51, 0.4);
+  --glow-info: rgba(33, 150, 243, 0.4);
+  /* ═══════════════════════════════════════════════════════════════════════
+     TYPOGRAPHY
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Font Families ────────────────────────────────────────────────── */
+  --font-body: 'Roboto', sans-serif;
+  --font-label: 'Roboto', sans-serif;
+  --font-tech: 'Michroma', sans-serif;
+  --font-display: 'Michroma', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+  /* ─── Type Scale ───────────────────────────────────────────────────── */
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  /* ─── Line Heights ─────────────────────────────────────────────────── */
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  /* ─── Letter Spacing ───────────────────────────────────────────────── */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+  /* ═══════════════════════════════════════════════════════════════════════
+     BACKWARD COMPATIBILITY ALIASES
+     (Legacy variable names → New semantic names)
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Legacy Orange ────────────────────────────────────────────────── */
+  --color-orange-vivid: var(--color-primary);
+  --color-orange-light: var(--color-primary-light);
+  --color-orange-dark: var(--color-primary-dark);
+  --color-orange-deep: var(--color-primary-deep);
+  /* ─── Legacy Red/Alert ─────────────────────────────────────────────── */
+  --color-red-vivid: var(--color-danger);
+  --color-red-deep: var(--color-danger-dark);
+  --color-red-dark: var(--color-danger-muted);
+  --color-alert: var(--color-danger);
+  --color-alert-dark: var(--color-danger-dark);
+  --color-alert-muted: var(--color-danger-muted);
+  /* ─── Legacy Text ──────────────────────────────────────────────────── */
+  --text-dark: var(--text-primary);
+  --text-dim: var(--text-secondary);
+  --text-orange: var(--text-accent);
+  /* ─── Legacy Buttons ───────────────────────────────────────────────── */
+  --btn-bg-orange: var(--btn-bg-primary);
+  --btn-orange-top: var(--btn-primary-top);
+  --btn-orange-btm: var(--btn-primary-btm);
+  /* ─── Legacy Indicators ────────────────────────────────────────────── */
+  --led-red-on: var(--led-on);
+  --led-red-off: var(--led-off);
+  /* ─── Legacy Gradients ─────────────────────────────────────────────── */
+  --grad-orange-vivid: var(--grad-primary);
+  --glow-orange-40: var(--glow-primary);
+}
+
+/* --- Main Content Area --- */
+.content-display {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.tab-pane {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  width: 100%;
+  max-width: 800px;
+}
+
+.tab-pane.active {
+  display: flex;
+  opacity: 1;
+}
+
+/* Placeholder Content Styling */
+.placeholder-icon {
+  font-size: 80px;
+  color: var(--shadow-10);
+  margin-bottom: 20px;
+  text-shadow: 1px 1px 0 var(--highlight-50);
+}
+
+h2 {
+  font-family: var(--font-tech);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+/* --- Bottom Tab Bar --- */
+.tab-bar {
+  height: 90px;
+  background-color: var(--device-surface);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 0 10px;
+  /* Minimal padding */
+  gap: 10px;
+  /* Minimal gap */
+  box-sizing: border-box;
+  /* Industrial Top Bevel */
+  border-top: 1px solid var(--highlight-40);
+  box-shadow: 0 -4px 10px var(--shadow-10), inset 0 1px 0 var(--highlight-30);
+  /* Texture */
+  background-image: linear-gradient(var(--highlight-03), var(--shadow-03)), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23000000' fill-opacity='0.03' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'/%3E%3C/svg%3E");
+  z-index: 100;
+}
+
+/* Tab Buttons */
+.tab-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  height: 70px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  /* Default State: Slight pop-out */
+  background: linear-gradient(180deg, var(--highlight-10) 0%, var(--shadow-05) 100%);
+  box-shadow: 2px 2px 5px var(--shadow-10), inset 1px 1px 0 var(--highlight-20);
+  border: 1px solid var(--shadow-05);
+}
+
+.tab-icon {
+  font-size: 28px;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+  transition: color 0.2s;
+  text-shadow: 0 1px 0 var(--highlight-50);
+}
+
+.tab-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Hover State */
+.tab-btn:hover {
+  background: linear-gradient(180deg, var(--highlight-20) 0%, var(--shadow-02) 100%);
+  transform: translateY(-1px);
+}
+
+/* Active State: Deeply Inset & Glowing */
+.tab-btn.active {
+  background-color: var(--device-surface);
+  box-shadow: inset 3px 3px 6px var(--shadow-30), inset -1px -1px 2px var(--highlight-60);
+  border: 1px solid transparent;
+  transform: translateY(1px);
+}
+
+.tab-btn.active .tab-icon {
+  color: var(--text-orange);
+  /* Soft LED Glow for Icon */
+  text-shadow: 0 0 10px var(--glow-orange-40);
+}
+
+.tab-btn.active .tab-label {
+  color: var(--color-gray-600);
+  font-weight: 700;
+}
+
+/* Indicator Light (Optional - small dot below icon) */
+.tab-btn::after {
+  content: "";
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--color-gray-500);
+  margin-top: 4px;
+  box-shadow: inset 0 1px 1px var(--shadow-50);
+  transition: all 0.3s;
+}
+
+.tab-btn.active::after {
+  background-color: var(--led-red-on);
+  box-shadow: 0 0 5px var(--led-red-on);
+}
+
+/* --- Tab-specific layout overrides --- */
+/* Browse Grid simulation */
+.browse-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 20px;
+  width: 100%;
+  padding: 20px;
+}
+
+.grid-item {
+  aspect-ratio: 1;
+  background: var(--color-gray-100);
+  border-radius: 8px;
+  box-shadow: var(--shadow-component);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Playback simple view */
+.playback-info {
+  text-align: center;
+}
+
+/* Media Player Layout & Common Components */
+.player-casing {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  background-color: var(--device-surface);
+  border-radius: 30px;
+  padding: 30px;
+  box-shadow: 20px 20px 40px rgba(0, 0, 0, 0.25), -5px -5px 15px rgba(255, 255, 255, 0.6), inset 1px 1px 0 rgba(255, 255, 255, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  position: relative;
+  /* Texture */
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.03)), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23000000' fill-opacity='0.03' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'/%3E%3C/svg%3E");
+  transition: max-width 0.3s ease;
+}
+
+/* Layout wrappers for RWD */
+.media-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.controls-section {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Screen Area */
+.screen-frame {
+  background-color: var(--color-gray-800, #222);
+  border-radius: 6px;
+  padding: 15px;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.6), inset -1px -1px 2px rgba(255, 255, 255, 0.1), 0 1px 0 rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  height: 100%;
+  justify-content: center;
+}
+
+/* Common Media Container Base Styles */
+.album-art-container,
+.vinyl-container,
+.cd-container {
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  margin: 0 auto;
+}
+
+/* Track Info Typography */
+.track-info {
+  font-family: var(--font-label, "Roboto", sans-serif);
+  color: var(--color-gray-600);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.track-title {
+  font-size: clamp(1.25rem, 4.5vw, 2.25rem);
+  font-weight: 700;
+  margin-bottom: 5px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  color: var(--color-gray-200, #eee);
+  text-overflow: ellipsis;
+}
+
+.artist-name,
+.album-name {
+  font-size: clamp(0.8rem, 2.2vw, 1.2rem);
+  color: var(--color-gray-300, #888);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.album-name {
+  font-style: italic;
+  color: var(--color-gray-400, #666);
+}
+
+.responsive-title {
+  font-size: clamp(1rem, 4.5cqw, 3rem);
+}
+
+.responsive-artist {
+  font-size: clamp(0.75rem, 3.5cqw, 2.5rem);
+}
+
+.responsive-album {
+  font-size: clamp(0.7rem, 1.8cqw, 0.95rem);
+}
+
+.responsive-stream-info {
+  font-size: clamp(0.7rem, 2.1cqw, 1.96rem);
+}
+
+.format-logo-responsive {
+  height: clamp(1.3rem, 3.8cqw, 4.2rem);
+  display: block;
+}
+
+/* Audio Format & Bitrate Info */
+.audio-meta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  height: 20px;
+}
+
+.format-logo-icon {
+  height: clamp(0.85rem, 1.6vw, 1.4rem);
+  width: auto;
+  display: block;
+  opacity: 0.9;
+}
+
+.bitrate-info {
+  font-family: var(--font-tech, "Michroma", sans-serif);
+  font-size: clamp(0.55rem, 1vw, 0.75rem);
+  color: var(--color-gray-500, #555);
+  letter-spacing: 0.5px;
+}
+
+.material-icons {
+  font-size: 24px;
+}
+
+.transport-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.btn-primary .material-icons, .btn-orange .material-icons {
+  font-size: 32px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Progress Sliders */
+.slider-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.slider-track {
+  flex-grow: 1;
+  height: clamp(8px, 1.2vw, 16px);
+  background-color: var(--color-gray-850, #1a1a1a);
+  border-radius: 5px;
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.7), 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  cursor: pointer;
+}
+
+.slider-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-orange-light, #ff7043), var(--color-orange-dark, #d84315));
+  border-radius: 5px 0 0 5px;
+  width: 30%;
+  position: relative;
+}
+
+.slider-cap {
+  width: clamp(12px, 1.4vw, 20px);
+  height: clamp(18px, 2.2vw, 30px);
+  background: var(--grad-metallic, linear-gradient(180deg, #e0e0e0, #bdbdbd));
+  border-radius: 2px;
+  position: absolute;
+  right: calc(clamp(12px, 1.4vw, 20px) / -2);
+  top: 50%;
+  transform: translateY(-50%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 1px 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.slider-cap::after {
+  content: "";
+  position: absolute;
+  top: 25%;
+  left: 3px;
+  right: 3px;
+  bottom: 25%;
+  border-top: 2px solid var(--color-gray-300, #888);
+  border-bottom: 2px solid var(--color-gray-300, #888);
+}
+
+.time-label {
+  font-family: var(--font-tech);
+  font-size: clamp(0.6rem, 1.1vw, 0.85rem);
+  color: var(--color-gray-500, #555);
+  min-width: clamp(28px, 3.5vw, 44px);
+}
+
+/* Utiltiy Controls */
+.controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px;
+}
+
+.utility-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+}
+
+.utility-btn {
+  width: 40px;
+  height: 40px;
+}
+
+.utility-btn .material-icons {
+  font-size: 18px;
+}
+
+/* ---------------------------------------------------- */
+/* RESPONSIVE MEDIA QUERIES                             */
+/* ---------------------------------------------------- */
+/* Landscape / Desktop / Ultrawide */
+@media (min-width: 768px) and (min-aspect-ratio: 4/3) {
+  .player-casing {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 60px;
+    gap: 60px;
+  }
+  .media-section {
+    flex: 1;
+    max-width: none;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+  }
+  .screen-frame {
+    width: 100%;
+    height: auto;
+    justify-content: center;
+  }
+  /* Common container size override */
+  .album-art-container,
+  .vinyl-container,
+  .cd-container {
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    margin-bottom: 20px;
+  }
+  .controls-section {
+    flex: 1;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    max-width: none;
+    gap: 40px;
+  }
+  .controls-section > * {
+    width: 100%;
+    max-width: 500px;
+  }
+  .utility-row {
+    margin-top: 20px;
+  }
+}
+/* Ultrawide 2560x720 specific optimization */
+@media (min-aspect-ratio: 21/9) {
+  .player-casing {
+    max-width: none;
+  }
+  .transport-controls .btn-round {
+    transform: scale(1.1);
+  }
+  .transport-controls .btn-primary, .transport-controls .btn-orange {
+    transform: scale(1.1);
+  }
+}
+/* 4K Scaling / High DPI Large Screens */
+@media (min-width: 2500px) {
+  body {
+    zoom: 1.5;
+  }
+}
+.read-only .slider-track {
+  cursor: default;
+}
+
+/* Page-level wrapper — apply to the element that wraps the entire album browser */
+.album-browser-page {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.browser-casing {
+  width: 100%;
+  flex: 1;
+  min-height: 0; /* allow flex child to shrink below intrinsic height */
+  max-width: none;
+  background-color: var(--device-surface);
+  border-radius: 30px;
+  padding: 30px;
+  box-shadow: 20px 20px 60px rgba(0, 0, 0, 0.3), -5px -5px 15px rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+  /* Texture */
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.03)), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23000000' fill-opacity='0.03' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'/%3E%3C/svg%3E");
+}
+
+/* Screen Frame acting as the viewport */
+.screen-frame {
+  background-color: #222;
+  border-radius: 6px;
+  padding: 20px;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.6), inset -1px -1px 2px rgba(255, 255, 255, 0.1), 0 1px 0 rgba(255, 255, 255, 0.1);
+  flex: 1;
+  min-height: 0; /* allow flex child to shrink below intrinsic height */
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header / Navigation Bar */
+.nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #333;
+}
+
+.screen-title {
+  font-family: var(--font-tech);
+  color: #ccc;
+  font-size: 18px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.search-bar {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 15px;
+  padding: 8px 18px;
+  color: #fff;
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 400px;
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Scrollable container — wraps .album-grid. Only this scrolls, not the nav-bar */
+.album-list-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px; /* prevent content from touching the scrollbar */
+}
+
+.album-list-scroll::-webkit-scrollbar {
+  width: 12px;
+}
+
+.album-list-scroll::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 0 6px 6px 0;
+  box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.5);
+}
+
+.album-list-scroll::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 6px;
+  border: 2px solid #1a1a1a;
+}
+
+.album-list-scroll::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Album Grid */
+.album-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+/* Album Card */
+.album-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.album-card:active {
+  transform: scale(0.98);
+}
+
+.album-art {
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #333, #1a1a1a);
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Placeholder pattern from other files */
+  background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, #222 10px, #222 20px);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #333;
+}
+
+.album-art::after {
+  content: "ALBUM";
+  font-family: var(--font-tech);
+  color: rgba(255, 255, 255, 0.1);
+  font-size: 14px;
+  transform: rotate(-45deg);
+}
+
+.album-info {
+  font-family: "Roboto", sans-serif;
+}
+
+.album-title {
+  color: #ddd;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.album-artist {
+  color: #777;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Controls outside screen */
+.browser-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-square {
+  width: 50px;
+  height: 50px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #eaeaea 0%, #cdcdcd 100%);
+  color: #444;
+  border-bottom: 2px solid #999;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2), inset 0 1px 0 #fff;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.btn-square:active {
+  background: #cdcdcd;
+  transform: translateY(2px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  border-bottom: 0;
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Orange) ────────────────────────────────────────────── */
+  --color-primary: #ff4500;
+  --color-primary-light: #ff7043;
+  --color-primary-dark: #d84315;
+  --color-primary-deep: #bf360c;
+  /* ─── Neutrals (Grays) ────────────────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #050505;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #4d4d4d;
+  --color-gray-500: #555555;
+  --color-gray-400: #666666;
+  --color-gray-300: #888888;
+  --color-gray-250: #999999;
+  --color-gray-200: #aaaaaa;
+  --color-gray-150: #bbbbbb;
+  --color-gray-100: #cccccc;
+  --color-gray-075: #d0d0d0;
+  --color-gray-050: #e0e0e0;
+  --color-gray-025: #f0f0f0;
+  --color-gray-010: #f5f5f5;
+  --color-white: #ffffff;
+  /* ─── Warm Neutrals (Browns/Taupes) ───────────────────────────────── */
+  --color-taupe-dark: #55433c;
+  --color-taupe-light: #bda69e;
+  --color-taupe-medium: #8a7166;
+  /* ─── Secondary (Neutral/Gray) ────────────────────────────────────── */
+  --color-secondary: #666666;
+  --color-secondary-light: #888888;
+  --color-secondary-dark: #444444;
+  /* ─── Success/Green ────────────────────────────────────────────────── */
+  --color-success: #00a300;
+  --color-success-dark: #006d00;
+  --color-success-light: #33b833;
+  /* ─── Warning/Amber ────────────────────────────────────────────────── */
+  --color-warning: #ff9800;
+  --color-warning-dark: #f57c00;
+  --color-warning-light: #ffb74d;
+  /* ─── Danger/Alert (Red) ──────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #b71c1c;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #552222;
+  /* ─── Info/Blue ────────────────────────────────────────────────────── */
+  --color-info: #2196f3;
+  --color-info-dark: #1976d2;
+  --color-info-light: #64b5f6;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-050);
+  --text-secondary: var(--color-gray-300);
+  --text-light: var(--color-white);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success-dark);
+  --text-warning: var(--color-warning-dark);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info-dark);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: var(--color-gray-900);
+  --panel-bg-dark: var(--color-gray-950);
+  --device-surface: var(--color-gray-100);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: #202020;
+  --btn-bg-light: #e6e6e6;
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 163, 0, 0.12);
+  --alert-bg-warning: rgba(255, 152, 0, 0.12);
+  --alert-bg-danger: rgba(255, 51, 51, 0.12);
+  --alert-bg-info: rgba(33, 150, 243, 0.12);
+  --alert-border-success: var(--color-success);
+  --alert-border-warning: var(--color-warning);
+  --alert-border-danger: var(--color-danger);
+  --alert-border-info: var(--color-info);
+  /* ─── UI Components ────────────────────────────────────────────────── */
+  --list-item-bg: #252525;
+  --list-item-bg-hover: var(--color-gray-750);
+  --border-dark: var(--color-gray-900);
+  --border-light: var(--color-gray-300);
+  --border-warm: var(--color-taupe-medium);
+  --border-primary: var(--color-primary);
+  --border-secondary: var(--color-secondary);
+  --border-success: var(--color-success);
+  --border-warning: var(--color-warning);
+  --border-danger: var(--color-danger);
+  --border-info: var(--color-info);
+  /* ─── Status & Indicators ──────────────────────────────────────────── */
+  --led-on: var(--color-danger);
+  --led-off: var(--color-danger-muted);
+  --indicator-success: var(--color-success);
+  --indicator-warning: var(--color-warning);
+  --indicator-danger: var(--color-danger);
+  --indicator-info: var(--color-info);
+  --indicator-error: var(--color-danger);
+  /* ─── Gradients ────────────────────────────────────────────────────── */
+  --grad-primary: linear-gradient(
+      90deg,
+      var(--color-primary-light),
+      var(--color-primary-dark)
+  );
+  --grad-metallic: linear-gradient(180deg, var(--color-gray-050), #bdbdbd);
+  --grad-warm: linear-gradient(
+      135deg,
+      var(--color-taupe-light),
+      var(--color-taupe-dark)
+  );
+  /* ─── Button Gradients ─────────────────────────────────────────────── */
+  --btn-black-top: var(--color-gray-700);
+  --btn-black-btm: var(--color-gray-800);
+  --btn-white-top: #eaeaea;
+  --btn-white-btm: #cdcdcd;
+  --btn-primary-top: #ff6622;
+  --btn-primary-btm: #e64a19;
+  --btn-secondary-top: var(--color-secondary-light);
+  --btn-secondary-btm: var(--color-secondary-dark);
+  --btn-success-top: var(--color-success-light);
+  --btn-success-btm: var(--color-success-dark);
+  --btn-warning-top: var(--color-warning-light);
+  --btn-warning-btm: var(--color-warning-dark);
+  --btn-danger-top: var(--color-danger-light);
+  --btn-danger-btm: var(--color-danger-dark);
+  --btn-info-top: var(--color-info-light);
+  --btn-info-btm: var(--color-info-dark);
+  /* ═══════════════════════════════════════════════════════════════════════
+     SHADOW & HIGHLIGHT OVERLAYS
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Shadow Overlays (Black with alpha) ──────────────────────────── */
+  --shadow-02: rgba(0, 0, 0, 0.02);
+  --shadow-03: rgba(0, 0, 0, 0.03);
+  --shadow-05: rgba(0, 0, 0, 0.05);
+  --shadow-10: rgba(0, 0, 0, 0.1);
+  --shadow-15: rgba(0, 0, 0, 0.15);
+  --shadow-20: rgba(0, 0, 0, 0.2);
+  --shadow-30: rgba(0, 0, 0, 0.3);
+  --shadow-40: rgba(0, 0, 0, 0.4);
+  --shadow-50: rgba(0, 0, 0, 0.5);
+  --shadow-60: rgba(0, 0, 0, 0.6);
+  --shadow-80: rgba(0, 0, 0, 0.8);
+  --shadow-90: rgba(0, 0, 0, 0.9);
+  /* ─── Highlight Overlays (White with alpha) ───────────────────────── */
+  --highlight-03: rgba(255, 255, 255, 0.03);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
+  --highlight-60: rgba(255, 255, 255, 0.6);
+  /* ─── Glow Effects ─────────────────────────────────────────────────── */
+  --glow-primary: rgba(255, 69, 0, 0.4);
+  --glow-success: rgba(0, 163, 0, 0.4);
+  --glow-warning: rgba(255, 152, 0, 0.4);
+  --glow-danger: rgba(255, 51, 51, 0.4);
+  --glow-info: rgba(33, 150, 243, 0.4);
+  /* ═══════════════════════════════════════════════════════════════════════
+     TYPOGRAPHY
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Font Families ────────────────────────────────────────────────── */
+  --font-body: 'Roboto', sans-serif;
+  --font-label: 'Roboto', sans-serif;
+  --font-tech: 'Michroma', sans-serif;
+  --font-display: 'Michroma', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+  /* ─── Type Scale ───────────────────────────────────────────────────── */
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  /* ─── Line Heights ─────────────────────────────────────────────────── */
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  /* ─── Letter Spacing ───────────────────────────────────────────────── */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+  /* ═══════════════════════════════════════════════════════════════════════
+     BACKWARD COMPATIBILITY ALIASES
+     (Legacy variable names → New semantic names)
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Legacy Orange ────────────────────────────────────────────────── */
+  --color-orange-vivid: var(--color-primary);
+  --color-orange-light: var(--color-primary-light);
+  --color-orange-dark: var(--color-primary-dark);
+  --color-orange-deep: var(--color-primary-deep);
+  /* ─── Legacy Red/Alert ─────────────────────────────────────────────── */
+  --color-red-vivid: var(--color-danger);
+  --color-red-deep: var(--color-danger-dark);
+  --color-red-dark: var(--color-danger-muted);
+  --color-alert: var(--color-danger);
+  --color-alert-dark: var(--color-danger-dark);
+  --color-alert-muted: var(--color-danger-muted);
+  /* ─── Legacy Text ──────────────────────────────────────────────────── */
+  --text-dark: var(--text-primary);
+  --text-dim: var(--text-secondary);
+  --text-orange: var(--text-accent);
+  /* ─── Legacy Buttons ───────────────────────────────────────────────── */
+  --btn-bg-orange: var(--btn-bg-primary);
+  --btn-orange-top: var(--btn-primary-top);
+  --btn-orange-btm: var(--btn-primary-btm);
+  /* ─── Legacy Indicators ────────────────────────────────────────────── */
+  --led-red-on: var(--led-on);
+  --led-red-off: var(--led-off);
+  /* ─── Legacy Gradients ─────────────────────────────────────────────── */
+  --grad-orange-vivid: var(--grad-primary);
+  --glow-orange-40: var(--glow-primary);
+}
+
+/* ── Playlist Items ── */
+.playlist-list {
+  padding-bottom: 1rem;
+}
+
+.playlist-item {
+  border-bottom: 1px solid var(--highlight-05);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s;
+  padding: 8px 4px;
+}
+
+.playlist-item:hover {
+  background: var(--highlight-05);
+}
+
+/* Active / current track */
+.playlist-item--active {
+  background: var(--highlight-10);
+}
+
+.playlist-item--active .playlist-track-title {
+  color: var(--btn-primary-top);
+}
+
+/* ── Album Art ── */
+.playlist-art-wrap {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.playlist-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.playlist-art--empty {
+  background: var(--highlight-10);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Play icon overlay on current track's art */
+.playlist-art-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--shadow-50);
+  color: var(--color-white);
+}
+
+/* ── Track Text ── */
+.playlist-track-title {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  line-height: 1.3;
+}
+
+.playlist-track-meta {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+/* ── Remove Button ── */
+.playlist-remove {
+  flex-shrink: 0;
+  transition: color 0.15s;
+  text-decoration: none !important;
+}
+
+.playlist-remove:hover {
+  color: var(--color-red-vivid) !important;
+}
+
+.playlist-remove .material-icons {
+  font-size: 1.1rem;
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Orange) ────────────────────────────────────────────── */
+  --color-primary: #ff4500;
+  --color-primary-light: #ff7043;
+  --color-primary-dark: #d84315;
+  --color-primary-deep: #bf360c;
+  /* ─── Neutrals (Grays) ────────────────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #050505;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #4d4d4d;
+  --color-gray-500: #555555;
+  --color-gray-400: #666666;
+  --color-gray-300: #888888;
+  --color-gray-250: #999999;
+  --color-gray-200: #aaaaaa;
+  --color-gray-150: #bbbbbb;
+  --color-gray-100: #cccccc;
+  --color-gray-075: #d0d0d0;
+  --color-gray-050: #e0e0e0;
+  --color-gray-025: #f0f0f0;
+  --color-gray-010: #f5f5f5;
+  --color-white: #ffffff;
+  /* ─── Warm Neutrals (Browns/Taupes) ───────────────────────────────── */
+  --color-taupe-dark: #55433c;
+  --color-taupe-light: #bda69e;
+  --color-taupe-medium: #8a7166;
+  /* ─── Secondary (Neutral/Gray) ────────────────────────────────────── */
+  --color-secondary: #666666;
+  --color-secondary-light: #888888;
+  --color-secondary-dark: #444444;
+  /* ─── Success/Green ────────────────────────────────────────────────── */
+  --color-success: #00a300;
+  --color-success-dark: #006d00;
+  --color-success-light: #33b833;
+  /* ─── Warning/Amber ────────────────────────────────────────────────── */
+  --color-warning: #ff9800;
+  --color-warning-dark: #f57c00;
+  --color-warning-light: #ffb74d;
+  /* ─── Danger/Alert (Red) ──────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #b71c1c;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #552222;
+  /* ─── Info/Blue ────────────────────────────────────────────────────── */
+  --color-info: #2196f3;
+  --color-info-dark: #1976d2;
+  --color-info-light: #64b5f6;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-050);
+  --text-secondary: var(--color-gray-300);
+  --text-light: var(--color-white);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success-dark);
+  --text-warning: var(--color-warning-dark);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info-dark);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: var(--color-gray-900);
+  --panel-bg-dark: var(--color-gray-950);
+  --device-surface: var(--color-gray-100);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: #202020;
+  --btn-bg-light: #e6e6e6;
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 163, 0, 0.12);
+  --alert-bg-warning: rgba(255, 152, 0, 0.12);
+  --alert-bg-danger: rgba(255, 51, 51, 0.12);
+  --alert-bg-info: rgba(33, 150, 243, 0.12);
+  --alert-border-success: var(--color-success);
+  --alert-border-warning: var(--color-warning);
+  --alert-border-danger: var(--color-danger);
+  --alert-border-info: var(--color-info);
+  /* ─── UI Components ────────────────────────────────────────────────── */
+  --list-item-bg: #252525;
+  --list-item-bg-hover: var(--color-gray-750);
+  --border-dark: var(--color-gray-900);
+  --border-light: var(--color-gray-300);
+  --border-warm: var(--color-taupe-medium);
+  --border-primary: var(--color-primary);
+  --border-secondary: var(--color-secondary);
+  --border-success: var(--color-success);
+  --border-warning: var(--color-warning);
+  --border-danger: var(--color-danger);
+  --border-info: var(--color-info);
+  /* ─── Status & Indicators ──────────────────────────────────────────── */
+  --led-on: var(--color-danger);
+  --led-off: var(--color-danger-muted);
+  --indicator-success: var(--color-success);
+  --indicator-warning: var(--color-warning);
+  --indicator-danger: var(--color-danger);
+  --indicator-info: var(--color-info);
+  --indicator-error: var(--color-danger);
+  /* ─── Gradients ────────────────────────────────────────────────────── */
+  --grad-primary: linear-gradient(
+      90deg,
+      var(--color-primary-light),
+      var(--color-primary-dark)
+  );
+  --grad-metallic: linear-gradient(180deg, var(--color-gray-050), #bdbdbd);
+  --grad-warm: linear-gradient(
+      135deg,
+      var(--color-taupe-light),
+      var(--color-taupe-dark)
+  );
+  /* ─── Button Gradients ─────────────────────────────────────────────── */
+  --btn-black-top: var(--color-gray-700);
+  --btn-black-btm: var(--color-gray-800);
+  --btn-white-top: #eaeaea;
+  --btn-white-btm: #cdcdcd;
+  --btn-primary-top: #ff6622;
+  --btn-primary-btm: #e64a19;
+  --btn-secondary-top: var(--color-secondary-light);
+  --btn-secondary-btm: var(--color-secondary-dark);
+  --btn-success-top: var(--color-success-light);
+  --btn-success-btm: var(--color-success-dark);
+  --btn-warning-top: var(--color-warning-light);
+  --btn-warning-btm: var(--color-warning-dark);
+  --btn-danger-top: var(--color-danger-light);
+  --btn-danger-btm: var(--color-danger-dark);
+  --btn-info-top: var(--color-info-light);
+  --btn-info-btm: var(--color-info-dark);
+  /* ═══════════════════════════════════════════════════════════════════════
+     SHADOW & HIGHLIGHT OVERLAYS
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Shadow Overlays (Black with alpha) ──────────────────────────── */
+  --shadow-02: rgba(0, 0, 0, 0.02);
+  --shadow-03: rgba(0, 0, 0, 0.03);
+  --shadow-05: rgba(0, 0, 0, 0.05);
+  --shadow-10: rgba(0, 0, 0, 0.1);
+  --shadow-15: rgba(0, 0, 0, 0.15);
+  --shadow-20: rgba(0, 0, 0, 0.2);
+  --shadow-30: rgba(0, 0, 0, 0.3);
+  --shadow-40: rgba(0, 0, 0, 0.4);
+  --shadow-50: rgba(0, 0, 0, 0.5);
+  --shadow-60: rgba(0, 0, 0, 0.6);
+  --shadow-80: rgba(0, 0, 0, 0.8);
+  --shadow-90: rgba(0, 0, 0, 0.9);
+  /* ─── Highlight Overlays (White with alpha) ───────────────────────── */
+  --highlight-03: rgba(255, 255, 255, 0.03);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
+  --highlight-60: rgba(255, 255, 255, 0.6);
+  /* ─── Glow Effects ─────────────────────────────────────────────────── */
+  --glow-primary: rgba(255, 69, 0, 0.4);
+  --glow-success: rgba(0, 163, 0, 0.4);
+  --glow-warning: rgba(255, 152, 0, 0.4);
+  --glow-danger: rgba(255, 51, 51, 0.4);
+  --glow-info: rgba(33, 150, 243, 0.4);
+  /* ═══════════════════════════════════════════════════════════════════════
+     TYPOGRAPHY
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Font Families ────────────────────────────────────────────────── */
+  --font-body: 'Roboto', sans-serif;
+  --font-label: 'Roboto', sans-serif;
+  --font-tech: 'Michroma', sans-serif;
+  --font-display: 'Michroma', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+  /* ─── Type Scale ───────────────────────────────────────────────────── */
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  /* ─── Line Heights ─────────────────────────────────────────────────── */
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  /* ─── Letter Spacing ───────────────────────────────────────────────── */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+  /* ═══════════════════════════════════════════════════════════════════════
+     BACKWARD COMPATIBILITY ALIASES
+     (Legacy variable names → New semantic names)
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Legacy Orange ────────────────────────────────────────────────── */
+  --color-orange-vivid: var(--color-primary);
+  --color-orange-light: var(--color-primary-light);
+  --color-orange-dark: var(--color-primary-dark);
+  --color-orange-deep: var(--color-primary-deep);
+  /* ─── Legacy Red/Alert ─────────────────────────────────────────────── */
+  --color-red-vivid: var(--color-danger);
+  --color-red-deep: var(--color-danger-dark);
+  --color-red-dark: var(--color-danger-muted);
+  --color-alert: var(--color-danger);
+  --color-alert-dark: var(--color-danger-dark);
+  --color-alert-muted: var(--color-danger-muted);
+  /* ─── Legacy Text ──────────────────────────────────────────────────── */
+  --text-dark: var(--text-primary);
+  --text-dim: var(--text-secondary);
+  --text-orange: var(--text-accent);
+  /* ─── Legacy Buttons ───────────────────────────────────────────────── */
+  --btn-bg-orange: var(--btn-bg-primary);
+  --btn-orange-top: var(--btn-primary-top);
+  --btn-orange-btm: var(--btn-primary-btm);
+  /* ─── Legacy Indicators ────────────────────────────────────────────── */
+  --led-red-on: var(--led-on);
+  --led-red-off: var(--led-off);
+  /* ─── Legacy Gradients ─────────────────────────────────────────────── */
+  --grad-orange-vivid: var(--grad-primary);
+  --glow-orange-40: var(--glow-primary);
+}
+
+/* ── Backdrop ── */
+.slide-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1040;
+  background: transparent;
+  pointer-events: none;
+  transition: background 0.3s ease;
+}
+
+.slide-panel-backdrop.show {
+  background: var(--shadow-50);
+  pointer-events: auto;
+}
+
+/* ── Panel ── */
+.slide-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  max-width: 80vw;
+  background: var(--panel-bg-dark);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--highlight-10);
+  box-shadow: 4px 0 24px var(--shadow-50);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  outline: none;
+}
+
+.slide-panel.open {
+  transform: translateX(0);
+}
+
+/* ── Header ── */
+.slide-panel-header {
+  border-bottom: 1px solid var(--highlight-10);
+  flex-shrink: 0;
+}
+
+/* ── Title Group ── */
+.slide-panel-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.slide-panel-subtitle {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-family: var(--font-label);
+  opacity: 0.8;
+}
+
+.slide-panel-title {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text-light);
+}
+
+/* ── Body ── */
+.slide-panel-body {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  padding: 12px 16px;
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Orange) ────────────────────────────────────────────── */
+  --color-primary: #ff4500;
+  --color-primary-light: #ff7043;
+  --color-primary-dark: #d84315;
+  --color-primary-deep: #bf360c;
+  /* ─── Neutrals (Grays) ────────────────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #050505;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #4d4d4d;
+  --color-gray-500: #555555;
+  --color-gray-400: #666666;
+  --color-gray-300: #888888;
+  --color-gray-250: #999999;
+  --color-gray-200: #aaaaaa;
+  --color-gray-150: #bbbbbb;
+  --color-gray-100: #cccccc;
+  --color-gray-075: #d0d0d0;
+  --color-gray-050: #e0e0e0;
+  --color-gray-025: #f0f0f0;
+  --color-gray-010: #f5f5f5;
+  --color-white: #ffffff;
+  /* ─── Warm Neutrals (Browns/Taupes) ───────────────────────────────── */
+  --color-taupe-dark: #55433c;
+  --color-taupe-light: #bda69e;
+  --color-taupe-medium: #8a7166;
+  /* ─── Secondary (Neutral/Gray) ────────────────────────────────────── */
+  --color-secondary: #666666;
+  --color-secondary-light: #888888;
+  --color-secondary-dark: #444444;
+  /* ─── Success/Green ────────────────────────────────────────────────── */
+  --color-success: #00a300;
+  --color-success-dark: #006d00;
+  --color-success-light: #33b833;
+  /* ─── Warning/Amber ────────────────────────────────────────────────── */
+  --color-warning: #ff9800;
+  --color-warning-dark: #f57c00;
+  --color-warning-light: #ffb74d;
+  /* ─── Danger/Alert (Red) ──────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #b71c1c;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #552222;
+  /* ─── Info/Blue ────────────────────────────────────────────────────── */
+  --color-info: #2196f3;
+  --color-info-dark: #1976d2;
+  --color-info-light: #64b5f6;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-050);
+  --text-secondary: var(--color-gray-300);
+  --text-light: var(--color-white);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success-dark);
+  --text-warning: var(--color-warning-dark);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info-dark);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: var(--color-gray-900);
+  --panel-bg-dark: var(--color-gray-950);
+  --device-surface: var(--color-gray-100);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: #202020;
+  --btn-bg-light: #e6e6e6;
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 163, 0, 0.12);
+  --alert-bg-warning: rgba(255, 152, 0, 0.12);
+  --alert-bg-danger: rgba(255, 51, 51, 0.12);
+  --alert-bg-info: rgba(33, 150, 243, 0.12);
+  --alert-border-success: var(--color-success);
+  --alert-border-warning: var(--color-warning);
+  --alert-border-danger: var(--color-danger);
+  --alert-border-info: var(--color-info);
+  /* ─── UI Components ────────────────────────────────────────────────── */
+  --list-item-bg: #252525;
+  --list-item-bg-hover: var(--color-gray-750);
+  --border-dark: var(--color-gray-900);
+  --border-light: var(--color-gray-300);
+  --border-warm: var(--color-taupe-medium);
+  --border-primary: var(--color-primary);
+  --border-secondary: var(--color-secondary);
+  --border-success: var(--color-success);
+  --border-warning: var(--color-warning);
+  --border-danger: var(--color-danger);
+  --border-info: var(--color-info);
+  /* ─── Status & Indicators ──────────────────────────────────────────── */
+  --led-on: var(--color-danger);
+  --led-off: var(--color-danger-muted);
+  --indicator-success: var(--color-success);
+  --indicator-warning: var(--color-warning);
+  --indicator-danger: var(--color-danger);
+  --indicator-info: var(--color-info);
+  --indicator-error: var(--color-danger);
+  /* ─── Gradients ────────────────────────────────────────────────────── */
+  --grad-primary: linear-gradient(
+      90deg,
+      var(--color-primary-light),
+      var(--color-primary-dark)
+  );
+  --grad-metallic: linear-gradient(180deg, var(--color-gray-050), #bdbdbd);
+  --grad-warm: linear-gradient(
+      135deg,
+      var(--color-taupe-light),
+      var(--color-taupe-dark)
+  );
+  /* ─── Button Gradients ─────────────────────────────────────────────── */
+  --btn-black-top: var(--color-gray-700);
+  --btn-black-btm: var(--color-gray-800);
+  --btn-white-top: #eaeaea;
+  --btn-white-btm: #cdcdcd;
+  --btn-primary-top: #ff6622;
+  --btn-primary-btm: #e64a19;
+  --btn-secondary-top: var(--color-secondary-light);
+  --btn-secondary-btm: var(--color-secondary-dark);
+  --btn-success-top: var(--color-success-light);
+  --btn-success-btm: var(--color-success-dark);
+  --btn-warning-top: var(--color-warning-light);
+  --btn-warning-btm: var(--color-warning-dark);
+  --btn-danger-top: var(--color-danger-light);
+  --btn-danger-btm: var(--color-danger-dark);
+  --btn-info-top: var(--color-info-light);
+  --btn-info-btm: var(--color-info-dark);
+  /* ═══════════════════════════════════════════════════════════════════════
+     SHADOW & HIGHLIGHT OVERLAYS
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Shadow Overlays (Black with alpha) ──────────────────────────── */
+  --shadow-02: rgba(0, 0, 0, 0.02);
+  --shadow-03: rgba(0, 0, 0, 0.03);
+  --shadow-05: rgba(0, 0, 0, 0.05);
+  --shadow-10: rgba(0, 0, 0, 0.1);
+  --shadow-15: rgba(0, 0, 0, 0.15);
+  --shadow-20: rgba(0, 0, 0, 0.2);
+  --shadow-30: rgba(0, 0, 0, 0.3);
+  --shadow-40: rgba(0, 0, 0, 0.4);
+  --shadow-50: rgba(0, 0, 0, 0.5);
+  --shadow-60: rgba(0, 0, 0, 0.6);
+  --shadow-80: rgba(0, 0, 0, 0.8);
+  --shadow-90: rgba(0, 0, 0, 0.9);
+  /* ─── Highlight Overlays (White with alpha) ───────────────────────── */
+  --highlight-03: rgba(255, 255, 255, 0.03);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
+  --highlight-60: rgba(255, 255, 255, 0.6);
+  /* ─── Glow Effects ─────────────────────────────────────────────────── */
+  --glow-primary: rgba(255, 69, 0, 0.4);
+  --glow-success: rgba(0, 163, 0, 0.4);
+  --glow-warning: rgba(255, 152, 0, 0.4);
+  --glow-danger: rgba(255, 51, 51, 0.4);
+  --glow-info: rgba(33, 150, 243, 0.4);
+  /* ═══════════════════════════════════════════════════════════════════════
+     TYPOGRAPHY
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Font Families ────────────────────────────────────────────────── */
+  --font-body: 'Roboto', sans-serif;
+  --font-label: 'Roboto', sans-serif;
+  --font-tech: 'Michroma', sans-serif;
+  --font-display: 'Michroma', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+  /* ─── Type Scale ───────────────────────────────────────────────────── */
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  /* ─── Line Heights ─────────────────────────────────────────────────── */
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  /* ─── Letter Spacing ───────────────────────────────────────────────── */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+  /* ═══════════════════════════════════════════════════════════════════════
+     BACKWARD COMPATIBILITY ALIASES
+     (Legacy variable names → New semantic names)
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Legacy Orange ────────────────────────────────────────────────── */
+  --color-orange-vivid: var(--color-primary);
+  --color-orange-light: var(--color-primary-light);
+  --color-orange-dark: var(--color-primary-dark);
+  --color-orange-deep: var(--color-primary-deep);
+  /* ─── Legacy Red/Alert ─────────────────────────────────────────────── */
+  --color-red-vivid: var(--color-danger);
+  --color-red-deep: var(--color-danger-dark);
+  --color-red-dark: var(--color-danger-muted);
+  --color-alert: var(--color-danger);
+  --color-alert-dark: var(--color-danger-dark);
+  --color-alert-muted: var(--color-danger-muted);
+  /* ─── Legacy Text ──────────────────────────────────────────────────── */
+  --text-dark: var(--text-primary);
+  --text-dim: var(--text-secondary);
+  --text-orange: var(--text-accent);
+  /* ─── Legacy Buttons ───────────────────────────────────────────────── */
+  --btn-bg-orange: var(--btn-bg-primary);
+  --btn-orange-top: var(--btn-primary-top);
+  --btn-orange-btm: var(--btn-primary-btm);
+  /* ─── Legacy Indicators ────────────────────────────────────────────── */
+  --led-red-on: var(--led-on);
+  --led-red-off: var(--led-off);
+  /* ─── Legacy Gradients ─────────────────────────────────────────────── */
+  --grad-orange-vivid: var(--grad-primary);
+  --glow-orange-40: var(--glow-primary);
+}
+
+.context-menu-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 1rem;
+  z-index: 100;
+}
+
+.context-menu-toggle {
+  width: 40px;
+  height: 40px;
+  background-color: var(--color-gray-500);
+  border: none;
+  border-radius: 50%;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 3px 3px 8px var(--shadow-30), -1px -1px 6px var(--highlight-30), inset 1px 1px 0 var(--highlight-20);
+  background-image: linear-gradient(var(--highlight-05), var(--shadow-05));
+}
+.context-menu-toggle .material-icons {
+  color: var(--text-light);
+  font-size: 20px;
+  filter: drop-shadow(0 1px 1px var(--shadow-30));
+}
+.context-menu-toggle:hover {
+  background-color: var(--color-gray-400);
+  box-shadow: 4px 4px 10px var(--shadow-40), -2px -2px 8px var(--highlight-40), inset 1px 1px 0 var(--highlight-30);
+  transform: translateY(-1px);
+}
+.context-menu-toggle:active {
+  transform: translateY(0);
+  box-shadow: 2px 2px 6px var(--shadow-30), -1px -1px 4px var(--highlight-20), inset 2px 2px 4px var(--shadow-20);
+}
+.context-menu-toggle--no-shadow {
+  box-shadow: none !important;
+  background-color: rgba(0, 0, 0, 0.35);
+  background-image: none;
+  border: none !important;
+  color: var(--color-primary);
+}
+.context-menu-toggle--no-shadow .material-icons {
+  color: var(--color-primary);
+  filter: none;
+}
+.context-menu-toggle--no-shadow:hover {
+  box-shadow: none !important;
+  background-color: rgba(0, 0, 0, 0.5);
+  transform: none;
+}
+.context-menu-toggle--no-shadow:active {
+  box-shadow: none !important;
+  transform: none;
+}
+
+.context-menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 99;
+  background-color: transparent;
+}
+
+.context-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background-color: var(--color-gray-500);
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 101;
+  box-shadow: 6px 6px 16px var(--shadow-40), -2px -2px 10px var(--highlight-15), inset 1px 1px 0 var(--highlight-10);
+  background-image: linear-gradient(var(--highlight-03), var(--shadow-03)), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23000000' fill-opacity='0.03' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'/%3E%3C/svg%3E");
+  animation: contextMenuSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top right;
+}
+
+@keyframes contextMenuSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.context-menu-item {
+  padding: 12px 20px;
+  color: var(--text-light);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-label);
+}
+.context-menu-item .material-icons {
+  font-size: 18px;
+  color: var(--text-muted);
+  width: 20px;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+.context-menu-item:hover {
+  background-color: var(--highlight-10);
+  color: var(--color-white);
+  border-left-color: var(--text-orange);
+}
+.context-menu-item:hover .material-icons {
+  color: var(--text-orange);
+}
+.context-menu-item:active {
+  background-color: var(--shadow-15);
+  box-shadow: inset 1px 1px 3px var(--shadow-20);
+}
+.context-menu-item:not(:last-child) {
+  border-bottom: 1px solid var(--highlight-05);
+  box-shadow: 0 1px 0 var(--shadow-10);
+}
+
+.context-menu-separator {
+  height: 1px;
+  background-color: var(--highlight-10);
+  margin: 4px 0;
+  border-bottom: 1px solid var(--shadow-20);
+}
+
+.context-menu-item.danger {
+  color: #ff6b6b;
+}
+.context-menu-item.danger .material-icons {
+  color: #ff6b6b;
+}
+.context-menu-item.danger:hover {
+  background-color: rgba(255, 71, 87, 0.15);
+  border-left-color: #ff6b6b;
+}
+.context-menu-item.danger:hover .material-icons {
+  color: #ff6b6b;
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Orange) ────────────────────────────────────────────── */
+  --color-primary: #ff4500;
+  --color-primary-light: #ff7043;
+  --color-primary-dark: #d84315;
+  --color-primary-deep: #bf360c;
+  /* ─── Neutrals (Grays) ────────────────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #050505;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #4d4d4d;
+  --color-gray-500: #555555;
+  --color-gray-400: #666666;
+  --color-gray-300: #888888;
+  --color-gray-250: #999999;
+  --color-gray-200: #aaaaaa;
+  --color-gray-150: #bbbbbb;
+  --color-gray-100: #cccccc;
+  --color-gray-075: #d0d0d0;
+  --color-gray-050: #e0e0e0;
+  --color-gray-025: #f0f0f0;
+  --color-gray-010: #f5f5f5;
+  --color-white: #ffffff;
+  /* ─── Warm Neutrals (Browns/Taupes) ───────────────────────────────── */
+  --color-taupe-dark: #55433c;
+  --color-taupe-light: #bda69e;
+  --color-taupe-medium: #8a7166;
+  /* ─── Secondary (Neutral/Gray) ────────────────────────────────────── */
+  --color-secondary: #666666;
+  --color-secondary-light: #888888;
+  --color-secondary-dark: #444444;
+  /* ─── Success/Green ────────────────────────────────────────────────── */
+  --color-success: #00a300;
+  --color-success-dark: #006d00;
+  --color-success-light: #33b833;
+  /* ─── Warning/Amber ────────────────────────────────────────────────── */
+  --color-warning: #ff9800;
+  --color-warning-dark: #f57c00;
+  --color-warning-light: #ffb74d;
+  /* ─── Danger/Alert (Red) ──────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #b71c1c;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #552222;
+  /* ─── Info/Blue ────────────────────────────────────────────────────── */
+  --color-info: #2196f3;
+  --color-info-dark: #1976d2;
+  --color-info-light: #64b5f6;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-050);
+  --text-secondary: var(--color-gray-300);
+  --text-light: var(--color-white);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success-dark);
+  --text-warning: var(--color-warning-dark);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info-dark);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: var(--color-gray-900);
+  --panel-bg-dark: var(--color-gray-950);
+  --device-surface: var(--color-gray-100);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: #202020;
+  --btn-bg-light: #e6e6e6;
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 163, 0, 0.12);
+  --alert-bg-warning: rgba(255, 152, 0, 0.12);
+  --alert-bg-danger: rgba(255, 51, 51, 0.12);
+  --alert-bg-info: rgba(33, 150, 243, 0.12);
+  --alert-border-success: var(--color-success);
+  --alert-border-warning: var(--color-warning);
+  --alert-border-danger: var(--color-danger);
+  --alert-border-info: var(--color-info);
+  /* ─── UI Components ────────────────────────────────────────────────── */
+  --list-item-bg: #252525;
+  --list-item-bg-hover: var(--color-gray-750);
+  --border-dark: var(--color-gray-900);
+  --border-light: var(--color-gray-300);
+  --border-warm: var(--color-taupe-medium);
+  --border-primary: var(--color-primary);
+  --border-secondary: var(--color-secondary);
+  --border-success: var(--color-success);
+  --border-warning: var(--color-warning);
+  --border-danger: var(--color-danger);
+  --border-info: var(--color-info);
+  /* ─── Status & Indicators ──────────────────────────────────────────── */
+  --led-on: var(--color-danger);
+  --led-off: var(--color-danger-muted);
+  --indicator-success: var(--color-success);
+  --indicator-warning: var(--color-warning);
+  --indicator-danger: var(--color-danger);
+  --indicator-info: var(--color-info);
+  --indicator-error: var(--color-danger);
+  /* ─── Gradients ────────────────────────────────────────────────────── */
+  --grad-primary: linear-gradient(
+      90deg,
+      var(--color-primary-light),
+      var(--color-primary-dark)
+  );
+  --grad-metallic: linear-gradient(180deg, var(--color-gray-050), #bdbdbd);
+  --grad-warm: linear-gradient(
+      135deg,
+      var(--color-taupe-light),
+      var(--color-taupe-dark)
+  );
+  /* ─── Button Gradients ─────────────────────────────────────────────── */
+  --btn-black-top: var(--color-gray-700);
+  --btn-black-btm: var(--color-gray-800);
+  --btn-white-top: #eaeaea;
+  --btn-white-btm: #cdcdcd;
+  --btn-primary-top: #ff6622;
+  --btn-primary-btm: #e64a19;
+  --btn-secondary-top: var(--color-secondary-light);
+  --btn-secondary-btm: var(--color-secondary-dark);
+  --btn-success-top: var(--color-success-light);
+  --btn-success-btm: var(--color-success-dark);
+  --btn-warning-top: var(--color-warning-light);
+  --btn-warning-btm: var(--color-warning-dark);
+  --btn-danger-top: var(--color-danger-light);
+  --btn-danger-btm: var(--color-danger-dark);
+  --btn-info-top: var(--color-info-light);
+  --btn-info-btm: var(--color-info-dark);
+  /* ═══════════════════════════════════════════════════════════════════════
+     SHADOW & HIGHLIGHT OVERLAYS
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Shadow Overlays (Black with alpha) ──────────────────────────── */
+  --shadow-02: rgba(0, 0, 0, 0.02);
+  --shadow-03: rgba(0, 0, 0, 0.03);
+  --shadow-05: rgba(0, 0, 0, 0.05);
+  --shadow-10: rgba(0, 0, 0, 0.1);
+  --shadow-15: rgba(0, 0, 0, 0.15);
+  --shadow-20: rgba(0, 0, 0, 0.2);
+  --shadow-30: rgba(0, 0, 0, 0.3);
+  --shadow-40: rgba(0, 0, 0, 0.4);
+  --shadow-50: rgba(0, 0, 0, 0.5);
+  --shadow-60: rgba(0, 0, 0, 0.6);
+  --shadow-80: rgba(0, 0, 0, 0.8);
+  --shadow-90: rgba(0, 0, 0, 0.9);
+  /* ─── Highlight Overlays (White with alpha) ───────────────────────── */
+  --highlight-03: rgba(255, 255, 255, 0.03);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
+  --highlight-60: rgba(255, 255, 255, 0.6);
+  /* ─── Glow Effects ─────────────────────────────────────────────────── */
+  --glow-primary: rgba(255, 69, 0, 0.4);
+  --glow-success: rgba(0, 163, 0, 0.4);
+  --glow-warning: rgba(255, 152, 0, 0.4);
+  --glow-danger: rgba(255, 51, 51, 0.4);
+  --glow-info: rgba(33, 150, 243, 0.4);
+  /* ═══════════════════════════════════════════════════════════════════════
+     TYPOGRAPHY
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Font Families ────────────────────────────────────────────────── */
+  --font-body: 'Roboto', sans-serif;
+  --font-label: 'Roboto', sans-serif;
+  --font-tech: 'Michroma', sans-serif;
+  --font-display: 'Michroma', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+  /* ─── Type Scale ───────────────────────────────────────────────────── */
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  /* ─── Line Heights ─────────────────────────────────────────────────── */
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  /* ─── Letter Spacing ───────────────────────────────────────────────── */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+  /* ═══════════════════════════════════════════════════════════════════════
+     BACKWARD COMPATIBILITY ALIASES
+     (Legacy variable names → New semantic names)
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Legacy Orange ────────────────────────────────────────────────── */
+  --color-orange-vivid: var(--color-primary);
+  --color-orange-light: var(--color-primary-light);
+  --color-orange-dark: var(--color-primary-dark);
+  --color-orange-deep: var(--color-primary-deep);
+  /* ─── Legacy Red/Alert ─────────────────────────────────────────────── */
+  --color-red-vivid: var(--color-danger);
+  --color-red-deep: var(--color-danger-dark);
+  --color-red-dark: var(--color-danger-muted);
+  --color-alert: var(--color-danger);
+  --color-alert-dark: var(--color-danger-dark);
+  --color-alert-muted: var(--color-danger-muted);
+  /* ─── Legacy Text ──────────────────────────────────────────────────── */
+  --text-dark: var(--text-primary);
+  --text-dim: var(--text-secondary);
+  --text-orange: var(--text-accent);
+  /* ─── Legacy Buttons ───────────────────────────────────────────────── */
+  --btn-bg-orange: var(--btn-bg-primary);
+  --btn-orange-top: var(--btn-primary-top);
+  --btn-orange-btm: var(--btn-primary-btm);
+  /* ─── Legacy Indicators ────────────────────────────────────────────── */
+  --led-red-on: var(--led-on);
+  --led-red-off: var(--led-off);
+  /* ─── Legacy Gradients ─────────────────────────────────────────────── */
+  --grad-orange-vivid: var(--grad-primary);
+  --glow-orange-40: var(--glow-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DIALOG - Skeuomorphic Theme (Industrial/Metallic)
+   ═══════════════════════════════════════════════════════════════════════ */
+/* ── Backdrop ── */
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: var(--shadow-70);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: dialogBackdropFadeIn 0.2s ease-out;
+}
+
+@keyframes dialogBackdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* ── Dialog Container (Centered) ── */
+.dialog-container {
+  position: fixed;
+  inset: 0;
+  z-index: 2010;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  pointer-events: none;
+}
+
+/* ── Dialog Box ── */
+.dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  width: 100%;
+  pointer-events: auto;
+  outline: none;
+  overflow: hidden; /* Prevents border clipping on corners */
+  /* Industrial metallic surface */
+  background: var(--device-surface);
+  border-radius: 8px;
+  border: 1px solid var(--highlight-20);
+  box-shadow: 0 8px 32px var(--shadow-60), 0 4px 16px var(--shadow-40), inset 0 1px 0 var(--highlight-30);
+  /* Subtle texture */
+  background-image: linear-gradient(var(--highlight-05), var(--shadow-05)), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23000000' fill-opacity='0.03' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'/%3E%3C/svg%3E");
+  /* Animation */
+  animation: dialogSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: center;
+}
+
+@keyframes dialogSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+/* ── Header ── */
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-dark);
+  box-shadow: 0 1px 0 var(--highlight-10);
+  flex-shrink: 0;
+  /* Slightly darker header */
+  background: linear-gradient(180deg, var(--color-gray-600), var(--color-gray-700));
+}
+
+.dialog-title {
+  margin: 0;
+  font-family: var(--font-label);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-light);
+  text-shadow: 0 1px 2px var(--shadow-30);
+  letter-spacing: 0.5px;
+}
+
+.dialog-close {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  margin-left: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.dialog-close .material-icons {
+  font-size: 20px;
+}
+.dialog-close:hover {
+  background: var(--highlight-15);
+  color: var(--text-light);
+}
+.dialog-close:active {
+  background: var(--shadow-20);
+  transform: scale(0.95);
+}
+
+/* ── Toolbar ── */
+.dialog-toolbar {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+  padding: 0.5rem 1rem;
+  flex-shrink: 0;
+}
+.dialog-toolbar .browse-search__input {
+  color: var(--text-light);
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.25);
+}
+.dialog-toolbar .browse-search__input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  opacity: 1;
+}
+.dialog-toolbar .browse-search__input:focus {
+  border-color: var(--color-primary);
+}
+.dialog-toolbar .browse-search__icon {
+  color: var(--text-light);
+}
+
+/* ── Body ── */
+.dialog-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 1.25rem;
+  color: var(--color-gray-900);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  /* Custom scrollbar */
+}
+.dialog-body::-webkit-scrollbar {
+  width: 8px;
+}
+.dialog-body::-webkit-scrollbar-track {
+  background: var(--color-gray-850);
+  border-radius: 4px;
+}
+.dialog-body::-webkit-scrollbar-thumb {
+  background: var(--color-gray-600);
+  border-radius: 4px;
+}
+.dialog-body::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-500);
+}
+
+/* ── Footer ── */
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border-dark);
+  box-shadow: 0 -1px 0 var(--highlight-10);
+  flex-shrink: 0;
+  /* Match header background */
+  background: linear-gradient(180deg, var(--color-gray-700), var(--color-gray-750));
+}
+
+/* ── Size Variants ── */
+.dialog-sm {
+  max-width: 400px;
+}
+
+.dialog-md {
+  max-width: 600px;
+}
+
+.dialog-lg {
+  max-width: 800px;
+}
+
+.dialog-xl {
+  max-width: 1200px;
+}
+
+.dialog-full {
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100vh - 2rem);
+}
+
+/* ── Dialog List Items ── */
+.dialog-list-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  background: var(--color-gray-700);
+  color: var(--text-light);
+  font-family: var(--font-label);
+  font-size: 14px;
+  text-align: left;
+  width: 100%;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 4px var(--shadow-20), inset 0 1px 0 var(--highlight-10);
+}
+.dialog-list-item:hover:not(:disabled) {
+  background: var(--color-gray-600);
+  box-shadow: 0 3px 6px var(--shadow-30), inset 0 1px 0 var(--highlight-20);
+  transform: translateY(-1px);
+}
+.dialog-list-item:active:not(:disabled) {
+  background: var(--color-gray-750);
+  box-shadow: inset 0 2px 4px var(--shadow-30);
+  transform: translateY(0);
+}
+.dialog-list-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.dialog-list-item.active {
+  background: var(--grad-orange-vivid);
+  color: var(--color-white);
+  box-shadow: 0 3px 8px var(--shadow-40), inset 0 1px 0 var(--highlight-30);
+}
+.dialog-list-item .material-icons {
+  font-size: 20px;
+}
+
+/* ── Dialog Alerts ── */
+.dialog-alert {
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  border-left: 3px solid;
+}
+.dialog-alert.error {
+  background: var(--color-danger-dark);
+  color: var(--color-white);
+  border-left-color: var(--color-danger);
+  box-shadow: 0 2px 4px var(--shadow-20);
+}
+.dialog-alert.success {
+  background: var(--color-success-dark);
+  color: var(--color-white);
+  border-left-color: var(--color-success);
+  box-shadow: 0 2px 4px var(--shadow-20);
+}
+
+/* ── Dialog Form Elements ── */
+.dialog-input {
+  width: 100%;
+  padding: 10px 14px;
+  background-color: var(--color-gray-850);
+  border: 1px solid var(--border-dark);
+  border-radius: 4px;
+  color: var(--text-light);
+  font-family: var(--font-body);
+  font-size: 14px;
+  box-shadow: inset 2px 2px 4px var(--shadow-60), 0 1px 0 var(--highlight-10);
+}
+.dialog-input:focus {
+  outline: none;
+  border-color: var(--text-orange);
+  box-shadow: inset 2px 2px 4px var(--shadow-60), 0 0 0 2px rgba(255, 102, 34, 0.3);
+}
+.dialog-input::placeholder {
+  color: var(--color-gray-500);
+  opacity: 0.7;
+}
+
+.dialog-label {
+  display: block;
+  font-family: var(--font-label);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-orange);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  text-shadow: 0 1px 2px var(--shadow-40);
+}
+
+.dialog-section-title {
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-orange);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+/* ── Track Info Display ── */
+.dialog-track-info {
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  background: var(--color-gray-800);
+  border: 1px solid var(--border-dark);
+  box-shadow: inset 2px 2px 4px var(--shadow-30);
+}
+
+.dialog-track-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-light);
+  margin: 0 0 6px 0;
+  line-height: 1.4;
+}
+
+.dialog-track-meta {
+  font-size: 14px;
+  color: var(--color-gray-300);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .dialog {
+    max-width: calc(100vw - 1rem);
+    margin: 0.5rem;
+  }
+  .dialog-header,
+  .dialog-body,
+  .dialog-footer {
+    padding: 0.875rem 1rem;
+  }
+  .dialog-title {
+    font-size: 1rem;
+  }
+}
+/* ── Browse Tiles ── */
+.browse-tile {
+  color: var(--text-secondary);
+  background: transparent;
+}
+.browse-tile:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-primary);
+}
+.browse-tile .browse-tile__icon {
+  color: var(--color-primary);
+}
+.browse-tile .browse-tile__label {
+  color: var(--text-secondary);
+}
+
+/* ── Digital LCD Clock ─────────────────────────────────────────────────────── */
+/* Centering wrapper */
+.digital-clock-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 90vw;
+  height: 90dvh;
+  max-width: none;
+  margin: 0 auto;
+  container-type: size;
+}
+
+/* Outer frame — thick, sharp corners, with whitespace padding inside */
+.digital-clock-frame {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: fit-content;
+  padding: 1.5cqw 2cqw;
+  background: var(--color-gray-025, #f0f0f0);
+  border: 0.4cqw solid var(--color-gray-150, #bbbbbb);
+  border-radius: 0;
+  box-shadow: 0 4px 16px var(--shadow-20, rgba(0, 0, 0, 0.2));
+  user-select: none;
+}
+
+/* Date and weather below the LCD panel, inside the frame */
+.lcd-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2cqw;
+  margin-top: 2cqw;
+}
+
+.lcd-date {
+  font-family: var(--font-label, "Roboto", sans-serif);
+  font-size: clamp(0.8rem, 2cqw, 3rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-gray-500, #888);
+  text-align: center;
+}
+
+.lcd-weather {
+  display: flex;
+  align-items: center;
+  gap: 0.4cqw;
+}
+
+.lcd-weather-icon {
+  font-size: clamp(1rem, 2.2cqw, 3.5rem);
+  color: #2c3e50;
+}
+
+.lcd-weather-temp {
+  font-family: var(--font-label, "Roboto", sans-serif);
+  font-size: clamp(0.8rem, 2cqw, 3rem);
+  font-weight: 700;
+  color: #2c3e50;
+  letter-spacing: 0.04em;
+}
+
+.digital-clock {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 1cqw 1.5cqw;
+  border-radius: 10px;
+  background: var(--color-gray-075, #d0d0d0);
+  border: 1px solid var(--color-gray-200, #aaa);
+  box-shadow: inset 0 1px 3px var(--shadow-10, rgba(0, 0, 0, 0.1)), 0 1px 0 var(--highlight-60, rgba(255, 255, 255, 0.6));
+}
+
+/* ── Day-of-week bar ────────────────────────────────────────────────────── */
+.lcd-days {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8cqw;
+  margin-bottom: 0.8cqw;
+  font-family: var(--font-label, "Roboto", sans-serif);
+  font-size: clamp(0.6rem, 1.2cqw, 2rem);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--color-gray-300, #c4c4c4);
+}
+.lcd-days span {
+  opacity: 0.35;
+}
+.lcd-days .active {
+  color: #2c3e50;
+  font-weight: 800;
+  opacity: 1;
+  filter: drop-shadow(2px 2px 0 rgba(255, 140, 30, 0.4));
+}
+
+/* ── Time display ───────────────────────────────────────────────────────── */
+.lcd-time {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6cqw;
+}
+
+.lcd-digits {
+  display: flex;
+  align-items: center;
+  gap: 2cqw;
+}
+
+.lcd-ampm {
+  font-family: var(--font-label, "Roboto", sans-serif);
+  font-size: clamp(0.8rem, 2.5cqw, 4rem);
+  font-weight: 700;
+  color: #2c3e50;
+  letter-spacing: 0.05em;
+  padding-bottom: 0.2cqw;
+  margin-left: 0.4cqw;
+  filter: drop-shadow(2px 2px 0 rgba(255, 140, 30, 0.4));
+}
+
+/* ── Colon ──────────────────────────────────────────────────────────────── */
+.lcd-colon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3cqw;
+  width: 2.5cqw;
+  height: 100%;
+  padding: 2cqh 0;
+}
+
+.lcd-colon-dot {
+  width: 1.4cqw;
+  height: 1.4cqw;
+  background: #2c3e50;
+  border-radius: 1px;
+  filter: drop-shadow(2px 2px 0 rgba(255, 140, 30, 0.4));
+}
+
+.lcd-colon--blink .lcd-colon-dot {
+  animation: lcd-blink 1s step-start infinite;
+}
+
+@keyframes lcd-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+.lcd-digit {
+  position: relative;
+  width: 11cqw;
+  height: 18.7cqw;
+  filter: drop-shadow(2px 2px 0 rgba(255, 140, 30, 0.4));
+}
+
+.seg {
+  position: absolute;
+  background: #2c3e50;
+  transition: opacity 0.15s;
+}
+.seg.on {
+  opacity: 1;
+}
+.seg.off {
+  opacity: 0.03;
+}
+
+.seg-a,
+.seg-d,
+.seg-g {
+  left: 10%;
+  width: 80%;
+  height: 7%;
+  clip-path: polygon(12% 0%, 88% 0%, 100% 50%, 88% 100%, 12% 100%, 0% 50%);
+}
+
+.seg-a {
+  top: 0;
+}
+
+.seg-g {
+  top: 46.5%;
+}
+
+.seg-d {
+  bottom: 0;
+}
+
+.seg-b,
+.seg-c,
+.seg-e,
+.seg-f {
+  width: 13%;
+  height: 42%;
+  clip-path: polygon(50% 0%, 100% 8%, 100% 92%, 50% 100%, 0% 92%, 0% 8%);
+}
+
+.seg-b {
+  top: 4%;
+  right: 0;
+}
+
+.seg-c {
+  bottom: 4%;
+  right: 0;
+}
+
+.seg-f {
+  top: 4%;
+  left: 0;
+}
+
+.seg-e {
+  bottom: 4%;
+  left: 0;
+}
+
+/* ── Responsive sizing — handled via container-query units (cqw) above ── */
+/* ── Skeuomorphic Analog Clock ─────────────────────────────────────────── */
+/* Centering wrapper */
+.analog-clock-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  user-select: none;
+  container-type: size;
+}
+
+/* Outer container — keeps aspect ratio square */
+.analog-clock {
+  --clock-size: min(80cqw, 80cqh);
+  width: var(--clock-size);
+  height: var(--clock-size);
+}
+
+/* Bezel — raised metallic ring */
+.clock-bezel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  padding: 5%;
+  background: var(--grad-metallic, linear-gradient(180deg, #e0e0e0, #bdbdbd));
+  box-shadow: 0 4px 20px var(--shadow-40, rgba(0, 0, 0, 0.4)), inset 0 2px 4px var(--highlight-50, rgba(255, 255, 255, 0.5)), inset 0 -2px 6px var(--shadow-15, rgba(0, 0, 0, 0.15));
+  border: 2px solid var(--color-gray-200, #aaa);
+}
+
+/* Face — recessed dial */
+.clock-face {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--color-gray-025, #f0f0f0);
+  box-shadow: inset 0 2px 10px var(--shadow-20, rgba(0, 0, 0, 0.2)), inset 0 -1px 4px var(--highlight-30, rgba(255, 255, 255, 0.3));
+  border: 1px solid var(--color-gray-200, #aaa);
+}
+
+/* ── Tick marks ─────────────────────────────────────────────────────────── */
+.clock-tick {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 50%;
+  transform-origin: bottom center;
+  pointer-events: none;
+}
+
+.clock-tick::before {
+  content: "";
+  display: block;
+  width: 100%;
+  position: absolute;
+  top: 4%;
+  border-radius: 1px;
+}
+
+/* Hour ticks — longer, bold */
+.clock-tick--hour::before {
+  height: 10%;
+  background: var(--color-gray-700, #333);
+  width: 3px;
+  margin-left: -0.5px;
+}
+
+/* Minute ticks — shorter, muted */
+.clock-tick--minute::before {
+  height: 5%;
+  background: var(--color-gray-300, #bbb);
+  width: 1px;
+}
+
+/* ── Hour digits ────────────────────────────────────────────────────────── */
+.clock-hour-digit {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-label, "Roboto", sans-serif);
+  font-size: clamp(0.7rem, 3.5cqi, 1.4rem);
+  font-weight: 700;
+  color: var(--color-gray-800, #222);
+  text-shadow: 0 1px 0 var(--highlight-40, rgba(255, 255, 255, 0.4));
+  line-height: 1;
+}
+
+/* ── Hands ──────────────────────────────────────────────────────────────── */
+.clock-hand {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform-origin: bottom center;
+  border-radius: 2px;
+}
+
+/* Hour hand — shorter, thicker */
+.clock-hand--hour {
+  width: 7px;
+  height: 25%;
+  margin-left: -3.5px;
+  background: var(--color-gray-800, #222);
+  box-shadow: 0 0 4px var(--shadow-30, rgba(0, 0, 0, 0.3));
+  border-radius: 3px 3px 1px 1px;
+  z-index: 3;
+}
+
+/* Minute hand — longer, thinner */
+.clock-hand--minute {
+  width: 3px;
+  height: 35%;
+  margin-left: -1.5px;
+  background: var(--color-gray-700, #333);
+  box-shadow: 0 0 4px var(--shadow-20, rgba(0, 0, 0, 0.2));
+  border-radius: 1.5px 1.5px 1px 1px;
+  z-index: 4;
+}
+
+/* Second hand — thinnest, accent color */
+.clock-hand--second {
+  width: 1.5px;
+  height: 38%;
+  margin-left: -0.75px;
+  background: var(--color-red-vivid, #ff3333);
+  box-shadow: 0 0 3px rgba(255, 51, 51, 0.3);
+  border-radius: 1px;
+  z-index: 5;
+  transition: none;
+}
+
+/* Center cap */
+.clock-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5%;
+  height: 5%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--color-gray-800, #222);
+  box-shadow: 0 0 0 2px var(--color-gray-700, #333), 0 2px 4px var(--shadow-30, rgba(0, 0, 0, 0.3));
+  z-index: 6;
+}
+
+/* Day & date on the clock face — stacked below center */
+.clock-face-info {
+  position: absolute;
+  top: 62%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.clock-face-day {
+  font-family: var(--font-label, "Roboto", sans-serif);
+  font-size: clamp(0.8rem, 4cqi, 1.5rem);
+  font-weight: 600;
+  color: var(--color-gray-300, #bbb);
+  letter-spacing: 0.1em;
+}
+
+.clock-face-date {
+  font-family: var(--font-label, "Roboto", sans-serif);
+  font-size: clamp(0.8rem, 4cqi, 1.5rem);
+  font-weight: 700;
+  color: var(--color-gray-700, #333);
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+/* ── Weather on face ────────────────────────────────────────────────────── */
+.clock-face-weather {
+  position: absolute;
+  top: 28%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.clock-face-weather-icon {
+  font-size: clamp(0.7rem, 3.5cqi, 1.4rem);
+  color: var(--color-gray-600, #666);
+}
+
+.clock-face-weather-temp {
+  font-family: var(--font-label, "Roboto", sans-serif);
+  font-size: clamp(0.7rem, 3.5cqi, 1.4rem);
+  font-weight: 700;
+  color: var(--color-gray-700, #333);
+  white-space: nowrap;
+}
+
+/* ── Flip Clock – Skeuomorphic Plastic Theme ─────────────────────────────── */
+.tick-flip-panel {
+  color: #eedfc0;
+  background-color: #1e1a10;
+}
+
+.tick-flip-panel-front {
+  background: linear-gradient(180deg, rgba(255, 210, 130, 0.14) 0%, rgba(255, 180, 80, 0.06) 30%, transparent 55%), linear-gradient(180deg, #2e2618 0%, #1a1508 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 200, 100, 0.1);
+}
+
+.tick-flip-panel-back {
+  background: linear-gradient(180deg, rgba(255, 170, 50, 0.04) 0%, transparent 40%), linear-gradient(180deg, #120f00 0%, #1e1a10 100%);
+}
+
+.tick-flip-panel-front {
+  box-shadow: inset 0 1px 0 rgba(255, 200, 100, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+}
+
+.flip-clock-body {
+  border-color: #3a2810;
+  background: linear-gradient(180deg, #2e2410 0%, #181000 100%);
+  box-shadow: 0 0 0 3px #100c00, 0 0 0 4px rgba(255, 140, 30, 0.08), 0 10px 40px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 180, 60, 0.06);
+}
+
+.flip-clock-stand {
+  background: linear-gradient(180deg, #2e2410 0%, #1e1808 100%);
+  border-top: 1px solid #3e2e18;
+}
+
+.flip-clock-date,
+.flip-clock-weather {
+  color: var(--color-primary-light, #ff7043);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.flip-colon,
+.flip-ampm {
+  color: #d8b880;
+}
+
+.tick-flip-panel-front-text .tick-flip-panel-text-wrapper {
+  transform: translateY(-10%);
+}
+
+.tick-flip-panel-back-text .tick-flip-panel-text-wrapper {
+  transform: translateY(-5%);
+}
+
+body {
+  background-color: var(--bg-color);
+}
+
+/*# sourceMappingURL=skeuomorphic.css.map */

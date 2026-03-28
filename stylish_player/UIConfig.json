@@ -25,13 +25,28 @@
           "label": "TRANSLATE.PORT",
           "doc": "TRANSLATE.PORT_DESC",
           "value": 3339
-        },
+        }
+      ]
+    },
+    {
+      "id": "section_app_info",
+      "element": "section",
+      "label": "TRANSLATE.OPEN_APP",
+      "icon": "fa-external-link",
+      "content": [
         {
           "id": "url",
           "type": "text",
           "element": "input",
           "label": "TRANSLATE.NOW_PLAYING_URL",
           "doc": "TRANSLATE.NOW_PLAYING_URL_DESC"
+        },
+        {
+          "id": "openApp",
+          "element": "button",
+          "label": "TRANSLATE.OPEN_APP",
+          "doc": "TRANSLATE.OPEN_APP_DESC",
+          "onClick": { "type": "openUrl", "url": "" }
         }
       ]
     },
@@ -47,9 +62,26 @@
       },
       "saveButton": {
         "label": "TRANSLATE.SAVE",
-        "data": ["playerType"]
+        "data": ["playerType", "theme", "showPlayerControls", "vizType"]
       },
       "content": [
+        {
+          "id": "theme",
+          "element": "select",
+          "label": "TRANSLATE.THEME",
+          "doc": "TRANSLATE.THEME_DESC",
+          "value": {
+            "value": "skeuomorphic",
+            "label": "Skeuomorphic"
+          },
+          "options": [
+            { "value": "skeuomorphic", "label": "Skeuomorphic" },
+            { "value": "metallic", "label": "Metallic" },
+            { "value": "aqua", "label": "Aqua" },
+            { "value": "flat", "label": "Flat" },
+            { "value": "win95", "label": "Windows 95" }
+          ]
+        },
         {
           "id": "playerType",
           "element": "select",
@@ -71,6 +103,31 @@
             { "value": "globe", "label": "TRANSLATE.PLAYER_TYPE_GLOBE" },
             { "value": "matchSource", "label": "TRANSLATE.PLAYER_TYPE_MATCH_SOURCE" },
             { "value": "random", "label": "TRANSLATE.PLAYER_TYPE_RANDOM" }
+          ]
+        },
+        {
+          "id": "showPlayerControls",
+          "element": "switch",
+          "label": "TRANSLATE.SHOW_PLAYER_CONTROLS",
+          "doc": "TRANSLATE.SHOW_PLAYER_CONTROLS_DESC",
+          "value": true
+        },
+        {
+          "id": "vizType",
+          "element": "select",
+          "label": "TRANSLATE.VIZ_TYPE",
+          "doc": "TRANSLATE.VIZ_TYPE_DESC",
+          "value": {
+            "value": "spectrum",
+            "label": "TRANSLATE.VIZ_TYPE_SPECTRUM"
+          },
+          "options": [
+            { "value": "spectrum",  "label": "TRANSLATE.VIZ_TYPE_SPECTRUM" },
+            { "value": "vuMeter1",  "label": "TRANSLATE.VIZ_TYPE_VU_METER_1" },
+            { "value": "vuMeter2",  "label": "TRANSLATE.VIZ_TYPE_VU_METER_2" },
+            { "value": "vuMeter3",  "label": "TRANSLATE.VIZ_TYPE_VU_METER_3" },
+            { "value": "vuMeter4",  "label": "TRANSLATE.VIZ_TYPE_VU_METER_4" },
+            { "value": "none",      "label": "TRANSLATE.NONE" }
           ]
         }
       ]
@@ -162,6 +219,7 @@
         "data": [
           "idleScreen",
           "idleTimeout",
+          "externalUrl",
           "showWeatherInClock",
           "analogClockShowDate",
           "unsplashApiKey",
@@ -190,8 +248,21 @@
             { "value": "weatherHourly", "label": "TRANSLATE.IDLE_SCREEN_WEATHER_HOURLY" },
             { "value": "weatherDaily", "label": "TRANSLATE.IDLE_SCREEN_WEATHER_DAILY" },
             { "value": "weatherFull", "label": "TRANSLATE.IDLE_SCREEN_WEATHER_FULL" },
-            { "value": "wallpaper", "label": "TRANSLATE.IDLE_SCREEN_WALLPAPER" }
+            { "value": "wallpaper", "label": "TRANSLATE.IDLE_SCREEN_WALLPAPER" },
+            { "value": "externalUrl", "label": "TRANSLATE.IDLE_SCREEN_EXTERNAL_URL" }
           ]
+        },
+        {
+          "id": "externalUrl",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.EXTERNAL_URL",
+          "doc": "TRANSLATE.EXTERNAL_URL_DESC",
+          "value": "",
+          "visibleIf": {
+            "field": "idleScreen",
+            "value": "externalUrl"
+          }
         },
         {
           "id": "idleTimeout",

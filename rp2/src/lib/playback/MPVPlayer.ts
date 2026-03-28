@@ -4,6 +4,7 @@ import { Player } from '@patrickkfkan/rp.js';
 
 export class MPVPlayer extends Player {
   #service: MPVService | null = null;
+  onUnsetVolatile?: () => void;
 
   async #getService() {
     if (!this.#service) {
@@ -18,7 +19,15 @@ export class MPVPlayer extends Player {
             );
           }
           rp2.getLogger().info(`[rp2] mpv process closed`);
+          this.#service?.removeAllListeners();
           this.#service = null;
+        });
+        p.on('unsetVolatile', () => {
+          console.log('MPVPlayer onunsetVolatile called');
+          if (this.onUnsetVolatile) {
+            console.log('MPVPlayer calling onunsetVolatile callbacks');
+            this.onUnsetVolatile();
+          }
         });
         this.#service = p;
         return p;

@@ -19,6 +19,10 @@
     "type": "string",
     "value": ""
   },
+  "showPlayerControls": {
+    "type": "boolean",
+    "value": true
+  },
   "unitSystem": {
     "type": "string",
     "value": "metric"

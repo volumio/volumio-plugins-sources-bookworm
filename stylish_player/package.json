@@ -1,6 +1,6 @@
 {
   "name": "stylish_player",
-  "version": "1.0.0",
+  "version": "1.0.36",
   "description": "A modern and customizable music player interface for Volumio.",
   "main": "index.js",
   "scripts": {},
@@ -15,7 +15,13 @@
     "icon": "fa-music",
     "boot_priority": 10,
     "details": "A modern and customizable music player interface for Volumio.",
-    "changelog": "Initial release",
+    "changelog": [
+      {
+        "changes": [
+          "Bug fixes and UI improvements."
+        ]
+      }
+    ],
     "architectures": [
       "amd64",
       "armhf"
@@ -30,8 +36,8 @@
     "volumio": ">=4"
   },
   "dependencies": {
-    "fs-extra": "^11.2.0",
+    "fs-extra": "^0.28.0",
     "kew": "^0.7.0",
-    "v-conf": "^1.4.3"
+    "v-conf": "^1.4.0"
   }
 }

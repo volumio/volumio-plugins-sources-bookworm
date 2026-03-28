@@ -1,10 +1,10 @@
 import {
-  AlbumInfo,
-  ArtistInfo,
-  Channel,
-  Episode,
-  EpisodeList,
-  SongInfo
+  type AlbumInfo,
+  type ArtistInfo,
+  type Channel,
+  type Episode,
+  type EpisodeList,
+  type SongInfo
 } from '@patrickkfkan/rp.js';
 import { LRUCache } from 'lru-cache';
 

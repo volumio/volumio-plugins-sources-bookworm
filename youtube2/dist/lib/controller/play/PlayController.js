@@ -15,13 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
@@ -36,7 +46,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _PlayController_instances, _PlayController_mpdPlugin, _PlayController_autoplayListener, _PlayController_lastPlaybackInfo, _PlayController_prefetchPlaybackStateFixer, _PlayController_prefetchAborter, _PlayController_addAutoplayListener, _PlayController_removeAutoplayListener, _PlayController_updateTrackWithPlaybackInfo, _PlayController_doPlay, _PlayController_appendTrackTypeToStreamUrl, _PlayController_mpdAddTags, _PlayController_handleAutoplay, _PlayController_findLastPlayedTrackQueueIndex, _PlayController_getAutoplayItems, _PlayController_cancelPrefetch, _PrefetchPlaybackStateFixer_instances, _PrefetchPlaybackStateFixer_positionAtPrefetch, _PrefetchPlaybackStateFixer_prefetchedTrack, _PrefetchPlaybackStateFixer_volumioPushStateListener, _PrefetchPlaybackStateFixer_addPushStateListener, _PrefetchPlaybackStateFixer_removePushStateListener, _PrefetchPlaybackStateFixer_handleVolumioPushState;
+var _PlayController_instances, _PlayController_mpdPlugin, _PlayController_prefetchPlaybackStateFixer, _PlayController_prefetchAborter, _PlayController_autoplayManager, _PlayController_updateTrackWithPlaybackInfo, _PlayController_doPlay, _PlayController_appendTrackTypeToStreamUrl, _PlayController_mpdAddTags, _PlayController_getAutoplayItems, _PlayController_cancelPrefetch, _PrefetchPlaybackStateFixer_instances, _PrefetchPlaybackStateFixer_positionAtPrefetch, _PrefetchPlaybackStateFixer_prefetchedTrack, _PrefetchPlaybackStateFixer_volumioPushStateListener, _PrefetchPlaybackStateFixer_addPushStateListener, _PrefetchPlaybackStateFixer_removePushStateListener, _PrefetchPlaybackStateFixer_handleVolumioPushState;
 Object.defineProperty(exports, "__esModule", { value: true });
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -49,24 +59,44 @@ const ViewHelper_1 = __importDefault(require("../browse/view-handlers/ViewHelper
 const ExplodeHelper_1 = __importDefault(require("../../util/ExplodeHelper"));
 const EndpointHelper_1 = __importDefault(require("../../util/EndpointHelper"));
 const events_1 = __importDefault(require("events"));
+const volumio_yt_support_1 = require("volumio-yt-support");
 class PlayController {
     constructor() {
         _PlayController_instances.add(this);
         _PlayController_mpdPlugin.set(this, void 0);
-        _PlayController_autoplayListener.set(this, void 0);
-        _PlayController_lastPlaybackInfo.set(this, void 0);
         _PlayController_prefetchPlaybackStateFixer.set(this, void 0);
         _PlayController_prefetchAborter.set(this, void 0);
+        _PlayController_autoplayManager.set(this, void 0);
         __classPrivateFieldSet(this, _PlayController_mpdPlugin, YouTube2Context_1.default.getMpdPlugin(), "f");
-        __classPrivateFieldSet(this, _PlayController_autoplayListener, null, "f");
         __classPrivateFieldSet(this, _PlayController_prefetchPlaybackStateFixer, new PrefetchPlaybackStateFixer(), "f");
-        __classPrivateFieldGet(this, _PlayController_prefetchPlaybackStateFixer, "f").on('playPrefetch', (info) => {
-            __classPrivateFieldSet(this, _PlayController_lastPlaybackInfo, info, "f");
-        });
         __classPrivateFieldSet(this, _PlayController_prefetchAborter, null, "f");
+        __classPrivateFieldSet(this, _PlayController_autoplayManager, new volumio_yt_support_1.AutoplayManager({
+            serviceName: 'youtube2',
+            volumioCoreCommand: YouTube2Context_1.default.volumioCoreCommand,
+            stateMachine: YouTube2Context_1.default.getStateMachine(),
+            mpdPlugin: YouTube2Context_1.default.getMpdPlugin(),
+            getConfigValue: (key) => YouTube2Context_1.default.getConfigValue(key),
+            getAutoplayItems: __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_getAutoplayItems).bind(this),
+            logger: {
+                info: (msg) => YouTube2Context_1.default.getLogger().info(`[youtube2] ${msg}`),
+                warn: (msg) => YouTube2Context_1.default.getLogger().warn(`[youtube2] ${msg}`),
+                error: (msg) => YouTube2Context_1.default.getLogger().error(`[youtube2] ${msg}`),
+            }
+        }), "f");
+        __classPrivateFieldGet(this, _PlayController_autoplayManager, "f").on('queued', ({ items }) => {
+            if (items.length === 0) {
+                YouTube2Context_1.default.toast('info', YouTube2Context_1.default.getI18n('YOUTUBE2_AUTOPLAY_NO_ITEMS'));
+            }
+            else if (items.length > 1) {
+                YouTube2Context_1.default.toast('success', YouTube2Context_1.default.getI18n('YOUTUBE2_AUTOPLAY_ADDED', items.length));
+            }
+            else {
+                YouTube2Context_1.default.toast('success', YouTube2Context_1.default.getI18n('YOUTUBE2_AUTOPLAY_ADDED_SINGLE', items[0].title));
+            }
+        });
     }
     reset() {
-        __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_removeAutoplayListener).call(this);
+        __classPrivateFieldGet(this, _PlayController_autoplayManager, "f").disable();
         __classPrivateFieldGet(this, _PlayController_prefetchPlaybackStateFixer, "f")?.reset();
         __classPrivateFieldSet(this, _PlayController_prefetchPlaybackStateFixer, null, "f");
     }
@@ -79,6 +109,10 @@ class PlayController {
         YouTube2Context_1.default.getLogger().info(`[youtube2-play] clearAddPlayTrack: ${track.uri}`);
         __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_cancelPrefetch).call(this);
         __classPrivateFieldGet(this, _PlayController_prefetchPlaybackStateFixer, "f")?.notifyPrefetchCleared();
+        if (!YouTube2Context_1.default.getConfigValue('hasAcceptedDisclaimer')) {
+            YouTube2Context_1.default.toast('error', YouTube2Context_1.default.getI18n('YOUTUBE2_ERR_ACCEPT_DISCLAIMER_PLAY'));
+            return;
+        }
         const { videoId, info: playbackInfo } = await PlayController.getPlaybackInfoFromUri(track.uri);
         if (!playbackInfo) {
             throw Error(`Could not obtain playback info for videoId: ${videoId})`);
@@ -99,27 +133,18 @@ class PlayController {
              */
             sm.currentSongDuration = playbackInfo.duration * 1000;
         }
-        __classPrivateFieldSet(this, _PlayController_lastPlaybackInfo, {
-            track,
-            position: sm.getState().position
-        }, "f");
+        __classPrivateFieldGet(this, _PlayController_autoplayManager, "f").enable();
         const safeStreamUrl = stream.url.replace(/"/g, '\\"');
         await __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_doPlay).call(this, safeStreamUrl, track);
-        if (YouTube2Context_1.default.getConfigValue('autoplay')) {
-            __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_addAutoplayListener).call(this);
-        }
         if (YouTube2Context_1.default.getConfigValue('addToHistory')) {
-            try {
-                void playbackInfo.addToHistory();
-            }
-            catch (error) {
+            playbackInfo.addToHistory().catch((error) => {
                 YouTube2Context_1.default.getLogger().error(YouTube2Context_1.default.getErrorMessage(`[youtube2-play] Error: could not add to history (videoId: ${videoId}): `, error));
-            }
+            });
         }
     }
     // Returns kew promise!
     stop() {
-        __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_removeAutoplayListener).call(this);
+        __classPrivateFieldGet(this, _PlayController_autoplayManager, "f").disable();
         YouTube2Context_1.default.getStateMachine().setConsumeUpdateService('mpd', true, false);
         return __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").stop();
     }
@@ -148,7 +173,7 @@ class PlayController {
         YouTube2Context_1.default.getStateMachine().setConsumeUpdateService(undefined);
         return YouTube2Context_1.default.getStateMachine().previous();
     }
-    static async getPlaybackInfoFromUri(uri, signal) {
+    static async getPlaybackInfoFromUri(uri, isPrefetch = false, skipStream = false, signal) {
         const watchEndpoint = ExplodeHelper_1.default.getExplodedTrackInfoFromUri(uri)?.endpoint;
         const videoId = watchEndpoint?.payload?.videoId;
         if (!videoId) {
@@ -157,7 +182,7 @@ class PlayController {
         const model = model_1.default.getInstance(model_1.ModelType.Video);
         return {
             videoId,
-            info: await model.getPlaybackInfo(videoId, undefined, signal)
+            info: await model.getPlaybackInfo(videoId, isPrefetch, skipStream, signal)
         };
     }
     async getGotoUri(type, uri) {
@@ -180,7 +205,7 @@ class PlayController {
             const videoId = ExplodeHelper_1.default.getExplodedTrackInfoFromUri(uri)?.endpoint?.payload?.videoId;
             if (videoId) {
                 const model = model_1.default.getInstance(model_1.ModelType.Video);
-                const playbackInfo = await model.getPlaybackInfo(videoId);
+                const playbackInfo = await model.getPlaybackInfo(videoId, false, true);
                 const channelId = playbackInfo?.author?.channelId;
                 if (channelId) {
                     const targetView = {
@@ -225,7 +250,7 @@ class PlayController {
         __classPrivateFieldSet(this, _PlayController_prefetchAborter, new AbortController(), "f");
         const signal = __classPrivateFieldGet(this, _PlayController_prefetchAborter, "f").signal;
         try {
-            const { videoId, info: playbackInfo } = await PlayController.getPlaybackInfoFromUri(track.uri, signal);
+            const { videoId, info: playbackInfo } = await PlayController.getPlaybackInfoFromUri(track.uri, true, false, signal);
             streamUrl = playbackInfo?.stream?.url;
             if (!streamUrl || !playbackInfo) {
                 throw Error(`Stream not found for videoId '${videoId}'`);
@@ -255,24 +280,7 @@ class PlayController {
         return res;
     }
 }
-_PlayController_mpdPlugin = new WeakMap(), _PlayController_autoplayListener = new WeakMap(), _PlayController_lastPlaybackInfo = new WeakMap(), _PlayController_prefetchPlaybackStateFixer = new WeakMap(), _PlayController_prefetchAborter = new WeakMap(), _PlayController_instances = new WeakSet(), _PlayController_addAutoplayListener = function _PlayController_addAutoplayListener() {
-    if (!__classPrivateFieldGet(this, _PlayController_autoplayListener, "f")) {
-        __classPrivateFieldSet(this, _PlayController_autoplayListener, () => {
-            __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").getState().then((state) => {
-                if (state.status === 'stop') {
-                    void __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_handleAutoplay).call(this);
-                    __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_removeAutoplayListener).call(this);
-                }
-            });
-        }, "f");
-        __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").clientMpd.on('system-player', __classPrivateFieldGet(this, _PlayController_autoplayListener, "f"));
-    }
-}, _PlayController_removeAutoplayListener = function _PlayController_removeAutoplayListener() {
-    if (__classPrivateFieldGet(this, _PlayController_autoplayListener, "f")) {
-        __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").clientMpd.removeListener('system-player', __classPrivateFieldGet(this, _PlayController_autoplayListener, "f"));
-        __classPrivateFieldSet(this, _PlayController_autoplayListener, null, "f");
-    }
-}, _PlayController_updateTrackWithPlaybackInfo = function _PlayController_updateTrackWithPlaybackInfo(track, playbackInfo) {
+_PlayController_mpdPlugin = new WeakMap(), _PlayController_prefetchPlaybackStateFixer = new WeakMap(), _PlayController_prefetchAborter = new WeakMap(), _PlayController_autoplayManager = new WeakMap(), _PlayController_instances = new WeakSet(), _PlayController_updateTrackWithPlaybackInfo = function _PlayController_updateTrackWithPlaybackInfo(track, playbackInfo) {
     track.title = playbackInfo.title || track.title;
     track.name = playbackInfo.title || track.title;
     track.artist = playbackInfo.author?.name || track.artist;
@@ -281,6 +289,7 @@ _PlayController_mpdPlugin = new WeakMap(), _PlayController_autoplayListener = ne
     if (playbackInfo.stream?.bitrate) {
         track.samplerate = playbackInfo.stream.bitrate;
     }
+    track.bitdepth = '';
     return track;
 }, _PlayController_doPlay = function _PlayController_doPlay(streamUrl, track) {
     const mpdPlugin = __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f");
@@ -323,52 +332,8 @@ _PlayController_mpdPlugin = new WeakMap(), _PlayController_autoplayListener = ne
         return __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").sendMpdCommandArray(cmds);
     }
     return kew_1.default.resolve();
-}, _PlayController_handleAutoplay = async function _PlayController_handleAutoplay() {
-    const lastPlayedQueueIndex = __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_findLastPlayedTrackQueueIndex).call(this);
-    if (lastPlayedQueueIndex < 0) {
-        return;
-    }
-    const stateMachine = YouTube2Context_1.default.getStateMachine(), state = stateMachine.getState(), isLastTrack = stateMachine.getQueue().length - 1 === lastPlayedQueueIndex, currentPositionChanged = state.position !== lastPlayedQueueIndex; // True if client clicks on another item in the queue
-    const noAutoplayConditions = !YouTube2Context_1.default.getConfigValue('autoplay') || currentPositionChanged || !isLastTrack || state.random || state.repeat || state.repeatSingle;
-    const getAutoplayItemsPromise = noAutoplayConditions ? Promise.resolve(null) : __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_getAutoplayItems).call(this);
-    if (!noAutoplayConditions) {
-        YouTube2Context_1.default.toast('info', YouTube2Context_1.default.getI18n('YOUTUBE2_AUTOPLAY_FETCH'));
-    }
-    const items = await getAutoplayItemsPromise;
-    if (items && items.length > 0) {
-        // Add items to queue and play
-        const clearQueue = YouTube2Context_1.default.getConfigValue('autoplayClearQueue');
-        if (clearQueue) {
-            stateMachine.clearQueue();
-        }
-        stateMachine.addQueueItems(items).then((result) => {
-            if (items.length > 1) {
-                YouTube2Context_1.default.toast('success', YouTube2Context_1.default.getI18n('YOUTUBE2_AUTOPLAY_ADDED', items.length));
-            }
-            else {
-                YouTube2Context_1.default.toast('success', YouTube2Context_1.default.getI18n('YOUTUBE2_AUTOPLAY_ADDED_SINGLE', items[0].title));
-            }
-            stateMachine.play(result.firstItemIndex);
-        });
-    }
-    else if (!noAutoplayConditions) {
-        YouTube2Context_1.default.toast('info', YouTube2Context_1.default.getI18n('YOUTUBE2_AUTOPLAY_NO_ITEMS'));
-    }
-}, _PlayController_findLastPlayedTrackQueueIndex = function _PlayController_findLastPlayedTrackQueueIndex() {
-    if (!__classPrivateFieldGet(this, _PlayController_lastPlaybackInfo, "f")) {
-        return -1;
-    }
-    const queue = YouTube2Context_1.default.getStateMachine().getQueue();
-    const trackUri = __classPrivateFieldGet(this, _PlayController_lastPlaybackInfo, "f").track.uri;
-    const endIndex = __classPrivateFieldGet(this, _PlayController_lastPlaybackInfo, "f").position;
-    for (let i = endIndex; i >= 0; i--) {
-        if (queue[i]?.uri === trackUri) {
-            return i;
-        }
-    }
-    return -1;
-}, _PlayController_getAutoplayItems = async function _PlayController_getAutoplayItems() {
-    const lastPlayedEndpoint = ExplodeHelper_1.default.getExplodedTrackInfoFromUri(__classPrivateFieldGet(this, _PlayController_lastPlaybackInfo, "f")?.track?.uri)?.endpoint;
+}, _PlayController_getAutoplayItems = async function _PlayController_getAutoplayItems(lastPlaybackInfo) {
+    const lastPlayedEndpoint = ExplodeHelper_1.default.getExplodedTrackInfoFromUri(lastPlaybackInfo.track.uri)?.endpoint;
     const videoId = lastPlayedEndpoint?.payload?.videoId;
     if (!videoId) {
         return [];
@@ -439,7 +404,7 @@ _PlayController_mpdPlugin = new WeakMap(), _PlayController_autoplayListener = ne
     if (autoplayItems.length === 0 && contents?.autoplay?.payload?.videoId) {
         const videoModel = model_1.default.getInstance(model_1.ModelType.Video);
         // Contents.autoplay is just an endpoint, so we need to get video info (title, author...) from it
-        const playbackInfo = await videoModel.getPlaybackInfo(contents.autoplay.payload.videoId);
+        const playbackInfo = await videoModel.getPlaybackInfo(contents.autoplay.payload.videoId, false, true);
         if (playbackInfo && playbackInfo.title && playbackInfo.author?.name) {
             autoplayItems.push({
                 title: playbackInfo.title,
@@ -463,7 +428,7 @@ _PlayController_mpdPlugin = new WeakMap(), _PlayController_autoplayListener = ne
 exports.default = PlayController;
 /**
  * (Taken from YouTube Music plugin)
- * https://github.com/patrickkfkan/volumio-ytmusic/blob/master/src/lib/controller/play/PlayController.ts
+ * https://github.com/patrickkfkan/volumio-yt2/blob/master/src/lib/controller/play/PlayController.ts
  *
  * Given state is updated by calling `setConsumeUpdateService('mpd', true)` (`consumeIgnoreMetadata`: true), when moving to
  * prefetched track there's no guarantee the state machine will store the correct consume state obtained from MPD. It depends on
@@ -486,6 +451,7 @@ class PrefetchPlaybackStateFixer extends events_1.default {
         _PrefetchPlaybackStateFixer_volumioPushStateListener.set(this, void 0);
         __classPrivateFieldSet(this, _PrefetchPlaybackStateFixer_positionAtPrefetch, -1, "f");
         __classPrivateFieldSet(this, _PrefetchPlaybackStateFixer_prefetchedTrack, null, "f");
+        __classPrivateFieldSet(this, _PrefetchPlaybackStateFixer_volumioPushStateListener, null, "f");
     }
     reset() {
         __classPrivateFieldGet(this, _PrefetchPlaybackStateFixer_instances, "m", _PrefetchPlaybackStateFixer_removePushStateListener).call(this);
@@ -535,7 +501,9 @@ _PrefetchPlaybackStateFixer_positionAtPrefetch = new WeakMap(), _PrefetchPlaybac
         const pf = __classPrivateFieldGet(this, _PrefetchPlaybackStateFixer_prefetchedTrack, "f");
         __classPrivateFieldGet(this, _PrefetchPlaybackStateFixer_instances, "m", _PrefetchPlaybackStateFixer_removePushStateListener).call(this);
         if (track && state && pf && track.service === 'youtube2' && pf.uri === track.uri) {
+            YouTube2Context_1.default.getLogger().verbose('[youtube2] PrefetchPlaybackStateFixer: detected playback of prefetched track');
             if (state.uri !== track.uri) {
+                YouTube2Context_1.default.getLogger().verbose('[youtube2] PrefetchPlaybackStateFixer: force pushState to rectify Volumio state');
                 const mpdPlugin = YouTube2Context_1.default.getMpdPlugin();
                 mpdPlugin.getState().then((st) => mpdPlugin.pushState(st));
             }
@@ -546,4 +514,3 @@ _PrefetchPlaybackStateFixer_positionAtPrefetch = new WeakMap(), _PrefetchPlaybac
         }
     }
 };
-//# sourceMappingURL=PlayController.js.map

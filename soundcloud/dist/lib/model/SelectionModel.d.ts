@@ -1,10 +1,8 @@
-import BaseModel, { type LoopFetchResult } from './BaseModel';
-import type SelectionEntity from '../entities/SelectionEntity';
+import BaseModel from './BaseModel';
 export interface SelectionModelGetSelectionsParams {
-    mixed?: boolean;
+    type: 'mixed' | 'charts';
 }
 export default class SelectionModel extends BaseModel {
-    #private;
-    getSelections(options: SelectionModelGetSelectionsParams): LoopFetchResult<SelectionEntity> | Promise<LoopFetchResult<SelectionEntity>>;
+    getSelections(params: SelectionModelGetSelectionsParams): Promise<import("../entities/SelectionEntity").default[]>;
 }
 //# sourceMappingURL=SelectionModel.d.ts.map

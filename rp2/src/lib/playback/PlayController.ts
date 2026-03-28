@@ -18,14 +18,15 @@ export class PlayController {
     const rpjs = rp2.getRpjsLib();
     if (view.name === 'channel' && view.params.id) {
       await rpjs.play(view.params.id);
-    }
-    else if (view.name === 'episode' && view.params.id && view.params.channel) {
+    } else if (
+      view.name === 'episode' &&
+      view.params.id &&
+      view.params.channel
+    ) {
       await rpjs.play(view.params.channel, view.params.id);
-    }
-    else if (view.name === 'episodes' && view.params.channel) {
+    } else if (view.name === 'episodes' && view.params.channel) {
       await rpjs.play(view.params.channel);
-    }
-    else {
+    } else {
       throw Error(`Invalid URI "${track.uri}`);
     }
     if (rp2.getConfigValue('persistSession')) {
