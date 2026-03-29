@@ -14,7 +14,15 @@ var VOLUMIO_KIOSK_SERVICE_NAME = "volumio-kiosk";
 
 module.exports = ControllerStylishPlayer;
 
-function checkPort(port) {
+function ControllerStylishPlayer(context) {
+  this.context = context;
+  this.commandRouter = this.context.coreCommand;
+  this.logger = this.context.logger;
+  this.configManager = this.context.configManager;
+  this.server = null;
+}
+
+ControllerStylishPlayer.prototype.checkPort = function (port) {
   const output = spawnSync(
     `lsof -i tcp:${port} | awk '{print $2}' |grep --invert PID`,
     { shell: true }
@@ -26,16 +34,7 @@ function checkPort(port) {
   const pid = Buffer.from(output.stdout.buffer).toString().split('\n')[0]
   console.log({ pid })
   return pid
-}
-
-
-function ControllerStylishPlayer(context) {
-  this.context = context;
-  this.commandRouter = this.context.coreCommand;
-  this.logger = this.context.logger;
-  this.configManager = this.context.configManager;
-  this.server = null;
-}
+};
 
 ControllerStylishPlayer.prototype.getI18n = function (key) {
   var self = this;
@@ -192,7 +191,7 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
     }
   });
 
-  const pid = checkPort(STREAM_PORT);
+  const pid = self.checkPort(STREAM_PORT);
   if (pid) {
     console.log(`the server is running, process id: ${pid}`);
   } else {
