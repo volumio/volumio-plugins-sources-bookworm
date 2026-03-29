@@ -609,6 +609,17 @@ ControllerStylishPlayer.prototype.configSaveDaemon = function (data) {
 
   var oldPort = self.config.get("port", 3339);
 
+  // Check kiosk BEFORE saving the new port, so checkVolumioKiosk still finds the old port
+  var kioskHasOldPort = false;
+  try {
+    if (fs.existsSync(VOLUMIO_KIOSK_PATH)) {
+      var kioskContent = fs.readFileSync(VOLUMIO_KIOSK_PATH, "utf8");
+      kioskHasOldPort = kioskContent.indexOf("localhost:" + oldPort) !== -1;
+    }
+  } catch (e) {
+    self.logger.error("Stylish Player: Could not read kiosk script: " + e.message);
+  }
+
   self.config.set("port", port);
 
   self.logger.info("Stylish Player: Port saved. Old: " + oldPort + ", New: " + port);
@@ -618,10 +629,10 @@ ControllerStylishPlayer.prototype.configSaveDaemon = function (data) {
   if (oldPort !== port) {
     self.stopServer();
     self.startServer();
-    // If kiosk is currently showing Stylish Player, update the port in the kiosk script
-    if (self.checkVolumioKiosk().display === "stylishPlayer") {
+    if (kioskHasOldPort) {
       try {
         execSync("echo volumio | sudo -S sed -i 's|localhost:" + oldPort + "|localhost:" + port + "|g' \"" + VOLUMIO_KIOSK_PATH + "\"");
+        self.logger.info("Stylish Player: Updated kiosk URL from port " + oldPort + " to " + port);
         self.restartKioskService();
       } catch (error) {
         self.logger.error("Stylish Player: Failed to update kiosk port: " + error.message);
