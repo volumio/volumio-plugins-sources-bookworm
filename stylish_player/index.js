@@ -8,13 +8,28 @@ var os = require("os");
 const { spawn } = require('child_process');
 var execSync = require("child_process").execSync;
 var exec = require("child_process").exec;
-
+var STREAM_PORT = 9993;
 // Kiosk constants
 var VOLUMIO_KIOSK_PATH = "/opt/volumiokiosk.sh";
 var VOLUMIO_KIOSK_BAK_PATH = "/home/volumio/.stylish_player/volumiokiosk.sh.bak";
 var VOLUMIO_KIOSK_SERVICE_NAME = "volumio-kiosk";
 
 module.exports = ControllerStylishPlayer;
+
+function checkPort(port) {
+  const output = spawnSync(
+    `lsof -i tcp:${port} | awk '{print $2}' |grep --invert PID`,
+    { shell: true }
+  )
+  if (output.error) {
+    console.error(output.error)
+    return
+  }
+  const pid = Buffer.from(output.stdout.buffer).toString().split('\n')[0]
+  console.log({ pid })
+  return pid
+}
+
 
 function ControllerStylishPlayer(context) {
   this.context = context;
@@ -54,7 +69,7 @@ ControllerStylishPlayer.prototype.onStart = function () {
   var self = this;
   var defer = libQ.defer();
 
-   // 1. Update ALSA first (Synchronous or returns promise)
+  // 1. Update ALSA first (Synchronous or returns promise)
   self.commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'updateALSAConfigFile');
   self.loadalsastuff();
   self.streamOutViz();
@@ -113,6 +128,7 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
   if (self.audioServer) return;
 
   self.audioServer = http.createServer(function (req, res) {
+    console.log('Received request for ' + req.url);
     if (req.url === '/stream' || req.url === '/') {
 
       res.writeHead(200, {
@@ -126,7 +142,7 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
       var isConnected = true;
 
       // Function to spawn (and re-spawn) FFmpeg
-      var startFfmpeg = function() {
+      var startFfmpeg = function () {
         if (!isConnected) return;
 
         self.logger.info("Stylish Player: Starting FFmpeg instance");
@@ -139,7 +155,8 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
         ]);
 
         // Push data chunks to the HTTP response
-        ffmpeg.stdout.on('data', function(chunk) {
+        ffmpeg.stdout.on('data', function (chunk) {
+          console.log('FFmpeg output chunk of size ' + chunk.length);
           if (isConnected) res.write(chunk);
         });
 
@@ -173,9 +190,14 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
     }
   });
 
-  self.audioServer.listen(9993, function () {
-    self.logger.info("Stylish Player: Resilient Audio Streamer on port 9993");
-  });
+  const pid = checkPort(STREAM_PORT);
+  if (pid) {
+    console.log(`the server is running, process id: ${pid}`);
+  } else {
+    self.audioServer.listen(STREAM_PORT, function () {
+      self.logger.info("Stylish Player: Resilient Audio Streamer on port " + STREAM_PORT);
+    });
+  }
 };
 
 ControllerStylishPlayer.prototype.startServer = function () {
