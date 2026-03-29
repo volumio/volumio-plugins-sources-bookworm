@@ -88,5 +88,7 @@
   "KIOSK_SET_TO_STYLISH": "ตั้งค่าเป็น Stylish Player",
   "KIOSK_RESTORE_DEFAULT": "ตั้งค่าเป็นค่าเริ่มต้น",
   "KIOSK_RESTORE_BAK_LABEL": "กู้คืนจากการสำรองข้อมูล",
-  "KIOSK_RESTORE_BAK_BTN": "กู้คืน"
+  "KIOSK_RESTORE_BAK_BTN": "กู้คืน",
+  "USE_24_HOUR": "รูปแบบ 24 ชั่วโมง",
+  "USE_24_HOUR_DESC": "แสดงเวลาในรูปแบบ 24 ชั่วโมง (แบบทหาร) แทนรูปแบบ 12 ชั่วโมง AM/PM"
 }

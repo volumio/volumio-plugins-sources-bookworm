@@ -88,5 +88,7 @@
   "KIOSK_SET_TO_STYLISH": "Instellen op Stylish Player",
   "KIOSK_RESTORE_DEFAULT": "Standaard instellen",
   "KIOSK_RESTORE_BAK_LABEL": "Herstellen vanuit back-up",
-  "KIOSK_RESTORE_BAK_BTN": "Herstellen"
+  "KIOSK_RESTORE_BAK_BTN": "Herstellen",
+  "USE_24_HOUR": "24-uursnotatie",
+  "USE_24_HOUR_DESC": "Toon de tijd in 24-uursnotatie (militair) in plaats van 12-uursnotatie AM/PM."
 }

@@ -88,5 +88,7 @@
   "KIOSK_SET_TO_STYLISH": "Nastavit na Stylish Player",
   "KIOSK_RESTORE_DEFAULT": "Nastavit na výchozí",
   "KIOSK_RESTORE_BAK_LABEL": "Obnovit ze zálohy",
-  "KIOSK_RESTORE_BAK_BTN": "Obnovit"
+  "KIOSK_RESTORE_BAK_BTN": "Obnovit",
+  "USE_24_HOUR": "24hodinový čas",
+  "USE_24_HOUR_DESC": "Zobrazit čas ve 24hodinovém (vojenském) formátu místo 12hodinového formátu AM/PM."
 }

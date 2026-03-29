@@ -88,5 +88,7 @@
   "KIOSK_SET_TO_STYLISH": "Aseta Stylish Playeriksi",
   "KIOSK_RESTORE_DEFAULT": "Aseta oletukseksi",
   "KIOSK_RESTORE_BAK_LABEL": "Palauta varmuuskopiosta",
-  "KIOSK_RESTORE_BAK_BTN": "Palauta"
+  "KIOSK_RESTORE_BAK_BTN": "Palauta",
+  "USE_24_HOUR": "24 tunnin aika",
+  "USE_24_HOUR_DESC": "Näytä aika 24 tunnin (sotilasajan) muodossa 12 tunnin AM/PM-muodon sijaan."
 }

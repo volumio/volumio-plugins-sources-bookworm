@@ -88,5 +88,7 @@
   "KIOSK_SET_TO_STYLISH": "Stylish Player로 설정",
   "KIOSK_RESTORE_DEFAULT": "기본값으로 설정",
   "KIOSK_RESTORE_BAK_LABEL": "백업에서 복원",
-  "KIOSK_RESTORE_BAK_BTN": "복원"
+  "KIOSK_RESTORE_BAK_BTN": "복원",
+  "USE_24_HOUR": "24시간 형식",
+  "USE_24_HOUR_DESC": "시간을 12시간 AM/PM 형식 대신 24시간(군용) 형식으로 표시합니다."
 }

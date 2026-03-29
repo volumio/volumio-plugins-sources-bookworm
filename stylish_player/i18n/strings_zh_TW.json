@@ -88,5 +88,7 @@
   "KIOSK_SET_TO_STYLISH": "設定為 Stylish Player",
   "KIOSK_RESTORE_DEFAULT": "設定為預設",
   "KIOSK_RESTORE_BAK_LABEL": "從備份還原",
-  "KIOSK_RESTORE_BAK_BTN": "還原"
+  "KIOSK_RESTORE_BAK_BTN": "還原",
+  "USE_24_HOUR": "24小時制",
+  "USE_24_HOUR_DESC": "以24小時制（軍用格式）顯示時間，而非12小時制AM/PM格式。"
 }

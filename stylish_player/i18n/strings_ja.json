@@ -88,5 +88,7 @@
   "KIOSK_SET_TO_STYLISH": "Stylish Playerに設定",
   "KIOSK_RESTORE_DEFAULT": "デフォルトに設定",
   "KIOSK_RESTORE_BAK_LABEL": "バックアップから復元",
-  "KIOSK_RESTORE_BAK_BTN": "復元"
+  "KIOSK_RESTORE_BAK_BTN": "復元",
+  "USE_24_HOUR": "24時間表示",
+  "USE_24_HOUR_DESC": "時刻を12時間（AM/PM）形式ではなく24時間（軍用）形式で表示します。"
 }

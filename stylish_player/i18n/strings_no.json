@@ -88,5 +88,7 @@
   "KIOSK_SET_TO_STYLISH": "Still inn på Stylish Player",
   "KIOSK_RESTORE_DEFAULT": "Still til standard",
   "KIOSK_RESTORE_BAK_LABEL": "Gjenopprett fra sikkerhetskopi",
-  "KIOSK_RESTORE_BAK_BTN": "Gjenopprett"
+  "KIOSK_RESTORE_BAK_BTN": "Gjenopprett",
+  "USE_24_HOUR": "24-timers format",
+  "USE_24_HOUR_DESC": "Vis tid i 24-timers (militær) format i stedet for 12-timers AM/PM."
 }

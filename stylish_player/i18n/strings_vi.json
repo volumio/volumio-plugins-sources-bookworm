@@ -88,5 +88,7 @@
   "KIOSK_SET_TO_STYLISH": "Đặt thành Stylish Player",
   "KIOSK_RESTORE_DEFAULT": "Đặt về mặc định",
   "KIOSK_RESTORE_BAK_LABEL": "Khôi phục từ bản sao lưu",
-  "KIOSK_RESTORE_BAK_BTN": "Khôi phục"
+  "KIOSK_RESTORE_BAK_BTN": "Khôi phục",
+  "USE_24_HOUR": "Định dạng 24 giờ",
+  "USE_24_HOUR_DESC": "Hiển thị thời gian theo định dạng 24 giờ (quân sự) thay vì định dạng 12 giờ AM/PM."
 }

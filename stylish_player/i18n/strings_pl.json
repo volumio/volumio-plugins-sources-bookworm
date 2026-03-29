@@ -88,5 +88,7 @@
   "KIOSK_SET_TO_STYLISH": "Ustaw na Stylish Player",
   "KIOSK_RESTORE_DEFAULT": "Ustaw na domyślne",
   "KIOSK_RESTORE_BAK_LABEL": "Przywróć z kopii zapasowej",
-  "KIOSK_RESTORE_BAK_BTN": "Przywróć"
+  "KIOSK_RESTORE_BAK_BTN": "Przywróć",
+  "USE_24_HOUR": "Format 24-godzinny",
+  "USE_24_HOUR_DESC": "Wyświetlaj czas w formacie 24-godzinnym (wojskowym) zamiast 12-godzinnego AM/PM."
 }

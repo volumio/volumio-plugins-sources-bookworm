@@ -285,6 +285,7 @@ ControllerStylishPlayer.prototype.startServer = function () {
         wallpaperShowWeather: self.config.get("wallpaperShowWeather", true),
         slideshowInterval: self.config.get("slideshowInterval", 30),
         externalUrl: self.config.get("externalUrl", ""),
+        use24Hour: self.config.get("use24Hour", false),
       };
       res.writeHead(200, {
         "Content-Type": "application/json",
@@ -398,6 +399,7 @@ ControllerStylishPlayer.prototype.broadcastConfig = function () {
     wallpaperShowWeather: self.config.get("wallpaperShowWeather", true),
     slideshowInterval: self.config.get("slideshowInterval", 30),
     externalUrl: self.config.get("externalUrl", ""),
+    use24Hour: self.config.get("use24Hour", false),
   };
   self.commandRouter.broadcastMessage("pushStylishPlayerConfig", configData);
   self.logger.info("Stylish Player: Broadcasted config update: " + JSON.stringify(configData));
@@ -512,6 +514,7 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       uiconf.sections[5].content[8].value = self.config.get("wallpaperShowSeconds", false);
       uiconf.sections[5].content[9].value = self.config.get("wallpaperShowWeather", true);
       uiconf.sections[5].content[10].value = self.config.get("slideshowInterval", 30);
+      uiconf.sections[5].content[11].value = self.config.get("use24Hour", false);
 
       // Populate kiosk section (index 6) — content is built dynamically based on current kiosk state
       var kioskState = self.checkVolumioKiosk();
@@ -806,6 +809,7 @@ ControllerStylishPlayer.prototype.configSaveIdleScreen = function (data) {
   self.config.set("externalUrl", (data["externalUrl"] || "").toString().trim());
   var slideshowInterval = parseInt(data["slideshowInterval"], 10);
   self.config.set("slideshowInterval", isNaN(slideshowInterval) || slideshowInterval < 5 ? 30 : slideshowInterval);
+  self.config.set("use24Hour", data["use24Hour"] === true);
   self.commandRouter.pushToastMessage("success", "Stylish Player", "Idle screen settings saved.");
 
   self.broadcastConfig();

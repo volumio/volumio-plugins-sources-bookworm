@@ -88,5 +88,7 @@
   "KIOSK_SET_TO_STYLISH": "Stylish Player Olarak Ayarla",
   "KIOSK_RESTORE_DEFAULT": "Varsayılan Olarak Ayarla",
   "KIOSK_RESTORE_BAK_LABEL": "Yedekten Geri Yükle",
-  "KIOSK_RESTORE_BAK_BTN": "Geri Yükle"
+  "KIOSK_RESTORE_BAK_BTN": "Geri Yükle",
+  "USE_24_HOUR": "24 Saatlik Format",
+  "USE_24_HOUR_DESC": "Saati 12 saatlik AM/PM formatı yerine 24 saatlik (askeri) formatta görüntüle."
 }

@@ -227,7 +227,8 @@
           "wallpaperShowTime",
           "wallpaperShowSeconds",
           "wallpaperShowWeather",
-          "slideshowInterval"
+          "slideshowInterval",
+          "use24Hour"
         ]
       },
       "content": [
@@ -335,6 +336,14 @@
           "label": "TRANSLATE.SLIDESHOW_INTERVAL",
           "doc": "TRANSLATE.SLIDESHOW_INTERVAL_DESC",
           "value": 30
+        },
+        {
+          "id": "use24Hour",
+          "type": "boolean",
+          "element": "switch",
+          "label": "TRANSLATE.USE_24_HOUR",
+          "doc": "TRANSLATE.USE_24_HOUR_DESC",
+          "value": false
         }
       ]
     },

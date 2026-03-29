@@ -88,5 +88,7 @@
   "KIOSK_SET_TO_STYLISH": "Beállítás Stylish Playerre",
   "KIOSK_RESTORE_DEFAULT": "Alapértelmezett beállítása",
   "KIOSK_RESTORE_BAK_LABEL": "Visszaállítás biztonsági mentésből",
-  "KIOSK_RESTORE_BAK_BTN": "Visszaállítás"
+  "KIOSK_RESTORE_BAK_BTN": "Visszaállítás",
+  "USE_24_HOUR": "24 órás formátum",
+  "USE_24_HOUR_DESC": "Az idő megjelenítése 24 órás (katonai) formátumban 12 órás AM/PM helyett."
 }

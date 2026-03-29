@@ -88,5 +88,7 @@
   "KIOSK_SET_TO_STYLISH": "Установить Stylish Player",
   "KIOSK_RESTORE_DEFAULT": "Установить по умолчанию",
   "KIOSK_RESTORE_BAK_LABEL": "Восстановить из резервной копии",
-  "KIOSK_RESTORE_BAK_BTN": "Восстановить"
+  "KIOSK_RESTORE_BAK_BTN": "Восстановить",
+  "USE_24_HOUR": "24-часовой формат",
+  "USE_24_HOUR_DESC": "Отображать время в 24-часовом (военном) формате вместо 12-часового AM/PM."
 }

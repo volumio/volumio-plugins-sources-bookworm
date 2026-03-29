@@ -88,5 +88,7 @@
   "KIOSK_SET_TO_STYLISH": "Auf Stylish Player setzen",
   "KIOSK_RESTORE_DEFAULT": "Auf Standard setzen",
   "KIOSK_RESTORE_BAK_LABEL": "Von Sicherung wiederherstellen",
-  "KIOSK_RESTORE_BAK_BTN": "Wiederherstellen"
+  "KIOSK_RESTORE_BAK_BTN": "Wiederherstellen",
+  "USE_24_HOUR": "24-Stunden-Zeit",
+  "USE_24_HOUR_DESC": "Uhrzeit im 24-Stunden-Format (Militärformat) statt im 12-Stunden AM/PM-Format anzeigen."
 }
