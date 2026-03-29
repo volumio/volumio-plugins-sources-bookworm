@@ -101,6 +101,10 @@ ControllerStylishPlayer.prototype.onRestart = function () {
 
 // Server Management -------------------------------------------------------------------
 ControllerStylishPlayer.prototype.loadalsastuff = function () {
+  execSync(`rm /tmp/stream.mp3 || true`, {
+    uid: 1000,
+    gid: 1000
+  });
   const self = this;
   var defer = libQ.defer();
   try {
