@@ -789,6 +789,8 @@ ControllerStylishPlayer.prototype.restartKioskService = function () {
 ControllerStylishPlayer.prototype.configSaveIdleScreen = function (data) {
   var self = this;
 
+  self.logger.info("Stylish Player: configSaveIdleScreen called with data: " + JSON.stringify(data));
+
   var idleScreen = data["idleScreen"] ? data["idleScreen"].value : "analogClock";
   var idleTimeout = parseInt(data["idleTimeout"], 10);
 
@@ -804,12 +806,12 @@ ControllerStylishPlayer.prototype.configSaveIdleScreen = function (data) {
   self.config.set("unsplashApiKey", (data["unsplashApiKey"] || "").toString().trim());
   self.config.set("wallpaperUrl", (data["wallpaperUrl"] || "").toString().trim());
   self.config.set("wallpaperShowTime", data["wallpaperShowTime"] !== false);
-  self.config.set("wallpaperShowSeconds", data["wallpaperShowSeconds"] === true);
+  self.config.set("wallpaperShowSeconds", data["wallpaperShowSeconds"] === true || data["wallpaperShowSeconds"] === "true");
   self.config.set("wallpaperShowWeather", data["wallpaperShowWeather"] !== false);
   self.config.set("externalUrl", (data["externalUrl"] || "").toString().trim());
   var slideshowInterval = parseInt(data["slideshowInterval"], 10);
   self.config.set("slideshowInterval", isNaN(slideshowInterval) || slideshowInterval < 5 ? 30 : slideshowInterval);
-  self.config.set("use24Hour", data["use24Hour"] === true);
+  self.config.set("use24Hour", data["use24Hour"] === true || data["use24Hour"] === "true");
   self.commandRouter.pushToastMessage("success", "Stylish Player", "Idle screen settings saved.");
 
   self.broadcastConfig();
