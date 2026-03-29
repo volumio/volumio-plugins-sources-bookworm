@@ -5,9 +5,7 @@ var fs = require("fs-extra");
 var http = require("http");
 var path = require("path");
 var os = require("os");
-const { spawn, spawnSync } = require('child_process');
-var execSync = require("child_process").execSync;
-var exec = require("child_process").exec;
+const { spawn, spawnSync, exec, execSync } = require('child_process');
 var STREAM_PORT = 9993;
 // Kiosk constants
 var VOLUMIO_KIOSK_PATH = "/opt/volumiokiosk.sh";
