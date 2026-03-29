@@ -5,6 +5,12 @@ var fs = require("fs-extra");
 var http = require("http");
 var path = require("path");
 var os = require("os");
+var execSync = require("child_process").execSync;
+
+// Kiosk constants
+var VOLUMIO_KIOSK_PATH = "/opt/volumiokiosk.sh";
+var VOLUMIO_KIOSK_BAK_PATH = "/opt/volumiokiosk.sh.bak";
+var VOLUMIO_KIOSK_SERVICE_NAME = "volumio-kiosk";
 
 module.exports = ControllerStylishPlayer;
 
@@ -344,6 +350,9 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       uiconf.sections[5].content[9].value = self.config.get("wallpaperShowWeather", true);
       uiconf.sections[5].content[10].value = self.config.get("slideshowInterval", 30);
 
+      // Populate kiosk section (index 6)
+      uiconf.sections[6].content[0].value = self.config.get("kioskEnabled", false);
+
       defer.resolve(uiconf);
     })
     .fail(function () {
@@ -387,6 +396,15 @@ ControllerStylishPlayer.prototype.configSaveDaemon = function (data) {
   if (oldPort !== port) {
     self.stopServer();
     self.startServer();
+    // If kiosk mode is active, update the kiosk script with the new port
+    if (self.config.get("kioskEnabled", false)) {
+      try {
+        execSync("sudo sed -i 's|localhost:" + oldPort + "|localhost:" + port + "|g' " + VOLUMIO_KIOSK_PATH);
+        self.restartKioskService();
+      } catch (error) {
+        self.logger.error("Stylish Player: Failed to update kiosk port: " + error.message);
+      }
+    }
   }
 
   self.broadcastConfig();
@@ -442,6 +460,95 @@ ControllerStylishPlayer.prototype.configSaveWeather = function (data) {
   self.commandRouter.pushToastMessage("success", "Stylish Player", "Weather settings saved.");
 
   self.broadcastConfig();
+};
+
+// Kiosk Management -----------------------------------------------------------------------
+
+ControllerStylishPlayer.prototype.checkVolumioKiosk = function () {
+  var self = this;
+  var port = self.config.get("port", 3339);
+  try {
+    if (!fs.existsSync(VOLUMIO_KIOSK_PATH)) {
+      return { exists: false };
+    }
+    var content = fs.readFileSync(VOLUMIO_KIOSK_PATH, "utf8");
+    if (content.indexOf("localhost:3000") !== -1) {
+      return { exists: true, display: "default" };
+    }
+    if (content.indexOf("localhost:" + port) !== -1) {
+      return { exists: true, display: "stylishPlayer" };
+    }
+    return { exists: true, display: "unknown" };
+  } catch (error) {
+    self.logger.error("Stylish Player: Error reading Volumio Kiosk script: " + error.message);
+    return { exists: false };
+  }
+};
+
+ControllerStylishPlayer.prototype.configureKiosk = function (enable) {
+  var self = this;
+  var port = self.config.get("port", 3339);
+  try {
+    if (enable) {
+      if (!fs.existsSync(VOLUMIO_KIOSK_BAK_PATH)) {
+        self.logger.info("Stylish Player: Backing up " + VOLUMIO_KIOSK_PATH + " to " + VOLUMIO_KIOSK_BAK_PATH);
+        execSync("sudo cp " + VOLUMIO_KIOSK_PATH + " " + VOLUMIO_KIOSK_BAK_PATH);
+      }
+      execSync("sudo sed -i 's|localhost:3000|localhost:" + port + "|g' " + VOLUMIO_KIOSK_PATH);
+      self.commandRouter.pushToastMessage("success", "Stylish Player", "Kiosk mode enabled.");
+    } else {
+      if (fs.existsSync(VOLUMIO_KIOSK_BAK_PATH)) {
+        execSync("sudo cp " + VOLUMIO_KIOSK_BAK_PATH + " " + VOLUMIO_KIOSK_PATH);
+      } else {
+        execSync("sudo sed -i 's|localhost:" + port + "|localhost:3000|g' " + VOLUMIO_KIOSK_PATH);
+      }
+      self.commandRouter.pushToastMessage("success", "Stylish Player", "Kiosk mode disabled.");
+    }
+    self.restartKioskService();
+  } catch (error) {
+    self.logger.error("Stylish Player: Error configuring kiosk: " + error.message);
+    self.commandRouter.pushToastMessage("error", "Stylish Player", "Failed to configure kiosk mode.");
+    throw error;
+  }
+};
+
+ControllerStylishPlayer.prototype.restartKioskService = function () {
+  var self = this;
+  try {
+    var result = execSync("systemctl is-active " + VOLUMIO_KIOSK_SERVICE_NAME).toString().trim();
+    if (result === "active") {
+      self.commandRouter.pushToastMessage("info", "Stylish Player", "Restarting Volumio Kiosk service...");
+      execSync("sudo systemctl restart " + VOLUMIO_KIOSK_SERVICE_NAME);
+    }
+  } catch (e) {
+    // systemctl is-active exits non-zero when the service is inactive; that is expected and not an error
+  }
+};
+
+ControllerStylishPlayer.prototype.configSaveKiosk = function (data) {
+  var self = this;
+  var kioskEnabled = data["kioskEnabled"] === true;
+  var currentlyEnabled = self.config.get("kioskEnabled", false);
+
+  var kiosk = self.checkVolumioKiosk();
+  if (!kiosk.exists) {
+    self.commandRouter.pushToastMessage("error", "Stylish Player", "Volumio Kiosk script not found. Is the kiosk service installed?");
+    return;
+  }
+
+  self.config.set("kioskEnabled", kioskEnabled);
+
+  if (kioskEnabled !== currentlyEnabled) {
+    try {
+      self.configureKiosk(kioskEnabled);
+    } catch (e) {
+      // Error already toasted inside configureKiosk
+    }
+  } else {
+    self.commandRouter.pushToastMessage("success", "Stylish Player", "Kiosk settings saved.");
+  }
+
+  self.refreshUI();
 };
 
 ControllerStylishPlayer.prototype.configSaveIdleScreen = function (data) {

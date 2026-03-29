@@ -77,5 +77,8 @@
   "SHOW_PLAYER_CONTROLS_DESC": "When disabled, player buttons are hidden and the seek bar becomes a read-only progress indicator.",
   "OPEN_APP": "Open App",
   "OPEN_APP_DESC": "Open the Stylish Player interface in a new tab.",
-  "NONE": "None"
+  "NONE": "None",
+  "KIOSK": "Kiosk Mode",
+  "KIOSK_ENABLE": "Enable Kiosk Mode",
+  "KIOSK_ENABLE_DESC": "When enabled, the Volumio kiosk display will show the Stylish Player interface instead of the default Volumio UI. Requires the Volumio Kiosk service to be installed. The original kiosk script is backed up to /opt/volumiokiosk.sh.bak and can be restored by disabling this setting."
 }
