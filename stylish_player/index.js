@@ -91,7 +91,7 @@ ControllerStylishPlayer.prototype.onStop = function () {
   var self = this;
 
   self.stopServer();
-
+  self.stopAudioServer();
   return libQ.resolve();
 };
 
@@ -351,6 +351,16 @@ ControllerStylishPlayer.prototype.stopServer = function () {
     self.server.close();
     self.server = null;
     self.logger.info("Stylish Player: Server stopped");
+  }
+};
+
+ControllerStylishPlayer.prototype.stopAudioServer = function () {
+  var self = this;
+
+  if (self.audioServer) {
+    self.audioServer.close();
+    self.audioServer = null;
+    self.logger.info("Stylish Player: Audio server stopped");
   }
 };
 
