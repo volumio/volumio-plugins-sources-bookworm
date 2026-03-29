@@ -23,6 +23,24 @@ function ControllerStylishPlayer(context) {
   this.server = null;
 }
 
+ControllerStylishPlayer.prototype.getI18n = function (key) {
+  var self = this;
+  if (!self.i18nStrings) {
+    var lang_code = self.commandRouter.sharedVars.get("language_code");
+    try {
+      self.i18nStrings = fs.readJsonSync(__dirname + "/i18n/strings_" + lang_code + ".json");
+    } catch (e) {
+      self.i18nStrings = {};
+    }
+    try {
+      self.i18nDefaults = fs.readJsonSync(__dirname + "/i18n/strings_en.json");
+    } catch (e) {
+      self.i18nDefaults = {};
+    }
+  }
+  return self.i18nStrings[key] || self.i18nDefaults[key] || key;
+};
+
 ControllerStylishPlayer.prototype.onVolumioStart = function () {
   var configFile = this.commandRouter.pluginManager.getConfigurationFile(this.context, "config.json");
   this.config = new (require("v-conf"))();
@@ -355,13 +373,13 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       var kioskState = self.checkVolumioKiosk();
       var kioskDesc, kioskButton;
       if (!kioskState.exists) {
-        kioskDesc = "Volumio Kiosk is not installed on this system. Install the kiosk service to use this feature.";
+        kioskDesc = self.getI18n("KIOSK_NOT_FOUND");
       } else if (kioskState.display === "default") {
-        kioskDesc = "The kiosk display is currently showing the default Volumio interface.";
+        kioskDesc = self.getI18n("KIOSK_SHOWING_DEFAULT");
         kioskButton = {
           id: "kioskSetToStylish",
           element: "button",
-          label: "Set to Stylish Player",
+          label: self.getI18n("KIOSK_SET_TO_STYLISH"),
           onClick: {
             type: "emit",
             message: "callMethod",
@@ -372,11 +390,11 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
           }
         };
       } else if (kioskState.display === "stylishPlayer") {
-        kioskDesc = "The kiosk display is currently showing the Stylish Player interface.";
+        kioskDesc = self.getI18n("KIOSK_SHOWING_STYLISH");
         kioskButton = {
           id: "kioskRestoreDefault",
           element: "button",
-          label: "Restore Default",
+          label: self.getI18n("KIOSK_RESTORE_DEFAULT"),
           onClick: {
             type: "emit",
             message: "callMethod",
@@ -387,13 +405,13 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
           }
         };
       } else {
-        kioskDesc = "The kiosk display is set to open a different page. ";
+        kioskDesc = self.getI18n("KIOSK_SHOWING_UNKNOWN");
         if (fs.existsSync(VOLUMIO_KIOSK_BAK_PATH)) {
-          kioskDesc += "A backup of the original kiosk script is available. Use \"Restore from Backup\" to revert to the original configuration.";
+          kioskDesc += " " + self.getI18n("KIOSK_RESTORE_BAK_AVAILABLE");
           kioskButton = {
             id: "kioskRestoreBak",
             element: "button",
-            label: "Restore",
+            label: self.getI18n("KIOSK_RESTORE_BAK_BTN"),
             onClick: {
               type: "emit",
               message: "callMethod",
