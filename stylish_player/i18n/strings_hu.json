@@ -78,5 +78,15 @@
   "OPEN_APP": "Alkalmazás megnyitása",
   "OPEN_APP_DESC": "A Stylish Player felület megnyitása új lapon.",
   "VIZ_TYPE_VU_METER_4": "VU Mérő 4 (Fekete)",
-  "NONE": "Semmi"
+  "NONE": "Semmi",
+  "KIOSK": "Kiosk mód",
+  "KIOSK_NOT_FOUND": "A Volumio Kiosk nincs telepítve ezen a rendszeren. Telepítse a kiosk szolgáltatást a funkció használatához.",
+  "KIOSK_SHOWING_DEFAULT": "A kiosk kijelző jelenleg az alapértelmezett Volumio felületet mutatja.",
+  "KIOSK_SHOWING_STYLISH": "A kiosk kijelző jelenleg a Stylish Player felületet mutatja.",
+  "KIOSK_SHOWING_UNKNOWN": "A kiosk kijelző egy másik oldal megnyitására van beállítva.",
+  "KIOSK_RESTORE_BAK_AVAILABLE": "Az eredeti kiosk szkript biztonsági mentése elérhető. Használja a \"Visszaállítás biztonsági mentésből\" lehetőséget az eredeti konfiguráció visszaállításához.",
+  "KIOSK_SET_TO_STYLISH": "Beállítás Stylish Playerre",
+  "KIOSK_RESTORE_DEFAULT": "Alapértelmezett beállítása",
+  "KIOSK_RESTORE_BAK_LABEL": "Visszaállítás biztonsági mentésből",
+  "KIOSK_RESTORE_BAK_BTN": "Visszaállítás"
 }

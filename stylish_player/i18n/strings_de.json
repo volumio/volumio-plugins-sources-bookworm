@@ -78,5 +78,15 @@
   "OPEN_APP": "App öffnen",
   "OPEN_APP_DESC": "Die Stylish Player-Oberfläche in einem neuen Tab öffnen.",
   "VIZ_TYPE_VU_METER_4": "VU-Meter 4 (Schwarz)",
-  "NONE": "Keine"
+  "NONE": "Keine",
+  "KIOSK": "Kiosk-Modus",
+  "KIOSK_NOT_FOUND": "Volumio Kiosk ist nicht auf diesem System installiert. Installieren Sie den Kiosk-Dienst, um diese Funktion zu nutzen.",
+  "KIOSK_SHOWING_DEFAULT": "Das Kiosk-Display zeigt derzeit die Standard-Volumio-Oberfläche.",
+  "KIOSK_SHOWING_STYLISH": "Das Kiosk-Display zeigt derzeit die Stylish Player-Oberfläche.",
+  "KIOSK_SHOWING_UNKNOWN": "Das Kiosk-Display ist so eingestellt, dass es eine andere Seite öffnet.",
+  "KIOSK_RESTORE_BAK_AVAILABLE": "Eine Sicherung des ursprünglichen Kiosk-Skripts ist verfügbar. Verwenden Sie \"Von Sicherung wiederherstellen\", um zur ursprünglichen Konfiguration zurückzukehren.",
+  "KIOSK_SET_TO_STYLISH": "Auf Stylish Player setzen",
+  "KIOSK_RESTORE_DEFAULT": "Auf Standard setzen",
+  "KIOSK_RESTORE_BAK_LABEL": "Von Sicherung wiederherstellen",
+  "KIOSK_RESTORE_BAK_BTN": "Wiederherstellen"
 }

@@ -78,5 +78,15 @@
   "OPEN_APP": "Відкрити додаток",
   "OPEN_APP_DESC": "Відкрити інтерфейс Stylish Player у новій вкладці.",
   "VIZ_TYPE_VU_METER_4": "VU-метр 4 (Чорний)",
-  "NONE": "Немає"
+  "NONE": "Немає",
+  "KIOSK": "Режим кіоску",
+  "KIOSK_NOT_FOUND": "Volumio Kiosk не встановлено на цій системі. Встановіть сервіс кіоску для використання цієї функції.",
+  "KIOSK_SHOWING_DEFAULT": "Дисплей кіоску наразі відображає стандартний інтерфейс Volumio.",
+  "KIOSK_SHOWING_STYLISH": "Дисплей кіоску наразі відображає інтерфейс Stylish Player.",
+  "KIOSK_SHOWING_UNKNOWN": "Дисплей кіоску налаштовано для відкриття іншої сторінки.",
+  "KIOSK_RESTORE_BAK_AVAILABLE": "Доступна резервна копія оригінального скрипту кіоску. Використовуйте «Відновити з резервної копії» для повернення до вихідної конфігурації.",
+  "KIOSK_SET_TO_STYLISH": "Встановити Stylish Player",
+  "KIOSK_RESTORE_DEFAULT": "Встановити за замовчуванням",
+  "KIOSK_RESTORE_BAK_LABEL": "Відновити з резервної копії",
+  "KIOSK_RESTORE_BAK_BTN": "Відновити"
 }

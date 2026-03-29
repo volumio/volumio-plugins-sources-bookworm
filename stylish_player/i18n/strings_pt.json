@@ -78,5 +78,15 @@
   "OPEN_APP": "Abrir aplicação",
   "OPEN_APP_DESC": "Abrir a interface do Stylish Player num novo separador.",
   "VIZ_TYPE_VU_METER_4": "VU Meter 4 (Preto)",
-  "NONE": "Nenhum"
+  "NONE": "Nenhum",
+  "KIOSK": "Modo Kiosk",
+  "KIOSK_NOT_FOUND": "O Volumio Kiosk não está instalado neste sistema. Instale o serviço kiosk para usar esta funcionalidade.",
+  "KIOSK_SHOWING_DEFAULT": "O visor do kiosk está a mostrar atualmente a interface padrão do Volumio.",
+  "KIOSK_SHOWING_STYLISH": "O visor do kiosk está a mostrar atualmente a interface do Stylish Player.",
+  "KIOSK_SHOWING_UNKNOWN": "O visor do kiosk está configurado para abrir uma página diferente.",
+  "KIOSK_RESTORE_BAK_AVAILABLE": "Existe uma cópia de segurança do script kiosk original disponível. Use \"Restaurar a partir da cópia de segurança\" para reverter para a configuração original.",
+  "KIOSK_SET_TO_STYLISH": "Definir como Stylish Player",
+  "KIOSK_RESTORE_DEFAULT": "Definir como predefinição",
+  "KIOSK_RESTORE_BAK_LABEL": "Restaurar a partir da cópia de segurança",
+  "KIOSK_RESTORE_BAK_BTN": "Restaurar"
 }

@@ -85,7 +85,7 @@
   "KIOSK_SHOWING_UNKNOWN": "The kiosk display is set to open a different page.",
   "KIOSK_RESTORE_BAK_AVAILABLE": "A backup of the original kiosk script is available. Use \"Restore from Backup\" to revert to the original configuration.",
   "KIOSK_SET_TO_STYLISH": "Set to Stylish Player",
-  "KIOSK_RESTORE_DEFAULT": "Restore Default",
+  "KIOSK_RESTORE_DEFAULT": "Set to Default",
   "KIOSK_RESTORE_BAK_LABEL": "Restore from Backup",
   "KIOSK_RESTORE_BAK_BTN": "Restore"
 }

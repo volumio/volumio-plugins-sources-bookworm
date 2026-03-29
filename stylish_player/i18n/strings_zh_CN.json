@@ -78,5 +78,15 @@
   "OPEN_APP": "打开应用",
   "OPEN_APP_DESC": "在新标签页中打开 Stylish Player 界面。",
   "VIZ_TYPE_VU_METER_4": "VU表 4 (黑色)",
-  "NONE": "无"
+  "NONE": "无",
+  "KIOSK": "信息亭模式",
+  "KIOSK_NOT_FOUND": "Volumio 信息亭未安装在此系统上。请安装信息亭服务以使用此功能。",
+  "KIOSK_SHOWING_DEFAULT": "信息亭显示器当前正在显示默认的 Volumio 界面。",
+  "KIOSK_SHOWING_STYLISH": "信息亭显示器当前正在显示 Stylish Player 界面。",
+  "KIOSK_SHOWING_UNKNOWN": "信息亭显示器已设置为打开其他页面。",
+  "KIOSK_RESTORE_BAK_AVAILABLE": "原始信息亭脚本的备份可用。使用"从备份恢复"以恢复原始配置。",
+  "KIOSK_SET_TO_STYLISH": "设置为 Stylish Player",
+  "KIOSK_RESTORE_DEFAULT": "设置为默认",
+  "KIOSK_RESTORE_BAK_LABEL": "从备份恢复",
+  "KIOSK_RESTORE_BAK_BTN": "恢复"
 }

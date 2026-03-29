@@ -78,5 +78,15 @@
   "OPEN_APP": "앱 열기",
   "OPEN_APP_DESC": "새 탭에서 Stylish Player 인터페이스를 엽니다.",
   "VIZ_TYPE_VU_METER_4": "VU 미터 4 (검은색)",
-  "NONE": "없음"
+  "NONE": "없음",
+  "KIOSK": "키오스크 모드",
+  "KIOSK_NOT_FOUND": "이 시스템에 Volumio 키오스크가 설치되어 있지 않습니다. 이 기능을 사용하려면 키오스크 서비스를 설치하세요.",
+  "KIOSK_SHOWING_DEFAULT": "키오스크 디스플레이가 현재 기본 Volumio 인터페이스를 표시하고 있습니다.",
+  "KIOSK_SHOWING_STYLISH": "키오스크 디스플레이가 현재 Stylish Player 인터페이스를 표시하고 있습니다.",
+  "KIOSK_SHOWING_UNKNOWN": "키오스크 디스플레이가 다른 페이지를 열도록 설정되어 있습니다.",
+  "KIOSK_RESTORE_BAK_AVAILABLE": "원본 키오스크 스크립트의 백업이 있습니다. \"백업에서 복원\"을 사용하여 원래 구성으로 되돌리세요.",
+  "KIOSK_SET_TO_STYLISH": "Stylish Player로 설정",
+  "KIOSK_RESTORE_DEFAULT": "기본값으로 설정",
+  "KIOSK_RESTORE_BAK_LABEL": "백업에서 복원",
+  "KIOSK_RESTORE_BAK_BTN": "복원"
 }

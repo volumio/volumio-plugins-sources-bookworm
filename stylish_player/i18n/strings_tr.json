@@ -78,5 +78,15 @@
   "OPEN_APP": "Uygulamayı Aç",
   "OPEN_APP_DESC": "Stylish Player arayüzünü yeni bir sekmede açın.",
   "VIZ_TYPE_VU_METER_4": "VU Metre 4 (Siyah)",
-  "NONE": "Hiçbir"
+  "NONE": "Hiçbir",
+  "KIOSK": "Kiosk Modu",
+  "KIOSK_NOT_FOUND": "Volumio Kiosk bu sisteme yüklü değil. Bu özelliği kullanmak için kiosk servisini yükleyin.",
+  "KIOSK_SHOWING_DEFAULT": "Kiosk ekranı şu anda varsayılan Volumio arayüzünü gösteriyor.",
+  "KIOSK_SHOWING_STYLISH": "Kiosk ekranı şu anda Stylish Player arayüzünü gösteriyor.",
+  "KIOSK_SHOWING_UNKNOWN": "Kiosk ekranı farklı bir sayfa açacak şekilde ayarlanmış.",
+  "KIOSK_RESTORE_BAK_AVAILABLE": "Orijinal kiosk betiğinin bir yedeği mevcut. Orijinal yapılandırmaya dönmek için \"Yedekten Geri Yükle\" seçeneğini kullanın.",
+  "KIOSK_SET_TO_STYLISH": "Stylish Player Olarak Ayarla",
+  "KIOSK_RESTORE_DEFAULT": "Varsayılan Olarak Ayarla",
+  "KIOSK_RESTORE_BAK_LABEL": "Yedekten Geri Yükle",
+  "KIOSK_RESTORE_BAK_BTN": "Geri Yükle"
 }

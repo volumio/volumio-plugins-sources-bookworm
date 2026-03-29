@@ -78,5 +78,15 @@
   "OPEN_APP": "Otevřít aplikaci",
   "OPEN_APP_DESC": "Otevřít rozhraní Stylish Player v nové záložce.",
   "VIZ_TYPE_VU_METER_4": "VU Metr 4 (Černá)",
-  "NONE": "Žádný"
+  "NONE": "Žádný",
+  "KIOSK": "Režim kiosk",
+  "KIOSK_NOT_FOUND": "Volumio Kiosk není na tomto systému nainstalován. Nainstalujte kiosk službu, abyste mohli tuto funkci používat.",
+  "KIOSK_SHOWING_DEFAULT": "Kiosk displej aktuálně zobrazuje výchozí rozhraní Volumio.",
+  "KIOSK_SHOWING_STYLISH": "Kiosk displej aktuálně zobrazuje rozhraní Stylish Player.",
+  "KIOSK_SHOWING_UNKNOWN": "Kiosk displej je nastaven na otevření jiné stránky.",
+  "KIOSK_RESTORE_BAK_AVAILABLE": "Je k dispozici záloha původního kiosk skriptu. Použijte \"Obnovit ze zálohy\" pro návrat k původní konfiguraci.",
+  "KIOSK_SET_TO_STYLISH": "Nastavit na Stylish Player",
+  "KIOSK_RESTORE_DEFAULT": "Nastavit na výchozí",
+  "KIOSK_RESTORE_BAK_LABEL": "Obnovit ze zálohy",
+  "KIOSK_RESTORE_BAK_BTN": "Obnovit"
 }

@@ -78,5 +78,15 @@
   "OPEN_APP": "Mở ứng dụng",
   "OPEN_APP_DESC": "Mở giao diện Stylish Player trong tab mới.",
   "VIZ_TYPE_VU_METER_4": "Đồng hồ VU 4 (Đen)",
-  "NONE": "Không"
+  "NONE": "Không",
+  "KIOSK": "Chế độ Kiosk",
+  "KIOSK_NOT_FOUND": "Volumio Kiosk không được cài đặt trên hệ thống này. Cài đặt dịch vụ kiosk để sử dụng tính năng này.",
+  "KIOSK_SHOWING_DEFAULT": "Màn hình kiosk hiện đang hiển thị giao diện Volumio mặc định.",
+  "KIOSK_SHOWING_STYLISH": "Màn hình kiosk hiện đang hiển thị giao diện Stylish Player.",
+  "KIOSK_SHOWING_UNKNOWN": "Màn hình kiosk được cài đặt để mở một trang khác.",
+  "KIOSK_RESTORE_BAK_AVAILABLE": "Có sẵn bản sao lưu của script kiosk gốc. Sử dụng \"Khôi phục từ bản sao lưu\" để trở về cấu hình ban đầu.",
+  "KIOSK_SET_TO_STYLISH": "Đặt thành Stylish Player",
+  "KIOSK_RESTORE_DEFAULT": "Đặt về mặc định",
+  "KIOSK_RESTORE_BAK_LABEL": "Khôi phục từ bản sao lưu",
+  "KIOSK_RESTORE_BAK_BTN": "Khôi phục"
 }

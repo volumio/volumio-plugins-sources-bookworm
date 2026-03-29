@@ -78,5 +78,15 @@
   "OPEN_APP": "Άνοιγμα εφαρμογής",
   "OPEN_APP_DESC": "Άνοιγμα της διεπαφής Stylish Player σε νέα καρτέλα.",
   "VIZ_TYPE_VU_METER_4": "VU Μετρητής 4 (Μαύρο)",
-  "NONE": "Κανένα"
+  "NONE": "Κανένα",
+  "KIOSK": "Λειτουργία Kiosk",
+  "KIOSK_NOT_FOUND": "Το Volumio Kiosk δεν είναι εγκατεστημένο σε αυτό το σύστημα. Εγκαταστήστε την υπηρεσία kiosk για να χρησιμοποιήσετε αυτή τη δυνατότητα.",
+  "KIOSK_SHOWING_DEFAULT": "Η οθόνη kiosk εμφανίζει αυτήν τη στιγμή την προεπιλεγμένη διεπαφή Volumio.",
+  "KIOSK_SHOWING_STYLISH": "Η οθόνη kiosk εμφανίζει αυτήν τη στιγμή τη διεπαφή Stylish Player.",
+  "KIOSK_SHOWING_UNKNOWN": "Η οθόνη kiosk είναι ρυθμισμένη να ανοίγει διαφορετική σελίδα.",
+  "KIOSK_RESTORE_BAK_AVAILABLE": "Υπάρχει αντίγραφο ασφαλείας του αρχικού σεναρίου kiosk. Χρησιμοποιήστε \"Επαναφορά από αντίγραφο ασφαλείας\" για να επιστρέψετε στην αρχική διαμόρφωση.",
+  "KIOSK_SET_TO_STYLISH": "Ορισμός σε Stylish Player",
+  "KIOSK_RESTORE_DEFAULT": "Ορισμός σε προεπιλογή",
+  "KIOSK_RESTORE_BAK_LABEL": "Επαναφορά από αντίγραφο ασφαλείας",
+  "KIOSK_RESTORE_BAK_BTN": "Επαναφορά"
 }

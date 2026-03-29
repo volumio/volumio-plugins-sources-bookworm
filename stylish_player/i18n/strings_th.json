@@ -78,5 +78,15 @@
   "OPEN_APP": "เปิดแอป",
   "OPEN_APP_DESC": "เปิดอินเทอร์เฟซ Stylish Player ในแท็บใหม่",
   "VIZ_TYPE_VU_METER_4": "VU มิเตอร์ 4 (ดำ)",
-  "NONE": "ไม่มี"
+  "NONE": "ไม่มี",
+  "KIOSK": "โหมดคีออสก์",
+  "KIOSK_NOT_FOUND": "Volumio Kiosk ไม่ได้ติดตั้งในระบบนี้ ติดตั้งบริการคีออสก์เพื่อใช้ฟีเจอร์นี้",
+  "KIOSK_SHOWING_DEFAULT": "จอแสดงผลคีออสก์กำลังแสดงอินเทอร์เฟซ Volumio เริ่มต้นอยู่",
+  "KIOSK_SHOWING_STYLISH": "จอแสดงผลคีออสก์กำลังแสดงอินเทอร์เฟซ Stylish Player อยู่",
+  "KIOSK_SHOWING_UNKNOWN": "จอแสดงผลคีออสก์ถูกตั้งค่าให้เปิดหน้าอื่น",
+  "KIOSK_RESTORE_BAK_AVAILABLE": "มีการสำรองข้อมูลของสคริปต์คีออสก์ต้นฉบับ ใช้ \"กู้คืนจากการสำรองข้อมูล\" เพื่อกลับไปใช้การตั้งค่าเดิม",
+  "KIOSK_SET_TO_STYLISH": "ตั้งค่าเป็น Stylish Player",
+  "KIOSK_RESTORE_DEFAULT": "ตั้งค่าเป็นค่าเริ่มต้น",
+  "KIOSK_RESTORE_BAK_LABEL": "กู้คืนจากการสำรองข้อมูล",
+  "KIOSK_RESTORE_BAK_BTN": "กู้คืน"
 }

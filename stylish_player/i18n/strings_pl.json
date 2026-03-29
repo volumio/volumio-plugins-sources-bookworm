@@ -78,5 +78,15 @@
   "OPEN_APP": "Otwórz aplikację",
   "OPEN_APP_DESC": "Otwórz interfejs Stylish Player w nowej karcie.",
   "VIZ_TYPE_VU_METER_4": "Miernik VU 4 (Czarny)",
-  "NONE": "Brak"
+  "NONE": "Brak",
+  "KIOSK": "Tryb kiosk",
+  "KIOSK_NOT_FOUND": "Volumio Kiosk nie jest zainstalowany w tym systemie. Zainstaluj usługę kiosk, aby korzystać z tej funkcji.",
+  "KIOSK_SHOWING_DEFAULT": "Wyświetlacz kiosku pokazuje obecnie domyślny interfejs Volumio.",
+  "KIOSK_SHOWING_STYLISH": "Wyświetlacz kiosku pokazuje obecnie interfejs Stylish Player.",
+  "KIOSK_SHOWING_UNKNOWN": "Wyświetlacz kiosku jest ustawiony na otwarcie innej strony.",
+  "KIOSK_RESTORE_BAK_AVAILABLE": "Dostępna jest kopia zapasowa oryginalnego skryptu kiosku. Użyj opcji \"Przywróć z kopii zapasowej\", aby powrócić do oryginalnej konfiguracji.",
+  "KIOSK_SET_TO_STYLISH": "Ustaw na Stylish Player",
+  "KIOSK_RESTORE_DEFAULT": "Ustaw na domyślne",
+  "KIOSK_RESTORE_BAK_LABEL": "Przywróć z kopii zapasowej",
+  "KIOSK_RESTORE_BAK_BTN": "Przywróć"
 }
