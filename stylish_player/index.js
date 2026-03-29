@@ -173,8 +173,8 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
     }
   });
 
-  self.audioServer.listen(8000, function () {
-    self.logger.info("Stylish Player: Resilient Audio Streamer on port 8000");
+  self.audioServer.listen(9993, function () {
+    self.logger.info("Stylish Player: Resilient Audio Streamer on port 9993");
   });
 };
 
