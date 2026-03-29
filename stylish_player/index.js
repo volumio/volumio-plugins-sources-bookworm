@@ -6,7 +6,7 @@ var http = require("http");
 var path = require("path");
 var os = require("os");
 const { spawn, spawnSync, exec, execSync } = require('child_process');
-var STREAM_PORT = 9993;
+var STREAM_PORT = 8000;
 // Kiosk constants
 var VOLUMIO_KIOSK_PATH = "/opt/volumiokiosk.sh";
 var VOLUMIO_KIOSK_BAK_PATH = "/home/volumio/.stylish_player/volumiokiosk.sh.bak";
@@ -66,14 +66,15 @@ ControllerStylishPlayer.prototype.onStart = function () {
   var self = this;
   var defer = libQ.defer();
 
-  // 1. Update ALSA first (Synchronous or returns promise)
   self.commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'updateALSAConfigFile');
-  self.loadalsastuff();
-  self.streamOutViz();
-  // 2. Start the sequence
 
-  self
-    .startServer()
+  self.loadalsastuff()
+    .then(function () {
+      return self.streamOutViz();
+    })
+    .then(function () {
+      return self.startServer();
+    })
     .then(function () {
       defer.resolve();
     })
@@ -122,11 +123,14 @@ ControllerStylishPlayer.prototype.loadalsastuff = function () {
  */
 ControllerStylishPlayer.prototype.streamOutViz = function () {
   var self = this;
-
+  var defer = libQ.defer();
 
   this.pipePath = '/tmp/stream.mp3';
 
-  if (self.audioServer) return;
+  if (self.audioServer) {
+    defer.resolve();
+    return defer.promise;
+  }
 
   self.audioServer = http.createServer(function (req, res) {
     console.log('Received request for ' + req.url);
@@ -193,12 +197,20 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
 
   const pid = self.checkPort(STREAM_PORT);
   if (pid) {
-    console.log(`the server is running, process id: ${pid}`);
+    self.logger.info("Stylish Player: Audio server already running on port " + STREAM_PORT + " (pid " + pid + ")");
+    defer.resolve();
   } else {
+    self.audioServer.on('error', function (err) {
+      self.logger.error("Stylish Player: Audio server error: " + err);
+      defer.reject(err);
+    });
     self.audioServer.listen(STREAM_PORT, function () {
       self.logger.info("Stylish Player: Resilient Audio Streamer on port " + STREAM_PORT);
+      defer.resolve();
     });
   }
+
+  return defer.promise;
 };
 
 ControllerStylishPlayer.prototype.startServer = function () {
