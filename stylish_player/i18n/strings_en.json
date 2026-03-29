@@ -79,6 +79,13 @@
   "OPEN_APP_DESC": "Open the Stylish Player interface in a new tab.",
   "NONE": "None",
   "KIOSK": "Kiosk Mode",
-  "KIOSK_ENABLE": "Enable Kiosk Mode",
-  "KIOSK_ENABLE_DESC": "When enabled, the Volumio kiosk display will show the Stylish Player interface instead of the default Volumio UI. Requires the Volumio Kiosk service to be installed. The original kiosk script is backed up to /opt/volumiokiosk.sh.bak and can be restored by disabling this setting."
+  "KIOSK_NOT_FOUND": "Volumio Kiosk is not installed on this system. Install the kiosk service to use this feature.",
+  "KIOSK_SHOWING_DEFAULT": "The kiosk display is currently showing the default Volumio interface.",
+  "KIOSK_SHOWING_STYLISH": "The kiosk display is currently showing the Stylish Player interface.",
+  "KIOSK_SHOWING_UNKNOWN": "The kiosk display is set to open a different page.",
+  "KIOSK_RESTORE_BAK_AVAILABLE": "A backup of the original kiosk script is available. Use \"Restore from Backup\" to revert to the original configuration.",
+  "KIOSK_SET_TO_STYLISH": "Set to Stylish Player",
+  "KIOSK_RESTORE_DEFAULT": "Restore Default",
+  "KIOSK_RESTORE_BAK_LABEL": "Restore from Backup",
+  "KIOSK_RESTORE_BAK_BTN": "Restore"
 }

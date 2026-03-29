@@ -342,25 +342,7 @@
       "id": "section_kiosk",
       "element": "section",
       "label": "TRANSLATE.KIOSK",
-      "icon": "fa-desktop",
-      "onSave": {
-        "type": "controller",
-        "endpoint": "user_interface/stylish_player",
-        "method": "configSaveKiosk"
-      },
-      "saveButton": {
-        "label": "TRANSLATE.SAVE",
-        "data": ["kioskEnabled"]
-      },
-      "content": [
-        {
-          "id": "kioskEnabled",
-          "element": "switch",
-          "label": "TRANSLATE.KIOSK_ENABLE",
-          "doc": "TRANSLATE.KIOSK_ENABLE_DESC",
-          "value": false
-        }
-      ]
+      "icon": "fa-desktop"
     }
   ]
 }

@@ -62,9 +62,5 @@
   "slideshowInterval": {
     "type": "number",
     "value": 30
-  },
-  "kioskEnabled": {
-    "type": "boolean",
-    "value": false
   }
 }

@@ -10,7 +10,7 @@ var exec = require("child_process").exec;
 
 // Kiosk constants
 var VOLUMIO_KIOSK_PATH = "/opt/volumiokiosk.sh";
-var VOLUMIO_KIOSK_BAK_PATH = "/opt/volumiokiosk.sh.bak";
+var VOLUMIO_KIOSK_BAK_PATH = "/home/volumio/.stylish_player/volumiokiosk.sh.bak";
 var VOLUMIO_KIOSK_SERVICE_NAME = "volumio-kiosk";
 
 module.exports = ControllerStylishPlayer;
@@ -351,8 +351,64 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       uiconf.sections[5].content[9].value = self.config.get("wallpaperShowWeather", true);
       uiconf.sections[5].content[10].value = self.config.get("slideshowInterval", 30);
 
-      // Populate kiosk section (index 6)
-      uiconf.sections[6].content[0].value = self.config.get("kioskEnabled", false);
+      // Populate kiosk section (index 6) — content is built dynamically based on current kiosk state
+      var kioskState = self.checkVolumioKiosk();
+      var kioskDesc, kioskButton;
+      if (!kioskState.exists) {
+        kioskDesc = "Volumio Kiosk is not installed on this system. Install the kiosk service to use this feature.";
+      } else if (kioskState.display === "default") {
+        kioskDesc = "The kiosk display is currently showing the default Volumio interface.";
+        kioskButton = {
+          id: "kioskSetToStylish",
+          element: "button",
+          label: "Set to Stylish Player",
+          onClick: {
+            type: "emit",
+            message: "callMethod",
+            data: {
+              endpoint: "user_interface/stylish_player",
+              method: "kioskSetToStylishPlayer"
+            }
+          }
+        };
+      } else if (kioskState.display === "stylishPlayer") {
+        kioskDesc = "The kiosk display is currently showing the Stylish Player interface.";
+        kioskButton = {
+          id: "kioskRestoreDefault",
+          element: "button",
+          label: "Restore Default",
+          onClick: {
+            type: "emit",
+            message: "callMethod",
+            data: {
+              endpoint: "user_interface/stylish_player",
+              method: "kioskRestoreDefault"
+            }
+          }
+        };
+      } else {
+        kioskDesc = "The kiosk display is set to open a different page. ";
+        if (fs.existsSync(VOLUMIO_KIOSK_BAK_PATH)) {
+          kioskDesc += "A backup of the original kiosk script is available. Use \"Restore from Backup\" to revert to the original configuration.";
+          kioskButton = {
+            id: "kioskRestoreBak",
+            element: "button",
+            label: "Restore",
+            onClick: {
+              type: "emit",
+              message: "callMethod",
+              data: {
+                endpoint: "user_interface/stylish_player",
+                method: "kioskRestoreFromBackup"
+              }
+            }
+          };
+        }
+      }
+      uiconf.sections[6].description = kioskDesc;
+      if (kioskButton) {
+        uiconf.sections[6].content = [kioskButton];
+      }
 
       defer.resolve(uiconf);
     })
@@ -397,8 +453,8 @@ ControllerStylishPlayer.prototype.configSaveDaemon = function (data) {
   if (oldPort !== port) {
     self.stopServer();
     self.startServer();
-    // If kiosk mode is active, update the kiosk script with the new port
-    if (self.config.get("kioskEnabled", false)) {
+    // If kiosk is currently showing Stylish Player, update the port in the kiosk script
+    if (self.checkVolumioKiosk().display === "stylishPlayer") {
       try {
         execSync("echo volumio | sudo -S sed -i 's|localhost:" + oldPort + "|localhost:" + port + "|g' \"" + VOLUMIO_KIOSK_PATH + "\"");
         self.restartKioskService();
@@ -473,11 +529,11 @@ ControllerStylishPlayer.prototype.checkVolumioKiosk = function () {
       return { exists: false };
     }
     var content = fs.readFileSync(VOLUMIO_KIOSK_PATH, "utf8");
-    if (content.indexOf("localhost:3000") !== -1) {
-      return { exists: true, display: "default" };
-    }
     if (content.indexOf("localhost:" + port) !== -1) {
       return { exists: true, display: "stylishPlayer" };
+    }
+    if (content.indexOf("localhost:3000") !== -1) {
+      return { exists: true, display: "default" };
     }
     return { exists: true, display: "unknown" };
   } catch (error) {
@@ -486,31 +542,62 @@ ControllerStylishPlayer.prototype.checkVolumioKiosk = function () {
   }
 };
 
-ControllerStylishPlayer.prototype.configureKiosk = function (enable) {
+ControllerStylishPlayer.prototype.kioskSetToStylishPlayer = function () {
   var self = this;
   var port = self.config.get("port", 3339);
   try {
-    if (enable) {
-      if (!fs.existsSync(VOLUMIO_KIOSK_BAK_PATH)) {
-        self.logger.info("Stylish Player: Backing up " + VOLUMIO_KIOSK_PATH + " to " + VOLUMIO_KIOSK_BAK_PATH);
-        execSync("echo volumio | sudo -S cp \"" + VOLUMIO_KIOSK_PATH + "\" \"" + VOLUMIO_KIOSK_BAK_PATH + "\"");
-      }
-      execSync("echo volumio | sudo -S sed -i 's|localhost:3000|localhost:" + port + "|g' \"" + VOLUMIO_KIOSK_PATH + "\"");
-      self.commandRouter.pushToastMessage("success", "Stylish Player", "Kiosk mode enabled. The display will refresh shortly.");
-    } else {
-      if (fs.existsSync(VOLUMIO_KIOSK_BAK_PATH)) {
-        execSync("echo volumio | sudo -S cp \"" + VOLUMIO_KIOSK_BAK_PATH + "\" \"" + VOLUMIO_KIOSK_PATH + "\"");
-      } else {
-        execSync("echo volumio | sudo -S sed -i 's|localhost:" + port + "|localhost:3000|g' \"" + VOLUMIO_KIOSK_PATH + "\"");
-      }
-      self.commandRouter.pushToastMessage("success", "Stylish Player", "Kiosk mode disabled. The display will refresh shortly.");
+    if (!fs.existsSync(VOLUMIO_KIOSK_BAK_PATH)) {
+      self.logger.info("Stylish Player: Backing up " + VOLUMIO_KIOSK_PATH + " to " + VOLUMIO_KIOSK_BAK_PATH);
+      execSync("echo volumio | sudo -S mkdir -p \"" + require("path").dirname(VOLUMIO_KIOSK_BAK_PATH) + "\"");
+      execSync("echo volumio | sudo -S cp \"" + VOLUMIO_KIOSK_PATH + "\" \"" + VOLUMIO_KIOSK_BAK_PATH + "\"");
     }
+    execSync("echo volumio | sudo -S sed -i 's|localhost:3000|localhost:" + port + "|g' \"" + VOLUMIO_KIOSK_PATH + "\"");
+    self.commandRouter.pushToastMessage("success", "Stylish Player", "Kiosk set to Stylish Player. The display will refresh shortly.");
     self.restartKioskService();
   } catch (error) {
-    self.logger.error("Stylish Player: Error configuring kiosk: " + error.message);
-    self.commandRouter.pushToastMessage("error", "Stylish Player", "Failed to configure kiosk mode: " + error.message);
-    throw error;
+    self.logger.error("Stylish Player: Error setting kiosk to Stylish Player: " + error.message);
+    self.commandRouter.pushToastMessage("error", "Stylish Player", "Failed to configure kiosk: " + error.message);
   }
+  self.refreshUI();
+  return libQ.resolve();
+};
+
+ControllerStylishPlayer.prototype.kioskRestoreDefault = function () {
+  var self = this;
+  var port = self.config.get("port", 3339);
+  try {
+    if (fs.existsSync(VOLUMIO_KIOSK_BAK_PATH)) {
+      execSync("echo volumio | sudo -S cp \"" + VOLUMIO_KIOSK_BAK_PATH + "\" \"" + VOLUMIO_KIOSK_PATH + "\"");
+    } else {
+      execSync("echo volumio | sudo -S sed -i 's|localhost:" + port + "|localhost:3000|g' \"" + VOLUMIO_KIOSK_PATH + "\"");
+    }
+    self.commandRouter.pushToastMessage("success", "Stylish Player", "Kiosk restored to default. The display will refresh shortly.");
+    self.restartKioskService();
+  } catch (error) {
+    self.logger.error("Stylish Player: Error restoring kiosk default: " + error.message);
+    self.commandRouter.pushToastMessage("error", "Stylish Player", "Failed to restore kiosk default: " + error.message);
+  }
+  self.refreshUI();
+  return libQ.resolve();
+};
+
+ControllerStylishPlayer.prototype.kioskRestoreFromBackup = function () {
+  var self = this;
+  if (!fs.existsSync(VOLUMIO_KIOSK_BAK_PATH)) {
+    self.commandRouter.pushToastMessage("error", "Stylish Player", "Backup not found at " + VOLUMIO_KIOSK_BAK_PATH);
+    self.refreshUI();
+    return libQ.resolve();
+  }
+  try {
+    execSync("echo volumio | sudo -S cp \"" + VOLUMIO_KIOSK_BAK_PATH + "\" \"" + VOLUMIO_KIOSK_PATH + "\"");
+    self.commandRouter.pushToastMessage("success", "Stylish Player", "Kiosk restored from backup. The display will refresh shortly.");
+    self.restartKioskService();
+  } catch (error) {
+    self.logger.error("Stylish Player: Error restoring kiosk from backup: " + error.message);
+    self.commandRouter.pushToastMessage("error", "Stylish Player", "Failed to restore from backup: " + error.message);
+  }
+  self.refreshUI();
+  return libQ.resolve();
 };
 
 ControllerStylishPlayer.prototype.restartKioskService = function () {
@@ -532,36 +619,6 @@ ControllerStylishPlayer.prototype.restartKioskService = function () {
   } catch (e) {
     // Service is not active — nothing to restart
   }
-};
-
-ControllerStylishPlayer.prototype.configSaveKiosk = function (data) {
-  var self = this;
-  // Volumio switches may send boolean true/false or numeric 1/0; normalise to boolean
-  var kioskEnabled = data["kioskEnabled"] !== false && data["kioskEnabled"] !== 0 && data["kioskEnabled"] !== "0";
-  var currentlyEnabled = self.config.get("kioskEnabled", false);
-
-  if (kioskEnabled === currentlyEnabled) {
-    self.commandRouter.pushToastMessage("success", "Stylish Player", "Kiosk settings saved.");
-    return libQ.resolve();
-  }
-
-  var kiosk = self.checkVolumioKiosk();
-  if (!kiosk.exists) {
-    self.commandRouter.pushToastMessage("error", "Stylish Player", "Volumio Kiosk script not found at " + VOLUMIO_KIOSK_PATH + ". Is the kiosk service installed?");
-    return libQ.resolve();
-  }
-
-  self.config.set("kioskEnabled", kioskEnabled);
-
-  try {
-    self.configureKiosk(kioskEnabled);
-  } catch (e) {
-    // configureKiosk already emitted an error toast and logged; revert the saved value
-    self.config.set("kioskEnabled", currentlyEnabled);
-  }
-
-  self.refreshUI();
-  return libQ.resolve();
 };
 
 ControllerStylishPlayer.prototype.configSaveIdleScreen = function (data) {
