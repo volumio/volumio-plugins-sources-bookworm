@@ -28,11 +28,11 @@ ControllerStylishPlayer.prototype.checkPort = function (port) {
     { shell: true }
   )
   if (output.error) {
-    console.error(output.error)
+    self.logger.error('Stylish Player: ' + output.error)
     return
   }
   const pid = Buffer.from(output.stdout.buffer).toString().split('\n')[0]
-  console.log({ pid })
+  self.logger.info('Stylish Player: Found process ID ' + pid);
   return pid
 };
 
@@ -128,7 +128,7 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
   if (self.audioServer) return;
 
   self.audioServer = http.createServer(function (req, res) {
-    console.log('Received request for ' + req.url);
+    self.logger.info('Stylish Player: Received request for ' + req.url);
     if (req.url === '/stream' || req.url === '/') {
 
       res.writeHead(200, {
@@ -156,7 +156,7 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
 
         // Push data chunks to the HTTP response
         ffmpeg.stdout.on('data', function (chunk) {
-          console.log('FFmpeg output chunk of size ' + chunk.length);
+          self.logger.info('Stylish Player: FFmpeg output chunk of size ' + chunk.length);
           if (isConnected) res.write(chunk);
         });
 
@@ -195,6 +195,7 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
     self.logger.info("Stylish Player: Audio server already running on port " + STREAM_PORT + " (pid " + pid + ")");
     defer.resolve();
   } else {
+    self.logger.info("Stylish Player: Starting audio server on port " + STREAM_PORT);
     self.audioServer.on('error', function (err) {
       self.logger.error("Stylish Player: Audio server error: " + err);
       defer.reject(err);
