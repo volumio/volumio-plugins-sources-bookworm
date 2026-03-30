@@ -1,12 +1,13 @@
 {
   "name": "stylish_player",
-  "version": "1.0.52",
+  "version": "1.0.53",
   "description": "A modern and customizable music player interface for Volumio.",
   "main": "index.js",
   "scripts": {},
   "author": "KJavia",
   "license": "MIT",
   "volumio_info": {
+    "has_alsa_contribution": true,
     "prettyName": "Stylish Player",
     "plugin_type": "user_interface",
     "os": [
@@ -27,7 +28,6 @@
       "armhf"
     ]
   },
-  "has_alsa_contribution": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/kjavia/Volumio-UI-React.git"
