@@ -65,16 +65,14 @@ ControllerStylishPlayer.prototype.onVolumioStart = function () {
 ControllerStylishPlayer.prototype.onStart = function () {
   var self = this;
   var defer = libQ.defer();
-
+// 1. Update ALSA first (Synchronous or returns promise)
   self.commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'updateALSAConfigFile');
+  self.loadalsastuff();
+  self.streamOutViz();
+  // 2. Start the sequence
 
-  self.loadalsastuff()
-    .then(function () {
-      return self.streamOutViz();
-    })
-    .then(function () {
-      return self.startServer();
-    })
+   self
+    .startServer()
     .then(function () {
       defer.resolve();
     })
@@ -99,10 +97,10 @@ ControllerStylishPlayer.prototype.onRestart = function () {
 
 // Server Management -------------------------------------------------------------------
 ControllerStylishPlayer.prototype.loadalsastuff = function () {
-  execSync(`rm /tmp/stream.mp3 || true`, {
-    uid: 1000,
-    gid: 1000
-  });
+  // execSync(`rm /tmp/stream.mp3 || true`, {
+  //   uid: 1000,
+  //   gid: 1000
+  // });
   const self = this;
   var defer = libQ.defer();
   try {
@@ -123,14 +121,11 @@ ControllerStylishPlayer.prototype.loadalsastuff = function () {
  */
 ControllerStylishPlayer.prototype.streamOutViz = function () {
   var self = this;
-  var defer = libQ.defer();
+
 
   this.pipePath = '/tmp/stream.mp3';
 
-  if (self.audioServer) {
-    defer.resolve();
-    return defer.promise;
-  }
+  if (self.audioServer) return;
 
   self.audioServer = http.createServer(function (req, res) {
     console.log('Received request for ' + req.url);
@@ -206,11 +201,8 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
     });
     self.audioServer.listen(STREAM_PORT, function () {
       self.logger.info("Stylish Player: Resilient Audio Streamer on port " + STREAM_PORT);
-      defer.resolve();
     });
   }
-
-  return defer.promise;
 };
 
 ControllerStylishPlayer.prototype.startServer = function () {
