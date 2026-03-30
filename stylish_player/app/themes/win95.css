@@ -818,6 +818,105 @@ code, pre {
   border-right: 2px solid var(--win95-highlight);
 }
 
+/* Centering wrapper */
+.analog-clock-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  user-select: none;
+  container-type: size;
+}
+
+/* Outer container — square aspect ratio */
+.analog-clock {
+  --clock-size: min(80cqw, 80cqh);
+  width: var(--clock-size);
+  height: var(--clock-size);
+}
+
+/* Tick marks — parent element (visual ::before stays in theme file) */
+.clock-tick {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 50%;
+  transform-origin: bottom center;
+  pointer-events: none;
+}
+
+/* Day & date cluster — below clock center */
+.clock-face-info {
+  position: absolute;
+  top: 62%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Weather info cluster — above clock center */
+.clock-face-weather {
+  position: absolute;
+  top: 28%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Dialog Container (Centered) ── */
+.dialog-container {
+  position: fixed;
+  inset: 0;
+  z-index: 2010;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  pointer-events: none;
+}
+
+@keyframes dialogBackdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* ── Size Variants ── */
+.dialog-sm {
+  max-width: 400px;
+}
+
+.dialog-md {
+  max-width: 600px;
+}
+
+.dialog-lg {
+  max-width: 800px;
+}
+
+.dialog-xl {
+  max-width: 1200px;
+}
+
+.dialog-full {
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100vh - 2rem);
+}
+
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE - Windows 95 Theme
@@ -4817,17 +4916,6 @@ input[type=range]::-webkit-slider-runnable-track {
   background: rgba(0, 0, 0, 0.4);
 }
 
-.dialog-container {
-  position: fixed;
-  inset: 0;
-  z-index: 2010;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  pointer-events: none;
-}
-
 .dialog {
   position: relative;
   display: flex;
@@ -5220,23 +5308,6 @@ input[type=range]::-webkit-slider-runnable-track {
 /* ── Analog Clock — Windows 95 Theme ───────────────────────────────────────
  * Classic silver face, navy accent hands, pixel font digits
  * ──────────────────────────────────────────────────────────────────────── */
-.analog-clock-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  user-select: none;
-  container-type: size;
-}
-
-.analog-clock {
-  --clock-size: min(80cqw, 80cqh);
-  width: var(--clock-size);
-  height: var(--clock-size);
-}
-
 /* Raised bezel — Win95 3D bevel on a circle */
 .clock-bezel {
   width: 100%;
@@ -5265,16 +5336,6 @@ input[type=range]::-webkit-slider-runnable-track {
 }
 
 /* Tick marks */
-.clock-tick {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 2px;
-  height: 50%;
-  transform-origin: bottom center;
-  pointer-events: none;
-}
-
 .clock-tick::before {
   content: "";
   display: block;
@@ -5357,20 +5418,6 @@ input[type=range]::-webkit-slider-runnable-track {
   z-index: 6;
 }
 
-/* Day and date */
-.clock-face-info {
-  position: absolute;
-  top: 62%;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  pointer-events: none;
-  z-index: 1;
-}
-
 .clock-face-day {
   font-family: "Pixelify Sans", "Courier New", monospace;
   font-size: clamp(0.8rem, 4cqi, 1.5rem);
@@ -5389,18 +5436,6 @@ input[type=range]::-webkit-slider-runnable-track {
 }
 
 /* Weather on face */
-.clock-face-weather {
-  position: absolute;
-  top: 28%;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  pointer-events: none;
-  z-index: 1;
-}
-
 .clock-face-weather-icon {
   font-size: clamp(0.7rem, 3.5cqi, 1.4rem);
   color: #000080;

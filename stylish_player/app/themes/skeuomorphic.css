@@ -1008,6 +1008,105 @@ ol li {
   background-color: var(--list-item-bg-hover);
 }
 
+/* Centering wrapper */
+.analog-clock-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  user-select: none;
+  container-type: size;
+}
+
+/* Outer container — square aspect ratio */
+.analog-clock {
+  --clock-size: min(80cqw, 80cqh);
+  width: var(--clock-size);
+  height: var(--clock-size);
+}
+
+/* Tick marks — parent element (visual ::before stays in theme file) */
+.clock-tick {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 50%;
+  transform-origin: bottom center;
+  pointer-events: none;
+}
+
+/* Day & date cluster — below clock center */
+.clock-face-info {
+  position: absolute;
+  top: 62%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Weather info cluster — above clock center */
+.clock-face-weather {
+  position: absolute;
+  top: 28%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Dialog Container (Centered) ── */
+.dialog-container {
+  position: fixed;
+  inset: 0;
+  z-index: 2010;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  pointer-events: none;
+}
+
+@keyframes dialogBackdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* ── Size Variants ── */
+.dialog-sm {
+  max-width: 400px;
+}
+
+.dialog-md {
+  max-width: 600px;
+}
+
+.dialog-lg {
+  max-width: 800px;
+}
+
+.dialog-xl {
+  max-width: 1200px;
+}
+
+.dialog-full {
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100vh - 2rem);
+}
+
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE
@@ -4780,26 +4879,6 @@ h2 {
   animation: dialogBackdropFadeIn 0.2s ease-out;
 }
 
-@keyframes dialogBackdropFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-/* ── Dialog Container (Centered) ── */
-.dialog-container {
-  position: fixed;
-  inset: 0;
-  z-index: 2010;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  pointer-events: none;
-}
-
 /* ── Dialog Box ── */
 .dialog {
   position: relative;
@@ -4950,28 +5029,6 @@ h2 {
   flex-shrink: 0;
   /* Match header background */
   background: linear-gradient(180deg, var(--color-gray-700), var(--color-gray-750));
-}
-
-/* ── Size Variants ── */
-.dialog-sm {
-  max-width: 400px;
-}
-
-.dialog-md {
-  max-width: 600px;
-}
-
-.dialog-lg {
-  max-width: 800px;
-}
-
-.dialog-xl {
-  max-width: 1200px;
-}
-
-.dialog-full {
-  max-width: calc(100vw - 2rem);
-  max-height: calc(100vh - 2rem);
 }
 
 /* ── Dialog List Items ── */
@@ -5363,25 +5420,6 @@ h2 {
 
 /* ── Responsive sizing — handled via container-query units (cqw) above ── */
 /* ── Skeuomorphic Analog Clock ─────────────────────────────────────────── */
-/* Centering wrapper */
-.analog-clock-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  user-select: none;
-  container-type: size;
-}
-
-/* Outer container — keeps aspect ratio square */
-.analog-clock {
-  --clock-size: min(80cqw, 80cqh);
-  width: var(--clock-size);
-  height: var(--clock-size);
-}
-
 /* Bezel — raised metallic ring */
 .clock-bezel {
   width: 100%;
@@ -5405,16 +5443,6 @@ h2 {
 }
 
 /* ── Tick marks ─────────────────────────────────────────────────────────── */
-.clock-tick {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 2px;
-  height: 50%;
-  transform-origin: bottom center;
-  pointer-events: none;
-}
-
 .clock-tick::before {
   content: "";
   display: block;
@@ -5508,20 +5536,6 @@ h2 {
   z-index: 6;
 }
 
-/* Day & date on the clock face — stacked below center */
-.clock-face-info {
-  position: absolute;
-  top: 62%;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  pointer-events: none;
-  z-index: 1;
-}
-
 .clock-face-day {
   font-family: var(--font-label, "Roboto", sans-serif);
   font-size: clamp(0.8rem, 4cqi, 1.5rem);
@@ -5539,18 +5553,6 @@ h2 {
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 /* ── Weather on face ────────────────────────────────────────────────────── */
-.clock-face-weather {
-  position: absolute;
-  top: 28%;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  pointer-events: none;
-  z-index: 1;
-}
-
 .clock-face-weather-icon {
   font-size: clamp(0.7rem, 3.5cqi, 1.4rem);
   color: var(--color-gray-600, #666);
