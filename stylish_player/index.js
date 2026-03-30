@@ -207,6 +207,18 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
     });
     self.audioServer.listen(STREAM_PORT, function () {
       self.logger.info("Stylish Player: Resilient Audio Streamer on port " + STREAM_PORT);
+      // Open the FIFO with O_RDWR as a permanent sentinel. Because this fd holds
+      // both the read and write ends open simultaneously:
+      //   - FFmpeg's open(O_RDONLY) never blocks waiting for a writer
+      //   - ALSA's open(O_WRONLY) never blocks waiting for a reader
+      //   - When ALSA closes after playback stops, FFmpeg never receives EOF
+      //     (the sentinel is still a writer), so FFmpeg keeps running
+      try {
+        self._fifoSentinelFd = fs.openSync(self.pipePath, fs.constants.O_RDWR);
+        self.logger.info("Stylish Player: FIFO sentinel opened");
+      } catch (e) {
+        self.logger.error("Stylish Player: Failed to open FIFO sentinel: " + e);
+      }
       self._startAudioFfmpeg();
     });
   }
@@ -369,6 +381,11 @@ ControllerStylishPlayer.prototype.stopAudioServer = function () {
   if (self._audioFfmpeg) {
     self._audioFfmpeg.kill('SIGTERM');
     self._audioFfmpeg = null;
+  }
+
+  if (self._fifoSentinelFd != null) {
+    try { fs.closeSync(self._fifoSentinelFd); } catch (e) { /* ignore */ }
+    self._fifoSentinelFd = null;
   }
 
   if (self.audioServer) {
