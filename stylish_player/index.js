@@ -119,21 +119,62 @@ ControllerStylishPlayer.prototype.loadalsastuff = function () {
 
 /**
  * Self-contained logic to host an HTTP server and stream ALSA pipe data.
+ *
+ * A single persistent FFmpeg process holds the FIFO read-end open at all times so
+ * the ALSA writer never receives EPIPE/SIGPIPE when clients disconnect. Each HTTP
+ * client is simply added to / removed from a broadcast list.
  */
 ControllerStylishPlayer.prototype.streamOutViz = function () {
   var self = this;
-
 
   this.pipePath = '/tmp/stream.mp3';
 
   if (self.audioServer) return;
 
+  self.streamClients = [];
+
+  // Start (or restart) the single long-running FFmpeg encoder.
+  self._startAudioFfmpeg = function () {
+    if (self._audioFfmpeg) return;
+
+    self.logger.info("Stylish Player: Starting persistent FFmpeg audio streamer");
+
+    self._audioFfmpeg = spawn('ffmpeg', [
+      '-f', 's16le', '-ar', '44100', '-ac', '2',
+      '-i', self.pipePath,
+      '-codec:a', 'libmp3lame', '-b:a', '128k',
+      '-f', 'mp3', 'pipe:1'
+    ]);
+
+    self._audioFfmpeg.stdout.on('data', function (chunk) {
+      self.streamClients.forEach(function (res) {
+        try { res.write(chunk); } catch (e) { /* client already gone */ }
+      });
+    });
+
+    self._audioFfmpeg.on('exit', function (code) {
+      self.logger.info("Stylish Player: FFmpeg exited with code " + code + ". Restarting...");
+      self._audioFfmpeg = null;
+      // Keep restarting as long as the audio server is alive so the FIFO
+      // read-end stays open and the ALSA writer never gets EPIPE.
+      if (self.audioServer) {
+        setTimeout(self._startAudioFfmpeg, 1000);
+      }
+    });
+
+    self._audioFfmpeg.on('error', function (err) {
+      self.logger.error("Stylish Player: FFmpeg error: " + err);
+      self._audioFfmpeg = null;
+    });
+  };
+
   self.audioServer = http.createServer(function (req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-    self.logger.info('Stylish Player: Received request for ' + req.url);
+
     if (req.url.startsWith('/stream') || req.url.startsWith('/')) {
+      self.logger.info('Stylish Player: Stream client connected for ' + req.url);
 
       res.writeHead(200, {
         'Content-Type': 'audio/mpeg',
@@ -142,49 +183,11 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
         'Cache-Control': 'no-cache, no-store'
       });
 
-      var ffmpeg;
-      var isConnected = true;
+      self.streamClients.push(res);
 
-      // Function to spawn (and re-spawn) FFmpeg
-      var startFfmpeg = function () {
-        if (!isConnected) return;
-
-        self.logger.info("Stylish Player: Starting FFmpeg instance");
-
-        ffmpeg = spawn('ffmpeg', [
-          '-f', 's16le', '-ar', '44100', '-ac', '2',
-          '-i', self.pipePath,
-          '-codec:a', 'libmp3lame', '-b:a', '128k',
-          '-f', 'mp3', 'pipe:1'
-        ]);
-
-        // Push data chunks to the HTTP response
-        ffmpeg.stdout.on('data', function (chunk) {
-          self.logger.info('Stylish Player: FFmpeg output chunk of size ' + chunk.length);
-          if (isConnected) res.write(chunk);
-        });
-
-        // Restart logic: if FFmpeg exits, wait 1 second and try again
-        ffmpeg.on('exit', function (code) {
-          self.logger.info("Stylish Player: FFmpeg exited with code " + code + ". Restarting...");
-          if (isConnected) {
-            setTimeout(startFfmpeg, 1000);
-          }
-        });
-
-        ffmpeg.on('error', function (err) {
-          self.logger.error("Stylish Player: FFmpeg error: " + err);
-        });
-      };
-
-      // Initial start
-      startFfmpeg();
-
-      // Stop everything when the browser/client disconnects
       req.on('close', function () {
         self.logger.info("Stylish Player: Stream client disconnected");
-        isConnected = false;
-        if (ffmpeg) ffmpeg.kill('SIGTERM');
+        self.streamClients = self.streamClients.filter(function (r) { return r !== res; });
         res.end();
       });
 
@@ -197,15 +200,14 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
   const pid = self.checkPort(STREAM_PORT);
   if (pid) {
     self.logger.info("Stylish Player: Audio server already running on port " + STREAM_PORT + " (pid " + pid + ")");
-    defer.resolve();
   } else {
     self.logger.info("Stylish Player: Starting audio server on port " + STREAM_PORT);
     self.audioServer.on('error', function (err) {
       self.logger.error("Stylish Player: Audio server error: " + err);
-      defer.reject(err);
     });
     self.audioServer.listen(STREAM_PORT, function () {
       self.logger.info("Stylish Player: Resilient Audio Streamer on port " + STREAM_PORT);
+      self._startAudioFfmpeg();
     });
   }
 };
@@ -364,9 +366,15 @@ ControllerStylishPlayer.prototype.stopServer = function () {
 ControllerStylishPlayer.prototype.stopAudioServer = function () {
   var self = this;
 
+  if (self._audioFfmpeg) {
+    self._audioFfmpeg.kill('SIGTERM');
+    self._audioFfmpeg = null;
+  }
+
   if (self.audioServer) {
     self.audioServer.close();
     self.audioServer = null;
+    self.streamClients = [];
     self.logger.info("Stylish Player: Audio server stopped");
   }
 };
