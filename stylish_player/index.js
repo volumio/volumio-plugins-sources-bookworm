@@ -23,13 +23,14 @@ function ControllerStylishPlayer(context) {
 }
 
 ControllerStylishPlayer.prototype.checkPort = function (port) {
+  var self = this;
   const output = spawnSync(
     `lsof -i tcp:${port} | awk '{print $2}' |grep --invert PID`,
     { shell: true }
   )
   if (output.error) {
     self.logger.error('Stylish Player: ' + output.error)
-    return
+    return null;
   }
   const pid = Buffer.from(output.stdout.buffer).toString().split('\n')[0]
   self.logger.info('Stylish Player: Found process ID ' + pid);
