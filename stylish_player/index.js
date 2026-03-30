@@ -6,7 +6,7 @@ var http = require("http");
 var path = require("path");
 var os = require("os");
 const { spawn, spawnSync, exec, execSync } = require('child_process');
-var STREAM_PORT = 8000;
+var STREAM_PORT = 9993;
 // Kiosk constants
 var VOLUMIO_KIOSK_PATH = "/opt/volumiokiosk.sh";
 var VOLUMIO_KIOSK_BAK_PATH = "/home/volumio/.stylish_player/volumiokiosk.sh.bak";
