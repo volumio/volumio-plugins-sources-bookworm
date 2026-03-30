@@ -140,16 +140,23 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
     self.logger.info("Stylish Player: Starting persistent FFmpeg audio streamer");
 
     self._audioFfmpeg = spawn('ffmpeg', [
+      '-loglevel', 'error',
       '-f', 's16le', '-ar', '44100', '-ac', '2',
       '-i', self.pipePath,
       '-codec:a', 'libmp3lame', '-b:a', '128k',
       '-f', 'mp3', 'pipe:1'
-    ]);
+    ], { stdio: ['ignore', 'pipe', 'pipe'] });
 
     self._audioFfmpeg.stdout.on('data', function (chunk) {
       self.streamClients.forEach(function (res) {
         try { res.write(chunk); } catch (e) { /* client already gone */ }
       });
+    });
+
+    // MUST drain stderr — if the 64 KB pipe buffer fills up, FFmpeg blocks
+    // on its own write() to stderr and stops producing stdout entirely.
+    self._audioFfmpeg.stderr.on('data', function (data) {
+      self.logger.error("Stylish Player: FFmpeg: " + data.toString().trim());
     });
 
     self._audioFfmpeg.on('exit', function (code) {
@@ -173,7 +180,7 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
     res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-    if (req.url.startsWith('/stream') || req.url.startsWith('/')) {
+    if (req.url.startsWith('/')) {
       self.logger.info('Stylish Player: Stream client connected for ' + req.url);
 
       res.writeHead(200, {
