@@ -129,8 +129,11 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
   if (self.audioServer) return;
 
   self.audioServer = http.createServer(function (req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
     self.logger.info('Stylish Player: Received request for ' + req.url);
-    if (req.url === '/stream' || req.url === '/') {
+    if (req.url.startsWith('/stream') || req.url.startsWith('/')) {
 
       res.writeHead(200, {
         'Content-Type': 'audio/mpeg',
