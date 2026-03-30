@@ -2360,6 +2360,7 @@ h2 {
   align-items: center;
   gap: 15px;
   position: relative;
+  padding: 0 1em;
 }
 
 .slider-track {
@@ -3724,7 +3725,7 @@ h2 {
 .dialog-body {
   flex: 1 1 auto;
   overflow-y: auto;
-  padding: 1.25rem;
+  padding: 1em;
   color: var(--text-light);
   font-family: var(--font-body);
   font-size: var(--text-base);

@@ -3178,6 +3178,7 @@ input[type=range]::-webkit-slider-runnable-track {
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 0 1em;
 }
 
 .slider-track {
@@ -4917,6 +4918,7 @@ input[type=range]::-webkit-slider-runnable-track {
 .dialog-body {
   flex: 1 1 auto;
   overflow-y: auto;
+  padding: 1em;
   font-family: var(--font-body);
   font-size: var(--text-sm);
   background: var(--win95-face);

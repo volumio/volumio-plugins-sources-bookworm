@@ -3160,6 +3160,7 @@ h2 {
   display: flex;
   align-items: center;
   gap: 15px;
+  padding: 0 1em;
 }
 
 .slider-track {
@@ -4909,7 +4910,7 @@ h2 {
 .dialog-body {
   flex: 1 1 auto;
   overflow-y: auto;
-  padding: 1.25rem;
+  padding: 1em;
   color: var(--color-gray-900);
   font-family: var(--font-body);
   font-size: var(--text-base);
@@ -4929,6 +4930,12 @@ h2 {
 }
 .dialog-body::-webkit-scrollbar-thumb:hover {
   background: var(--color-gray-500);
+}
+
+/* ── Browse search section titles — boost contrast on light dialog bg ── */
+.browse-search-section__title {
+  opacity: 0.85;
+  color: var(--color-gray-700);
 }
 
 /* ── Footer ── */

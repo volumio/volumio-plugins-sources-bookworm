@@ -4035,6 +4035,7 @@ input[type=range]::-moz-range-thumb:active {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 0 1em;
 }
 
 .slider-track {
@@ -6178,7 +6179,7 @@ input[type=range]::-moz-range-thumb:active {
 .dialog-body {
   flex: 1 1 auto;
   overflow-y: auto;
-  padding: 1.25rem;
+  padding: 1em;
   color: var(--text-primary);
   font-family: var(--font-body);
   font-size: var(--text-base);
