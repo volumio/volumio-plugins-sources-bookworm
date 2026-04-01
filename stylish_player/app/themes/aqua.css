@@ -5652,7 +5652,7 @@ input[type=range]::-moz-range-thumb:active {
 .context-menu-container {
   position: absolute;
   top: 0;
-  right: 0;
+  left: 0;
   padding: 1rem;
   z-index: 100;
 }
@@ -5721,7 +5721,7 @@ input[type=range]::-moz-range-thumb:active {
 .context-menu {
   position: absolute;
   top: calc(100% + 4px);
-  right: 0;
+  left: 0;
   min-width: 180px;
   border-radius: 8px;
   overflow: hidden;

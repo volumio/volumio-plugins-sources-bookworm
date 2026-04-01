@@ -3541,8 +3541,6 @@ input[type=range]::-moz-range-thumb:active {
   margin-bottom: 4px;
   letter-spacing: var(--tracking-tight);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   color: var(--text-primary);
 }
 
@@ -3551,8 +3549,6 @@ input[type=range]::-moz-range-thumb:active {
   font-size: clamp(0.8rem, 2.2vw, 1.1rem);
   color: var(--text-secondary);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   font-weight: 400;
 }
 
@@ -5090,7 +5086,7 @@ input[type=range]::-moz-range-thumb:active {
 .context-menu-container {
   position: absolute;
   top: 0;
-  right: 0;
+  left: 0;
   padding: 1rem;
   z-index: 100;
 }
@@ -5143,7 +5139,7 @@ input[type=range]::-moz-range-thumb:active {
 .context-menu {
   position: absolute;
   top: calc(100% + 4px);
-  right: 0;
+  left: 0;
   min-width: 200px;
   border-radius: var(--radius-lg);
   overflow: hidden;

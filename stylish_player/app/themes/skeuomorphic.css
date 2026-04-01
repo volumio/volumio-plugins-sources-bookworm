@@ -4475,7 +4475,7 @@ h2 {
 .context-menu-container {
   position: absolute;
   top: 0;
-  right: 0;
+  left: 0;
   padding: 1rem;
   z-index: 100;
 }
@@ -4543,7 +4543,7 @@ h2 {
 .context-menu {
   position: absolute;
   top: calc(100% + 8px);
-  right: 0;
+  left: 0;
   min-width: 200px;
   background-color: var(--color-gray-500);
   border-radius: 8px;
