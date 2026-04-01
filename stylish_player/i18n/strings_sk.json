@@ -78,6 +78,8 @@
   "OPEN_APP": "Otvoriť aplikáciu",
   "OPEN_APP_DESC": "Otvoriť rozhranie Stylish Player v novej karte.",
   "VIZ_TYPE_VU_METER_4": "VU Meter 4 (Čierny)",
+  "SPECTRUM_OPTIONS": "Možnosti spektrálneho analyzátora (JSON)",
+  "SPECTRUM_OPTIONS_DESC": "Prepíšte možnosti AudioMotion Analyzera objektom JSON. Nechajte prázdne pre použitie predvolených hodnôt. Generujte možnosti pomocou getOptions() na tejto stránke https://audiomotion.dev/demo/fluid.html",
   "NONE": "Žiadny",
   "KIOSK": "Režim kiosk",
   "KIOSK_NOT_FOUND": "Volumio Kiosk nie je nainštalovaný na tomto systéme. Nainštalujte kiosk službu, aby ste mohli túto funkciu používať.",

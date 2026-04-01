@@ -78,6 +78,8 @@
   "OPEN_APP": "앱 열기",
   "OPEN_APP_DESC": "새 탭에서 Stylish Player 인터페이스를 엽니다.",
   "VIZ_TYPE_VU_METER_4": "VU 미터 4 (검은색)",
+  "SPECTRUM_OPTIONS": "스펙트럼 분석기 옵션 (JSON)",
+  "SPECTRUM_OPTIONS_DESC": "JSON 객체로 AudioMotion Analyzer 옵션을 재정의합니다. 기본값을 사용하려면 비워 두세요. 이 페이지에서 getOptions()를 사용하여 옵션을 생성하세요 https://audiomotion.dev/demo/fluid.html",
   "NONE": "없음",
   "KIOSK": "키오스크 모드",
   "KIOSK_NOT_FOUND": "이 시스템에 Volumio 키오스크가 설치되어 있지 않습니다. 이 기능을 사용하려면 키오스크 서비스를 설치하세요.",

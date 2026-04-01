@@ -78,6 +78,8 @@
   "OPEN_APP": "Alkalmazás megnyitása",
   "OPEN_APP_DESC": "A Stylish Player felület megnyitása új lapon.",
   "VIZ_TYPE_VU_METER_4": "VU Mérő 4 (Fekete)",
+  "SPECTRUM_OPTIONS": "Spektrumelemző beállítások (JSON)",
+  "SPECTRUM_OPTIONS_DESC": "Írja felül az AudioMotion Analyzer beállításait egy JSON objektummal. Hagyja üresen az alapértelmezett értékek használatához. Generálja a beállításokat a getOptions() segítségével ezen az oldalon https://audiomotion.dev/demo/fluid.html",
   "NONE": "Semmi",
   "KIOSK": "Kiosk mód",
   "KIOSK_NOT_FOUND": "A Volumio Kiosk nincs telepítve ezen a rendszeren. Telepítse a kiosk szolgáltatást a funkció használatához.",

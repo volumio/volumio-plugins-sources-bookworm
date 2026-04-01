@@ -78,6 +78,8 @@
   "OPEN_APP": "打开应用",
   "OPEN_APP_DESC": "在新标签页中打开 Stylish Player 界面。",
   "VIZ_TYPE_VU_METER_4": "VU表 4 (黑色)",
+  "SPECTRUM_OPTIONS": "频谱分析仪选项 (JSON)",
+  "SPECTRUM_OPTIONS_DESC": "使用 JSON 对象覆盖 AudioMotion Analyzer 选项。留空以使用默认值。在此页面使用 getOptions() 生成选项 https://audiomotion.dev/demo/fluid.html",
   "NONE": "无",
   "KIOSK": "信息亭模式",
   "KIOSK_NOT_FOUND": "Volumio 信息亭未安装在此系统上。请安装信息亭服务以使用此功能。",

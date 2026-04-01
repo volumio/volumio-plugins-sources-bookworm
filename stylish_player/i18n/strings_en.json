@@ -74,7 +74,7 @@
   "VIZ_TYPE_VU_METER_3": "VU Meter 3 (Yellow)",
   "VIZ_TYPE_VU_METER_4": "VU Meter 4 (Black)",
   "SPECTRUM_OPTIONS": "Spectrum Analyzer Options (JSON)",
-  "SPECTRUM_OPTIONS_DESC": "Override AudioMotion Analyzer options with a JSON object. Leave empty to use defaults. Example: {\"mode\":3,\"gradient\":\"rainbow\",\"ledBars\":false}",
+  "SPECTRUM_OPTIONS_DESC": "Override AudioMotion Analyzer options with a JSON object. Leave empty to use defaults. Generate options using getOptions() on this page https://audiomotion.dev/demo/fluid.html",
   "SHOW_PLAYER_CONTROLS": "Show Player Controls",
   "SHOW_PLAYER_CONTROLS_DESC": "When disabled, player buttons are hidden and the seek bar becomes a read-only progress indicator.",
   "OPEN_APP": "Open App",

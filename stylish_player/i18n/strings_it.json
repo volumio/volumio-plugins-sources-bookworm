@@ -78,6 +78,8 @@
   "OPEN_APP": "Apri app",
   "OPEN_APP_DESC": "Apri l'interfaccia Stylish Player in una nuova scheda.",
   "VIZ_TYPE_VU_METER_4": "VU Meter 4 (Nero)",
+  "SPECTRUM_OPTIONS": "Opzioni analizzatore di spettro (JSON)",
+  "SPECTRUM_OPTIONS_DESC": "Sovrascrivi le opzioni di AudioMotion Analyzer con un oggetto JSON. Lascia vuoto per usare i valori predefiniti. Genera opzioni con getOptions() in questa pagina https://audiomotion.dev/demo/fluid.html",
   "NONE": "Nessuno",
   "KIOSK": "Modalità Kiosk",
   "KIOSK_NOT_FOUND": "Volumio Kiosk non è installato su questo sistema. Installare il servizio kiosk per utilizzare questa funzione.",

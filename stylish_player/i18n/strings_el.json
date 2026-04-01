@@ -78,6 +78,8 @@
   "OPEN_APP": "Άνοιγμα εφαρμογής",
   "OPEN_APP_DESC": "Άνοιγμα της διεπαφής Stylish Player σε νέα καρτέλα.",
   "VIZ_TYPE_VU_METER_4": "VU Μετρητής 4 (Μαύρο)",
+  "SPECTRUM_OPTIONS": "Επιλογές αναλυτή φάσματος (JSON)",
+  "SPECTRUM_OPTIONS_DESC": "Παρακάμψτε τις επιλογές του AudioMotion Analyzer με αντικείμενο JSON. Αφήστε κενό για χρήση προεπιλογών. Δημιουργήστε επιλογές με getOptions() σε αυτή τη σελίδα https://audiomotion.dev/demo/fluid.html",
   "NONE": "Κανένα",
   "KIOSK": "Λειτουργία Kiosk",
   "KIOSK_NOT_FOUND": "Το Volumio Kiosk δεν είναι εγκατεστημένο σε αυτό το σύστημα. Εγκαταστήστε την υπηρεσία kiosk για να χρησιμοποιήσετε αυτή τη δυνατότητα.",

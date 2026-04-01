@@ -78,6 +78,8 @@
   "OPEN_APP": "Відкрити додаток",
   "OPEN_APP_DESC": "Відкрити інтерфейс Stylish Player у новій вкладці.",
   "VIZ_TYPE_VU_METER_4": "VU-метр 4 (Чорний)",
+  "SPECTRUM_OPTIONS": "Параметри аналізатора спектра (JSON)",
+  "SPECTRUM_OPTIONS_DESC": "Перевизначте параметри AudioMotion Analyzer об'єктом JSON. Залиште порожнім для використання значень за замовчуванням. Генеруйте параметри за допомогою getOptions() на цій сторінці https://audiomotion.dev/demo/fluid.html",
   "NONE": "Немає",
   "KIOSK": "Режим кіоску",
   "KIOSK_NOT_FOUND": "Volumio Kiosk не встановлено на цій системі. Встановіть сервіс кіоску для використання цієї функції.",
