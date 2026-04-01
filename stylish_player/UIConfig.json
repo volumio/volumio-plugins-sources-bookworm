@@ -62,7 +62,7 @@
       },
       "saveButton": {
         "label": "TRANSLATE.SAVE",
-        "data": ["playerType", "theme", "showPlayerControls", "vizType"]
+        "data": ["playerType", "theme", "showPlayerControls", "vizType", "spectrumOptions"]
       },
       "content": [
         {
@@ -129,6 +129,18 @@
             { "value": "vuMeter4",  "label": "TRANSLATE.VIZ_TYPE_VU_METER_4" },
             { "value": "none",      "label": "TRANSLATE.NONE" }
           ]
+        },
+        {
+          "id": "spectrumOptions",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.SPECTRUM_OPTIONS",
+          "doc": "TRANSLATE.SPECTRUM_OPTIONS_DESC",
+          "value": "",
+          "visibleIf": {
+            "field": "vizType",
+            "value": "spectrum"
+          }
         }
       ]
     },

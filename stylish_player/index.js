@@ -286,6 +286,7 @@ ControllerStylishPlayer.prototype.startServer = function () {
         theme: self.config.get("theme", "skeuomorphic"),
         showPlayerControls: self.config.get("showPlayerControls", true),
         vizType: self.config.get("vizType", "spectrum"),
+        spectrumOptions: self.config.get("spectrumOptions", ""),
         port: self.config.get("port", 3339),
         latitude: self.config.get("latitude", ""),
         longitude: self.config.get("longitude", ""),
@@ -412,6 +413,7 @@ ControllerStylishPlayer.prototype.broadcastConfig = function () {
     theme: self.config.get("theme", "skeuomorphic"),
     showPlayerControls: self.config.get("showPlayerControls", true),
     vizType: self.config.get("vizType", "spectrum"),
+    spectrumOptions: self.config.get("spectrumOptions", ""),
     port: self.config.get("port", 3339),
     latitude: self.config.get("latitude", ""),
     longitude: self.config.get("longitude", ""),
@@ -508,6 +510,9 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       if (matchVizType) {
         uiconf.sections[2].content[3].value = matchVizType;
       }
+
+      // Populate spectrum options (Index 4)
+      uiconf.sections[2].content[4].value = self.config.get("spectrumOptions", "");
 
       // Populate location section (index 3)
       uiconf.sections[3].content[0].value = self.config.get("latitude", "");
@@ -679,11 +684,23 @@ ControllerStylishPlayer.prototype.configSavePlayerConfig = function (data) {
   var playerType = data["playerType"] ? data["playerType"].value : "albumArt";
   var showPlayerControls = data["showPlayerControls"] !== false;
   var vizType = data["vizType"] ? data["vizType"].value : "spectrum";
+  var spectrumOptions = (data["spectrumOptions"] || "").toString().trim();
+
+  // Validate JSON if a value is provided
+  if (spectrumOptions) {
+    try {
+      JSON.parse(spectrumOptions);
+    } catch (e) {
+      self.commandRouter.pushToastMessage("error", "Stylish Player", "Spectrum Options is not valid JSON: " + e.message);
+      return;
+    }
+  }
 
   self.config.set("theme", theme);
   self.config.set("playerType", playerType);
   self.config.set("showPlayerControls", showPlayerControls);
   self.config.set("vizType", vizType);
+  self.config.set("spectrumOptions", spectrumOptions);
   self.commandRouter.pushToastMessage("success", "Stylish Player", "Player configuration saved.");
 
   self.broadcastConfig();
