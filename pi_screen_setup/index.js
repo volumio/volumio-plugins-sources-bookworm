@@ -266,6 +266,54 @@ PiScreenSetup.prototype.setConfigValue = function(key, value) {
   self.wizardDataCache[key] = value;
 };
 
+/**
+ * Preset default for whether to load vc4-kms-v3d (vc4_kms false = omit KMS driver line).
+ * Defaults to true when preset omits vc4_kms.
+ */
+PiScreenSetup.prototype.getPresetVc4KmsDefaultForPrimary = function(primaryOutput) {
+  var self = this;
+  var preset = null;
+  if (primaryOutput === 'hdmi0' || primaryOutput === 'hdmi1') {
+    var pid = self.getConfigValue(primaryOutput + '.display_preset', 'auto');
+    if (pid && pid !== 'auto' && pid !== 'custom' && pid !== 'custom-hdmi') {
+      preset = self.getDisplayPreset(pid);
+    }
+  } else if (primaryOutput === 'dsi0' || primaryOutput === 'dsi1') {
+    var oid = self.getConfigValue(primaryOutput + '.overlay', '');
+    if (oid && oid !== 'custom') {
+      preset = self.getDisplayPreset(oid);
+    }
+  } else if (primaryOutput === 'dpi') {
+    var did = self.getConfigValue('dpi.overlay', '');
+    if (did && did !== 'custom') {
+      preset = self.getDisplayPreset(did);
+    }
+  }
+  if (preset && preset.vc4_kms === false) {
+    return false;
+  }
+  return true;
+};
+
+/**
+ * Whether videoconfig.txt should include vc4-kms-v3d (and CMA). Respects kms.mode and preset vc4_kms.
+ */
+PiScreenSetup.prototype.getEffectiveKmsEnabled = function() {
+  var self = this;
+  if (!self.hardwareInfo || !self.hardwareInfo.kms_supported) {
+    return false;
+  }
+  var mode = self.getConfigValue('kms.mode', 'preset');
+  if (mode === 'off') {
+    return false;
+  }
+  if (mode === 'on') {
+    return true;
+  }
+  var primaryOutput = self.primaryOutputCache || self.getConfigValue('primary_output', 'hdmi0');
+  return self.getPresetVc4KmsDefaultForPrimary(primaryOutput) !== false;
+};
+
 
 // ============================================================================
 // LIFECYCLE METHODS
@@ -277,6 +325,11 @@ PiScreenSetup.prototype.onVolumioStart = function() {
 
   self.config = new (require('v-conf'))();
   self.config.loadFile(configFile);
+
+  if (self.config.get('kms.mode') === undefined) {
+    var legacyEnabled = self.config.get('kms.enabled', true);
+    self.config.set('kms.mode', legacyEnabled === false ? 'off' : 'preset');
+  }
 
   return libQ.resolve();
 };
@@ -307,6 +360,9 @@ PiScreenSetup.prototype.onStart = function() {
       self.config.set('hardware.soc', hwInfo.soc);
       self.config.set('hardware.ram_mb', hwInfo.ram_mb);
       self.config.set('hardware.detected', true);
+
+      // Keep legacy kms.enabled aligned with kms.mode + preset (for older readers)
+      self.config.set('kms.enabled', self.getEffectiveKmsEnabled());
 
       // Perform boot validation
       return self.validateBootConfig();
@@ -2091,6 +2147,14 @@ PiScreenSetup.prototype.validatePresetData = function(preset) {
   if (!preset.config || typeof preset.config !== 'object') {
     return { valid: false, error: self.getI18n('ADMIN_ERROR_NO_CONFIG') || 'Preset must have a config object' };
   }
+
+  if (preset.vc4_kms !== undefined && typeof preset.vc4_kms !== 'boolean') {
+    return { valid: false, error: self.getI18n('ADMIN_ERROR_VC4_KMS') || 'vc4_kms must be a boolean when set' };
+  }
+
+  if (preset.emit_dsi_overlay !== undefined && typeof preset.emit_dsi_overlay !== 'boolean') {
+    return { valid: false, error: self.getI18n('ADMIN_ERROR_EMIT_DSI') || 'emit_dsi_overlay must be a boolean when set' };
+  }
   
   return { valid: true };
 };
@@ -3106,7 +3170,7 @@ PiScreenSetup.prototype.generateVideoConfig = function() {
 
   // KMS overlay (if supported and not Pi Zero 2 W)
   if (self.hardwareInfo && self.hardwareInfo.kms_supported) {
-    var kmsEnabled = self.getConfigValue('kms.enabled', true);
+    var kmsEnabled = self.getEffectiveKmsEnabled();
     if (kmsEnabled) {
       var kmsOverlay = self.hardwareInfo.kms_overlay || 'vc4-kms-v3d';
       var cmaOption = self.getConfigValue('kms.cma_option', 'default');
@@ -3144,76 +3208,49 @@ PiScreenSetup.prototype.generateVideoConfig = function() {
     }
   }
 
-  // DSI configuration
-  if (primaryOutput === 'dsi0' || self.getConfigValue('dsi0.enabled', false)) {
-    var dsi0PresetId = self.getConfigValue('dsi0.overlay', '');
-    if (dsi0PresetId && dsi0PresetId !== 'custom') {
-      lines.push('# DSI0 Configuration');
-      var dsi0Preset = self.getDisplayPreset(dsi0PresetId);
-      var dsi0Overlay = '';
-      if (dsi0Preset && dsi0Preset.config && dsi0Preset.config.dtoverlay) {
-        dsi0Overlay = dsi0Preset.config.dtoverlay;
+  // DSI configuration (emit_dsi_overlay:false = omit vc4-kms-dsi panel dtoverlay line)
+  var appendDsiPortLines = function(portKey, sectionTitle) {
+    if (!(primaryOutput === portKey || self.getConfigValue(portKey + '.enabled', false))) {
+      return;
+    }
+    var presetId = self.getConfigValue(portKey + '.overlay', '');
+    if (presetId && presetId !== 'custom') {
+      lines.push('# ' + sectionTitle + ' Configuration');
+      var dsiPreset = self.getDisplayPreset(presetId);
+      var emitDsiOverlay = !dsiPreset || dsiPreset.emit_dsi_overlay !== false;
+      if (!emitDsiOverlay) {
+        lines.push('# No vc4-kms-dsi panel dtoverlay line (preset emit_dsi_overlay=false)');
+        lines.push('');
+        return;
+      }
+      var dsiOverlay = '';
+      if (dsiPreset && dsiPreset.config && dsiPreset.config.dtoverlay) {
+        dsiOverlay = dsiPreset.config.dtoverlay;
       } else {
-        // Fallback: assume preset ID is the overlay name (backward compat)
-        dsi0Overlay = dsi0PresetId;
+        dsiOverlay = presetId;
       }
-      var dsi0Params = self.getConfigValue('dsi0.custom_params', '');
-      var dsi0Rotation = self.getConfigValue('dsi0.rotation', 0);
-      var dsi0Line = 'dtoverlay=' + dsi0Overlay;
-      // Only add rotation to overlay if it supports the rotation parameter
-      if (dsi0Rotation !== 0 && dsi0Preset && dsi0Preset.overlay_rotation_param === true) {
-        dsi0Line += ',rotation=' + dsi0Rotation;
+      var dsiParams = self.getConfigValue(portKey + '.custom_params', '');
+      var dsiRotation = self.getConfigValue(portKey + '.rotation', 0);
+      var dsiLine = 'dtoverlay=' + dsiOverlay;
+      if (dsiRotation !== 0 && dsiPreset && dsiPreset.overlay_rotation_param === true) {
+        dsiLine += ',rotation=' + dsiRotation;
       }
-      if (dsi0Params) {
-        dsi0Line += ',' + dsi0Params;
+      if (dsiParams) {
+        dsiLine += ',' + dsiParams;
       }
-      lines.push(dsi0Line);
+      lines.push(dsiLine);
       lines.push('');
-    } else if (dsi0PresetId === 'custom') {
-      // Custom overlay - use custom_params as the full overlay line
-      var customLine = self.getConfigValue('dsi0.custom_params', '');
+    } else if (presetId === 'custom') {
+      var customLine = self.getConfigValue(portKey + '.custom_params', '');
       if (customLine) {
-        lines.push('# DSI0 Custom Configuration');
+        lines.push('# ' + sectionTitle + ' Custom Configuration');
         lines.push('dtoverlay=' + customLine);
         lines.push('');
       }
     }
-  }
-
-  if (primaryOutput === 'dsi1' || self.getConfigValue('dsi1.enabled', false)) {
-    var dsi1PresetId = self.getConfigValue('dsi1.overlay', '');
-    if (dsi1PresetId && dsi1PresetId !== 'custom') {
-      lines.push('# DSI1 Configuration');
-      var dsi1Preset = self.getDisplayPreset(dsi1PresetId);
-      var dsi1Overlay = '';
-      if (dsi1Preset && dsi1Preset.config && dsi1Preset.config.dtoverlay) {
-        dsi1Overlay = dsi1Preset.config.dtoverlay;
-      } else {
-        // Fallback: assume preset ID is the overlay name (backward compat)
-        dsi1Overlay = dsi1PresetId;
-      }
-      var dsi1Params = self.getConfigValue('dsi1.custom_params', '');
-      var dsi1Rotation = self.getConfigValue('dsi1.rotation', 0);
-      var dsi1Line = 'dtoverlay=' + dsi1Overlay;
-      // Only add rotation to overlay if it supports the rotation parameter
-      if (dsi1Rotation !== 0 && dsi1Preset && dsi1Preset.overlay_rotation_param === true) {
-        dsi1Line += ',rotation=' + dsi1Rotation;
-      }
-      if (dsi1Params) {
-        dsi1Line += ',' + dsi1Params;
-      }
-      lines.push(dsi1Line);
-      lines.push('');
-    } else if (dsi1PresetId === 'custom') {
-      // Custom overlay - use custom_params as the full overlay line
-      var customLine1 = self.getConfigValue('dsi1.custom_params', '');
-      if (customLine1) {
-        lines.push('# DSI1 Custom Configuration');
-        lines.push('dtoverlay=' + customLine1);
-        lines.push('');
-      }
-    }
-  }
+  };
+  appendDsiPortLines('dsi0', 'DSI0');
+  appendDsiPortLines('dsi1', 'DSI1');
 
   // DPI configuration
   if (primaryOutput === 'dpi' || self.getConfigValue('dpi.enabled', false)) {
@@ -3458,6 +3495,9 @@ PiScreenSetup.prototype.generateConfigSummary = function() {
     var dsiPreset = self.getDisplayPreset(dsiPresetId);
     var dsiLabel = dsiPreset && dsiPreset.name ? dsiPreset.name : dsiPresetId;
     parts.push('DSI: ' + dsiLabel);
+    if (dsiPreset && dsiPreset.emit_dsi_overlay === false) {
+      parts.push(self.getI18n('DSI_SUMMARY_NO_PANEL_OVERLAY'));
+    }
   } else if (primaryOutput === 'dpi') {
     var dpiPresetId = self.getConfigValue('dpi.overlay', '');
     var dpiPreset = self.getDisplayPreset(dpiPresetId);
@@ -3489,13 +3529,19 @@ PiScreenSetup.prototype.generateConfigSummary = function() {
   
   // KMS
   if (self.hardwareInfo && self.hardwareInfo.kms_supported) {
-    var cmaOption = self.getConfigValue('kms.cma_option', 'default');
-    self.logger.info('pi_screen_setup: generateConfigSummary - cmaOption=' + cmaOption);
-    var cmaValue = CMA_OPTIONS[cmaOption] ? CMA_OPTIONS[cmaOption].value : 64;
-    if (cmaOption === 'custom') {
-      cmaValue = self.getConfigValue('kms.cma_custom_mb', 256);
+    var kmsMode = self.getConfigValue('kms.mode', 'preset');
+    self.logger.info('pi_screen_setup: generateConfigSummary - kms.mode=' + kmsMode);
+    if (!self.getEffectiveKmsEnabled()) {
+      parts.push(self.getI18n('KMS_SUMMARY_OFF'));
+    } else {
+      var cmaOption = self.getConfigValue('kms.cma_option', 'default');
+      self.logger.info('pi_screen_setup: generateConfigSummary - cmaOption=' + cmaOption);
+      var cmaValue = CMA_OPTIONS[cmaOption] ? CMA_OPTIONS[cmaOption].value : 64;
+      if (cmaOption === 'custom') {
+        cmaValue = self.getConfigValue('kms.cma_custom_mb', 256);
+      }
+      parts.push(self.getI18n('KMS_SUMMARY_ON') + ' ' + cmaValue + 'MB');
     }
-    parts.push('KMS CMA: ' + cmaValue + 'MB');
   }
   
   return parts.join(', ');
@@ -3820,30 +3866,37 @@ PiScreenSetup.prototype.updateCmdline = function() {
       connectorName = 'DPI-1';
     }
 
+    // DRM-style video=/plymouth= assume vc4-kms-v3d; skip when KMS driver is disabled for this config
+    var kmsActive = self.getEffectiveKmsEnabled();
+
     // Only add cmdline rotation params if overlay doesn't handle it
     if (!overlayHandlesRotation) {
-      // Build video parameter
-      // Format: video=CONNECTOR:WIDTHxHEIGHTM@REFRESH,rotate=DEGREES
-      // Or: video=CONNECTOR:rotate=DEGREES (if no video_mode)
-      if (applyCmdlineVideo && (videoMode || rotation !== 0)) {
-        var videoParam = 'video=' + connectorName + ':';
-        if (videoMode) {
-          videoParam += videoMode;
-          if (rotation !== 0) {
-            videoParam += ',rotate=' + rotation;
+      if (kmsActive) {
+        // Build video parameter
+        // Format: video=CONNECTOR:WIDTHxHEIGHTM@REFRESH,rotate=DEGREES
+        // Or: video=CONNECTOR:rotate=DEGREES (if no video_mode)
+        if (applyCmdlineVideo && (videoMode || rotation !== 0)) {
+          var videoParam = 'video=' + connectorName + ':';
+          if (videoMode) {
+            videoParam += videoMode;
+            if (rotation !== 0) {
+              videoParam += ',rotate=' + rotation;
+            }
+          } else if (rotation !== 0) {
+            videoParam += 'rotate=' + rotation;
           }
-        } else if (rotation !== 0) {
-          videoParam += 'rotate=' + rotation;
+          content += ' ' + videoParam;
         }
-        content += ' ' + videoParam;
+
+        // Add plymouth parameter for boot splash rotation (used by volumio-adaptive theme)
+        if (applyCmdlinePlymouth && rotation !== 0) {
+          content += ' plymouth=' + rotation;
+        }
+      } else {
+        self.logger.info('pi_screen_setup: KMS driver disabled — omitting DRM video=/plymouth= rotation from cmdline');
       }
 
-      // Add plymouth parameter for boot splash rotation (used by volumio-adaptive theme)
-      if (applyCmdlinePlymouth && rotation !== 0) {
-        content += ' plymouth=' + rotation;
-      }
-
-      // Add fbcon rotation
+      // Add fbcon rotation (still useful without KMS)
       if (applyCmdlineFbcon) {
         content += ' fbcon=rotate:' + rotateValue;
       }
@@ -4406,6 +4459,7 @@ PiScreenSetup.prototype.applyParsedConfigToSettings = function(parseResult) {
   
   // KMS settings
   if (parsed.kms_overlay) {
+    self.config.set('kms.mode', 'on');
     self.config.set('kms.enabled', true);
     if (parsed.kms_cma) {
       // Map CMA value to option
@@ -5773,6 +5827,19 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
         if (paramsInput) {
           paramsInput.value = self.getConfigValue(dsiPrefix + '.custom_params', '');
         }
+
+        var dsiHint = self.findContentItem(step3Section, 'dsi_preset_hint');
+        if (dsiHint) {
+          var selId = self.getConfigValue(dsiPrefix + '.overlay', '');
+          var selPreset = selId && selId !== 'custom' ? self.getDisplayPreset(selId) : null;
+          if (selPreset && selPreset.emit_dsi_overlay === false) {
+            dsiHint.value = self.getI18n('DSI_PRESET_EMIT_HINT');
+            dsiHint.hidden = false;
+          } else {
+            dsiHint.value = '';
+            dsiHint.hidden = true;
+          }
+        }
       }
     }
 
@@ -6007,9 +6074,39 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
       step8Section.hidden = wizardComplete || !showKms;
 
       if (showKms) {
+        var primaryOut = self.primaryOutputCache || self.getConfigValue('primary_output', 'hdmi0');
+        var kmsModeCurrent = self.getConfigValue('kms.mode', 'preset');
+        var modeOptions = [
+          { value: 'preset', label: self.getI18n('KMS_MODE_PRESET') },
+          { value: 'on', label: self.getI18n('KMS_MODE_ON') },
+          { value: 'off', label: self.getI18n('KMS_MODE_OFF') }
+        ];
+        var kmsModeSelect = self.findContentItem(step8Section, 'kms_mode');
+        if (kmsModeSelect) {
+          kmsModeSelect.options = modeOptions;
+          kmsModeSelect.value = modeOptions.find(function(o) { return o.value === kmsModeCurrent; }) || modeOptions[0];
+        }
+
+        var presetWantsKms = self.getPresetVc4KmsDefaultForPrimary(primaryOut);
+        var hintItem = self.findContentItem(step8Section, 'kms_preset_hint');
+        if (hintItem) {
+          if (kmsModeCurrent === 'on') {
+            hintItem.value = self.getI18n('KMS_HINT_FORCE_ON');
+          } else if (kmsModeCurrent === 'off') {
+            hintItem.value = self.getI18n('KMS_HINT_FORCE_OFF');
+          } else if (presetWantsKms === false) {
+            hintItem.value = self.getI18n('KMS_HINT_PRESET_OFF');
+          } else {
+            hintItem.value = self.getI18n('KMS_HINT_PRESET_ON');
+          }
+        }
+
+        var showCma = kmsModeCurrent === 'on' || (kmsModeCurrent === 'preset' && presetWantsKms !== false);
+
         // CMA option
         var cmaSelect = self.findContentItem(step8Section, 'cma_option');
         if (cmaSelect) {
+          cmaSelect.hidden = !showCma;
           var cmaOptions = [];
           for (var cmaKey in CMA_OPTIONS) {
             // Filter based on RAM
@@ -6027,6 +6124,7 @@ PiScreenSetup.prototype.populateWizardSections = function(uiconf, wizardStep, wi
         // Custom CMA value
         var cmaCustomInput = self.findContentItem(step8Section, 'cma_custom_mb');
         if (cmaCustomInput) {
+          cmaCustomInput.hidden = !showCma;
           var cmaCustomVal = self.config.get('kms.cma_custom_mb');
           cmaCustomInput.value = (cmaCustomVal !== undefined && cmaCustomVal !== null) ? cmaCustomVal : 256;
         }
@@ -6626,8 +6724,11 @@ PiScreenSetup.prototype.saveStep4 = function(data) {
 
   self.logger.info('pi_screen_setup: Saving Step 4 KMS - ' + JSON.stringify(data));
 
+  var modeVal = data.kms_mode && data.kms_mode.value ? data.kms_mode.value : 'preset';
+  self.setConfigValue('kms.mode', modeVal);
   self.setConfigValue('kms.cma_option', data.cma_option ? data.cma_option.value : 'default');
   self.setConfigValue('kms.cma_custom_mb', parseInt(data.cma_custom_mb, 10) || 256);
+  self.config.set('kms.enabled', self.getEffectiveKmsEnabled());
 
   // Advance wizard
   self.config.set('wizard_step', 5);
@@ -6700,6 +6801,8 @@ PiScreenSetup.prototype.applyConfiguration = function(data) {
       self.wizardStepCache = 7;
       self.config.set('applied_date', new Date().toISOString());
       
+      self.config.set('kms.enabled', self.getEffectiveKmsEnabled());
+
       // Clear any drift state
       self.driftDetected = false;
       self.driftErrors = [];
