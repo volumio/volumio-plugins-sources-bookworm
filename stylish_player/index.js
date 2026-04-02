@@ -148,6 +148,11 @@ ControllerStylishPlayer.prototype._alsaRateFor = function (samplerate, trackType
   }
 
   var rate = parseInt(String(samplerate || ''), 10) || 44100;
+  // Volumio may report PCM rates as "44.1 kHz", "96 kHz", etc.
+  var khzMatch = String(samplerate || '').match(/^(\d+\.?\d*)\s*[Kk][Hh][Zz]/);
+  if (khzMatch) {
+    rate = Math.round(parseFloat(khzMatch[1]) * 1000);
+  }
   return (rate > 0 && rate <= 768000) ? rate : 44100;
 };
 
