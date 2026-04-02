@@ -119,13 +119,17 @@ ControllerStylishPlayer.prototype.loadalsastuff = function () {
 
 /**
  * Map a Volumio pushState samplerate + trackType to the actual PCM sample rate
- * the ALSA volumiofifo plugin writes into the pipe.
+ * the ALSA volumiofifo plugin writes into the pipe, and the desired output rate
+ * for the MP3 encoder.
  *
  * DSD is wrapped as DoP (DSD-over-PCM) by the ALSA loopback at:
- *   DSD64  (native 2822400 Hz)  → PCM at 176400 Hz
- *   DSD128 (native 5644800 Hz)  → PCM at 352800 Hz
- *   DSD256 (native 11289600 Hz) → PCM at 705600 Hz
- * All PCM formats use their reported samplerate directly.
+ *   DSD64  (native 2822400 Hz)  → FIFO at 176400 Hz
+ *   DSD128 (native 5644800 Hz)  → FIFO at 352800 Hz
+ *   DSD256 (native 11289600 Hz) → FIFO at 705600 Hz
+ * DSD is always downmixed to 44100 Hz PCM for the MP3 stream.
+ * All PCM formats use their reported samplerate for both input and output.
+ *
+ * Returns { inputRate, outputRate }
  */
 ControllerStylishPlayer.prototype._alsaRateFor = function (samplerate, trackType) {
   var type = (trackType || '').toLowerCase();
@@ -141,10 +145,13 @@ ControllerStylishPlayer.prototype._alsaRateFor = function (samplerate, trackType
     } else {
       nativeRate = parseInt(srStr, 10) || 0;
     }
-    // Map DSD native rate to the DoP PCM rate ALSA writes into the FIFO
-    if (nativeRate >= 10000000) return 705600;  // DSD256 (~11.2 MHz)
-    if (nativeRate >= 5000000)  return 352800;  // DSD128 (~5.6 MHz)
-    return 176400;                               // DSD64  (~2.8 MHz) + fallback
+    // Map DSD native rate to the DoP PCM rate ALSA writes into the FIFO,
+    // then always downsample to 44100 for the MP3 output.
+    var inputRate;
+    if (nativeRate >= 10000000) inputRate = 705600;  // DSD256 (~11.2 MHz)
+    else if (nativeRate >= 5000000) inputRate = 352800;  // DSD128 (~5.6 MHz)
+    else inputRate = 176400;                              // DSD64  (~2.8 MHz)
+    return { inputRate: inputRate, outputRate: 44100 };
   }
 
   var rate = parseInt(String(samplerate || ''), 10) || 44100;
@@ -153,7 +160,8 @@ ControllerStylishPlayer.prototype._alsaRateFor = function (samplerate, trackType
   if (khzMatch) {
     rate = Math.round(parseFloat(khzMatch[1]) * 1000);
   }
-  return (rate > 0 && rate <= 768000) ? rate : 44100;
+  rate = (rate > 0 && rate <= 768000) ? rate : 44100;
+  return { inputRate: rate, outputRate: 44100 };
 };
 
 ControllerStylishPlayer.prototype.streamOutViz = function () {
@@ -165,18 +173,21 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
 
   self.streamClients = [];
   self._currentAlsaRate = 44100;
+  self._currentOutputRate = 44100;
 
   // Track sample-rate changes (critical for DSD) so FFmpeg is restarted with
   // the correct -ar value whenever the track format changes.
   self.commandRouter.addCallback('volumioPushState', function (state) {
     if (!state) return;
-    var newRate = self._alsaRateFor(state.samplerate, state.trackType);
-    console.log("Stylish Player: volumioPushState callback: samplerate=" + state.samplerate + ", trackType=" + state.trackType + " → ALSA rate " + newRate);
+    var rates = self._alsaRateFor(state.samplerate, state.trackType);
+    var newRate = rates.inputRate;
+    console.log('Stylish Player: volumioPushState callback: samplerate=' + state.samplerate + ', trackType=' + state.trackType + ' → ALSA rate ' + newRate + ', output rate ' + rates.outputRate);
     if (newRate !== self._currentAlsaRate) {
       self.logger.info('Stylish Player: Sample rate changed ' +
         self._currentAlsaRate + ' → ' + newRate +
         ' (trackType=' + (state.trackType || 'pcm') + '); restarting FFmpeg');
       self._currentAlsaRate = newRate;
+      self._currentOutputRate = rates.outputRate;
       // Close all active stream clients so browsers reconnect cleanly
       // after FFmpeg comes back up at the new rate.
       var clients = self.streamClients.slice();
@@ -194,13 +205,14 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
   self._startAudioFfmpeg = function () {
     if (self._audioFfmpeg) return;
 
-    self.logger.info('Stylish Player: Starting persistent FFmpeg audio streamer at ' + self._currentAlsaRate + ' Hz');
+    self.logger.info('Stylish Player: Starting persistent FFmpeg audio streamer at ' + self._currentAlsaRate + ' Hz → output ' + self._currentOutputRate + ' Hz');
 
     self._audioFfmpeg = spawn('ffmpeg', [
       '-loglevel', 'error',
       '-fflags', '+discardcorrupt',
       '-f', 's16le', '-ar', String(self._currentAlsaRate), '-ac', '2',
       '-i', self.pipePath,
+      '-ar', String(self._currentOutputRate),
       '-codec:a', 'libmp3lame', '-b:a', '128k',
       '-f', 'mp3', 'pipe:1'
     ], { stdio: ['ignore', 'pipe', 'pipe'] });
