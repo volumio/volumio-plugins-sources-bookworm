@@ -426,6 +426,7 @@ ControllerStylishPlayer.prototype.startServer = function () {
         slideshowInterval: self.config.get("slideshowInterval", 30),
         externalUrl: self.config.get("externalUrl", ""),
         use24Hour: self.config.get("use24Hour", false),
+        language: self.commandRouter.sharedVars.get("language_code") || 'en',
       };
       res.writeHead(200, {
         "Content-Type": "application/json",
@@ -557,6 +558,7 @@ ControllerStylishPlayer.prototype.broadcastConfig = function () {
     slideshowInterval: self.config.get("slideshowInterval", 30),
     externalUrl: self.config.get("externalUrl", ""),
     use24Hour: self.config.get("use24Hour", false),
+    language: self.commandRouter.sharedVars.get("language_code") || 'en',
   };
   self.commandRouter.broadcastMessage("pushStylishPlayerConfig", configData);
   self.logger.info("Stylish Player: Broadcasted config update: " + JSON.stringify(configData));
