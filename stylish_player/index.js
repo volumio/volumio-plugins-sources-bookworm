@@ -118,12 +118,36 @@ ControllerStylishPlayer.prototype.loadalsastuff = function () {
 };
 
 /**
- * Self-contained logic to host an HTTP server and stream ALSA pipe data.
+ * Map a Volumio pushState samplerate + trackType to the actual PCM sample rate
+ * the ALSA volumiofifo plugin writes into the pipe.
  *
- * A single persistent FFmpeg process holds the FIFO read-end open at all times so
- * the ALSA writer never receives EPIPE/SIGPIPE when clients disconnect. Each HTTP
- * client is simply added to / removed from a broadcast list.
+ * DSD is wrapped as DoP (DSD-over-PCM) by the ALSA loopback at:
+ *   DSD64  (native 2822400 Hz)  → PCM at 176400 Hz
+ *   DSD128 (native 5644800 Hz)  → PCM at 352800 Hz
+ *   DSD256 (native 11289600 Hz) → PCM at 705600 Hz
+ * All PCM formats use their reported samplerate directly.
  */
+ControllerStylishPlayer.prototype._alsaRateFor = function (samplerate, trackType) {
+  var type = (trackType || '').toLowerCase();
+  var isDSD = (type === 'dsf' || type === 'dff');
+
+  if (isDSD) {
+    var nativeRate = parseInt(samplerate, 10) || 0;
+    if (!nativeRate) {
+      var s = String(samplerate).toLowerCase();
+      if (s.indexOf('dsd256') !== -1 || s.indexOf('11.2') !== -1) return 705600;
+      if (s.indexOf('dsd128') !== -1 || s.indexOf('5.6')  !== -1) return 352800;
+      return 176400; // DSD64 default
+    }
+    if (nativeRate >= 11000000) return 705600;
+    if (nativeRate >= 5000000)  return 352800;
+    return 176400; // DSD64
+  }
+
+  var rate = parseInt(samplerate, 10) || 44100;
+  return (rate > 0 && rate <= 768000) ? rate : 44100;
+};
+
 ControllerStylishPlayer.prototype.streamOutViz = function () {
   var self = this;
 
@@ -132,16 +156,35 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
   if (self.audioServer) return;
 
   self.streamClients = [];
+  self._currentAlsaRate = 44100;
+
+  // Track sample-rate changes (critical for DSD) so FFmpeg is restarted with
+  // the correct -ar value whenever the track format changes.
+  self.commandRouter.addCallback('volumioPushState', function (state) {
+    if (!state) return;
+    var newRate = self._alsaRateFor(state.samplerate, state.trackType);
+    if (newRate !== self._currentAlsaRate) {
+      self.logger.info('Stylish Player: Sample rate changed ' +
+        self._currentAlsaRate + ' → ' + newRate +
+        ' (trackType=' + (state.trackType || 'pcm') + '); restarting FFmpeg');
+      self._currentAlsaRate = newRate;
+      if (self._audioFfmpeg) {
+        self._audioFfmpeg.kill('SIGTERM');
+        self._audioFfmpeg = null;
+        // exit handler will call _startAudioFfmpeg after 1 s with the new rate
+      }
+    }
+  });
 
   // Start (or restart) the single long-running FFmpeg encoder.
   self._startAudioFfmpeg = function () {
     if (self._audioFfmpeg) return;
 
-    self.logger.info("Stylish Player: Starting persistent FFmpeg audio streamer");
+    self.logger.info('Stylish Player: Starting persistent FFmpeg audio streamer at ' + self._currentAlsaRate + ' Hz');
 
     self._audioFfmpeg = spawn('ffmpeg', [
       '-loglevel', 'error',
-      '-f', 's16le', '-ar', '44100', '-ac', '2',
+      '-f', 's16le', '-ar', String(self._currentAlsaRate), '-ac', '2',
       '-i', self.pipePath,
       '-codec:a', 'libmp3lame', '-b:a', '128k',
       '-f', 'mp3', 'pipe:1'
