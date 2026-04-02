@@ -172,47 +172,18 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
   if (self.audioServer) return;
 
   self.streamClients = [];
-  self._currentAlsaRate = 44100;
-  self._currentOutputRate = 44100;
-
-  // Track sample-rate changes (critical for DSD) so FFmpeg is restarted with
-  // the correct -ar value whenever the track format changes.
-  self.commandRouter.addCallback('volumioPushState', function (state) {
-    if (!state) return;
-    var rates = self._alsaRateFor(state.samplerate, state.trackType);
-    var newRate = rates.inputRate;
-    console.log('Stylish Player: volumioPushState callback: samplerate=' + state.samplerate + ', trackType=' + state.trackType + ' → ALSA rate ' + newRate + ', output rate ' + rates.outputRate);
-    if (newRate !== self._currentAlsaRate) {
-      self.logger.info('Stylish Player: Sample rate changed ' +
-        self._currentAlsaRate + ' → ' + newRate +
-        ' (trackType=' + (state.trackType || 'pcm') + '); restarting FFmpeg');
-      self._currentAlsaRate = newRate;
-      self._currentOutputRate = rates.outputRate;
-      // Close all active stream clients so browsers reconnect cleanly
-      // after FFmpeg comes back up at the new rate.
-      var clients = self.streamClients.slice();
-      self.streamClients = [];
-      clients.forEach(function (r) { try { r.end(); } catch (e) { /* ignore */ } });
-      if (self._audioFfmpeg) {
-        self._audioFfmpeg.kill('SIGTERM');
-        self._audioFfmpeg = null;
-        // exit handler will call _startAudioFfmpeg after 1 s with the new rate
-      }
-    }
-  });
 
   // Start (or restart) the single long-running FFmpeg encoder.
   self._startAudioFfmpeg = function () {
     if (self._audioFfmpeg) return;
 
-    self.logger.info('Stylish Player: Starting persistent FFmpeg audio streamer at ' + self._currentAlsaRate + ' Hz → output ' + self._currentOutputRate + ' Hz');
+    self.logger.info('Stylish Player: Starting persistent FFmpeg audio streamer (44100 Hz S16LE, downsampled to 44100 MP3)');
 
     self._audioFfmpeg = spawn('ffmpeg', [
       '-loglevel', 'error',
       '-fflags', '+discardcorrupt',
-      '-f', 's16le', '-ar', String(self._currentAlsaRate), '-ac', '2',
+      '-f', 's16le', '-ar', '44100', '-ac', '2',
       '-i', self.pipePath,
-      '-ar', String(self._currentOutputRate),
       '-codec:a', 'libmp3lame', '-b:a', '128k',
       '-f', 'mp3', 'pipe:1'
     ], { stdio: ['ignore', 'pipe', 'pipe'] });
