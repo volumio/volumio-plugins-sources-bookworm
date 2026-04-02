@@ -169,6 +169,7 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
   self._currentFifoFmt = 's16le';
   self._currentFifoRate = 44100;
   self._currentIsDSD = false;
+  self._fifoDrainStream = null;
 
   // Restart FFmpeg when the track switches between PCM and DSD (DoP), because
   // the FIFO format and sample rate change (S16LE/44100 vs S32LE/176400+).
@@ -190,16 +191,45 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
         self._audioFfmpeg.kill('SIGKILL');
         self._audioFfmpeg = null;
       }
-      // Always schedule a restart directly; don't rely solely on the exit handler
-      // so we restart even when FFmpeg was already dead, and use a short delay
-      // (200 ms with SIGKILL) to avoid filling the 64 KB FIFO buffer.
-      setTimeout(self._startAudioFfmpeg, 200);
+      // Start drain to prevent ALSA from blocking during the format-change gap
+      // or while waiting for a client to reconnect after being dropped.
+      self._startFifoDrain();
+      // No clients remain (they were all ended above), so do not restart FFmpeg
+      // here — it will be started when the first client reconnects.
     }
   });
+
+  // Drain the FIFO by reading and discarding data so ALSA never blocks on write
+  // when FFmpeg is not running (e.g. no stream clients are connected).
+  self._startFifoDrain = function () {
+    if (self._fifoDrainStream || self._audioFfmpeg) return;
+    self.logger.info('Stylish Player: No stream clients — draining FIFO to keep ALSA unblocked');
+    try {
+      var drain = fs.createReadStream(self.pipePath);
+      drain.on('data', function () { /* discard */ });
+      drain.on('error', function (e) {
+        self.logger.error('Stylish Player: FIFO drain error: ' + e);
+        if (self._fifoDrainStream === drain) self._fifoDrainStream = null;
+      });
+      self._fifoDrainStream = drain;
+    } catch (e) {
+      self.logger.error('Stylish Player: Failed to start FIFO drain: ' + e);
+    }
+  };
+
+  self._stopFifoDrain = function () {
+    if (self._fifoDrainStream) {
+      self.logger.info('Stylish Player: Stopping FIFO drain');
+      self._fifoDrainStream.destroy();
+      self._fifoDrainStream = null;
+    }
+  };
 
   // Start (or restart) the single long-running FFmpeg encoder.
   self._startAudioFfmpeg = function () {
     if (self._audioFfmpeg) return;
+    // Stop the FIFO drain before FFmpeg opens the read end of the pipe.
+    self._stopFifoDrain();
 
     self.logger.info('Stylish Player: Starting FFmpeg — fmt=' + self._currentFifoFmt +
       ' inputRate=' + self._currentFifoRate + (self._currentIsDSD ? ' (DoP DSD)' : '') + ' → output 44100 Hz MP3');
@@ -237,10 +267,12 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
       // restart may have already spawned a new process and assigned it.
       if (self._audioFfmpeg === proc) {
         self._audioFfmpeg = null;
-        // Keep restarting as long as the audio server is alive so the FIFO
-        // read-end stays open and the ALSA writer never gets EPIPE.
-        if (self.audioServer) {
+        // Only restart if there are active stream clients; otherwise drain the
+        // FIFO so ALSA never blocks once the kernel buffer fills up.
+        if (self.audioServer && self.streamClients.length > 0) {
           setTimeout(self._startAudioFfmpeg, 1000);
+        } else if (self.audioServer) {
+          self._startFifoDrain();
         }
       }
     });
@@ -269,11 +301,21 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
       });
 
       self.streamClients.push(res);
+      // First client: stop the FIFO drain and start FFmpeg if not already running.
+      self._stopFifoDrain();
+      if (!self._audioFfmpeg) {
+        self._startAudioFfmpeg();
+      }
 
       req.on('close', function () {
         self.logger.info("Stylish Player: Stream client disconnected");
         self.streamClients = self.streamClients.filter(function (r) { return r !== res; });
         res.end();
+        // Last client: terminate FFmpeg; the exit handler will start the FIFO drain.
+        if (self.streamClients.length === 0 && self._audioFfmpeg) {
+          self.logger.info('Stylish Player: Last stream client left — stopping FFmpeg');
+          self._audioFfmpeg.kill('SIGTERM');
+        }
       });
 
     } else {
@@ -304,7 +346,8 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
       } catch (e) {
         self.logger.error("Stylish Player: Failed to open FIFO sentinel: " + e);
       }
-      self._startAudioFfmpeg();
+      // No clients yet — start drain only; FFmpeg will be launched on first connect.
+      self._startFifoDrain();
     });
   }
 };
@@ -467,6 +510,11 @@ ControllerStylishPlayer.prototype.stopAudioServer = function () {
   if (self._audioFfmpeg) {
     self._audioFfmpeg.kill('SIGTERM');
     self._audioFfmpeg = null;
+  }
+
+  if (self._fifoDrainStream) {
+    self._fifoDrainStream.destroy();
+    self._fifoDrainStream = null;
   }
 
   if (self._fifoSentinelFd != null) {
