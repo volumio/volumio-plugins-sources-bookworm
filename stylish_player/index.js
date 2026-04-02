@@ -187,10 +187,13 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
       self.streamClients = [];
       clients.forEach(function (r) { try { r.end(); } catch (e) { /* ignore */ } });
       if (self._audioFfmpeg) {
-        self._audioFfmpeg.kill('SIGTERM');
+        self._audioFfmpeg.kill('SIGKILL');
         self._audioFfmpeg = null;
-        // exit handler calls _startAudioFfmpeg after 1 s with the new params
       }
+      // Always schedule a restart directly; don't rely solely on the exit handler
+      // so we restart even when FFmpeg was already dead, and use a short delay
+      // (200 ms with SIGKILL) to avoid filling the 64 KB FIFO buffer.
+      setTimeout(self._startAudioFfmpeg, 200);
     }
   });
 
@@ -213,9 +216,10 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
       '-f', 'mp3', 'pipe:1'
     ];
 
-    self._audioFfmpeg = spawn('ffmpeg', ffArgs, { stdio: ['ignore', 'pipe', 'pipe'] });
+    var proc = spawn('ffmpeg', ffArgs, { stdio: ['ignore', 'pipe', 'pipe'] });
+    self._audioFfmpeg = proc;
 
-    self._audioFfmpeg.stdout.on('data', function (chunk) {
+    proc.stdout.on('data', function (chunk) {
       self.streamClients.forEach(function (res) {
         try { res.write(chunk); } catch (e) { /* client already gone */ }
       });
@@ -223,23 +227,29 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
 
     // MUST drain stderr — if the 64 KB pipe buffer fills up, FFmpeg blocks
     // on its own write() to stderr and stops producing stdout entirely.
-    self._audioFfmpeg.stderr.on('data', function (data) {
+    proc.stderr.on('data', function (data) {
       self.logger.error("Stylish Player: FFmpeg: " + data.toString().trim());
     });
 
-    self._audioFfmpeg.on('exit', function (code) {
+    proc.on('exit', function (code) {
       self.logger.info("Stylish Player: FFmpeg exited with code " + code + ". Restarting...");
-      self._audioFfmpeg = null;
-      // Keep restarting as long as the audio server is alive so the FIFO
-      // read-end stays open and the ALSA writer never gets EPIPE.
-      if (self.audioServer) {
-        setTimeout(self._startAudioFfmpeg, 1000);
+      // Only null the reference if it still points to this process; a format-change
+      // restart may have already spawned a new process and assigned it.
+      if (self._audioFfmpeg === proc) {
+        self._audioFfmpeg = null;
+        // Keep restarting as long as the audio server is alive so the FIFO
+        // read-end stays open and the ALSA writer never gets EPIPE.
+        if (self.audioServer) {
+          setTimeout(self._startAudioFfmpeg, 1000);
+        }
       }
     });
 
-    self._audioFfmpeg.on('error', function (err) {
+    proc.on('error', function (err) {
       self.logger.error("Stylish Player: FFmpeg error: " + err);
-      self._audioFfmpeg = null;
+      if (self._audioFfmpeg === proc) {
+        self._audioFfmpeg = null;
+      }
     });
   };
 
