@@ -118,25 +118,23 @@ ControllerStylishPlayer.prototype.loadalsastuff = function () {
 };
 
 /**
- * Map a Volumio pushState samplerate + trackType to the actual PCM sample rate
- * the ALSA volumiofifo plugin writes into the pipe, and the desired output rate
- * for the MP3 encoder.
+ * Return the FFmpeg input parameters needed to read the ALSA FIFO for the
+ * current track format.
  *
- * DSD is wrapped as DoP (DSD-over-PCM) by the ALSA loopback at:
- *   DSD64  (native 2822400 Hz)  → FIFO at 176400 Hz
- *   DSD128 (native 5644800 Hz)  → FIFO at 352800 Hz
- *   DSD256 (native 11289600 Hz) → FIFO at 705600 Hz
- * DSD is always downmixed to 44100 Hz PCM for the MP3 stream.
- * All PCM formats use their reported samplerate for both input and output.
+ * PCM (flac, mp3, aac, …): ALSA plug writes S16LE at the track's native rate.
+ * DSD (dsf, dff): Volumio sends DoP (DSD-over-PCM) — S32LE at the reduced
+ *   DoP sample rate (native DSD rate ÷ 16):
+ *     DSD64  (~2.82 MHz native) → S32LE 176400 Hz
+ *     DSD128 (~5.64 MHz native) → S32LE 352800 Hz
+ *     DSD256 (~11.2 MHz native) → S32LE 705600 Hz
  *
- * Returns { inputRate, outputRate }
+ * Returns { fmt, inputRate, isDSD }
  */
-ControllerStylishPlayer.prototype._alsaRateFor = function (samplerate, trackType) {
+ControllerStylishPlayer.prototype._fifoParams = function (samplerate, trackType) {
   var type = (trackType || '').toLowerCase();
   var isDSD = (type === 'dsf' || type === 'dff');
 
   if (isDSD) {
-    // Parse both raw Hz integers and Volumio's "X.XX MHz" display strings.
     var srStr = String(samplerate || '');
     var nativeRate = 0;
     var mhzMatch = srStr.match(/^(\d+\.?\d*)\s*[Mm][Hh][Zz]/);
@@ -145,23 +143,19 @@ ControllerStylishPlayer.prototype._alsaRateFor = function (samplerate, trackType
     } else {
       nativeRate = parseInt(srStr, 10) || 0;
     }
-    // Map DSD native rate to the DoP PCM rate ALSA writes into the FIFO,
-    // then always downsample to 44100 for the MP3 output.
-    var inputRate;
-    if (nativeRate >= 10000000) inputRate = 705600;  // DSD256 (~11.2 MHz)
-    else if (nativeRate >= 5000000) inputRate = 352800;  // DSD128 (~5.6 MHz)
-    else inputRate = 176400;                              // DSD64  (~2.8 MHz)
-    return { inputRate: inputRate, outputRate: 44100 };
+    var dopRate;
+    if (nativeRate >= 10000000) dopRate = 705600;      // DSD256
+    else if (nativeRate >= 5000000) dopRate = 352800;  // DSD128
+    else dopRate = 176400;                             // DSD64 + fallback
+    return { fmt: 's32le', inputRate: dopRate, isDSD: true };
   }
 
+  // PCM: parse "44.1 kHz" / "96 kHz" / raw Hz integer
   var rate = parseInt(String(samplerate || ''), 10) || 44100;
-  // Volumio may report PCM rates as "44.1 kHz", "96 kHz", etc.
   var khzMatch = String(samplerate || '').match(/^(\d+\.?\d*)\s*[Kk][Hh][Zz]/);
-  if (khzMatch) {
-    rate = Math.round(parseFloat(khzMatch[1]) * 1000);
-  }
+  if (khzMatch) rate = Math.round(parseFloat(khzMatch[1]) * 1000);
   rate = (rate > 0 && rate <= 768000) ? rate : 44100;
-  return { inputRate: rate, outputRate: 44100 };
+  return { fmt: 's16le', inputRate: rate, isDSD: false };
 };
 
 ControllerStylishPlayer.prototype.streamOutViz = function () {
@@ -172,21 +166,54 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
   if (self.audioServer) return;
 
   self.streamClients = [];
+  self._currentFifoFmt = 's16le';
+  self._currentFifoRate = 44100;
+  self._currentIsDSD = false;
+
+  // Restart FFmpeg when the track switches between PCM and DSD (DoP), because
+  // the FIFO format and sample rate change (S16LE/44100 vs S32LE/176400+).
+  self.commandRouter.addCallback('volumioPushState', function (state) {
+    if (!state) return;
+    var p = self._fifoParams(state.samplerate, state.trackType);
+    self.logger.info('Stylish Player: pushState → fmt=' + p.fmt + ' rate=' + p.inputRate + ' isDSD=' + p.isDSD);
+    if (p.fmt !== self._currentFifoFmt || p.inputRate !== self._currentFifoRate) {
+      self.logger.info('Stylish Player: FIFO format changed, restarting FFmpeg (' +
+        self._currentFifoFmt + '/' + self._currentFifoRate + ' → ' + p.fmt + '/' + p.inputRate + ')');
+      self._currentFifoFmt = p.fmt;
+      self._currentFifoRate = p.inputRate;
+      self._currentIsDSD = p.isDSD;
+      // Close stream clients so browsers reconnect cleanly after the restart.
+      var clients = self.streamClients.slice();
+      self.streamClients = [];
+      clients.forEach(function (r) { try { r.end(); } catch (e) { /* ignore */ } });
+      if (self._audioFfmpeg) {
+        self._audioFfmpeg.kill('SIGTERM');
+        self._audioFfmpeg = null;
+        // exit handler calls _startAudioFfmpeg after 1 s with the new params
+      }
+    }
+  });
 
   // Start (or restart) the single long-running FFmpeg encoder.
   self._startAudioFfmpeg = function () {
     if (self._audioFfmpeg) return;
 
-    self.logger.info('Stylish Player: Starting persistent FFmpeg audio streamer (44100 Hz S16LE, downsampled to 44100 MP3)');
+    self.logger.info('Stylish Player: Starting FFmpeg — fmt=' + self._currentFifoFmt +
+      ' inputRate=' + self._currentFifoRate + (self._currentIsDSD ? ' (DoP DSD)' : '') + ' → output 44100 Hz MP3');
 
-    self._audioFfmpeg = spawn('ffmpeg', [
+    var ffArgs = [
       '-loglevel', 'error',
       '-fflags', '+discardcorrupt',
-      '-f', 's16le', '-ar', '44100', '-ac', '2',
+      '-f', self._currentFifoFmt,
+      '-ar', String(self._currentFifoRate),
+      '-ac', '2',
       '-i', self.pipePath,
+      '-ar', '44100',
       '-codec:a', 'libmp3lame', '-b:a', '128k',
       '-f', 'mp3', 'pipe:1'
-    ], { stdio: ['ignore', 'pipe', 'pipe'] });
+    ];
+
+    self._audioFfmpeg = spawn('ffmpeg', ffArgs, { stdio: ['ignore', 'pipe', 'pipe'] });
 
     self._audioFfmpeg.stdout.on('data', function (chunk) {
       self.streamClients.forEach(function (res) {
