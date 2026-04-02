@@ -892,8 +892,8 @@ ControllerRtlsdrRadio.prototype.validateCsvData = function(content, filename) {
   var errors = [];
   var stations = [];
   
-  // Get FM frequency limits
-  var fmFreqMin = parseFloat(self.config.get('fm_lower_freq', '87.5'));
+  // Get FM frequency limits from region settings
+  var fmFreqMin = self.getRegionSettings().band_start;
   var fmFreqMax = self.CSV_FM_FREQ_MAX;
   
   // Process data rows
@@ -2427,6 +2427,15 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
       };
     }
     
+    var fmScanOffset = findContentItem(fmRegionSection, 'fm_scan_offset');
+    if (fmScanOffset) {
+      var offsetValue = self.config.get('fm_scan_offset', '0');
+      fmScanOffset.value = {
+        value: offsetValue,
+        label: self.getFmScanOffsetLabel(offsetValue)
+      };
+    }
+    
     var fmLowerFreq = findContentItem(fmRegionSection, 'fm_lower_freq');
     if (fmLowerFreq) {
       var lowerFreqValue = self.config.get('fm_lower_freq', '87.5');
@@ -2668,6 +2677,9 @@ ControllerRtlsdrRadio.prototype.getRegionSettings = function() {
   var self = this;
   var regionKey = self.config.get('fm_region', 'europe');
   
+  // Scan offset applies to all regions (kHz, e.g. 0, 50, 100)
+  var scanOffsetKhz = parseInt(self.config.get('fm_scan_offset', '0'), 10) || 0;
+  
   if (regionKey === 'custom') {
     // Use manual override settings
     var spacingStr = self.config.get('fm_channel_spacing', '100k');
@@ -2676,17 +2688,25 @@ ControllerRtlsdrRadio.prototype.getRegionSettings = function() {
       band_start: parseFloat(self.config.get('fm_lower_freq', '87.5')),
       band_end: parseFloat(self.config.get('fm_upper_freq', '108.0')),
       spacing_khz: spacingKhz,
-      deemphasis_us: self.config.get('fm_deemphasis', false) ? 50 : 0
+      deemphasis_us: self.config.get('fm_deemphasis', false) ? 50 : 0,
+      scan_offset_khz: scanOffsetKhz
     };
   }
   
-  // Use preset region settings
+  // Use preset region settings (copy to avoid mutating cached regionData)
   if (self.regionData && self.regionData.regions && self.regionData.regions[regionKey]) {
-    return self.regionData.regions[regionKey];
+    var preset = self.regionData.regions[regionKey];
+    return {
+      band_start: preset.band_start,
+      band_end: preset.band_end,
+      spacing_khz: preset.spacing_khz,
+      deemphasis_us: preset.deemphasis_us,
+      scan_offset_khz: scanOffsetKhz
+    };
   }
   
   // Fallback to Europe defaults
-  return { band_start: 87.5, band_end: 108.0, spacing_khz: 100, deemphasis_us: 50 };
+  return { band_start: 87.5, band_end: 108.0, spacing_khz: 100, deemphasis_us: 50, scan_offset_khz: scanOffsetKhz };
 };
 
 // Get label for FM region
@@ -2715,6 +2735,17 @@ ControllerRtlsdrRadio.prototype.getFmChannelSpacingLabel = function(value) {
     '200k': self.getI18nString('FM_CHANNEL_SPACING_200K') || '200 kHz (Americas/Asia/Australia)'
   };
   return labels[value] || labels['100k'];
+};
+
+// Get label for FM scan offset
+ControllerRtlsdrRadio.prototype.getFmScanOffsetLabel = function(value) {
+  var self = this;
+  var labels = {
+    '0': self.getI18nString('FM_SCAN_OFFSET_0') || '0 kHz (Default)',
+    '50': self.getI18nString('FM_SCAN_OFFSET_50') || '50 kHz',
+    '100': self.getI18nString('FM_SCAN_OFFSET_100') || '100 kHz'
+  };
+  return labels[value] || labels['0'];
 };
 
 ControllerRtlsdrRadio.prototype.saveWebManagerSettings = function(data) {
@@ -2791,6 +2822,15 @@ ControllerRtlsdrRadio.prototype.saveFmRegion = function(data) {
       var validRegions = ['europe', 'americas', 'japan', 'east_asia', 'australia', 'italy', 'oirt', 'custom'];
       if (validRegions.indexOf(regionValue) !== -1) {
         self.config.set('fm_region', regionValue);
+      }
+    }
+    
+    // Save FM scan offset (applies to all regions)
+    if (data.fm_scan_offset !== undefined) {
+      var offsetValue = data.fm_scan_offset.value || data.fm_scan_offset;
+      var validOffsets = ['0', '50', '100'];
+      if (validOffsets.indexOf(offsetValue) !== -1) {
+        self.config.set('fm_scan_offset', offsetValue);
       }
     }
     
@@ -4470,9 +4510,9 @@ ControllerRtlsdrRadio.prototype.playFmStation = function(frequency, stationName)
   self.albumLookupCache = {};
   self.lastArtworkLogKey = null;
   
-  // Validate frequency (FM band: configured lower bound to 108 MHz)
+  // Validate frequency (FM band: region lower bound to 108 MHz)
   var freq = parseFloat(frequency);
-  var lowerFreq = parseFloat(self.config.get('fm_lower_freq', '87.5'));
+  var lowerFreq = self.getRegionSettings().band_start;
   if (isNaN(freq) || freq < lowerFreq || freq > 108) {
     self.logger.error('[RTL-SDR Radio] Invalid FM frequency: ' + frequency);
     defer.reject(new Error('Invalid frequency'));
@@ -6033,7 +6073,8 @@ ControllerRtlsdrRadio.prototype.testManualFm = function(data) {
   
   // Validate frequency
   var freq = parseFloat(frequency);
-  var lowerFreq = parseFloat(self.config.get('fm_lower_freq', '87.5'));
+  var regionSettings = self.getRegionSettings();
+  var lowerFreq = regionSettings.band_start;
   if (isNaN(freq) || freq < lowerFreq || freq > 108) {
     self.commandRouter.pushToastMessage('error', self.getI18nString('FM_RADIO'), 
       self.getI18nString('TEST_FM_FAILED').replace('{0}', 'Invalid frequency. Enter ' + lowerFreq + ' - 108.0 MHz'));
@@ -7181,12 +7222,13 @@ ControllerRtlsdrRadio.prototype.scanFm = function() {
       // -i 10 = Integrate for 10 seconds
       // -1 = Single-shot mode (exit after one scan)
       var regionSettings = self.getRegionSettings();
-      var lowerFreq = self.config.get('fm_lower_freq', String(regionSettings.band_start));
+      var effectiveStart = regionSettings.band_start + (regionSettings.scan_offset_khz / 1000);
+      var lowerFreq = effectiveStart.toFixed(2);
       var upperFreq = regionSettings.band_end;
       var spacing = regionSettings.spacing_khz + 'k';
       var command = 'fn-rtl_power -f ' + lowerFreq + 'M:' + upperFreq + 'M:' + spacing + ' -i 10 -1 ' + scanFile;
       
-      self.logger.info('[RTL-SDR Radio] Scan command: ' + command + ' (region spacing: ' + spacing + ')');
+      self.logger.info('[RTL-SDR Radio] Scan command: ' + command + ' (region spacing: ' + spacing + ', offset: ' + regionSettings.scan_offset_khz + ' kHz)');
       
       // Push progress update after delay
       setTimeout(function() {
@@ -7352,12 +7394,14 @@ ControllerRtlsdrRadio.prototype.parseScanResults = function(scanFile) {
             current.power > prev.power && 
             current.power > next.power) {
           
-          // Round to nearest channel based on regional spacing
+          // Round to nearest channel based on regional spacing and scan offset
           var regionSettings = self.getRegionSettings();
           var spacingMHz = regionSettings.spacing_khz / 1000;
-          var freqRounded = Math.round(current.freq / spacingMHz) * spacingMHz;
-          // Format to appropriate decimal places based on spacing
-          var decimalPlaces = spacingMHz < 0.1 ? 2 : 1;
+          var effectiveStart = regionSettings.band_start + (regionSettings.scan_offset_khz / 1000);
+          var freqRounded = Math.round((current.freq - effectiveStart) / spacingMHz) * spacingMHz + effectiveStart;
+          // Format to appropriate decimal places based on spacing and offset
+          // 50kHz offset produces frequencies like 88.05, 88.25 needing 2 decimal places
+          var decimalPlaces = (spacingMHz < 0.1 || regionSettings.scan_offset_khz % 100 !== 0) ? 2 : 1;
           var freqFormatted = freqRounded.toFixed(decimalPlaces);
           
           stations.push({
