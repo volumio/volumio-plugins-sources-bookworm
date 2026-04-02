@@ -132,19 +132,22 @@ ControllerStylishPlayer.prototype._alsaRateFor = function (samplerate, trackType
   var isDSD = (type === 'dsf' || type === 'dff');
 
   if (isDSD) {
-    var nativeRate = parseInt(samplerate, 10) || 0;
-    if (!nativeRate) {
-      var s = String(samplerate).toLowerCase();
-      if (s.indexOf('dsd256') !== -1 || s.indexOf('11.2') !== -1) return 705600;
-      if (s.indexOf('dsd128') !== -1 || s.indexOf('5.6')  !== -1) return 352800;
-      return 176400; // DSD64 default
+    // Parse both raw Hz integers and Volumio's "X.XX MHz" display strings.
+    var srStr = String(samplerate || '');
+    var nativeRate = 0;
+    var mhzMatch = srStr.match(/^(\d+\.?\d*)\s*[Mm][Hh][Zz]/);
+    if (mhzMatch) {
+      nativeRate = Math.round(parseFloat(mhzMatch[1]) * 1000000);
+    } else {
+      nativeRate = parseInt(srStr, 10) || 0;
     }
-    if (nativeRate >= 11000000) return 705600;
-    if (nativeRate >= 5000000)  return 352800;
-    return 176400; // DSD64
+    // Map DSD native rate to the DoP PCM rate ALSA writes into the FIFO
+    if (nativeRate >= 10000000) return 705600;  // DSD256 (~11.2 MHz)
+    if (nativeRate >= 5000000)  return 352800;  // DSD128 (~5.6 MHz)
+    return 176400;                               // DSD64  (~2.8 MHz) + fallback
   }
 
-  var rate = parseInt(samplerate, 10) || 44100;
+  var rate = parseInt(String(samplerate || ''), 10) || 44100;
   return (rate > 0 && rate <= 768000) ? rate : 44100;
 };
 
@@ -163,11 +166,17 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
   self.commandRouter.addCallback('volumioPushState', function (state) {
     if (!state) return;
     var newRate = self._alsaRateFor(state.samplerate, state.trackType);
+    console.log("Stylish Player: volumioPushState callback: samplerate=" + state.samplerate + ", trackType=" + state.trackType + " → ALSA rate " + newRate);
     if (newRate !== self._currentAlsaRate) {
       self.logger.info('Stylish Player: Sample rate changed ' +
         self._currentAlsaRate + ' → ' + newRate +
         ' (trackType=' + (state.trackType || 'pcm') + '); restarting FFmpeg');
       self._currentAlsaRate = newRate;
+      // Close all active stream clients so browsers reconnect cleanly
+      // after FFmpeg comes back up at the new rate.
+      var clients = self.streamClients.slice();
+      self.streamClients = [];
+      clients.forEach(function (r) { try { r.end(); } catch (e) { /* ignore */ } });
       if (self._audioFfmpeg) {
         self._audioFfmpeg.kill('SIGTERM');
         self._audioFfmpeg = null;
@@ -184,6 +193,7 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
 
     self._audioFfmpeg = spawn('ffmpeg', [
       '-loglevel', 'error',
+      '-fflags', '+discardcorrupt',
       '-f', 's16le', '-ar', String(self._currentAlsaRate), '-ac', '2',
       '-i', self.pipePath,
       '-codec:a', 'libmp3lame', '-b:a', '128k',
