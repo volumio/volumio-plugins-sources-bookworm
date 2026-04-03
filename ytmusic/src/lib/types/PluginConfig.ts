@@ -20,6 +20,7 @@ export interface PluginConfigSchema {
   activeChannelHandle: PluginConfigSchemaEntry<string>;
   useYtDlp: PluginConfigSchemaEntry<boolean>;
   ytDlpVersion: PluginConfigSchemaEntry<string | null>;
+  player: PluginConfigSchemaEntry<'mpd' | 'vlc' | 'mpv'>;
 }
 
 export interface I18nOptions {

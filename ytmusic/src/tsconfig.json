@@ -12,7 +12,8 @@
     "sourceMap": false,
     "strict": true,
     "strictPropertyInitialization": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "skipLibCheck": true
   },
   "references": [
     { "path": "../" }

@@ -16,5 +16,11 @@ echo "Installing Python..."
 sudo apt update
 sudo apt-get install -y python3
 
+echo "Installing VLC media player..."
+sudo apt-get install -y vlc-bin vlc-plugin-base
+
+echo "Installing mpv media player..."
+sudo apt-get install -y mpv
+
 echo "YouTube Music plugin installed"
 echo "plugininstallend"

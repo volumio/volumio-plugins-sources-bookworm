@@ -6,6 +6,9 @@ Credit goes to the [YouTube.js](https://github.com/LuanRT/YouTube.js) project. T
 
 ## Changelog
 
+2.6.0
+- Add option to use VLC or mpv for playback.
+
 2.5.2
 - Fix "Active profile" setting not applied.
 

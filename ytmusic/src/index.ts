@@ -122,11 +122,15 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
     browseUIConf.content.loadFullPlaylists.value = loadFullPlaylists;
 
     // Playback
+    const player = ytmusic.getConfigValue('player');
     const autoplay = ytmusic.getConfigValue('autoplay');
     const autoplayClearQueue = ytmusic.getConfigValue('autoplayClearQueue');
     const addToHistory = ytmusic.getConfigValue('addToHistory');
     const prefetchEnabled = ytmusic.getConfigValue('prefetch');
     const preferOpus = ytmusic.getConfigValue('preferOpus');
+    playbackUIConf.content.player.value =
+      playbackUIConf.content.player.options.find((o) => o.value === player) ||
+      playbackUIConf.content.player.options[0];
     playbackUIConf.content.autoplay.value = autoplay;
     playbackUIConf.content.autoplayClearQueue.value = autoplayClearQueue;
     playbackUIConf.content.addToHistory.value = addToHistory;
@@ -353,6 +357,7 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
   }
 
   configSavePlayback(data: any) {
+    ytmusic.setConfigValue('player', data.player.value);
     ytmusic.setConfigValue('autoplay', data.autoplay);
     ytmusic.setConfigValue('autoplayClearQueue', data.autoplayClearQueue);
     ytmusic.setConfigValue('addToHistory', data.addToHistory);
@@ -456,6 +461,13 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
     return this.#playController.resume();
   }
 
+  play() {
+    if (!this.#playController) {
+      return libQ.reject('YouTube Music plugin is not started');
+    }
+    return this.#playController.play();
+  }
+
   seek(position: number) {
     if (!this.#playController) {
       return libQ.reject('YouTube Music plugin is not started');
@@ -482,6 +494,20 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
       return libQ.reject('YouTube Music plugin is not started');
     }
     return jsPromiseToKew(this.#searchController.search(query));
+  }
+
+  random(value: boolean) {
+    if (!this.#playController) {
+      return libQ.reject('YouTube Music plugin is not started');
+    }
+    return this.#playController.setRandom(value);
+  }
+
+  repeat(value: boolean, repeatSingle: boolean) {
+    if (!this.#playController) {
+      return libQ.reject('YouTube Music plugin is not started');
+    }
+    return this.#playController.setRepeat(value, repeatSingle);
   }
 
   prefetch(track: QueueItem) {

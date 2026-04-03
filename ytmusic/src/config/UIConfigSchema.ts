@@ -28,6 +28,7 @@ export type UIConfigSectionContentKeyOf<K extends UIConfigSectionKey> =
     'loadFullPlaylists' :
 
   K extends 'section_playback' ?
+    'player' | 
     'autoplay' | 
     'autoplayClearQueue' | 
     'addToHistory' | 
@@ -68,6 +69,7 @@ export type UIConfigElementOf<K extends UIConfigSectionKey, C extends UIConfigSe
   ) : 
 
   K extends 'section_playback' ? (
+    C extends 'player' ? UIConfigSelect<K> :
     C extends 'autoplay' ? UIConfigSwitch<K> :
     C extends 'autoplayClearQueue' ? UIConfigSwitch<K> :
     C extends 'addToHistory' ? UIConfigSwitch<K> :

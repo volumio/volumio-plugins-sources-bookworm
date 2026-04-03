@@ -33,7 +33,8 @@ exports.PLUGIN_CONFIG_SCHEMA = {
     cookie: { defaultValue: '', json: false },
     activeChannelHandle: { defaultValue: '', json: false },
     useYtDlp: { defaultValue: false, json: false },
-    ytDlpVersion: { defaultValue: null, json: false }
+    ytDlpVersion: { defaultValue: null, json: false },
+    player: { defaultValue: 'mpd', json: false }
 };
 class ConfigModel extends BaseModel_1.BaseModel {
     constructor() {

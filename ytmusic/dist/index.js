@@ -204,6 +204,7 @@ class ControllerYTMusic {
         YTMusicContext_1.default.toast('success', YTMusicContext_1.default.getI18n('YTMUSIC_SETTINGS_SAVED'));
     }
     configSavePlayback(data) {
+        YTMusicContext_1.default.setConfigValue('player', data.player.value);
         YTMusicContext_1.default.setConfigValue('autoplay', data.autoplay);
         YTMusicContext_1.default.setConfigValue('autoplayClearQueue', data.autoplayClearQueue);
         YTMusicContext_1.default.setConfigValue('addToHistory', data.addToHistory);
@@ -285,6 +286,12 @@ class ControllerYTMusic {
         }
         return __classPrivateFieldGet(this, _ControllerYTMusic_playController, "f").resume();
     }
+    play() {
+        if (!__classPrivateFieldGet(this, _ControllerYTMusic_playController, "f")) {
+            return kew_1.default.reject('YouTube Music plugin is not started');
+        }
+        return __classPrivateFieldGet(this, _ControllerYTMusic_playController, "f").play();
+    }
     seek(position) {
         if (!__classPrivateFieldGet(this, _ControllerYTMusic_playController, "f")) {
             return kew_1.default.reject('YouTube Music plugin is not started');
@@ -308,6 +315,18 @@ class ControllerYTMusic {
             return kew_1.default.reject('YouTube Music plugin is not started');
         }
         return (0, util_1.jsPromiseToKew)(__classPrivateFieldGet(this, _ControllerYTMusic_searchController, "f").search(query));
+    }
+    random(value) {
+        if (!__classPrivateFieldGet(this, _ControllerYTMusic_playController, "f")) {
+            return kew_1.default.reject('YouTube Music plugin is not started');
+        }
+        return __classPrivateFieldGet(this, _ControllerYTMusic_playController, "f").setRandom(value);
+    }
+    repeat(value, repeatSingle) {
+        if (!__classPrivateFieldGet(this, _ControllerYTMusic_playController, "f")) {
+            return kew_1.default.reject('YouTube Music plugin is not started');
+        }
+        return __classPrivateFieldGet(this, _ControllerYTMusic_playController, "f").setRepeat(value, repeatSingle);
     }
     prefetch(track) {
         if (!__classPrivateFieldGet(this, _ControllerYTMusic_playController, "f")) {
@@ -413,11 +432,15 @@ _ControllerYTMusic_context = new WeakMap(), _ControllerYTMusic_config = new Weak
     const loadFullPlaylists = YTMusicContext_1.default.getConfigValue('loadFullPlaylists');
     browseUIConf.content.loadFullPlaylists.value = loadFullPlaylists;
     // Playback
+    const player = YTMusicContext_1.default.getConfigValue('player');
     const autoplay = YTMusicContext_1.default.getConfigValue('autoplay');
     const autoplayClearQueue = YTMusicContext_1.default.getConfigValue('autoplayClearQueue');
     const addToHistory = YTMusicContext_1.default.getConfigValue('addToHistory');
     const prefetchEnabled = YTMusicContext_1.default.getConfigValue('prefetch');
     const preferOpus = YTMusicContext_1.default.getConfigValue('preferOpus');
+    playbackUIConf.content.player.value =
+        playbackUIConf.content.player.options.find((o) => o.value === player) ||
+            playbackUIConf.content.player.options[0];
     playbackUIConf.content.autoplay.value = autoplay;
     playbackUIConf.content.autoplayClearQueue.value = autoplayClearQueue;
     playbackUIConf.content.addToHistory.value = addToHistory;

@@ -164,6 +164,7 @@
       "saveButton": {
         "label": "TRANSLATE.YTMUSIC_SAVE",
         "data": [
+          "player",
           "autoplay",
           "autoplayClearQueue",
           "addToHistory",
@@ -172,6 +173,27 @@
         ]
       },
       "content": [
+        {
+          "id": "player",
+          "element": "select",
+          "label": "TRANSLATE.YTMUSIC_PLAYER",
+          "doc": "TRANSLATE.YTMUSIC_DOC_PLAYER",
+          "options": [
+            {
+              "label": "TRANSLATE.YTMUSIC_PLAYER_MPD",
+              "value": "mpd"
+            },
+            {
+              "label": "TRANSLATE.YTMUSIC_PLAYER_VLC",
+              "value": "vlc"
+            },
+            {
+              "label": "TRANSLATE.YTMUSIC_PLAYER_MPV",
+              "value": "mpv"
+            }
+          ],
+          "value": {}
+        },
         {
           "id": "autoplay",
           "element": "switch",
