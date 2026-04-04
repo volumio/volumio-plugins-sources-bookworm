@@ -79,7 +79,8 @@
             { "value": "metallic", "label": "Metallic" },
             { "value": "aqua", "label": "Aqua" },
             { "value": "flat", "label": "Flat" },
-            { "value": "win95", "label": "Windows 95" }
+            { "value": "win95", "label": "Windows 95" },
+            { "value": "casio", "label": "Casio 80s" }
           ]
         },
         {
