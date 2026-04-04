@@ -1107,6 +1107,139 @@ ol li {
   max-height: calc(100vh - 2rem);
 }
 
+/* ── Label / Input — shared structure, visual props from theme vars ── */
+.dialog-label {
+  display: block;
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary, var(--color-gray-500));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.dialog-input {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--input-bg, var(--color-gray-800));
+  border: 1px solid var(--input-border, var(--border-dark));
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+}
+.dialog-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+.dialog-input::placeholder {
+  color: var(--text-secondary, var(--color-gray-600));
+  opacity: 0.6;
+}
+
+/* ── Section title ── */
+.dialog-section-title {
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary, var(--color-gray-500));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+/* ── List Items (playlist rows, favourites) ── */
+.dialog-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid transparent;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 6px;
+  font-family: var(--font-label);
+}
+.dialog-list-item .material-icons {
+  font-size: 18px;
+  color: var(--text-secondary, var(--color-gray-500));
+  flex-shrink: 0;
+}
+.dialog-list-item:hover:not(:disabled) {
+  background: var(--list-item-bg-hover, rgba(255, 255, 255, 0.07));
+  color: var(--color-primary);
+}
+.dialog-list-item:hover:not(:disabled) .material-icons {
+  color: var(--color-primary);
+}
+.dialog-list-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.dialog-list-item.active {
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.dialog-list-item.active .material-icons {
+  color: var(--color-primary);
+}
+
+/* ── Track Info ── */
+.dialog-track-info {
+  padding: 12px 14px;
+  margin-bottom: 1rem;
+  border-radius: var(--radius-md);
+  background: var(--panel-bg-subtle, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border-dark);
+}
+
+.dialog-track-title {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+  line-height: 1.4;
+}
+
+.dialog-track-meta {
+  font-size: var(--text-sm);
+  color: var(--text-secondary, var(--color-gray-500));
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Alerts ── */
+.dialog-alert {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  margin-bottom: 1rem;
+  border: 1px solid;
+}
+.dialog-alert.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+.dialog-alert.success {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE
@@ -5613,6 +5746,55 @@ h2 {
 
 .tick-flip-panel-back-text .tick-flip-panel-text-wrapper {
   transform: translateY(-5%);
+}
+
+/* ── Weather — Skeuomorphic Theme ──────────────────────────────────────
+ * Reduced font sizes for hourly and daily screens so content fits cards.
+ * ─────────────────────────────────────────────────────────────────────── */
+/* ── Hourly ──────────────────────────────────────────────────────────── */
+.weather-hourly-time {
+  font-size: clamp(0.55rem, 1.2cqw, 1.8rem);
+}
+
+.weather-hourly-icon {
+  font-size: clamp(1.1rem, 2.8cqw, 4rem);
+}
+
+.weather-hourly-temp {
+  font-size: clamp(0.7rem, 1.6cqw, 2.5rem);
+}
+
+.weather-hourly-wind {
+  font-size: clamp(0.5rem, 1cqw, 1.4rem);
+}
+
+/* ── Daily ───────────────────────────────────────────────────────────── */
+.weather-daily-day {
+  font-size: clamp(0.55rem, 1.8dvh, 1.3rem);
+}
+
+.weather-daily-date {
+  font-size: clamp(0.5rem, 1.3dvh, 1rem);
+}
+
+.weather-daily-icon {
+  font-size: clamp(1.1rem, 5.5dvh, 3.8rem);
+}
+
+.weather-daily-desc {
+  font-size: clamp(0.48rem, 1.1dvh, 0.9rem);
+}
+
+.weather-daily-temps {
+  font-size: clamp(0.6rem, 2.2dvh, 1.8rem);
+}
+
+.weather-daily-meta {
+  font-size: clamp(0.45rem, 1.1dvh, 0.9rem);
+}
+
+.weather-daily-sun-item {
+  font-size: clamp(0.42rem, 1dvh, 0.85rem);
 }
 
 body {
