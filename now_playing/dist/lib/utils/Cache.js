@@ -115,4 +115,3 @@ _Cache_ttl = new WeakMap(), _Cache_maxEntries = new WeakMap(), _Cache_cache = ne
     }
 };
 exports.default = Cache;
-//# sourceMappingURL=Cache.js.map

@@ -101,4 +101,3 @@ function getPluginInfo() {
     }
     return cached;
 }
-//# sourceMappingURL=System.js.map

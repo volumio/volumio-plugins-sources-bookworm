@@ -8,14 +8,15 @@ export default class DefaultMetadataProvider implements NowPlayingMetadataProvid
   version: '1.1.0';
 
   #genius: Genius;
-  #accessToken: string;
+  #accessToken: string | null;
 
   constructor() {
+    this.version = '1.1.0';
     this.#genius = new Genius();
+    this.#accessToken = null;
   }
 
   config(params: { accessToken: string }) {
-    this.version = '1.1.0';
     this.#accessToken = params.accessToken;
     this.#genius.config(params);
   }

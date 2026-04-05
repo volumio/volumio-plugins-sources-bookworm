@@ -73,4 +73,3 @@ _a = UIConfigHelper, _UIConfigHelper_observeSection = function _UIConfigHelper_o
     });
 };
 exports.default = UIConfigHelper;
-//# sourceMappingURL=UIConfigHelper.js.map

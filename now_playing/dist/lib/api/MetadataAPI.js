@@ -269,4 +269,3 @@ _MetadataAPI_fetchPromises = new WeakMap(), _MetadataAPI_defaultMetadataProvider
 };
 const metadataAPI = new MetadataAPI();
 exports.default = metadataAPI;
-//# sourceMappingURL=MetadataAPI.js.map

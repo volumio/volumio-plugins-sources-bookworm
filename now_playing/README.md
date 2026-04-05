@@ -71,7 +71,7 @@ The 'Preview URL' points to the preview page. Click the 'Open Preview' button to
 
 'Timezone' determines what date and time should be displayed in the Clock Dock Component and on the Idle Screen. If you have provided Geographic Coordinates, you can simply set this to 'Match Geographic Coordinates' - the plugin will determine the timezone based on the specified coordinates.
 
-*Display of weather information is optional. Data is obtained from [OpenWeather](https://openweathermap.org/).
+*Display of weather information is optional. Weather data is obtained from [Open-Meteo](https://open-meteo.com) and location data from [OpenStreetMap](https://openstreetmap.org).
 
 ## Technical Notes
 
@@ -92,6 +92,10 @@ Starting from v0.7.0, the Now Playing plugin can query the relevant music servic
 4. The Now Playing plugin calls the corresponding method of the `NowPlayingMetadataProvider` implementation and returns the result in its response.
 
 ## Changelog
+
+1.1.0
+- Replace OpenWeatherMap with Open-Meteo + OpenStreetMap as data provider for weather service.
+- Update web client v0.7.6.
 
 1.0.7
 - Make OpenWeatherMap API key optional.

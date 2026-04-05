@@ -133,4 +133,3 @@ _a = ConfigUpdater, _ConfigUpdater_getUpdaters = function _ConfigUpdater_getUpda
     NowPlayingContext_1.default.getLogger().info(`[now-playing] ConfigUpdater: updated config version to ${toVersion}`);
 };
 exports.default = ConfigUpdater;
-//# sourceMappingURL=ConfigUpdater.js.map

@@ -15,4 +15,3 @@ class SettingsAPI {
 }
 const settingsAPI = new SettingsAPI();
 exports.default = settingsAPI;
-//# sourceMappingURL=SettingsAPI.js.map
