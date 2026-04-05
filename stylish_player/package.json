@@ -1,0 +1,44 @@
+{
+  "name": "stylish_player",
+  "version": "1.0.69",
+  "description": "A modern and customizable music player interface for Volumio.",
+  "main": "index.js",
+  "scripts": {},
+  "author": "KJavia",
+  "license": "MIT",
+  "volumio_info": {
+    "has_alsa_contribution": true,
+    "prettyName": "Stylish Player",
+    "plugin_type": "user_interface",
+    "os": [
+      "bookworm"
+    ],
+    "icon": "fa-music",
+    "boot_priority": 10,
+    "details": "A modern and customizable music player interface for Volumio.",
+    "changelog": [
+      {
+        "changes": [
+          "Bug fixes and UI improvements."
+        ]
+      }
+    ],
+    "architectures": [
+      "amd64",
+      "armhf"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kjavia/Volumio-UI-React.git"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "fs-extra": "^0.28.0",
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.0"
+  }
+}

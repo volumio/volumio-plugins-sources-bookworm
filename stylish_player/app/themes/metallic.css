@@ -1,0 +1,4451 @@
+@charset "UTF-8";
+/* ═══════════════════════════════════════════════════════════════════════
+   METALLIC CHROME THEME - Main Index
+   ═══════════════════════════════════════════════════════════════════════ */
+@import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Titillium+Web:wght@300;400;600;700&family=Share+Tech+Mono&display=swap");
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE - Dark Metallic / Black Chrome Theme
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Electric Cyan/Blue) ────────────────────────────────── */
+  --color-primary: #00e1ff;
+  --color-primary-light: #66efff;
+  --color-primary-dark: #00b8cc;
+  --color-primary-deep: #008f99;
+  --glow-primary: rgba(0, 225, 255, 0.4);
+  /* ─── Neutrals (Black/Dark Chrome) ────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #080808;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #555555;
+  --color-gray-500: #666666;
+  --color-gray-400: #888888;
+  --color-gray-300: #aaaaaa;
+  --color-gray-250: #bbbbbb;
+  --color-gray-200: #cccccc;
+  --color-gray-150: #dddddd;
+  --color-gray-100: #eeeeee;
+  --color-gray-075: #f4f4f4;
+  --color-gray-050: #f9f9f9;
+  --color-gray-025: #fcfdfd;
+  --color-gray-010: #ffffff;
+  --color-white: #ffffff;
+  /* ─── Chrome/Steel Gradients ───────────────────────────────────────── */
+  --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
+  --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
+  --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
+  --color-secondary: #555555;
+  --color-secondary-light: #777777;
+  --color-secondary-dark: #333333;
+  /* ─── Success/Green (LED) ─────────────────────────────────────────── */
+  --color-success: #00ff88;
+  --color-success-dark: #00cc66;
+  --color-success-light: #66ffbb;
+  /* ─── Warning/Amber (LED) ─────────────────────────────────────────── */
+  --color-warning: #ffaa00;
+  --color-warning-dark: #cc8800;
+  --color-warning-light: #ffcc66;
+  /* ─── Danger/Red (LED) ────────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #cc0000;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #4d0000;
+  /* ─── Info/Blue (LED) ─────────────────────────────────────────────── */
+  --color-info: #00ccff;
+  --color-info-dark: #0099cc;
+  --color-info-light: #66ddff;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-400);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success);
+  --text-warning: var(--color-warning);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info);
+  --text-light: var(--color-white);
+  --text-muted: var(--color-gray-500);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: #050505;
+  --panel-bg-dark: #0a0a0a;
+  --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
+  --btn-bg-light: linear-gradient(180deg, #444444 0%, #222222 100%);
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 255, 136, 0.15);
+  --alert-bg-warning: rgba(255, 170, 0, 0.15);
+  --alert-bg-danger: rgba(255, 51, 51, 0.15);
+  --alert-bg-info: rgba(0, 204, 255, 0.15);
+  /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
+  --shadow-10: rgba(0,0,0,0.5);
+  --shadow-15: rgba(0,0,0,0.6);
+  --shadow-20: rgba(0,0,0,0.7);
+  --shadow-25: rgba(0,0,0,0.8);
+  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-40: #000;
+  --shadow-50: #000;
+  --shadow-60: #000;
+  --highlight-05: rgba(255,255,255,0.05);
+  --highlight-10: rgba(255,255,255,0.1);
+  --highlight-15: rgba(255,255,255,0.15);
+  --highlight-20: rgba(255,255,255,0.2);
+  --highlight-30: rgba(255,255,255,0.3);
+  --highlight-40: rgba(255,255,255,0.4);
+  --highlight-50: rgba(255,255,255,0.5);
+  /* ─── Typography ─────────────────────────────────────────────────── */
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Titillium Web', sans-serif;
+  --font-code: 'Share Tech Mono', monospace;
+  --font-tech: 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-label: 'Titillium Web', sans-serif;
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --leading-none: 1;
+  --leading-tight: 1.1;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.6;
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
+  --tracking-widest: 0.25em;
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE - Dark Metallic / Black Chrome Theme
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Electric Cyan/Blue) ────────────────────────────────── */
+  --color-primary: #00e1ff;
+  --color-primary-light: #66efff;
+  --color-primary-dark: #00b8cc;
+  --color-primary-deep: #008f99;
+  --glow-primary: rgba(0, 225, 255, 0.4);
+  /* ─── Neutrals (Black/Dark Chrome) ────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #080808;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #555555;
+  --color-gray-500: #666666;
+  --color-gray-400: #888888;
+  --color-gray-300: #aaaaaa;
+  --color-gray-250: #bbbbbb;
+  --color-gray-200: #cccccc;
+  --color-gray-150: #dddddd;
+  --color-gray-100: #eeeeee;
+  --color-gray-075: #f4f4f4;
+  --color-gray-050: #f9f9f9;
+  --color-gray-025: #fcfdfd;
+  --color-gray-010: #ffffff;
+  --color-white: #ffffff;
+  /* ─── Chrome/Steel Gradients ───────────────────────────────────────── */
+  --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
+  --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
+  --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
+  --color-secondary: #555555;
+  --color-secondary-light: #777777;
+  --color-secondary-dark: #333333;
+  /* ─── Success/Green (LED) ─────────────────────────────────────────── */
+  --color-success: #00ff88;
+  --color-success-dark: #00cc66;
+  --color-success-light: #66ffbb;
+  /* ─── Warning/Amber (LED) ─────────────────────────────────────────── */
+  --color-warning: #ffaa00;
+  --color-warning-dark: #cc8800;
+  --color-warning-light: #ffcc66;
+  /* ─── Danger/Red (LED) ────────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #cc0000;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #4d0000;
+  /* ─── Info/Blue (LED) ─────────────────────────────────────────────── */
+  --color-info: #00ccff;
+  --color-info-dark: #0099cc;
+  --color-info-light: #66ddff;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-400);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success);
+  --text-warning: var(--color-warning);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info);
+  --text-light: var(--color-white);
+  --text-muted: var(--color-gray-500);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: #050505;
+  --panel-bg-dark: #0a0a0a;
+  --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
+  --btn-bg-light: linear-gradient(180deg, #444444 0%, #222222 100%);
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 255, 136, 0.15);
+  --alert-bg-warning: rgba(255, 170, 0, 0.15);
+  --alert-bg-danger: rgba(255, 51, 51, 0.15);
+  --alert-bg-info: rgba(0, 204, 255, 0.15);
+  /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
+  --shadow-10: rgba(0,0,0,0.5);
+  --shadow-15: rgba(0,0,0,0.6);
+  --shadow-20: rgba(0,0,0,0.7);
+  --shadow-25: rgba(0,0,0,0.8);
+  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-40: #000;
+  --shadow-50: #000;
+  --shadow-60: #000;
+  --highlight-05: rgba(255,255,255,0.05);
+  --highlight-10: rgba(255,255,255,0.1);
+  --highlight-15: rgba(255,255,255,0.15);
+  --highlight-20: rgba(255,255,255,0.2);
+  --highlight-30: rgba(255,255,255,0.3);
+  --highlight-40: rgba(255,255,255,0.4);
+  --highlight-50: rgba(255,255,255,0.5);
+  /* ─── Typography ─────────────────────────────────────────────────── */
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Titillium Web', sans-serif;
+  --font-code: 'Share Tech Mono', monospace;
+  --font-tech: 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-label: 'Titillium Web', sans-serif;
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --leading-none: 1;
+  --leading-tight: 1.1;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.6;
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
+  --tracking-widest: 0.25em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TYPOGRAPHY - Metallic Chrome Theme
+   ═══════════════════════════════════════════════════════════════════════ */
+/* ─── Google Fonts ──────────────────────────────────────────────────────── */
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  font-weight: 400;
+  line-height: var(--leading-normal);
+  color: var(--text-dark);
+  background-color: var(--bg-color);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Headings ───────────────────────────────────────────────────────────── */
+/* Orbitron gives the modern metallic/tech aesthetic; chrome-like text-shadow */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-dark);
+  margin-top: 0;
+  margin-bottom: 0.5em;
+  /* Chrome engraved look: subtle highlight and shadow */
+  text-shadow: 0 1px 0 var(--highlight-40), 0 -1px 0 var(--shadow-15);
+}
+
+h1 {
+  font-size: var(--text-4xl);
+  letter-spacing: var(--tracking-widest);
+}
+
+h2 {
+  font-size: var(--text-3xl);
+  letter-spacing: var(--tracking-wider);
+}
+
+h3 {
+  font-size: var(--text-2xl);
+  letter-spacing: var(--tracking-wider);
+}
+
+h4 {
+  font-size: var(--text-xl);
+}
+
+h5 {
+  font-size: var(--text-lg);
+}
+
+h6 {
+  font-size: var(--text-base);
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
+}
+
+/* ─── Display Heading (dark panel, glowing blue) ───────────────────────── */
+.display-heading {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: 600;
+  color: var(--text-light);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  text-shadow: 0 0 20px var(--glow-blue-40), 0 2px 4px var(--shadow-80);
+}
+
+/* ─── Paragraphs ─────────────────────────────────────────────────────────── */
+p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+/* ─── Text Utilities ─────────────────────────────────────────────────────── */
+.text-primary {
+  color: var(--text-primary) !important;
+}
+
+.text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+.text-accent {
+  color: var(--text-accent) !important;
+}
+
+.text-blue {
+  color: var(--color-blue-vivid) !important;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.text-light {
+  color: var(--text-light) !important;
+}
+
+.text-dark {
+  color: var(--text-dark) !important;
+}
+
+.text-success {
+  color: var(--text-success) !important;
+}
+
+.text-warning {
+  color: var(--text-warning) !important;
+}
+
+.text-danger {
+  color: var(--text-danger) !important;
+}
+
+.text-info {
+  color: var(--text-info) !important;
+}
+
+/* ─── Label/Badge Text ───────────────────────────────────────────────────── */
+.label-text {
+  font-family: var(display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-secondary);
+}
+
+/* ─── Technical Display Text ─────────────────────────────────────────────── */
+.tech-display {
+  font-family: var(--font-tech);
+  font-size: var(--text-md);
+  font-weight: 400;
+  color: var(--color-primary);
+  letter-spacing: var(--tracking-wide);
+  text-shadow: 0 0 10px var(--glow-blue-40);
+}
+
+/* ─── Monospace/Code ─────────────────────────────────────────────────────── */
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--font-mono);
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE - Dark Metallic / Black Chrome Theme
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Electric Cyan/Blue) ────────────────────────────────── */
+  --color-primary: #00e1ff;
+  --color-primary-light: #66efff;
+  --color-primary-dark: #00b8cc;
+  --color-primary-deep: #008f99;
+  --glow-primary: rgba(0, 225, 255, 0.4);
+  /* ─── Neutrals (Black/Dark Chrome) ────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #080808;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #555555;
+  --color-gray-500: #666666;
+  --color-gray-400: #888888;
+  --color-gray-300: #aaaaaa;
+  --color-gray-250: #bbbbbb;
+  --color-gray-200: #cccccc;
+  --color-gray-150: #dddddd;
+  --color-gray-100: #eeeeee;
+  --color-gray-075: #f4f4f4;
+  --color-gray-050: #f9f9f9;
+  --color-gray-025: #fcfdfd;
+  --color-gray-010: #ffffff;
+  --color-white: #ffffff;
+  /* ─── Chrome/Steel Gradients ───────────────────────────────────────── */
+  --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
+  --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
+  --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
+  --color-secondary: #555555;
+  --color-secondary-light: #777777;
+  --color-secondary-dark: #333333;
+  /* ─── Success/Green (LED) ─────────────────────────────────────────── */
+  --color-success: #00ff88;
+  --color-success-dark: #00cc66;
+  --color-success-light: #66ffbb;
+  /* ─── Warning/Amber (LED) ─────────────────────────────────────────── */
+  --color-warning: #ffaa00;
+  --color-warning-dark: #cc8800;
+  --color-warning-light: #ffcc66;
+  /* ─── Danger/Red (LED) ────────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #cc0000;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #4d0000;
+  /* ─── Info/Blue (LED) ─────────────────────────────────────────────── */
+  --color-info: #00ccff;
+  --color-info-dark: #0099cc;
+  --color-info-light: #66ddff;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-400);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success);
+  --text-warning: var(--color-warning);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info);
+  --text-light: var(--color-white);
+  --text-muted: var(--color-gray-500);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: #050505;
+  --panel-bg-dark: #0a0a0a;
+  --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
+  --btn-bg-light: linear-gradient(180deg, #444444 0%, #222222 100%);
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 255, 136, 0.15);
+  --alert-bg-warning: rgba(255, 170, 0, 0.15);
+  --alert-bg-danger: rgba(255, 51, 51, 0.15);
+  --alert-bg-info: rgba(0, 204, 255, 0.15);
+  /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
+  --shadow-10: rgba(0,0,0,0.5);
+  --shadow-15: rgba(0,0,0,0.6);
+  --shadow-20: rgba(0,0,0,0.7);
+  --shadow-25: rgba(0,0,0,0.8);
+  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-40: #000;
+  --shadow-50: #000;
+  --shadow-60: #000;
+  --highlight-05: rgba(255,255,255,0.05);
+  --highlight-10: rgba(255,255,255,0.1);
+  --highlight-15: rgba(255,255,255,0.15);
+  --highlight-20: rgba(255,255,255,0.2);
+  --highlight-30: rgba(255,255,255,0.3);
+  --highlight-40: rgba(255,255,255,0.4);
+  --highlight-50: rgba(255,255,255,0.5);
+  /* ─── Typography ─────────────────────────────────────────────────── */
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Titillium Web', sans-serif;
+  --font-code: 'Share Tech Mono', monospace;
+  --font-tech: 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-label: 'Titillium Web', sans-serif;
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --leading-none: 1;
+  --leading-tight: 1.1;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.6;
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
+  --tracking-widest: 0.25em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   COLOR UTILITIES - Metallic Chrome Theme
+   ═══════════════════════════════════════════════════════════════════════ */
+/* ─── Background Utilities ───────────────────────────────────────────── */
+.bg-dark {
+  background-color: var(--panel-bg-dark) !important;
+}
+
+.bg-surface {
+  background: var(--device-surface) !important;
+}
+
+.bg-app {
+  background-color: var(--bg-color) !important;
+}
+
+.bg-list-item {
+  background-color: var(--list-item-bg) !important;
+}
+
+.bg-blue {
+  background: var(--grad-blue-vivid) !important;
+}
+
+.bg-primary {
+  background: var(--grad-primary) !important;
+}
+
+.bg-metallic {
+  background: var(--grad-metallic) !important;
+}
+
+.bg-chrome {
+  background: var(--grad-chrome) !important;
+}
+
+/* ─── Border Utilities ────────────────────────────────────────────────────── */
+.border-dark {
+  border-color: var(--border-dark) !important;
+}
+
+.border-light {
+  border-color: var(--border-light) !important;
+}
+
+.border-blue {
+  border-color: var(--color-blue-vivid) !important;
+}
+
+.border-primary {
+  border-color: var(--color-primary) !important;
+}
+
+.border-chrome {
+  border-color: var(--border-chrome) !important;
+}
+
+/* ─── Surface Patterns ─────────────────────────────────────────────────────── */
+/* Recessed dark panel (inset shadow — appears sunken into the device) */
+.panel {
+  background-color: var(--panel-bg-dark);
+  border-radius: 4px;
+  box-shadow: inset 2px 2px 5px var(--shadow-70), 0 1px 0 var(--highlight-10);
+}
+
+/* Raised light surface (metallic chrome look) */
+.surface {
+  background: var(--grad-metallic);
+  border-radius: 4px;
+  box-shadow: 0 2px 5px var(--shadow-20), inset 0 1px 0 var(--highlight-60);
+}
+
+/* Brushed metal effect */
+.brushed-metal {
+  background: var(--grad-chrome);
+  background-size: 100% 200%;
+  background-position: center;
+  box-shadow: 0 2px 4px var(--shadow-15), inset 0 1px 0 var(--highlight-40), inset 0 -1px 0 var(--shadow-10);
+}
+
+/* Centering wrapper */
+.analog-clock-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  user-select: none;
+  container-type: size;
+}
+
+/* Outer container — square aspect ratio */
+.analog-clock {
+  --clock-size: min(80cqw, 80cqh);
+  width: var(--clock-size);
+  height: var(--clock-size);
+}
+
+/* Tick marks — parent element (visual ::before stays in theme file) */
+.clock-tick {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 50%;
+  transform-origin: bottom center;
+  pointer-events: none;
+}
+
+/* Day & date cluster — below clock center */
+.clock-face-info {
+  position: absolute;
+  top: 62%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Weather info cluster — above clock center */
+.clock-face-weather {
+  position: absolute;
+  top: 28%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Dialog Container (Centered) ── */
+.dialog-container {
+  position: fixed;
+  inset: 0;
+  z-index: 2010;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  pointer-events: none;
+}
+
+@keyframes dialogBackdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* ── Size Variants ── */
+.dialog-sm {
+  max-width: 400px;
+}
+
+.dialog-md {
+  max-width: 600px;
+}
+
+.dialog-lg {
+  max-width: 800px;
+}
+
+.dialog-xl {
+  max-width: 1200px;
+}
+
+.dialog-full {
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100vh - 2rem);
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE - Dark Metallic / Black Chrome Theme
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Electric Cyan/Blue) ────────────────────────────────── */
+  --color-primary: #00e1ff;
+  --color-primary-light: #66efff;
+  --color-primary-dark: #00b8cc;
+  --color-primary-deep: #008f99;
+  --glow-primary: rgba(0, 225, 255, 0.4);
+  /* ─── Neutrals (Black/Dark Chrome) ────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #080808;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #555555;
+  --color-gray-500: #666666;
+  --color-gray-400: #888888;
+  --color-gray-300: #aaaaaa;
+  --color-gray-250: #bbbbbb;
+  --color-gray-200: #cccccc;
+  --color-gray-150: #dddddd;
+  --color-gray-100: #eeeeee;
+  --color-gray-075: #f4f4f4;
+  --color-gray-050: #f9f9f9;
+  --color-gray-025: #fcfdfd;
+  --color-gray-010: #ffffff;
+  --color-white: #ffffff;
+  /* ─── Chrome/Steel Gradients ───────────────────────────────────────── */
+  --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
+  --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
+  --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
+  --color-secondary: #555555;
+  --color-secondary-light: #777777;
+  --color-secondary-dark: #333333;
+  /* ─── Success/Green (LED) ─────────────────────────────────────────── */
+  --color-success: #00ff88;
+  --color-success-dark: #00cc66;
+  --color-success-light: #66ffbb;
+  /* ─── Warning/Amber (LED) ─────────────────────────────────────────── */
+  --color-warning: #ffaa00;
+  --color-warning-dark: #cc8800;
+  --color-warning-light: #ffcc66;
+  /* ─── Danger/Red (LED) ────────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #cc0000;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #4d0000;
+  /* ─── Info/Blue (LED) ─────────────────────────────────────────────── */
+  --color-info: #00ccff;
+  --color-info-dark: #0099cc;
+  --color-info-light: #66ddff;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-400);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success);
+  --text-warning: var(--color-warning);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info);
+  --text-light: var(--color-white);
+  --text-muted: var(--color-gray-500);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: #050505;
+  --panel-bg-dark: #0a0a0a;
+  --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
+  --btn-bg-light: linear-gradient(180deg, #444444 0%, #222222 100%);
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 255, 136, 0.15);
+  --alert-bg-warning: rgba(255, 170, 0, 0.15);
+  --alert-bg-danger: rgba(255, 51, 51, 0.15);
+  --alert-bg-info: rgba(0, 204, 255, 0.15);
+  /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
+  --shadow-10: rgba(0,0,0,0.5);
+  --shadow-15: rgba(0,0,0,0.6);
+  --shadow-20: rgba(0,0,0,0.7);
+  --shadow-25: rgba(0,0,0,0.8);
+  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-40: #000;
+  --shadow-50: #000;
+  --shadow-60: #000;
+  --highlight-05: rgba(255,255,255,0.05);
+  --highlight-10: rgba(255,255,255,0.1);
+  --highlight-15: rgba(255,255,255,0.15);
+  --highlight-20: rgba(255,255,255,0.2);
+  --highlight-30: rgba(255,255,255,0.3);
+  --highlight-40: rgba(255,255,255,0.4);
+  --highlight-50: rgba(255,255,255,0.5);
+  /* ─── Typography ─────────────────────────────────────────────────── */
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Titillium Web', sans-serif;
+  --font-code: 'Share Tech Mono', monospace;
+  --font-tech: 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-label: 'Titillium Web', sans-serif;
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --leading-none: 1;
+  --leading-tight: 1.1;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.6;
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
+  --tracking-widest: 0.25em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   BUTTONS - Dark Metallic / Black Chrome Theme
+   ═══════════════════════════════════════════════════════════════════════ */
+/* ─── Base Button Style ───────────────────────────────────────────────── */
+.btn {
+  border-radius: 6px;
+  border: 1px solid var(--color-black);
+  position: relative;
+  cursor: pointer;
+  font-family: var(--font-label);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  user-select: none;
+  transition: all 0.15s ease-out;
+  color: var(--color-gray-300);
+  background: linear-gradient(180deg, #3a3a3a 0%, #222222 50%, #1a1a1a 51%, #222222 100%);
+  /* Dark Metallic Depth */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 2px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.btn:hover {
+  color: var(--color-white);
+  background: linear-gradient(180deg, #444444 0%, #2a2a2a 50%, #222222 51%, #2a2a2a 100%);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 5px rgba(255, 255, 255, 0.05);
+}
+
+.btn:active,
+.btn.active {
+  transform: translateY(1px);
+  color: var(--color-primary);
+  background: linear-gradient(180deg, #151515 0%, #222222 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), inset 0 2px 5px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(0, 0, 0, 0.5);
+  border-color: rgba(0, 0, 0, 0.8);
+}
+
+/* ─── Button Color Variants ───────────────────────────────────────────── */
+.btn-black {
+  background: linear-gradient(180deg, #222 0%, #050505 100%);
+  color: var(--color-gray-400);
+  border: 1px solid #000;
+}
+
+.btn-white {
+  /* Actually dark grey in this theme, but brighter than black */
+  background: linear-gradient(180deg, #555 0%, #333 100%);
+  color: var(--color-white);
+  border: 1px solid #222;
+}
+
+.btn-primary {
+  /* Electric Blue Accent Button */
+  background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+  color: var(--color-primary);
+  border: 1px solid #000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), inset 0 0 5px rgba(0, 225, 255, 0.1);
+}
+
+.btn-primary:hover {
+  color: var(--color-primary-light);
+  box-shadow: 0 4px 12px rgba(0, 225, 255, 0.15), inset 0 0 10px rgba(0, 225, 255, 0.2);
+  text-shadow: 0 0 8px var(--color-primary);
+}
+
+.btn-primary:active,
+.btn-primary.active {
+  background: linear-gradient(180deg, #111 0%, #1a1a1a 100%);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 5px var(--color-primary-dark);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary-deep);
+}
+
+/* Circular Buttons (like power button) */
+.btn-circle {
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  background: radial-gradient(circle at 50% 30%, #444, #1a1a1a);
+}
+
+.btn-circle.active {
+  background: radial-gradient(circle at 50% 50%, #111, #222);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.9), 0 0 5px var(--color-primary);
+}
+
+/* Disabled State */
+.btn:disabled,
+.btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(100%);
+}
+
+/* ─── Icon Button ─────────────────────────────────────────────────────── */
+/* Flat, transparent button for toolbar icon actions — no metallic chrome */
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  user-select: none;
+  /* Reset metallic .btn chrome */
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  text-shadow: none;
+  color: var(--text-muted);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.btn-icon .material-icons {
+  font-size: 20px;
+}
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-light);
+  box-shadow: none;
+  transform: none;
+}
+.btn-icon:active {
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text-light);
+  transform: none;
+  box-shadow: none;
+}
+.btn-icon.active {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  transform: none;
+  color: var(--color-primary);
+}
+.btn-icon.active:hover {
+  background: rgba(0, 225, 255, 0.08);
+}
+.btn-icon:disabled, .btn-icon.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  filter: none;
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE - Dark Metallic / Black Chrome Theme
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Electric Cyan/Blue) ────────────────────────────────── */
+  --color-primary: #00e1ff;
+  --color-primary-light: #66efff;
+  --color-primary-dark: #00b8cc;
+  --color-primary-deep: #008f99;
+  --glow-primary: rgba(0, 225, 255, 0.4);
+  /* ─── Neutrals (Black/Dark Chrome) ────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #080808;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #555555;
+  --color-gray-500: #666666;
+  --color-gray-400: #888888;
+  --color-gray-300: #aaaaaa;
+  --color-gray-250: #bbbbbb;
+  --color-gray-200: #cccccc;
+  --color-gray-150: #dddddd;
+  --color-gray-100: #eeeeee;
+  --color-gray-075: #f4f4f4;
+  --color-gray-050: #f9f9f9;
+  --color-gray-025: #fcfdfd;
+  --color-gray-010: #ffffff;
+  --color-white: #ffffff;
+  /* ─── Chrome/Steel Gradients ───────────────────────────────────────── */
+  --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
+  --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
+  --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
+  --color-secondary: #555555;
+  --color-secondary-light: #777777;
+  --color-secondary-dark: #333333;
+  /* ─── Success/Green (LED) ─────────────────────────────────────────── */
+  --color-success: #00ff88;
+  --color-success-dark: #00cc66;
+  --color-success-light: #66ffbb;
+  /* ─── Warning/Amber (LED) ─────────────────────────────────────────── */
+  --color-warning: #ffaa00;
+  --color-warning-dark: #cc8800;
+  --color-warning-light: #ffcc66;
+  /* ─── Danger/Red (LED) ────────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #cc0000;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #4d0000;
+  /* ─── Info/Blue (LED) ─────────────────────────────────────────────── */
+  --color-info: #00ccff;
+  --color-info-dark: #0099cc;
+  --color-info-light: #66ddff;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-400);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success);
+  --text-warning: var(--color-warning);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info);
+  --text-light: var(--color-white);
+  --text-muted: var(--color-gray-500);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: #050505;
+  --panel-bg-dark: #0a0a0a;
+  --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
+  --btn-bg-light: linear-gradient(180deg, #444444 0%, #222222 100%);
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 255, 136, 0.15);
+  --alert-bg-warning: rgba(255, 170, 0, 0.15);
+  --alert-bg-danger: rgba(255, 51, 51, 0.15);
+  --alert-bg-info: rgba(0, 204, 255, 0.15);
+  /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
+  --shadow-10: rgba(0,0,0,0.5);
+  --shadow-15: rgba(0,0,0,0.6);
+  --shadow-20: rgba(0,0,0,0.7);
+  --shadow-25: rgba(0,0,0,0.8);
+  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-40: #000;
+  --shadow-50: #000;
+  --shadow-60: #000;
+  --highlight-05: rgba(255,255,255,0.05);
+  --highlight-10: rgba(255,255,255,0.1);
+  --highlight-15: rgba(255,255,255,0.15);
+  --highlight-20: rgba(255,255,255,0.2);
+  --highlight-30: rgba(255,255,255,0.3);
+  --highlight-40: rgba(255,255,255,0.4);
+  --highlight-50: rgba(255,255,255,0.5);
+  /* ─── Typography ─────────────────────────────────────────────────── */
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Titillium Web', sans-serif;
+  --font-code: 'Share Tech Mono', monospace;
+  --font-tech: 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-label: 'Titillium Web', sans-serif;
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --leading-none: 1;
+  --leading-tight: 1.1;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.6;
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
+  --tracking-widest: 0.25em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   FORMS - Dark Metallic Theme
+   ═══════════════════════════════════════════════════════════════════════ */
+.settings-panel {
+  width: 100%;
+  max-width: 800px;
+  background: linear-gradient(135deg, #151515 0%, #0a0a0a 100%);
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.panel-header {
+  border-bottom: 1px solid #000;
+  padding-bottom: 20px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.section-title {
+  font-family: var(--font-tech);
+  font-size: 14px;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 8px;
+  margin-bottom: 15px;
+  text-shadow: 0 0 10px rgba(0, 225, 255, 0.4);
+}
+
+.form-group {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.form-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-gray-400);
+  text-shadow: 0 1px 1px #000;
+}
+
+.form-control {
+  background: #050505;
+  border: 1px solid #1a1a1a;
+  border-radius: 6px;
+  padding: 10px 15px;
+  color: var(--color-gray-100);
+  font-family: var(--font-code);
+  font-size: 14px;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--color-primary-dark);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 225, 255, 0.2);
+  color: var(--color-white);
+}
+
+/* Checkbox/Switch Styles */
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-switch {
+  width: 48px;
+  height: 24px;
+  background: #000;
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid #111;
+}
+
+.form-switch::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 18px;
+  height: 18px;
+  background: linear-gradient(180deg, #555 0%, #222 100%);
+  border-radius: 50%;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.form-switch.checked {
+  background: rgba(0, 225, 255, 0.1);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(0, 225, 255, 0.1);
+}
+
+.form-switch.checked::after {
+  left: 26px;
+  background: var(--color-primary);
+  box-shadow: 0 0 10px var(--color-primary);
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE - Dark Metallic / Black Chrome Theme
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Electric Cyan/Blue) ────────────────────────────────── */
+  --color-primary: #00e1ff;
+  --color-primary-light: #66efff;
+  --color-primary-dark: #00b8cc;
+  --color-primary-deep: #008f99;
+  --glow-primary: rgba(0, 225, 255, 0.4);
+  /* ─── Neutrals (Black/Dark Chrome) ────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #080808;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #555555;
+  --color-gray-500: #666666;
+  --color-gray-400: #888888;
+  --color-gray-300: #aaaaaa;
+  --color-gray-250: #bbbbbb;
+  --color-gray-200: #cccccc;
+  --color-gray-150: #dddddd;
+  --color-gray-100: #eeeeee;
+  --color-gray-075: #f4f4f4;
+  --color-gray-050: #f9f9f9;
+  --color-gray-025: #fcfdfd;
+  --color-gray-010: #ffffff;
+  --color-white: #ffffff;
+  /* ─── Chrome/Steel Gradients ───────────────────────────────────────── */
+  --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
+  --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
+  --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
+  --color-secondary: #555555;
+  --color-secondary-light: #777777;
+  --color-secondary-dark: #333333;
+  /* ─── Success/Green (LED) ─────────────────────────────────────────── */
+  --color-success: #00ff88;
+  --color-success-dark: #00cc66;
+  --color-success-light: #66ffbb;
+  /* ─── Warning/Amber (LED) ─────────────────────────────────────────── */
+  --color-warning: #ffaa00;
+  --color-warning-dark: #cc8800;
+  --color-warning-light: #ffcc66;
+  /* ─── Danger/Red (LED) ────────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #cc0000;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #4d0000;
+  /* ─── Info/Blue (LED) ─────────────────────────────────────────────── */
+  --color-info: #00ccff;
+  --color-info-dark: #0099cc;
+  --color-info-light: #66ddff;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-400);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success);
+  --text-warning: var(--color-warning);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info);
+  --text-light: var(--color-white);
+  --text-muted: var(--color-gray-500);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: #050505;
+  --panel-bg-dark: #0a0a0a;
+  --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
+  --btn-bg-light: linear-gradient(180deg, #444444 0%, #222222 100%);
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 255, 136, 0.15);
+  --alert-bg-warning: rgba(255, 170, 0, 0.15);
+  --alert-bg-danger: rgba(255, 51, 51, 0.15);
+  --alert-bg-info: rgba(0, 204, 255, 0.15);
+  /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
+  --shadow-10: rgba(0,0,0,0.5);
+  --shadow-15: rgba(0,0,0,0.6);
+  --shadow-20: rgba(0,0,0,0.7);
+  --shadow-25: rgba(0,0,0,0.8);
+  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-40: #000;
+  --shadow-50: #000;
+  --shadow-60: #000;
+  --highlight-05: rgba(255,255,255,0.05);
+  --highlight-10: rgba(255,255,255,0.1);
+  --highlight-15: rgba(255,255,255,0.15);
+  --highlight-20: rgba(255,255,255,0.2);
+  --highlight-30: rgba(255,255,255,0.3);
+  --highlight-40: rgba(255,255,255,0.4);
+  --highlight-50: rgba(255,255,255,0.5);
+  /* ─── Typography ─────────────────────────────────────────────────── */
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Titillium Web', sans-serif;
+  --font-code: 'Share Tech Mono', monospace;
+  --font-tech: 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-label: 'Titillium Web', sans-serif;
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --leading-none: 1;
+  --leading-tight: 1.1;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.6;
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
+  --tracking-widest: 0.25em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PROGRESS BAR - Metallic Chrome Theme
+   ═══════════════════════════════════════════════════════════════════════ */
+.progress-group {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  width: 250px;
+}
+
+/* LED Segment Style */
+.led-bar-container {
+  display: flex;
+  gap: 4px;
+  background-color: var(--panel-bg-dark);
+  padding: 4px;
+  border-radius: 6px;
+  box-shadow: inset 2px 2px 5px var(--shadow-50), 0 1px 0 var(--highlight-10);
+}
+
+.led-segment {
+  flex: 1;
+  height: 10px;
+  background-color: var(--led-off);
+  border-radius: 2px;
+  box-shadow: inset 0 0 3px var(--shadow-70);
+  transition: all 0.2s;
+}
+
+.led-segment.on {
+  background-color: var(--led-on);
+  box-shadow: 0 0 6px var(--glow-primary);
+}
+
+/* Smooth recessed bar */
+.smooth-bar-track {
+  height: 8px;
+  width: 100%;
+  background-color: var(--color-gray-850);
+  border-radius: 6px;
+  box-shadow: inset 2px 2px 4px var(--shadow-50), 0 1px 0 var(--highlight-10);
+  overflow: hidden;
+  position: relative;
+}
+
+.smooth-bar-fill {
+  height: 100%;
+  width: 60%;
+  background: linear-gradient(90deg, var(--color-primary-light), var(--color-primary));
+  box-shadow: 2px 0 8px var(--glow-primary);
+  border-radius: 6px;
+  position: relative;
+  transition: width 0.3s ease;
+}
+
+.smooth-bar-fill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, var(--highlight-40), transparent);
+  border-radius: 6px 6px 0 0;
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE - Dark Metallic / Black Chrome Theme
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Electric Cyan/Blue) ────────────────────────────────── */
+  --color-primary: #00e1ff;
+  --color-primary-light: #66efff;
+  --color-primary-dark: #00b8cc;
+  --color-primary-deep: #008f99;
+  --glow-primary: rgba(0, 225, 255, 0.4);
+  /* ─── Neutrals (Black/Dark Chrome) ────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #080808;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #555555;
+  --color-gray-500: #666666;
+  --color-gray-400: #888888;
+  --color-gray-300: #aaaaaa;
+  --color-gray-250: #bbbbbb;
+  --color-gray-200: #cccccc;
+  --color-gray-150: #dddddd;
+  --color-gray-100: #eeeeee;
+  --color-gray-075: #f4f4f4;
+  --color-gray-050: #f9f9f9;
+  --color-gray-025: #fcfdfd;
+  --color-gray-010: #ffffff;
+  --color-white: #ffffff;
+  /* ─── Chrome/Steel Gradients ───────────────────────────────────────── */
+  --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
+  --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
+  --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
+  --color-secondary: #555555;
+  --color-secondary-light: #777777;
+  --color-secondary-dark: #333333;
+  /* ─── Success/Green (LED) ─────────────────────────────────────────── */
+  --color-success: #00ff88;
+  --color-success-dark: #00cc66;
+  --color-success-light: #66ffbb;
+  /* ─── Warning/Amber (LED) ─────────────────────────────────────────── */
+  --color-warning: #ffaa00;
+  --color-warning-dark: #cc8800;
+  --color-warning-light: #ffcc66;
+  /* ─── Danger/Red (LED) ────────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #cc0000;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #4d0000;
+  /* ─── Info/Blue (LED) ─────────────────────────────────────────────── */
+  --color-info: #00ccff;
+  --color-info-dark: #0099cc;
+  --color-info-light: #66ddff;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-400);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success);
+  --text-warning: var(--color-warning);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info);
+  --text-light: var(--color-white);
+  --text-muted: var(--color-gray-500);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: #050505;
+  --panel-bg-dark: #0a0a0a;
+  --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
+  --btn-bg-light: linear-gradient(180deg, #444444 0%, #222222 100%);
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 255, 136, 0.15);
+  --alert-bg-warning: rgba(255, 170, 0, 0.15);
+  --alert-bg-danger: rgba(255, 51, 51, 0.15);
+  --alert-bg-info: rgba(0, 204, 255, 0.15);
+  /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
+  --shadow-10: rgba(0,0,0,0.5);
+  --shadow-15: rgba(0,0,0,0.6);
+  --shadow-20: rgba(0,0,0,0.7);
+  --shadow-25: rgba(0,0,0,0.8);
+  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-40: #000;
+  --shadow-50: #000;
+  --shadow-60: #000;
+  --highlight-05: rgba(255,255,255,0.05);
+  --highlight-10: rgba(255,255,255,0.1);
+  --highlight-15: rgba(255,255,255,0.15);
+  --highlight-20: rgba(255,255,255,0.2);
+  --highlight-30: rgba(255,255,255,0.3);
+  --highlight-40: rgba(255,255,255,0.4);
+  --highlight-50: rgba(255,255,255,0.5);
+  /* ─── Typography ─────────────────────────────────────────────────── */
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Titillium Web', sans-serif;
+  --font-code: 'Share Tech Mono', monospace;
+  --font-tech: 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-label: 'Titillium Web', sans-serif;
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --leading-none: 1;
+  --leading-tight: 1.1;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.6;
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
+  --tracking-widest: 0.25em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SLIDERS - Dark Metallic Theme
+   ═══════════════════════════════════════════════════════════════════════ */
+.slider-group {
+  display: flex;
+  gap: 60px;
+  align-items: center;
+}
+
+/* Vertical Fader Track */
+.fader-track {
+  width: 16px;
+  height: 240px;
+  background-color: #080808;
+  border-radius: 8px;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.9), inset 0 0 2px rgb(0, 0, 0), 0 1px 0 rgba(255, 255, 255, 0.05);
+  position: relative;
+  margin: 0 20px;
+  border: 1px solid #000;
+}
+
+/* Fader Knob/Cap */
+.fader-cap {
+  width: 40px;
+  height: 60px;
+  background: linear-gradient(180deg, #444 0%, #2a2a2a 50%, #1a1a1a 51%, #2a2a2a 100%);
+  border-radius: 6px;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 0 5px rgba(0, 0, 0, 0.5);
+  cursor: ns-resize;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.1s ease;
+  border: 1px solid #111;
+}
+
+/* Grip lines on fader */
+.fader-cap::after {
+  content: "";
+  width: 24px;
+  height: 2px;
+  background: #111;
+  box-shadow: 0 4px 0 #111, 0 -4px 0 #111, 0 1px 0 rgba(255, 255, 255, 0.1), 0 5px 0 rgba(255, 255, 255, 0.1), 0 -3px 0 rgba(255, 255, 255, 0.1);
+}
+
+.fader-cap:active {
+  background: linear-gradient(180deg, #333 0%, #1a1a1a 100%);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.9), inset 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Horizontal Slider (General) */
+.range-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  background: #080808;
+  border-radius: 4px;
+  outline: none;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
+  border: 1px solid #000;
+}
+
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #555, #1a1a1a);
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 1px solid #000;
+  margin-top: -8px; /* Alignment fix if needed */
+}
+
+.range-slider::-webkit-slider-thumb:active {
+  background: radial-gradient(circle at 50% 50%, #222, #111);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8);
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE - Dark Metallic / Black Chrome Theme
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Electric Cyan/Blue) ────────────────────────────────── */
+  --color-primary: #00e1ff;
+  --color-primary-light: #66efff;
+  --color-primary-dark: #00b8cc;
+  --color-primary-deep: #008f99;
+  --glow-primary: rgba(0, 225, 255, 0.4);
+  /* ─── Neutrals (Black/Dark Chrome) ────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #080808;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #555555;
+  --color-gray-500: #666666;
+  --color-gray-400: #888888;
+  --color-gray-300: #aaaaaa;
+  --color-gray-250: #bbbbbb;
+  --color-gray-200: #cccccc;
+  --color-gray-150: #dddddd;
+  --color-gray-100: #eeeeee;
+  --color-gray-075: #f4f4f4;
+  --color-gray-050: #f9f9f9;
+  --color-gray-025: #fcfdfd;
+  --color-gray-010: #ffffff;
+  --color-white: #ffffff;
+  /* ─── Chrome/Steel Gradients ───────────────────────────────────────── */
+  --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
+  --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
+  --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
+  --color-secondary: #555555;
+  --color-secondary-light: #777777;
+  --color-secondary-dark: #333333;
+  /* ─── Success/Green (LED) ─────────────────────────────────────────── */
+  --color-success: #00ff88;
+  --color-success-dark: #00cc66;
+  --color-success-light: #66ffbb;
+  /* ─── Warning/Amber (LED) ─────────────────────────────────────────── */
+  --color-warning: #ffaa00;
+  --color-warning-dark: #cc8800;
+  --color-warning-light: #ffcc66;
+  /* ─── Danger/Red (LED) ────────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #cc0000;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #4d0000;
+  /* ─── Info/Blue (LED) ─────────────────────────────────────────────── */
+  --color-info: #00ccff;
+  --color-info-dark: #0099cc;
+  --color-info-light: #66ddff;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-400);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success);
+  --text-warning: var(--color-warning);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info);
+  --text-light: var(--color-white);
+  --text-muted: var(--color-gray-500);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: #050505;
+  --panel-bg-dark: #0a0a0a;
+  --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
+  --btn-bg-light: linear-gradient(180deg, #444444 0%, #222222 100%);
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 255, 136, 0.15);
+  --alert-bg-warning: rgba(255, 170, 0, 0.15);
+  --alert-bg-danger: rgba(255, 51, 51, 0.15);
+  --alert-bg-info: rgba(0, 204, 255, 0.15);
+  /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
+  --shadow-10: rgba(0,0,0,0.5);
+  --shadow-15: rgba(0,0,0,0.6);
+  --shadow-20: rgba(0,0,0,0.7);
+  --shadow-25: rgba(0,0,0,0.8);
+  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-40: #000;
+  --shadow-50: #000;
+  --shadow-60: #000;
+  --highlight-05: rgba(255,255,255,0.05);
+  --highlight-10: rgba(255,255,255,0.1);
+  --highlight-15: rgba(255,255,255,0.15);
+  --highlight-20: rgba(255,255,255,0.2);
+  --highlight-30: rgba(255,255,255,0.3);
+  --highlight-40: rgba(255,255,255,0.4);
+  --highlight-50: rgba(255,255,255,0.5);
+  /* ─── Typography ─────────────────────────────────────────────────── */
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Titillium Web', sans-serif;
+  --font-code: 'Share Tech Mono', monospace;
+  --font-tech: 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-label: 'Titillium Web', sans-serif;
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --leading-none: 1;
+  --leading-tight: 1.1;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.6;
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
+  --tracking-widest: 0.25em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   KNOBS - Dark Metallic Theme
+   ═══════════════════════════════════════════════════════════════════════ */
+.knob-container {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.knob {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  position: relative;
+  cursor: grab;
+  user-select: none;
+  border: 1px solid #000;
+  /* Dark Brushed Metal */
+  background: repeating-conic-gradient(rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.03) 2%, transparent 2%, transparent 4%), radial-gradient(circle at 50% 50%, #2a2a2a 0%, #111 60%, #0a0a0a 100%);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 5px rgba(0, 0, 0, 0.5);
+  transition: transform 0.1s ease;
+}
+
+.knob:active {
+  cursor: grabbing;
+  background: radial-gradient(circle at 50% 50%, #222 0%, #080808 100%);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.9), inset 0 5px 15px rgba(0, 0, 0, 0.8);
+}
+
+/* Texture/Grooves on side (simulated with border/shadow) */
+.knob::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  right: 5px;
+  bottom: 5px;
+  border-radius: 50%;
+  /* Inner ring */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Indicator line on knob */
+.knob::before {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 24px;
+  background: var(--color-primary);
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  box-shadow: 0 0 8px var(--color-primary);
+  z-index: 2;
+}
+
+/* Min/Max indicators around knob */
+.knob-scale {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  pointer-events: none;
+  /* This would require SVG or complex CSS transforms, omitting for brevity */
+}
+
+/* Smaller knob variant */
+.knob-sm {
+  width: 48px;
+  height: 48px;
+}
+
+.knob-sm::before {
+  height: 14px;
+  width: 3px;
+  top: 5px;
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE - Dark Metallic / Black Chrome Theme
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Electric Cyan/Blue) ────────────────────────────────── */
+  --color-primary: #00e1ff;
+  --color-primary-light: #66efff;
+  --color-primary-dark: #00b8cc;
+  --color-primary-deep: #008f99;
+  --glow-primary: rgba(0, 225, 255, 0.4);
+  /* ─── Neutrals (Black/Dark Chrome) ────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #080808;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #555555;
+  --color-gray-500: #666666;
+  --color-gray-400: #888888;
+  --color-gray-300: #aaaaaa;
+  --color-gray-250: #bbbbbb;
+  --color-gray-200: #cccccc;
+  --color-gray-150: #dddddd;
+  --color-gray-100: #eeeeee;
+  --color-gray-075: #f4f4f4;
+  --color-gray-050: #f9f9f9;
+  --color-gray-025: #fcfdfd;
+  --color-gray-010: #ffffff;
+  --color-white: #ffffff;
+  /* ─── Chrome/Steel Gradients ───────────────────────────────────────── */
+  --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
+  --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
+  --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
+  --color-secondary: #555555;
+  --color-secondary-light: #777777;
+  --color-secondary-dark: #333333;
+  /* ─── Success/Green (LED) ─────────────────────────────────────────── */
+  --color-success: #00ff88;
+  --color-success-dark: #00cc66;
+  --color-success-light: #66ffbb;
+  /* ─── Warning/Amber (LED) ─────────────────────────────────────────── */
+  --color-warning: #ffaa00;
+  --color-warning-dark: #cc8800;
+  --color-warning-light: #ffcc66;
+  /* ─── Danger/Red (LED) ────────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #cc0000;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #4d0000;
+  /* ─── Info/Blue (LED) ─────────────────────────────────────────────── */
+  --color-info: #00ccff;
+  --color-info-dark: #0099cc;
+  --color-info-light: #66ddff;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-400);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success);
+  --text-warning: var(--color-warning);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info);
+  --text-light: var(--color-white);
+  --text-muted: var(--color-gray-500);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: #050505;
+  --panel-bg-dark: #0a0a0a;
+  --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
+  --btn-bg-light: linear-gradient(180deg, #444444 0%, #222222 100%);
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 255, 136, 0.15);
+  --alert-bg-warning: rgba(255, 170, 0, 0.15);
+  --alert-bg-danger: rgba(255, 51, 51, 0.15);
+  --alert-bg-info: rgba(0, 204, 255, 0.15);
+  /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
+  --shadow-10: rgba(0,0,0,0.5);
+  --shadow-15: rgba(0,0,0,0.6);
+  --shadow-20: rgba(0,0,0,0.7);
+  --shadow-25: rgba(0,0,0,0.8);
+  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-40: #000;
+  --shadow-50: #000;
+  --shadow-60: #000;
+  --highlight-05: rgba(255,255,255,0.05);
+  --highlight-10: rgba(255,255,255,0.1);
+  --highlight-15: rgba(255,255,255,0.15);
+  --highlight-20: rgba(255,255,255,0.2);
+  --highlight-30: rgba(255,255,255,0.3);
+  --highlight-40: rgba(255,255,255,0.4);
+  --highlight-50: rgba(255,255,255,0.5);
+  /* ─── Typography ─────────────────────────────────────────────────── */
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Titillium Web', sans-serif;
+  --font-code: 'Share Tech Mono', monospace;
+  --font-tech: 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-label: 'Titillium Web', sans-serif;
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --leading-none: 1;
+  --leading-tight: 1.1;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.6;
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
+  --tracking-widest: 0.25em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TABS - Metallic Chrome Theme
+   ═══════════════════════════════════════════════════════════════════════ */
+/* Main Content Area */
+.content-display {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.tab-pane {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  width: 100%;
+  max-width: 800px;
+}
+
+.tab-pane.active {
+  display: flex;
+  opacity: 1;
+}
+
+/* Placeholder Content */
+.placeholder-icon {
+  font-size: 80px;
+  color: var(--color-gray-600);
+  margin-bottom: 20px;
+  text-shadow: 1px 1px 0 var(--highlight-20);
+}
+
+h2 {
+  font-family: var(--font-tech);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+/* Bottom Tab Bar */
+.tab-bar {
+  height: 90px;
+  background: linear-gradient(135deg, var(--color-gray-100) 0%, var(--color-gray-200) 50%, var(--color-gray-150) 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 0 10px;
+  gap: 10px;
+  box-sizing: border-box;
+  border-top: 1px solid var(--highlight-30);
+  box-shadow: 0 -4px 12px var(--shadow-15), inset 0 1px 0 var(--highlight-40);
+  z-index: 100;
+}
+
+/* Tab Buttons */
+.tab-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  height: 70px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-gray-600);
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.tab-btn:hover {
+  background: var(--highlight-10);
+  color: var(--color-gray-700);
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--color-gray-300) 0%, var(--color-gray-250) 100%);
+  color: var(--color-primary);
+  box-shadow: inset 2px 2px 6px var(--shadow-20), 0 0 8px var(--glow-primary);
+}
+
+.tab-btn .material-icons {
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE - Dark Metallic / Black Chrome Theme
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Electric Cyan/Blue) ────────────────────────────────── */
+  --color-primary: #00e1ff;
+  --color-primary-light: #66efff;
+  --color-primary-dark: #00b8cc;
+  --color-primary-deep: #008f99;
+  --glow-primary: rgba(0, 225, 255, 0.4);
+  /* ─── Neutrals (Black/Dark Chrome) ────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #080808;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #555555;
+  --color-gray-500: #666666;
+  --color-gray-400: #888888;
+  --color-gray-300: #aaaaaa;
+  --color-gray-250: #bbbbbb;
+  --color-gray-200: #cccccc;
+  --color-gray-150: #dddddd;
+  --color-gray-100: #eeeeee;
+  --color-gray-075: #f4f4f4;
+  --color-gray-050: #f9f9f9;
+  --color-gray-025: #fcfdfd;
+  --color-gray-010: #ffffff;
+  --color-white: #ffffff;
+  /* ─── Chrome/Steel Gradients ───────────────────────────────────────── */
+  --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
+  --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
+  --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
+  --color-secondary: #555555;
+  --color-secondary-light: #777777;
+  --color-secondary-dark: #333333;
+  /* ─── Success/Green (LED) ─────────────────────────────────────────── */
+  --color-success: #00ff88;
+  --color-success-dark: #00cc66;
+  --color-success-light: #66ffbb;
+  /* ─── Warning/Amber (LED) ─────────────────────────────────────────── */
+  --color-warning: #ffaa00;
+  --color-warning-dark: #cc8800;
+  --color-warning-light: #ffcc66;
+  /* ─── Danger/Red (LED) ────────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #cc0000;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #4d0000;
+  /* ─── Info/Blue (LED) ─────────────────────────────────────────────── */
+  --color-info: #00ccff;
+  --color-info-dark: #0099cc;
+  --color-info-light: #66ddff;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-400);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success);
+  --text-warning: var(--color-warning);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info);
+  --text-light: var(--color-white);
+  --text-muted: var(--color-gray-500);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: #050505;
+  --panel-bg-dark: #0a0a0a;
+  --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
+  --btn-bg-light: linear-gradient(180deg, #444444 0%, #222222 100%);
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 255, 136, 0.15);
+  --alert-bg-warning: rgba(255, 170, 0, 0.15);
+  --alert-bg-danger: rgba(255, 51, 51, 0.15);
+  --alert-bg-info: rgba(0, 204, 255, 0.15);
+  /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
+  --shadow-10: rgba(0,0,0,0.5);
+  --shadow-15: rgba(0,0,0,0.6);
+  --shadow-20: rgba(0,0,0,0.7);
+  --shadow-25: rgba(0,0,0,0.8);
+  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-40: #000;
+  --shadow-50: #000;
+  --shadow-60: #000;
+  --highlight-05: rgba(255,255,255,0.05);
+  --highlight-10: rgba(255,255,255,0.1);
+  --highlight-15: rgba(255,255,255,0.15);
+  --highlight-20: rgba(255,255,255,0.2);
+  --highlight-30: rgba(255,255,255,0.3);
+  --highlight-40: rgba(255,255,255,0.4);
+  --highlight-50: rgba(255,255,255,0.5);
+  /* ─── Typography ─────────────────────────────────────────────────── */
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Titillium Web', sans-serif;
+  --font-code: 'Share Tech Mono', monospace;
+  --font-tech: 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-label: 'Titillium Web', sans-serif;
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --leading-none: 1;
+  --leading-tight: 1.1;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.6;
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
+  --tracking-widest: 0.25em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MEDIA PLAYER - Dark Metallic Theme
+   ═══════════════════════════════════════════════════════════════════════ */
+.player-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-color);
+  background-image: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0px, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 4px), linear-gradient(180deg, #111 0%, #050505 100%);
+}
+
+.player-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  gap: 20px;
+}
+
+.transport-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 10px;
+  padding: 15px;
+  background: var(--panel-bg-dark);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid #000;
+}
+
+/* ─── Media Containers ────────────────────────────────────────────────── */
+.album-art-container,
+.vinyl-container,
+.cd-container {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  margin: 0 auto;
+}
+
+.volume-control {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: linear-gradient(180deg, #151515 0%, #1a1a1a 100%);
+  border-radius: 10px;
+  border: 1px solid #000;
+  box-shadow: inset 0 0 10px #000, 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.track-info {
+  text-align: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  width: 95%;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+.track-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 4vw, 2rem);
+  font-weight: 700;
+  color: var(--color-white);
+  margin: 0 0 8px 0;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 0 2px 0 #000;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.artist-name {
+  font-family: var(--font-body);
+  font-size: clamp(0.75rem, 2vw, 1.1rem);
+  color: var(--color-primary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(0, 225, 255, 0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-artist {
+  font-family: var(--font-body);
+  font-size: clamp(0.75rem, 2vw, 1.1rem);
+  color: var(--color-primary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(0, 225, 255, 0.4);
+}
+
+.album-name {
+  font-size: clamp(0.7rem, 1.8vw, 1rem);
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.responsive-title {
+  font-size: clamp(1rem, 4.5cqw, 3rem);
+}
+
+.responsive-artist {
+  font-size: clamp(0.75rem, 3.5cqw, 2.5rem);
+}
+
+.responsive-album {
+  font-size: clamp(0.7rem, 1.8cqw, 0.95rem);
+}
+
+.responsive-stream-info {
+  font-size: clamp(0.7rem, 2.1cqw, 1.96rem);
+}
+
+.format-logo-responsive {
+  height: clamp(1.3rem, 3.8cqw, 4.2rem);
+  display: block;
+}
+
+.album-art {
+  width: 280px;
+  height: 280px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  object-fit: cover;
+  border: 4px solid #111;
+  background: #000;
+}
+
+/* ─── Progress Sliders ────────────────────────────────────────────────── */
+.slider-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  position: relative;
+  padding: 0 1em;
+}
+
+.slider-track {
+  flex-grow: 1;
+  height: clamp(10px, 1.4vw, 18px);
+  background-color: #050505;
+  border-radius: 10px;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.9), inset 0 0 2px rgb(0, 0, 0), 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  cursor: pointer;
+  border: 1px solid #000;
+  overflow: hidden; /* Keep fill inside */
+}
+
+.slider-fill {
+  height: 100%;
+  background: linear-gradient(180deg, var(--color-primary-light) 0%, var(--color-primary) 50%, var(--color-primary-deep) 100%);
+  border-radius: 10px;
+  width: 0%; /* Dynamic */
+  position: relative;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 10px var(--color-primary);
+}
+
+/* Add a handle effect at the end of the fill if possible, or pseudo element */
+.slider-fill::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 80%;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 2px;
+  box-shadow: 0 0 5px #fff;
+  opacity: 0.8;
+}
+
+.read-only .slider-fill::after {
+  display: none;
+}
+
+.read-only .slider-track {
+  cursor: default;
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE - Dark Metallic / Black Chrome Theme
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Electric Cyan/Blue) ────────────────────────────────── */
+  --color-primary: #00e1ff;
+  --color-primary-light: #66efff;
+  --color-primary-dark: #00b8cc;
+  --color-primary-deep: #008f99;
+  --glow-primary: rgba(0, 225, 255, 0.4);
+  /* ─── Neutrals (Black/Dark Chrome) ────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #080808;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #555555;
+  --color-gray-500: #666666;
+  --color-gray-400: #888888;
+  --color-gray-300: #aaaaaa;
+  --color-gray-250: #bbbbbb;
+  --color-gray-200: #cccccc;
+  --color-gray-150: #dddddd;
+  --color-gray-100: #eeeeee;
+  --color-gray-075: #f4f4f4;
+  --color-gray-050: #f9f9f9;
+  --color-gray-025: #fcfdfd;
+  --color-gray-010: #ffffff;
+  --color-white: #ffffff;
+  /* ─── Chrome/Steel Gradients ───────────────────────────────────────── */
+  --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
+  --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
+  --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
+  --color-secondary: #555555;
+  --color-secondary-light: #777777;
+  --color-secondary-dark: #333333;
+  /* ─── Success/Green (LED) ─────────────────────────────────────────── */
+  --color-success: #00ff88;
+  --color-success-dark: #00cc66;
+  --color-success-light: #66ffbb;
+  /* ─── Warning/Amber (LED) ─────────────────────────────────────────── */
+  --color-warning: #ffaa00;
+  --color-warning-dark: #cc8800;
+  --color-warning-light: #ffcc66;
+  /* ─── Danger/Red (LED) ────────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #cc0000;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #4d0000;
+  /* ─── Info/Blue (LED) ─────────────────────────────────────────────── */
+  --color-info: #00ccff;
+  --color-info-dark: #0099cc;
+  --color-info-light: #66ddff;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-400);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success);
+  --text-warning: var(--color-warning);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info);
+  --text-light: var(--color-white);
+  --text-muted: var(--color-gray-500);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: #050505;
+  --panel-bg-dark: #0a0a0a;
+  --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
+  --btn-bg-light: linear-gradient(180deg, #444444 0%, #222222 100%);
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 255, 136, 0.15);
+  --alert-bg-warning: rgba(255, 170, 0, 0.15);
+  --alert-bg-danger: rgba(255, 51, 51, 0.15);
+  --alert-bg-info: rgba(0, 204, 255, 0.15);
+  /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
+  --shadow-10: rgba(0,0,0,0.5);
+  --shadow-15: rgba(0,0,0,0.6);
+  --shadow-20: rgba(0,0,0,0.7);
+  --shadow-25: rgba(0,0,0,0.8);
+  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-40: #000;
+  --shadow-50: #000;
+  --shadow-60: #000;
+  --highlight-05: rgba(255,255,255,0.05);
+  --highlight-10: rgba(255,255,255,0.1);
+  --highlight-15: rgba(255,255,255,0.15);
+  --highlight-20: rgba(255,255,255,0.2);
+  --highlight-30: rgba(255,255,255,0.3);
+  --highlight-40: rgba(255,255,255,0.4);
+  --highlight-50: rgba(255,255,255,0.5);
+  /* ─── Typography ─────────────────────────────────────────────────── */
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Titillium Web', sans-serif;
+  --font-code: 'Share Tech Mono', monospace;
+  --font-tech: 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-label: 'Titillium Web', sans-serif;
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --leading-none: 1;
+  --leading-tight: 1.1;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.6;
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
+  --tracking-widest: 0.25em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ALBUM BROWSER - Metallic Chrome Theme
+   ═══════════════════════════════════════════════════════════════════════ */
+.album-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.album-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--color-gray-800);
+  box-shadow: 0 4px 12px var(--shadow-20);
+}
+.album-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px var(--shadow-30);
+}
+.album-card:hover .album-cover {
+  box-shadow: inset 0 0 0 2px var(--color-primary);
+}
+
+.album-cover {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  box-shadow: inset 0 0 0 1px var(--highlight-05);
+  transition: all 0.2s ease;
+}
+
+.album-info {
+  padding: 12px;
+}
+
+.album-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-light);
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.album-artist {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-bar {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 6px 16px;
+  color: var(--text-light);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 360px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.search-bar:focus-within {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--glow-primary);
+  color: var(--color-white);
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE - Dark Metallic / Black Chrome Theme
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Electric Cyan/Blue) ────────────────────────────────── */
+  --color-primary: #00e1ff;
+  --color-primary-light: #66efff;
+  --color-primary-dark: #00b8cc;
+  --color-primary-deep: #008f99;
+  --glow-primary: rgba(0, 225, 255, 0.4);
+  /* ─── Neutrals (Black/Dark Chrome) ────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #080808;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #555555;
+  --color-gray-500: #666666;
+  --color-gray-400: #888888;
+  --color-gray-300: #aaaaaa;
+  --color-gray-250: #bbbbbb;
+  --color-gray-200: #cccccc;
+  --color-gray-150: #dddddd;
+  --color-gray-100: #eeeeee;
+  --color-gray-075: #f4f4f4;
+  --color-gray-050: #f9f9f9;
+  --color-gray-025: #fcfdfd;
+  --color-gray-010: #ffffff;
+  --color-white: #ffffff;
+  /* ─── Chrome/Steel Gradients ───────────────────────────────────────── */
+  --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
+  --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
+  --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
+  --color-secondary: #555555;
+  --color-secondary-light: #777777;
+  --color-secondary-dark: #333333;
+  /* ─── Success/Green (LED) ─────────────────────────────────────────── */
+  --color-success: #00ff88;
+  --color-success-dark: #00cc66;
+  --color-success-light: #66ffbb;
+  /* ─── Warning/Amber (LED) ─────────────────────────────────────────── */
+  --color-warning: #ffaa00;
+  --color-warning-dark: #cc8800;
+  --color-warning-light: #ffcc66;
+  /* ─── Danger/Red (LED) ────────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #cc0000;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #4d0000;
+  /* ─── Info/Blue (LED) ─────────────────────────────────────────────── */
+  --color-info: #00ccff;
+  --color-info-dark: #0099cc;
+  --color-info-light: #66ddff;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-400);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success);
+  --text-warning: var(--color-warning);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info);
+  --text-light: var(--color-white);
+  --text-muted: var(--color-gray-500);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: #050505;
+  --panel-bg-dark: #0a0a0a;
+  --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
+  --btn-bg-light: linear-gradient(180deg, #444444 0%, #222222 100%);
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 255, 136, 0.15);
+  --alert-bg-warning: rgba(255, 170, 0, 0.15);
+  --alert-bg-danger: rgba(255, 51, 51, 0.15);
+  --alert-bg-info: rgba(0, 204, 255, 0.15);
+  /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
+  --shadow-10: rgba(0,0,0,0.5);
+  --shadow-15: rgba(0,0,0,0.6);
+  --shadow-20: rgba(0,0,0,0.7);
+  --shadow-25: rgba(0,0,0,0.8);
+  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-40: #000;
+  --shadow-50: #000;
+  --shadow-60: #000;
+  --highlight-05: rgba(255,255,255,0.05);
+  --highlight-10: rgba(255,255,255,0.1);
+  --highlight-15: rgba(255,255,255,0.15);
+  --highlight-20: rgba(255,255,255,0.2);
+  --highlight-30: rgba(255,255,255,0.3);
+  --highlight-40: rgba(255,255,255,0.4);
+  --highlight-50: rgba(255,255,255,0.5);
+  /* ─── Typography ─────────────────────────────────────────────────── */
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Titillium Web', sans-serif;
+  --font-code: 'Share Tech Mono', monospace;
+  --font-tech: 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-label: 'Titillium Web', sans-serif;
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --leading-none: 1;
+  --leading-tight: 1.1;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.6;
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
+  --tracking-widest: 0.25em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PLAYLIST - Metallic Chrome Theme
+   ═══════════════════════════════════════════════════════════════════════ */
+/* ── Queue Info Bar ── */
+.playlist-info {
+  font-size: 0.72rem;
+  border-bottom: 1px solid var(--color-gray-700);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.playlist-info-count {
+  color: var(--color-gray-500);
+  font-family: var(--font-label);
+}
+
+.playlist-info-position {
+  color: var(--color-accent);
+  font-family: var(--font-label);
+  font-weight: 500;
+}
+
+/* ── Playlist Items ── */
+.playlist-list {
+  padding-bottom: 1rem;
+}
+
+.playlist-item {
+  border-bottom: 1px solid var(--color-gray-700);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+  padding: 8px 4px;
+}
+.playlist-item:last-child {
+  border-bottom: none;
+}
+.playlist-item:hover {
+  background: var(--list-item-bg-hover);
+}
+
+/* Active / current track */
+.playlist-item--active {
+  background: var(--list-item-bg-hover);
+}
+.playlist-item--active .playlist-track-title {
+  color: var(--color-accent);
+  font-weight: 500;
+}
+
+/* ── Album Art ── */
+.playlist-art-wrap {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--color-gray-700);
+}
+
+.playlist-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.playlist-art--empty {
+  background: var(--color-gray-750);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--color-gray-500);
+}
+
+/* Play icon overlay on current track's art */
+.playlist-art-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--shadow-60);
+  color: var(--color-white);
+  backdrop-filter: blur(2px);
+}
+
+/* ── Track Text ── */
+.playlist-track-title {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  line-height: 1.3;
+  font-family: var(--font-label);
+  transition: color 0.15s ease;
+}
+
+.playlist-track-meta {
+  font-size: 0.72rem;
+  color: var(--color-gray-500);
+  line-height: 1.3;
+  font-family: var(--font-label);
+}
+
+/* ── Remove Button ── */
+.playlist-remove {
+  flex-shrink: 0;
+  text-decoration: none !important;
+  color: var(--text-primary);
+  background: var(--highlight-10);
+  border-radius: 4px;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+.playlist-remove .material-icons {
+  font-size: 1.1rem;
+}
+
+.playlist-item:hover .playlist-remove:hover {
+  background: rgba(255, 68, 68, 0.18);
+  color: var(--color-danger) !important;
+}
+
+.playlist-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--panel-bg-dark);
+}
+
+.playlist-header {
+  padding: 16px 20px;
+  background: linear-gradient(180deg, var(--color-gray-750), var(--color-gray-800));
+  border-bottom: 1px solid var(--color-gray-700);
+  box-shadow: 0 2px 4px var(--shadow-20);
+}
+
+.playlist-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--text-light);
+  margin: 0;
+  text-shadow: 0 1px 2px var(--shadow-30);
+}
+
+.playlist-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.playlist-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  background: var(--color-gray-800);
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+.playlist-item:hover {
+  background: var(--color-gray-700);
+  border-color: var(--color-gray-600);
+  transform: translateX(4px);
+}
+.playlist-item.active {
+  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
+  border-color: var(--color-primary-light);
+  box-shadow: 0 2px 8px var(--glow-primary);
+}
+
+.playlist-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.playlist-item-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-light);
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlist-item-artist {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlist-item-duration {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE - Dark Metallic / Black Chrome Theme
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Electric Cyan/Blue) ────────────────────────────────── */
+  --color-primary: #00e1ff;
+  --color-primary-light: #66efff;
+  --color-primary-dark: #00b8cc;
+  --color-primary-deep: #008f99;
+  --glow-primary: rgba(0, 225, 255, 0.4);
+  /* ─── Neutrals (Black/Dark Chrome) ────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #080808;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #555555;
+  --color-gray-500: #666666;
+  --color-gray-400: #888888;
+  --color-gray-300: #aaaaaa;
+  --color-gray-250: #bbbbbb;
+  --color-gray-200: #cccccc;
+  --color-gray-150: #dddddd;
+  --color-gray-100: #eeeeee;
+  --color-gray-075: #f4f4f4;
+  --color-gray-050: #f9f9f9;
+  --color-gray-025: #fcfdfd;
+  --color-gray-010: #ffffff;
+  --color-white: #ffffff;
+  /* ─── Chrome/Steel Gradients ───────────────────────────────────────── */
+  --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
+  --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
+  --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
+  --color-secondary: #555555;
+  --color-secondary-light: #777777;
+  --color-secondary-dark: #333333;
+  /* ─── Success/Green (LED) ─────────────────────────────────────────── */
+  --color-success: #00ff88;
+  --color-success-dark: #00cc66;
+  --color-success-light: #66ffbb;
+  /* ─── Warning/Amber (LED) ─────────────────────────────────────────── */
+  --color-warning: #ffaa00;
+  --color-warning-dark: #cc8800;
+  --color-warning-light: #ffcc66;
+  /* ─── Danger/Red (LED) ────────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #cc0000;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #4d0000;
+  /* ─── Info/Blue (LED) ─────────────────────────────────────────────── */
+  --color-info: #00ccff;
+  --color-info-dark: #0099cc;
+  --color-info-light: #66ddff;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-400);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success);
+  --text-warning: var(--color-warning);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info);
+  --text-light: var(--color-white);
+  --text-muted: var(--color-gray-500);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: #050505;
+  --panel-bg-dark: #0a0a0a;
+  --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
+  --btn-bg-light: linear-gradient(180deg, #444444 0%, #222222 100%);
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 255, 136, 0.15);
+  --alert-bg-warning: rgba(255, 170, 0, 0.15);
+  --alert-bg-danger: rgba(255, 51, 51, 0.15);
+  --alert-bg-info: rgba(0, 204, 255, 0.15);
+  /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
+  --shadow-10: rgba(0,0,0,0.5);
+  --shadow-15: rgba(0,0,0,0.6);
+  --shadow-20: rgba(0,0,0,0.7);
+  --shadow-25: rgba(0,0,0,0.8);
+  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-40: #000;
+  --shadow-50: #000;
+  --shadow-60: #000;
+  --highlight-05: rgba(255,255,255,0.05);
+  --highlight-10: rgba(255,255,255,0.1);
+  --highlight-15: rgba(255,255,255,0.15);
+  --highlight-20: rgba(255,255,255,0.2);
+  --highlight-30: rgba(255,255,255,0.3);
+  --highlight-40: rgba(255,255,255,0.4);
+  --highlight-50: rgba(255,255,255,0.5);
+  /* ─── Typography ─────────────────────────────────────────────────── */
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Titillium Web', sans-serif;
+  --font-code: 'Share Tech Mono', monospace;
+  --font-tech: 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-label: 'Titillium Web', sans-serif;
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --leading-none: 1;
+  --leading-tight: 1.1;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.6;
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
+  --tracking-widest: 0.25em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SLIDE PANEL - Metallic Chrome Theme
+   ═══════════════════════════════════════════════════════════════════════ */
+/* ── Backdrop ── */
+.slide-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1040;
+  background: transparent;
+  pointer-events: none;
+  transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.slide-panel-backdrop.show {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  pointer-events: auto;
+}
+
+/* ── Panel ── */
+.slide-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  max-width: 80vw;
+  background: linear-gradient(135deg, var(--color-gray-800) 0%, var(--color-gray-850) 100%);
+  border-right: 1px solid var(--color-gray-700);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+.slide-panel.open {
+  transform: translateX(0);
+}
+
+/* ── Header ── */
+.slide-panel-header {
+  background: linear-gradient(180deg, var(--color-gray-750), var(--color-gray-800));
+  border-bottom: 1px solid var(--color-gray-700);
+  flex-shrink: 0;
+}
+
+/* ── Title Group ── */
+.slide-panel-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.slide-panel-subtitle {
+  font-size: 0.7rem;
+  color: var(--color-gray-500);
+  font-family: var(--font-label);
+}
+
+.slide-panel-title {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  color: var(--text-light);
+}
+
+/* ── Body ── */
+.slide-panel-body {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  padding: 12px 16px;
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE - Dark Metallic / Black Chrome Theme
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Electric Cyan/Blue) ────────────────────────────────── */
+  --color-primary: #00e1ff;
+  --color-primary-light: #66efff;
+  --color-primary-dark: #00b8cc;
+  --color-primary-deep: #008f99;
+  --glow-primary: rgba(0, 225, 255, 0.4);
+  /* ─── Neutrals (Black/Dark Chrome) ────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #080808;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #555555;
+  --color-gray-500: #666666;
+  --color-gray-400: #888888;
+  --color-gray-300: #aaaaaa;
+  --color-gray-250: #bbbbbb;
+  --color-gray-200: #cccccc;
+  --color-gray-150: #dddddd;
+  --color-gray-100: #eeeeee;
+  --color-gray-075: #f4f4f4;
+  --color-gray-050: #f9f9f9;
+  --color-gray-025: #fcfdfd;
+  --color-gray-010: #ffffff;
+  --color-white: #ffffff;
+  /* ─── Chrome/Steel Gradients ───────────────────────────────────────── */
+  --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
+  --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
+  --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
+  --color-secondary: #555555;
+  --color-secondary-light: #777777;
+  --color-secondary-dark: #333333;
+  /* ─── Success/Green (LED) ─────────────────────────────────────────── */
+  --color-success: #00ff88;
+  --color-success-dark: #00cc66;
+  --color-success-light: #66ffbb;
+  /* ─── Warning/Amber (LED) ─────────────────────────────────────────── */
+  --color-warning: #ffaa00;
+  --color-warning-dark: #cc8800;
+  --color-warning-light: #ffcc66;
+  /* ─── Danger/Red (LED) ────────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #cc0000;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #4d0000;
+  /* ─── Info/Blue (LED) ─────────────────────────────────────────────── */
+  --color-info: #00ccff;
+  --color-info-dark: #0099cc;
+  --color-info-light: #66ddff;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-400);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success);
+  --text-warning: var(--color-warning);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info);
+  --text-light: var(--color-white);
+  --text-muted: var(--color-gray-500);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: #050505;
+  --panel-bg-dark: #0a0a0a;
+  --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
+  --btn-bg-light: linear-gradient(180deg, #444444 0%, #222222 100%);
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 255, 136, 0.15);
+  --alert-bg-warning: rgba(255, 170, 0, 0.15);
+  --alert-bg-danger: rgba(255, 51, 51, 0.15);
+  --alert-bg-info: rgba(0, 204, 255, 0.15);
+  /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
+  --shadow-10: rgba(0,0,0,0.5);
+  --shadow-15: rgba(0,0,0,0.6);
+  --shadow-20: rgba(0,0,0,0.7);
+  --shadow-25: rgba(0,0,0,0.8);
+  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-40: #000;
+  --shadow-50: #000;
+  --shadow-60: #000;
+  --highlight-05: rgba(255,255,255,0.05);
+  --highlight-10: rgba(255,255,255,0.1);
+  --highlight-15: rgba(255,255,255,0.15);
+  --highlight-20: rgba(255,255,255,0.2);
+  --highlight-30: rgba(255,255,255,0.3);
+  --highlight-40: rgba(255,255,255,0.4);
+  --highlight-50: rgba(255,255,255,0.5);
+  /* ─── Typography ─────────────────────────────────────────────────── */
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Titillium Web', sans-serif;
+  --font-code: 'Share Tech Mono', monospace;
+  --font-tech: 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-label: 'Titillium Web', sans-serif;
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --leading-none: 1;
+  --leading-tight: 1.1;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.6;
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
+  --tracking-widest: 0.25em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CONTEXT MENU - Metallic Chrome Theme
+   ═══════════════════════════════════════════════════════════════════════ */
+.context-menu-container {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 5000;
+}
+
+.context-menu-toggle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-gray-200), var(--color-gray-300));
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-gray-700);
+  box-shadow: 0 4px 12px var(--shadow-30), inset 0 1px 0 var(--highlight-40);
+  transition: all 0.2s ease;
+}
+
+.context-menu-toggle:hover {
+  background: linear-gradient(135deg, var(--color-gray-150), var(--color-gray-250));
+  box-shadow: 0 6px 16px var(--shadow-35), inset 0 1px 0 var(--highlight-50);
+  transform: scale(1.05);
+}
+
+.context-menu-toggle:active {
+  transform: scale(0.95);
+  box-shadow: inset 0 2px 6px var(--shadow-30), 0 2px 8px var(--shadow-20);
+}
+
+/* ── No-shadow variant ────────────────────────────────────────────────── */
+.context-menu-toggle--no-shadow {
+  background: rgba(0, 0, 0, 0.35);
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--color-primary);
+}
+.context-menu-toggle--no-shadow:hover {
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: none !important;
+  transform: none;
+}
+.context-menu-toggle--no-shadow:active {
+  box-shadow: none !important;
+  transform: none;
+}
+.context-menu-toggle--no-shadow .material-icons {
+  color: var(--color-primary);
+  filter: none;
+}
+
+.context-menu-toggle .material-icons {
+  font-size: 24px;
+}
+
+.context-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  z-index: 4999;
+}
+
+.context-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 200px;
+  background: linear-gradient(135deg, var(--color-gray-800) 0%, var(--color-gray-850) 100%);
+  border-radius: 8px;
+  border: 1px solid var(--color-gray-700);
+  box-shadow: 0 8px 24px var(--shadow-50), inset 0 1px 0 var(--highlight-10);
+  padding: 6px;
+  z-index: 5001;
+  animation: contextMenuIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top right;
+}
+
+@keyframes contextMenuIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  color: var(--text-light);
+  font-family: var(--font-label);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.context-menu-item:hover {
+  background: var(--color-gray-700);
+  color: var(--text-light);
+}
+.context-menu-item:active {
+  background: var(--color-gray-750);
+}
+.context-menu-item.danger {
+  color: var(--color-danger-light);
+}
+.context-menu-item.danger:hover {
+  background: rgba(255, 71, 87, 0.15);
+}
+
+.context-menu-separator {
+  height: 1px;
+  background: var(--color-gray-750);
+  margin: 4px 0;
+}
+
+.context-menu-item .material-icons {
+  font-size: 18px;
+  color: var(--text-secondary);
+}
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════
+     COLOR PALETTE - Dark Metallic / Black Chrome Theme
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Primary (Electric Cyan/Blue) ────────────────────────────────── */
+  --color-primary: #00e1ff;
+  --color-primary-light: #66efff;
+  --color-primary-dark: #00b8cc;
+  --color-primary-deep: #008f99;
+  --glow-primary: rgba(0, 225, 255, 0.4);
+  /* ─── Neutrals (Black/Dark Chrome) ────────────────────────────────── */
+  --color-black: #000000;
+  --color-gray-950: #080808;
+  --color-gray-900: #111111;
+  --color-gray-850: #1a1a1a;
+  --color-gray-800: #222222;
+  --color-gray-750: #2a2a2a;
+  --color-gray-700: #333333;
+  --color-gray-600: #444444;
+  --color-gray-550: #555555;
+  --color-gray-500: #666666;
+  --color-gray-400: #888888;
+  --color-gray-300: #aaaaaa;
+  --color-gray-250: #bbbbbb;
+  --color-gray-200: #cccccc;
+  --color-gray-150: #dddddd;
+  --color-gray-100: #eeeeee;
+  --color-gray-075: #f4f4f4;
+  --color-gray-050: #f9f9f9;
+  --color-gray-025: #fcfdfd;
+  --color-gray-010: #ffffff;
+  --color-white: #ffffff;
+  /* ─── Chrome/Steel Gradients ───────────────────────────────────────── */
+  --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
+  --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
+  --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
+  --color-secondary: #555555;
+  --color-secondary-light: #777777;
+  --color-secondary-dark: #333333;
+  /* ─── Success/Green (LED) ─────────────────────────────────────────── */
+  --color-success: #00ff88;
+  --color-success-dark: #00cc66;
+  --color-success-light: #66ffbb;
+  /* ─── Warning/Amber (LED) ─────────────────────────────────────────── */
+  --color-warning: #ffaa00;
+  --color-warning-dark: #cc8800;
+  --color-warning-light: #ffcc66;
+  /* ─── Danger/Red (LED) ────────────────────────────────────────────── */
+  --color-danger: #ff3333;
+  --color-danger-dark: #cc0000;
+  --color-danger-light: #ff6666;
+  --color-danger-muted: #4d0000;
+  /* ─── Info/Blue (LED) ─────────────────────────────────────────────── */
+  --color-info: #00ccff;
+  --color-info-dark: #0099cc;
+  --color-info-light: #66ddff;
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC COLOR USAGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* ─── Text Colors ──────────────────────────────────────────────────── */
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-400);
+  --text-accent: var(--color-primary);
+  --text-success: var(--color-success);
+  --text-warning: var(--color-warning);
+  --text-danger: var(--color-danger);
+  --text-info: var(--color-info);
+  --text-light: var(--color-white);
+  --text-muted: var(--color-gray-500);
+  /* ─── Background Colors ────────────────────────────────────────────── */
+  --bg-color: #050505;
+  --panel-bg-dark: #0a0a0a;
+  --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
+  /* ─── Button Colors ────────────────────────────────────────────────── */
+  --btn-bg-dark: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
+  --btn-bg-light: linear-gradient(180deg, #444444 0%, #222222 100%);
+  --btn-bg-primary: var(--color-primary);
+  --btn-bg-secondary: var(--color-secondary);
+  --btn-bg-success: var(--color-success);
+  --btn-bg-warning: var(--color-warning);
+  --btn-bg-danger: var(--color-danger);
+  --btn-bg-info: var(--color-info);
+  /* ─── Alert/Notification Backgrounds ──────────────────────────────── */
+  --alert-bg-success: rgba(0, 255, 136, 0.15);
+  --alert-bg-warning: rgba(255, 170, 0, 0.15);
+  --alert-bg-danger: rgba(255, 51, 51, 0.15);
+  --alert-bg-info: rgba(0, 204, 255, 0.15);
+  /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
+  --shadow-10: rgba(0,0,0,0.5);
+  --shadow-15: rgba(0,0,0,0.6);
+  --shadow-20: rgba(0,0,0,0.7);
+  --shadow-25: rgba(0,0,0,0.8);
+  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-40: #000;
+  --shadow-50: #000;
+  --shadow-60: #000;
+  --highlight-05: rgba(255,255,255,0.05);
+  --highlight-10: rgba(255,255,255,0.1);
+  --highlight-15: rgba(255,255,255,0.15);
+  --highlight-20: rgba(255,255,255,0.2);
+  --highlight-30: rgba(255,255,255,0.3);
+  --highlight-40: rgba(255,255,255,0.4);
+  --highlight-50: rgba(255,255,255,0.5);
+  /* ─── Typography ─────────────────────────────────────────────────── */
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Titillium Web', sans-serif;
+  --font-code: 'Share Tech Mono', monospace;
+  --font-tech: 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-label: 'Titillium Web', sans-serif;
+  /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
+     Formula: clamp(min, intercept + slope * 100vw, max)
+     Generated via Utopia method: slope = (max−min)/(1440−320)
+     ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --leading-none: 1;
+  --leading-tight: 1.1;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.6;
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
+  --tracking-widest: 0.25em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DIALOG - Metallic Chrome Theme
+   ═══════════════════════════════════════════════════════════════════════ */
+/* ── Backdrop ─────────────────────────────────────────────────────────── */
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: var(--shadow-60);
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  animation: dialogBackdropFadeIn 0.25s ease-out;
+}
+
+/* ── Dialog Box ───────────────────────────────────────────────────────── */
+.dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  width: 100%;
+  pointer-events: auto;
+  outline: none;
+  overflow: hidden; /* Prevents border clipping on corners */
+  /* Chrome metallic surface */
+  background: linear-gradient(135deg, var(--color-gray-800) 0%, var(--color-gray-850) 50%, var(--color-gray-800) 100%);
+  border-radius: 10px;
+  border: 1px solid var(--color-gray-700);
+  box-shadow: 0 12px 40px var(--shadow-50), 0 6px 20px var(--shadow-30), inset 0 1px 0 var(--highlight-15);
+  /* Animation */
+  animation: dialogSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: center;
+}
+
+@keyframes dialogSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+/* ── Header ───────────────────────────────────────────────────────────── */
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--color-gray-750);
+  box-shadow: 0 1px 0 var(--highlight-08);
+  flex-shrink: 0;
+  /* Slightly lighter header */
+  background: linear-gradient(180deg, var(--color-gray-750), var(--color-gray-800));
+}
+
+.dialog-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-light);
+  text-shadow: 0 1px 2px var(--shadow-40);
+  letter-spacing: 0.5px;
+}
+
+.dialog-close {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  margin-left: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.dialog-close .material-icons {
+  font-size: 20px;
+}
+.dialog-close:hover {
+  background: var(--highlight-10);
+  color: var(--text-light);
+}
+.dialog-close:active {
+  background: var(--shadow-15);
+  transform: scale(0.95);
+}
+
+/* ── Toolbar ─────────────────────────────────────────────────────────── */
+.dialog-toolbar {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
+  padding: 0.5rem 1rem;
+  flex-shrink: 0;
+}
+.dialog-toolbar .btn-icon {
+  color: var(--text-light);
+}
+.dialog-toolbar .btn-icon.active {
+  color: var(--color-primary);
+}
+.dialog-toolbar .browse-search__input {
+  color: var(--text-light);
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.2);
+}
+.dialog-toolbar .browse-search__input:focus {
+  border-color: var(--color-primary);
+}
+.dialog-toolbar .browse-search__icon {
+  color: var(--text-light);
+}
+
+/* ── Body ─────────────────────────────────────────────────────────────── */
+.dialog-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 1em;
+  color: var(--text-light);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  /* Custom scrollbar */
+}
+.dialog-body::-webkit-scrollbar {
+  width: 8px;
+}
+.dialog-body::-webkit-scrollbar-track {
+  background: var(--color-gray-900);
+  border-radius: 4px;
+}
+.dialog-body::-webkit-scrollbar-thumb {
+  background: var(--color-gray-600);
+  border-radius: 4px;
+}
+.dialog-body::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-500);
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────── */
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--color-gray-750);
+  box-shadow: 0 -1px 0 var(--highlight-05);
+  flex-shrink: 0;
+  /* Match header background */
+  background: linear-gradient(180deg, var(--color-gray-800), var(--color-gray-850));
+}
+
+/* ── Dialog List Items ────────────────────────────────────────────────── */
+.dialog-list-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  background: var(--color-gray-800);
+  color: var(--text-light);
+  font-family: var(--font-label);
+  font-size: 14px;
+  text-align: left;
+  width: 100%;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 6px var(--shadow-15), inset 0 1px 0 var(--highlight-10);
+}
+.dialog-list-item:hover:not(:disabled) {
+  background: var(--color-gray-700);
+  box-shadow: 0 4px 10px var(--shadow-20), inset 0 1px 0 var(--highlight-15);
+  transform: translateY(-1px);
+}
+.dialog-list-item:active:not(:disabled) {
+  background: var(--color-gray-850);
+  box-shadow: inset 0 2px 6px var(--shadow-25);
+  transform: translateY(0);
+}
+.dialog-list-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.dialog-list-item.active {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: var(--color-white);
+  box-shadow: 0 4px 12px var(--glow-primary), inset 0 1px 0 var(--highlight-30);
+}
+.dialog-list-item .material-icons {
+  font-size: 20px;
+}
+
+/* ── Dialog Alerts ────────────────────────────────────────────────────── */
+.dialog-alert {
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  border-left: 3px solid;
+}
+.dialog-alert.error {
+  background: rgba(211, 47, 63, 0.15);
+  color: var(--color-danger-light);
+  border-left-color: var(--color-danger);
+  box-shadow: 0 2px 6px var(--shadow-20);
+}
+.dialog-alert.success {
+  background: rgba(0, 201, 118, 0.15);
+  color: var(--color-success-light);
+  border-left-color: var(--color-success);
+  box-shadow: 0 2px 6px var(--shadow-20);
+}
+.dialog-alert.warning {
+  background: rgba(255, 171, 0, 0.15);
+  color: var(--color-warning-light);
+  border-left-color: var(--color-warning);
+  box-shadow: 0 2px 6px var(--shadow-20);
+}
+.dialog-alert.info {
+  background: rgba(0, 212, 255, 0.15);
+  color: var(--color-info-light);
+  border-left-color: var(--color-info);
+  box-shadow: 0 2px 6px var(--shadow-20);
+}
+
+/* ── Dialog Form Elements ─────────────────────────────────────────────── */
+.dialog-input {
+  width: 100%;
+  padding: 10px 14px;
+  background-color: var(--color-gray-900);
+  border: 1px solid var(--color-gray-700);
+  border-radius: 6px;
+  color: var(--text-light);
+  font-family: var(--font-body);
+  font-size: 14px;
+  box-shadow: inset 2px 2px 6px var(--shadow-50), 0 1px 0 var(--highlight-08);
+  transition: all 0.2s;
+}
+.dialog-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background-color: var(--color-gray-850);
+  box-shadow: inset 2px 2px 6px var(--shadow-50), 0 0 0 2px var(--glow-primary);
+}
+.dialog-input::placeholder {
+  color: var(--color-gray-500);
+  opacity: 0.7;
+}
+
+.dialog-label {
+  display: block;
+  font-family: var(--font-label);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  text-shadow: 0 0 8px var(--glow-primary);
+}
+
+.dialog-section-title {
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+/* ── Track Info Display ───────────────────────────────────────────────── */
+.dialog-track-info {
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  background: var(--color-gray-900);
+  border: 1px solid var(--color-gray-750);
+  box-shadow: inset 2px 2px 6px var(--shadow-30);
+}
+
+.dialog-track-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-light);
+  margin: 0 0 6px 0;
+  line-height: 1.4;
+}
+
+.dialog-track-meta {
+  font-size: 14px;
+  color: var(--color-gray-300);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .dialog {
+    max-width: calc(100vw - 1rem);
+    max-height: calc(100vh - 1rem);
+    margin: 0.5rem;
+  }
+  .dialog-header,
+  .dialog-footer {
+    padding: 0.875rem 1rem;
+  }
+  .dialog-body {
+    padding: 1rem;
+  }
+  .dialog-title {
+    font-size: 1rem;
+  }
+}
+/* ── Browse Tiles ── */
+.browse-tile {
+  color: var(--text-secondary);
+  background: transparent;
+}
+.browse-tile:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-primary);
+}
+.browse-tile .browse-tile__icon {
+  color: var(--color-primary);
+}
+.browse-tile .browse-tile__label {
+  color: var(--text-secondary);
+}
+
+/* ── Digital LCD Clock — Metallic Chrome Variant ───────────────────────────
+ * Reference: retro LCD weather-station / radio clock aesthetic
+ * Dark gunmetal bezel + pale cool-gray LCD glass + classic dark segments
+ * ──────────────────────────────────────────────────────────────────────── */
+/* ── Centering wrapper ──────────────────────────────────────────────────── */
+.digital-clock-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 90vw;
+  height: 90dvh;
+  max-width: none;
+  margin: 0 auto;
+  container-type: size;
+}
+
+/* ── Outer frame — thick dark-metal bezel ──────────────────────────────── */
+.digital-clock-frame {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: fit-content;
+  padding: 2cqw 2.5cqw;
+  background: linear-gradient(180deg, #2e2e2e 0%, #0e0e0e 100%);
+  border: 0.5cqw solid #111111;
+  border-radius: 6px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+  user-select: none;
+}
+
+/* ── Date + weather row below the LCD panel ─────────────────────────────── */
+.lcd-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5cqw;
+  margin-top: 1.5cqw;
+}
+
+.lcd-date {
+  font-family: "Roboto Condensed", "Roboto", sans-serif;
+  font-size: clamp(0.7rem, 1.8cqw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-gray-300, #aaa);
+  text-align: center;
+}
+
+.lcd-weather {
+  display: flex;
+  align-items: center;
+  gap: 0.5cqw;
+}
+
+.lcd-weather-icon {
+  font-size: clamp(0.9rem, 2cqw, 3rem);
+  color: var(--color-primary, #00e1ff);
+  filter: drop-shadow(0 0 0.3cqw rgba(0, 225, 255, 0.5));
+}
+
+.lcd-weather-temp {
+  font-family: "Roboto Condensed", "Roboto", sans-serif;
+  font-size: clamp(0.7rem, 1.8cqw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-primary, #00e1ff);
+}
+
+/* ── LCD Panel (the glassy screen area) ─────────────────────────────────── */
+.digital-clock {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 1.2cqw 1.8cqw;
+  border-radius: 2px;
+  background: #bfcfe8;
+  border: 0.2cqw solid #7a9ab8;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.35), inset 0 0 0 0.1cqw rgba(255, 255, 255, 0.2), 0 1px 0 rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.02) 2px, rgba(0, 0, 0, 0.02) 3px), linear-gradient(180deg, #ccd8e8 0%, #bfcfe8 55%, #aec4e0 100%);
+}
+.digital-clock::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 55%;
+  background: radial-gradient(ellipse 100% 100% at 50% 100%, rgba(0, 100, 255, 0.38) 0%, rgba(0, 70, 220, 0.2) 40%, transparent 75%);
+  pointer-events: none;
+}
+
+/* ── Day-of-week bar ────────────────────────────────────────────────────── */
+.lcd-days {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8cqw;
+  margin-bottom: 0.8cqw;
+  font-family: "Roboto Condensed", "Roboto", sans-serif;
+  font-size: clamp(0.55rem, 1.1cqw, 1.8rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+.lcd-days span {
+  opacity: 0.25;
+  color: #1c3038;
+}
+.lcd-days .active {
+  color: #1c3038;
+  opacity: 1;
+  border-bottom: 0.2cqw solid #1c3038;
+  filter: drop-shadow(2px 2px 0 rgba(28, 48, 56, 0.6));
+}
+
+/* ── Time row ───────────────────────────────────────────────────────────── */
+.lcd-time {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6cqw;
+}
+
+.lcd-digits {
+  display: flex;
+  align-items: center;
+  gap: 2cqw;
+}
+
+.lcd-ampm {
+  font-family: "Roboto Condensed", "Roboto", sans-serif;
+  font-size: clamp(0.75rem, 2.2cqw, 3.5rem);
+  font-weight: 800;
+  color: #1c3038;
+  letter-spacing: 0.08em;
+  padding-bottom: 0.2cqw;
+  margin-left: 0.4cqw;
+  text-transform: uppercase;
+  filter: drop-shadow(2px 2px 0 rgba(28, 48, 56, 0.6));
+}
+
+/* ── Colon separator ────────────────────────────────────────────────────── */
+.lcd-colon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3cqw;
+  width: 2.5cqw;
+  height: 100%;
+  padding: 2cqh 0;
+}
+
+.lcd-colon-dot {
+  width: 1.4cqw;
+  height: 1.4cqw;
+  background: #1c3038;
+  border-radius: 1px;
+  filter: drop-shadow(2px 2px 0 rgba(28, 48, 56, 0.6));
+}
+
+.lcd-colon--blink .lcd-colon-dot {
+  animation: lcd-blink 1s step-start infinite;
+}
+
+@keyframes lcd-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+/* ── 7-Segment Digit ────────────────────────────────────────────────────── */
+.lcd-digit {
+  position: relative;
+  width: 11cqw;
+  height: 18.7cqw;
+  filter: drop-shadow(2px 2px 0 rgba(28, 48, 56, 0.6));
+}
+
+.seg {
+  position: absolute;
+  background: #1c3038;
+  transition: opacity 0.1s ease;
+}
+.seg.on {
+  opacity: 1;
+}
+.seg.off {
+  opacity: 0.03;
+}
+
+.seg-a,
+.seg-d,
+.seg-g {
+  left: 10%;
+  width: 80%;
+  height: 7%;
+  clip-path: polygon(12% 0%, 88% 0%, 100% 50%, 88% 100%, 12% 100%, 0% 50%);
+}
+
+.seg-a {
+  top: 0;
+}
+
+.seg-g {
+  top: 46.5%;
+}
+
+.seg-d {
+  bottom: 0;
+}
+
+.seg-b,
+.seg-c,
+.seg-e,
+.seg-f {
+  width: 13%;
+  height: 42%;
+  clip-path: polygon(50% 0%, 100% 8%, 100% 92%, 50% 100%, 0% 92%, 0% 8%);
+}
+
+.seg-b {
+  top: 4%;
+  right: 0;
+}
+
+.seg-c {
+  bottom: 4%;
+  right: 0;
+}
+
+.seg-f {
+  top: 4%;
+  left: 0;
+}
+
+.seg-e {
+  bottom: 4%;
+  left: 0;
+}
+
+/* ── Analog Clock — Metallic Chrome Variant ────────────────────────────────
+ * Dark gunmetal bezel, near-black recessed face, chrome hands,
+ * electric-cyan second hand + accents
+ * ──────────────────────────────────────────────────────────────────────── */
+/* Bezel — thick dark-gunmetal ring with chrome edge highlight */
+.clock-bezel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  padding: 5%;
+  background: linear-gradient(145deg, #3a3a3a 0%, #111111 50%, #2a2a2a 100%);
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.75), inset 0 2px 4px rgba(255, 255, 255, 0.08), inset 0 -2px 6px rgba(0, 0, 0, 0.5);
+  border: 2px solid #0a0a0a;
+}
+
+/* Face — deep dark recessed dial */
+.clock-face {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 40% 35%, #1e1e1e 0%, #0a0a0a 100%);
+  box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.7), inset 0 0 40px rgba(0, 0, 0, 0.4);
+  border: 1px solid #000000;
+}
+
+/* ── Tick marks ─────────────────────────────────────────────────────────── */
+.clock-tick::before {
+  content: "";
+  display: block;
+  width: 100%;
+  position: absolute;
+  top: 4%;
+  border-radius: 1px;
+}
+
+/* Hour ticks — chrome bright */
+.clock-tick--hour::before {
+  height: 10%;
+  background: var(--color-gray-200, #cccccc);
+  width: 3px;
+  margin-left: -0.5px;
+}
+
+/* Minute ticks — dim chrome */
+.clock-tick--minute::before {
+  height: 5%;
+  background: var(--color-gray-600, #444444);
+  width: 1px;
+}
+
+/* ── Hour digits ────────────────────────────────────────────────────────── */
+.clock-hour-digit {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: "Roboto Condensed", "Roboto", sans-serif;
+  font-size: clamp(0.7rem, 3.5cqi, 1.4rem);
+  font-weight: 700;
+  color: var(--color-gray-150, #dddddd);
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
+  line-height: 1;
+}
+
+/* ── Hands ──────────────────────────────────────────────────────────────── */
+.clock-hand {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform-origin: bottom center;
+  border-radius: 2px;
+}
+
+/* Hour hand — short, brushed chrome */
+.clock-hand--hour {
+  width: 7px;
+  height: 25%;
+  margin-left: -3.5px;
+  background: linear-gradient(180deg, #e0e0e0 0%, #888888 100%);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+  border-radius: 3px 3px 1px 1px;
+  z-index: 3;
+}
+
+/* Minute hand — longer, polished chrome */
+.clock-hand--minute {
+  width: 3px;
+  height: 35%;
+  margin-left: -1.5px;
+  background: linear-gradient(180deg, #ffffff 0%, #aaaaaa 100%);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+  border-radius: 1.5px 1.5px 1px 1px;
+  z-index: 4;
+}
+
+/* Second hand — electric cyan accent */
+.clock-hand--second {
+  width: 1.5px;
+  height: 38%;
+  margin-left: -0.75px;
+  background: var(--color-primary, #00e1ff);
+  box-shadow: 0 0 6px rgba(0, 225, 255, 0.6);
+  border-radius: 1px;
+  z-index: 5;
+  transition: none;
+}
+
+/* Center cap — cyan-lit pivot */
+.clock-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5%;
+  height: 5%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--color-primary, #00e1ff);
+  box-shadow: 0 0 0 2px rgba(0, 225, 255, 0.3), 0 0 10px rgba(0, 225, 255, 0.5), 0 2px 6px rgba(0, 0, 0, 0.6);
+  z-index: 6;
+}
+
+.clock-face-day {
+  font-family: "Roboto Condensed", "Roboto", sans-serif;
+  font-size: clamp(0.8rem, 4cqi, 1.5rem);
+  font-weight: 600;
+  color: var(--color-gray-600, #444444);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.clock-face-date {
+  font-family: "Roboto Condensed", "Roboto", sans-serif;
+  font-size: clamp(0.8rem, 4cqi, 1.5rem);
+  font-weight: 700;
+  color: var(--color-gray-200, #cccccc);
+}
+
+/* ── Weather on face ────────────────────────────────────────────────────── */
+.clock-face-weather-icon {
+  font-size: clamp(0.7rem, 3.5cqi, 1.4rem);
+  color: var(--color-primary, #00e1ff);
+  filter: drop-shadow(0 0 3px rgba(0, 225, 255, 0.5));
+}
+
+.clock-face-weather-temp {
+  font-family: "Roboto Condensed", "Roboto", sans-serif;
+  font-size: clamp(0.7rem, 3.5cqi, 1.4rem);
+  font-weight: 700;
+  color: var(--color-gray-150, #dddddd);
+  white-space: nowrap;
+}
+
+/* ── Flip Clock – Metallic Chrome Theme ──────────────────────────────────── */
+.tick-flip-panel {
+  color: #c8d8e8;
+  background-color: #1a1a1a;
+}
+
+.tick-flip-panel-front {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.13) 0%, rgba(255, 255, 255, 0.04) 45%, transparent 60%), linear-gradient(180deg, #3c3c3c 0%, #1c1c1c 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.tick-flip-panel-back {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 40%), linear-gradient(180deg, #121212 0%, #1c1c1c 100%);
+}
+
+.flip-clock-body {
+  border-color: var(--color-white, #ffffff);
+  box-shadow: 0 0 0 1px rgba(0, 225, 255, 0.2), 0 0 18px rgba(0, 225, 255, 0.12), 0 10px 40px rgba(0, 0, 0, 0.95);
+}
+
+.flip-clock-stand {
+  background: linear-gradient(180deg, #2e2e2e 0%, #141414 100%);
+  border-top: 1px solid #444;
+}
+
+.flip-clock-date,
+.flip-clock-weather {
+  color: var(--color-primary, #00e1ff);
+  text-shadow: 0 0 6px rgba(0, 225, 255, 0.4);
+}
+
+body {
+  background-color: var(--bg-color);
+}
+
+/*# sourceMappingURL=metallic.css.map */

@@ -1,0 +1,13 @@
+node_modules
+.DS_Store
+*.log
+*.cache
+*.tmp
+*.bak
+*.swp
+.idea
+.vscode
+*.sublime-project
+*.sublime-workspace
+*.iml
+*.~af-lock~
