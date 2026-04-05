@@ -1,0 +1,9 @@
+{
+  "PLUGIN_NAME": "Audio Keepalive",
+  "SETTINGS_TITLE": "Paramètres Audio Keepalive",
+  "SETTINGS_DESC": "Maintenir le périphérique de sortie audio actif pour éviter les délais de négociation, les clics et les craquements sur les sorties HDMI, SPDIF et DAC USB.",
+  "KEEPALIVE_ENABLED": "Maintenir le périphérique audio actif",
+  "KEEPALIVE_ENABLED_DESC": "Maintient le périphérique de sortie ALSA ouvert en permanence. Empêche les récepteurs HDMI/SPDIF et les DAC USB de perdre le verrouillage du signal au repos, éliminant le délai à la reprise de la lecture.",
+  "SETTINGS_SAVED": "Paramètres Audio Keepalive appliqués",
+  "SAVE": "Enregistrer"
+}

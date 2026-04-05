@@ -54,6 +54,21 @@ class YouTube2Context {
         }
     }
     toast(type, message, title = 'YouTube2') {
+        // Suppress duplicate toasts if an identical one was shown within the last 5 seconds
+        const previousToast = this.get('previousToast');
+        if (previousToast &&
+            previousToast.type === type &&
+            previousToast.message === message &&
+            previousToast.title === title &&
+            Date.now() - previousToast.dt <= 5000) {
+            return;
+        }
+        this.set('previousToast', {
+            type,
+            message,
+            title,
+            dt: Date.now()
+        });
         __classPrivateFieldGet(this, _YouTube2Context_pluginContext, "f").coreCommand.pushToastMessage(type, title, message);
     }
     refreshUIConfig() {
@@ -171,4 +186,3 @@ _YouTube2Context_singletons = new WeakMap(), _YouTube2Context_data = new WeakMap
     __classPrivateFieldGet(this, _YouTube2Context_instances, "m", _YouTube2Context_loadI18n).call(this);
 };
 exports.default = new YouTube2Context();
-//# sourceMappingURL=YouTube2Context.js.map

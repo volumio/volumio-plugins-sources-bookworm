@@ -1,0 +1,9 @@
+{
+  "PLUGIN_NAME": "Audio Keepalive",
+  "SETTINGS_TITLE": "Audio Keepalive Einstellungen",
+  "SETTINGS_DESC": "Audioausgabegerät aktiv halten, um Verzögerungen bei der Signalaushandlung, Knackser und Klicks an HDMI-, SPDIF- und USB-DAC-Ausgängen zu vermeiden.",
+  "KEEPALIVE_ENABLED": "Audiogerät aktiv halten",
+  "KEEPALIVE_ENABLED_DESC": "Hält das ALSA-Ausgabegerät dauerhaft geöffnet. Verhindert, dass HDMI/SPDIF-Receiver und USB-DACs im Leerlauf das Signal verlieren, und beseitigt die Verzögerung beim Fortsetzen der Wiedergabe.",
+  "SETTINGS_SAVED": "Audio Keepalive Einstellungen angewendet",
+  "SAVE": "Speichern"
+}

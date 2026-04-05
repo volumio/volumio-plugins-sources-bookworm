@@ -1,0 +1,42 @@
+{
+  "host": {
+    "type": "string",
+    "value": ""
+  },
+  "port": {
+    "type": "number",
+    "value": 32400
+  },
+  "token": {
+    "type": "string",
+    "value": ""
+  },
+  "https": {
+    "type": "boolean",
+    "value": false
+  },
+  "shuffle": {
+    "type": "boolean",
+    "value": false
+  },
+  "pageSize": {
+    "type": "number",
+    "value": 100
+  },
+  "gaplessPlayback": {
+    "type": "boolean",
+    "value": true
+  },
+  "crossfadeEnabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "crossfadeDuration": {
+    "type": "number",
+    "value": 5
+  },
+  "clientId": {
+    "type": "string",
+    "value": ""
+  }
+}

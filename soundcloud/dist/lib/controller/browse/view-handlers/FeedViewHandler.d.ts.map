@@ -1,0 +1,1 @@
+{"version":3,"file":"FeedViewHandler.d.ts","sourceRoot":"","sources":["../../../../../src/lib/controller/browse/view-handlers/FeedViewHandler.ts"],"names":[],"mappings":"AAMA,OAAO,eAAe,MAAM,mBAAmB,CAAC;AAChD,OAAO,KAAK,IAAI,MAAM,QAAQ,CAAC;AAG/B,MAAM,WAAW,QAAS,SAAQ,IAAI;IACpC,IAAI,EAAE,MAAM,CAAC;CACd;AAED,MAAM,CAAC,OAAO,OAAO,eAAgB,SAAQ,eAAe,CAAC,QAAQ,CAAC;;IAE9D,MAAM;CAmCb"}

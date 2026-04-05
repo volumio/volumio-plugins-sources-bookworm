@@ -1,7 +1,7 @@
 import type I18nSchema from '../i18n/strings_en.json';
 import type winston from 'winston';
 import Cache from './util/Cache';
-import { type PluginConfigKey, type PluginConfigValue } from './PluginConfig';
+import { type PluginConfigKey, type PluginConfigValue } from './config/PluginConfig';
 export type I18nKey = keyof typeof I18nSchema;
 declare class SoundCloudContext {
     #private;

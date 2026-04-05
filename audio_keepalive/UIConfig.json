@@ -1,0 +1,34 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_NAME"
+  },
+  "sections": [
+    {
+      "id": "keepalive_settings",
+      "element": "section",
+      "label": "TRANSLATE.SETTINGS_TITLE",
+      "icon": "fa-plug",
+      "description": "TRANSLATE.SETTINGS_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "audio_interface/audio_keepalive",
+        "method": "saveSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "keepalive_enabled"
+        ]
+      },
+      "content": [
+        {
+          "id": "keepalive_enabled",
+          "element": "switch",
+          "label": "TRANSLATE.KEEPALIVE_ENABLED",
+          "doc": "TRANSLATE.KEEPALIVE_ENABLED_DESC",
+          "value": false
+        }
+      ]
+    }
+  ]
+}

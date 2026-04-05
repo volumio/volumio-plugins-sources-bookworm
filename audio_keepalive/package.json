@@ -1,0 +1,36 @@
+{
+  "name": "audio_keepalive",
+  "version": "1.1.1",
+  "description": "Maintains continuous audio output to prevent HDMI/SPDIF/USB signal loss during idle",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Just a Nerd",
+  "license": "ISC",
+  "volumio_info": {
+    "prettyName": "Audio Keepalive",
+    "icon": "fa-plug",
+    "plugin_type": "audio_interface",
+    "os": [
+      "bookworm"
+    ],
+    "details": "Feeds silence to the audio output during idle to prevent HDMI receivers, SPDIF decoders, and USB DACs from losing signal lock",
+    "changelog": "v1.1.1: HDMI/iec958 chain initialization bug fixes and improvements.",
+    "architectures": [
+      "amd64",
+      "armhf"
+    ],
+    "has_alsa_contribution": true
+  },
+  "dependencies": {
+    "fs-extra": "^0.28.0",
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.2"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "repository": "https://github.com/volumio/volumio-plugins-sources-bookworm"
+}

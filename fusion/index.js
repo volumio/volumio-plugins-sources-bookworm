@@ -1,6 +1,6 @@
 /*--------------------
-// FusionDsp plugin for volumio 3. By balbuze Febuary 2026
-contribution : Nerd, Paolo Sabatino
+// FusionDsp plugin for volumio 3. By balbuze March 2026
+contribution : Nerd, Paolo Sabatino, squadgazzz
 Multi Dsp features
 Based on CamillaDsp
 ----------------------
@@ -15,6 +15,7 @@ const execSync = require('child_process').execSync;
 const libQ = require('kew');
 const net = require('net');
 const path = require('path');
+const http = require('http');
 const WebSocket = require('ws');
 const { CamillaDsp } = require('./camilladsp-js');
 const url = 'ws://localhost:9876';
@@ -30,17 +31,43 @@ const presetFolder = "/data/INTERNAL/FusionDsp/presets/";
 const eq15range = [25, 40, 63, 100, 160, 250, 400, 630, 1000, 1600, 2500, 4000, 6300, 10000, 16000]//freq for graphic eq
 const baseQ = 1.4
 //const coefQ = [baseQ + 0.5, baseQ + 0.5, baseQ + 0.5, baseQ + 0.5, baseQ + 0.5, baseQ + 0.40, baseQ + 0.40, baseQ + 0.28, baseQ + 0.28, baseQ + 0.38, baseQ + 0.38, baseQ + 0.38, baseQ + 0.49, baseQ + 0.49, baseQ + 0.49]//Q for graphic EQ
-const coefQ = [1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85]
+//const coefQ = [1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85]
+//const coefQ = [1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.53, 1.56, 1.5, 1.21, 1, 0.7]
+const coefQ = [
+  1.45, 1.45, 1.45, 1.45, 1.45,
+  1.45, 1.45, 1.45, 1.45, 1.45,
+  1.40, 1.35, 1.25, 1.10, 0.90
+]/*
+const coefQ = [
+  1.5, // 25
+  1.5, // 40
+  1.5, // 63
+  1.5, // 100
+  1.5, // 160
+  1.5, // 250
+  1.5, // 400
+  1.5, // 630
+  1.5, // 1k
+  1.5, // 1.6k
+  1.45,// 2.5k
+  1.35,// 4k
+  1.2, // 6.3k
+  1.0, // 10k
+  0.8  // 16k
+]//to get a smooth curve*/
 const eq3range = [185, 1300, 5500]// freq for Eq3
 const coefQ3 = [0.82, 0.4, 0.82]//Q for graphic EQ3
 const eq3type = ["Lowshelf2", "Peaking", "Highshelf2"] //Filter type for EQ3
 const sv = 34300 // sound velocity cm/s
 const logPrefix = "FusionDsp - "
 const fileStreamParams = "/tmp/fusiondsp_stream_params.log";
+const peqGraphPort = 10015;
 
 // Debounce for config file write + Reload (to coalesce rapid UI/config changes)
 let configReloadDebounceTimeout = null;
 const configReloadDebounceMs = 250;
+
+const { computePeakCombinedGain } = require('./biquad-utils');
 
 // Define the Parameq class
 module.exports = FusionDsp;
@@ -110,6 +137,7 @@ FusionDsp.prototype.onStart = function () {
     self.hwinfo();
     self.purecamillagui();
     self.getIP();
+    self.startPeqGraphServer();
     self.volumioState();
     self.reportFusionEnabled();
     self.checksamplerate();
@@ -145,6 +173,8 @@ FusionDsp.prototype.onStop = function () {
     self.camillaProcess.stop();
     self.camillaProcess = null;
   }
+
+  self.stopPeqGraphServer();
 
   // Stop the FusionDsp system service
   exec("/usr/bin/sudo /bin/systemctl stop fusiondsp.service", {
@@ -335,22 +365,26 @@ FusionDsp.prototype.getUIConfig = function () {
         // Section 2: Preset Selection
         configurePresetSelection(self, uiconf, selectedsp);
 
-        // Section 3: Save Preset
-        uiconf.sections[3].content[0].value = self.config.get('renpreset');
+        // Section 3: Manage Preset (rename)
+        // Section 4: Preset Actions (duplicate/delete)
+        configureManagePreset(self, uiconf);
 
-        // Section 4: Import EQ
+        // Section 5: Save Preset
+        uiconf.sections[5].content[0].value = self.config.get('renpreset');
+
+        // Section 6: Import EQ
         configureImportEq(self, uiconf);
 
-        // Section 5: Local EQ Import
+        // Section 7: Local EQ Import
         configureLocalEqImport(self, uiconf);
 
-        // Section 6: Resampling
+        // Section 8: Resampling
         configureResampling(self, uiconf);
 
-        // Section 7: DRC Configuration
+        // Section 9: DRC Configuration
         configureDrc(self, uiconf);
 
-        // Section 8: Tools
+        // Section 9: Tools
         configureTools(self, uiconf);
 
         defer.resolve(uiconf);
@@ -437,8 +471,8 @@ function configureSection1(self, uiconf, selectedsp, ncontent, effect) {
 }
 
 function configurePeqSection(self, uiconf, ncontent) {
-  uiconf.sections[7].hidden = true;
   uiconf.sections[9].hidden = true;
+  uiconf.sections[11].hidden = true;
 
   const eqval = self.config.get('mergedeq') || '';
   const subtypex = eqval.toString().split('|');
@@ -564,14 +598,35 @@ function addPeqButtons(self, uiconf, ncontent) {
     });
   }
 
+  buttons.push({
+    id: 'resetpeq',
+    element: 'button',
+    label: self.commandRouter.getI18nString('RESET_PEQ'),
+    doc: self.commandRouter.getI18nString('RESET_PEQ_DOC'),
+    onClick: { type: 'plugin', endpoint: 'audio_interface/fusiondsp', method: 'resetPeqToSaved', data: [] },
+    visibleIf: { field: 'showeq', value: true }
+  }, {
+    id: 'showpeqcurve',
+    element: 'button',
+    label: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
+    doc: self.commandRouter.getI18nString('SHOW_PEQ_CURVE_DOC'),
+    onClick: {
+      type: 'plugin',
+      endpoint: 'audio_interface/fusiondsp',
+      method: 'showPeqGraph',
+      data: []
+    },
+    visibleIf: { field: 'showeq', value: true }
+  });
+
   uiconf.sections[1].content.push(...buttons);
 }
 
 function configureEq15Section(self, uiconf, selectedsp) {
-  uiconf.sections[9].hidden = true;
-  uiconf.sections[4].hidden = true;
-  uiconf.sections[5].hidden = true;
+  uiconf.sections[11].hidden = true;
+  uiconf.sections[6].hidden = true;
   uiconf.sections[7].hidden = true;
+  uiconf.sections[9].hidden = true;
 
   const listeq = selectedsp === 'EQ15' ? ['geq15'] : ['geq15', 'x2geq15'];
   const eqtext = selectedsp === 'EQ15'
@@ -610,10 +665,24 @@ function configureEq15Section(self, uiconf, selectedsp) {
     onClick: { type: 'plugin', endpoint: 'audio_interface/fusiondsp', method: 'reseteq', data: [] },
     visibleIf: { field: 'showeq', value: true }
   });
+
+  uiconf.sections[1].content.push({
+    id: 'showpeqcurve',
+    element: 'button',
+    label: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
+    doc: self.commandRouter.getI18nString('SHOW_PEQ_CURVE_DOC'),
+    onClick: {
+      type: 'plugin',
+      endpoint: 'audio_interface/fusiondsp',
+      method: 'showPeqGraph',
+      data: []
+    },
+    visibleIf: { field: 'showeq', value: true }
+  });
 }
 
 function configureEq3Section(self, uiconf) {
-  for (let i = 2; i <= 9; i++) uiconf.sections[i].hidden = true;
+  for (let i = 2; i <= 10; i++) uiconf.sections[i].hidden = true;
 
   const geq3 = self.config.get('geq3').split(',');
   const bars = [
@@ -637,9 +706,9 @@ function configureConvfirSection(self, uiconf) {
 
   // Ensure section 1 is visible and reset content
   uiconf.sections[1].hidden = false;
-  uiconf.sections[4].hidden = true;
-  uiconf.sections[5].hidden = true;
-  uiconf.sections[9].hidden = true;
+  uiconf.sections[6].hidden = true;
+  uiconf.sections[7].hidden = true;
+  uiconf.sections[11].hidden = true;
 
   // Clear existing content to avoid conflicts
   uiconf.sections[1].content = [];
@@ -734,13 +803,13 @@ function configureConvfirSection(self, uiconf) {
 }
 
 function configurePureCamillaSection(self, uiconf) {
-  for (let i = 1; i <= 8; i++) uiconf.sections[i].hidden = true;
+  for (let i = 1; i <= 9; i++) uiconf.sections[i].hidden = true;
 
   const IPaddress = self.config.get('address');
   const purecamillainstalled = self.config.get('purecgui');
 
   if (purecamillainstalled) {
-    uiconf.sections[9].content.push({
+    uiconf.sections[11].content.push({
       id: 'camillagui',
       element: 'button',
       label: 'Access to Camilla Gui',
@@ -748,7 +817,7 @@ function configurePureCamillaSection(self, uiconf) {
       onClick: { type: 'openUrl', url: `http://${IPaddress}:5011` }
     });
   } else {
-    uiconf.sections[9].content.push({
+    uiconf.sections[11].content.push({
       id: 'installcamillagui',
       element: 'button',
       label: 'First use. Install Camilla GUI',
@@ -783,7 +852,8 @@ function configureAdvancedSettings(self, uiconf, selectedsp) {
       id: 'autoatt',
       element: 'switch',
       doc: self.commandRouter.getI18nString('AUTO_ATT_DOC'),
-      label: self.commandRouter.getI18nString('AUTO_ATT'),
+      label: self.commandRouter.getI18nString('AUTO_ATT') + ' (' + ((Number(self.config.get('gainapplied')) || 0).toFixed(1)) + '\u200CdB)',
+      // label: self.commandRouter.getI18nString('AUTO_ATT') + ' (' + (Number(self.config.get('gainapplied')) || 0) + ' dB)',
       value: self.config.get('autoatt'),
       visibleIf: { field: 'showeq', value: true }
     }] : []),
@@ -797,7 +867,10 @@ function configureAdvancedSettings(self, uiconf, selectedsp) {
   if (self.config.get('showloudness')) {
     controls.push(
       { id: 'loudness', element: 'switch', doc: self.commandRouter.getI18nString('LOUDNESS_DOC'), label: self.commandRouter.getI18nString('LOUDNESS'), value: self.config.get('loudness'), visibleIf: { field: 'showeq', value: true } },
-      { id: 'loudnessthreshold', element: 'equalizer', label: self.commandRouter.getI18nString('LOUDNESS_THRESHOLD'), doc: self.commandRouter.getI18nString('LOUDNESS_THRESHOLD_DOC'), visibleIf: { field: 'showeq', value: true }, config: { orientation: 'horizontal', bars: [{ min: 10, max: 100, step: '1', value: self.config.get('loudnessthreshold'), ticksLabels: ['%'], tooltip: 'always' }] } }
+      { id: 'loudnessthreshold', element: 'equalizer', label: self.commandRouter.getI18nString('LOUDNESS_THRESHOLD'), doc: self.commandRouter.getI18nString('LOUDNESS_THRESHOLD_DOC'), visibleIf: { field: 'showeq', value: true }, config: { orientation: 'horizontal', bars: [{ min: 10, max: 100, step: '1', value: self.config.get('loudnessthreshold'), ticksLabels: ['%'], tooltip: 'always' }] } },
+      //{ id: 'loudnessstrength', element: 'equalizer', label: self.commandRouter.getI18nString('LOUDNESS_STRENGTH'), doc: self.commandRouter.getI18nString('LOUDNESS_STRENGTH_DOC'), visibleIf: { field: 'showeq', value: true }, config: { orientation: 'horizontal', bars: [{ min: 0, max: 2, step: '1', value: self.config.get('loudnessstrength'), ticks: [0, 1, 2], ticksLabels: ['Min', 'Medium', 'Max'], tooltip: 'show' }] } }
+      { id: 'loudnessstrength', element: 'equalizer', label: self.commandRouter.getI18nString('LOUDNESS_STRENGTH'), doc: self.commandRouter.getI18nString('LOUDNESS_STRENGTH_DOC'), visibleIf: { field: 'showeq', value: true }, config: { orientation: 'horizontal', bars: [{ value: self.config.get('loudnessstrength'), ticks: [0, 1, 2], ticksLabels: ['Min', 'Medium', 'Max'], tooltip: 'hide' }] } }
+
     );
   }
 
@@ -893,7 +966,7 @@ function configureFinalSettings(self, uiconf) {
   });
 
   const saveData = ['autoatt', 'leftlevel', 'rightlevel', 'crossfeed', 'monooutput', 'muteleft', 'muteright', 'permutchannel', 'showeq'];
-  if (self.config.get('showloudness')) saveData.push('loudness', 'loudnessthreshold');
+  if (self.config.get('showloudness')) saveData.push('loudness', 'loudnessthreshold', 'loudnessstrength');
   uiconf.sections[1].saveButton.data.push(...saveData);
 }
 
@@ -904,7 +977,7 @@ function configurePresetSelection(self, uiconf, selectedsp) {
 
   self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.value', value);
   self.configManager.setUIConfigParam(uiconf, 'sections[2].content[0].value.label', plabel);
-  if ((selectedsp != 'EQ3'&& selectedsp != 'purecgui')) {
+  if ((selectedsp != 'EQ3' && selectedsp != 'purecgui')) {
     try {
       const items = fs.readdirSync(pFolder);
       const itemsf = items.map(item => item.replace(/^\./, '').replace(/\.json$/, ''));
@@ -923,16 +996,30 @@ function configurePresetSelection(self, uiconf, selectedsp) {
   }
 }
 
+function configureManagePreset(self, uiconf) {
+  const selectedsp = self.config.get('selectedsp');
+  const currentPreset = (self.config.get(selectedsp + 'preset') || '').replace(/^\./, '').replace(/\.json$/, '');
+  if (currentPreset && currentPreset !== 'nopreset' && currentPreset !== 'no preset' && currentPreset !== 'no preset used') {
+    uiconf.sections[3].content[0].value = currentPreset;
+  } else {
+    uiconf.sections[3].content[0].value = '';
+  }
+  if (selectedsp === 'EQ3' || selectedsp === 'purecgui') {
+    uiconf.sections[3].hidden = true;
+    uiconf.sections[4].hidden = true;
+  }
+}
+
 function configureImportEq(self, uiconf) {
   const value = self.config.get('importeq');
-  self.configManager.setUIConfigParam(uiconf, 'sections[4].content[0].value.value', value);
-  self.configManager.setUIConfigParam(uiconf, 'sections[4].content[0].value.label', value);
+  self.configManager.setUIConfigParam(uiconf, 'sections[6].content[0].value.value', value);
+  self.configManager.setUIConfigParam(uiconf, 'sections[6].content[0].value.label', value);
 
   try {
     const listf = fs.readFileSync('/data/plugins/audio_interface/fusiondsp/downloadedlist.txt', 'utf8').split('\n');
     listf.slice(15).forEach((line, i) => {
       const [namel, linkl] = line.replace(/- \[/g, '').replace('](.', ',').slice(0, -1).split(',');
-      self.configManager.pushUIConfigParam(uiconf, 'sections[4].content[0].options', { value: linkl, label: `${i + 1}  ${namel}` });
+      self.configManager.pushUIConfigParam(uiconf, 'sections[6].content[0].options', { value: linkl, label: `${i + 1}  ${namel}` });
     });
   } catch (e) {
     self.logger.error(logPrfix + ' failed to read downloadedlist.txt: ' + e);
@@ -941,95 +1028,95 @@ function configureImportEq(self, uiconf) {
 
 function configureLocalEqImport(self, uiconf) {
   const value = self.config.get('importlocal');
-  self.configManager.setUIConfigParam(uiconf, 'sections[5].content[0].value.value', value);
-  self.configManager.setUIConfigParam(uiconf, 'sections[5].content[0].value.label', self.commandRouter.getI18nString('CHOOSE_LOCALEQ'));
+  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[0].value.value', value);
+  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[0].value.label', self.commandRouter.getI18nString('CHOOSE_LOCALEQ'));
 
   try {
     fs.readdirSync('/data/INTERNAL/FusionDsp/peq').forEach(item => {
-      self.configManager.pushUIConfigParam(uiconf, 'sections[5].content[0].options', { value: item, label: item });
+      self.configManager.pushUIConfigParam(uiconf, 'sections[7].content[0].options', { value: item, label: item });
     });
   } catch (e) {
     self.logger.error(logPrefix + ' failed to read local file: ' + e);
   }
 
   const localscope = self.config.get('localscope');
-  self.configManager.setUIConfigParam(uiconf, 'sections[5].content[1].value.value', localscope);
-  self.configManager.setUIConfigParam(uiconf, 'sections[5].content[1].value.label', localscope);
+  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[1].value.value', localscope);
+  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[1].value.label', localscope);
   ['L', 'R', 'L+R'].forEach(item => {
-    self.configManager.pushUIConfigParam(uiconf, 'sections[5].content[1].options', { value: item, label: item });
+    self.configManager.pushUIConfigParam(uiconf, 'sections[7].content[1].options', { value: item, label: item });
   });
 
-  uiconf.sections[5].content[2].value = self.config.get('addreplace');
+  uiconf.sections[7].content[2].value = self.config.get('addreplace');
 }
 
 function configureResampling(self, uiconf) {
-  uiconf.sections[6].content[0].value = self.config.get('enableresampling');
+  uiconf.sections[8].content[0].value = self.config.get('enableresampling');
 
   const resamplingSet = self.config.get('resamplingset');
-  self.configManager.setUIConfigParam(uiconf, 'sections[6].content[1].value.value', resamplingSet);
-  self.configManager.setUIConfigParam(uiconf, 'sections[6].content[1].value.label', resamplingSet);
+  self.configManager.setUIConfigParam(uiconf, 'sections[8].content[1].value.value', resamplingSet);
+  self.configManager.setUIConfigParam(uiconf, 'sections[8].content[1].value.label', resamplingSet);
   self.config.get('probesmplerate').split(' ').forEach(rate => {
-    self.configManager.pushUIConfigParam(uiconf, 'sections[6].content[1].options', { value: rate, label: rate });
+    self.configManager.pushUIConfigParam(uiconf, 'sections[8].content[1].options', { value: rate, label: rate });
   });
 
   const resamplingQ = self.config.get('resamplingq');
-  self.configManager.setUIConfigParam(uiconf, 'sections[6].content[2].value.value', resamplingQ);
-  self.configManager.setUIConfigParam(uiconf, 'sections[6].content[2].value.label', resamplingQ);
+  self.configManager.setUIConfigParam(uiconf, 'sections[8].content[2].value.value', resamplingQ);
+  self.configManager.setUIConfigParam(uiconf, 'sections[8].content[2].value.label', resamplingQ);
   ['+', '++', '+++', '++++'].forEach(q => {
-    self.configManager.pushUIConfigParam(uiconf, 'sections[6].content[2].options', { value: q, label: q });
+    self.configManager.pushUIConfigParam(uiconf, 'sections[8].content[2].options', { value: q, label: q });
   });
 }
 
 function configureDrc(self, uiconf) {
   const filetoconvertl = self.config.get('filetoconvert');
-  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[0].value.value', filetoconvertl);
-  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[0].value.label', filetoconvertl);
+  self.configManager.setUIConfigParam(uiconf, 'sections[9].content[0].value.value', filetoconvertl);
+  self.configManager.setUIConfigParam(uiconf, 'sections[9].content[0].value.label', filetoconvertl);
   try {
     fs.readdirSync(filtersource).forEach(item => {
-      self.configManager.pushUIConfigParam(uiconf, 'sections[7].content[0].options', { value: item, label: item });
+      self.configManager.pushUIConfigParam(uiconf, 'sections[9].content[0].options', { value: item, label: item });
     });
   } catch (e) {
     self.logger.error(logPrefix + ' Could not read file: ' + e);
   }
 
   const drcSampleRate = self.config.get('drc_sample_rate');
-  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[1].value.value', drcSampleRate);
-  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[1].value.label', self.getLabelForSelect(self.configManager.getValue(uiconf, 'sections[7].content[1].options'), drcSampleRate));
+  self.configManager.setUIConfigParam(uiconf, 'sections[9].content[1].value.value', drcSampleRate);
+  self.configManager.setUIConfigParam(uiconf, 'sections[9].content[1].value.label', self.getLabelForSelect(self.configManager.getValue(uiconf, 'sections[9].content[1].options'), drcSampleRate));
 
   const tc = self.config.get('tc');
-  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[2].value.value', tc);
-  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[2].value.label', tc);
+  self.configManager.setUIConfigParam(uiconf, 'sections[9].content[2].value.value', tc);
+  self.configManager.setUIConfigParam(uiconf, 'sections[9].content[2].value.label', tc);
   try {
     fs.readdirSync(tccurvepath).forEach(item => {
-      self.configManager.pushUIConfigParam(uiconf, 'sections[7].content[2].options', { value: item, label: item });
+      self.configManager.pushUIConfigParam(uiconf, 'sections[9].content[2].options', { value: item, label: item });
     });
   } catch (e) {
     self.logger.error(logPrefix + ' Could not read file: ' + e);
   }
 
   const drcconfig = self.config.get('drcconfig');
-  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[3].value.value', drcconfig);
-  self.configManager.setUIConfigParam(uiconf, 'sections[7].content[3].value.label', self.getLabelForSelect(self.configManager.getValue(uiconf, 'sections[7].content[3].options'), drcconfig));
-  uiconf.sections[7].content[4].value = self.config.get('outputfilename');
+  self.configManager.setUIConfigParam(uiconf, 'sections[9].content[3].value.value', drcconfig);
+  self.configManager.setUIConfigParam(uiconf, 'sections[9].content[3].value.label', self.getLabelForSelect(self.configManager.getValue(uiconf, 'sections[9].content[3].options'), drcconfig));
+  uiconf.sections[9].content[4].value = self.config.get('outputfilename');
 }
 
 function configureTools(self, uiconf) {
   const ttools = self.config.get('toolsinstalled');
   const toolsfiletoplay = self.config.get('toolsfiletoplay');
-  self.configManager.setUIConfigParam(uiconf, 'sections[8].content[0].value.value', toolsfiletoplay);
-  self.configManager.setUIConfigParam(uiconf, 'sections[8].content[0].value.label', toolsfiletoplay);
+  self.configManager.setUIConfigParam(uiconf, 'sections[10].content[0].value.value', toolsfiletoplay);
+  self.configManager.setUIConfigParam(uiconf, 'sections[10].content[0].value.label', toolsfiletoplay);
 
   try {
     fs.readdirSync('/data/' + toolspath).filter(item => item !== 'folder.png').forEach(item => {
-      self.configManager.pushUIConfigParam(uiconf, 'sections[8].content[0].options', { value: item, label: item });
+      self.configManager.pushUIConfigParam(uiconf, 'sections[10].content[0].options', { value: item, label: item });
     });
   } catch (e) {
     self.logger.error(logPrefix + ' Could not read file: ' + e);
   }
 
-  uiconf.sections[8].content[0].hidden = !ttools;
-  uiconf.sections[8].content[1].hidden = !ttools;
-  uiconf.sections[8].content[2].hidden = ttools;
+  uiconf.sections[10].content[0].hidden = !ttools;
+  uiconf.sections[10].content[1].hidden = !ttools;
+  uiconf.sections[10].content[2].hidden = ttools;
 }
 
 FusionDsp.prototype.refreshUI = function () {
@@ -1067,6 +1154,7 @@ FusionDsp.prototype.choosedsp = function (data) {
     self.config.set('monooutput', false)
     self.config.set('loudness', false)
     self.config.set('loudnessthreshold', 50)
+    self.config.set('loudnessstrength', 2)
     self.config.set('leftlevel', 0)
     self.config.set('rightlevel', 0)
     self.config.set('delay', 0)
@@ -1123,7 +1211,7 @@ FusionDsp.prototype.getIP = function () {
   const self = this;
   var address
   var iPAddresses = self.commandRouter.executeOnPlugin('system_controller', 'network', 'getCachedIPAddresses', '');
-  self.logger.info(logPrefix+'--'+iPAddresses);
+  self.logger.info(logPrefix + '--' + iPAddresses);
   if (iPAddresses && iPAddresses.eth0 && iPAddresses.eth0 != '') {
     address = iPAddresses.eth0;
   } else if (iPAddresses && iPAddresses.wlan0 && iPAddresses.wlan0 != '' && iPAddresses.wlan0 !== '192.168.211.1') {
@@ -1151,6 +1239,550 @@ FusionDsp.prototype.purecamillagui = function () {
     self.logger.info(logPrefix + ' failed to load Camilla Gui' + err);
   }
 
+};
+
+FusionDsp.prototype.startPeqGraphServer = function () {
+  const self = this;
+  if (self.peqGraphServer) return;
+
+  self.peqGraphServer = http.createServer(function (req, res) {
+    if (req.method === 'GET' && req.url === '/') {
+      fs.readFile(path.join(__dirname, 'peq-graph.html'), function (err, data) {
+        if (err) {
+          res.writeHead(500, { 'Content-Type': 'text/plain' });
+          res.end('Error loading page');
+          return;
+        }
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(data);
+      });
+    } else if (req.method === 'OPTIONS' && (req.url === '/api/peq' || req.url === '/api/peq/reset' || req.url === '/api/peq/save' || req.url === '/api/peq/add' || req.url === '/api/peq/remove')) {
+      res.writeHead(204, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      });
+      res.end();
+
+    } else if (req.method === 'GET' && req.url === '/api/peq') {
+      var sampleRate = self.pushstateSamplerate || 44100;
+      var mergedeq = self.config.get('mergedeq') || '';
+      var parts = mergedeq.toString().split('|');
+      var filters = [];
+
+      for (var i = 0; i + 3 < parts.length; i += 4) {
+        var indexMatch = parts[i].match(/\d+/);
+        var filterIndex = indexMatch ? parseInt(indexMatch[0]) : i / 4;
+        var type = parts[i + 1];
+        var scope = parts[i + 2];
+        var paramStr = parts[i + 3];
+        if (!type || type === 'None' || type === 'undefined') continue;
+        var params = paramStr.split(',').map(Number);
+        filters.push({
+          index: filterIndex,
+          type: type,
+          scope: scope,
+          params: params
+        });
+      }
+
+      var result = {
+        sampleRate: sampleRate,
+        mode: self.config.get('selectedsp'),
+        filters: filters
+      };
+
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      res.end(JSON.stringify(result));
+
+    } else if (req.method === 'POST' && req.url === '/api/peq') {
+      var body = '';
+      req.on('data', function (chunk) { body += chunk; });
+      req.on('end', function () {
+        var corsHeaders = {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        };
+
+        var mode = self.config.get('selectedsp');
+        if (mode !== 'PEQ' && mode !== 'EQ15' && mode !== '2XEQ15') {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
+          return;
+        }
+
+        var payload;
+        try {
+          payload = JSON.parse(body);
+        } catch (e) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Invalid JSON' }));
+          return;
+        }
+
+        if (!payload.filters || !Array.isArray(payload.filters) || payload.filters.length === 0) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Missing or empty filters array' }));
+          return;
+        }
+
+        // Parse current mergedeq into slot array (groups of 4 pipe-delimited parts)
+        var mergedeq = self.config.get('mergedeq') || '';
+        var rawParts = mergedeq.toString().split('|');
+        // Build array of slots: each slot = { label, type, scope, paramStr }
+        var slots = [];
+        for (var si = 0; si + 3 < rawParts.length; si += 4) {
+          slots.push({
+            label: rawParts[si],
+            type: rawParts[si + 1],
+            scope: rawParts[si + 2],
+            paramStr: rawParts[si + 3]
+          });
+        }
+
+        // Validate and patch each requested filter
+        for (var fi = 0; fi < payload.filters.length; fi++) {
+          var upd = payload.filters[fi];
+          var idx = upd.index;
+          var newParams = upd.params;
+
+          if (!Array.isArray(newParams) || newParams.length === 0) {
+            res.writeHead(400, corsHeaders);
+            res.end(JSON.stringify({ error: 'Invalid params for filter index ' + idx }));
+            return;
+          }
+
+          // Find matching slot by index number (and matchScope for disambiguation in 2XEQ15)
+          var slotIdx = -1;
+          var matchScope = upd.matchScope || null;
+          for (var si = 0; si < slots.length; si++) {
+            var m = slots[si].label.match(/\d+/);
+            if (m && parseInt(m[0]) === idx) {
+              if (matchScope && slots[si].scope !== matchScope) continue;
+              slotIdx = si; break;
+            }
+          }
+          if (slotIdx === -1) {
+            res.writeHead(400, corsHeaders);
+            res.end(JSON.stringify({ error: 'Filter index ' + idx + ' not found' }));
+            return;
+          }
+
+          // In EQ15/2XEQ15 mode, only gain (params[1]) can be changed
+          if (mode === 'EQ15' || mode === '2XEQ15') {
+            if (upd.type) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Cannot change filter type in EQ15 mode' }));
+              return;
+            }
+            if (upd.scope) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Cannot change scope in EQ15 mode' }));
+              return;
+            }
+            var originalParams = slots[slotIdx].paramStr.split(',').map(Number);
+            newParams[0] = originalParams[0];
+            if (newParams.length > 2) newParams[2] = originalParams[2];
+            upd.params = newParams;
+          }
+
+          // Allow type change if provided
+          if (upd.type && typeof upd.type === 'string') {
+            slots[slotIdx].type = upd.type;
+          }
+
+          // Allow scope change if provided
+          if (upd.scope && ['L+R', 'L', 'R'].indexOf(upd.scope) !== -1) {
+            slots[slotIdx].scope = upd.scope;
+          }
+
+          var typer = slots[slotIdx].type;
+
+          // Validate frequency (param 0 for all types except None and Tilt)
+          if (typer !== 'None' && typer !== 'Tilt') {
+            var freq = Number(newParams[0]);
+            if (!isFinite(freq) || freq <= 0 || freq >= 22050) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Frequency out of range for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Validate gain for types that have it at param index 1
+          if (typer === 'Peaking' || typer === 'Peaking2' || typer === 'Highshelf' || typer === 'Highshelf2' ||
+            typer === 'Lowshelf' || typer === 'Lowshelf2' || typer === 'LowshelfFO' || typer === 'HighshelfFO') {
+            var g = Number(newParams[1]);
+            var gainLimit = (mode === 'EQ15' || mode === '2XEQ15') ? 10.1 : 20.1;
+            if (!isFinite(g) || g <= -gainLimit || g >= gainLimit) {
+              var limitLabel = (mode === 'EQ15' || mode === '2XEQ15') ? '10' : '20';
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Gain must be between -' + limitLabel + ' and ' + limitLabel + ' dB for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Validate Q for Peaking, Highshelf2, Lowshelf2
+          if (typer === 'Peaking' || typer === 'Highshelf2' || typer === 'Lowshelf2') {
+            var q = Number(newParams[2]);
+            if (!isFinite(q) || q <= 0 || q >= 40.1) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Q out of range for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Validate bandwidth for Peaking2
+          if (typer === 'Peaking2') {
+            var bw = Number(newParams[2]);
+            if (!isFinite(bw) || bw <= 0 || bw >= 8) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Bandwidth out of range for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Validate Q for Highpass, Lowpass, Notch
+          if (typer === 'Highpass' || typer === 'Lowpass' || typer === 'Notch') {
+            var q = Number(newParams[1]);
+            if (!isFinite(q) || q <= 0 || q >= 40.1) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Q out of range for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Validate bandwidth for Highpass2, Lowpass2, Notch2
+          if (typer === 'Highpass2' || typer === 'Lowpass2' || typer === 'Notch2') {
+            var bw = Number(newParams[1]);
+            if (!isFinite(bw) || bw <= 0 || bw >= 25.1) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Bandwidth out of range for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Validate slope for Highshelf, Lowshelf
+          if (typer === 'Highshelf' || typer === 'Lowshelf') {
+            var s = Number(newParams[2]);
+            if (!isFinite(s) || s <= 0 || s >= 13) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Slope out of range for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Validate order for Butterworth types
+          if (typer === 'ButterworthHighpass' || typer === 'ButterworthLowpass') {
+            var order = Number(newParams[1]);
+            if ([2, 4, 6, 8].indexOf(order) === -1) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Invalid order for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Validate LinkwitzTransform
+          if (typer === 'LinkwitzTransform') {
+            var qa = Number(newParams[1]);
+            var ft = Number(newParams[2]);
+            var qt = Number(newParams[3]);
+            if (!isFinite(qa) || qa <= 0 || qa >= 40.1 || !isFinite(qt) || qt <= 0 || qt >= 40.1) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Q out of range for Eq' + idx }));
+              return;
+            }
+            if (!isFinite(ft) || ft <= 0 || ft >= 22050) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Target frequency out of range for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Validate Tilt
+          if (typer === 'Tilt') {
+            var g = Number(newParams[0]);
+            if (!isFinite(g) || g <= -100.1 || g >= 100.1) {
+              res.writeHead(400, corsHeaders);
+              res.end(JSON.stringify({ error: 'Tilt gain out of range for Eq' + idx }));
+              return;
+            }
+          }
+
+          // Patch the slot params
+          slots[slotIdx].paramStr = newParams.join(',');
+        }
+
+        // Reconstruct mergedeq string
+        var newMergedeq = '';
+        for (var si = 0; si < slots.length; si++) {
+          newMergedeq += slots[si].label + '|' + slots[si].type + '|' + slots[si].scope + '|' + slots[si].paramStr + '|';
+        }
+
+        self.config.set('mergedeq', newMergedeq);
+
+        // Sync geq15/x2geq15 config from updated mergedeq so UI sliders stay in sync
+        if (mode === 'EQ15' || mode === '2XEQ15') {
+          var updatedSlots = newMergedeq.split('|');
+          var lGains = [];
+          var rGains = [];
+          for (var si = 0; si + 3 < updatedSlots.length; si += 4) {
+            var scope = updatedSlots[si + 2];
+            var gain = updatedSlots[si + 3].split(',')[1] || '0';
+            if (scope === 'L+R' || scope === 'L') lGains.push(gain);
+            if (scope === 'R') rGains.push(gain);
+          }
+          if (mode === 'EQ15') {
+            self.config.set('geq15', lGains.join(','));
+          } else {
+            self.config.set('geq15', lGains.join(','));
+            self.config.set('x2geq15', rGains.join(','));
+          }
+        }
+
+        setTimeout(function () {
+          self.refreshUI();
+          self.createCamilladspfile();
+        }, 100);
+
+        res.writeHead(200, corsHeaders);
+        res.end(JSON.stringify({ ok: true }));
+      });
+
+    } else if (req.method === 'POST' && req.url === '/api/peq/reset') {
+      var corsHeaders = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      };
+
+      if (self.config.get('selectedsp') !== 'PEQ') {
+        res.writeHead(400, corsHeaders);
+        res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
+        return;
+      }
+
+      var savedmergedeq = self.config.get('savedmergedeq');
+      var savednbreq = self.config.get('savednbreq');
+      self.config.set('mergedeq', savedmergedeq);
+      self.config.set('nbreq', savednbreq);
+
+      setTimeout(function () {
+        self.createCamilladspfile();
+        self.refreshUI();
+      }, 100);
+
+      res.writeHead(200, corsHeaders);
+      res.end(JSON.stringify({ ok: true }));
+
+    } else if (req.method === 'POST' && req.url === '/api/peq/save') {
+      var corsHeaders = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      };
+
+      if (self.config.get('selectedsp') !== 'PEQ') {
+        res.writeHead(400, corsHeaders);
+        res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
+        return;
+      }
+
+      self.config.set('savedmergedeq', self.config.get('mergedeq'));
+      self.config.set('savednbreq', self.config.get('nbreq'));
+
+      res.writeHead(200, corsHeaders);
+      res.end(JSON.stringify({ ok: true }));
+
+    } else if (req.method === 'POST' && req.url === '/api/peq/add') {
+      var body = '';
+      req.on('data', function (chunk) { body += chunk; });
+      req.on('end', function () {
+        var corsHeaders = {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        };
+
+        if (self.config.get('selectedsp') !== 'PEQ') {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
+          return;
+        }
+
+        var nbreq = self.config.get('nbreq');
+        if (nbreq >= tnbreq) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Maximum number of filters reached' }));
+          return;
+        }
+
+        var scope = 'L+R';
+        try {
+          var payload = JSON.parse(body);
+          if (payload.scope && ['L+R', 'L', 'R'].indexOf(payload.scope) !== -1) {
+            scope = payload.scope;
+          }
+        } catch (e) {
+          // ignore parse errors, use defaults
+        }
+
+        var mergedeq = (self.config.get('mergedeq') || '').toString();
+        var rawParts = mergedeq.split('|');
+
+        // Find the max EqN index in existing slots
+        var maxIndex = 0;
+        for (var si = 0; si + 3 < rawParts.length; si += 4) {
+          var m = rawParts[si].match(/\d+/);
+          if (m) {
+            var idx = parseInt(m[0]);
+            if (idx > maxIndex) maxIndex = idx;
+          }
+        }
+
+        var newIndex = maxIndex + 1;
+        mergedeq += 'Eq' + newIndex + '|Peaking|' + scope + '|1000,0,1|';
+        self.config.set('mergedeq', mergedeq);
+        self.config.set('nbreq', nbreq + 1);
+        self.config.set('effect', true);
+
+        setTimeout(function () {
+          self.createCamilladspfile();
+          self.refreshUI();
+        }, 100);
+
+        res.writeHead(200, corsHeaders);
+        res.end(JSON.stringify({ ok: true }));
+      });
+
+    } else if (req.method === 'POST' && req.url === '/api/peq/remove') {
+      var body = '';
+      req.on('data', function (chunk) { body += chunk; });
+      req.on('end', function () {
+        var corsHeaders = {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        };
+
+        var mode = self.config.get('selectedsp');
+        if (mode !== 'PEQ' && mode !== 'EQ15' && mode !== '2XEQ15') {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'PEQ mode is not active' }));
+          return;
+        }
+
+        var nbreq = self.config.get('nbreq');
+        if (nbreq <= 1) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Cannot remove the last filter' }));
+          return;
+        }
+
+        var payload;
+        try {
+          payload = JSON.parse(body);
+        } catch (e) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Invalid JSON' }));
+          return;
+        }
+
+        var removeIndex = payload.index;
+        if (removeIndex === undefined || removeIndex === null) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Missing index' }));
+          return;
+        }
+
+        var mergedeq = (self.config.get('mergedeq') || '').toString();
+        var rawParts = mergedeq.split('|');
+        var slots = [];
+        for (var si = 0; si + 3 < rawParts.length; si += 4) {
+          slots.push({
+            label: rawParts[si],
+            type: rawParts[si + 1],
+            scope: rawParts[si + 2],
+            paramStr: rawParts[si + 3]
+          });
+        }
+
+        // Find and remove the slot matching the requested index
+        var found = false;
+        for (var si = 0; si < slots.length; si++) {
+          var m = slots[si].label.match(/\d+/);
+          if (m && parseInt(m[0]) === removeIndex) {
+            slots.splice(si, 1);
+            found = true;
+            break;
+          }
+        }
+
+        if (!found) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Filter index ' + removeIndex + ' not found' }));
+          return;
+        }
+
+        // Rebuild mergedeq string
+        var newMergedeq = '';
+        for (var si = 0; si < slots.length; si++) {
+          newMergedeq += slots[si].label + '|' + slots[si].type + '|' + slots[si].scope + '|' + slots[si].paramStr + '|';
+        }
+
+        self.config.set('mergedeq', newMergedeq);
+        self.config.set('nbreq', nbreq - 1);
+
+        setTimeout(function () {
+          self.createCamilladspfile();
+          self.refreshUI();
+        }, 100);
+
+        res.writeHead(200, corsHeaders);
+        res.end(JSON.stringify({ ok: true }));
+      });
+
+    } else {
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      res.end('Not found');
+    }
+  });
+
+  self.peqGraphServer.on('error', function (err) {
+    self.logger.info(logPrefix + ' PEQ graph server error: ' + err.message);
+  });
+
+  self.peqGraphServer.listen(peqGraphPort, function () {
+    self.logger.info(logPrefix + ' PEQ graph server listening on port ' + peqGraphPort);
+  });
+};
+
+FusionDsp.prototype.showPeqGraph = function () {
+  var self = this;
+  var url = 'http://' + self.config.get('address') + ':' + peqGraphPort;
+  var modalData = {
+    title: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
+    message: self.commandRouter.getI18nString('SHOW_PEQ_CURVE_DOC'),
+    size: 'lg',
+    buttons: [{
+      name: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
+      class: 'btn btn-info',
+      url: url
+    }, {
+      name: 'Close',
+      class: 'btn btn-warning',
+      emit: 'closeModals',
+      payload: ''
+    }]
+  };
+  self.commandRouter.broadcastMessage('openModal', modalData);
+};
+
+FusionDsp.prototype.stopPeqGraphServer = function () {
+  const self = this;
+  if (self.peqGraphServer) {
+    self.peqGraphServer.close();
+    self.peqGraphServer = null;
+    self.logger.info(logPrefix + ' PEQ graph server stopped');
+  }
 };
 
 FusionDsp.prototype.addeq = function (data) {
@@ -1205,6 +1837,19 @@ FusionDsp.prototype.removealleq = function () {
   self.refreshUI();
 };
 
+FusionDsp.prototype.resetPeqToSaved = function () {
+  const self = this;
+  var savedmergedeq = self.config.get('savedmergedeq');
+  var savednbreq = self.config.get('savednbreq');
+  self.config.set('mergedeq', savedmergedeq);
+  self.config.set('nbreq', savednbreq);
+
+  setTimeout(function () {
+    self.createCamilladspfile();
+  }, 100);
+  self.refreshUI();
+};
+
 FusionDsp.prototype.reseteq = function () {
   const self = this;
   const selectedsp = self.config.get("selectedsp");
@@ -1220,6 +1865,7 @@ FusionDsp.prototype.reseteq = function () {
     self.config.set("savedgeq15", defaultEQ15);
     self.config.set('nbreq', 15);
     self.config.set('mergedeq', defaultMergedEQ15);
+    self.config.set('savedmergedgeq15', defaultMergedEQ15);
   } else if (selectedsp === '2XEQ15') {
     self.config.set(`${selectedsp}preset`, 'no preset used');
     self.config.set('usethispreset', 'no preset used');
@@ -1227,6 +1873,9 @@ FusionDsp.prototype.reseteq = function () {
     self.config.set("geq15", defaultEQ15);
     self.config.set('nbreq', 30);
     self.config.set('mergedeq', defaultMerged2XEQ15);
+    self.config.set('savedmergedeqx2geq15', defaultMerged2XEQ15);
+    self.config.set('savedx2geq15l', defaultEQ15);
+    self.config.set('savedx2geq15r', defaultEQ15);
   }
 
   setTimeout(() => {
@@ -2598,23 +3247,41 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
 
   };
 
-  gainmaxused += ',' + loudnessGain
-
-  const withNegativeValues = gainmaxused.split(',').some((val) => val < 0);
-  gainresult = (gainmaxused.toString().split(',').slice(1).sort((a, b) => a - b)).pop();
-
-  //    self.logger.info(logPrefix + ' gainmaxused ' + gainmaxused + ' ' + typeof (withNegativeValues) + withNegativeValues)
   let monooutput = self.config.get('monooutput')
 
   if (effect) {
 
+    if (selectedsp == "convfir") {
+      // FIR convolution: attenuation is stored in gainmaxused, not computable via biquad math
+      gainmaxused += ',' + (Number(loudnessGain) || 0);
+      gainresult = Number((gainmaxused.toString().split(',').slice(1).sort((a, b) => a - b)).pop()) || 0;
+    } else {
+      // Build combined EQ string including loudness filters for accurate peak computation
+      var eqForPeak = self.config.get('mergedeq') || '';
+      if (self.config.get('loudness') && Number(loudnessGain) > 0) {
+        var lg = Number(loudnessGain);
+        eqForPeak += 'Lhs|Highshelf2|L+R|10620,' + (lg * 0.2811168954093706).toFixed(2) + ',1.38|';
+        eqForPeak += 'Lls|LowshelfFO|L+R|120,' + lg + '|';
+        eqForPeak += 'Lp1|Peaking|L+R|2000,' + (lg * -0.061050638902035).toFixed(2) + ',0.6|';
+        eqForPeak += 'Lp2|Peaking|L+R|4000,' + (lg * -0.0274491244675816).toFixed(2) + ',0.8|';
+        eqForPeak += 'Lp3|Peaking|L+R|8000,' + (lg * 0.0709891150023663).toFixed(2) + ',2.13|';
+      }
+      // Compute peak of the combined frequency response (EQ + loudness filters)
+      var combinedPeakDb = computePeakCombinedGain(eqForPeak, hcurrentsamplerate || 44100);
+      gainresult = combinedPeakDb;
+    }
+
+    const withNegativeValues = gainmaxused.split(',').some((val) => val < 0);
+
+    //    self.logger.info(logPrefix + ' gainmaxused ' + gainmaxused + ' ' + typeof (withNegativeValues) + withNegativeValues)
+
     if (+gainresult == 0 && !withNegativeValues) {
       gainclipfree = -0.005
     } else if (+gainresult == 0 && withNegativeValues) {
-      gainclipfree = -2.5
+      gainclipfree = -1
       self.logger.info(logPrefix + ' else 1  ' + gainclipfree)
     } else if (+gainresult > 0 && (selectedsp != "convfir")) {
-      gainclipfree = ('-' + ((parseFloat(Number(gainresult).toFixed(2))) + 2.5))
+      gainclipfree = ('-' + ((parseFloat(Number(gainresult).toFixed(2))) + 1))
     } else if (+gainresult > 0 && (selectedsp == "convfir")) {
       gainclipfree = ('-' + (parseFloat(Number(gainresult))))
     }
@@ -3437,7 +4104,8 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
           muteright: data['muteright'] || false, // Default: false
           ldistance: data['ldistance'] || 0, // Default: 0
           rdistance: data['rdistance'] || 0, // Default: 0
-          permutchannel: data['permutchannel'] || false // Default: false
+          permutchannel: data['permutchannel'] || false, // Default: false
+          loudnessstrength: data['loudnessstrength']
         };
         self.config.set("state4Clipping", state4Clipping)
         self.logger.info(logPrefix + ' State4Clipping saved: ' + JSON.stringify(state4Clipping, null, 2));
@@ -3522,6 +4190,14 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
     let loudness = data["loudness"]
     if (loudness) {
       self.config.set('loudnessthreshold', data.loudnessthreshold)
+      /*
+      let loudnessstrength = data.loudnessstrength
+
+      while (Array.isArray(loudnessstrength)) loudnessstrength = loudnessstrength[0]
+
+      self.config.set('loudnessstrength', [0, 1, 2].includes(loudnessstrength) ? loudnessstrength : 2)
+      */
+      self.config.set('loudnessstrength', data.loudnessstrength)
       self.socket.emit('volume', '+')
       setTimeout(function () {
 
@@ -3631,7 +4307,8 @@ FusionDsp.prototype.saveequalizerpresetv = function (data) {
     self.config.get('muteright'),
     self.config.get('ldistance'),
     self.config.get('rdistance'),
-    self.config.get('permutchannel')
+    self.config.get('permutchannel'),
+    self.config.get('loudnessstrength', 2)
   ];
 
   var nbreq = self.config.get('nbreq');
@@ -3690,6 +4367,156 @@ FusionDsp.prototype.saveequalizerpresetv = function (data) {
   });
 
   return defer.promise;
+};
+
+FusionDsp.prototype.duplicatepreset = function () {
+  const self = this;
+  const selectedsp = self.config.get('selectedsp');
+  const preset = self.config.get(selectedsp + 'preset');
+
+  if (!preset || preset === 'nopreset' || preset === 'no preset' || preset === 'no preset used' || preset === 'Choose a preset') {
+    self.commandRouter.pushToastMessage('warning', self.commandRouter.getI18nString('NO_PRESET_USED'));
+    return libQ.resolve();
+  }
+
+  const presetName = preset.replace(/^\./, '').replace(/\.json$/, '');
+  const newName = presetName + ' Copy';
+  const oldPath = presetFolder + selectedsp + '/' + preset;
+  const newFileName = newName + '.json';
+  const newPath = presetFolder + selectedsp + '/' + newFileName;
+
+  try {
+    fs.copySync(oldPath, newPath);
+    self.config.set(selectedsp + 'preset', newFileName);
+    self.commandRouter.pushToastMessage('success',
+      self.commandRouter.getI18nString('PRESET_DUPLICATED').replace('{0}', newName));
+    setTimeout(function () { self.refreshUI(); }, 500);
+  } catch (e) {
+    self.logger.error(logPrefix + ' failed to duplicate preset: ' + e);
+    self.commandRouter.pushToastMessage('error', 'Failed to duplicate preset');
+  }
+  return libQ.resolve();
+};
+
+FusionDsp.prototype.deletepreset = function () {
+  const self = this;
+  const selectedsp = self.config.get('selectedsp');
+  const preset = self.config.get(selectedsp + 'preset');
+
+  if (!preset || preset === 'nopreset' || preset === 'no preset' || preset === 'no preset used' || preset === 'Choose a preset') {
+    self.commandRouter.pushToastMessage('warning', self.commandRouter.getI18nString('NO_PRESET_USED'));
+    return libQ.resolve();
+  }
+
+  const presetName = preset.replace(/^\./, '').replace(/\.json$/, '');
+  var responseData = {
+    title: self.commandRouter.getI18nString('DELETE_PRESET_CONFIRM_TITLE'),
+    message: self.commandRouter.getI18nString('DELETE_PRESET_CONFIRM_MSG').replace('{0}', presetName),
+    size: 'lg',
+    buttons: [
+      {
+        name: self.commandRouter.getI18nString('DELETE'),
+        class: 'btn btn-cancel',
+        emit: 'callMethod',
+        payload: { 'endpoint': 'audio_interface/fusiondsp', 'method': 'deletepresetconfirm' }
+      },
+      {
+        name: self.commandRouter.getI18nString('CANCEL'),
+        class: 'btn btn-info',
+        emit: 'closeModals',
+        payload: ''
+      }
+    ]
+  };
+  self.commandRouter.broadcastMessage('openModal', responseData);
+};
+
+FusionDsp.prototype.deletepresetconfirm = function () {
+  const self = this;
+  const selectedsp = self.config.get('selectedsp');
+  const preset = self.config.get(selectedsp + 'preset');
+
+  // Prevent deleting factory presets
+  if (!preset || preset.startsWith('.')) {
+    self.commandRouter.pushToastMessage(
+      'error',
+      self.commandRouter.getI18nString('NOT_POSSIBLE_DELETE_FACTORY_PRESET')
+    );
+    return libQ.resolve();
+  }
+
+  const filePath = presetFolder + selectedsp + '/' + preset;
+
+  try {
+    fs.unlinkSync(filePath);
+    self.config.set(selectedsp + 'preset', '');
+    self.commandRouter.pushToastMessage(
+      'success',
+      self.commandRouter.getI18nString('PRESET_DELETED')
+    );
+    setTimeout(function () { self.refreshUI(); }, 500);
+
+  } catch (e) {
+    self.logger.error(logPrefix + ' failed to delete preset: ' + e);
+    self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('FAIL_TO_DEL_PRESET'));
+  };
+
+  return libQ.resolve();
+};
+
+FusionDsp.prototype.renamepreset = function (data) {
+  const self = this;
+  const selectedsp = self.config.get('selectedsp');
+  const preset = self.config.get(selectedsp + 'preset');
+
+  // No preset selected
+  if (!preset || preset === 'nopreset' || preset === 'no preset' || preset === 'no preset used' || preset === 'Choose a preset') {
+    self.commandRouter.pushToastMessage('warning', self.commandRouter.getI18nString('NO_PRESET_USED'));
+    return libQ.resolve();
+  }
+
+  // Prevent renaming factory presets
+  if (preset.trim().startsWith('.')) {
+    self.commandRouter.pushToastMessage(
+      'error',
+      self.commandRouter.getI18nString('NOT_POSSIBLE_RENAME_FACTORY_PRESET')
+    );
+    return libQ.resolve();
+  }
+
+  const newName = data['newpresetname'];
+
+  if (!newName || newName.trim() === '') {
+    self.commandRouter.pushToastMessage('warning', self.commandRouter.getI18nString('RENAME_PRESET_EMPTY'));
+    return libQ.resolve();
+  }
+
+  if (newName.trim().startsWith('.')) {
+    self.commandRouter.pushToastMessage('warning', self.commandRouter.getI18nString('WRONG_PRESET_NAME'));
+    return libQ.resolve();
+  }
+
+  const oldPath = presetFolder + selectedsp + '/' + preset;
+  const newFileName = newName.trim() + '.json';
+  const newPath = presetFolder + selectedsp + '/' + newFileName;
+
+  try {
+    fs.renameSync(oldPath, newPath);
+    self.config.set(selectedsp + 'preset', newFileName);
+
+    self.commandRouter.pushToastMessage(
+      'success',
+      self.commandRouter.getI18nString('PRESET_RENAMED').replace('{0}', newName.trim())
+    );
+
+    setTimeout(function () { self.refreshUI(); }, 500);
+
+  } catch (e) {
+    self.logger.error(logPrefix + ' failed to rename preset: ' + e);
+    self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('FAIL_RENAME_PRESET'));
+  }
+
+  return libQ.resolve();
 };
 
 FusionDsp.prototype.usethispreset = function (data) {
@@ -3815,6 +4642,8 @@ FusionDsp.prototype.usethispreset = function (data) {
         self.config.set('rdistance', state4preset[12]);
       }
       self.config.set('permutchannel', state4preset[13]);
+      self.config.set('loudnessstrength', state4preset[14] ?? 0)
+
       self.config.set(selectedsp + "preset", preset);
       self.commandRouter.pushToastMessage('info', preset.replace(".json", "").replace(/^\./, "") + self.commandRouter.getI18nString('PRESET_LOADED_USED'))
 
@@ -4453,6 +5282,12 @@ FusionDsp.prototype.sendvolumelevel = function () {
     let ratio = loudnessMaxGain / loudnessRange
     let loudnessGain
 
+    let loudnessstrength = self.config.get('loudnessstrength')
+    loudnessstrength = [0, 1, 2].includes(loudnessstrength) ? loudnessstrength : 2
+
+    const profiles = [0.5, 0.75, 1]
+    let profile = profiles[loudnessstrength]
+
     if (data.volume > loudnessLowThreshold && data.volume < loudnessVolumeThreshold) {
       loudnessGain = ratio * (loudnessVolumeThreshold - data.volume)
     } else if (data.volume <= loudnessLowThreshold) {
@@ -4461,8 +5296,8 @@ FusionDsp.prototype.sendvolumelevel = function () {
       loudnessGain = 0
     }
 
-    self.logger.info(logPrefix + 'volume level for loudness ' + data.volume + ' gain applied ' + Number.parseFloat(loudnessGain).toFixed(2))
-    self.config.set('loudnessGain', Number.parseFloat(loudnessGain).toFixed(2))
+    self.logger.info(logPrefix + 'volume level for loudness ' + data.volume + ' gain applied ' + Number.parseFloat(loudnessGain).toFixed(2) * profile)
+    self.config.set('loudnessGain', Number.parseFloat(loudnessGain).toFixed(2) * profile)
     self.createCamilladspfile()
   })
 }

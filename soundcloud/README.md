@@ -6,25 +6,27 @@ Volumio plugin for browsing and playing SoundCloud content.
 
 ### Playback
 
-The plugin uses [MPD](https://www.musicpd.org/) for playing a SoundCloud track, which can be in one or more of the following formats:
+The plugin uses `vlc` and `mpv` for playback. This functionality is provided by the [volumio-ext-players](https://github.com/patrickkfkan/volumio-ext-players) module.
 
-1. MPEG Audio (Progressive)
-2. Ogg Opus (HLS)
-3. MPEG Audio (HLS)
+Support for different stream formats
 
-(These formats are revealed through inspecting the metadata of various SoundCloud tracks and may not be conclusive)
+| Codec     | Protocol  | Bitrate   | Supported     | Remarks       |
+|-----------|-----------|-----------|---------------|---------------|
+| AAC       | HLS       | 160 kbps  | Yes           |               |
+| Opus      | HLS       | 64 kbps   | Yes           |               |
+| MP3       | HTTP      | 128 kbps  | Yes           |               |
+| MP3       | HLS       | 128 kbp   | Partial       | Plays, but seeking will terminate playback.   |
 
-When playing a track, the plugin always looks for "MPEG Audio (Progressive)" first, then "Ogg Opus (HLS)". These two formats play just fine on Volumio 3.
+High-quality streams (AAC 256kbps) available with Go+ accounts are not supported, but you can enable "Log Transcodings" in plugin settings and send me Volumio logs so I could see if they can be supported.
 
-The last format, "MPEG Audio (HLS)", is somewhat problematic. While the stream will still play, playback will terminate if you try to seek.
-
->It appears that tracks that do not have "MPEG Audio (Progressive)" formats do have "Ogg Opus (HLS)". The chance of encountering an "MPEG Audio (HLS)" format should in fact be quite small.
-
-### Supporting SoundCloud and Artists
-
-If you come across an album that you like, consider purchasing it to support the SoundCloud platform and its artists. The plugin displays links where applicable so you can follow them to the corresponding SoundCloud pages (note: links not available if Manifest UI is enabled).
+DRM-ed streams are not supported at all.
 
 ### Changelog
+
+2.1.0
+- Use `vlc` and `mpv` for playback + remove `longStreamFormat` config option. Primary streams are now HLS+AAC which play fine (with seeking) even for lengthy ones.
+- Add `cookie` config option, now required for "Add to play history" functionality.
+- Add charts and feed to browseable content.
 
 2.0.0
 - Release for Bookworm-based Volumio

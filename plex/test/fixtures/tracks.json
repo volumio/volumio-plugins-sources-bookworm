@@ -1,0 +1,106 @@
+{
+  "MediaContainer": {
+    "size": 3,
+    "Metadata": [
+      {
+        "ratingKey": "2001",
+        "key": "/library/metadata/2001",
+        "title": "Airbag",
+        "grandparentTitle": "Radiohead",
+        "grandparentKey": "/library/metadata/1000/children",
+        "parentTitle": "OK Computer",
+        "parentKey": "/library/metadata/1001/children",
+        "duration": 282000,
+        "thumb": "/library/metadata/1001/thumb/1609459200",
+        "Media": [
+          {
+            "audioCodec": "flac",
+            "container": "flac",
+            "bitrate": 1411,
+            "Part": [
+              {
+                "key": "/library/parts/2001/1234567/file.flac",
+                "container": "flac",
+                "size": 32000000,
+                "Stream": [
+                  {
+                    "streamType": 2,
+                    "codec": "flac",
+                    "bitDepth": 24,
+                    "samplingRate": 44100,
+                    "channels": 2
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "ratingKey": "2002",
+        "key": "/library/metadata/2002",
+        "title": "Paranoid Android",
+        "grandparentTitle": "Radiohead",
+        "grandparentKey": "/library/metadata/1000/children",
+        "parentTitle": "OK Computer",
+        "parentKey": "/library/metadata/1001/children",
+        "duration": 383000,
+        "Media": [
+          {
+            "audioCodec": "mp3",
+            "container": "mp3",
+            "bitrate": 320,
+            "Part": [
+              {
+                "key": "/library/parts/2002/1234568/file.mp3",
+                "container": "mp3",
+                "size": 45000000,
+                "Stream": [
+                  {
+                    "streamType": 2,
+                    "codec": "mp3",
+                    "channels": 2
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "ratingKey": "2003",
+        "key": "/library/metadata/2003",
+        "title": "Subterranean Homesick Alien",
+        "grandparentTitle": "Radiohead",
+        "grandparentKey": "/library/metadata/1000/children",
+        "parentTitle": "OK Computer",
+        "parentKey": "/library/metadata/1001/children",
+        "duration": 265000,
+        "thumb": "/library/metadata/1001/thumb/1609459200",
+        "Media": [
+          {
+            "audioCodec": "flac",
+            "container": "flac",
+            "bitrate": 1234,
+            "Part": [
+              {
+                "key": "/library/parts/2003/1234569/file.flac",
+                "container": "flac",
+                "size": 28000000,
+                "Stream": [
+                  {
+                    "streamType": 2,
+                    "codec": "flac",
+                    "bitDepth": 16,
+                    "samplingRate": 48000,
+                    "channels": 2
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

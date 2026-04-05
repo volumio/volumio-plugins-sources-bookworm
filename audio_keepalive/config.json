@@ -1,0 +1,6 @@
+{
+  "keepalive_enabled": {
+    "type": "boolean",
+    "value": false
+  }
+}

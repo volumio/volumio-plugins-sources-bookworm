@@ -140,6 +140,7 @@
         "data": [
           "show_fm_region",
           "fm_region",
+          "fm_scan_offset",
           "fm_lower_freq",
           "fm_upper_freq",
           "fm_channel_spacing",
@@ -172,6 +173,25 @@
             {"value": "italy", "label": "TRANSLATE.FM_REGION_ITALY"},
             {"value": "oirt", "label": "TRANSLATE.FM_REGION_OIRT"},
             {"value": "custom", "label": "TRANSLATE.FM_REGION_CUSTOM"}
+          ],
+          "visibleIf": {
+            "field": "show_fm_region",
+            "value": true
+          }
+        },
+        {
+          "id": "fm_scan_offset",
+          "element": "select",
+          "label": "TRANSLATE.FM_SCAN_OFFSET",
+          "doc": "TRANSLATE.FM_SCAN_OFFSET_DOC",
+          "value": {
+            "value": "0",
+            "label": "TRANSLATE.FM_SCAN_OFFSET_0"
+          },
+          "options": [
+            {"value": "0", "label": "TRANSLATE.FM_SCAN_OFFSET_0"},
+            {"value": "50", "label": "TRANSLATE.FM_SCAN_OFFSET_50"},
+            {"value": "100", "label": "TRANSLATE.FM_SCAN_OFFSET_100"}
           ],
           "visibleIf": {
             "field": "show_fm_region",
