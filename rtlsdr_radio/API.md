@@ -879,7 +879,7 @@ DAB Stations:
 - File is validated before import
 - Maximum file size: 1MB
 - Type (FM/DAB) detected automatically from headers
-- FM frequency range respects `fm_lower_freq` configuration setting
+- FM frequency range respects the active region's lower band limit
 - Quoted values with commas are handled correctly
 - Import triggers automatic save to stations database
 
@@ -1016,6 +1016,10 @@ No authentication is currently required. Access control should be implemented at
     "type": "string",
     "value": "100k"
   },
+  "fm_scan_offset": {
+    "type": "string",
+    "value": "0"
+  },
   "fm_oversampling": {
     "type": "boolean",
     "value": false
@@ -1131,6 +1135,16 @@ curl -X POST http://volumio.local:3456/api/maintenance/backup/upload \
 ```
 
 ## Changelog
+
+### API v1.3.9
+- New configuration option:
+  - fm_scan_offset (string): Scan frequency grid offset - "0", "50", or "100" (kHz)
+- Scan behavior changes:
+  - Scan start frequency now uses region band_start + scan offset (was reading stale fm_lower_freq config)
+  - Frequency rounding uses effective start (band_start + offset) as reference instead of zero
+- Validation changes:
+  - FM frequency validation in playback, diagnostics, and CSV import now uses region band_start
+- No new API endpoints (configuration and scan logic changes)
 
 ### API v1.3.8
 - FM Regional Standards support with data-driven configuration

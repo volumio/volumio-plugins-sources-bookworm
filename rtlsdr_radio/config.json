@@ -51,6 +51,10 @@
     "type": "string",
     "value": "100k"
   },
+  "fm_scan_offset": {
+    "type": "string",
+    "value": "0"
+  },
   "fm_oversampling": {
     "type": "boolean",
     "value": false

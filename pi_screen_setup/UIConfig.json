@@ -477,6 +477,16 @@
           "options": []
         },
         {
+          "id": "dsi_preset_hint",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DSI_PRESET_HINT_LABEL",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.DSI_PRESET_HINT_DOC",
+          "value": "",
+          "readonly": true,
+          "hidden": true
+        },
+        {
           "id": "dsi_custom_params",
           "element": "input",
           "type": "text",
@@ -802,11 +812,32 @@
       "saveButton": {
         "label": "TRANSLATE.PI_SCREEN_SETUP.CONTINUE",
         "data": [
+          "kms_mode",
           "cma_option",
           "cma_custom_mb"
         ]
       },
       "content": [
+        {
+          "id": "kms_mode",
+          "element": "select",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.KMS_MODE",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.KMS_MODE_DOC",
+          "value": {
+            "value": "preset",
+            "label": ""
+          },
+          "options": []
+        },
+        {
+          "id": "kms_preset_hint",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.KMS_PRESET_HINT_LABEL",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.KMS_PRESET_HINT_DOC",
+          "value": "",
+          "readonly": true
+        },
         {
           "id": "cma_option",
           "element": "select",

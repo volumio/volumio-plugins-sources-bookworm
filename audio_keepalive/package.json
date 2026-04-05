@@ -1,6 +1,6 @@
 {
   "name": "audio_keepalive",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Maintains continuous audio output to prevent HDMI/SPDIF/USB signal loss during idle",
   "main": "index.js",
   "scripts": {
@@ -16,7 +16,7 @@
       "bookworm"
     ],
     "details": "Feeds silence to the audio output during idle to prevent HDMI receivers, SPDIF decoders, and USB DACs from losing signal lock",
-    "changelog": "v1.1.0: Complete rewrite using ALSA ioplug proxy via AAMPP contribution.",
+    "changelog": "v1.1.1: HDMI/iec958 chain initialization bug fixes and improvements.",
     "architectures": [
       "amd64",
       "armhf"

@@ -417,7 +417,18 @@ Just a Nerd
 
 ## Version History
 
-### v1.3.8 (Current)
+### v1.3.9 (Current)
+- New FM Scan Offset setting to align scan frequency grid with country channel plans
+  - Configurable in FM Region section: 0 kHz (default), 50 kHz, or 100 kHz
+  - Fixes station detection in countries where FM channels are at odd frequencies
+    (e.g. Taiwan 88.1, 88.3, 88.5 instead of 88.0, 88.2, 88.4)
+  - Set to 100 kHz for Taiwan, South Korea, and other countries with odd-tenth channels
+- Fixed scan command using stale config value instead of region preset band start
+- Fixed frequency rounding to align with effective scan grid (was rounding to multiples from zero)
+- Fixed frequency validation in playback, diagnostics, and CSV import to use region band start
+- Translated FM Scan Offset across all 11 languages
+
+### v1.3.8
 - FM Regional Standards support with automatic configuration
 - New FM Region setting with 8 presets:
   - Europe (87.5-108 MHz, 100kHz spacing, 50us de-emphasis)

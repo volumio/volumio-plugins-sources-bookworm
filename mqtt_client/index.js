@@ -400,7 +400,7 @@ ControllerMqttClient.prototype.connectMqtt = function() {
   self.infoLog('Connecting to MQTT broker: ' + brokerUrl);
 
   var options = {
-    clientId: self.config.get('client_id', '') || 'mqtt_' + self.deviceId + '_' + Date.now(),
+    clientId: self.config.get('client_id', '') || 'volumio_' + self.deviceId,
     keepalive: self.config.get('keepalive', 60),
     reconnectPeriod: self.config.get('reconnect_interval', 5000),
     connectTimeout: 30000,
