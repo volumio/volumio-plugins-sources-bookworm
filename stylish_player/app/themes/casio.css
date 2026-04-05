@@ -4636,6 +4636,12 @@ input[type=range]::-webkit-slider-thumb {
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 -1px 0 rgba(255, 255, 255, 0.5);
 }
 
+/* "1" only uses right-side segments on a real 7-segment display —
+   keep the ghost "8" centered, shift active "1" right via transform. */
+.lcd-digit[data-digit="1"]::after {
+  transform: translateX(32%);
+}
+
 /* ── Button row below display (decorative — like Casio's mode keys) ── */
 .digital-clock-frame::after {
   content: "";
