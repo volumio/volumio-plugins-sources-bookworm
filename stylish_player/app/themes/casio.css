@@ -2770,7 +2770,7 @@ input[type=range]::-webkit-slider-thumb {
 .vinyl-container,
 .cd-container {
   width: 100%;
-  max-width: 360px;
+  max-width: 460px;
   aspect-ratio: 1;
   display: flex;
   justify-content: center;
@@ -2816,6 +2816,8 @@ input[type=range]::-webkit-slider-thumb {
 .track-info-group {
   border-radius: 6px;
   padding: 14px 18px 12px;
+  position: relative; /* needed for ::before glass sheen */
+  overflow: hidden; /* clip sheen to the panel boundary */
   /* Glass layers baked into background — no pseudo-elements needed:
      Layer 1 (top): white-to-transparent arc = top dome reflection
      Layer 2 (bottom): glint stripe at the very bottom edge
@@ -2827,7 +2829,24 @@ input[type=range]::-webkit-slider-thumb {
   border-left: 2px solid var(--casio-sheen);
   border-bottom: 3px solid var(--casio-edge);
   border-right: 3px solid var(--casio-edge);
-  box-shadow: 0 0 0 1px var(--casio-edge), 0 0 0 3px var(--casio-silver), 0 0 0 4px rgba(0, 0, 0, 0.5), inset 0 6px 18px rgba(0, 0, 0, 0.18), inset 0 1px 3px rgba(0, 0, 0, 0.1); /* top inner shadow */
+  box-shadow: 0 0 0 1px var(--casio-edge), 0 0 0 4px var(--casio-silver), 0 0 0 6px rgba(0, 0, 0, 0.65), 0 8px 20px rgba(0, 0, 0, 0.55), inset 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 2px 6px rgba(0, 0, 0, 0.25), inset 0 -8px 18px rgba(0, 0, 0, 0.4), inset 6px 0 14px rgba(0, 0, 0, 0.2), inset -6px 0 14px rgba(0, 0, 0, 0.2), inset 0 3px 0 rgba(255, 255, 255, 0.6); /* bright glass rim — more prominent */
+  /* Glass sheen overlay — convex highlight spanning the top ~45% */
+}
+.track-info-group::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse 90% 50% at 50% -5%, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.18) 40%, transparent 70%), linear-gradient(128deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.08) 30%, transparent 55%);
+  pointer-events: none;
+  z-index: 1;
+}
+.track-info-group {
+  /* Children sit above the sheen */
+}
+.track-info-group > * {
+  position: relative;
+  z-index: 2;
 }
 
 /* ─── Track Info — dark digits on light panel ─────────────────────── */

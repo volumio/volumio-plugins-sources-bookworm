@@ -2476,6 +2476,7 @@ h2 {
 .vinyl-container,
 .cd-container {
   width: 100%;
+  max-width: 460px;
   aspect-ratio: 1;
   display: flex;
   justify-content: center;

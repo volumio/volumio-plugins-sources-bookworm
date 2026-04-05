@@ -3279,7 +3279,7 @@ h2 {
 .vinyl-container,
 .cd-container {
   width: 100%;
-  max-width: 400px;
+  max-width: 460px;
   aspect-ratio: 1;
   display: flex;
   justify-content: center;
@@ -3300,6 +3300,7 @@ h2 {
 }
 
 .track-title {
+  font-family: var(--font-display);
   font-size: clamp(1.25rem, 4.5vw, 2.25rem);
   font-weight: 700;
   margin-bottom: 5px;
@@ -3312,6 +3313,7 @@ h2 {
 
 .artist-name,
 .album-name {
+  font-family: var(--font-display);
   font-size: clamp(0.8rem, 2.2vw, 1.2rem);
   color: var(--color-gray-300, #888);
   white-space: nowrap;
@@ -3494,7 +3496,7 @@ h2 {
   .album-art-container,
   .vinyl-container,
   .cd-container {
-    max-width: 100%;
+    max-width: 460px;
     height: auto;
     aspect-ratio: 1;
     margin-bottom: 20px;
@@ -5366,7 +5368,7 @@ h2 {
 }
 
 .lcd-date {
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.8rem, 2cqw, 3rem);
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -5386,7 +5388,7 @@ h2 {
 }
 
 .lcd-weather-temp {
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.8rem, 2cqw, 3rem);
   font-weight: 700;
   color: #2c3e50;
@@ -5410,7 +5412,7 @@ h2 {
   justify-content: space-between;
   gap: 0.8cqw;
   margin-bottom: 0.8cqw;
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.6rem, 1.2cqw, 2rem);
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -5440,7 +5442,7 @@ h2 {
 }
 
 .lcd-ampm {
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.8rem, 2.5cqw, 4rem);
   font-weight: 700;
   color: #2c3e50;
@@ -5604,7 +5606,7 @@ h2 {
 .clock-hour-digit {
   position: absolute;
   transform: translate(-50%, -50%);
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.7rem, 3.5cqi, 1.4rem);
   font-weight: 700;
   color: var(--color-gray-800, #222);
@@ -5670,7 +5672,7 @@ h2 {
 }
 
 .clock-face-day {
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.8rem, 4cqi, 1.5rem);
   font-weight: 600;
   color: var(--color-gray-300, #bbb);
@@ -5678,7 +5680,7 @@ h2 {
 }
 
 .clock-face-date {
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.8rem, 4cqi, 1.5rem);
   font-weight: 700;
   color: var(--color-gray-700, #333);
@@ -5692,7 +5694,7 @@ h2 {
 }
 
 .clock-face-weather-temp {
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.7rem, 3.5cqi, 1.4rem);
   font-weight: 700;
   color: var(--color-gray-700, #333);
@@ -5740,17 +5742,58 @@ h2 {
   color: #d8b880;
 }
 
+.tick-flip-panel {
+  font-family: var(--font-display);
+}
+
 .tick-flip-panel-front-text .tick-flip-panel-text-wrapper {
-  transform: translateY(-10%);
+  transform: translateX(-15%) translateY(-10%);
 }
 
 .tick-flip-panel-back-text .tick-flip-panel-text-wrapper {
-  transform: translateY(-5%);
+  transform: translateX(-15%) translateY(-5%);
 }
 
 /* ── Weather — Skeuomorphic Theme ──────────────────────────────────────
  * Reduced font sizes for hourly and daily screens so content fits cards.
  * ─────────────────────────────────────────────────────────────────────── */
+/* Use display font (Michroma) for all weather values and temperatures */
+.weather-current-temp,
+.weather-current-desc,
+.weather-detail-value,
+.weather-detail-label,
+.weather-hourly-temp,
+.weather-hourly-time,
+.weather-daily-day,
+.weather-daily-date,
+.weather-daily-temps,
+.weather-daily-desc,
+.weather-daily-meta,
+.weather-daily-sun-item,
+.weather-full-hero-location,
+.weather-full-hero-temp,
+.weather-full-hero-desc,
+.weather-full-hero-hilow,
+.weather-full-tenday-row,
+.weather-full-tenday-day,
+.weather-full-tenday-lo,
+.weather-full-tenday-hi,
+.weather-full-hourly-time,
+.weather-full-tile-value,
+.weather-full-tile-sub {
+  font-family: var(--font-display);
+}
+
+/* Use secondary font (Roboto) for time and day labels on full weather screen */
+.weather-full-hourly-time,
+.weather-full-tenday-day,
+.weather-full-tenday-lo,
+.weather-full-tenday-hi,
+.weather-full-hourly-temp,
+.weather-full-tenday-row {
+  font-family: var(--font-label);
+}
+
 /* ── Hourly ──────────────────────────────────────────────────────────── */
 .weather-hourly-time {
   font-size: clamp(0.55rem, 1.2cqw, 1.8rem);

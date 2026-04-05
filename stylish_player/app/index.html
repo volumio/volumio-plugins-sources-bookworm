@@ -6,6 +6,13 @@
     <!-- <script crossorigin="anonymous" src="//unpkg.com/react-scan/dist/auto.global.js"></script> -->
 
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+
+    <!-- Preconnect for Google Fonts (used by all themes except win95) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Preconnect for CDN Fonts (win95 theme) -->
+    <link rel="preconnect" href="https://fonts.cdnfonts.com" />
+
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <meta
       name="viewport"
@@ -16,8 +23,16 @@
     <!-- @pqina/flip UMD build — sets window.Tick with the Flip view registered -->
     <link rel="stylesheet" href="/scripts/flip.min.css" />
     <script src="/scripts/flip.min.js"></script>
-    <script type="module" crossorigin src="/assets/index-Cf9Z5OjF.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BvERJWOs.css">
+
+    <!-- Hide root until theme CSS + fonts are ready to avoid FOUC -->
+    <style>
+      #root {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-C7QBeKEJ.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-D0LMp7g-.css">
   </head>
 
   <body>

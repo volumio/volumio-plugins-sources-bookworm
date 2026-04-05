@@ -3248,7 +3248,7 @@ input[type=range]::-webkit-slider-runnable-track {
 .vinyl-container,
 .cd-container {
   width: 100%;
-  max-width: 400px;
+  max-width: 460px;
   aspect-ratio: 1;
   display: flex;
   justify-content: center;
