@@ -819,10 +819,10 @@ pre {
 }
 .dialog-list-item:hover:not(:disabled) {
   background: var(--list-item-bg-hover, rgba(255, 255, 255, 0.07));
-  color: var(--color-primary);
+  color: var(--list-item-text-hover, var(--color-primary));
 }
 .dialog-list-item:hover:not(:disabled) .material-icons {
-  color: var(--color-primary);
+  color: var(--list-item-text-hover, var(--color-primary));
 }
 .dialog-list-item:disabled {
   opacity: 0.5;
@@ -1022,16 +1022,17 @@ pre {
    BUTTONS - Dark Metallic / Black Chrome Theme
    ═══════════════════════════════════════════════════════════════════════ */
 /* ─── Base Button Style ───────────────────────────────────────────────── */
-.btn {
+.btn, .form-select {
   border-radius: 6px;
   border: 1px solid var(--color-black);
   position: relative;
   cursor: pointer;
   font-family: var(--font-label);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
+  gap: 0.4rem;
   padding: 8px 16px;
   font-size: 14px;
   font-weight: 600;
@@ -1044,14 +1045,15 @@ pre {
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.8);
 }
 
-.btn:hover {
+.btn:hover, .form-select:hover {
   color: var(--color-white);
   background: linear-gradient(180deg, #444444 0%, #2a2a2a 50%, #222222 51%, #2a2a2a 100%);
   box-shadow: 0 5px 12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 5px rgba(255, 255, 255, 0.05);
 }
 
-.btn:active,
-.btn.active {
+.btn:active, .form-select:active,
+.btn.active,
+.active.form-select {
   transform: translateY(1px);
   color: var(--color-primary);
   background: linear-gradient(180deg, #151515 0%, #222222 100%);
@@ -1066,7 +1068,7 @@ pre {
   border: 1px solid #000;
 }
 
-.btn-white {
+.btn-white, .form-select {
   /* Actually dark grey in this theme, but brighter than black */
   background: linear-gradient(180deg, #555 0%, #333 100%);
   color: var(--color-white);
@@ -1110,8 +1112,9 @@ pre {
 }
 
 /* Disabled State */
-.btn:disabled,
-.btn.disabled {
+.btn:disabled, .form-select:disabled,
+.btn.disabled,
+.disabled.form-select {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
@@ -1168,6 +1171,13 @@ pre {
   opacity: 0.4;
   pointer-events: none;
   filter: none;
+}
+
+/* ─── Small Button ─────────────────────────────────────────────────────── */
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+  min-height: 24px;
 }
 
 :root {
@@ -1424,6 +1434,37 @@ pre {
   left: 26px;
   background: var(--color-primary);
   box-shadow: 0 0 10px var(--color-primary);
+}
+
+/* ─── Select / Dropdown ─────────────────────────────────────────────────────── */
+.form-select {
+  appearance: none;
+  display: block;
+  text-align: left;
+  padding: 8px 30px 8px 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23aaaaaa'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.form-select option {
+  background: #1a1a1a;
+  color: var(--color-gray-100);
+}
+.form-select:hover {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23aaaaaa'/%3E%3C/svg%3E"), linear-gradient(180deg, #555 0%, #333 100%);
+  background-repeat: no-repeat, no-repeat;
+  background-position: right 10px center, 0 0;
+  background-size: auto, cover;
+  box-shadow: none;
+}
+.form-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 8px rgba(0, 225, 255, 0.2);
+}
+.form-select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 :root {

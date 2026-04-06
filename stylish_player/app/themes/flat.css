@@ -1076,10 +1076,10 @@ code, pre {
 }
 .dialog-list-item:hover:not(:disabled) {
   background: var(--list-item-bg-hover, rgba(255, 255, 255, 0.07));
-  color: var(--color-primary);
+  color: var(--list-item-text-hover, var(--color-primary));
 }
 .dialog-list-item:hover:not(:disabled) .material-icons {
-  color: var(--color-primary);
+  color: var(--list-item-text-hover, var(--color-primary));
 }
 .dialog-list-item:disabled {
   opacity: 0.5;
@@ -1385,11 +1385,12 @@ code, pre {
    BUTTONS - Flat Dark Theme
    Clean, no-gradient, no-shadow buttons
    ═══════════════════════════════════════════════════════════════════════ */
-.btn {
+.btn, .form-select {
   position: relative;
   display: inline-flex;
   justify-content: center;
   align-items: center;
+  gap: 0.4rem;
   padding: 6px 20px;
   min-height: 32px;
   background: var(--color-primary);
@@ -1404,20 +1405,20 @@ code, pre {
   user-select: none;
   transition: background 0.15s ease, opacity 0.15s ease;
 }
-.btn:hover {
+.btn:hover, .form-select:hover {
   background: var(--color-primary-light);
 }
-.btn:active, .btn.active {
+.btn:active, .form-select:active, .btn.active, .active.form-select {
   background: var(--color-primary-dark);
   opacity: 0.9;
 }
-.btn:focus-visible {
+.btn:focus-visible, .form-select:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
 /* No gel shine overlay in flat theme */
-.btn::after {
+.btn::after, .form-select::after {
   display: none;
 }
 
@@ -1438,16 +1439,16 @@ code, pre {
 }
 
 /* ─── Secondary / White button ─────────────────────────────────────────── */
-.btn-secondary,
+.btn-secondary, .form-select,
 .btn-white {
   background: var(--color-gray-700);
   color: var(--text-primary);
 }
-.btn-secondary:hover,
+.btn-secondary:hover, .form-select:hover,
 .btn-white:hover {
   background: var(--color-gray-600);
 }
-.btn-secondary:active,
+.btn-secondary:active, .form-select:active,
 .btn-white:active {
   background: var(--color-gray-750);
 }
@@ -1614,12 +1615,12 @@ code, pre {
 }
 
 /* ─── Text inside button ───────────────────────────────────────────────── */
-.btn .primary-text {
+.btn .primary-text, .form-select .primary-text {
   font-size: 16px;
   font-weight: 600;
 }
 
-.btn .secondary-text {
+.btn .secondary-text, .form-select .secondary-text {
   font-size: 10px;
   opacity: 0.7;
   align-self: flex-start;
@@ -1634,6 +1635,13 @@ code, pre {
 .btn-rect-medium {
   width: 100px;
   height: 50px;
+}
+
+/* ─── Small Button ─────────────────────────────────────────────────────── */
+.btn-sm {
+  padding: 3px 12px;
+  min-height: 24px;
+  font-size: var(--text-xs, 11px);
 }
 
 :root {
@@ -1989,17 +1997,30 @@ label {
 
 /* ─── Select / Dropdown ─────────────────────────────────────────────────── */
 .form-select {
-  background-color: var(--color-gray-800);
+  appearance: none;
+  display: block;
+  text-align: left;
+  padding: 6px 28px 6px 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23a0a0b0'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.form-select option {
+  background: var(--color-gray-800);
   color: var(--text-primary);
-  border: 1px solid var(--border-dark);
-  border-radius: var(--radius-md);
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
+}
+.form-select:hover {
+  background-color: var(--color-gray-700);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23a0a0b0'/%3E%3C/svg%3E");
 }
 .form-select:focus {
   border-color: var(--color-primary);
   box-shadow: none;
   outline: none;
+}
+.form-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ─── Form Control (Bootstrap compat) ─────────────────────────────────── */

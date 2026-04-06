@@ -1178,10 +1178,10 @@ ol li {
 }
 .dialog-list-item:hover:not(:disabled) {
   background: var(--list-item-bg-hover, rgba(255, 255, 255, 0.07));
-  color: var(--color-primary);
+  color: var(--list-item-text-hover, var(--color-primary));
 }
 .dialog-list-item:hover:not(:disabled) .material-icons {
-  color: var(--color-primary);
+  color: var(--list-item-text-hover, var(--color-primary));
 }
 .dialog-list-item:disabled {
   opacity: 0.5;
@@ -1477,7 +1477,7 @@ ol li {
 }
 
 /* Base Button Style */
-.btn {
+.btn, .form-select {
   border-radius: 4px;
   /* Slight rounding */
   border: none;
@@ -1486,9 +1486,10 @@ ol li {
   font-family: var(--font-label, "Roboto", sans-serif);
   /* For the button label */
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-start;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
   padding: 8px;
   font-size: 14px;
   font-weight: 500;
@@ -1500,8 +1501,9 @@ ol li {
   box-shadow: 0 4px 6px var(--shadow-30), inset 0 1px 0 var(--highlight-20), inset 1px 0 0 var(--highlight-10), inset -1px 0 0 var(--shadow-10);
 }
 
-.btn:active,
-.btn.active {
+.btn:active, .form-select:active,
+.btn.active,
+.active.form-select {
   transform: translateY(2px);
   box-shadow: 0 2px 3px var(--shadow-20), inset 0 2px 5px var(--shadow-20);
   /* Pressed in shadow */
@@ -1514,14 +1516,14 @@ ol li {
   border-bottom: 2px solid var(--color-gray-900, #111);
 }
 
-.btn-white {
+.btn-white, .form-select {
   background: linear-gradient(180deg, var(--btn-white-top, #eaeaea) 0%, var(--btn-white-btm, #cdcdcd) 100%);
   color: var(--color-gray-500, #555);
   border-bottom: 2px solid var(--color-gray-250, #999);
   box-shadow: 0 4px 6px var(--shadow-15), inset 0 1px 0 var(--color-white, #fff);
 }
 
-.btn-white:active {
+.btn-white:active, .form-select:active {
   background: var(--btn-white-btm, #cdcdcd);
   color: var(--color-gray-600, #444);
 }
@@ -1600,12 +1602,12 @@ ol li {
 }
 
 /* Text inside button */
-.btn .primary-text {
+.btn .primary-text, .form-select .primary-text {
   font-size: 18px;
   font-weight: 400;
 }
 
-.btn .secondary-text {
+.btn .secondary-text, .form-select .secondary-text {
   font-size: 10px;
   opacity: 0.7;
   align-self: flex-start;
@@ -1753,6 +1755,12 @@ ol li {
   flex-direction: column;
   align-items: center;
   gap: 5px;
+}
+
+/* ─── Small Button ─────────────────────────────────────────────────────── */
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
 }
 
 :root {
@@ -2337,6 +2345,37 @@ input:checked + .slider:after {
     padding: 20px;
   }
 }
+/* ─── Select / Dropdown ─────────────────────────────────────────────────────── */
+.form-select {
+  appearance: none;
+  display: block;
+  text-align: left;
+  padding: 8px 28px 8px 8px;
+  border-bottom: none;
+  box-shadow: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555555'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.form-select option {
+  background: #e8e8e8;
+  color: #333;
+}
+.form-select:hover {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555555'/%3E%3C/svg%3E"), linear-gradient(180deg, #f5f5f5 0%, #d8d8d8 100%);
+  background-repeat: no-repeat, no-repeat;
+  background-position: right 10px center, 0 0;
+  background-size: auto, cover;
+}
+.form-select:focus {
+  outline: none;
+  box-shadow: 3px 3px 7px rgba(0, 0, 0, 0.2), -1px -1px 4px rgba(255, 255, 255, 0.6), 0 0 0 2px rgba(255, 87, 34, 0.4);
+}
+.form-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE

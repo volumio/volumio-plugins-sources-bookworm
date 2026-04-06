@@ -838,10 +838,10 @@ p {
 }
 .dialog-list-item:hover:not(:disabled) {
   background: var(--list-item-bg-hover, rgba(255, 255, 255, 0.07));
-  color: var(--color-primary);
+  color: var(--list-item-text-hover, var(--color-primary));
 }
 .dialog-list-item:hover:not(:disabled) .material-icons {
-  color: var(--color-primary);
+  color: var(--list-item-text-hover, var(--color-primary));
 }
 .dialog-list-item:disabled {
   opacity: 0.5;
@@ -1063,11 +1063,12 @@ p {
    ═══════════════════════════════════════════════════════════════════════ */
 /* ─── Shared key mixins ─────────────────────────────────────────────────── */
 /* ─── Base key ────────────────────────────────────────────────────────────── */
-.btn {
+.btn, .form-select {
   position: relative;
   display: inline-flex;
   justify-content: center;
   align-items: center;
+  gap: 0.4rem;
   padding: 5px 16px;
   min-height: 32px;
   /* Domed surface: radial highlight at top-center → darker toward edges */
@@ -1086,16 +1087,16 @@ p {
   user-select: none;
   transition: transform 60ms ease, box-shadow 60ms ease;
 }
-.btn:hover {
+.btn:hover, .form-select:hover {
   background: radial-gradient(ellipse 80% 55% at 50% 20%, #4a5260 0%, #323848 50%, #242c3a 100%);
 }
-.btn:active, .btn.active {
+.btn:active, .form-select:active, .btn.active, .active.form-select {
   background: radial-gradient(ellipse 80% 55% at 50% 20%, #303840 0%, #202830 50%, #181e26 100%);
   box-shadow: 0 1px 0 0 #0d1018, 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(0, 0, 0, 0.4);
   border: 1px solid #10141c;
   transform: translateY(2px);
 }
-.btn:focus-visible {
+.btn:focus-visible, .form-select:focus-visible {
   outline: 2px solid var(--casio-red);
   outline-offset: 2px;
 }
@@ -1123,7 +1124,7 @@ p {
 }
 
 /* ─── Secondary ─────────────────────────────────────────────────────────── */
-.btn-secondary,
+.btn-secondary, .form-select,
 .btn-white {
   /* Domed surface: radial highlight at top-center → darker toward edges */
   background: radial-gradient(ellipse 80% 55% at 50% 20%, #404855 0%, #2a3040 50%, #1e2530 100%);
@@ -1132,7 +1133,7 @@ p {
   border-bottom-color: #080b12;
   color: var(--casio-on-dark);
 }
-.btn-secondary:active, .btn-secondary.active,
+.btn-secondary:active, .form-select:active, .btn-secondary.active, .active.form-select,
 .btn-white:active,
 .btn-white.active {
   background: radial-gradient(ellipse 80% 55% at 50% 20%, #303840 0%, #202830 50%, #181e26 100%);
@@ -1172,6 +1173,13 @@ p {
   box-shadow: 0 1px 0 0 #0d1018, 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(0, 0, 0, 0.4);
   border: 1px solid #10141c;
   transform: translateY(2px);
+}
+
+/* ─── Small Button ─────────────────────────────────────────────────────── */
+.btn-sm {
+  padding: 3px 10px;
+  min-height: 24px;
+  font-size: var(--text-xs, 11px);
 }
 
 :root {
@@ -1485,6 +1493,36 @@ input[type=range]::-webkit-slider-thumb {
   border-bottom: 2px solid var(--casio-key-sh);
   border-right: 2px solid var(--casio-key-sh);
   cursor: ns-resize;
+}
+
+/* ─── Select / Dropdown ─────────────────────────────────────────────────────── */
+.form-select {
+  appearance: none;
+  display: block;
+  text-align: left;
+  padding: 5px 26px 5px 10px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23aaaaaa'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+.form-select option {
+  background: var(--casio-face);
+  color: var(--casio-on-dark);
+}
+.form-select:hover {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23aaaaaa'/%3E%3C/svg%3E"), radial-gradient(ellipse 80% 55% at 50% 20%, #4a5260 0%, #323848 50%, #242c3a 100%);
+  background-repeat: no-repeat, no-repeat;
+  background-position: right 8px center, 0 0;
+  background-size: auto, cover;
+}
+.form-select:focus {
+  outline: none;
+  border-top-color: var(--casio-red);
+  border-left-color: var(--casio-red);
+}
+.form-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 :root {
