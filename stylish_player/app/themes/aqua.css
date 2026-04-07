@@ -1107,6 +1107,139 @@ pre {
   max-height: calc(100vh - 2rem);
 }
 
+/* ── Label / Input — shared structure, visual props from theme vars ── */
+.dialog-label {
+  display: block;
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary, var(--color-gray-500));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.dialog-input {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--input-bg, var(--color-gray-800));
+  border: 1px solid var(--input-border, var(--border-dark));
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+}
+.dialog-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+.dialog-input::placeholder {
+  color: var(--text-secondary, var(--color-gray-600));
+  opacity: 0.6;
+}
+
+/* ── Section title ── */
+.dialog-section-title {
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary, var(--color-gray-500));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+/* ── List Items (playlist rows, favourites) ── */
+.dialog-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid transparent;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 6px;
+  font-family: var(--font-label);
+}
+.dialog-list-item .material-icons {
+  font-size: 18px;
+  color: var(--text-secondary, var(--color-gray-500));
+  flex-shrink: 0;
+}
+.dialog-list-item:hover:not(:disabled) {
+  background: var(--list-item-bg-hover, rgba(255, 255, 255, 0.07));
+  color: var(--list-item-text-hover, var(--color-primary));
+}
+.dialog-list-item:hover:not(:disabled) .material-icons {
+  color: var(--list-item-text-hover, var(--color-primary));
+}
+.dialog-list-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.dialog-list-item.active {
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.dialog-list-item.active .material-icons {
+  color: var(--color-primary);
+}
+
+/* ── Track Info ── */
+.dialog-track-info {
+  padding: 12px 14px;
+  margin-bottom: 1rem;
+  border-radius: var(--radius-md);
+  background: var(--panel-bg-subtle, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border-dark);
+}
+
+.dialog-track-title {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+  line-height: 1.4;
+}
+
+.dialog-track-meta {
+  font-size: var(--text-sm);
+  color: var(--text-secondary, var(--color-gray-500));
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Alerts ── */
+.dialog-alert {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  margin-bottom: 1rem;
+  border: 1px solid;
+}
+.dialog-alert.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+.dialog-alert.success {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE - Aqua Theme (macOS Classic)
@@ -1377,11 +1510,12 @@ pre {
   --panel-bg-light: rgba(255, 255, 255, 0.72);
 }
 
-.btn {
+.btn, .form-select {
   position: relative;
   display: inline-flex;
   justify-content: center;
   align-items: center;
+  gap: 0.4rem;
   padding: 4px 20px;
   min-height: 26px;
   background: linear-gradient(to bottom, #74b0e6 0%, #1e69de 50%, #1254c0 51%, #539fe1 100%);
@@ -1398,17 +1532,17 @@ pre {
   transition: none;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
-.btn:active, .btn.active {
+.btn:active, .form-select:active, .btn.active, .active.form-select {
   background: linear-gradient(to bottom, #10428d 0%, #195ac9 50%, #2972e6 51%, #5ba7ef 100%);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.4);
   border-color: #0c3372;
 }
-.btn:focus-visible {
+.btn:focus-visible, .form-select:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(118, 178, 240, 0.6), 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
-.btn::after {
+.btn::after, .form-select::after {
   content: "";
   position: absolute;
   top: 1px;
@@ -1420,7 +1554,7 @@ pre {
   pointer-events: none;
 }
 
-.btn-secondary,
+.btn-secondary, .form-select,
 .btn-white {
   background: linear-gradient(to bottom, #fcfcfc 0%, #e2e2e2 50%, #d4d4d4 51%, #f4f4f4 100%);
   border: 1px solid #9c9c9c;
@@ -1428,13 +1562,13 @@ pre {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }
-.btn-secondary:active,
+.btn-secondary:active, .form-select:active,
 .btn-white:active {
   background: linear-gradient(to bottom, #a0a0a0 0%, #b8b8b8 50%, #d0d0d0 51%, #e0e0e0 100%);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
   border-color: #888888;
 }
-.btn-secondary::after,
+.btn-secondary::after, .form-select::after,
 .btn-white::after {
   background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.2) 100%);
 }
@@ -1568,12 +1702,12 @@ pre {
   box-shadow: 0 0 6px var(--color-green-vivid), 0 0 0 1px rgba(0, 0, 0, 0.15);
 }
 
-.btn .primary-text {
+.btn .primary-text, .form-select .primary-text {
   font-size: 16px;
   font-weight: 500;
 }
 
-.btn .secondary-text {
+.btn .secondary-text, .form-select .secondary-text {
   font-size: 10px;
   opacity: 0.7;
   align-self: flex-start;
@@ -1618,6 +1752,12 @@ pre {
 .traffic-light.maximise {
   background: var(--color-green-vivid);
   border-color: #16aa29;
+}
+
+.btn-sm {
+  padding: 2px 12px;
+  min-height: 20px;
+  font-size: 11px;
 }
 
 :root {
@@ -2237,6 +2377,33 @@ input:checked + .slider:before {
   color: white;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  text-align: left;
+  padding: 4px 28px 4px 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555555'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+}
+.form-select option {
+  background: #f0f0f0;
+  color: #1a1a1a;
+}
+.form-select::after {
+  display: none;
+  content: none;
+}
+.form-select:focus {
+  outline: none;
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.25);
+}
+.form-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 :root {
@@ -4020,7 +4187,7 @@ input[type=range]::-moz-range-thumb:active {
 .vinyl-container,
 .cd-container {
   width: 100%;
-  max-width: 400px;
+  max-width: 460px;
   aspect-ratio: 1;
   display: flex;
   justify-content: center;

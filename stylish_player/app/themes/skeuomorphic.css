@@ -1107,6 +1107,139 @@ ol li {
   max-height: calc(100vh - 2rem);
 }
 
+/* ── Label / Input — shared structure, visual props from theme vars ── */
+.dialog-label {
+  display: block;
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary, var(--color-gray-500));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.dialog-input {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--input-bg, var(--color-gray-800));
+  border: 1px solid var(--input-border, var(--border-dark));
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+}
+.dialog-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+.dialog-input::placeholder {
+  color: var(--text-secondary, var(--color-gray-600));
+  opacity: 0.6;
+}
+
+/* ── Section title ── */
+.dialog-section-title {
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary, var(--color-gray-500));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+/* ── List Items (playlist rows, favourites) ── */
+.dialog-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid transparent;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 6px;
+  font-family: var(--font-label);
+}
+.dialog-list-item .material-icons {
+  font-size: 18px;
+  color: var(--text-secondary, var(--color-gray-500));
+  flex-shrink: 0;
+}
+.dialog-list-item:hover:not(:disabled) {
+  background: var(--list-item-bg-hover, rgba(255, 255, 255, 0.07));
+  color: var(--list-item-text-hover, var(--color-primary));
+}
+.dialog-list-item:hover:not(:disabled) .material-icons {
+  color: var(--list-item-text-hover, var(--color-primary));
+}
+.dialog-list-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.dialog-list-item.active {
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.dialog-list-item.active .material-icons {
+  color: var(--color-primary);
+}
+
+/* ── Track Info ── */
+.dialog-track-info {
+  padding: 12px 14px;
+  margin-bottom: 1rem;
+  border-radius: var(--radius-md);
+  background: var(--panel-bg-subtle, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border-dark);
+}
+
+.dialog-track-title {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+  line-height: 1.4;
+}
+
+.dialog-track-meta {
+  font-size: var(--text-sm);
+  color: var(--text-secondary, var(--color-gray-500));
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Alerts ── */
+.dialog-alert {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  margin-bottom: 1rem;
+  border: 1px solid;
+}
+.dialog-alert.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+.dialog-alert.success {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE
@@ -1344,7 +1477,7 @@ ol li {
 }
 
 /* Base Button Style */
-.btn {
+.btn, .form-select {
   border-radius: 4px;
   /* Slight rounding */
   border: none;
@@ -1353,9 +1486,10 @@ ol li {
   font-family: var(--font-label, "Roboto", sans-serif);
   /* For the button label */
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-start;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
   padding: 8px;
   font-size: 14px;
   font-weight: 500;
@@ -1367,8 +1501,9 @@ ol li {
   box-shadow: 0 4px 6px var(--shadow-30), inset 0 1px 0 var(--highlight-20), inset 1px 0 0 var(--highlight-10), inset -1px 0 0 var(--shadow-10);
 }
 
-.btn:active,
-.btn.active {
+.btn:active, .form-select:active,
+.btn.active,
+.active.form-select {
   transform: translateY(2px);
   box-shadow: 0 2px 3px var(--shadow-20), inset 0 2px 5px var(--shadow-20);
   /* Pressed in shadow */
@@ -1381,14 +1516,14 @@ ol li {
   border-bottom: 2px solid var(--color-gray-900, #111);
 }
 
-.btn-white {
+.btn-white, .form-select {
   background: linear-gradient(180deg, var(--btn-white-top, #eaeaea) 0%, var(--btn-white-btm, #cdcdcd) 100%);
   color: var(--color-gray-500, #555);
   border-bottom: 2px solid var(--color-gray-250, #999);
   box-shadow: 0 4px 6px var(--shadow-15), inset 0 1px 0 var(--color-white, #fff);
 }
 
-.btn-white:active {
+.btn-white:active, .form-select:active {
   background: var(--btn-white-btm, #cdcdcd);
   color: var(--color-gray-600, #444);
 }
@@ -1467,12 +1602,12 @@ ol li {
 }
 
 /* Text inside button */
-.btn .primary-text {
+.btn .primary-text, .form-select .primary-text {
   font-size: 18px;
   font-weight: 400;
 }
 
-.btn .secondary-text {
+.btn .secondary-text, .form-select .secondary-text {
   font-size: 10px;
   opacity: 0.7;
   align-self: flex-start;
@@ -1620,6 +1755,12 @@ ol li {
   flex-direction: column;
   align-items: center;
   gap: 5px;
+}
+
+/* ─── Small Button ─────────────────────────────────────────────────────── */
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
 }
 
 :root {
@@ -2204,6 +2345,37 @@ input:checked + .slider:after {
     padding: 20px;
   }
 }
+/* ─── Select / Dropdown ─────────────────────────────────────────────────────── */
+.form-select {
+  appearance: none;
+  display: block;
+  text-align: left;
+  padding: 8px 28px 8px 8px;
+  border-bottom: none;
+  box-shadow: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555555'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.form-select option {
+  background: #e8e8e8;
+  color: #333;
+}
+.form-select:hover {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555555'/%3E%3C/svg%3E"), linear-gradient(180deg, #f5f5f5 0%, #d8d8d8 100%);
+  background-repeat: no-repeat, no-repeat;
+  background-position: right 10px center, 0 0;
+  background-size: auto, cover;
+}
+.form-select:focus {
+  outline: none;
+  box-shadow: 3px 3px 7px rgba(0, 0, 0, 0.2), -1px -1px 4px rgba(255, 255, 255, 0.6), 0 0 0 2px rgba(255, 87, 34, 0.4);
+}
+.form-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE
@@ -3146,7 +3318,7 @@ h2 {
 .vinyl-container,
 .cd-container {
   width: 100%;
-  max-width: 400px;
+  max-width: 460px;
   aspect-ratio: 1;
   display: flex;
   justify-content: center;
@@ -3167,6 +3339,7 @@ h2 {
 }
 
 .track-title {
+  font-family: var(--font-display);
   font-size: clamp(1.25rem, 4.5vw, 2.25rem);
   font-weight: 700;
   margin-bottom: 5px;
@@ -3179,6 +3352,7 @@ h2 {
 
 .artist-name,
 .album-name {
+  font-family: var(--font-display);
   font-size: clamp(0.8rem, 2.2vw, 1.2rem);
   color: var(--color-gray-300, #888);
   white-space: nowrap;
@@ -3361,7 +3535,7 @@ h2 {
   .album-art-container,
   .vinyl-container,
   .cd-container {
-    max-width: 100%;
+    max-width: 460px;
     height: auto;
     aspect-ratio: 1;
     margin-bottom: 20px;
@@ -5233,7 +5407,7 @@ h2 {
 }
 
 .lcd-date {
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.8rem, 2cqw, 3rem);
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -5253,7 +5427,7 @@ h2 {
 }
 
 .lcd-weather-temp {
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.8rem, 2cqw, 3rem);
   font-weight: 700;
   color: #2c3e50;
@@ -5277,7 +5451,7 @@ h2 {
   justify-content: space-between;
   gap: 0.8cqw;
   margin-bottom: 0.8cqw;
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.6rem, 1.2cqw, 2rem);
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -5307,7 +5481,7 @@ h2 {
 }
 
 .lcd-ampm {
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.8rem, 2.5cqw, 4rem);
   font-weight: 700;
   color: #2c3e50;
@@ -5471,7 +5645,7 @@ h2 {
 .clock-hour-digit {
   position: absolute;
   transform: translate(-50%, -50%);
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.7rem, 3.5cqi, 1.4rem);
   font-weight: 700;
   color: var(--color-gray-800, #222);
@@ -5537,7 +5711,7 @@ h2 {
 }
 
 .clock-face-day {
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.8rem, 4cqi, 1.5rem);
   font-weight: 600;
   color: var(--color-gray-300, #bbb);
@@ -5545,7 +5719,7 @@ h2 {
 }
 
 .clock-face-date {
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.8rem, 4cqi, 1.5rem);
   font-weight: 700;
   color: var(--color-gray-700, #333);
@@ -5559,7 +5733,7 @@ h2 {
 }
 
 .clock-face-weather-temp {
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.7rem, 3.5cqi, 1.4rem);
   font-weight: 700;
   color: var(--color-gray-700, #333);
@@ -5607,12 +5781,102 @@ h2 {
   color: #d8b880;
 }
 
+.tick-flip-panel {
+  font-family: var(--font-display);
+}
+
 .tick-flip-panel-front-text .tick-flip-panel-text-wrapper {
-  transform: translateY(-10%);
+  transform: translateX(-15%) translateY(-10%);
 }
 
 .tick-flip-panel-back-text .tick-flip-panel-text-wrapper {
-  transform: translateY(-5%);
+  transform: translateX(-15%) translateY(-5%);
+}
+
+/* ── Weather — Skeuomorphic Theme ──────────────────────────────────────
+ * Reduced font sizes for hourly and daily screens so content fits cards.
+ * ─────────────────────────────────────────────────────────────────────── */
+/* Use display font (Michroma) for all weather values and temperatures */
+.weather-current-temp,
+.weather-current-desc,
+.weather-detail-value,
+.weather-detail-label,
+.weather-hourly-temp,
+.weather-hourly-time,
+.weather-daily-day,
+.weather-daily-date,
+.weather-daily-temps,
+.weather-daily-desc,
+.weather-daily-meta,
+.weather-daily-sun-item,
+.weather-full-hero-location,
+.weather-full-hero-temp,
+.weather-full-hero-desc,
+.weather-full-hero-hilow,
+.weather-full-tenday-row,
+.weather-full-tenday-day,
+.weather-full-tenday-lo,
+.weather-full-tenday-hi,
+.weather-full-hourly-time,
+.weather-full-tile-value,
+.weather-full-tile-sub {
+  font-family: var(--font-display);
+}
+
+/* Use secondary font (Roboto) for time and day labels on full weather screen */
+.weather-full-hourly-time,
+.weather-full-tenday-day,
+.weather-full-tenday-lo,
+.weather-full-tenday-hi,
+.weather-full-hourly-temp,
+.weather-full-tenday-row {
+  font-family: var(--font-label);
+}
+
+/* ── Hourly ──────────────────────────────────────────────────────────── */
+.weather-hourly-time {
+  font-size: clamp(0.55rem, 1.2cqw, 1.8rem);
+}
+
+.weather-hourly-icon {
+  font-size: clamp(1.1rem, 2.8cqw, 4rem);
+}
+
+.weather-hourly-temp {
+  font-size: clamp(0.7rem, 1.6cqw, 2.5rem);
+}
+
+.weather-hourly-wind {
+  font-size: clamp(0.5rem, 1cqw, 1.4rem);
+}
+
+/* ── Daily ───────────────────────────────────────────────────────────── */
+.weather-daily-day {
+  font-size: clamp(0.55rem, 1.8dvh, 1.3rem);
+}
+
+.weather-daily-date {
+  font-size: clamp(0.5rem, 1.3dvh, 1rem);
+}
+
+.weather-daily-icon {
+  font-size: clamp(1.1rem, 5.5dvh, 3.8rem);
+}
+
+.weather-daily-desc {
+  font-size: clamp(0.48rem, 1.1dvh, 0.9rem);
+}
+
+.weather-daily-temps {
+  font-size: clamp(0.6rem, 2.2dvh, 1.8rem);
+}
+
+.weather-daily-meta {
+  font-size: clamp(0.45rem, 1.1dvh, 0.9rem);
+}
+
+.weather-daily-sun-item {
+  font-size: clamp(0.42rem, 1dvh, 0.85rem);
 }
 
 body {
