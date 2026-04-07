@@ -201,4 +201,3 @@ class BaseViewHandler {
 }
 _BaseViewHandler_uri = new WeakMap(), _BaseViewHandler_currentView = new WeakMap(), _BaseViewHandler_previousViews = new WeakMap(), _BaseViewHandler_models = new WeakMap(), _BaseViewHandler_renderers = new WeakMap();
 exports.default = BaseViewHandler;
-//# sourceMappingURL=BaseViewHandler.js.map

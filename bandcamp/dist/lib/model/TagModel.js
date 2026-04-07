@@ -30,4 +30,3 @@ class TagModel extends BaseModel_1.default {
     }
 }
 exports.default = TagModel;
-//# sourceMappingURL=TagModel.js.map

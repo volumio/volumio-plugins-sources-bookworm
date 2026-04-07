@@ -238,4 +238,3 @@ _BandViewHandler_instances = new WeakSet(), _BandViewHandler_getContentListsForA
     }
 };
 exports.default = BandViewHandler;
-//# sourceMappingURL=BandViewHandler.js.map

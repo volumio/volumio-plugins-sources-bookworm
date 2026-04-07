@@ -74,4 +74,3 @@ class SearchViewHandler extends BaseViewHandler_1.default {
     }
 }
 exports.default = SearchViewHandler;
-//# sourceMappingURL=SearchViewHandler.js.map
