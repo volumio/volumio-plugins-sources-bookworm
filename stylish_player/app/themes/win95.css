@@ -5618,7 +5618,7 @@ input[type=range]::-webkit-slider-runnable-track {
 
 .clock-face-day {
   font-family: "Pixelify Sans", "Courier New", monospace;
-  font-size: clamp(0.8rem, 4cqi, 1.5rem);
+  font-size: clamp(0.6rem, 3cqi, 1rem);
   font-weight: 700;
   color: #404040;
   letter-spacing: 0.08em;
@@ -5627,7 +5627,7 @@ input[type=range]::-webkit-slider-runnable-track {
 
 .clock-face-date {
   font-family: "Pixelify Sans", "Courier New", monospace;
-  font-size: clamp(0.8rem, 4cqi, 1.5rem);
+  font-size: clamp(0.6rem, 3cqi, 1rem);
   font-weight: 400;
   color: #000000;
   white-space: nowrap;

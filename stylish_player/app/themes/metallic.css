@@ -4559,7 +4559,7 @@ h2 {
 
 .clock-face-day {
   font-family: "Roboto Condensed", "Roboto", sans-serif;
-  font-size: clamp(0.8rem, 4cqi, 1.5rem);
+  font-size: clamp(0.6rem, 3cqi, 1rem);
   font-weight: 600;
   color: var(--color-gray-600, #444444);
   letter-spacing: 0.1em;
@@ -4568,7 +4568,7 @@ h2 {
 
 .clock-face-date {
   font-family: "Roboto Condensed", "Roboto", sans-serif;
-  font-size: clamp(0.8rem, 4cqi, 1.5rem);
+  font-size: clamp(0.6rem, 3cqi, 1rem);
   font-weight: 700;
   color: var(--color-gray-200, #cccccc);
 }
