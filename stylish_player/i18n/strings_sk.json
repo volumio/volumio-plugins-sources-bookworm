@@ -92,5 +92,7 @@
   "KIOSK_RESTORE_BAK_LABEL": "Obnoviť zo zálohy",
   "KIOSK_RESTORE_BAK_BTN": "Obnoviť",
   "USE_24_HOUR": "24-hodinový čas",
-  "USE_24_HOUR_DESC": "Zobrazovať čas v 24-hodinovom (vojenskom) formáte namiesto 12-hodinového formátu AM/PM."
+  "USE_24_HOUR_DESC": "Zobrazovať čas v 24-hodinovom (vojenskom) formáte namiesto 12-hodinového formátu AM/PM.",
+  "ALBUM_ART_MAX_SPACE": "Použiť maximálny priestor",
+  "ALBUM_ART_MAX_SPACE_DESC": "Keď je povolené, obal albumu sa roztiahne na celý ľavý panel a informácie o skladbe a ovládacie prvky sa rozšíria tak, aby vyplnili celý dostupný priestor."
 }

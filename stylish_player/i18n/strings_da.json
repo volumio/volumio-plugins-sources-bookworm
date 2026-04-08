@@ -90,5 +90,7 @@
   "KIOSK_RESTORE_BAK_LABEL": "Gendan fra sikkerhedskopi",
   "KIOSK_RESTORE_BAK_BTN": "Gendan",
   "USE_24_HOUR": "24-timers format",
-  "USE_24_HOUR_DESC": "Vis tid i 24-timers (militær) format i stedet for 12-timers AM/PM."
+  "USE_24_HOUR_DESC": "Vis tid i 24-timers (militær) format i stedet for 12-timers AM/PM.",
+  "ALBUM_ART_MAX_SPACE": "Brug maksimal plads",
+  "ALBUM_ART_MAX_SPACE_DESC": "Når aktiveret, strækker albumcoveret sig over hele venstre panel og udvider sporinformation og kontroller for at udfylde al tilgængelig plads."
 }

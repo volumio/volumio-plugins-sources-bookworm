@@ -92,5 +92,7 @@
   "KIOSK_RESTORE_BAK_LABEL": "Przywróć z kopii zapasowej",
   "KIOSK_RESTORE_BAK_BTN": "Przywróć",
   "USE_24_HOUR": "Format 24-godzinny",
-  "USE_24_HOUR_DESC": "Wyświetlaj czas w formacie 24-godzinnym (wojskowym) zamiast 12-godzinnego AM/PM."
+  "USE_24_HOUR_DESC": "Wyświetlaj czas w formacie 24-godzinnym (wojskowym) zamiast 12-godzinnego AM/PM.",
+  "ALBUM_ART_MAX_SPACE": "Użyj maksymalnej przestrzeni",
+  "ALBUM_ART_MAX_SPACE_DESC": "Po włączeniu okładka albumu rozpościera się na całym lewym panelu, a informacje o utworze i elementy sterowania rozszerzają się, aby wypełnić całą dostępną przestrzeń."
 }

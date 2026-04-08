@@ -62,7 +62,7 @@
       },
       "saveButton": {
         "label": "TRANSLATE.SAVE",
-        "data": ["playerType", "theme", "showPlayerControls", "vizType", "spectrumOptions"]
+        "data": ["playerType", "theme", "showPlayerControls", "albumArtMaxSpace", "vizType", "spectrumOptions"]
       },
       "content": [
         {

@@ -92,5 +92,7 @@
   "KIOSK_RESTORE_BAK_LABEL": "Palauta varmuuskopiosta",
   "KIOSK_RESTORE_BAK_BTN": "Palauta",
   "USE_24_HOUR": "24 tunnin aika",
-  "USE_24_HOUR_DESC": "Näytä aika 24 tunnin (sotilasajan) muodossa 12 tunnin AM/PM-muodon sijaan."
+  "USE_24_HOUR_DESC": "Näytä aika 24 tunnin (sotilasajan) muodossa 12 tunnin AM/PM-muodon sijaan.",
+  "ALBUM_ART_MAX_SPACE": "Käytä enimmäistilaa",
+  "ALBUM_ART_MAX_SPACE_DESC": "Kun käytössä, albumin kansikuva ulottuu koko vasemmalle paneelille ja kappaleen tiedot sekä säätimet laajenevat täyttämään kaiken käytettävissä olevan tilan."
 }

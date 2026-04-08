@@ -92,5 +92,7 @@
   "KIOSK_RESTORE_BAK_LABEL": "Yedekten Geri Yükle",
   "KIOSK_RESTORE_BAK_BTN": "Geri Yükle",
   "USE_24_HOUR": "24 Saatlik Format",
-  "USE_24_HOUR_DESC": "Saati 12 saatlik AM/PM formatı yerine 24 saatlik (askeri) formatta görüntüle."
+  "USE_24_HOUR_DESC": "Saati 12 saatlik AM/PM formatı yerine 24 saatlik (askeri) formatta görüntüle.",
+  "ALBUM_ART_MAX_SPACE": "Maksimum alan kullan",
+  "ALBUM_ART_MAX_SPACE_DESC": "Etkinleştirildiğinde, albüm kapağı sol panelin tamamına yayılır ve parça bilgisi ile kontroller tüm mevcut alanı doldurmak için genişler."
 }

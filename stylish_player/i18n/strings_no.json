@@ -90,5 +90,7 @@
   "KIOSK_RESTORE_BAK_LABEL": "Gjenopprett fra sikkerhetskopi",
   "KIOSK_RESTORE_BAK_BTN": "Gjenopprett",
   "USE_24_HOUR": "24-timers format",
-  "USE_24_HOUR_DESC": "Vis tid i 24-timers (militær) format i stedet for 12-timers AM/PM."
+  "USE_24_HOUR_DESC": "Vis tid i 24-timers (militær) format i stedet for 12-timers AM/PM.",
+  "ALBUM_ART_MAX_SPACE": "Bruk maksimal plass",
+  "ALBUM_ART_MAX_SPACE_DESC": "Når aktivert, strekker albumomslaget seg over hele venstre panel og utvider sporinformasjon og kontroller for å fylle all tilgjengelig plass."
 }

@@ -92,5 +92,7 @@
   "KIOSK_RESTORE_BAK_LABEL": "從備份還原",
   "KIOSK_RESTORE_BAK_BTN": "還原",
   "USE_24_HOUR": "24小時制",
-  "USE_24_HOUR_DESC": "以24小時制（軍用格式）顯示時間，而非12小時制AM/PM格式。"
+  "USE_24_HOUR_DESC": "以24小時制（軍用格式）顯示時間，而非12小時制AM/PM格式。",
+  "ALBUM_ART_MAX_SPACE": "使用最大空間",
+  "ALBUM_ART_MAX_SPACE_DESC": "啟用後，專輯封面將跨越整個左側面板，並展開曲目資訊和控制項以填充所有可用空間。"
 }

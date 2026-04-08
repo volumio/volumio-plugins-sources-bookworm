@@ -92,5 +92,7 @@
   "KIOSK_RESTORE_BAK_LABEL": "Von Sicherung wiederherstellen",
   "KIOSK_RESTORE_BAK_BTN": "Wiederherstellen",
   "USE_24_HOUR": "24-Stunden-Zeit",
-  "USE_24_HOUR_DESC": "Uhrzeit im 24-Stunden-Format (Militärformat) statt im 12-Stunden AM/PM-Format anzeigen."
+  "USE_24_HOUR_DESC": "Uhrzeit im 24-Stunden-Format (Militärformat) statt im 12-Stunden AM/PM-Format anzeigen.",
+  "ALBUM_ART_MAX_SPACE": "Maximalen Platz nutzen",
+  "ALBUM_ART_MAX_SPACE_DESC": "Wenn aktiviert, erstreckt sich das Albumcover über das gesamte linke Panel und erweitert Track-Info und Steuerelemente auf den gesamten verfügbaren Platz."
 }

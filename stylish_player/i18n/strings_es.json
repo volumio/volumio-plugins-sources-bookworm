@@ -92,5 +92,7 @@
   "KIOSK_RESTORE_BAK_LABEL": "Restaurar desde copia de seguridad",
   "KIOSK_RESTORE_BAK_BTN": "Restaurar",
   "USE_24_HOUR": "Hora de 24 horas",
-  "USE_24_HOUR_DESC": "Mostrar la hora en formato de 24 horas (militar) en lugar de 12 horas AM/PM."
+  "USE_24_HOUR_DESC": "Mostrar la hora en formato de 24 horas (militar) en lugar de 12 horas AM/PM.",
+  "ALBUM_ART_MAX_SPACE": "Usar espacio máximo",
+  "ALBUM_ART_MAX_SPACE_DESC": "Cuando está habilitado, extiende la carátula del álbum por todo el panel izquierdo y expande la información de la pista y los controles para llenar todo el espacio disponible."
 }

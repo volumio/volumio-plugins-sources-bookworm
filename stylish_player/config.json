@@ -62,5 +62,9 @@
   "slideshowInterval": {
     "type": "number",
     "value": 30
+  },
+  "albumArtMaxSpace": {
+    "type": "boolean",
+    "value": false
   }
 }

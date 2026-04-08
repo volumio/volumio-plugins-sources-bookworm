@@ -92,5 +92,7 @@
   "KIOSK_RESTORE_BAK_LABEL": "Khôi phục từ bản sao lưu",
   "KIOSK_RESTORE_BAK_BTN": "Khôi phục",
   "USE_24_HOUR": "Định dạng 24 giờ",
-  "USE_24_HOUR_DESC": "Hiển thị thời gian theo định dạng 24 giờ (quân sự) thay vì định dạng 12 giờ AM/PM."
+  "USE_24_HOUR_DESC": "Hiển thị thời gian theo định dạng 24 giờ (quân sự) thay vì định dạng 12 giờ AM/PM.",
+  "ALBUM_ART_MAX_SPACE": "Sử dụng không gian tối đa",
+  "ALBUM_ART_MAX_SPACE_DESC": "Khi được bật, ảnh bìa album trải dài toàn bộ bảng bên trái và thông tin bài hát cùng các nút điều khiển được mở rộng để lấp đầy toàn bộ không gian có sẵn."
 }
