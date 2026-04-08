@@ -27,7 +27,7 @@
 	},
 	"volumio_info": {
 		"plugin_type": "music_service",
-		"prettyName": "DMD2 Music",
+		"prettyName": "DMD2 Music Legacy",
 		"os": [
 			"bookworm"
 		],
