@@ -2624,6 +2624,12 @@ h2 {
   background: #000;
 }
 
+/* ─── Track info group: use full panel width ───────────────────────────── */
+.track-info-group {
+  width: calc(100% - 2rem) !important;
+  margin-inline: 1rem;
+}
+
 /* ─── Progress Sliders ────────────────────────────────────────────────── */
 .slider-container {
   width: 100%;
