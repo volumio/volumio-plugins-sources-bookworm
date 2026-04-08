@@ -114,6 +114,17 @@
           "value": true
         },
         {
+          "id": "albumArtMaxSpace",
+          "element": "switch",
+          "label": "TRANSLATE.ALBUM_ART_MAX_SPACE",
+          "doc": "TRANSLATE.ALBUM_ART_MAX_SPACE_DESC",
+          "value": false,
+          "visibleIf": {
+            "field": "playerType",
+            "value": "albumArt"
+          }
+        },
+        {
           "id": "vizType",
           "element": "select",
           "label": "TRANSLATE.VIZ_TYPE",

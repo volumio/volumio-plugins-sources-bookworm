@@ -77,6 +77,8 @@
   "SPECTRUM_OPTIONS_DESC": "Override AudioMotion Analyzer options with a JSON object. Leave empty to use defaults. Generate options using getOptions() on this page https://audiomotion.dev/demo/fluid.html",
   "SHOW_PLAYER_CONTROLS": "Show Player Controls",
   "SHOW_PLAYER_CONTROLS_DESC": "When disabled, player buttons are hidden and the seek bar becomes a read-only progress indicator.",
+  "ALBUM_ART_MAX_SPACE": "Use Maximum Space",
+  "ALBUM_ART_MAX_SPACE_DESC": "When enabled, spans the album art across the full left panel and expands track info and controls to fill all available space.",
   "OPEN_APP": "Open App",
   "OPEN_APP_DESC": "Open the Stylish Player interface in a new tab.",
   "NONE": "None",
