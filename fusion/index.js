@@ -643,7 +643,7 @@ function configureEq15Section(self, uiconf, selectedsp) {
       max: 10,
       step: '0.5',
       value: geq15[idx],
-      ticksLabels: [label],
+      ticksLabels: [mutedBands[idx] === '1' ? label + ' [M]' : label],
       tooltip: 'show',
       muted: mutedBands[idx] === '1'
     }));
@@ -689,10 +689,11 @@ function configureEq3Section(self, uiconf) {
 
   const geq3 = self.config.get('geq3').split(',');
   const mutedBands = (self.config.get('geq3mute') || '0,0,0').split(',');
+  const eq3Labels = [self.commandRouter.getI18nString('EQ3_LOW'), self.commandRouter.getI18nString('EQ3_MID'), self.commandRouter.getI18nString('EQ3_HIGH')];
   const bars = [
-    { min: -10, max: 10, step: '0.5', value: geq3[0], ticksLabels: [self.commandRouter.getI18nString('EQ3_LOW')], tooltip: 'show', muted: mutedBands[0] === '1' },
-    { min: -10, max: 10, step: '0.5', value: geq3[1], ticksLabels: [self.commandRouter.getI18nString('EQ3_MID')], tooltip: 'show', muted: mutedBands[1] === '1' },
-    { min: -10, max: 10, step: '0.5', value: geq3[2], ticksLabels: [self.commandRouter.getI18nString('EQ3_HIGH')], tooltip: 'show', muted: mutedBands[2] === '1' }
+    { min: -10, max: 10, step: '0.5', value: geq3[0], ticksLabels: [mutedBands[0] === '1' ? eq3Labels[0] + ' [M]' : eq3Labels[0]], tooltip: 'show', muted: mutedBands[0] === '1' },
+    { min: -10, max: 10, step: '0.5', value: geq3[1], ticksLabels: [mutedBands[1] === '1' ? eq3Labels[1] + ' [M]' : eq3Labels[1]], tooltip: 'show', muted: mutedBands[1] === '1' },
+    { min: -10, max: 10, step: '0.5', value: geq3[2], ticksLabels: [mutedBands[2] === '1' ? eq3Labels[2] + ' [M]' : eq3Labels[2]], tooltip: 'show', muted: mutedBands[2] === '1' }
   ];
 
   uiconf.sections[1].content.push({

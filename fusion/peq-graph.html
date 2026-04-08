@@ -449,12 +449,7 @@
     xhr.timeout = 5000;
     xhr.onload = function () {
       if (xhr.status === 200) {
-        try {
-          var resp = JSON.parse(xhr.responseText);
-          eqBypassed = resp.bypassed;
-          updateBypassButton();
-          renderLocal();
-        } catch (e) {}
+        fetchAndRender();
       }
     };
     xhr.send('{}');
@@ -2123,23 +2118,9 @@
       xhr.timeout = 5000;
       xhr.onload = function () {
         if (xhr.status === 200) {
-          try {
-            var resp = JSON.parse(xhr.responseText);
-            // Update local state
-            var fIdx = findFilterIdx(currentData.filters, ind.index, ind.scope);
-            if (fIdx >= 0) {
-              currentData.filters[fIdx].muted = resp.muted;
-            }
-            // Update button appearance
-            if (resp.muted) {
-              muteBtn.textContent = 'Unmute';
-              muteBtn.classList.add('muted');
-            } else {
-              muteBtn.textContent = 'Mute';
-              muteBtn.classList.remove('muted');
-            }
-            renderLocal();
-          } catch (e) {}
+          closePopup();
+          interacting = false;
+          fetchAndRender();
         }
       };
       xhr.send(JSON.stringify({ bandIndex: ind.index, scope: ind.scope }));
