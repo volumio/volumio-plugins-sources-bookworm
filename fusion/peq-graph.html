@@ -1991,11 +1991,9 @@
     html += '<div class="popup-error" id="popup-error-text"></div>';
     var deleteDisabled = isEQ15 || (currentData && currentData.filters.length <= 1) ? ' disabled title="Cannot remove this filter"' : '';
     html += '<div class="popup-buttons">';
-    if (isEQ15) {
-      var muteClass = ind.muted ? 'mute-btn muted' : 'mute-btn';
-      var muteLabel = ind.muted ? 'Unmute' : 'Mute';
-      html += '<button class="' + muteClass + '" id="popup-mute">' + muteLabel + '</button>';
-    }
+    var muteClass = ind.muted ? 'mute-btn muted' : 'mute-btn';
+    var muteLabel = ind.muted ? 'Unmute' : 'Mute';
+    html += '<button class="' + muteClass + '" id="popup-mute">' + muteLabel + '</button>';
     if (!isEQ15) {
       html += '<button class="delete-btn" id="popup-delete"' + deleteDisabled + '>Delete</button>';
     }
