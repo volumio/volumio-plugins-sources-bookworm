@@ -1203,6 +1203,8 @@ FusionDsp.prototype.choosedsp = function (data) {
 
   self.config.set('effect', true)
   self.config.set('selectedsp', selectedsp)
+  // Clear bypass state when switching modes to prevent stale bypass in the new mode
+  self.config.set('eqbypass', false)
 
   setTimeout(function () {
     self.createCamilladspfile()
