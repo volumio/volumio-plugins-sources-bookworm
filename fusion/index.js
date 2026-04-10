@@ -1603,6 +1603,9 @@ FusionDsp.prototype.startPeqGraphServer = function () {
       var savednbreq = self.config.get('savednbreq');
       self.config.set('mergedeq', savedmergedeq);
       self.config.set('nbreq', savednbreq);
+      // Clear mute and bypass state on reset
+      self.config.set('peqmute', '');
+      self.config.set('eqbypass', false);
 
       setTimeout(function () {
         self.createCamilladspfile();
@@ -2012,6 +2015,7 @@ FusionDsp.prototype.removealleq = function () {
   self.config.set('mergedeq', "Eq0|None|L+R|0,0,0|")
   self.config.set('savedmergedeq', "Eq0|None|L+R|0,0,0|")
   self.config.set('savednbreq', 1)
+  self.config.set('peqmute', '')
   self.config.set('usethispreset', 'no preset used');
   self.config.set(selectedsp + "preset", "no preset used");
 
@@ -2027,6 +2031,8 @@ FusionDsp.prototype.resetPeqToSaved = function () {
   var savednbreq = self.config.get('savednbreq');
   self.config.set('mergedeq', savedmergedeq);
   self.config.set('nbreq', savednbreq);
+  self.config.set('peqmute', '');
+  self.config.set('eqbypass', false);
 
   setTimeout(function () {
     self.createCamilladspfile();
