@@ -3878,6 +3878,13 @@ input[type=range]::-moz-range-thumb:active {
 .volume-manager .slider-fill {
   height: 8px;
 }
+.volume-manager {
+  /* Ensure the value label never collapses flush against the slider */
+}
+.volume-manager .small {
+  min-width: 3.5ch;
+  padding-left: 0.4rem;
+}
 
 /* ─── Player Controls Container ────────────────────────────────────────── */
 .player-controls-container {

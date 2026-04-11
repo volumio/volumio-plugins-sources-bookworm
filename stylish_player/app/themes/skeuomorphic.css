@@ -3578,6 +3578,12 @@ h2 {
   cursor: default;
 }
 
+/* ─── Volume label spacing ─────────────────────────────────────────────── */
+.volume-manager .small {
+  min-width: 3.5ch;
+  padding-left: 0.4rem;
+}
+
 /* Page-level wrapper — apply to the element that wraps the entire album browser */
 .album-browser-page {
   height: 100dvh;

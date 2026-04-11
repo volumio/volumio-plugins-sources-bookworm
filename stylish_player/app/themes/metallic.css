@@ -2720,14 +2720,16 @@ h2 {
   position: relative;
   cursor: pointer;
   border: 1px solid #000;
-  overflow: hidden; /* Keep fill inside */
+  overflow: hidden;
+  /* Keep fill inside */
 }
 
 .slider-fill {
   height: 100%;
   background: linear-gradient(180deg, var(--color-primary-light) 0%, var(--color-primary) 50%, var(--color-primary-deep) 100%);
   border-radius: 10px;
-  width: 0%; /* Dynamic */
+  width: 0%;
+  /* Dynamic */
   position: relative;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 10px var(--color-primary);
 }
@@ -2755,6 +2757,27 @@ h2 {
   cursor: default;
 }
 
+/* ─── Mobile compact (portrait ≤ 768px) ──────────────────────────────── */
+/* At 393×842 the controls panel is ~421px tall. The theme's generous padding
+   on .track-info (20px), .volume-control (16px top/bottom), and the
+   .player-controls (24px padding / 20px gap) push elements below the fold.
+   Scale everything down so nothing gets clipped. */
+@media (max-width: 768px) {
+  .track-info {
+    padding: 10px 14px;
+  }
+  .player-controls {
+    padding: 10px 16px;
+    gap: 10px;
+  }
+  .volume-control {
+    padding: 10px 14px;
+  }
+  .track-info-group {
+    width: calc(100% - 1rem) !important;
+    margin-inline: 0.5rem;
+  }
+}
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE - Dark Metallic / Black Chrome Theme
