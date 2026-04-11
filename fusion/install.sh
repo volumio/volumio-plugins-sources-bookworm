@@ -78,7 +78,7 @@ echo "Detected cpu architecture as $cpu"
 if [ $cpu = "armv7l" ] || [ $cpu = "aarch64" ] 
 then
 cd /tmp
-wget https://github.com/HEnquist/camilladsp/releases/download/v3.0.1/camilladsp-linux-armv7.tar.gz
+wget https://github.com/HEnquist/camilladsp/releases/download/v4.1.3/camilladsp-linux-armv7.tar.gz
 tar -xf camilladsp-linux-armv7.tar.gz -C /tmp
 chown volumio camilladsp
 chgrp volumio camilladsp
@@ -90,19 +90,17 @@ sudo chmod +x $LIB/hw_params
 
 cd $LIB
 echo "Downloading camillagui ... Please wait!"
-
-wget https://github.com/balbuze/volumio-plugins-xtra/raw/refs/heads/main/cgui-venv-3.0.2.tar.gz
+wget https://github.com/HEnquist/camillagui-backend/releases/download/v4.1.0/bundle_linux_armv7.tar.gz
 echo "Extracting camillagui ..."
-
-tar -xzf cgui-venv-3.0.2.tar.gz
-chown -R volumio cgui
-chgrp -R volumio cgui
-rm cgui-venv-3.0.2.tar.gz
+mkdir -p camillagui && tar -xzvf bundle_linux_armv7.tar.gz -C camillagui
+chown -R volumio camillagui
+chgrp -R volumio camillagui
+rm bundle_linux_armv7.tar.gz
 
 elif [ $cpu = "x86_64" ]
 then
 cd /tmp
-wget https://github.com/HEnquist/camilladsp/releases/download/v3.0.1/camilladsp-linux-amd64.tar.gz
+wget https://github.com/HEnquist/camilladsp/releases/download/v4.1.3/camilladsp-linux-amd64.tar.gz
 tar -xf camilladsp-linux-amd64.tar.gz -C /tmp
 chown volumio camilladsp
 chgrp volumio camilladsp
@@ -113,23 +111,20 @@ cp $LIB/c/hw_params_amd64 $LIB/hw_params
 chmod +x $LIB/hw_params
 
 
-cd $LIB
 echo "Downloading camillagui ... Please wait!"
-
-wget https://github.com/balbuze/volumio-plugins-xtra/raw/refs/heads/main/cgui-venvx86-3.0.2.tar.gz
+wget https://github.com/HEnquist/camillagui-backend/releases/download/v4.1.0/bundle_linux_amd64.tar.gz
 echo "Extracting camillagui ..."
-
-tar -xzf cgui-venvx86-3.0.2.tar.gz
-#chmod -R 777 cgui
-chown -R volumio cgui
-chgrp -R volumio cgui
-rm cgui-venvx86-3.0.2.tar.gz
+mkdir -p camillagui && tar -xzvf bundle_linux_amd64.tar.gz -C camillagui
+chown -R volumio camillagui
+chgrp -R volumio camillagui
+rm bundle_linux_amd64.tar.gz
 
 else
     echo "Sorry, cpu is $cpu and your device is not yet supported !"
 	echo "exit now..."
 	exit -1
 fi
+cp -r config ./camillagui/camillagui_backend/_internal/
 
 #required to end the plugin install
 echo "plugininstallend"

@@ -1,5 +1,6 @@
 /*--------------------
-// FusionDsp plugin for volumio 3. By balbuze March 2026
+// FusionDsp plugin for volumio 3. By balbuze April 2026
+Camilladsp v4.1.0
 contribution : Nerd, Paolo Sabatino, squadgazzz
 Multi Dsp features
 Based on CamillaDsp
@@ -636,13 +637,16 @@ function configureEq15Section(self, uiconf, selectedsp) {
   listeq.forEach((eq, i) => {
     const neq = eqtext.split(',')[i];
     const geq15 = self.config.get(eq).split(',');
+    const muteKey = eq === 'x2geq15' ? 'x2geq15mute' : 'geq15mute';
+    const mutedBands = (self.config.get(muteKey) || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
     const bars = eq15range.map((label, idx) => ({
       min: -10,
       max: 10,
       step: '0.5',
       value: geq15[idx],
-      ticksLabels: [label],
-      tooltip: 'show'
+      ticksLabels: [mutedBands[idx] === '1' ? label + ' [M]' : label],
+      tooltip: 'show',
+      muted: mutedBands[idx] === '1'
     }));
 
     uiconf.sections[1].content.push({
@@ -682,13 +686,15 @@ function configureEq15Section(self, uiconf, selectedsp) {
 }
 
 function configureEq3Section(self, uiconf) {
-  for (let i = 2; i <= 10; i++) uiconf.sections[i].hidden = true;
+  for (let i = 2; i <= 11; i++) uiconf.sections[i].hidden = true;
 
   const geq3 = self.config.get('geq3').split(',');
+  const mutedBands = (self.config.get('geq3mute') || '0,0,0').split(',');
+  const eq3Labels = [self.commandRouter.getI18nString('EQ3_LOW'), self.commandRouter.getI18nString('EQ3_MID'), self.commandRouter.getI18nString('EQ3_HIGH')];
   const bars = [
-    { min: -10, max: 10, step: '0.5', value: geq3[0], ticksLabels: [self.commandRouter.getI18nString('EQ3_LOW')], tooltip: 'show' },
-    { min: -10, max: 10, step: '0.5', value: geq3[1], ticksLabels: [self.commandRouter.getI18nString('EQ3_MID')], tooltip: 'show' },
-    { min: -10, max: 10, step: '0.5', value: geq3[2], ticksLabels: [self.commandRouter.getI18nString('EQ3_HIGH')], tooltip: 'show' }
+    { min: -10, max: 10, step: '0.5', value: geq3[0], ticksLabels: [mutedBands[0] === '1' ? eq3Labels[0] + ' [M]' : eq3Labels[0]], tooltip: 'show', muted: mutedBands[0] === '1' },
+    { min: -10, max: 10, step: '0.5', value: geq3[1], ticksLabels: [mutedBands[1] === '1' ? eq3Labels[1] + ' [M]' : eq3Labels[1]], tooltip: 'show', muted: mutedBands[1] === '1' },
+    { min: -10, max: 10, step: '0.5', value: geq3[2], ticksLabels: [mutedBands[2] === '1' ? eq3Labels[2] + ' [M]' : eq3Labels[2]], tooltip: 'show', muted: mutedBands[2] === '1' }
   ];
 
   uiconf.sections[1].content.push({
@@ -803,7 +809,7 @@ function configureConvfirSection(self, uiconf) {
 }
 
 function configurePureCamillaSection(self, uiconf) {
-  for (let i = 1; i <= 9; i++) uiconf.sections[i].hidden = true;
+  for (let i = 1; i <= 10; i++) uiconf.sections[i].hidden = true;
 
   const IPaddress = self.config.get('address');
   const purecamillainstalled = self.config.get('purecgui');
@@ -1198,6 +1204,8 @@ FusionDsp.prototype.choosedsp = function (data) {
 
   self.config.set('effect', true)
   self.config.set('selectedsp', selectedsp)
+  // Clear bypass state when switching modes to prevent stale bypass in the new mode
+  self.config.set('eqbypass', false)
 
   setTimeout(function () {
     self.createCamilladspfile()
@@ -1256,7 +1264,7 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.end(data);
       });
-    } else if (req.method === 'OPTIONS' && (req.url === '/api/peq' || req.url === '/api/peq/reset' || req.url === '/api/peq/save' || req.url === '/api/peq/add' || req.url === '/api/peq/remove')) {
+    } else if (req.method === 'OPTIONS' && (req.url === '/api/peq' || req.url === '/api/peq/reset' || req.url === '/api/peq/save' || req.url === '/api/peq/add' || req.url === '/api/peq/remove' || req.url === '/api/peq/mute' || req.url === '/api/peq/bypass')) {
       res.writeHead(204, {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -1269,6 +1277,23 @@ FusionDsp.prototype.startPeqGraphServer = function () {
       var mergedeq = self.config.get('mergedeq') || '';
       var parts = mergedeq.toString().split('|');
       var filters = [];
+      var mode = self.config.get('selectedsp');
+
+      // Load mute state
+      var mutedBands = null;
+      var mutedBandsR = null;
+      var peqMutes = null;
+      if (mode === 'EQ15') {
+        mutedBands = (self.config.get('geq15mute') || '').split(',');
+      } else if (mode === '2XEQ15') {
+        mutedBands = (self.config.get('geq15mute') || '').split(',');
+        mutedBandsR = (self.config.get('x2geq15mute') || '').split(',');
+      } else if (mode === 'EQ3') {
+        mutedBands = (self.config.get('geq3mute') || '').split(',');
+      } else if (mode === 'PEQ') {
+        var peqmuteStr = self.config.get('peqmute') || '';
+        peqMutes = peqmuteStr ? peqmuteStr.split(',') : [];
+      }
 
       for (var i = 0; i + 3 < parts.length; i += 4) {
         var indexMatch = parts[i].match(/\d+/);
@@ -1278,17 +1303,29 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         var paramStr = parts[i + 3];
         if (!type || type === 'None' || type === 'undefined') continue;
         var params = paramStr.split(',').map(Number);
-        filters.push({
+        var filterObj = {
           index: filterIndex,
           type: type,
           scope: scope,
           params: params
-        });
+        };
+        // Add muted state
+        if (mutedBands) {
+          if (mode === '2XEQ15' && scope === 'R') {
+            filterObj.muted = (mutedBandsR && mutedBandsR[filterIndex] === '1');
+          } else {
+            filterObj.muted = (mutedBands[filterIndex] === '1');
+          }
+        } else if (peqMutes) {
+          filterObj.muted = (peqMutes[filters.length] === '1');
+        }
+        filters.push(filterObj);
       }
 
       var result = {
         sampleRate: sampleRate,
-        mode: self.config.get('selectedsp'),
+        mode: mode,
+        eqbypass: self.config.get('eqbypass') || false,
         filters: filters
       };
 
@@ -1567,6 +1604,9 @@ FusionDsp.prototype.startPeqGraphServer = function () {
       var savednbreq = self.config.get('savednbreq');
       self.config.set('mergedeq', savedmergedeq);
       self.config.set('nbreq', savednbreq);
+      // Clear mute and bypass state on reset
+      self.config.set('peqmute', '');
+      self.config.set('eqbypass', false);
 
       setTimeout(function () {
         self.createCamilladspfile();
@@ -1645,6 +1685,12 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         self.config.set('nbreq', nbreq + 1);
         self.config.set('effect', true);
 
+        // Extend peqmute for the new filter (unmuted by default)
+        var peqmuteStr = self.config.get('peqmute') || '';
+        var peqmutes = peqmuteStr ? peqmuteStr.split(',') : [];
+        peqmutes.push('0');
+        self.config.set('peqmute', peqmutes.join(','));
+
         setTimeout(function () {
           self.createCamilladspfile();
           self.refreshUI();
@@ -1707,13 +1753,19 @@ FusionDsp.prototype.startPeqGraphServer = function () {
 
         // Find and remove the slot matching the requested index
         var found = false;
+        var removedPosition = -1;
+        var visiblePos = 0;
         for (var si = 0; si < slots.length; si++) {
+          var slotType = slots[si].type;
+          var isVisible = slotType && slotType !== 'None' && slotType !== 'undefined';
           var m = slots[si].label.match(/\d+/);
           if (m && parseInt(m[0]) === removeIndex) {
+            if (isVisible) removedPosition = visiblePos;
             slots.splice(si, 1);
             found = true;
             break;
           }
+          if (isVisible) visiblePos++;
         }
 
         if (!found) {
@@ -1731,6 +1783,16 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         self.config.set('mergedeq', newMergedeq);
         self.config.set('nbreq', nbreq - 1);
 
+        // Remove corresponding peqmute entry
+        if (mode === 'PEQ' && removedPosition >= 0) {
+          var peqmuteStr = self.config.get('peqmute') || '';
+          var peqmutes = peqmuteStr ? peqmuteStr.split(',') : [];
+          if (removedPosition < peqmutes.length) {
+            peqmutes.splice(removedPosition, 1);
+          }
+          self.config.set('peqmute', peqmutes.join(','));
+        }
+
         setTimeout(function () {
           self.createCamilladspfile();
           self.refreshUI();
@@ -1739,6 +1801,132 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         res.writeHead(200, corsHeaders);
         res.end(JSON.stringify({ ok: true }));
       });
+
+    } else if (req.method === 'POST' && req.url === '/api/peq/mute') {
+      var body = '';
+      req.on('data', function (chunk) { body += chunk; });
+      req.on('end', function () {
+        var corsHeaders = {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        };
+
+        var mode = self.config.get('selectedsp');
+        if (mode !== 'EQ15' && mode !== '2XEQ15' && mode !== 'EQ3' && mode !== 'PEQ') {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Mute is not available in this mode' }));
+          return;
+        }
+
+        var payload;
+        try {
+          payload = JSON.parse(body);
+        } catch (e) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Invalid JSON' }));
+          return;
+        }
+
+        var bandIndex = payload.bandIndex;
+        var scope = payload.scope || 'L';
+
+        if (mode === 'PEQ') {
+          // PEQ: mute by position (find position from Eq number)
+          var mergedeq = (self.config.get('mergedeq') || '').toString();
+          var rawParts = mergedeq.split('|');
+          var nfilters = 0;
+          var targetPos = -1;
+          for (var si = 0; si + 3 < rawParts.length; si += 4) {
+            var m = rawParts[si].match(/\d+/);
+            var eqNum = m ? parseInt(m[0]) : si / 4;
+            var ftype = rawParts[si + 1];
+            if (ftype && ftype !== 'None' && ftype !== 'undefined') {
+              if (eqNum === bandIndex) targetPos = nfilters;
+              nfilters++;
+            }
+          }
+          if (targetPos < 0) {
+            res.writeHead(400, corsHeaders);
+            res.end(JSON.stringify({ error: 'Filter index not found' }));
+            return;
+          }
+          var peqmuteStr = self.config.get('peqmute') || '';
+          var mutes = peqmuteStr ? peqmuteStr.split(',') : [];
+          // Extend array if needed
+          while (mutes.length < nfilters) mutes.push('0');
+          mutes[targetPos] = mutes[targetPos] === '1' ? '0' : '1';
+          self.config.set('peqmute', mutes.join(','));
+
+          setTimeout(function () {
+            self.createCamilladspfile();
+          }, 100);
+
+          res.writeHead(200, corsHeaders);
+          res.end(JSON.stringify({ ok: true, muted: mutes[targetPos] === '1' }));
+          return;
+        }
+
+        // Graphic EQ modes
+        var muteKey, nbands;
+        if (mode === 'EQ3') {
+          muteKey = 'geq3mute';
+          nbands = 3;
+        } else if (mode === 'EQ15') {
+          muteKey = 'geq15mute';
+          nbands = 15;
+        } else if (mode === '2XEQ15') {
+          muteKey = (scope === 'R') ? 'x2geq15mute' : 'geq15mute';
+          nbands = 15;
+        }
+
+        var defaultMute = Array(nbands).fill('0').join(',');
+        var mutes = (self.config.get(muteKey) || defaultMute).split(',');
+
+        if (bandIndex < 0 || bandIndex >= mutes.length) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Band index out of range' }));
+          return;
+        }
+
+        mutes[bandIndex] = mutes[bandIndex] === '1' ? '0' : '1';
+        self.config.set(muteKey, mutes.join(','));
+
+        self.rebuildGraphicEqMergedeq();
+
+        setTimeout(function () {
+          self.createCamilladspfile();
+          self.refreshUI();
+        }, 100);
+
+        res.writeHead(200, corsHeaders);
+        res.end(JSON.stringify({ ok: true, muted: mutes[bandIndex] === '1' }));
+      });
+
+    } else if (req.method === 'POST' && req.url === '/api/peq/bypass') {
+      var corsHeaders = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      };
+
+      var mode = self.config.get('selectedsp');
+      if (mode !== 'EQ15' && mode !== '2XEQ15' && mode !== 'EQ3') {
+        res.writeHead(400, corsHeaders);
+        res.end(JSON.stringify({ error: 'Bypass is only available in graphic EQ modes' }));
+        return;
+      }
+
+      var bypassed = !self.config.get('eqbypass');
+      self.config.set('eqbypass', bypassed);
+
+      self.rebuildGraphicEqMergedeq();
+
+      setTimeout(function () {
+        self.createCamilladspfile();
+        self.refreshUI();
+      }, 100);
+
+      res.writeHead(200, corsHeaders);
+      res.end(JSON.stringify({ ok: true, bypassed: bypassed }));
 
     } else {
       res.writeHead(404, { 'Content-Type': 'text/plain' });
@@ -1828,6 +2016,7 @@ FusionDsp.prototype.removealleq = function () {
   self.config.set('mergedeq', "Eq0|None|L+R|0,0,0|")
   self.config.set('savedmergedeq', "Eq0|None|L+R|0,0,0|")
   self.config.set('savednbreq', 1)
+  self.config.set('peqmute', '')
   self.config.set('usethispreset', 'no preset used');
   self.config.set(selectedsp + "preset", "no preset used");
 
@@ -1843,6 +2032,8 @@ FusionDsp.prototype.resetPeqToSaved = function () {
   var savednbreq = self.config.get('savednbreq');
   self.config.set('mergedeq', savedmergedeq);
   self.config.set('nbreq', savednbreq);
+  self.config.set('peqmute', '');
+  self.config.set('eqbypass', false);
 
   setTimeout(function () {
     self.createCamilladspfile();
@@ -1858,11 +2049,14 @@ FusionDsp.prototype.reseteq = function () {
   const defaultMergedEQ15 = "Eq0|Peaking|L+R|25,0,1.85|Eq1|Peaking|L+R|40,0,1.85|Eq2|Peaking|L+R|63,0,1.85|Eq3|Peaking|L+R|100,0,1.85|Eq4|Peaking|L+R|160,0,1.85|Eq5|Peaking|L+R|250,0,1.85|Eq6|Peaking|L+R|400,0,1.85|Eq7|Peaking|L+R|630,0,1.85|Eq8|Peaking|L+R|1000,0,1.85|Eq9|Peaking|L+R|1600,0,1.85|Eq10|Peaking|L+R|2500,0,1.85|Eq11|Peaking|L+R|4000,0,1.85|Eq12|Peaking|L+R|6300,0,1.85|Eq13|Peaking|L+R|10000,0,1.85|Eq14|Peaking|L+R|16000,0,1.85";
   const defaultMerged2XEQ15 = "Eq0|Peaking|L|25,0,1.85|Eq1|Peaking|L|40,0,1.85|Eq2|Peaking|L|63,0,1.85|Eq3|Peaking|L|100,0,1.85|Eq4|Peaking|L|160,0,1.85|Eq5|Peaking|L|250,0,1.85|Eq6|Peaking|L|400,0,1.85|Eq7|Peaking|L|630,0,1.85|Eq8|Peaking|L|1000,0,1.85|Eq9|Peaking|L|1600,0,1.85|Eq10|Peaking|L|2500,0,1.85|Eq11|Peaking|L|4000,0,1.85|Eq12|Peaking|L|6300,0,1.85|Eq13|Peaking|L|10000,0,1.85|Eq14|Peaking|L|16000,0,1.85|undefinedEq0|Peaking|R|25,0,1.85|Eq1|Peaking|R|40,0,1.85|Eq2|Peaking|R|63,0,1.85|Eq3|Peaking|R|100,0,1.85|Eq4|Peaking|R|160,0,1.85|Eq5|Peaking|R|250,0,1.85|Eq6|Peaking|R|400,0,1.85|Eq7|Peaking|R|630,0,1.85|Eq8|Peaking|R|1000,0,1.85|Eq9|Peaking|R|1600,0,1.85|Eq10|Peaking|R|2500,0,1.85|Eq11|Peaking|R|4000,0,1.85|Eq12|Peaking|R|6300,0,1.85|Eq13|Peaking|R|10000,0,1.85|Eq14|Peaking|R|16000,0,1.85";
 
+  self.config.set('eqbypass', false);
+
   if (selectedsp === 'EQ15') {
     self.config.set('usethispreset', 'no preset used');
     self.config.set(`${selectedsp}preset`, 'no preset used');
     self.config.set("geq15", defaultEQ15);
     self.config.set("savedgeq15", defaultEQ15);
+    self.config.set("geq15mute", defaultEQ15);
     self.config.set('nbreq', 15);
     self.config.set('mergedeq', defaultMergedEQ15);
     self.config.set('savedmergedgeq15', defaultMergedEQ15);
@@ -1871,6 +2065,8 @@ FusionDsp.prototype.reseteq = function () {
     self.config.set('usethispreset', 'no preset used');
     self.config.set("x2geq15", defaultEQ15);
     self.config.set("geq15", defaultEQ15);
+    self.config.set("geq15mute", defaultEQ15);
+    self.config.set("x2geq15mute", defaultEQ15);
     self.config.set('nbreq', 30);
     self.config.set('mergedeq', defaultMerged2XEQ15);
     self.config.set('savedmergedeqx2geq15', defaultMerged2XEQ15);
@@ -1885,6 +2081,105 @@ FusionDsp.prototype.reseteq = function () {
   self.refreshUI();
 };
 
+
+FusionDsp.prototype.toggleMuteBand = function (data) {
+  const self = this;
+  const selectedsp = self.config.get('selectedsp');
+  const bandIndex = data.bandIndex;
+  const channel = data.channel || 'L'; // 'L' or 'R', only relevant for 2XEQ15
+
+  let muteKey, gainsKey, nbands;
+  if (selectedsp === 'EQ3') {
+    muteKey = 'geq3mute';
+    gainsKey = 'geq3';
+    nbands = 3;
+  } else if (selectedsp === 'EQ15') {
+    muteKey = 'geq15mute';
+    gainsKey = 'geq15';
+    nbands = 15;
+  } else if (selectedsp === '2XEQ15') {
+    muteKey = channel === 'R' ? 'x2geq15mute' : 'geq15mute';
+    gainsKey = channel === 'R' ? 'x2geq15' : 'geq15';
+    nbands = 15;
+  } else {
+    return;
+  }
+
+  const defaultMute = Array(nbands).fill('0').join(',');
+  const mutes = (self.config.get(muteKey) || defaultMute).split(',');
+  if (bandIndex < 0 || bandIndex >= mutes.length) return;
+
+  mutes[bandIndex] = mutes[bandIndex] === '1' ? '0' : '1';
+  self.config.set(muteKey, mutes.join(','));
+
+  // Rebuild mergedeq from stored gains + updated mute state
+  self.rebuildGraphicEqMergedeq();
+
+  setTimeout(function () {
+    self.createCamilladspfile();
+  }, 100);
+  self.refreshUI();
+};
+
+FusionDsp.prototype.toggleEqBypass = function () {
+  const self = this;
+  const bypassed = !self.config.get('eqbypass');
+  self.config.set('eqbypass', bypassed);
+
+  self.rebuildGraphicEqMergedeq();
+
+  setTimeout(function () {
+    self.createCamilladspfile();
+  }, 100);
+  self.refreshUI();
+};
+
+FusionDsp.prototype.rebuildGraphicEqMergedeq = function () {
+  const self = this;
+  const selectedsp = self.config.get('selectedsp');
+  const eqbypass = self.config.get('eqbypass');
+  let test = '';
+
+  if (selectedsp === 'EQ3') {
+    const geq3 = self.config.get('geq3').split(',');
+    const mutes = (self.config.get('geq3mute') || '0,0,0').split(',');
+    for (let o = 0; o < geq3.length; o++) {
+      let eqval = (eqbypass || mutes[o] === '1') ? 0 : geq3[o];
+      test += ('Eq' + o + '|' + eq3type[o] + '|L+R|' + eq3range[o] + ',' + eqval + ',' + coefQ3[o] + '|');
+    }
+    self.config.set('mergedeq', test);
+    self.config.set('savedmergedgeqx3', test);
+
+  } else if (selectedsp === 'EQ15') {
+    const geq15 = self.config.get('geq15').split(',');
+    const mutes = (self.config.get('geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
+    for (let o = 0; o < geq15.length; o++) {
+      let eqval = (eqbypass || mutes[o] === '1') ? 0 : geq15[o];
+      test += ('Eq' + o + '|Peaking|L+R|' + eq15range[o] + ',' + eqval + ',' + coefQ[o] + '|');
+    }
+    self.config.set('mergedeq', test);
+    self.config.set('savedmergedgeq15', test);
+
+  } else if (selectedsp === '2XEQ15') {
+    const geq15 = self.config.get('geq15').split(',');
+    const x2geq15 = self.config.get('x2geq15').split(',');
+    const lmutes = (self.config.get('geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
+    const rmutes = (self.config.get('x2geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
+    let ltest = '';
+    let rtest = '';
+    for (let o = 0; o < geq15.length; o++) {
+      let eqval = (eqbypass || lmutes[o] === '1') ? 0 : geq15[o];
+      ltest += ('Eq' + o + '|Peaking|L|' + eq15range[o] + ',' + eqval + ',' + coefQ[o] + '|');
+    }
+    for (let v = 0; v < x2geq15.length; v++) {
+      let eqval = (eqbypass || rmutes[v] === '1') ? 0 : x2geq15[v];
+      rtest += ('Eq' + v + '|Peaking|R|' + eq15range[v] + ',' + eqval + ',' + coefQ[v] + '|');
+    }
+    test = ltest + rtest;
+    self.config.set('mergedeq', test);
+    self.config.set('savedmergedeqx2geq15', test);
+  }
+};
 
 FusionDsp.prototype.moresettings = function () {
   const self = this;
@@ -2399,10 +2694,10 @@ FusionDsp.prototype.dfiltertype = function (data) {
   let convtype = "Raw";
 
   const fileExtensions = {
-    pcm: { format: 'FLOAT32LE', sizeDivisor: 4 },
+    pcm: { format: 'F32_LE', sizeDivisor: 4 },
     txt: { format: 'TEXT', sizeCommand: '/bin/cat', sizeDivisor: 1 },
-    raw: { format: 'FLOAT32LE', sizeDivisor: 4 },
-    dbl: { format: 'FLOAT64LE', sizeDivisor: 8 },
+    raw: { format: 'F32_LE', sizeDivisor: 4 },
+    dbl: { format: 'F64_LE', sizeDivisor: 8 },
     wav: { convtype: "Wav" },
     None: { format: 'TEXT' }
   };
@@ -2599,6 +2894,13 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
   let crossatt, crossfreq
   let loudnessGain = self.config.get('loudnessGain')
 
+  // Load PEQ mute state
+  let peqMutedFilters = null;
+  if (selectedsp === 'PEQ') {
+    var peqmuteStr = self.config.get('peqmute') || '';
+    peqMutedFilters = peqmuteStr ? peqmuteStr.split(',') : [];
+  }
+
   let enableresampling = self.config.get('enableresampling')
   let resamplingq = self.config.get('resamplingq')
   let resamplingset = self.config.get('resamplingset')
@@ -2612,7 +2914,7 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
     composeout += '    type: File' + '\n';
     composeout += '    channels: 2' + '\n';
     composeout += '    filename: "/dev/null"' + '\n';
-    composeout += '    format: S32LE' + '\n';
+    composeout += '    format: S32_LE' + '\n';
 
   } else if (testclipping == false) {
     var composeout = ''
@@ -2620,7 +2922,7 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
     composeout += '    type: Alsa' + '\n';
     composeout += '    channels: 2' + '\n';
     composeout += '    device: "postDsp"' + '\n';
-    composeout += '    format: S32LE' + '\n';
+    composeout += '    format: S32_LE' + '\n';
   }
   //------resampling section-----
 
@@ -2891,6 +3193,11 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
   } else {
 
     for (let o = 1; o < (nbreq + 1); o++) {
+      // Skip muted PEQ filters
+      if (peqMutedFilters && peqMutedFilters[o - 1] === '1') {
+        continue;
+      }
+
       eqo = ("eq" + o + "c");
       eqa = subtypex[((o - 1) * 4) + 3]//("eq" + o);
       typec = subtypex[((o - 1) * 4) + 1];
@@ -3944,6 +4251,9 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
     }
 
     let skipeqn = 0;
+    var peqmuteStr = self.config.get('peqmute') || '';
+    var oldPeqmutes = peqmuteStr ? peqmuteStr.split(',') : [];
+    var newPeqmutes = [];
     for (var xo = 1; xo < (nbreq + 1); xo++) {
       var o = xo
       var typec = 'type' + o;
@@ -3952,34 +4262,30 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
       //--- skip PEQ if set to REMOVE
       if (((data[typec].value) != 'Remove')) {
         test += ('Eq' + o + '|' + data[typec].value + '|' + data[scopec].value + '|' + data[eqc] + '|');
-        //  self.logger.info(logPrefix + ' test values ' + test)
-        //  self.commandRouter.pushToastMessage('info', self.commandRouter.getI18nString('VALUE_SAVED_APPLIED'))
+        newPeqmutes.push(oldPeqmutes[xo - 1] || '0');
       } else if (((data[typec].value) == 'Remove') && (nbreq == 1)) {
         self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('CANT_REMOVE_LAST_PEQ'))
       } else if (((data[typec].value) == 'Remove') && (nbreq != 1)) {
         skipeqn = skipeqn + 1
         self.logger.info(logPrefix + ' skipeqn ' + skipeqn)
-
       }
     }
     self.config.set('nbreq', nbreq - skipeqn)
     self.config.set('savednbreq', nbreq - skipeqn)
     self.config.set('savedmergedeq', test)
+    self.config.set('peqmute', newPeqmutes.join(','))
 
   } else if (selectedsp == 'EQ3') {
     let geq3 = (data['geq3'])
     self.config.set('geq3', geq3);
 
+    const eqbypass = self.config.get('eqbypass');
+    const geq3mute = (self.config.get('geq3mute') || '0,0,0').split(',');
     eqr = geq3
     //self.logger.info(logPrefix + ' setting EQ3 values ' + eqr)
     for (let o in eqr) {
-      // for(let q in coefQ3){
-      //   let qa =coefQ3[q]
-      // let ceq3type = eq3type[o]
-
-      let eqval = geq3[o]
+      let eqval = (eqbypass || geq3mute[o] === '1') ? 0 : geq3[o];
       test += ('Eq' + o + '|' + eq3type[o] + '|L+R|' + eq3range[o] + ',' + eqval + ',' + coefQ3[o] + '|');
-      // }
     }
     self.config.set('savedmergedgeqx3', test)
     self.config.set('savedgeq3', self.config.get('geq3'))
@@ -3989,10 +4295,12 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
     self.config.set('geq15', geq15);
     self.config.set('x2geq15', geq15);
 
+    const eqbypass = self.config.get('eqbypass');
+    const geq15mute = (self.config.get('geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
     eqr = geq15
     //self.logger.info(logPrefix + ' setting EQ15 values ' + eqr)
     for (let o in eqr) {
-      let eqval = geq15[o]
+      let eqval = (eqbypass || geq15mute[o] === '1') ? 0 : geq15[o];
       test += ('Eq' + o + '|Peaking|L+R|' + eq15range[o] + ',' + eqval + ',' + coefQ[o] + '|');
     }
     self.config.set('savedmergedgeq15', test)
@@ -4004,12 +4312,15 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
     let ltest, rtest
     self.config.set('geq15', geq15);
     self.config.set('x2geq15', x2geq15);
+    const eqbypass = self.config.get('eqbypass');
+    const geq15mute = (self.config.get('geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
+    const x2geq15mute = (self.config.get('x2geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
     for (let o in geq15) {
-      var eqval = geq15[o]
+      var eqval = (eqbypass || geq15mute[o] === '1') ? 0 : geq15[o];
       ltest += ('Eq' + o + '|Peaking|L|' + eq15range[o] + ',' + eqval + ',' + coefQ[o] + '|');
     }
     for (let v in x2geq15) {
-      var eqval = x2geq15[v]
+      var eqval = (eqbypass || x2geq15mute[v] === '1') ? 0 : x2geq15[v];
       rtest += ('Eq' + v + '|Peaking|R|' + eq15range[v] + ',' + eqval + ',' + coefQ[v] + '|');
     }
     test = ltest + rtest
@@ -4599,6 +4910,10 @@ FusionDsp.prototype.usethispreset = function (data) {
       if ((selectedsp == 'EQ15') || (selectedsp == '2XEQ15')) {
         self.config.set('geq15', eqrx)
         self.config.set('x2geq15', x2eqrx);
+        // Reset mute state when loading a preset
+        const defaultMute15 = '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0';
+        self.config.set('geq15mute', defaultMute15);
+        self.config.set('x2geq15mute', defaultMute15);
 
       } else if (selectedsp == 'PEQ') {
         var nbreqc = value.spreset;
