@@ -301,8 +301,9 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
       });
 
       self.streamClients.push(res);
-      // First client: stop the FIFO drain and start FFmpeg if not already running.
-      self._stopFifoDrain();
+      // Start FFmpeg if not already running. _startAudioFfmpeg stops the drain
+      // internally just before spawning, so the FIFO never has a read-gap that
+      // would cause ALSA's volumiofifo plugin to block and report "device busy".
       if (!self._audioFfmpeg) {
         self._startAudioFfmpeg();
       }
