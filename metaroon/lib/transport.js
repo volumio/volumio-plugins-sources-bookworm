@@ -110,19 +110,22 @@ function attach(proto) {
 	proto.prefetch = function() { return libQ.resolve(); };
 	proto.getState = function() { return this.state; };
 
-	proto.getTrackInfo = function() {
-		if (!this.isActive || !this.state.title) return libQ.resolve({});
-		return libQ.resolve({
+	proto.getTrackInfo = function(uri) {
+		if (!this.isActive || !this.state.title) return libQ.resolve([]);
+		return libQ.resolve([{
+			service: 'metaroon',
+			type: 'song',
 			title: this.state.title,
 			artist: this.state.artist,
 			album: this.state.album,
 			albumart: this.state.albumart,
+			uri: uri || 'roon/now_playing',
 			duration: this.state.duration,
 			samplerate: this.state.samplerate,
 			bitdepth: this.state.bitdepth,
 			channels: this.state.channels,
 			trackType: this.state.trackType
-		});
+		}]);
 	};
 
 	proto.goto = function(data) {

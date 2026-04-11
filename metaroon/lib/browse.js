@@ -32,6 +32,7 @@ function attach(proto) {
 		var handler;
 		if (uri === 'roon') handler = self.browseRoonTopLevel();
 		else if (uri === 'roon/back') handler = self.browseRoonBack();
+		else if (uri.startsWith('roon/page:')) handler = self.browseRoonPage(parseInt(uri.substring(10)));
 		else if (uri.startsWith('roon/search:')) handler = self.browseSearchItem(uri.substring(12));
 		else if (uri.startsWith('roon/library:')) handler = self.browseLibraryItem(uri.substring(13));
 		else if (uri.startsWith('roon/')) handler = self.browseRoonItem(uri.substring(5));
@@ -48,7 +49,19 @@ function attach(proto) {
 		self.roonBrowse.browse({ hierarchy: self.browseHierarchy, pop_all: true }, function(err, result) {
 			if (err) { defer.reject(err); return; }
 			self.browseLevel = result.list ? result.list.level : 0;
-			self._loadAndConvertBrowseItems(defer);
+			// Auto-navigate into Library to show only local content
+			self.roonBrowse.load({ hierarchy: self.browseHierarchy, offset: 0, count: 50 }, function(loadErr, loadResult) {
+				if (loadErr) { self._loadAndConvertBrowseItems(defer); return; }
+				var libraryItem = (loadResult.items || []).find(function(i) {
+					return i.title && i.title.toLowerCase() === 'library';
+				});
+				if (!libraryItem) { self._loadAndConvertBrowseItems(defer); return; }
+				self.roonBrowse.browse({ hierarchy: self.browseHierarchy, item_key: libraryItem.item_key }, function(libErr, libResult) {
+					if (libErr) { self._loadAndConvertBrowseItems(defer); return; }
+					self.browseLevel = libResult.list ? libResult.list.level : 1;
+					self._loadAndConvertBrowseItems(defer);
+				});
+			});
 		});
 		return defer.promise;
 	};
@@ -82,9 +95,17 @@ function attach(proto) {
 		return defer.promise;
 	};
 
-	proto._loadAndConvertBrowseItems = function(defer) {
+	proto.browseRoonPage = function(offset) {
 		var self = this;
-		self.roonBrowse.load({ hierarchy: self.browseHierarchy, offset: 0, count: BROWSE_PAGE_SIZE }, function(err, result) {
+		var defer = libQ.defer();
+		self._loadAndConvertBrowseItems(defer, offset);
+		return defer.promise;
+	};
+
+	proto._loadAndConvertBrowseItems = function(defer, offset) {
+		var self = this;
+		offset = offset || 0;
+		self.roonBrowse.load({ hierarchy: self.browseHierarchy, offset: offset, count: BROWSE_PAGE_SIZE }, function(err, result) {
 			if (err) { defer.reject(err); return; }
 			if (result.list && result.list.image_key) {
 				self.currentBrowseListImage = result.list.image_key;
@@ -92,6 +113,17 @@ function attach(proto) {
 			var items = (result.items || []).map(function(i) {
 				return convertRoonItemToVolumio(i, self.roonCoreHost, self.currentBrowseListImage, false);
 			}).filter(function(i) { return i !== null; });
+
+			// Add pagination item if more results exist
+			var totalCount = result.list ? result.list.count : 0;
+			if (totalCount > offset + BROWSE_PAGE_SIZE) {
+				items.push({
+					service: 'metaroon', type: 'item-no-menu',
+					title: 'Load more... (' + (offset + BROWSE_PAGE_SIZE) + ' of ' + totalCount + ')',
+					icon: 'fa fa-arrow-down',
+					uri: 'roon/page:' + (offset + BROWSE_PAGE_SIZE)
+				});
+			}
 
 			defer.resolve({
 				navigation: {

@@ -188,6 +188,8 @@ metaroon.prototype._startRoonApi = function() {
 	}
 
 	globalRoonApiStarting = true;
+	try {
+
 	self.logger.info('metaroon: Creating new Roon API instance');
 
 	self.roonApi = new RoonApi({
@@ -268,7 +270,10 @@ metaroon.prototype._startRoonApi = function() {
 
 	globalRoonApi = self.roonApi;
 	self.roonVolumeControl = new RoonApiVolumeControl(self.roonApi);
-	globalRoonApiStarting = false;
+
+	} finally {
+		globalRoonApiStarting = false;
+	}
 
 	self.roonApi.init_services({
 		required_services: [RoonApiTransport, RoonApiImage],
@@ -284,9 +289,16 @@ metaroon.prototype._handleZoneUpdate = function(response, msg) {
 	var self = this;
 	if (!response || (response !== 'Subscribed' && response !== 'Changed')) return;
 
+	// Rebuild available zones only on initial subscription or when zones are added/removed
+	if (msg && msg.zones) self._updateAvailableZones(msg.zones);
+	if (msg && msg.zones_added) self._updateAvailableZones(msg.zones_added);
+	if (msg && msg.zones_removed) {
+		var removedIds = msg.zones_removed;
+		self.availableZones = self.availableZones.filter(function(z) { return removedIds.indexOf(z.zone_id) === -1; });
+	}
+
 	var zones = (msg && msg.zones) || (msg && msg.zones_changed) || (msg && msg.zones_added);
 	if (zones && zones.length > 0) {
-		self._updateAvailableZones(zones);
 		if (!self.zoneId) self._identifyZone(zones);
 		if (self.zoneId) {
 			var zone = zones.find(function(z) { return z.zone_id === self.zoneId; });

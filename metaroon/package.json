@@ -15,7 +15,7 @@
 		"os": [
 			"bookworm"
 		],
-		"has_alsa_contribution": "false",
+		"has_alsa_contribution": false,
 		"details": "MetaRoon - Roon integration plugin with metadata support for Volumio",
 		"changelog": "",
 		"architectures": [
@@ -24,7 +24,7 @@
 		]
 	},
 	"engines": {
-		"node": ">=14",
+		"node": ">=20",
 		"volumio": ">=4"
 	},
 	"dependencies": {

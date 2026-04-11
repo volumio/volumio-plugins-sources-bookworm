@@ -46,7 +46,6 @@ function attach(proto) {
 		var defer = libQ.defer();
 
 		var categoryLinks = [];
-		var searchTerm = searchString.toLowerCase();
 
 		for (var t = 0; t < topLevelItems.length; t++) {
 			var item = topLevelItems[t];
@@ -85,17 +84,11 @@ function attach(proto) {
 						var itm = loadResult.items[j];
 						if (!itm.item_key || itm.hint === 'header' || itm.hint === 'action') continue;
 
-						var itmTitle = (itm.title || '').toLowerCase();
-						if (!itmTitle.includes(searchTerm)) continue;
-
 						if (catTitleLower === 'artists') artists.push(_createLibraryItem(self, itm, 'artists'));
 						else if (catTitleLower === 'albums') albums.push(_createLibraryItem(self, itm, 'albums'));
 						else if (catTitleLower === 'tracks') tracks.push(_createLibraryItem(self, itm, 'tracks'));
 					}
 				}
-				return self._roonBrowseAsync('browse', { hierarchy: 'browse', pop_levels: 1 });
-			})
-			.then(function() {
 				index++;
 				processNext();
 			})
