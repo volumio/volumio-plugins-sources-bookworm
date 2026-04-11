@@ -2041,6 +2041,61 @@ label {
   color: var(--color-gray-500);
 }
 
+/* ─── Input Group ──────────────────────────────────────────────────────── */
+.input-group {
+  position: relative;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  width: 100%;
+}
+.input-group > .form-control,
+.input-group > .form-select {
+  border-radius: 0;
+  flex: 1 1 auto;
+  width: 1%;
+  min-width: 0;
+  position: relative;
+}
+.input-group > .form-control:first-child,
+.input-group > .form-select:first-child {
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+.input-group > .form-control:last-child,
+.input-group > .form-select:last-child {
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+.input-group > .btn, .input-group > .form-select {
+  border-radius: 0;
+  position: relative;
+  flex: 0 0 auto;
+}
+.input-group > .btn:first-child, .input-group > .form-select:first-child {
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+.input-group > .btn:last-child, .input-group > .form-select:last-child {
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+.input-group .input-group-text {
+  display: flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  background-color: var(--color-gray-700);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-dark);
+  border-radius: 0;
+  white-space: nowrap;
+}
+.input-group .input-group-text:first-child {
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+.input-group .input-group-text:last-child {
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+.input-group > :not(:first-child) {
+  margin-left: -1px;
+}
+
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE - Flat Dark Theme
@@ -5387,6 +5442,27 @@ input[type=range]::-moz-range-thumb:active {
   outline-offset: 2px;
 }
 
+/* ─── Responsive sizing at ≥1980px ───────────────────────────────────────── */
+@media (min-width: 1980px) {
+  .context-menu-toggle {
+    width: clamp(40px, 3vw, 72px);
+    height: clamp(40px, 3vw, 72px);
+  }
+  .context-menu-toggle .material-icons {
+    font-size: clamp(20px, 1.8vw, 34px);
+  }
+  .context-menu {
+    min-width: clamp(180px, 16vw, 360px);
+  }
+  .context-menu-item {
+    font-size: clamp(13px, 1.1vw, 1.6rem);
+    gap: clamp(10px, 0.8vw, 18px);
+    padding: clamp(8px, 0.6vw, 14px) clamp(12px, 1vw, 22px);
+  }
+  .context-menu-item .material-icons {
+    font-size: clamp(18px, 1.5vw, 2.2rem);
+  }
+}
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE - Flat Dark Theme

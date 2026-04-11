@@ -133,14 +133,15 @@
   --font-mono: 'Share Tech Mono', 'Courier New', monospace; /* times, values, metadata */
   --font-tech: 'DS Digital', 'Share Tech Mono', 'Courier New', monospace; /* tech/data labels */
   /* VT323 renders large — calibrate sizes down one step */
-  --text-xs: 0.75rem; /* 12px equivalent */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
-  --text-3xl: 2.25rem;
-  --text-4xl: 3rem;
+  /* clamp() makes every rem-based rule responsive across all viewport widths */
+  --text-xs: clamp(0.75rem, 0.7vw, 1rem);
+  --text-sm: clamp(0.875rem, 0.9vw, 1.25rem);
+  --text-base: clamp(1rem, 1.05vw, 1.5rem);
+  --text-lg: clamp(1.25rem, 1.3vw, 1.875rem);
+  --text-xl: clamp(1.5rem, 1.6vw, 2.25rem);
+  --text-2xl: clamp(1.875rem, 2vw, 2.75rem);
+  --text-3xl: clamp(2.25rem, 2.5vw, 3.5rem);
+  --text-4xl: clamp(3rem, 3.2vw, 4.5rem);
   --leading-tight: 1.0;
   --leading-normal: 1.2;
   --leading-relaxed: 1.4;
@@ -289,14 +290,15 @@
   --font-mono: 'Share Tech Mono', 'Courier New', monospace; /* times, values, metadata */
   --font-tech: 'DS Digital', 'Share Tech Mono', 'Courier New', monospace; /* tech/data labels */
   /* VT323 renders large — calibrate sizes down one step */
-  --text-xs: 0.75rem; /* 12px equivalent */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
-  --text-3xl: 2.25rem;
-  --text-4xl: 3rem;
+  /* clamp() makes every rem-based rule responsive across all viewport widths */
+  --text-xs: clamp(0.75rem, 0.7vw, 1rem);
+  --text-sm: clamp(0.875rem, 0.9vw, 1.25rem);
+  --text-base: clamp(1rem, 1.05vw, 1.5rem);
+  --text-lg: clamp(1.25rem, 1.3vw, 1.875rem);
+  --text-xl: clamp(1.5rem, 1.6vw, 2.25rem);
+  --text-2xl: clamp(1.875rem, 2vw, 2.75rem);
+  --text-3xl: clamp(2.25rem, 2.5vw, 3.5rem);
+  --text-4xl: clamp(3rem, 3.2vw, 4.5rem);
   --leading-tight: 1.0;
   --leading-normal: 1.2;
   --leading-relaxed: 1.4;
@@ -555,14 +557,15 @@ p {
   --font-mono: 'Share Tech Mono', 'Courier New', monospace; /* times, values, metadata */
   --font-tech: 'DS Digital', 'Share Tech Mono', 'Courier New', monospace; /* tech/data labels */
   /* VT323 renders large — calibrate sizes down one step */
-  --text-xs: 0.75rem; /* 12px equivalent */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
-  --text-3xl: 2.25rem;
-  --text-4xl: 3rem;
+  /* clamp() makes every rem-based rule responsive across all viewport widths */
+  --text-xs: clamp(0.75rem, 0.7vw, 1rem);
+  --text-sm: clamp(0.875rem, 0.9vw, 1.25rem);
+  --text-base: clamp(1rem, 1.05vw, 1.5rem);
+  --text-lg: clamp(1.25rem, 1.3vw, 1.875rem);
+  --text-xl: clamp(1.5rem, 1.6vw, 2.25rem);
+  --text-2xl: clamp(1.875rem, 2vw, 2.75rem);
+  --text-3xl: clamp(2.25rem, 2.5vw, 3.5rem);
+  --text-4xl: clamp(3rem, 3.2vw, 4.5rem);
   --leading-tight: 1.0;
   --leading-normal: 1.2;
   --leading-relaxed: 1.4;
@@ -1028,14 +1031,15 @@ p {
   --font-mono: 'Share Tech Mono', 'Courier New', monospace; /* times, values, metadata */
   --font-tech: 'DS Digital', 'Share Tech Mono', 'Courier New', monospace; /* tech/data labels */
   /* VT323 renders large — calibrate sizes down one step */
-  --text-xs: 0.75rem; /* 12px equivalent */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
-  --text-3xl: 2.25rem;
-  --text-4xl: 3rem;
+  /* clamp() makes every rem-based rule responsive across all viewport widths */
+  --text-xs: clamp(0.75rem, 0.7vw, 1rem);
+  --text-sm: clamp(0.875rem, 0.9vw, 1.25rem);
+  --text-base: clamp(1rem, 1.05vw, 1.5rem);
+  --text-lg: clamp(1.25rem, 1.3vw, 1.875rem);
+  --text-xl: clamp(1.5rem, 1.6vw, 2.25rem);
+  --text-2xl: clamp(1.875rem, 2vw, 2.75rem);
+  --text-3xl: clamp(2.25rem, 2.5vw, 3.5rem);
+  --text-4xl: clamp(3rem, 3.2vw, 4.5rem);
   --leading-tight: 1.0;
   --leading-normal: 1.2;
   --leading-relaxed: 1.4;
@@ -1310,14 +1314,15 @@ p {
   --font-mono: 'Share Tech Mono', 'Courier New', monospace; /* times, values, metadata */
   --font-tech: 'DS Digital', 'Share Tech Mono', 'Courier New', monospace; /* tech/data labels */
   /* VT323 renders large — calibrate sizes down one step */
-  --text-xs: 0.75rem; /* 12px equivalent */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
-  --text-3xl: 2.25rem;
-  --text-4xl: 3rem;
+  /* clamp() makes every rem-based rule responsive across all viewport widths */
+  --text-xs: clamp(0.75rem, 0.7vw, 1rem);
+  --text-sm: clamp(0.875rem, 0.9vw, 1.25rem);
+  --text-base: clamp(1rem, 1.05vw, 1.5rem);
+  --text-lg: clamp(1.25rem, 1.3vw, 1.875rem);
+  --text-xl: clamp(1.5rem, 1.6vw, 2.25rem);
+  --text-2xl: clamp(1.875rem, 2vw, 2.75rem);
+  --text-3xl: clamp(2.25rem, 2.5vw, 3.5rem);
+  --text-4xl: clamp(3rem, 3.2vw, 4.5rem);
   --leading-tight: 1.0;
   --leading-normal: 1.2;
   --leading-relaxed: 1.4;
@@ -1653,14 +1658,15 @@ input[type=range]::-webkit-slider-thumb {
   --font-mono: 'Share Tech Mono', 'Courier New', monospace; /* times, values, metadata */
   --font-tech: 'DS Digital', 'Share Tech Mono', 'Courier New', monospace; /* tech/data labels */
   /* VT323 renders large — calibrate sizes down one step */
-  --text-xs: 0.75rem; /* 12px equivalent */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
-  --text-3xl: 2.25rem;
-  --text-4xl: 3rem;
+  /* clamp() makes every rem-based rule responsive across all viewport widths */
+  --text-xs: clamp(0.75rem, 0.7vw, 1rem);
+  --text-sm: clamp(0.875rem, 0.9vw, 1.25rem);
+  --text-base: clamp(1rem, 1.05vw, 1.5rem);
+  --text-lg: clamp(1.25rem, 1.3vw, 1.875rem);
+  --text-xl: clamp(1.5rem, 1.6vw, 2.25rem);
+  --text-2xl: clamp(1.875rem, 2vw, 2.75rem);
+  --text-3xl: clamp(2.25rem, 2.5vw, 3.5rem);
+  --text-4xl: clamp(3rem, 3.2vw, 4.5rem);
   --leading-tight: 1.0;
   --leading-normal: 1.2;
   --leading-relaxed: 1.4;
@@ -1917,14 +1923,15 @@ input[type=range]::-webkit-slider-thumb {
   --font-mono: 'Share Tech Mono', 'Courier New', monospace; /* times, values, metadata */
   --font-tech: 'DS Digital', 'Share Tech Mono', 'Courier New', monospace; /* tech/data labels */
   /* VT323 renders large — calibrate sizes down one step */
-  --text-xs: 0.75rem; /* 12px equivalent */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
-  --text-3xl: 2.25rem;
-  --text-4xl: 3rem;
+  /* clamp() makes every rem-based rule responsive across all viewport widths */
+  --text-xs: clamp(0.75rem, 0.7vw, 1rem);
+  --text-sm: clamp(0.875rem, 0.9vw, 1.25rem);
+  --text-base: clamp(1rem, 1.05vw, 1.5rem);
+  --text-lg: clamp(1.25rem, 1.3vw, 1.875rem);
+  --text-xl: clamp(1.5rem, 1.6vw, 2.25rem);
+  --text-2xl: clamp(1.875rem, 2vw, 2.75rem);
+  --text-3xl: clamp(2.25rem, 2.5vw, 3.5rem);
+  --text-4xl: clamp(3rem, 3.2vw, 4.5rem);
   --leading-tight: 1.0;
   --leading-normal: 1.2;
   --leading-relaxed: 1.4;
@@ -2223,14 +2230,15 @@ input[type=range]::-webkit-slider-thumb {
   --font-mono: 'Share Tech Mono', 'Courier New', monospace; /* times, values, metadata */
   --font-tech: 'DS Digital', 'Share Tech Mono', 'Courier New', monospace; /* tech/data labels */
   /* VT323 renders large — calibrate sizes down one step */
-  --text-xs: 0.75rem; /* 12px equivalent */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
-  --text-3xl: 2.25rem;
-  --text-4xl: 3rem;
+  /* clamp() makes every rem-based rule responsive across all viewport widths */
+  --text-xs: clamp(0.75rem, 0.7vw, 1rem);
+  --text-sm: clamp(0.875rem, 0.9vw, 1.25rem);
+  --text-base: clamp(1rem, 1.05vw, 1.5rem);
+  --text-lg: clamp(1.25rem, 1.3vw, 1.875rem);
+  --text-xl: clamp(1.5rem, 1.6vw, 2.25rem);
+  --text-2xl: clamp(1.875rem, 2vw, 2.75rem);
+  --text-3xl: clamp(2.25rem, 2.5vw, 3.5rem);
+  --text-4xl: clamp(3rem, 3.2vw, 4.5rem);
   --leading-tight: 1.0;
   --leading-normal: 1.2;
   --leading-relaxed: 1.4;
@@ -2444,14 +2452,15 @@ input[type=range]::-webkit-slider-thumb {
   --font-mono: 'Share Tech Mono', 'Courier New', monospace; /* times, values, metadata */
   --font-tech: 'DS Digital', 'Share Tech Mono', 'Courier New', monospace; /* tech/data labels */
   /* VT323 renders large — calibrate sizes down one step */
-  --text-xs: 0.75rem; /* 12px equivalent */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
-  --text-3xl: 2.25rem;
-  --text-4xl: 3rem;
+  /* clamp() makes every rem-based rule responsive across all viewport widths */
+  --text-xs: clamp(0.75rem, 0.7vw, 1rem);
+  --text-sm: clamp(0.875rem, 0.9vw, 1.25rem);
+  --text-base: clamp(1rem, 1.05vw, 1.5rem);
+  --text-lg: clamp(1.25rem, 1.3vw, 1.875rem);
+  --text-xl: clamp(1.5rem, 1.6vw, 2.25rem);
+  --text-2xl: clamp(1.875rem, 2vw, 2.75rem);
+  --text-3xl: clamp(2.25rem, 2.5vw, 3.5rem);
+  --text-4xl: clamp(3rem, 3.2vw, 4.5rem);
   --leading-tight: 1.0;
   --leading-normal: 1.2;
   --leading-relaxed: 1.4;
@@ -2681,14 +2690,15 @@ input[type=range]::-webkit-slider-thumb {
   --font-mono: 'Share Tech Mono', 'Courier New', monospace; /* times, values, metadata */
   --font-tech: 'DS Digital', 'Share Tech Mono', 'Courier New', monospace; /* tech/data labels */
   /* VT323 renders large — calibrate sizes down one step */
-  --text-xs: 0.75rem; /* 12px equivalent */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
-  --text-3xl: 2.25rem;
-  --text-4xl: 3rem;
+  /* clamp() makes every rem-based rule responsive across all viewport widths */
+  --text-xs: clamp(0.75rem, 0.7vw, 1rem);
+  --text-sm: clamp(0.875rem, 0.9vw, 1.25rem);
+  --text-base: clamp(1rem, 1.05vw, 1.5rem);
+  --text-lg: clamp(1.25rem, 1.3vw, 1.875rem);
+  --text-xl: clamp(1.5rem, 1.6vw, 2.25rem);
+  --text-2xl: clamp(1.875rem, 2vw, 2.75rem);
+  --text-3xl: clamp(2.25rem, 2.5vw, 3.5rem);
+  --text-4xl: clamp(3rem, 3.2vw, 4.5rem);
   --leading-tight: 1.0;
   --leading-normal: 1.2;
   --leading-relaxed: 1.4;
@@ -3240,14 +3250,15 @@ input[type=range]::-webkit-slider-thumb {
   --font-mono: 'Share Tech Mono', 'Courier New', monospace; /* times, values, metadata */
   --font-tech: 'DS Digital', 'Share Tech Mono', 'Courier New', monospace; /* tech/data labels */
   /* VT323 renders large — calibrate sizes down one step */
-  --text-xs: 0.75rem; /* 12px equivalent */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
-  --text-3xl: 2.25rem;
-  --text-4xl: 3rem;
+  /* clamp() makes every rem-based rule responsive across all viewport widths */
+  --text-xs: clamp(0.75rem, 0.7vw, 1rem);
+  --text-sm: clamp(0.875rem, 0.9vw, 1.25rem);
+  --text-base: clamp(1rem, 1.05vw, 1.5rem);
+  --text-lg: clamp(1.25rem, 1.3vw, 1.875rem);
+  --text-xl: clamp(1.5rem, 1.6vw, 2.25rem);
+  --text-2xl: clamp(1.875rem, 2vw, 2.75rem);
+  --text-3xl: clamp(2.25rem, 2.5vw, 3.5rem);
+  --text-4xl: clamp(3rem, 3.2vw, 4.5rem);
   --leading-tight: 1.0;
   --leading-normal: 1.2;
   --leading-relaxed: 1.4;
@@ -3515,14 +3526,15 @@ input[type=range]::-webkit-slider-thumb {
   --font-mono: 'Share Tech Mono', 'Courier New', monospace; /* times, values, metadata */
   --font-tech: 'DS Digital', 'Share Tech Mono', 'Courier New', monospace; /* tech/data labels */
   /* VT323 renders large — calibrate sizes down one step */
-  --text-xs: 0.75rem; /* 12px equivalent */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
-  --text-3xl: 2.25rem;
-  --text-4xl: 3rem;
+  /* clamp() makes every rem-based rule responsive across all viewport widths */
+  --text-xs: clamp(0.75rem, 0.7vw, 1rem);
+  --text-sm: clamp(0.875rem, 0.9vw, 1.25rem);
+  --text-base: clamp(1rem, 1.05vw, 1.5rem);
+  --text-lg: clamp(1.25rem, 1.3vw, 1.875rem);
+  --text-xl: clamp(1.5rem, 1.6vw, 2.25rem);
+  --text-2xl: clamp(1.875rem, 2vw, 2.75rem);
+  --text-3xl: clamp(2.25rem, 2.5vw, 3.5rem);
+  --text-4xl: clamp(3rem, 3.2vw, 4.5rem);
   --leading-tight: 1.0;
   --leading-normal: 1.2;
   --leading-relaxed: 1.4;
@@ -3793,14 +3805,15 @@ input[type=range]::-webkit-slider-thumb {
   --font-mono: 'Share Tech Mono', 'Courier New', monospace; /* times, values, metadata */
   --font-tech: 'DS Digital', 'Share Tech Mono', 'Courier New', monospace; /* tech/data labels */
   /* VT323 renders large — calibrate sizes down one step */
-  --text-xs: 0.75rem; /* 12px equivalent */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
-  --text-3xl: 2.25rem;
-  --text-4xl: 3rem;
+  /* clamp() makes every rem-based rule responsive across all viewport widths */
+  --text-xs: clamp(0.75rem, 0.7vw, 1rem);
+  --text-sm: clamp(0.875rem, 0.9vw, 1.25rem);
+  --text-base: clamp(1rem, 1.05vw, 1.5rem);
+  --text-lg: clamp(1.25rem, 1.3vw, 1.875rem);
+  --text-xl: clamp(1.5rem, 1.6vw, 2.25rem);
+  --text-2xl: clamp(1.875rem, 2vw, 2.75rem);
+  --text-3xl: clamp(2.25rem, 2.5vw, 3.5rem);
+  --text-4xl: clamp(3rem, 3.2vw, 4.5rem);
   --leading-tight: 1.0;
   --leading-normal: 1.2;
   --leading-relaxed: 1.4;
@@ -4036,14 +4049,15 @@ input[type=range]::-webkit-slider-thumb {
   --font-mono: 'Share Tech Mono', 'Courier New', monospace; /* times, values, metadata */
   --font-tech: 'DS Digital', 'Share Tech Mono', 'Courier New', monospace; /* tech/data labels */
   /* VT323 renders large — calibrate sizes down one step */
-  --text-xs: 0.75rem; /* 12px equivalent */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
-  --text-3xl: 2.25rem;
-  --text-4xl: 3rem;
+  /* clamp() makes every rem-based rule responsive across all viewport widths */
+  --text-xs: clamp(0.75rem, 0.7vw, 1rem);
+  --text-sm: clamp(0.875rem, 0.9vw, 1.25rem);
+  --text-base: clamp(1rem, 1.05vw, 1.5rem);
+  --text-lg: clamp(1.25rem, 1.3vw, 1.875rem);
+  --text-xl: clamp(1.5rem, 1.6vw, 2.25rem);
+  --text-2xl: clamp(1.875rem, 2vw, 2.75rem);
+  --text-3xl: clamp(2.25rem, 2.5vw, 3.5rem);
+  --text-4xl: clamp(3rem, 3.2vw, 4.5rem);
   --leading-tight: 1.0;
   --leading-normal: 1.2;
   --leading-relaxed: 1.4;
@@ -4144,7 +4158,7 @@ input[type=range]::-webkit-slider-thumb {
   align-items: center;
   gap: 8px;
   padding: 5px 14px 5px 12px;
-  font-size: var(--text-sm);
+  font-size: var(--text-base) !important;
   color: var(--casio-on-dark);
   cursor: pointer;
   background: transparent;
@@ -4174,10 +4188,31 @@ input[type=range]::-webkit-slider-thumb {
   pointer-events: none;
 }
 .context-menu-item .material-icons {
-  font-size: 16px;
+  font-size: clamp(16px, 1.4vw, 2rem);
   color: var(--casio-on-dark-dim);
 }
 
+/* ─── Responsive sizing at ≥1980px ───────────────────────────────────────── */
+@media (min-width: 1980px) {
+  .context-menu-toggle {
+    width: clamp(36px, 3vw, 72px);
+    height: clamp(30px, 2.5vw, 60px);
+  }
+  .context-menu-toggle .material-icons {
+    font-size: clamp(18px, 1.6vw, 30px);
+  }
+  .context-menu {
+    min-width: clamp(180px, 16vw, 360px);
+  }
+  .context-menu-item {
+    font-size: clamp(15px, 1.2vw, 1.8rem);
+    gap: clamp(8px, 0.8vw, 18px);
+    padding: clamp(6px, 0.5vw, 12px) clamp(10px, 0.9vw, 20px);
+  }
+  .context-menu-item .material-icons {
+    font-size: clamp(16px, 1.5vw, 2.2rem);
+  }
+}
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE — 80s Casio Theme
@@ -4306,14 +4341,15 @@ input[type=range]::-webkit-slider-thumb {
   --font-mono: 'Share Tech Mono', 'Courier New', monospace; /* times, values, metadata */
   --font-tech: 'DS Digital', 'Share Tech Mono', 'Courier New', monospace; /* tech/data labels */
   /* VT323 renders large — calibrate sizes down one step */
-  --text-xs: 0.75rem; /* 12px equivalent */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
-  --text-3xl: 2.25rem;
-  --text-4xl: 3rem;
+  /* clamp() makes every rem-based rule responsive across all viewport widths */
+  --text-xs: clamp(0.75rem, 0.7vw, 1rem);
+  --text-sm: clamp(0.875rem, 0.9vw, 1.25rem);
+  --text-base: clamp(1rem, 1.05vw, 1.5rem);
+  --text-lg: clamp(1.25rem, 1.3vw, 1.875rem);
+  --text-xl: clamp(1.5rem, 1.6vw, 2.25rem);
+  --text-2xl: clamp(1.875rem, 2vw, 2.75rem);
+  --text-3xl: clamp(2.25rem, 2.5vw, 3.5rem);
+  --text-4xl: clamp(3rem, 3.2vw, 4.5rem);
   --leading-tight: 1.0;
   --leading-normal: 1.2;
   --leading-relaxed: 1.4;
@@ -5002,14 +5038,15 @@ input[type=range]::-webkit-slider-thumb {
   --font-mono: 'Share Tech Mono', 'Courier New', monospace; /* times, values, metadata */
   --font-tech: 'DS Digital', 'Share Tech Mono', 'Courier New', monospace; /* tech/data labels */
   /* VT323 renders large — calibrate sizes down one step */
-  --text-xs: 0.75rem; /* 12px equivalent */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
-  --text-3xl: 2.25rem;
-  --text-4xl: 3rem;
+  /* clamp() makes every rem-based rule responsive across all viewport widths */
+  --text-xs: clamp(0.75rem, 0.7vw, 1rem);
+  --text-sm: clamp(0.875rem, 0.9vw, 1.25rem);
+  --text-base: clamp(1rem, 1.05vw, 1.5rem);
+  --text-lg: clamp(1.25rem, 1.3vw, 1.875rem);
+  --text-xl: clamp(1.5rem, 1.6vw, 2.25rem);
+  --text-2xl: clamp(1.875rem, 2vw, 2.75rem);
+  --text-3xl: clamp(2.25rem, 2.5vw, 3.5rem);
+  --text-4xl: clamp(3rem, 3.2vw, 4.5rem);
   --leading-tight: 1.0;
   --leading-normal: 1.2;
   --leading-relaxed: 1.4;

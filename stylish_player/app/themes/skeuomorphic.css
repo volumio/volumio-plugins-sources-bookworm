@@ -4803,6 +4803,27 @@ h2 {
   color: #ff6b6b;
 }
 
+/* ─── Responsive sizing at ≥1980px ───────────────────────────────────────── */
+@media (min-width: 1980px) {
+  .context-menu-toggle {
+    width: clamp(40px, 3vw, 72px);
+    height: clamp(40px, 3vw, 72px);
+  }
+  .context-menu-toggle .material-icons {
+    font-size: clamp(20px, 1.8vw, 34px);
+  }
+  .context-menu {
+    min-width: clamp(180px, 16vw, 360px);
+  }
+  .context-menu-item {
+    font-size: clamp(13px, 1.1vw, 1.6rem);
+    gap: clamp(10px, 0.8vw, 18px);
+    padding: clamp(8px, 0.6vw, 14px) clamp(12px, 1vw, 22px);
+  }
+  .context-menu-item .material-icons {
+    font-size: clamp(18px, 1.5vw, 2.2rem);
+  }
+}
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE
