@@ -410,6 +410,7 @@ ControllerStylishPlayer.prototype.startServer = function () {
         albumArtMaxSpace: self.config.get("albumArtMaxSpace", false),
         vizType: self.config.get("vizType", "spectrum"),
         spectrumOptions: self.config.get("spectrumOptions", ""),
+        backgroundColor: self.config.get("backgroundColor", ""),
         port: self.config.get("port", 3339),
         latitude: self.config.get("latitude", ""),
         longitude: self.config.get("longitude", ""),
@@ -648,6 +649,9 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       // Populate spectrum options (Index 5)
       uiconf.sections[2].content[5].value = self.config.get("spectrumOptions", "");
 
+      // Populate background color (Index 6)
+      uiconf.sections[2].content[6].value = self.config.get("backgroundColor", "");
+
       // Populate location section (index 3)
       uiconf.sections[3].content[0].value = self.config.get("latitude", "");
       uiconf.sections[3].content[1].value = self.config.get("longitude", "");
@@ -820,6 +824,7 @@ ControllerStylishPlayer.prototype.configSavePlayerConfig = function (data) {
   var albumArtMaxSpace = data["albumArtMaxSpace"] === true;
   var vizType = data["vizType"] ? data["vizType"].value : "spectrum";
   var spectrumOptions = (data["spectrumOptions"] || "").toString().trim();
+  var backgroundColor = (data["backgroundColor"] || "").toString().trim();
 
   // Validate JSON if a value is provided
   if (spectrumOptions) {
@@ -831,12 +836,19 @@ ControllerStylishPlayer.prototype.configSavePlayerConfig = function (data) {
     }
   }
 
+  // Validate backgroundColor hex format if provided
+  if (backgroundColor && !/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(backgroundColor)) {
+    self.commandRouter.pushToastMessage("error", "Stylish Player", "Background Color must be a valid hex code (e.g. #1a2b3c).");
+    return;
+  }
+
   self.config.set("theme", theme);
   self.config.set("playerType", playerType);
   self.config.set("showPlayerControls", showPlayerControls);
   self.config.set("albumArtMaxSpace", albumArtMaxSpace);
   self.config.set("vizType", vizType);
   self.config.set("spectrumOptions", spectrumOptions);
+  self.config.set("backgroundColor", backgroundColor);
   self.commandRouter.pushToastMessage("success", "Stylish Player", "Player configuration saved.");
 
   self.broadcastConfig();

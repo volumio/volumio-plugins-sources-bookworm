@@ -62,7 +62,7 @@
       },
       "saveButton": {
         "label": "TRANSLATE.SAVE",
-        "data": ["playerType", "theme", "showPlayerControls", "albumArtMaxSpace", "vizType", "spectrumOptions"]
+        "data": ["playerType", "theme", "showPlayerControls", "albumArtMaxSpace", "vizType", "spectrumOptions", "backgroundColor"]
       },
       "content": [
         {
@@ -153,6 +153,14 @@
             "field": "vizType",
             "value": "spectrum"
           }
+        },
+        {
+          "id": "backgroundColor",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.BACKGROUND_COLOR",
+          "doc": "TRANSLATE.BACKGROUND_COLOR_DESC",
+          "value": ""
         }
       ]
     },

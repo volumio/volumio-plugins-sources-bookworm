@@ -75,6 +75,8 @@
   "VIZ_TYPE_VU_METER_4": "VU Meter 4 (Black)",
   "SPECTRUM_OPTIONS": "Spectrum Analyzer Options (JSON)",
   "SPECTRUM_OPTIONS_DESC": "Override AudioMotion Analyzer options with a JSON object. Leave empty to use defaults. Generate options using getOptions() on this page https://audiomotion.dev/demo/fluid.html",
+  "BACKGROUND_COLOR": "Background Color (hex)",
+  "BACKGROUND_COLOR_DESC": "Set a solid background color instead of the blurred album art. Enter a hex code (e.g. #1a1a2e). Leave empty to use the album art background.",
   "SHOW_PLAYER_CONTROLS": "Show Player Controls",
   "SHOW_PLAYER_CONTROLS_DESC": "When disabled, player buttons are hidden and the seek bar becomes a read-only progress indicator.",
   "ALBUM_ART_MAX_SPACE": "Use Maximum Space",
