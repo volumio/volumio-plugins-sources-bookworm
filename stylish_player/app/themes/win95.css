@@ -890,6 +890,11 @@ code, pre {
   pointer-events: none;
 }
 
+/* Allow children to use cqi units relative to the dialog width */
+.dialog {
+  container-type: inline-size;
+}
+
 @keyframes dialogBackdropFadeIn {
   from {
     opacity: 0;
@@ -952,6 +957,24 @@ code, pre {
 .dialog-input::placeholder {
   color: var(--text-secondary, var(--color-gray-600));
   opacity: 0.6;
+}
+
+/* ── Dialog title — ensure it never touches edges ── */
+.dialog-title {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+/* ── Close button — structural base, theme files add visual overrides only ── */
+.dialog-close {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 /* ── Section title ── */
@@ -1439,14 +1462,11 @@ code, pre {
 .btn-icon {
   width: 36px;
   height: 36px;
+  min-height: unset;
   border-radius: 0;
-  background: var(--win95-face);
-  color: var(--text-primary);
-  /* Win95 raised bevel */
-  border-top: 2px solid var(--win95-highlight);
-  border-left: 2px solid var(--win95-highlight);
-  border-bottom: 2px solid var(--win95-dark);
-  border-right: 2px solid var(--win95-dark);
+  background: transparent;
+  color: var(--win95-shadow);
+  border: 1px solid transparent;
   padding: 0;
   display: flex;
   justify-content: center;
@@ -1454,21 +1474,18 @@ code, pre {
   flex-shrink: 0;
   cursor: pointer;
   user-select: none;
-  transition: none;
+  transition: background 0.1s, border-color 0.1s;
   box-shadow: none;
 }
 .btn-icon:hover {
-  background: var(--win95-light);
-  color: var(--text-primary);
+  background: rgba(0, 0, 128, 0.08);
+  border-color: var(--win95-shadow);
+  color: var(--win95-shadow);
 }
 .btn-icon:active {
-  /* Depressed: invert bevel */
-  border-top: 2px solid var(--win95-dark);
-  border-left: 2px solid var(--win95-dark);
-  border-bottom: 2px solid var(--win95-highlight);
-  border-right: 2px solid var(--win95-highlight);
-  background: var(--win95-face);
-  color: var(--text-primary);
+  background: rgba(0, 0, 128, 0.14);
+  border-color: var(--win95-dark);
+  color: var(--win95-shadow);
 }
 .btn-icon.active {
   background: transparent;
@@ -1480,11 +1497,70 @@ code, pre {
   color: var(--win95-titlebar);
 }
 
+/* ─── btn-icon in title bars: restore Win95 bevel ───────────────────────── */
+.dialog-header .btn-icon,
+.slide-panel-header .btn-icon {
+  background: var(--win95-face);
+  border-top: 2px solid var(--win95-highlight);
+  border-left: 2px solid var(--win95-highlight);
+  border-bottom: 2px solid var(--win95-dark);
+  border-right: 2px solid var(--win95-dark);
+  color: var(--text-primary);
+}
+.dialog-header .btn-icon:hover,
+.slide-panel-header .btn-icon:hover {
+  background: var(--win95-light);
+  color: var(--text-primary);
+}
+.dialog-header .btn-icon:active,
+.slide-panel-header .btn-icon:active {
+  border-top: 2px solid var(--win95-dark);
+  border-left: 2px solid var(--win95-dark);
+  border-bottom: 2px solid var(--win95-highlight);
+  border-right: 2px solid var(--win95-highlight);
+  background: var(--win95-face);
+  color: var(--text-primary);
+}
+
+/* ─── Link / Transparent Button ─────────────────────────────────────────── */
+.btn-link {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--win95-titlebar);
+  padding: 0;
+  min-height: unset;
+  text-decoration: underline;
+}
+.btn-link:hover {
+  background: transparent;
+  text-decoration: none;
+  color: var(--color-primary-light, #4d79ff);
+}
+.btn-link:active {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
 /* ─── Small Button ─────────────────────────────────────────────────────── */
 .btn-sm {
   padding: 2px 10px;
   min-height: 22px;
   font-size: var(--text-xs, 11px);
+}
+
+.btn-round.btn-sm {
+  width: 40px;
+  height: 40px;
+}
+
+.btn:disabled, .form-select:disabled,
+.btn.disabled,
+.disabled.form-select {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 :root {
@@ -1851,9 +1927,6 @@ label {
 }
 .input-group .form-control {
   min-height: 28px;
-  border-radius: 0;
-}
-.input-group .btn, .input-group .form-select {
   border-radius: 0;
 }
 
@@ -3476,13 +3549,14 @@ input[type=range]::-webkit-slider-runnable-track {
 .slider-track {
   position: relative;
   flex-grow: 1;
-  height: 12px;
+  height: 6px;
   background: #ffffff;
-  border-top: 2px solid var(--win95-dark);
-  border-left: 2px solid var(--win95-dark);
-  border-bottom: 2px solid var(--win95-highlight);
-  border-right: 2px solid var(--win95-highlight);
+  border-top: 1px solid var(--win95-dark);
+  border-left: 1px solid var(--win95-dark);
+  border-bottom: 1px solid var(--win95-highlight);
+  border-right: 1px solid var(--win95-highlight);
   cursor: pointer;
+  overflow: visible;
 }
 
 .slider-fill {
@@ -3870,6 +3944,17 @@ input[type=range]::-webkit-slider-runnable-track {
   border-left: 2px solid var(--win95-dark);
   border-bottom: 2px solid var(--win95-highlight);
   border-right: 2px solid var(--win95-highlight);
+}
+.album-browser::-webkit-scrollbar {
+  width: 16px;
+  background: var(--win95-face);
+}
+.album-browser::-webkit-scrollbar-thumb {
+  background: var(--win95-face);
+  border-top: 2px solid var(--win95-highlight);
+  border-left: 2px solid var(--win95-highlight);
+  border-bottom: 2px solid var(--win95-dark);
+  border-right: 2px solid var(--win95-dark);
 }
 
 .album-card {
@@ -4269,35 +4354,11 @@ input[type=range]::-webkit-slider-runnable-track {
   font-family: var(--font-mono);
 }
 
-.playlist-remove {
-  width: 22px;
-  height: 22px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-primary);
-  background: var(--win95-face);
-  border-top: 2px solid var(--win95-highlight);
-  border-left: 2px solid var(--win95-highlight);
-  border-bottom: 2px solid var(--win95-dark);
-  border-right: 2px solid var(--win95-dark);
-  padding: clamp(0.5rem, 1vw, 1rem) !important;
-  cursor: pointer;
-}
-.playlist-remove .material-icons {
-  font-size: 13px;
-  line-height: 1;
-}
-.playlist-remove:active {
-  border-top: 2px solid var(--win95-dark);
-  border-left: 2px solid var(--win95-dark);
-  border-bottom: 2px solid var(--win95-highlight);
-  border-right: 2px solid var(--win95-highlight);
-}
-.playlist-item--active .playlist-remove, .playlist-item:hover .playlist-remove {
-  background: var(--win95-face);
-  color: var(--text-primary);
+/* ─── Edge-to-edge rows ─── */
+.playlist-item {
+  border-radius: 0;
+  padding-left: 16px;
+  padding-right: 8px;
 }
 
 :root {
@@ -4518,7 +4579,7 @@ input[type=range]::-webkit-slider-runnable-track {
 .slide-panel-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 1040;
+  z-index: 3000;
   background: transparent;
   pointer-events: none;
   transition: background 0.2s;
@@ -4533,7 +4594,7 @@ input[type=range]::-webkit-slider-runnable-track {
   top: 0;
   left: 0;
   bottom: 0;
-  z-index: 1050;
+  z-index: 3010;
   display: flex;
   flex-direction: column;
   max-width: 80vw;
@@ -4565,13 +4626,13 @@ input[type=range]::-webkit-slider-runnable-track {
 }
 
 .slide-panel-subtitle {
-  font-size: 0.65rem;
+  font-size: 0.5rem;
   color: rgba(255, 255, 255, 0.7);
   font-family: var(--font-label);
 }
 
 .slide-panel-title {
-  font-size: var(--text-base);
+  font-size: clamp(0.75rem, 0.975vw, 0.86rem);
   font-weight: 700;
   color: #ffffff;
   font-family: var(--font-label);
@@ -4579,11 +4640,22 @@ input[type=range]::-webkit-slider-runnable-track {
 
 .slide-panel-body {
   color: var(--text-primary);
-  font-size: var(--text-sm);
+  font-size: calc(var(--text-sm) * 0.75);
   font-family: var(--font-body);
   overflow-y: auto;
   flex: 1 1 auto;
   padding: 0;
+}
+.slide-panel-body::-webkit-scrollbar {
+  width: 16px;
+  background: var(--win95-face);
+}
+.slide-panel-body::-webkit-scrollbar-thumb {
+  background: var(--win95-face);
+  border-top: 2px solid var(--win95-highlight);
+  border-left: 2px solid var(--win95-highlight);
+  border-bottom: 2px solid var(--win95-dark);
+  border-right: 2px solid var(--win95-dark);
 }
 
 :root {
@@ -4909,6 +4981,9 @@ input[type=range]::-webkit-slider-runnable-track {
     gap: clamp(8px, 0.8vw, 18px);
     padding: clamp(4px, 0.4vw, 10px) clamp(16px, 1.2vw, 28px) clamp(4px, 0.4vw, 10px) clamp(20px, 1.5vw, 36px);
   }
+  .context-menu-item .material-icons {
+    font-size: clamp(18px, 1.5vw, 2.2rem);
+  }
 }
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
@@ -5156,11 +5231,11 @@ input[type=range]::-webkit-slider-runnable-track {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 5px 6px 5px 10px;
+  padding: 3px 4px 3px 10px;
   background: linear-gradient(90deg, var(--win95-titlebar), #1084d0);
   flex-shrink: 0;
   gap: 8px;
-  height: 36px;
+  min-height: 28px;
 }
 
 .dialog-title {
@@ -5172,33 +5247,20 @@ input[type=range]::-webkit-slider-runnable-track {
 }
 
 .dialog-close {
-  width: 24px;
-  height: 22px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: var(--win95-face);
   border-radius: 0;
-  border-top: 1px solid var(--win95-highlight);
-  border-left: 1px solid var(--win95-highlight);
-  border-bottom: 1px solid var(--win95-dark);
-  border-right: 1px solid var(--win95-dark);
-  cursor: pointer;
+  border-top: 2px solid var(--win95-highlight);
+  border-left: 2px solid var(--win95-highlight);
+  border-bottom: 2px solid var(--win95-dark);
+  border-right: 2px solid var(--win95-dark);
   color: var(--text-primary);
-  font-size: 11px;
   font-weight: 700;
-  flex-shrink: 0;
 }
 .dialog-close:active {
-  border-top: 1px solid var(--win95-dark);
-  border-left: 1px solid var(--win95-dark);
-  border-bottom: 1px solid var(--win95-highlight);
-  border-right: 1px solid var(--win95-highlight);
-}
-.dialog-close .material-icons {
-  font-size: 16px;
-  line-height: 1;
+  border-top: 2px solid var(--win95-dark);
+  border-left: 2px solid var(--win95-dark);
+  border-bottom: 2px solid var(--win95-highlight);
+  border-right: 2px solid var(--win95-highlight);
 }
 
 .dialog-toolbar {
@@ -5277,20 +5339,14 @@ input[type=range]::-webkit-slider-runnable-track {
 }
 
 /* ── Browse Tiles ── */
-.browse-tile {
-  color: var(--text-primary);
-  background: var(--win95-face);
-  border: 2px solid transparent;
-}
-.browse-tile:hover {
-  border-color: var(--win95-titlebar);
-  background: var(--win95-light);
-}
 .browse-tile .browse-tile__icon {
-  color: var(--win95-titlebar);
+  font-size: clamp(18px, 3cqi, 30px) !important;
+  display: block;
+  margin-bottom: 4px;
 }
 .browse-tile .browse-tile__label {
-  color: var(--text-primary);
+  font-size: clamp(0.75rem, 1.5cqi, 1.1rem) !important;
+  font-weight: 600;
 }
 
 /* ── Digital Clock — Windows 95 Theme ──────────────────────────────────────
