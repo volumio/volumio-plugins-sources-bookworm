@@ -3982,10 +3982,12 @@ let getCamillaPureGuiConfig = function (plugin, chunksize, samplerate) {
     strConfig = strConfig
       .replace(regexCapturesamplerate, `$1: ${samplerate}`)
       .replace(regexChunksize, `$1: ${chunksize}`);
-
     // In case capture_samplerate is not present, add it right after samplerate
-    if (strConfig.search(regexCapturesamplerate) === -1)
-      strConfig = strConfig.replace(regexSamplerate, `$1$2$3capture_samplerate: ${samplerate}`);
+    if (strConfig.search(regexCapturesamplerate) === -1) {
+      // FIX: Added \n for a new line and $1 to reuse the same indentation
+      strConfig = strConfig.replace(regexSamplerate, `$1$2$3\n$1capture_samplerate: ${samplerate}`);
+    }
+
 
   } catch (err) {
 

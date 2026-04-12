@@ -241,6 +241,30 @@
     opacity: 0.4;
     cursor: not-allowed;
   }
+  #filter-popup .popup-buttons button.mute-btn {
+    background: #e9a645;
+    border-color: #e9a645;
+    color: #fff;
+  }
+  #filter-popup .popup-buttons button.mute-btn:hover {
+    background: #c78c2e;
+  }
+  #filter-popup .popup-buttons button.mute-btn.muted {
+    background: #7C7C7C;
+    border-color: #7C7C7C;
+  }
+  #filter-popup .popup-buttons button.mute-btn.muted:hover {
+    background: #999;
+  }
+  .header-btn.bypass-btn {
+    background: #090909;
+    border-color: #7C7C7C;
+  }
+  .header-btn.bypass-btn.active {
+    background: #e9a645;
+    border-color: #e9a645;
+    color: #fff;
+  }
   .knob-container {
     display: flex;
     flex-direction: column;
@@ -350,6 +374,7 @@
   <div id="header-controls">
     <span id="status-msg"></span>
     <span id="unsaved-dot" title="Unsaved changes"></span>
+    <button class="header-btn bypass-btn" id="btn-bypass-eq" style="display:none;">Bypass EQ</button>
     <button class="header-btn" id="btn-add-filter">+ Add Filter</button>
     <button class="header-btn" id="btn-reset">Reset</button>
     <button class="header-btn save-btn" id="btn-save">Save</button>
@@ -398,8 +423,10 @@
   var hasUnsavedChanges = false;
   var showL = true, showR = true;
   var currentPeakGain = 0;
+  var eqBypassed = false;
   var btnToggleLeft = document.getElementById('btn-toggle-left');
   var btnToggleRight = document.getElementById('btn-toggle-right');
+  var btnBypassEq = document.getElementById('btn-bypass-eq');
 
   btnToggleLeft.addEventListener('click', function () {
     showL = !showL;
@@ -413,6 +440,30 @@
     else btnToggleRight.classList.remove('active');
     renderLocal();
   });
+
+  // Bypass EQ toggle
+  btnBypassEq.addEventListener('click', function () {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/peq/bypass', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 5000;
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        fetchAndRender();
+      }
+    };
+    xhr.send('{}');
+  });
+
+  function updateBypassButton() {
+    if (eqBypassed) {
+      btnBypassEq.classList.add('active');
+      btnBypassEq.textContent = 'EQ Bypassed';
+    } else {
+      btnBypassEq.classList.remove('active');
+      btnBypassEq.textContent = 'Bypass EQ';
+    }
+  }
 
   // Panel toggle helper
   function initPanelToggle(btn, panelId, storageKey, displayStyle) {
@@ -1339,7 +1390,8 @@
         scope: f.scope,
         params: f.params,
         curve: curve,
-        biquads: biquads
+        biquads: biquads,
+        muted: !!f.muted
       });
 
       if (f.scope === 'L' || f.scope === 'L+R') hasL = true;
@@ -1356,7 +1408,7 @@
       for (var j = 0; j < numPoints; j++) {
         var total = 0;
         for (var fi = 0; fi < individual.length; fi++) {
-          total += individual[fi].curve[j];
+          if (!eqBypassed && !individual[fi].muted) total += individual[fi].curve[j];
         }
         combinedLR[j] = total;
       }
@@ -1366,7 +1418,7 @@
         for (var j = 0; j < numPoints; j++) {
           var total = 0;
           for (var fi = 0; fi < individual.length; fi++) {
-            if (individual[fi].scope === 'L' || individual[fi].scope === 'L+R') {
+            if (!eqBypassed && !individual[fi].muted && (individual[fi].scope === 'L' || individual[fi].scope === 'L+R')) {
               total += individual[fi].curve[j];
             }
           }
@@ -1378,7 +1430,7 @@
         for (var j = 0; j < numPoints; j++) {
           var total = 0;
           for (var fi = 0; fi < individual.length; fi++) {
-            if (individual[fi].scope === 'R' || individual[fi].scope === 'L+R') {
+            if (!eqBypassed && !individual[fi].muted && (individual[fi].scope === 'R' || individual[fi].scope === 'L+R')) {
               total += individual[fi].curve[j];
             }
           }
@@ -1582,9 +1634,11 @@
       var ind = responses.individual[fi];
       if (!isFilterVisible(ind.scope)) continue;
       var color = filterColors[fi % filterColors.length];
+      var isMuted = eqBypassed || ind.muted;
       ctx.strokeStyle = color;
-      ctx.globalAlpha = 0.4;
+      ctx.globalAlpha = isMuted ? 0.15 : 0.4;
       ctx.lineWidth = 1;
+      if (isMuted) ctx.setLineDash([4, 4]);
       ctx.beginPath();
       for (var j = 0; j < numPoints; j++) {
         var x = freqToX(frequencies[j]);
@@ -1593,6 +1647,7 @@
         else ctx.lineTo(x, y);
       }
       ctx.stroke();
+      ctx.setLineDash([]);
       ctx.globalAlpha = 1.0;
     }
 
@@ -1629,30 +1684,37 @@
       if (my > h - margin.bottom) my = h - margin.bottom;
       var label = '' + ind.index;
       var isActive = (fi === dragFilterIndex || fi === selectedFilterIndex || fi === hoveredFilterIndex);
+      var isMuted = eqBypassed || ind.muted;
       var radius = isActive ? 13 : 10;
       // Glow effect for active dot
-      if (isActive) {
+      if (isActive && !isMuted) {
         ctx.save();
         ctx.shadowColor = color;
         ctx.shadowBlur = 12;
       }
       // Filled circle
+      ctx.globalAlpha = isMuted ? 0.35 : 1.0;
       ctx.beginPath();
       ctx.arc(mx, my, radius, 0, 2 * Math.PI);
       ctx.fillStyle = color;
       ctx.fill();
-      // Dark outline for contrast
-      ctx.strokeStyle = '#333';
+      // Dark outline for contrast (dashed for muted)
+      ctx.strokeStyle = isMuted ? '#999' : '#333';
       ctx.lineWidth = isActive ? 2 : 1.5;
+      if (isMuted) ctx.setLineDash([3, 3]);
       ctx.stroke();
-      if (isActive) {
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1.0;
+      if (isActive && !isMuted) {
         ctx.restore();
       }
       // Number label
+      ctx.globalAlpha = isMuted ? 0.5 : 1.0;
       ctx.fillStyle = '#fff';
       ctx.font = isActive ? 'bold 11px Lato, sans-serif' : 'bold 10px Lato, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(label, mx, my + 3.5);
+      ctx.globalAlpha = 1.0;
     }
 
     // Draw crosshair (with snap support)
@@ -1929,6 +1991,9 @@
     html += '<div class="popup-error" id="popup-error-text"></div>';
     var deleteDisabled = isEQ15 || (currentData && currentData.filters.length <= 1) ? ' disabled title="Cannot remove this filter"' : '';
     html += '<div class="popup-buttons">';
+    var muteClass = ind.muted ? 'mute-btn muted' : 'mute-btn';
+    var muteLabel = ind.muted ? 'Unmute' : 'Mute';
+    html += '<button class="' + muteClass + '" id="popup-mute">' + muteLabel + '</button>';
     if (!isEQ15) {
       html += '<button class="delete-btn" id="popup-delete"' + deleteDisabled + '>Delete</button>';
     }
@@ -2040,6 +2105,23 @@
         if (errEl) errEl.textContent = 'Network error';
       };
       xhr.send(JSON.stringify({ index: ind.index }));
+    });
+
+    // Mute button (only in EQ15/2XEQ15 mode)
+    var muteBtn = document.getElementById('popup-mute');
+    if (muteBtn) muteBtn.addEventListener('click', function () {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/peq/mute', true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.timeout = 5000;
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          closePopup();
+          interacting = false;
+          fetchAndRender();
+        }
+      };
+      xhr.send(JSON.stringify({ bandIndex: ind.index, scope: ind.scope }));
     });
   }
 
@@ -2288,11 +2370,16 @@
           currentMode = currentData.mode || 'PEQ';
           errorMsg.style.display = 'none';
           samplerateEl.textContent = currentData.sampleRate || '--';
-          // Show/hide Add Filter button based on mode
+          // Show/hide buttons based on mode
           var isEQ15 = (currentMode === 'EQ15' || currentMode === '2XEQ15');
           btnAddFilter.style.display = isEQ15 ? 'none' : '';
           btnSave.style.display = isEQ15 ? 'none' : '';
           btnReset.style.display = isEQ15 ? 'none' : '';
+          // Show bypass button only in graphic EQ modes
+          var isGraphicEq = isEQ15 || currentMode === 'EQ3';
+          btnBypassEq.style.display = isGraphicEq ? '' : 'none';
+          eqBypassed = !!currentData.eqbypass;
+          updateBypassButton();
           var responses = computeResponses(currentData);
           lastResponses = responses;
           updateChannelToggleVisibility(responses);
