@@ -94,5 +94,7 @@
   "USE_24_HOUR": "24 órás formátum",
   "USE_24_HOUR_DESC": "Az idő megjelenítése 24 órás (katonai) formátumban 12 órás AM/PM helyett.",
   "ALBUM_ART_MAX_SPACE": "Maximális hely használata",
-  "ALBUM_ART_MAX_SPACE_DESC": "Ha engedélyezve van, az albumborító az egész bal panelre kiterjed, és a számadatok és vezérlők kitöltenek minden elérhető helyet."
+  "ALBUM_ART_MAX_SPACE_DESC": "Ha engedélyezve van, az albumborító az egész bal panelre kiterjed, és a számadatok és vezérlők kitöltenek minden elérhető helyet.",
+  "BACKGROUND_COLOR": "Background Color (hex)",
+  "BACKGROUND_COLOR_DESC": "Set a solid background color instead of the blurred album art. Enter a hex code (e.g. #1a1a2e). Leave empty to use the album art background."
 }

@@ -94,5 +94,7 @@
   "USE_24_HOUR": "รูปแบบ 24 ชั่วโมง",
   "USE_24_HOUR_DESC": "แสดงเวลาในรูปแบบ 24 ชั่วโมง (แบบทหาร) แทนรูปแบบ 12 ชั่วโมง AM/PM",
   "ALBUM_ART_MAX_SPACE": "ใช้พื้นที่สูงสุด",
-  "ALBUM_ART_MAX_SPACE_DESC": "เมื่อเปิดใช้งาน ภาพปกอัลบั้มจะขยายเต็มแผงด้านซ้าย และข้อมูลเพลงพร้อมตัวควบคุมจะขยายเพื่อเติมเต็มพื้นที่ที่มีอยู่"
+  "ALBUM_ART_MAX_SPACE_DESC": "เมื่อเปิดใช้งาน ภาพปกอัลบั้มจะขยายเต็มแผงด้านซ้าย และข้อมูลเพลงพร้อมตัวควบคุมจะขยายเพื่อเติมเต็มพื้นที่ที่มีอยู่",
+  "BACKGROUND_COLOR": "Background Color (hex)",
+  "BACKGROUND_COLOR_DESC": "Set a solid background color instead of the blurred album art. Enter a hex code (e.g. #1a1a2e). Leave empty to use the album art background."
 }

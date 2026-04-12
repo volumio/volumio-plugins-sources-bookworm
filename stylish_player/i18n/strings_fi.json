@@ -94,5 +94,7 @@
   "USE_24_HOUR": "24 tunnin aika",
   "USE_24_HOUR_DESC": "Näytä aika 24 tunnin (sotilasajan) muodossa 12 tunnin AM/PM-muodon sijaan.",
   "ALBUM_ART_MAX_SPACE": "Käytä enimmäistilaa",
-  "ALBUM_ART_MAX_SPACE_DESC": "Kun käytössä, albumin kansikuva ulottuu koko vasemmalle paneelille ja kappaleen tiedot sekä säätimet laajenevat täyttämään kaiken käytettävissä olevan tilan."
+  "ALBUM_ART_MAX_SPACE_DESC": "Kun käytössä, albumin kansikuva ulottuu koko vasemmalle paneelille ja kappaleen tiedot sekä säätimet laajenevat täyttämään kaiken käytettävissä olevan tilan.",
+  "BACKGROUND_COLOR": "Background Color (hex)",
+  "BACKGROUND_COLOR_DESC": "Set a solid background color instead of the blurred album art. Enter a hex code (e.g. #1a1a2e). Leave empty to use the album art background."
 }

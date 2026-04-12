@@ -94,5 +94,7 @@
   "USE_24_HOUR": "24-часовой формат",
   "USE_24_HOUR_DESC": "Отображать время в 24-часовом (военном) формате вместо 12-часового AM/PM.",
   "ALBUM_ART_MAX_SPACE": "Использовать максимальное пространство",
-  "ALBUM_ART_MAX_SPACE_DESC": "Если включено, обложка альбома занимает всю левую панель, а информация о треке и элементы управления расширяются на всё доступное пространство."
+  "ALBUM_ART_MAX_SPACE_DESC": "Если включено, обложка альбома занимает всю левую панель, а информация о треке и элементы управления расширяются на всё доступное пространство.",
+  "BACKGROUND_COLOR": "Background Color (hex)",
+  "BACKGROUND_COLOR_DESC": "Set a solid background color instead of the blurred album art. Enter a hex code (e.g. #1a1a2e). Leave empty to use the album art background."
 }

@@ -94,5 +94,7 @@
   "USE_24_HOUR": "24-hodinový čas",
   "USE_24_HOUR_DESC": "Zobrazovať čas v 24-hodinovom (vojenskom) formáte namiesto 12-hodinového formátu AM/PM.",
   "ALBUM_ART_MAX_SPACE": "Použiť maximálny priestor",
-  "ALBUM_ART_MAX_SPACE_DESC": "Keď je povolené, obal albumu sa roztiahne na celý ľavý panel a informácie o skladbe a ovládacie prvky sa rozšíria tak, aby vyplnili celý dostupný priestor."
+  "ALBUM_ART_MAX_SPACE_DESC": "Keď je povolené, obal albumu sa roztiahne na celý ľavý panel a informácie o skladbe a ovládacie prvky sa rozšíria tak, aby vyplnili celý dostupný priestor.",
+  "BACKGROUND_COLOR": "Background Color (hex)",
+  "BACKGROUND_COLOR_DESC": "Set a solid background color instead of the blurred album art. Enter a hex code (e.g. #1a1a2e). Leave empty to use the album art background."
 }

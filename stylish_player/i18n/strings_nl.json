@@ -94,5 +94,7 @@
   "USE_24_HOUR": "24-uursnotatie",
   "USE_24_HOUR_DESC": "Toon de tijd in 24-uursnotatie (militair) in plaats van 12-uursnotatie AM/PM.",
   "ALBUM_ART_MAX_SPACE": "Maximale ruimte gebruiken",
-  "ALBUM_ART_MAX_SPACE_DESC": "Wanneer ingeschakeld, strekt de albumhoes zich uit over het volledige linker paneel en worden trackinformatie en bedieningselementen uitgebreid om alle beschikbare ruimte te vullen."
+  "ALBUM_ART_MAX_SPACE_DESC": "Wanneer ingeschakeld, strekt de albumhoes zich uit over het volledige linker paneel en worden trackinformatie en bedieningselementen uitgebreid om alle beschikbare ruimte te vullen.",
+  "BACKGROUND_COLOR": "Background Color (hex)",
+  "BACKGROUND_COLOR_DESC": "Set a solid background color instead of the blurred album art. Enter a hex code (e.g. #1a1a2e). Leave empty to use the album art background."
 }

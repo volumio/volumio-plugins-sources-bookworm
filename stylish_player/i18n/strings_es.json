@@ -94,5 +94,7 @@
   "USE_24_HOUR": "Hora de 24 horas",
   "USE_24_HOUR_DESC": "Mostrar la hora en formato de 24 horas (militar) en lugar de 12 horas AM/PM.",
   "ALBUM_ART_MAX_SPACE": "Usar espacio máximo",
-  "ALBUM_ART_MAX_SPACE_DESC": "Cuando está habilitado, extiende la carátula del álbum por todo el panel izquierdo y expande la información de la pista y los controles para llenar todo el espacio disponible."
+  "ALBUM_ART_MAX_SPACE_DESC": "Cuando está habilitado, extiende la carátula del álbum por todo el panel izquierdo y expande la información de la pista y los controles para llenar todo el espacio disponible.",
+  "BACKGROUND_COLOR": "Background Color (hex)",
+  "BACKGROUND_COLOR_DESC": "Set a solid background color instead of the blurred album art. Enter a hex code (e.g. #1a1a2e). Leave empty to use the album art background."
 }

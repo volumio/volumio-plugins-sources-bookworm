@@ -94,5 +94,7 @@
   "USE_24_HOUR": "Định dạng 24 giờ",
   "USE_24_HOUR_DESC": "Hiển thị thời gian theo định dạng 24 giờ (quân sự) thay vì định dạng 12 giờ AM/PM.",
   "ALBUM_ART_MAX_SPACE": "Sử dụng không gian tối đa",
-  "ALBUM_ART_MAX_SPACE_DESC": "Khi được bật, ảnh bìa album trải dài toàn bộ bảng bên trái và thông tin bài hát cùng các nút điều khiển được mở rộng để lấp đầy toàn bộ không gian có sẵn."
+  "ALBUM_ART_MAX_SPACE_DESC": "Khi được bật, ảnh bìa album trải dài toàn bộ bảng bên trái và thông tin bài hát cùng các nút điều khiển được mở rộng để lấp đầy toàn bộ không gian có sẵn.",
+  "BACKGROUND_COLOR": "Background Color (hex)",
+  "BACKGROUND_COLOR_DESC": "Set a solid background color instead of the blurred album art. Enter a hex code (e.g. #1a1a2e). Leave empty to use the album art background."
 }
