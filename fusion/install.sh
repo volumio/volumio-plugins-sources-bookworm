@@ -110,7 +110,7 @@ rm /tmp/camilladsp-linux-amd64.tar.gz
 cp $LIB/c/hw_params_amd64 $LIB/hw_params
 chmod +x $LIB/hw_params
 
-
+cd $LIB
 echo "Downloading camillagui ... Please wait!"
 wget https://github.com/HEnquist/camillagui-backend/releases/download/v4.1.0/bundle_linux_amd64.tar.gz
 echo "Extracting camillagui ..."
