@@ -12,16 +12,5 @@ fi
 # Change to the plugin directory
 cd "$PLUGIN_DIR" || exit
 
-# Activate the virtual environment
-if [ ! -f "cgui/bin/activate" ]; then
-  echo "Error: Virtual environment not found in $PLUGIN_DIR/cgui."
-  exit 1
-fi
-source cgui/bin/activate
-
-# Run the main Python script
-if [ ! -f "cgui/main.py" ]; then
-  echo "Error: main.py not found in $PLUGIN_DIR/cgui."
-  exit 1
-fi
-python cgui/main.py
+# Run the backend script
+./camillagui/camillagui_backend/camillagui_backend

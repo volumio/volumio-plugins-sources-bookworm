@@ -6,11 +6,11 @@ devices:
   capture:
     type: RawFile
     channels: 2
-    format: S32LE
+    format: S32_LE
     filename: "/tmp/fusiondspfifo"
     extra_samples: 4096
   playback:
     type: Alsa
     channels: 2
     device: postDsp
-    format: S32LE
+    format: S32_LE

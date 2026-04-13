@@ -1,5 +1,6 @@
 /*--------------------
-// FusionDsp plugin for volumio 3. By balbuze March 2026
+// FusionDsp plugin for volumio 3. By balbuze April 2026
+Camilladsp v4.1.0
 contribution : Nerd, Paolo Sabatino, squadgazzz
 Multi Dsp features
 Based on CamillaDsp
@@ -685,7 +686,7 @@ function configureEq15Section(self, uiconf, selectedsp) {
 }
 
 function configureEq3Section(self, uiconf) {
-  for (let i = 2; i <= 10; i++) uiconf.sections[i].hidden = true;
+  for (let i = 2; i <= 11; i++) uiconf.sections[i].hidden = true;
 
   const geq3 = self.config.get('geq3').split(',');
   const mutedBands = (self.config.get('geq3mute') || '0,0,0').split(',');
@@ -808,7 +809,7 @@ function configureConvfirSection(self, uiconf) {
 }
 
 function configurePureCamillaSection(self, uiconf) {
-  for (let i = 1; i <= 9; i++) uiconf.sections[i].hidden = true;
+  for (let i = 1; i <= 10; i++) uiconf.sections[i].hidden = true;
 
   const IPaddress = self.config.get('address');
   const purecamillainstalled = self.config.get('purecgui');
@@ -2693,10 +2694,10 @@ FusionDsp.prototype.dfiltertype = function (data) {
   let convtype = "Raw";
 
   const fileExtensions = {
-    pcm: { format: 'FLOAT32LE', sizeDivisor: 4 },
+    pcm: { format: 'F32_LE', sizeDivisor: 4 },
     txt: { format: 'TEXT', sizeCommand: '/bin/cat', sizeDivisor: 1 },
-    raw: { format: 'FLOAT32LE', sizeDivisor: 4 },
-    dbl: { format: 'FLOAT64LE', sizeDivisor: 8 },
+    raw: { format: 'F32_LE', sizeDivisor: 4 },
+    dbl: { format: 'F64_LE', sizeDivisor: 8 },
     wav: { convtype: "Wav" },
     None: { format: 'TEXT' }
   };
@@ -2913,7 +2914,7 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
     composeout += '    type: File' + '\n';
     composeout += '    channels: 2' + '\n';
     composeout += '    filename: "/dev/null"' + '\n';
-    composeout += '    format: S32LE' + '\n';
+    composeout += '    format: S32_LE' + '\n';
 
   } else if (testclipping == false) {
     var composeout = ''
@@ -2921,7 +2922,7 @@ let getCamillaFiltersConfig = function (plugin, selectedsp, chunksize, hcurrents
     composeout += '    type: Alsa' + '\n';
     composeout += '    channels: 2' + '\n';
     composeout += '    device: "postDsp"' + '\n';
-    composeout += '    format: S32LE' + '\n';
+    composeout += '    format: S32_LE' + '\n';
   }
   //------resampling section-----
 
@@ -3981,10 +3982,12 @@ let getCamillaPureGuiConfig = function (plugin, chunksize, samplerate) {
     strConfig = strConfig
       .replace(regexCapturesamplerate, `$1: ${samplerate}`)
       .replace(regexChunksize, `$1: ${chunksize}`);
-
     // In case capture_samplerate is not present, add it right after samplerate
-    if (strConfig.search(regexCapturesamplerate) === -1)
-      strConfig = strConfig.replace(regexSamplerate, `$1$2$3capture_samplerate: ${samplerate}`);
+    if (strConfig.search(regexCapturesamplerate) === -1) {
+      // FIX: Added \n for a new line and $1 to reuse the same indentation
+      strConfig = strConfig.replace(regexSamplerate, `$1$2$3\n$1capture_samplerate: ${samplerate}`);
+    }
+
 
   } catch (err) {
 
