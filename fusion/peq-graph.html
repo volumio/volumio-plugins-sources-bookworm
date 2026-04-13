@@ -290,6 +290,17 @@
     white-space: nowrap;
     min-height: 16px;
   }
+  span.knob-value {
+    text-decoration: underline dotted rgba(255,255,255,0.3);
+    text-underline-offset: 3px;
+  }
+  span.knob-value:hover {
+    text-decoration: underline dotted rgba(84,198,136,0.7);
+  }
+  input.knob-value-persistent {
+    display: block;
+    margin-top: 4px;
+  }
   .knob-value-input {
     width: 56px;
     padding: 1px 3px;
@@ -673,7 +684,7 @@
 
   // ========== Knob creation ==========
 
-  function createKnob(paramIndex, label, value, config) {
+  function createKnob(paramIndex, label, value, config, alwaysEditable) {
     var div = document.createElement('div');
     div.className = 'knob-container';
 
@@ -719,10 +730,21 @@
     labelEl.textContent = label;
     div.appendChild(labelEl);
 
-    var valueEl = document.createElement('span');
-    valueEl.className = 'knob-value';
-    valueEl.textContent = formatKnobValue(value, config);
-    div.appendChild(valueEl);
+    if (alwaysEditable) {
+      var inputEl = document.createElement('input');
+      inputEl.type = 'number';
+      inputEl.className = 'knob-value knob-value-input knob-value-persistent';
+      inputEl.value = value;
+      inputEl.step = config.step || 'any';
+      if (config.min !== undefined) inputEl.min = config.min;
+      if (config.max !== undefined) inputEl.max = config.max;
+      div.appendChild(inputEl);
+    } else {
+      var valueEl = document.createElement('span');
+      valueEl.className = 'knob-value';
+      valueEl.textContent = formatKnobValue(value, config);
+      div.appendChild(valueEl);
+    }
 
     div._knobState = { value: value, config: config, paramIndex: paramIndex };
     updateKnobVisual(div, value, config);
@@ -773,8 +795,14 @@
     tipEl.setAttribute('cx', KNOB_CX + outerR * Math.sin(rad));
     tipEl.setAttribute('cy', KNOB_CY - outerR * Math.cos(rad));
 
-    if (valEl && !valEl._editing) {
-      valEl.textContent = formatKnobValue(value, config);
+    if (valEl) {
+      if (valEl.tagName === 'INPUT') {
+        if (document.activeElement !== valEl) {
+          valEl.value = value;
+        }
+      } else if (!valEl._editing) {
+        valEl.textContent = formatKnobValue(value, config);
+      }
     }
   }
 
@@ -830,19 +858,39 @@
       document.addEventListener('touchend', onEnd);
     }, { passive: false });
 
-    valEl.addEventListener('dblclick', function (e) {
-      e.stopPropagation();
-      startInlineEdit(knobEl, config, paramIndex, onValueChange);
-    });
-    var lastTap = 0;
-    valEl.addEventListener('touchend', function (e) {
-      var now = Date.now();
-      if (now - lastTap < 300) {
-        e.preventDefault();
+    if (valEl.tagName === 'INPUT') {
+      // Always-editable input (EQ15 mode): sync input changes to knob
+      valEl.addEventListener('input', function () {
+        var v = parseFloat(valEl.value);
+        if (isFinite(v)) {
+          v = quantizeValue(v, config);
+          knobEl._knobState.value = v;
+          updateKnobVisual(knobEl, v, config);
+          onValueChange(paramIndex, v);
+        }
+      });
+      valEl.addEventListener('keydown', function (e) { e.stopPropagation(); });
+    } else {
+      // Span value: double-click to enter inline edit mode
+      valEl.addEventListener('dblclick', function (e) {
+        e.stopPropagation();
         startInlineEdit(knobEl, config, paramIndex, onValueChange);
-      }
-      lastTap = now;
-    });
+      });
+      var lastTap = 0;
+      valEl.addEventListener('touchend', function (e) {
+        var now = Date.now();
+        if (now - lastTap < 300) {
+          e.preventDefault();
+          startInlineEdit(knobEl, config, paramIndex, onValueChange);
+        }
+        lastTap = now;
+      });
+      // Also allow double-click on the knob SVG itself
+      svg.addEventListener('dblclick', function (e) {
+        e.preventDefault(); e.stopPropagation();
+        startInlineEdit(knobEl, config, paramIndex, onValueChange);
+      });
+    }
   }
 
   function startInlineEdit(knobEl, config, paramIndex, onValueChange) {
@@ -1931,7 +1979,7 @@
       var label = meta.paramLabels[i];
       var val = (i < params.length) ? params[i] : 0;
       var config = getKnobConfig(label, type);
-      var knobEl = createKnob(i, label, val, config);
+      var knobEl = createKnob(i, label, val, config, isEQ15);
 
       attachKnobInteraction(knobEl, config, i, function (paramIdx, newValue) {
         var f = currentData.filters;
@@ -2107,9 +2155,12 @@
       xhr.send(JSON.stringify({ index: ind.index }));
     });
 
-    // Mute button (only in EQ15/2XEQ15 mode)
+    // Mute button
     var muteBtn = document.getElementById('popup-mute');
     if (muteBtn) muteBtn.addEventListener('click', function () {
+      if (muteBtn.disabled) return;
+      muteBtn.disabled = true;
+      muteBtn.style.opacity = '0.5';
       var xhr = new XMLHttpRequest();
       xhr.open('POST', '/api/peq/mute', true);
       xhr.setRequestHeader('Content-Type', 'application/json');
@@ -2119,7 +2170,20 @@
           closePopup();
           interacting = false;
           fetchAndRender();
+        } else {
+          muteBtn.disabled = false;
+          muteBtn.style.opacity = '';
+          var errEl = document.getElementById('popup-error-text');
+          var msg = 'Mute failed';
+          try { msg = JSON.parse(xhr.responseText).error || msg; } catch (e) {}
+          if (errEl) errEl.textContent = msg;
         }
+      };
+      xhr.onerror = function () {
+        muteBtn.disabled = false;
+        muteBtn.style.opacity = '';
+        var errEl = document.getElementById('popup-error-text');
+        if (errEl) errEl.textContent = 'Network error';
       };
       xhr.send(JSON.stringify({ bandIndex: ind.index, scope: ind.scope }));
     });
