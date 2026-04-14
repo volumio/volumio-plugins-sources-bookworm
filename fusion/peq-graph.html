@@ -284,20 +284,6 @@
     white-space: nowrap;
   }
   .knob-value {
-    font-size: 11px;
-    color: #fff;
-    cursor: pointer;
-    white-space: nowrap;
-    min-height: 16px;
-  }
-  span.knob-value {
-    text-decoration: underline dotted rgba(255,255,255,0.3);
-    text-underline-offset: 3px;
-  }
-  span.knob-value:hover {
-    text-decoration: underline dotted rgba(84,198,136,0.7);
-  }
-  input.knob-value-persistent {
     display: block;
     margin-top: 4px;
   }
@@ -677,14 +663,9 @@
     return parseFloat(value.toFixed(config.decimals));
   }
 
-  function formatKnobValue(value, config) {
-    if (config.scale === 'discrete') return value + (config.unit || '');
-    return value.toFixed(config.decimals) + (config.unit || '');
-  }
-
   // ========== Knob creation ==========
 
-  function createKnob(paramIndex, label, value, config, alwaysEditable) {
+  function createKnob(paramIndex, label, value, config) {
     var div = document.createElement('div');
     div.className = 'knob-container';
 
@@ -730,21 +711,14 @@
     labelEl.textContent = label;
     div.appendChild(labelEl);
 
-    if (alwaysEditable) {
-      var inputEl = document.createElement('input');
-      inputEl.type = 'number';
-      inputEl.className = 'knob-value knob-value-input knob-value-persistent';
-      inputEl.value = value;
-      inputEl.step = config.step || 'any';
-      if (config.min !== undefined) inputEl.min = config.min;
-      if (config.max !== undefined) inputEl.max = config.max;
-      div.appendChild(inputEl);
-    } else {
-      var valueEl = document.createElement('span');
-      valueEl.className = 'knob-value';
-      valueEl.textContent = formatKnobValue(value, config);
-      div.appendChild(valueEl);
-    }
+    var inputEl = document.createElement('input');
+    inputEl.type = 'number';
+    inputEl.className = 'knob-value knob-value-input knob-value-persistent';
+    inputEl.value = value;
+    inputEl.step = config.step || 'any';
+    if (config.min !== undefined) inputEl.min = config.min;
+    if (config.max !== undefined) inputEl.max = config.max;
+    div.appendChild(inputEl);
 
     div._knobState = { value: value, config: config, paramIndex: paramIndex };
     updateKnobVisual(div, value, config);
@@ -795,14 +769,8 @@
     tipEl.setAttribute('cx', KNOB_CX + outerR * Math.sin(rad));
     tipEl.setAttribute('cy', KNOB_CY - outerR * Math.cos(rad));
 
-    if (valEl) {
-      if (valEl.tagName === 'INPUT') {
-        if (document.activeElement !== valEl) {
-          valEl.value = value;
-        }
-      } else if (!valEl._editing) {
-        valEl.textContent = formatKnobValue(value, config);
-      }
+    if (valEl && document.activeElement !== valEl) {
+      valEl.value = value;
     }
   }
 
@@ -858,80 +826,17 @@
       document.addEventListener('touchend', onEnd);
     }, { passive: false });
 
-    if (valEl.tagName === 'INPUT') {
-      // Always-editable input (EQ15 mode): sync input changes to knob
-      valEl.addEventListener('input', function () {
-        var v = parseFloat(valEl.value);
-        if (isFinite(v)) {
-          v = quantizeValue(v, config);
-          knobEl._knobState.value = v;
-          updateKnobVisual(knobEl, v, config);
-          onValueChange(paramIndex, v);
-        }
-      });
-      valEl.addEventListener('keydown', function (e) { e.stopPropagation(); });
-    } else {
-      // Span value: double-click to enter inline edit mode
-      valEl.addEventListener('dblclick', function (e) {
-        e.stopPropagation();
-        startInlineEdit(knobEl, config, paramIndex, onValueChange);
-      });
-      var lastTap = 0;
-      valEl.addEventListener('touchend', function (e) {
-        var now = Date.now();
-        if (now - lastTap < 300) {
-          e.preventDefault();
-          startInlineEdit(knobEl, config, paramIndex, onValueChange);
-        }
-        lastTap = now;
-      });
-      // Also allow double-click on the knob SVG itself
-      svg.addEventListener('dblclick', function (e) {
-        e.preventDefault(); e.stopPropagation();
-        startInlineEdit(knobEl, config, paramIndex, onValueChange);
-      });
-    }
-  }
-
-  function startInlineEdit(knobEl, config, paramIndex, onValueChange) {
-    var valEl = knobEl.querySelector('.knob-value');
-    if (valEl._editing) return;
-    valEl._editing = true;
-
-    var input = document.createElement('input');
-    input.type = 'number';
-    input.className = 'knob-value-input';
-    input.value = knobEl._knobState.value;
-    input.step = config.step || 'any';
-
-    valEl.textContent = '';
-    valEl.appendChild(input);
-    input.focus();
-    input.select();
-
-    function commit() {
-      if (!valEl._editing) return;
-      valEl._editing = false;
-      var v = parseFloat(input.value);
+    // Sync input changes to knob
+    valEl.addEventListener('input', function () {
+      var v = parseFloat(valEl.value);
       if (isFinite(v)) {
         v = quantizeValue(v, config);
         knobEl._knobState.value = v;
         updateKnobVisual(knobEl, v, config);
         onValueChange(paramIndex, v);
       }
-      valEl.textContent = formatKnobValue(knobEl._knobState.value, config);
-    }
-
-    input.addEventListener('keydown', function (e) {
-      e.stopPropagation();
-      if (e.key === 'Enter') { e.preventDefault(); commit(); }
-      else if (e.key === 'Escape') {
-        e.preventDefault();
-        valEl._editing = false;
-        valEl.textContent = formatKnobValue(knobEl._knobState.value, config);
-      }
     });
-    input.addEventListener('blur', commit);
+    valEl.addEventListener('keydown', function (e) { e.stopPropagation(); });
   }
 
   // Plot margins
@@ -1979,7 +1884,7 @@
       var label = meta.paramLabels[i];
       var val = (i < params.length) ? params[i] : 0;
       var config = getKnobConfig(label, type);
-      var knobEl = createKnob(i, label, val, config, isEQ15);
+      var knobEl = createKnob(i, label, val, config);
 
       attachKnobInteraction(knobEl, config, i, function (paramIdx, newValue) {
         var f = currentData.filters;
