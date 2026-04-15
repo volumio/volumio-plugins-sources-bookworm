@@ -802,6 +802,7 @@
 
     svg.addEventListener('mousedown', function (e) {
       e.preventDefault(); e.stopPropagation();
+      if (document.activeElement === valEl) valEl.blur();
       beginDrag(e.clientY);
       function onMove(ev) { processDrag(ev.clientY); }
       function onUp() {
@@ -815,6 +816,7 @@
 
     svg.addEventListener('touchstart', function (e) {
       e.preventDefault(); e.stopPropagation();
+      if (document.activeElement === valEl) valEl.blur();
       beginDrag(e.touches[0].clientY);
       function onMove(ev) { ev.preventDefault(); processDrag(ev.touches[0].clientY); }
       function onEnd() {
