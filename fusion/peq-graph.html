@@ -284,11 +284,8 @@
     white-space: nowrap;
   }
   .knob-value {
-    font-size: 11px;
-    color: #fff;
-    cursor: pointer;
-    white-space: nowrap;
-    min-height: 16px;
+    display: block;
+    margin-top: 4px;
   }
   .knob-value-input {
     width: 56px;
@@ -666,11 +663,6 @@
     return parseFloat(value.toFixed(config.decimals));
   }
 
-  function formatKnobValue(value, config) {
-    if (config.scale === 'discrete') return value + (config.unit || '');
-    return value.toFixed(config.decimals) + (config.unit || '');
-  }
-
   // ========== Knob creation ==========
 
   function createKnob(paramIndex, label, value, config) {
@@ -719,10 +711,14 @@
     labelEl.textContent = label;
     div.appendChild(labelEl);
 
-    var valueEl = document.createElement('span');
-    valueEl.className = 'knob-value';
-    valueEl.textContent = formatKnobValue(value, config);
-    div.appendChild(valueEl);
+    var inputEl = document.createElement('input');
+    inputEl.type = 'number';
+    inputEl.className = 'knob-value knob-value-input knob-value-persistent';
+    inputEl.value = value;
+    inputEl.step = config.step || 'any';
+    if (config.min !== undefined) inputEl.min = config.min;
+    if (config.max !== undefined) inputEl.max = config.max;
+    div.appendChild(inputEl);
 
     div._knobState = { value: value, config: config, paramIndex: paramIndex };
     updateKnobVisual(div, value, config);
@@ -773,8 +769,8 @@
     tipEl.setAttribute('cx', KNOB_CX + outerR * Math.sin(rad));
     tipEl.setAttribute('cy', KNOB_CY - outerR * Math.cos(rad));
 
-    if (valEl && !valEl._editing) {
-      valEl.textContent = formatKnobValue(value, config);
+    if (valEl && document.activeElement !== valEl) {
+      valEl.value = value;
     }
   }
 
@@ -830,60 +826,17 @@
       document.addEventListener('touchend', onEnd);
     }, { passive: false });
 
-    valEl.addEventListener('dblclick', function (e) {
-      e.stopPropagation();
-      startInlineEdit(knobEl, config, paramIndex, onValueChange);
-    });
-    var lastTap = 0;
-    valEl.addEventListener('touchend', function (e) {
-      var now = Date.now();
-      if (now - lastTap < 300) {
-        e.preventDefault();
-        startInlineEdit(knobEl, config, paramIndex, onValueChange);
-      }
-      lastTap = now;
-    });
-  }
-
-  function startInlineEdit(knobEl, config, paramIndex, onValueChange) {
-    var valEl = knobEl.querySelector('.knob-value');
-    if (valEl._editing) return;
-    valEl._editing = true;
-
-    var input = document.createElement('input');
-    input.type = 'number';
-    input.className = 'knob-value-input';
-    input.value = knobEl._knobState.value;
-    input.step = config.step || 'any';
-
-    valEl.textContent = '';
-    valEl.appendChild(input);
-    input.focus();
-    input.select();
-
-    function commit() {
-      if (!valEl._editing) return;
-      valEl._editing = false;
-      var v = parseFloat(input.value);
+    // Sync input changes to knob
+    valEl.addEventListener('input', function () {
+      var v = parseFloat(valEl.value);
       if (isFinite(v)) {
         v = quantizeValue(v, config);
         knobEl._knobState.value = v;
         updateKnobVisual(knobEl, v, config);
         onValueChange(paramIndex, v);
       }
-      valEl.textContent = formatKnobValue(knobEl._knobState.value, config);
-    }
-
-    input.addEventListener('keydown', function (e) {
-      e.stopPropagation();
-      if (e.key === 'Enter') { e.preventDefault(); commit(); }
-      else if (e.key === 'Escape') {
-        e.preventDefault();
-        valEl._editing = false;
-        valEl.textContent = formatKnobValue(knobEl._knobState.value, config);
-      }
     });
-    input.addEventListener('blur', commit);
+    valEl.addEventListener('keydown', function (e) { e.stopPropagation(); });
   }
 
   // Plot margins
@@ -2107,9 +2060,12 @@
       xhr.send(JSON.stringify({ index: ind.index }));
     });
 
-    // Mute button (only in EQ15/2XEQ15 mode)
+    // Mute button
     var muteBtn = document.getElementById('popup-mute');
     if (muteBtn) muteBtn.addEventListener('click', function () {
+      if (muteBtn.disabled) return;
+      muteBtn.disabled = true;
+      muteBtn.style.opacity = '0.5';
       var xhr = new XMLHttpRequest();
       xhr.open('POST', '/api/peq/mute', true);
       xhr.setRequestHeader('Content-Type', 'application/json');
@@ -2119,7 +2075,20 @@
           closePopup();
           interacting = false;
           fetchAndRender();
+        } else {
+          muteBtn.disabled = false;
+          muteBtn.style.opacity = '';
+          var errEl = document.getElementById('popup-error-text');
+          var msg = 'Mute failed';
+          try { msg = JSON.parse(xhr.responseText).error || msg; } catch (e) {}
+          if (errEl) errEl.textContent = msg;
         }
+      };
+      xhr.onerror = function () {
+        muteBtn.disabled = false;
+        muteBtn.style.opacity = '';
+        var errEl = document.getElementById('popup-error-text');
+        if (errEl) errEl.textContent = 'Network error';
       };
       xhr.send(JSON.stringify({ bandIndex: ind.index, scope: ind.scope }));
     });
