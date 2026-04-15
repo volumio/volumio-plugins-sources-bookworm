@@ -3577,6 +3577,11 @@ h2 {
   min-width: clamp(28px, 3.5vw, 44px);
 }
 
+/* Align time labels with the slider track edges */
+.seekbar-labels {
+  padding-inline: 0;
+}
+
 /* Utiltiy Controls */
 .controls-row {
   display: flex;

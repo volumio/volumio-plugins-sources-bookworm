@@ -2778,6 +2778,7 @@ h2 {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-bottom: 6px;
 }
 
 .responsive-title {
@@ -2889,7 +2890,8 @@ h2 {
    Scale everything down so nothing gets clipped. */
 @media (max-width: 768px) {
   .track-info {
-    padding: 10px 14px;
+    padding: 8px 12px 10px;
+    /* extra 2px bottom so album row isn't clipped */
   }
   .player-controls {
     padding: 10px 16px;
@@ -2901,6 +2903,7 @@ h2 {
   .track-info-group {
     width: calc(100% - 1rem) !important;
     margin-inline: 0.5rem;
+    padding: 8px 10px;
   }
 }
 :root {
