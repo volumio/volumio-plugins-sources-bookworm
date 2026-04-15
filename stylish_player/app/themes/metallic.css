@@ -2906,6 +2906,124 @@ h2 {
     padding: 8px 10px;
   }
 }
+/* ── Large-screen player: boost font sizes on short screens so Rajdhani
+   (a condensed display font) reads at a similar optical size to Michroma ── */
+@media (max-height: 700px) and (not ((min-aspect-ratio: 2/1) and (min-width: 1440px))) {
+  .lsp-top__title {
+    font-size: clamp(1.4rem, 2vw, 2rem) !important;
+  }
+  .lsp-top__row2 {
+    font-size: clamp(1.1rem, 1.5vw, 1.5rem) !important;
+  }
+  .lsp-stream-info span {
+    font-size: clamp(1rem, 1.2vw, 1.4rem) !important;
+  }
+  .lsp-stream-info .format-logo-responsive:not(.hires-logo),
+  .lsp-stream-info .hires-logo {
+    height: clamp(1.2rem, 1.6vw, 1.8rem) !important;
+  }
+  .service-logo-icon {
+    font-size: clamp(1.6rem, 2vw, 2.4rem) !important;
+  }
+  .seekbar-labels,
+  .time-label {
+    font-size: 1rem !important;
+  }
+  .slider-track {
+    height: clamp(12px, 1.4vw, 18px) !important;
+  }
+  .lsp-btn.btn-icon, .lsp-btn.lsp-btn--sm.btn-icon, .lsp-btn.lsp-btn--md.btn-round {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  .lsp-btn.btn-icon .material-icons, .lsp-btn.lsp-btn--sm.btn-icon .material-icons, .lsp-btn.lsp-btn--md.btn-round .material-icons {
+    font-size: 1.8rem !important;
+  }
+  .lsp-btn.lsp-btn--lg.btn-round {
+    width: 68px !important;
+    height: 68px !important;
+  }
+  .lsp-btn.lsp-btn--lg.btn-round .material-icons.play-icon {
+    font-size: 2.2rem !important;
+  }
+  .context-menu-toggle {
+    width: 48px !important;
+    height: 48px !important;
+  }
+  .context-menu-toggle .material-icons {
+    font-size: 1.6rem !important;
+  }
+}
+/* ── UWLS (ultrawide + short): boost Rajdhani to match Michroma optical size ── */
+@media (max-height: 700px) and (min-width: 1440px) and (min-aspect-ratio: 2/1) {
+  .lsp-top__title {
+    font-size: clamp(2rem, 2.8vw, 3.2rem) !important;
+  }
+  .lsp-top__row2 {
+    font-size: clamp(1.4rem, 1.9vw, 2.2rem) !important;
+  }
+  .lsp-stream-info span {
+    font-size: clamp(1.1rem, 1.4vw, 1.8rem) !important;
+  }
+  .lsp-stream-info .format-logo-responsive:not(.hires-logo),
+  .lsp-stream-info .hires-logo {
+    height: clamp(1.4rem, 1.8vw, 2.2rem) !important;
+  }
+  .service-logo-icon {
+    font-size: clamp(2rem, 2.5vw, 3rem) !important;
+  }
+  .seekbar-labels,
+  .time-label {
+    font-size: 1.2rem !important;
+  }
+  .lsp-btn.btn-icon, .lsp-btn.lsp-btn--sm.btn-icon, .lsp-btn.lsp-btn--md.btn-round {
+    width: 64px !important;
+    height: 64px !important;
+  }
+  .lsp-btn.btn-icon .material-icons, .lsp-btn.lsp-btn--sm.btn-icon .material-icons, .lsp-btn.lsp-btn--md.btn-round .material-icons {
+    font-size: 2rem !important;
+  }
+  .lsp-btn.lsp-btn--lg.btn-round {
+    width: 80px !important;
+    height: 80px !important;
+  }
+  .lsp-btn.lsp-btn--lg.btn-round .material-icons.play-icon {
+    font-size: 2.6rem !important;
+  }
+  .context-menu-toggle {
+    width: 64px !important;
+    height: 64px !important;
+  }
+  .context-menu-toggle .material-icons {
+    font-size: 2.2rem !important;
+  }
+  .context-menu-item {
+    font-size: 1.3rem !important;
+    padding: 14px 20px !important;
+  }
+  .context-menu-item .material-icons {
+    font-size: 1.7rem !important;
+  }
+  .context-menu {
+    min-width: 240px !important;
+  }
+  .dialog-title {
+    font-size: 1.6rem !important;
+  }
+  .dialog-track-title {
+    font-size: 1.4rem !important;
+  }
+  .dialog-track-meta {
+    font-size: 1.2rem !important;
+  }
+  .dialog-list-item {
+    font-size: 1.3rem !important;
+    padding: 0.65rem 1.1rem !important;
+  }
+  .dialog-section-title {
+    font-size: 1rem !important;
+  }
+}
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE - Dark Metallic / Black Chrome Theme
