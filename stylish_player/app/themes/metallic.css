@@ -3023,6 +3023,18 @@ h2 {
   .dialog-section-title {
     font-size: 1rem !important;
   }
+  .playlist-track-title {
+    font-size: 1.3rem !important;
+  }
+  .playlist-track-meta {
+    font-size: 1.1rem !important;
+  }
+  .playlist-item {
+    padding: 0.65rem 1rem !important;
+  }
+  .playlist-info {
+    font-size: 1rem !important;
+  }
 }
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
