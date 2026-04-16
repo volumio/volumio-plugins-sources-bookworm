@@ -6042,7 +6042,7 @@ input[type=range]::-moz-range-thumb:active {
   justify-content: center;
   width: 90vw;
   height: 90dvh;
-  max-width: none;
+  max-width: 180dvh;
   margin: 0 auto;
   container-type: size;
 }

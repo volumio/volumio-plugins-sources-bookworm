@@ -2907,8 +2907,9 @@ h2 {
   }
 }
 /* ── Large-screen player: boost font sizes on short screens so Rajdhani
-   (a condensed display font) reads at a similar optical size to Michroma ── */
-@media (max-height: 700px) and (not ((min-aspect-ratio: 2/1) and (min-width: 1440px))) {
+   (a condensed display font) reads at a similar optical size to Michroma.
+   Requires min-width: 1024px so small screens (800×600) are excluded. ── */
+@media (max-height: 700px) and (min-width: 1024px) and (not ((min-aspect-ratio: 2/1) and (min-width: 1440px))) {
   .lsp-top__title {
     font-size: clamp(1.4rem, 2vw, 2rem) !important;
   }
@@ -2952,6 +2953,34 @@ h2 {
   }
   .context-menu-toggle .material-icons {
     font-size: 1.6rem !important;
+  }
+}
+/* ── Small/short screens (800×600 etc.): compact the standard player ──── */
+@media (max-height: 650px) and (max-width: 1023px) {
+  /* Tighten the track-info panel */
+  .track-info {
+    padding: 8px 12px 10px;
+  }
+  /* Reduce player-controls padding & gap so buttons fit */
+  .player-controls {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+  /* Smaller transport-controls panel */
+  .transport-controls {
+    gap: 10px;
+    margin-top: 4px;
+    padding: 8px;
+  }
+  /* Volume area — tighter padding */
+  .volume-control {
+    padding: 8px 12px;
+  }
+  /* Shrink the slider cap for tighter vertical space */
+  .slider-cap {
+    width: 12px;
+    height: 18px;
+    right: -6px;
   }
 }
 /* ── UWLS (ultrawide + short): boost Rajdhani to match Michroma optical size ── */
@@ -3011,11 +3040,11 @@ h2 {
     font-size: 2rem !important;
   }
   .dialog-close {
-    width: 36px !important;
-    height: 36px !important;
+    width: 48px !important;
+    height: 48px !important;
   }
   .dialog-close .material-icons {
-    font-size: 1.4rem !important;
+    font-size: 1.8rem !important;
   }
   .dialog-header {
     padding: 1.2rem 1.8rem !important;
@@ -3066,8 +3095,95 @@ h2 {
   .playlist-info {
     font-size: 1.2rem !important;
   }
-  .playlist-remove .material-icons {
-    font-size: 1.4rem !important;
+  .playlist-remove.btn-icon {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+  }
+  .playlist-remove.btn-icon .material-icons {
+    font-size: 1.6rem !important;
+  }
+  .slide-panel-header .btn-icon,
+  .slide-panel-header .btn-link,
+  .slide-panel-header .dialog-close {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+  }
+  .slide-panel-header .btn-icon .material-icons,
+  .slide-panel-header .btn-link .material-icons,
+  .slide-panel-header .dialog-close .material-icons {
+    font-size: 1.8rem !important;
+  }
+  .slide-panel-title {
+    font-size: clamp(1.2rem, 6cqi, 2.4rem) !important;
+  }
+  .slide-panel-subtitle {
+    font-size: clamp(0.9rem, 4.5cqi, 1.8rem) !important;
+  }
+  .playlist-art-wrap {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  .browse-dialog--lsp .dialog-title,
+  .browse-dialog--lsp.dialog .dialog-header .dialog-title {
+    font-size: clamp(1.4rem, 1.6cqi, 2.2rem) !important;
+  }
+  .browse-dialog--lsp .browse-toolbar .btn-icon {
+    width: clamp(44px, 3.5cqi, 60px) !important;
+    height: clamp(44px, 3.5cqi, 60px) !important;
+  }
+  .browse-dialog--lsp .browse-toolbar .btn-icon .material-icons,
+  .browse-dialog--lsp .browse-toolbar .material-icons {
+    font-size: clamp(1.3rem, 1.8cqi, 2.2rem) !important;
+  }
+  .browse-dialog--lsp .browse-search__icon {
+    font-size: clamp(1.3rem, 1.6cqi, 2rem) !important;
+  }
+  .browse-dialog--lsp .browse-search__input {
+    font-size: clamp(1.1rem, 1.4cqi, 1.8rem) !important;
+  }
+  .browse-dialog--lsp .browse-tile {
+    padding: clamp(2rem, 3cqi, 4rem) clamp(1rem, 2cqi, 2.5rem) !important;
+  }
+  .browse-dialog--lsp .browse-tile__icon {
+    font-size: clamp(3rem, 4.5cqi, 6rem) !important;
+  }
+  .browse-dialog--lsp .browse-tile__label {
+    font-size: clamp(1rem, 1.3cqi, 1.6rem) !important;
+  }
+  .browse-dialog--lsp .browse-result-card__title {
+    font-size: clamp(1rem, 1.2cqi, 1.5rem) !important;
+  }
+  .browse-dialog--lsp .browse-result-card__sub {
+    font-size: clamp(0.85rem, 1cqi, 1.3rem) !important;
+  }
+  .browse-dialog--lsp .browse-result-row__title {
+    font-size: clamp(1.1rem, 1.3cqi, 1.6rem) !important;
+  }
+  .browse-dialog--lsp .browse-result-row__sub {
+    font-size: clamp(0.9rem, 1.1cqi, 1.4rem) !important;
+  }
+  .browse-dialog--lsp .browse-result-row__chevron {
+    font-size: clamp(1.2rem, 1.5cqi, 1.8rem) !important;
+  }
+  .browse-dialog--lsp .browse-search-section__title {
+    font-size: clamp(1rem, 1.3cqi, 1.5rem) !important;
+  }
+  .browse-dialog--lsp .album-footer__chip,
+  .browse-dialog--lsp .album-footer__format-text {
+    font-size: clamp(0.85rem, 1cqi, 1.3rem) !important;
+  }
+  .track-menu {
+    min-width: 280px !important;
+  }
+  .track-menu__item {
+    font-size: 1.5rem !important;
+    padding: 16px 24px !important;
+    gap: 12px !important;
+  }
+  .track-menu__item .material-icons {
+    font-size: 1.9rem !important;
   }
 }
 :root {
@@ -4594,7 +4710,7 @@ h2 {
   justify-content: center;
   width: 90vw;
   height: 90dvh;
-  max-width: none;
+  max-width: 180dvh;
   margin: 0 auto;
   container-type: size;
 }

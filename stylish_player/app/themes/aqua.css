@@ -1715,10 +1715,10 @@ pre {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(to bottom, #f8f8f8 0%, #e4e4e4 49%, #d8d8d8 51%, #f0f0f0 100%);
-  border: 1px solid rgba(0, 0, 0, 0.28);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.14);
-  color: #444444;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--text-secondary, #666);
   padding: 0;
   display: flex;
   justify-content: center;
@@ -1736,12 +1736,12 @@ pre {
   font-size: 16px !important;
 }
 .btn-icon:hover {
-  filter: brightness(1.07);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 1px 3px rgba(0, 0, 0, 0.22);
+  background: rgba(0, 0, 0, 0.06);
+  box-shadow: none;
 }
 .btn-icon:active {
-  filter: brightness(0.88);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.22);
+  background: rgba(0, 0, 0, 0.1);
+  box-shadow: none;
 }
 .btn-icon.active {
   background: linear-gradient(to bottom, #6eb8f8 0%, #1e69de 49%, #1050b4 51%, #4a90e2 100%);
@@ -4558,6 +4558,34 @@ input[type=range]::-moz-range-thumb:active {
   .dialog-section-title {
     font-size: 1rem !important;
   }
+  .dialog-close {
+    width: 44px !important;
+    height: 44px !important;
+  }
+  .dialog-header {
+    padding: 1.1rem 1.6rem !important;
+  }
+  .dialog-body {
+    padding: 1.1rem 1.4rem !important;
+    font-size: 1.2rem !important;
+  }
+  .dialog-footer {
+    padding: 1.1rem 1.6rem !important;
+  }
+  .dialog-label {
+    font-size: 1.1rem !important;
+  }
+  .dialog-input {
+    font-size: 1.2rem !important;
+    padding: 0.55rem 0.75rem !important;
+  }
+  .dialog .btn {
+    font-size: 1.2rem !important;
+    padding: 0.55rem 1.1rem !important;
+  }
+  .dialog-list-item .material-icons {
+    font-size: 1.3rem !important;
+  }
   .playlist-track-title {
     font-size: 1.3rem !important;
   }
@@ -4569,6 +4597,26 @@ input[type=range]::-moz-range-thumb:active {
   }
   .playlist-info {
     font-size: 1rem !important;
+  }
+  .playlist-remove.btn-icon {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+  }
+  .playlist-remove.btn-icon .material-icons {
+    font-size: 1.4rem !important;
+  }
+  .slide-panel-header .btn-icon,
+  .slide-panel-header .btn-link,
+  .slide-panel-header .dialog-close {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+  }
+  .slide-panel-header .btn-icon .material-icons,
+  .slide-panel-header .btn-link .material-icons,
+  .slide-panel-header .dialog-close .material-icons {
+    font-size: 1.8rem !important;
   }
 }
 :root {
@@ -6925,7 +6973,7 @@ input[type=range]::-moz-range-thumb:active {
   justify-content: center;
   width: 90vw;
   height: 90dvh;
-  max-width: none;
+  max-width: 180dvh;
   margin: 0 auto;
   container-type: size;
 }

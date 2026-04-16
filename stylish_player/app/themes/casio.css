@@ -4705,7 +4705,7 @@ input[type=range]::-webkit-slider-thumb {
   justify-content: center;
   width: 90vw;
   height: 90dvh;
-  max-width: none;
+  max-width: 180dvh;
   margin: 0 auto;
   container-type: size;
   background: transparent;
@@ -4765,7 +4765,8 @@ input[type=range]::-webkit-slider-thumb {
   gap: 0.5cqw;
   margin-bottom: 0.6cqw;
   font-family: "DS Digital", "Share Tech Mono", "Courier New", monospace;
-  color: rgba(12, 30, 24, 0.3); /* inactive day — dim on light bg */
+  color: rgba(12, 30, 24, 0.3);
+  /* inactive day — dim on light bg */
 }
 .lcd-days .active {
   color: #3a5850;
@@ -4817,7 +4818,8 @@ input[type=range]::-webkit-slider-thumb {
   width: 1.2cqw;
   height: 1.2cqw;
   background: #3a5850;
-  border-radius: 0; /* square dots — like actual Casio segments */
+  border-radius: 0;
+  /* square dots — like actual Casio segments */
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 -1px 0 rgba(255, 255, 255, 0.5);
 }
 
@@ -4849,7 +4851,8 @@ input[type=range]::-webkit-slider-thumb {
   font-style: italic;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(58, 88, 80, 0.45); /* dim green for secondary info */
+  color: rgba(58, 88, 80, 0.45);
+  /* dim green for secondary info */
   text-align: center;
   -webkit-font-smoothing: antialiased;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 -1px 0 rgba(255, 255, 255, 0.5);

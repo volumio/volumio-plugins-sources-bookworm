@@ -3672,6 +3672,100 @@ h2 {
     zoom: 1.5;
   }
 }
+/* ── UWLS (ultrawide + short screen): disable 4K zoom & compact overrides ── */
+@media (max-height: 700px) and (min-width: 1440px) and (min-aspect-ratio: 2/1) {
+  body {
+    zoom: 1 !important;
+  }
+  .lsp-top__title {
+    font-size: clamp(1rem, 1.8vw, 1.8rem) !important;
+  }
+  .lsp-top__row2 {
+    font-size: clamp(0.75rem, 1.1vw, 1.1rem) !important;
+  }
+  .lsp-stream-info span {
+    font-size: clamp(0.7rem, 0.9vw, 1rem) !important;
+  }
+  .seekbar-labels,
+  .time-label {
+    font-size: 0.9rem !important;
+  }
+  .context-menu-toggle {
+    width: 48px !important;
+    height: 48px !important;
+  }
+  .context-menu-toggle .material-icons {
+    font-size: 1.6rem !important;
+  }
+  .context-menu-item {
+    font-size: 1.25rem !important;
+    padding: 14px 20px !important;
+  }
+  .context-menu-item .material-icons {
+    font-size: 1.4rem !important;
+  }
+  .context-menu {
+    min-width: 220px !important;
+  }
+  .dialog-title {
+    font-size: 1.3rem !important;
+  }
+  .dialog-close {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  .dialog-close .material-icons {
+    font-size: 1.4rem !important;
+  }
+  .dialog-body {
+    font-size: 1rem !important;
+  }
+  .dialog-list-item {
+    font-size: 1rem !important;
+    padding: 0.5rem 0.85rem !important;
+  }
+  .dialog-section-title {
+    font-size: 0.8rem !important;
+  }
+  .dialog-track-title {
+    font-size: 1.1rem !important;
+  }
+  .dialog-track-meta {
+    font-size: 0.9rem !important;
+  }
+  .dialog .btn, .dialog .form-select {
+    font-size: 1rem !important;
+    padding: 0.5rem 1rem !important;
+  }
+  .playlist-track-title {
+    font-size: 1.1rem !important;
+  }
+  .playlist-track-meta {
+    font-size: 0.9rem !important;
+  }
+  .slide-panel-header .btn-icon,
+  .slide-panel-header .btn-link,
+  .slide-panel-header .dialog-close {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  .slide-panel-header .btn-icon .material-icons,
+  .slide-panel-header .btn-link .material-icons,
+  .slide-panel-header .dialog-close .material-icons {
+    font-size: 1.5rem !important;
+  }
+  .track-menu {
+    min-width: 200px !important;
+  }
+  .track-menu__item {
+    font-size: 1.2rem !important;
+    padding: 12px 18px !important;
+    gap: 10px !important;
+  }
+  .track-menu__item .material-icons {
+    font-size: 1.3rem !important;
+  }
+}
 .read-only .slider-track {
   cursor: default;
 }
@@ -5462,7 +5556,7 @@ h2 {
   justify-content: center;
   width: 90vw;
   height: 90dvh;
-  max-width: none;
+  max-width: 180dvh;
   margin: 0 auto;
   container-type: size;
 }
@@ -5963,6 +6057,45 @@ h2 {
   font-size: clamp(0.42rem, 1dvh, 0.85rem);
 }
 
+/* ── Full weather — UWS + short screen adjustments ───────────────────── */
+@media (max-height: 700px) and (min-width: 1440px) and (min-aspect-ratio: 2/1), (max-height: 650px) {
+  .weather-full-hero {
+    padding: 1rem 1.5rem;
+  }
+  .weather-full-hero-temp {
+    font-size: clamp(2rem, min(8cqw, 18cqh), 5rem);
+  }
+  .weather-full-hero-desc {
+    font-size: clamp(0.7rem, min(2cqw, 3.5cqh), 1.2rem);
+  }
+  .weather-full-hero-hilow {
+    font-size: clamp(0.65rem, min(1.5cqw, 2.8cqh), 1rem);
+  }
+  .weather-full-hero-location {
+    font-size: clamp(0.65rem, min(1.5cqw, 2.8cqh), 1rem);
+  }
+  .weather-full-hero-icon {
+    font-size: clamp(3rem, min(12cqw, 22cqh), 7rem) !important;
+  }
+  .weather-full-tile-label {
+    font-size: clamp(0.6rem, min(1.1cqw, 2.2cqh), 1rem);
+  }
+  .weather-full-tile-value {
+    font-size: clamp(0.8rem, min(2cqw, 4cqh), 1.8rem);
+  }
+  .weather-full-tile-sub {
+    font-size: clamp(0.8rem, min(2cqw, 4cqh), 1.8rem);
+  }
+  .weather-full-tile-unit {
+    font-size: 0.65em;
+  }
+  .weather-full-hourly-time {
+    font-size: clamp(0.6rem, min(1cqw, 2.5cqh), 1rem);
+  }
+  .weather-full-hourly-temp {
+    font-size: clamp(0.65rem, min(1.1cqw, 2.8cqh), 1.1rem);
+  }
+}
 body {
   background-color: var(--bg-color);
 }
