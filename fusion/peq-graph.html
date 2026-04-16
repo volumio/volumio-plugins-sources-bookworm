@@ -2557,6 +2557,7 @@
         if (meta && meta.draggable) {
           applyDrag(pos.x, pos.y);
         }
+        updateCrosshair(pos.x, pos.y);
       }
       return;
     }
@@ -2686,6 +2687,7 @@
       if (meta && meta.draggable) {
         applyDrag(pos.x, pos.y);
       }
+      updateCrosshair(pos.x, pos.y);
     }
   }, { passive: false });
 
