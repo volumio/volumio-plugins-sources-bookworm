@@ -154,6 +154,9 @@
     padding: 12px;
     z-index: 10;
     min-width: 280px;
+    max-width: calc(100vw - 16px);
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
     box-shadow: 0 4px 16px rgba(0,0,0,0.5);
   }
   #filter-popup .popup-title {
@@ -802,6 +805,7 @@
 
     svg.addEventListener('mousedown', function (e) {
       e.preventDefault(); e.stopPropagation();
+      if (document.activeElement === valEl) valEl.blur();
       beginDrag(e.clientY);
       function onMove(ev) { processDrag(ev.clientY); }
       function onUp() {
@@ -815,6 +819,7 @@
 
     svg.addEventListener('touchstart', function (e) {
       e.preventDefault(); e.stopPropagation();
+      if (document.activeElement === valEl) valEl.blur();
       beginDrag(e.touches[0].clientY);
       function onMove(ev) { ev.preventDefault(); processDrag(ev.touches[0].clientY); }
       function onEnd() {
@@ -1956,18 +1961,23 @@
     popupEl.innerHTML = html;
     popupEl.style.display = 'block';
 
-    // Position near the dot
+    // Position near the dot, clamped to container bounds
     var markerFreq = ind.type === 'Tilt' ? 1000 : ind.params[0];
     var markerDb = ind.type === 'Tilt' ? 0 : evalBiquadMagnitudeDb(ind.biquads, markerFreq, lastResponses.sampleRate);
     var dotX = freqToX(markerFreq);
     var dotY = dbToY(markerDb, lastDbMin, lastDbMax);
-    var w = canvas.width / dpr;
-    var h = canvas.height / dpr;
+    var containerRect = container.getBoundingClientRect();
+    var cw = containerRect.width;
+    var ch = containerRect.height;
+    var popupRect = popupEl.getBoundingClientRect();
+    var pw = popupRect.width;
+    var ph = popupRect.height;
     var pLeft = dotX + 20;
     var pTop = dotY - 30;
-    if (pLeft + 320 > w) pLeft = dotX - 330;
-    if (pTop < 0) pTop = 10;
-    if (pTop + 280 > h) pTop = h - 290;
+    if (pLeft + pw > cw) pLeft = dotX - pw - 10;
+    if (pLeft < 0) pLeft = 4;
+    if (pTop + ph > ch) pTop = ch - ph - 4;
+    if (pTop < 0) pTop = 4;
     popupEl.style.left = pLeft + 'px';
     popupEl.style.top = pTop + 'px';
 
@@ -2513,7 +2523,9 @@
 
   canvas.addEventListener('mousedown', function (e) {
     if (e.button !== 0) return;
-    if (selectedFilterIndex >= 0) return;
+    if (selectedFilterIndex >= 0) {
+      revertAndClosePopup();
+    }
     var pos = getMousePos(e);
     var hit = hitTestMarker(pos.x, pos.y, lastResponses);
     if (hit < 0) return;
@@ -2555,6 +2567,7 @@
         if (meta && meta.draggable) {
           applyDrag(pos.x, pos.y);
         }
+        updateCrosshair(pos.x, pos.y);
       }
       return;
     }
@@ -2644,7 +2657,9 @@
   // ========== Touch event handlers ==========
 
   canvas.addEventListener('touchstart', function (e) {
-    if (selectedFilterIndex >= 0) return;
+    if (selectedFilterIndex >= 0) {
+      revertAndClosePopup();
+    }
     var pos = getTouchPos(e);
     var hit = hitTestMarker(pos.x, pos.y, lastResponses);
     if (hit < 0) return;
@@ -2684,6 +2699,7 @@
       if (meta && meta.draggable) {
         applyDrag(pos.x, pos.y);
       }
+      updateCrosshair(pos.x, pos.y);
     }
   }, { passive: false });
 
