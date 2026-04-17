@@ -12,7 +12,7 @@ ${resampling}
   capture:
     type: RawFile
     channels: 2
-    format: S32LE
+    format: S32_LE
     filename: "/tmp/fusiondspfifo"
     extra_samples: 4096
 

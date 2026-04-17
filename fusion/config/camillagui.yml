@@ -1,0 +1,17 @@
+---
+camilla_host: "0.0.0.0"
+camilla_port: 9876
+port: 5011
+bind_address: "0.0.0.0"
+ssl_certificate: null
+ssl_private_key: null
+config_dir: "/data/configuration/audio_interface/fusiondsp"
+coeff_dir: "/data/INTERNAL/FusionDsp/filters"
+gui_config_file: null
+default_config: "/data/configuration/audio_interface/fusiondsp/camilladsp.yml"
+statefile_path: "/data/configuration/audio_interface/fusiondsp/statefile.yml"
+log_file: "/tmp/camilladsp.log"
+on_set_active_config: null
+on_get_active_config: null
+supported_capture_types: null
+supported_playback_types: null
