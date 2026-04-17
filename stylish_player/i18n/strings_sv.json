@@ -92,5 +92,9 @@
   "KIOSK_RESTORE_BAK_LABEL": "Återställ från säkerhetskopia",
   "KIOSK_RESTORE_BAK_BTN": "Återställ",
   "USE_24_HOUR": "24-timmarsformat",
-  "USE_24_HOUR_DESC": "Visa tid i 24-timmarsformat (militärformat) istället för 12-timmarsformat AM/PM."
+  "USE_24_HOUR_DESC": "Visa tid i 24-timmarsformat (militärformat) istället för 12-timmarsformat AM/PM.",
+  "ALBUM_ART_MAX_SPACE": "Använd maximalt utrymme",
+  "ALBUM_ART_MAX_SPACE_DESC": "När aktiverat sträcker sig albumomslaget över hela vänstra panelen och utökar spårinformation och kontroller för att fylla allt tillgängligt utrymme.",
+  "BACKGROUND_COLOR": "Background Color (hex)",
+  "BACKGROUND_COLOR_DESC": "Set a solid background color instead of the blurred album art. Enter a hex code (e.g. #1a1a2e). Leave empty to use the album art background."
 }

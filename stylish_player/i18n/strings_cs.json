@@ -92,5 +92,9 @@
   "KIOSK_RESTORE_BAK_LABEL": "Obnovit ze zálohy",
   "KIOSK_RESTORE_BAK_BTN": "Obnovit",
   "USE_24_HOUR": "24hodinový čas",
-  "USE_24_HOUR_DESC": "Zobrazit čas ve 24hodinovém (vojenském) formátu místo 12hodinového formátu AM/PM."
+  "USE_24_HOUR_DESC": "Zobrazit čas ve 24hodinovém (vojenském) formátu místo 12hodinového formátu AM/PM.",
+  "ALBUM_ART_MAX_SPACE": "Použít maximální prostor",
+  "ALBUM_ART_MAX_SPACE_DESC": "Pokud je povoleno, obal alba se roztáhne přes celý levý panel a informace o skladbě a ovládací prvky se rozšíří, aby zaplnily veškerý dostupný prostor.",
+  "BACKGROUND_COLOR": "Background Color (hex)",
+  "BACKGROUND_COLOR_DESC": "Set a solid background color instead of the blurred album art. Enter a hex code (e.g. #1a1a2e). Leave empty to use the album art background."
 }

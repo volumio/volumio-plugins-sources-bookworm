@@ -1,6 +1,6 @@
 {
   "name": "stylish_player",
-  "version": "1.0.69",
+  "version": "1.0.100",
   "description": "A modern and customizable music player interface for Volumio.",
   "main": "index.js",
   "scripts": {},

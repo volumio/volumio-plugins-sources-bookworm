@@ -62,5 +62,37 @@
   "slideshowInterval": {
     "type": "number",
     "value": 30
+  },
+  "albumArtMaxSpace": {
+    "type": "boolean",
+    "value": false
+  },
+  "theme": {
+    "type": "string",
+    "value": "skeuomorphic"
+  },
+  "vizType": {
+    "type": "string",
+    "value": "spectrum"
+  },
+  "spectrumOptions": {
+    "type": "string",
+    "value": ""
+  },
+  "backgroundColor": {
+    "type": "string",
+    "value": ""
+  },
+  "externalUrl": {
+    "type": "string",
+    "value": ""
+  },
+  "use24Hour": {
+    "type": "boolean",
+    "value": false
+  },
+  "analogClockShowDate": {
+    "type": "boolean",
+    "value": true
   }
 }

@@ -718,6 +718,11 @@ pre {
   pointer-events: none;
 }
 
+/* Allow children to use cqi units relative to the dialog width */
+.dialog {
+  container-type: inline-size;
+}
+
 @keyframes dialogBackdropFadeIn {
   from {
     opacity: 0;
@@ -746,6 +751,157 @@ pre {
 .dialog-full {
   max-width: calc(100vw - 2rem);
   max-height: calc(100vh - 2rem);
+}
+
+/* ── Label / Input — shared structure, visual props from theme vars ── */
+.dialog-label {
+  display: block;
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary, var(--color-gray-500));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.dialog-input {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--input-bg, var(--color-gray-800));
+  border: 1px solid var(--input-border, var(--border-dark));
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+}
+.dialog-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+.dialog-input::placeholder {
+  color: var(--text-secondary, var(--color-gray-600));
+  opacity: 0.6;
+}
+
+/* ── Dialog title — ensure it never touches edges ── */
+.dialog-title {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+/* ── Close button — structural base, theme files add visual overrides only ── */
+.dialog-close {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ── Section title ── */
+.dialog-section-title {
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary, var(--color-gray-500));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+/* ── List Items (playlist rows, favourites) ── */
+.dialog-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid transparent;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 6px;
+  font-family: var(--font-label);
+}
+.dialog-list-item .material-icons {
+  font-size: 18px;
+  color: var(--text-secondary, var(--color-gray-500));
+  flex-shrink: 0;
+}
+.dialog-list-item:hover:not(:disabled) {
+  background: var(--list-item-bg-hover, rgba(255, 255, 255, 0.07));
+  color: var(--list-item-text-hover, var(--color-primary));
+}
+.dialog-list-item:hover:not(:disabled) .material-icons {
+  color: var(--list-item-text-hover, var(--color-primary));
+}
+.dialog-list-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.dialog-list-item.active {
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.dialog-list-item.active .material-icons {
+  color: var(--color-primary);
+}
+
+/* ── Track Info ── */
+.dialog-track-info {
+  padding: 12px 14px;
+  margin-bottom: 1rem;
+  border-radius: var(--radius-md);
+  background: var(--panel-bg-subtle, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border-dark);
+}
+
+.dialog-track-title {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+  line-height: 1.4;
+}
+
+.dialog-track-meta {
+  font-size: var(--text-sm);
+  color: var(--text-secondary, var(--color-gray-500));
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Alerts ── */
+.dialog-alert {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  margin-bottom: 1rem;
+  border: 1px solid;
+}
+.dialog-alert.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+.dialog-alert.success {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+  border-color: rgba(34, 197, 94, 0.3);
 }
 
 :root {
@@ -889,18 +1045,20 @@ pre {
    BUTTONS - Dark Metallic / Black Chrome Theme
    ═══════════════════════════════════════════════════════════════════════ */
 /* ─── Base Button Style ───────────────────────────────────────────────── */
-.btn {
+.btn, .form-select {
   border-radius: 6px;
   border: 1px solid var(--color-black);
   position: relative;
   cursor: pointer;
   font-family: var(--font-label);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
+  gap: 0.4rem;
   padding: 8px 16px;
-  font-size: 14px;
+  min-height: 32px;
+  font-size: var(--text-sm);
   font-weight: 600;
   user-select: none;
   transition: all 0.15s ease-out;
@@ -911,14 +1069,15 @@ pre {
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.8);
 }
 
-.btn:hover {
+.btn:hover, .form-select:hover {
   color: var(--color-white);
   background: linear-gradient(180deg, #444444 0%, #2a2a2a 50%, #222222 51%, #2a2a2a 100%);
   box-shadow: 0 5px 12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 5px rgba(255, 255, 255, 0.05);
 }
 
-.btn:active,
-.btn.active {
+.btn:active, .form-select:active,
+.btn.active,
+.active.form-select {
   transform: translateY(1px);
   color: var(--color-primary);
   background: linear-gradient(180deg, #151515 0%, #222222 100%);
@@ -933,7 +1092,7 @@ pre {
   border: 1px solid #000;
 }
 
-.btn-white {
+.btn-white, .form-select {
   /* Actually dark grey in this theme, but brighter than black */
   background: linear-gradient(180deg, #555 0%, #333 100%);
   color: var(--color-white);
@@ -962,27 +1121,114 @@ pre {
   border: 1px solid var(--color-primary-deep);
 }
 
+/* Success */
+.btn-success {
+  background: linear-gradient(180deg, #1a2a1a 0%, #0f1a0f 100%);
+  color: var(--color-success);
+  border: 1px solid #000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), inset 0 0 5px rgba(0, 180, 80, 0.08);
+}
+.btn-success:hover {
+  color: var(--color-success-light);
+  box-shadow: 0 4px 12px rgba(0, 180, 80, 0.15), inset 0 0 10px rgba(0, 180, 80, 0.18);
+}
+.btn-success:active, .btn-success.active {
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+/* Warning */
+.btn-warning {
+  background: linear-gradient(180deg, #2a2010 0%, #1a1408 100%);
+  color: var(--color-warning);
+  border: 1px solid #000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), inset 0 0 5px rgba(200, 140, 0, 0.08);
+}
+.btn-warning:hover {
+  color: var(--color-warning-light);
+  box-shadow: 0 4px 12px rgba(200, 140, 0, 0.15), inset 0 0 10px rgba(200, 140, 0, 0.18);
+}
+.btn-warning:active, .btn-warning.active {
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+/* Danger */
+.btn-danger {
+  background: linear-gradient(180deg, #2a1010 0%, #1a0808 100%);
+  color: #f44336;
+  border: 1px solid #000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), inset 0 0 5px rgba(200, 30, 30, 0.08);
+}
+.btn-danger:hover {
+  color: #ef9a9a;
+  box-shadow: 0 4px 12px rgba(200, 30, 30, 0.2), inset 0 0 10px rgba(200, 30, 30, 0.2);
+}
+.btn-danger:active, .btn-danger.active {
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+/* Info */
+.btn-info {
+  background: linear-gradient(180deg, #0a1a2a 0%, #06101a 100%);
+  color: var(--color-info);
+  border: 1px solid #000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), inset 0 0 5px rgba(0, 130, 200, 0.08);
+}
+.btn-info:hover {
+  color: var(--color-info-light);
+  box-shadow: 0 4px 12px rgba(0, 130, 200, 0.15), inset 0 0 10px rgba(0, 130, 200, 0.18);
+}
+.btn-info:active, .btn-info.active {
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
 /* Circular Buttons (like power button) */
-.btn-circle {
+.btn-circle,
+.btn-round {
   border-radius: 50%;
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background: radial-gradient(circle at 50% 30%, #444, #1a1a1a);
 }
 
-.btn-circle.active {
+.btn-circle.active,
+.btn-round.active {
   background: radial-gradient(circle at 50% 50%, #111, #222);
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.9), 0 0 5px var(--color-primary);
 }
 
 /* Disabled State */
-.btn:disabled,
-.btn.disabled {
+.btn:disabled, .form-select:disabled,
+.btn.disabled,
+.disabled.form-select {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
   filter: grayscale(100%);
+}
+
+/* ─── Link / Transparent Button ───────────────────────────────────── */
+.btn-link {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  text-shadow: none;
+  color: var(--text-muted);
+  padding: 0;
+  min-height: unset;
+}
+.btn-link:hover {
+  background: transparent;
+  color: var(--text-light);
+  box-shadow: none;
+}
+.btn-link:active {
+  background: transparent;
+  color: var(--text-light);
+  box-shadow: none;
 }
 
 /* ─── Icon Button ─────────────────────────────────────────────────────── */
@@ -990,6 +1236,7 @@ pre {
 .btn-icon {
   width: 36px;
   height: 36px;
+  min-height: unset;
   border-radius: 6px;
   padding: 0;
   display: flex;
@@ -1035,6 +1282,18 @@ pre {
   opacity: 0.4;
   pointer-events: none;
   filter: none;
+}
+
+/* ─── Small Button ─────────────────────────────────────────────────────── */
+.btn-sm {
+  padding: 3px 10px;
+  font-size: var(--text-xs, 11px);
+  min-height: 24px;
+}
+
+.btn-round.btn-sm {
+  width: 40px;
+  height: 40px;
 }
 
 :root {
@@ -1251,6 +1510,11 @@ pre {
   color: var(--color-white);
 }
 
+.form-control::placeholder {
+  color: var(--color-gray-500);
+  opacity: 1;
+}
+
 /* Checkbox/Switch Styles */
 .form-check {
   display: flex;
@@ -1291,6 +1555,103 @@ pre {
   left: 26px;
   background: var(--color-primary);
   box-shadow: 0 0 10px var(--color-primary);
+}
+
+/* ─── Select / Dropdown ─────────────────────────────────────────────────────── */
+.form-select {
+  appearance: none;
+  display: block;
+  text-align: left;
+  padding: 8px 30px 8px 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23aaaaaa'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.form-select option {
+  background: #1a1a1a;
+  color: var(--color-gray-100);
+}
+.form-select:hover {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23aaaaaa'/%3E%3C/svg%3E"), linear-gradient(180deg, #555 0%, #333 100%);
+  background-repeat: no-repeat, no-repeat;
+  background-position: right 10px center, 0 0;
+  background-size: auto, cover;
+  box-shadow: none;
+}
+.form-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 8px rgba(0, 225, 255, 0.2);
+}
+.form-select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ─── Input Group ──────────────────────────────────────────────────────── */
+.input-group {
+  position: relative;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  width: 100%;
+}
+.input-group > .form-control,
+.input-group > .form-select {
+  border-radius: 0;
+  flex: 1 1 auto;
+  width: 1%;
+  min-width: 0;
+  position: relative;
+  background: #050505;
+  color: var(--color-gray-100);
+}
+.input-group > .form-control:first-child,
+.input-group > .form-select:first-child {
+  border-radius: 6px 0 0 6px;
+}
+.input-group > .form-control:last-child,
+.input-group > .form-select:last-child {
+  border-radius: 0 6px 6px 0;
+}
+.input-group > .btn, .input-group > .form-select {
+  border-radius: 0;
+  position: relative;
+  flex: 0 0 auto;
+  background: #050505;
+  color: var(--color-gray-100);
+  border-color: #1a1a1a;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.input-group > .btn:hover, .input-group > .form-select:hover {
+  background: #111111;
+  color: var(--color-primary);
+}
+.input-group > .btn:first-child, .input-group > .form-select:first-child {
+  border-radius: 6px 0 0 6px;
+}
+.input-group > .btn:last-child, .input-group > .form-select:last-child {
+  border-radius: 0 6px 6px 0;
+}
+.input-group .input-group-text {
+  display: flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  background: #050505;
+  color: var(--color-gray-300);
+  border: 1px solid #1a1a1a;
+  border-radius: 0;
+  white-space: nowrap;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.input-group .input-group-text:first-child {
+  border-radius: 6px 0 0 6px;
+}
+.input-group .input-group-text:last-child {
+  border-radius: 0 6px 6px 0;
+}
+.input-group > :not(:first-child) {
+  margin-left: -1px;
 }
 
 :root {
@@ -2343,6 +2704,7 @@ h2 {
 .vinyl-container,
 .cd-container {
   width: 100%;
+  max-width: 460px;
   aspect-ratio: 1;
   display: flex;
   justify-content: center;
@@ -2416,6 +2778,7 @@ h2 {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-bottom: 6px;
 }
 
 .responsive-title {
@@ -2449,6 +2812,12 @@ h2 {
   background: #000;
 }
 
+/* ─── Track info group: use full panel width ───────────────────────────── */
+.track-info-group {
+  width: calc(100% - 2rem) !important;
+  margin-inline: 1rem;
+}
+
 /* ─── Progress Sliders ────────────────────────────────────────────────── */
 .slider-container {
   width: 100%;
@@ -2461,38 +2830,49 @@ h2 {
 
 .slider-track {
   flex-grow: 1;
-  height: clamp(10px, 1.4vw, 18px);
+  height: 6px;
   background-color: #050505;
-  border-radius: 10px;
+  border-radius: 3px;
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.9), inset 0 0 2px rgb(0, 0, 0), 0 1px 0 rgba(255, 255, 255, 0.1);
   position: relative;
   cursor: pointer;
   border: 1px solid #000;
-  overflow: hidden; /* Keep fill inside */
+  overflow: visible;
 }
 
 .slider-fill {
   height: 100%;
   background: linear-gradient(180deg, var(--color-primary-light) 0%, var(--color-primary) 50%, var(--color-primary-deep) 100%);
-  border-radius: 10px;
-  width: 0%; /* Dynamic */
+  border-radius: 3px;
+  width: 0%;
   position: relative;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 10px var(--color-primary);
 }
 
-/* Add a handle effect at the end of the fill if possible, or pseudo element */
-.slider-fill::after {
-  content: "";
+.slider-cap {
+  width: 14px;
+  height: 24px;
+  background: linear-gradient(180deg, #666 0%, #3a3a3a 50%, #222 51%, #333 100%);
+  border-radius: 2px;
   position: absolute;
-  right: 0;
+  right: -7px;
   top: 50%;
   transform: translateY(-50%);
-  width: 4px;
-  height: 80%;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 2px;
-  box-shadow: 0 0 5px #fff;
-  opacity: 0.8;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+  border: 1px solid #111;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.slider-cap::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.6), 0 -4px 0 rgba(0, 0, 0, 0.6), 0 5px 0 rgba(255, 255, 255, 0.08), 0 -3px 0 rgba(255, 255, 255, 0.08);
 }
 
 .read-only .slider-fill::after {
@@ -2503,6 +2883,309 @@ h2 {
   cursor: default;
 }
 
+/* ─── Mobile compact (portrait ≤ 768px) ──────────────────────────────── */
+/* At 393×842 the controls panel is ~421px tall. The theme's generous padding
+   on .track-info (20px), .volume-control (16px top/bottom), and the
+   .player-controls (24px padding / 20px gap) push elements below the fold.
+   Scale everything down so nothing gets clipped. */
+@media (max-width: 768px) {
+  .track-info {
+    padding: 8px 12px 10px;
+    /* extra 2px bottom so album row isn't clipped */
+  }
+  .player-controls {
+    padding: 10px 16px;
+    gap: 10px;
+  }
+  .volume-control {
+    padding: 10px 14px;
+  }
+  .track-info-group {
+    width: calc(100% - 1rem) !important;
+    margin-inline: 0.5rem;
+    padding: 8px 10px;
+  }
+}
+/* ── Large-screen player: boost font sizes on short screens so Rajdhani
+   (a condensed display font) reads at a similar optical size to Michroma.
+   Requires min-width: 1024px so small screens (800×600) are excluded. ── */
+@media (max-height: 700px) and (min-width: 1024px) and (not ((min-aspect-ratio: 2/1) and (min-width: 1440px))) {
+  .lsp-top__title {
+    font-size: clamp(1.4rem, 2vw, 2rem) !important;
+  }
+  .lsp-top__row2 {
+    font-size: clamp(1.1rem, 1.5vw, 1.5rem) !important;
+  }
+  .lsp-stream-info span {
+    font-size: clamp(1rem, 1.2vw, 1.4rem) !important;
+  }
+  .lsp-stream-info .format-logo-responsive:not(.hires-logo),
+  .lsp-stream-info .hires-logo {
+    height: clamp(1.2rem, 1.6vw, 1.8rem) !important;
+  }
+  .service-logo-icon {
+    font-size: clamp(1.6rem, 2vw, 2.4rem) !important;
+  }
+  .seekbar-labels,
+  .time-label {
+    font-size: 1rem !important;
+  }
+  .slider-track {
+    height: clamp(12px, 1.4vw, 18px) !important;
+  }
+  .lsp-btn.btn-icon, .lsp-btn.lsp-btn--sm.btn-icon, .lsp-btn.lsp-btn--md.btn-round {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  .lsp-btn.btn-icon .material-icons, .lsp-btn.lsp-btn--sm.btn-icon .material-icons, .lsp-btn.lsp-btn--md.btn-round .material-icons {
+    font-size: 1.8rem !important;
+  }
+  .lsp-btn.lsp-btn--lg.btn-round {
+    width: 68px !important;
+    height: 68px !important;
+  }
+  .lsp-btn.lsp-btn--lg.btn-round .material-icons.play-icon {
+    font-size: 2.2rem !important;
+  }
+  .context-menu-toggle {
+    width: 48px !important;
+    height: 48px !important;
+  }
+  .context-menu-toggle .material-icons {
+    font-size: 1.6rem !important;
+  }
+}
+/* ── Small/short screens (800×600 etc.): compact the standard player ──── */
+@media (max-height: 650px) and (max-width: 1023px) {
+  /* Tighten the track-info panel */
+  .track-info {
+    padding: 8px 12px 10px;
+  }
+  /* Reduce player-controls padding & gap so buttons fit */
+  .player-controls {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+  /* Smaller transport-controls panel */
+  .transport-controls {
+    gap: 10px;
+    margin-top: 4px;
+    padding: 8px;
+  }
+  /* Volume area — tighter padding */
+  .volume-control {
+    padding: 8px 12px;
+  }
+  /* Shrink the slider cap for tighter vertical space */
+  .slider-cap {
+    width: 12px;
+    height: 18px;
+    right: -6px;
+  }
+}
+/* ── UWLS (ultrawide + short): boost Rajdhani to match Michroma optical size ── */
+@media (max-height: 700px) and (min-width: 1440px) and (min-aspect-ratio: 2/1) {
+  .lsp-top__title {
+    font-size: clamp(2rem, 2.8vw, 3.2rem) !important;
+  }
+  .lsp-top__row2 {
+    font-size: clamp(1.4rem, 1.9vw, 2.2rem) !important;
+  }
+  .lsp-stream-info span {
+    font-size: clamp(1.1rem, 1.4vw, 1.8rem) !important;
+  }
+  .lsp-stream-info .format-logo-responsive:not(.hires-logo),
+  .lsp-stream-info .hires-logo {
+    height: clamp(1.4rem, 1.8vw, 2.2rem) !important;
+  }
+  .service-logo-icon {
+    font-size: clamp(2rem, 2.5vw, 3rem) !important;
+  }
+  .seekbar-labels,
+  .time-label {
+    font-size: 1.2rem !important;
+  }
+  .lsp-btn.btn-icon, .lsp-btn.lsp-btn--sm.btn-icon, .lsp-btn.lsp-btn--md.btn-round {
+    width: 72px !important;
+    height: 72px !important;
+  }
+  .lsp-btn.btn-icon .material-icons, .lsp-btn.lsp-btn--sm.btn-icon .material-icons, .lsp-btn.lsp-btn--md.btn-round .material-icons {
+    font-size: 2.4rem !important;
+  }
+  .lsp-btn.lsp-btn--lg.btn-round {
+    width: 92px !important;
+    height: 92px !important;
+  }
+  .lsp-btn.lsp-btn--lg.btn-round .material-icons.play-icon {
+    font-size: 3rem !important;
+  }
+  .context-menu-toggle {
+    width: 72px !important;
+    height: 72px !important;
+  }
+  .context-menu-toggle .material-icons {
+    font-size: 2.4rem !important;
+  }
+  .context-menu-item {
+    font-size: 1.5rem !important;
+    padding: 16px 24px !important;
+  }
+  .context-menu-item .material-icons {
+    font-size: 1.9rem !important;
+  }
+  .context-menu {
+    min-width: 280px !important;
+  }
+  .dialog-title {
+    font-size: 2rem !important;
+  }
+  .dialog-close {
+    width: 48px !important;
+    height: 48px !important;
+  }
+  .dialog-close .material-icons {
+    font-size: 1.8rem !important;
+  }
+  .dialog-header {
+    padding: 1.2rem 1.8rem !important;
+  }
+  .dialog-body {
+    padding: 1.2rem 1.5rem !important;
+    font-size: 1.3rem !important;
+  }
+  .dialog-footer {
+    padding: 1.2rem 1.8rem !important;
+  }
+  .dialog-track-title {
+    font-size: 1.7rem !important;
+  }
+  .dialog-track-meta {
+    font-size: 1.4rem !important;
+  }
+  .dialog-list-item {
+    font-size: 1.5rem !important;
+    padding: 0.8rem 1.3rem !important;
+  }
+  .dialog-list-item .material-icons {
+    font-size: 1.5rem !important;
+  }
+  .dialog-section-title {
+    font-size: 1.2rem !important;
+  }
+  .dialog-label {
+    font-size: 1.1rem !important;
+  }
+  .dialog-input {
+    font-size: 1.3rem !important;
+    padding: 0.6rem 0.8rem !important;
+  }
+  .dialog .btn, .dialog .form-select {
+    font-size: 1.3rem !important;
+    padding: 0.6rem 1.2rem !important;
+  }
+  .playlist-track-title {
+    font-size: 1.5rem !important;
+  }
+  .playlist-track-meta {
+    font-size: 1.3rem !important;
+  }
+  .playlist-item {
+    padding: 0.8rem 1.2rem !important;
+  }
+  .playlist-info {
+    font-size: 1.2rem !important;
+  }
+  .playlist-remove.btn-icon {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+  }
+  .playlist-remove.btn-icon .material-icons {
+    font-size: 1.6rem !important;
+  }
+  .slide-panel-header .btn-icon,
+  .slide-panel-header .btn-link,
+  .slide-panel-header .dialog-close {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+  }
+  .slide-panel-header .btn-icon .material-icons,
+  .slide-panel-header .btn-link .material-icons,
+  .slide-panel-header .dialog-close .material-icons {
+    font-size: 1.8rem !important;
+  }
+  .slide-panel-title {
+    font-size: clamp(1.2rem, 6cqi, 2.4rem) !important;
+  }
+  .slide-panel-subtitle {
+    font-size: clamp(0.9rem, 4.5cqi, 1.8rem) !important;
+  }
+  .playlist-art-wrap {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  .browse-dialog--lsp .dialog-title,
+  .browse-dialog--lsp.dialog .dialog-header .dialog-title {
+    font-size: clamp(1.4rem, 1.6cqi, 2.2rem) !important;
+  }
+  .browse-dialog--lsp .browse-toolbar .btn-icon {
+    width: clamp(44px, 3.5cqi, 60px) !important;
+    height: clamp(44px, 3.5cqi, 60px) !important;
+  }
+  .browse-dialog--lsp .browse-toolbar .btn-icon .material-icons,
+  .browse-dialog--lsp .browse-toolbar .material-icons {
+    font-size: clamp(1.3rem, 1.8cqi, 2.2rem) !important;
+  }
+  .browse-dialog--lsp .browse-search__icon {
+    font-size: clamp(1.3rem, 1.6cqi, 2rem) !important;
+  }
+  .browse-dialog--lsp .browse-search__input {
+    font-size: clamp(1.1rem, 1.4cqi, 1.8rem) !important;
+  }
+  .browse-dialog--lsp .browse-tile {
+    padding: clamp(2rem, 3cqi, 4rem) clamp(1rem, 2cqi, 2.5rem) !important;
+  }
+  .browse-dialog--lsp .browse-tile__icon {
+    font-size: clamp(3rem, 4.5cqi, 6rem) !important;
+  }
+  .browse-dialog--lsp .browse-tile__label {
+    font-size: clamp(1rem, 1.3cqi, 1.6rem) !important;
+  }
+  .browse-dialog--lsp .browse-result-card__title {
+    font-size: clamp(1rem, 1.2cqi, 1.5rem) !important;
+  }
+  .browse-dialog--lsp .browse-result-card__sub {
+    font-size: clamp(0.85rem, 1cqi, 1.3rem) !important;
+  }
+  .browse-dialog--lsp .browse-result-row__title {
+    font-size: clamp(1.1rem, 1.3cqi, 1.6rem) !important;
+  }
+  .browse-dialog--lsp .browse-result-row__sub {
+    font-size: clamp(0.9rem, 1.1cqi, 1.4rem) !important;
+  }
+  .browse-dialog--lsp .browse-result-row__chevron {
+    font-size: clamp(1.2rem, 1.5cqi, 1.8rem) !important;
+  }
+  .browse-dialog--lsp .browse-search-section__title {
+    font-size: clamp(1rem, 1.3cqi, 1.5rem) !important;
+  }
+  .browse-dialog--lsp .album-footer__chip,
+  .browse-dialog--lsp .album-footer__format-text {
+    font-size: clamp(0.85rem, 1cqi, 1.3rem) !important;
+  }
+  .track-menu {
+    min-width: 280px !important;
+  }
+  .track-menu__item {
+    font-size: 1.5rem !important;
+    padding: 16px 24px !important;
+    gap: 12px !important;
+  }
+  .track-menu__item .material-icons {
+    font-size: 1.9rem !important;
+  }
+}
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE - Dark Metallic / Black Chrome Theme
@@ -2885,9 +3568,9 @@ h2 {
 .playlist-item {
   border-bottom: 1px solid var(--color-gray-700);
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 0;
   transition: background 0.15s ease;
-  padding: 8px 4px;
+  padding: 8px 8px 8px 16px;
 }
 .playlist-item:last-child {
   border-bottom: none;
@@ -2957,24 +3640,6 @@ h2 {
   color: var(--color-gray-500);
   line-height: 1.3;
   font-family: var(--font-label);
-}
-
-/* ── Remove Button ── */
-.playlist-remove {
-  flex-shrink: 0;
-  text-decoration: none !important;
-  color: var(--text-primary);
-  background: var(--highlight-10);
-  border-radius: 4px;
-  transition: opacity 0.15s, color 0.15s, background 0.15s;
-}
-.playlist-remove .material-icons {
-  font-size: 1.1rem;
-}
-
-.playlist-item:hover .playlist-remove:hover {
-  background: rgba(255, 68, 68, 0.18);
-  color: var(--color-danger) !important;
 }
 
 .playlist-container {
@@ -3058,6 +3723,8 @@ h2 {
   color: var(--text-muted);
 }
 
+/* ─── Edge-to-edge rows ─── */
+/* padding and border-radius set directly on .playlist-item above */
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE - Dark Metallic / Black Chrome Theme
@@ -3202,7 +3869,7 @@ h2 {
 .slide-panel-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 1040;
+  z-index: 3000;
   background: transparent;
   pointer-events: none;
   transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -3220,7 +3887,7 @@ h2 {
   top: 0;
   left: 0;
   bottom: 0;
-  z-index: 1050;
+  z-index: 3010;
   display: flex;
   flex-direction: column;
   max-width: 80vw;
@@ -3251,22 +3918,32 @@ h2 {
 }
 
 .slide-panel-subtitle {
-  font-size: 0.7rem;
+  font-size: 0.53rem;
   color: var(--color-gray-500);
   font-family: var(--font-label);
 }
 
 .slide-panel-title {
   font-family: var(--font-display);
-  font-size: var(--text-base);
+  font-size: clamp(0.75rem, 0.975vw, 0.86rem);
   color: var(--text-light);
 }
 
 /* ── Body ── */
 .slide-panel-body {
   color: var(--text-light);
-  font-size: 0.9rem;
-  padding: 12px 16px;
+  font-size: 0.68rem;
+  padding: 12px 0;
+}
+.slide-panel-body::-webkit-scrollbar {
+  width: 8px;
+  background: var(--color-gray-900, #111);
+}
+.slide-panel-body::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #555 0%, #333 100%);
+  border-radius: 4px;
+  border: 1px solid #111;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 :root {
@@ -3413,7 +4090,7 @@ h2 {
   position: fixed;
   top: 20px;
   left: 20px;
-  z-index: 5000;
+  z-index: 100;
 }
 
 .context-menu-toggle {
@@ -3471,7 +4148,7 @@ h2 {
   position: fixed;
   inset: 0;
   background: transparent;
-  z-index: 4999;
+  z-index: 99;
 }
 
 .context-menu {
@@ -3484,7 +4161,7 @@ h2 {
   border: 1px solid var(--color-gray-700);
   box-shadow: 0 8px 24px var(--shadow-50), inset 0 1px 0 var(--highlight-10);
   padding: 6px;
-  z-index: 5001;
+  z-index: 101;
   animation: contextMenuIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   transform-origin: top right;
 }
@@ -3540,6 +4217,27 @@ h2 {
   color: var(--text-secondary);
 }
 
+/* ─── Responsive sizing at ≥1980px ───────────────────────────────────────── */
+@media (min-width: 1980px) {
+  .context-menu-toggle {
+    width: clamp(40px, 3vw, 72px);
+    height: clamp(40px, 3vw, 72px);
+  }
+  .context-menu-toggle .material-icons {
+    font-size: clamp(20px, 1.8vw, 34px);
+  }
+  .context-menu {
+    min-width: clamp(180px, 16vw, 360px);
+  }
+  .context-menu-item {
+    font-size: clamp(13px, 1.1vw, 1.6rem);
+    gap: clamp(10px, 0.8vw, 18px);
+    padding: clamp(8px, 0.6vw, 14px) clamp(12px, 1vw, 22px);
+  }
+  .context-menu-item .material-icons {
+    font-size: clamp(18px, 1.5vw, 2.2rem);
+  }
+}
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE - Dark Metallic / Black Chrome Theme
@@ -3700,7 +4398,8 @@ h2 {
   width: 100%;
   pointer-events: auto;
   outline: none;
-  overflow: hidden; /* Prevents border clipping on corners */
+  overflow: hidden;
+  /* Prevents border clipping on corners */
   /* Chrome metallic surface */
   background: linear-gradient(135deg, var(--color-gray-800) 0%, var(--color-gray-850) 50%, var(--color-gray-800) 100%);
   border-radius: 10px;
@@ -3745,27 +4444,13 @@ h2 {
 }
 
 .dialog-close {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  margin-left: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
   border-radius: 6px;
-  cursor: pointer;
-  color: var(--text-muted);
+  color: var(--text-light);
   transition: all 0.15s ease;
-  flex-shrink: 0;
-}
-.dialog-close .material-icons {
-  font-size: 20px;
 }
 .dialog-close:hover {
   background: var(--highlight-10);
-  color: var(--text-light);
+  color: #ffffff;
 }
 .dialog-close:active {
   background: var(--shadow-15);
@@ -4003,19 +4688,14 @@ h2 {
   }
 }
 /* ── Browse Tiles ── */
-.browse-tile {
-  color: var(--text-secondary);
-  background: transparent;
-}
-.browse-tile:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--color-primary);
-}
 .browse-tile .browse-tile__icon {
-  color: var(--color-primary);
+  font-size: clamp(18px, 3cqi, 30px) !important;
+  display: block;
+  margin-bottom: 4px;
 }
 .browse-tile .browse-tile__label {
-  color: var(--text-secondary);
+  font-size: clamp(0.75rem, 1.5cqi, 1.1rem) !important;
+  font-weight: 600;
 }
 
 /* ── Digital LCD Clock — Metallic Chrome Variant ───────────────────────────
@@ -4030,7 +4710,7 @@ h2 {
   justify-content: center;
   width: 90vw;
   height: 90dvh;
-  max-width: none;
+  max-width: 180dvh;
   margin: 0 auto;
   container-type: size;
 }
@@ -4384,7 +5064,7 @@ h2 {
 
 .clock-face-day {
   font-family: "Roboto Condensed", "Roboto", sans-serif;
-  font-size: clamp(0.8rem, 4cqi, 1.5rem);
+  font-size: clamp(0.6rem, 3cqi, 1rem);
   font-weight: 600;
   color: var(--color-gray-600, #444444);
   letter-spacing: 0.1em;
@@ -4393,7 +5073,7 @@ h2 {
 
 .clock-face-date {
   font-family: "Roboto Condensed", "Roboto", sans-serif;
-  font-size: clamp(0.8rem, 4cqi, 1.5rem);
+  font-size: clamp(0.6rem, 3cqi, 1rem);
   font-weight: 700;
   color: var(--color-gray-200, #cccccc);
 }

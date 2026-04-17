@@ -92,5 +92,9 @@
   "KIOSK_RESTORE_BAK_LABEL": "Restaurer depuis la sauvegarde",
   "KIOSK_RESTORE_BAK_BTN": "Restaurer",
   "USE_24_HOUR": "Heure sur 24h",
-  "USE_24_HOUR_DESC": "Afficher l'heure au format 24h (militaire) au lieu du format 12h AM/PM."
+  "USE_24_HOUR_DESC": "Afficher l'heure au format 24h (militaire) au lieu du format 12h AM/PM.",
+  "ALBUM_ART_MAX_SPACE": "Utiliser l'espace maximum",
+  "ALBUM_ART_MAX_SPACE_DESC": "Lorsqu'activé, étend la pochette d'album sur tout le panneau gauche et agrandit les informations de piste et les contrôles pour remplir tout l'espace disponible.",
+  "BACKGROUND_COLOR": "Background Color (hex)",
+  "BACKGROUND_COLOR_DESC": "Set a solid background color instead of the blurred album art. Enter a hex code (e.g. #1a1a2e). Leave empty to use the album art background."
 }

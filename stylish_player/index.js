@@ -301,8 +301,9 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
       });
 
       self.streamClients.push(res);
-      // First client: stop the FIFO drain and start FFmpeg if not already running.
-      self._stopFifoDrain();
+      // Start FFmpeg if not already running. _startAudioFfmpeg stops the drain
+      // internally just before spawning, so the FIFO never has a read-gap that
+      // would cause ALSA's volumiofifo plugin to block and report "device busy".
       if (!self._audioFfmpeg) {
         self._startAudioFfmpeg();
       }
@@ -406,8 +407,10 @@ ControllerStylishPlayer.prototype.startServer = function () {
         playerType: self.config.get("playerType", "albumArt"),
         theme: self.config.get("theme", "skeuomorphic"),
         showPlayerControls: self.config.get("showPlayerControls", true),
+        albumArtMaxSpace: self.config.get("albumArtMaxSpace", false),
         vizType: self.config.get("vizType", "spectrum"),
         spectrumOptions: self.config.get("spectrumOptions", ""),
+        backgroundColor: self.config.get("backgroundColor", ""),
         port: self.config.get("port", 3339),
         latitude: self.config.get("latitude", ""),
         longitude: self.config.get("longitude", ""),
@@ -539,6 +542,7 @@ ControllerStylishPlayer.prototype.broadcastConfig = function () {
     playerType: self.config.get("playerType", "albumArt"),
     theme: self.config.get("theme", "skeuomorphic"),
     showPlayerControls: self.config.get("showPlayerControls", true),
+    albumArtMaxSpace: self.config.get("albumArtMaxSpace", false),
     vizType: self.config.get("vizType", "spectrum"),
     spectrumOptions: self.config.get("spectrumOptions", ""),
     port: self.config.get("port", 3339),
@@ -629,18 +633,24 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       // Populate show player controls (Index 2)
       uiconf.sections[2].content[2].value = self.config.get("showPlayerControls", true);
 
-      // Populate viz type select (Index 3)
+      // Populate album art max space (Index 3)
+      uiconf.sections[2].content[3].value = self.config.get("albumArtMaxSpace", false);
+
+      // Populate viz type select (Index 4)
       var vizType = self.config.get("vizType", "spectrum");
-      var vizTypeOptions = uiconf.sections[2].content[3].options;
+      var vizTypeOptions = uiconf.sections[2].content[4].options;
       var matchVizType = vizTypeOptions.find(function (opt) {
         return opt.value === vizType;
       });
       if (matchVizType) {
-        uiconf.sections[2].content[3].value = matchVizType;
+        uiconf.sections[2].content[4].value = matchVizType;
       }
 
-      // Populate spectrum options (Index 4)
-      uiconf.sections[2].content[4].value = self.config.get("spectrumOptions", "");
+      // Populate spectrum options (Index 5)
+      uiconf.sections[2].content[5].value = self.config.get("spectrumOptions", "");
+
+      // Populate background color (Index 6)
+      uiconf.sections[2].content[6].value = self.config.get("backgroundColor", "");
 
       // Populate location section (index 3)
       uiconf.sections[3].content[0].value = self.config.get("latitude", "");
@@ -811,8 +821,10 @@ ControllerStylishPlayer.prototype.configSavePlayerConfig = function (data) {
   var theme = data["theme"] ? data["theme"].value : "skeuomorphic";
   var playerType = data["playerType"] ? data["playerType"].value : "albumArt";
   var showPlayerControls = data["showPlayerControls"] !== false;
+  var albumArtMaxSpace = data["albumArtMaxSpace"] === true;
   var vizType = data["vizType"] ? data["vizType"].value : "spectrum";
   var spectrumOptions = (data["spectrumOptions"] || "").toString().trim();
+  var backgroundColor = (data["backgroundColor"] || "").toString().trim();
 
   // Validate JSON if a value is provided
   if (spectrumOptions) {
@@ -824,11 +836,19 @@ ControllerStylishPlayer.prototype.configSavePlayerConfig = function (data) {
     }
   }
 
+  // Validate backgroundColor hex format if provided
+  if (backgroundColor && !/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(backgroundColor)) {
+    self.commandRouter.pushToastMessage("error", "Stylish Player", "Background Color must be a valid hex code (e.g. #1a2b3c).");
+    return;
+  }
+
   self.config.set("theme", theme);
   self.config.set("playerType", playerType);
   self.config.set("showPlayerControls", showPlayerControls);
+  self.config.set("albumArtMaxSpace", albumArtMaxSpace);
   self.config.set("vizType", vizType);
   self.config.set("spectrumOptions", spectrumOptions);
+  self.config.set("backgroundColor", backgroundColor);
   self.commandRouter.pushToastMessage("success", "Stylish Player", "Player configuration saved.");
 
   self.broadcastConfig();

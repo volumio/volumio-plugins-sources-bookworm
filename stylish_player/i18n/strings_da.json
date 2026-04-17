@@ -77,8 +77,10 @@
   "SHOW_PLAYER_CONTROLS_DESC": "Når deaktiveret, skjules afspillerknapperne, og søgelinjen bliver en skrivebeskyttet fremdriftsindikator.",
   "OPEN_APP": "Åbn app",
   "OPEN_APP_DESC": "Åbn Stylish Player-grænsefladen i en ny fane.",
-  "VIZ_TYPE_VU_METER_4": "VU Meter 4 (Sort)",  "SPECTRUM_OPTIONS": "Spektrumanalysator-indstillinger (JSON)",
-  "SPECTRUM_OPTIONS_DESC": "Tilsidesæt AudioMotion Analyzer-indstillinger med et JSON-objekt. Lad stå tomt for at bruge standardindstillinger. Generer indstillinger med getOptions() på denne side https://audiomotion.dev/demo/fluid.html",  "NONE": "Ingen",
+  "VIZ_TYPE_VU_METER_4": "VU Meter 4 (Sort)",
+  "SPECTRUM_OPTIONS": "Spektrumanalysator-indstillinger (JSON)",
+  "SPECTRUM_OPTIONS_DESC": "Tilsidesæt AudioMotion Analyzer-indstillinger med et JSON-objekt. Lad stå tomt for at bruge standardindstillinger. Generer indstillinger med getOptions() på denne side https://audiomotion.dev/demo/fluid.html",
+  "NONE": "Ingen",
   "KIOSK": "Kiosk-tilstand",
   "KIOSK_NOT_FOUND": "Volumio Kiosk er ikke installeret på dette system. Installer kiosk-tjenesten for at bruge denne funktion.",
   "KIOSK_SHOWING_DEFAULT": "Kiosk-displayet viser i øjeblikket standard Volumio-grænsefladen.",
@@ -90,5 +92,9 @@
   "KIOSK_RESTORE_BAK_LABEL": "Gendan fra sikkerhedskopi",
   "KIOSK_RESTORE_BAK_BTN": "Gendan",
   "USE_24_HOUR": "24-timers format",
-  "USE_24_HOUR_DESC": "Vis tid i 24-timers (militær) format i stedet for 12-timers AM/PM."
+  "USE_24_HOUR_DESC": "Vis tid i 24-timers (militær) format i stedet for 12-timers AM/PM.",
+  "ALBUM_ART_MAX_SPACE": "Brug maksimal plads",
+  "ALBUM_ART_MAX_SPACE_DESC": "Når aktiveret, strækker albumcoveret sig over hele venstre panel og udvider sporinformation og kontroller for at udfylde al tilgængelig plads.",
+  "BACKGROUND_COLOR": "Background Color (hex)",
+  "BACKGROUND_COLOR_DESC": "Set a solid background color instead of the blurred album art. Enter a hex code (e.g. #1a1a2e). Leave empty to use the album art background."
 }

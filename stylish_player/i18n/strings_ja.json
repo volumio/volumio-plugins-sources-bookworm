@@ -92,5 +92,9 @@
   "KIOSK_RESTORE_BAK_LABEL": "バックアップから復元",
   "KIOSK_RESTORE_BAK_BTN": "復元",
   "USE_24_HOUR": "24時間表示",
-  "USE_24_HOUR_DESC": "時刻を12時間（AM/PM）形式ではなく24時間（軍用）形式で表示します。"
+  "USE_24_HOUR_DESC": "時刻を12時間（AM/PM）形式ではなく24時間（軍用）形式で表示します。",
+  "ALBUM_ART_MAX_SPACE": "最大スペースを使用",
+  "ALBUM_ART_MAX_SPACE_DESC": "有効にすると、アルバムアートが左パネル全体に広がり、トラック情報とコントロールが利用可能なすべてのスペースを埋めます。",
+  "BACKGROUND_COLOR": "Background Color (hex)",
+  "BACKGROUND_COLOR_DESC": "Set a solid background color instead of the blurred album art. Enter a hex code (e.g. #1a1a2e). Leave empty to use the album art background."
 }

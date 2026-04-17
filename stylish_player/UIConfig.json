@@ -62,7 +62,7 @@
       },
       "saveButton": {
         "label": "TRANSLATE.SAVE",
-        "data": ["playerType", "theme", "showPlayerControls", "vizType", "spectrumOptions"]
+        "data": ["playerType", "theme", "showPlayerControls", "albumArtMaxSpace", "vizType", "spectrumOptions", "backgroundColor"]
       },
       "content": [
         {
@@ -79,7 +79,8 @@
             { "value": "metallic", "label": "Metallic" },
             { "value": "aqua", "label": "Aqua" },
             { "value": "flat", "label": "Flat" },
-            { "value": "win95", "label": "Windows 95" }
+            { "value": "win95", "label": "Windows 95" },
+            { "value": "casio", "label": "Casio 80s" }
           ]
         },
         {
@@ -113,6 +114,17 @@
           "value": true
         },
         {
+          "id": "albumArtMaxSpace",
+          "element": "switch",
+          "label": "TRANSLATE.ALBUM_ART_MAX_SPACE",
+          "doc": "TRANSLATE.ALBUM_ART_MAX_SPACE_DESC",
+          "value": false,
+          "visibleIf": {
+            "field": "playerType",
+            "value": "albumArt"
+          }
+        },
+        {
           "id": "vizType",
           "element": "select",
           "label": "TRANSLATE.VIZ_TYPE",
@@ -141,6 +153,14 @@
             "field": "vizType",
             "value": "spectrum"
           }
+        },
+        {
+          "id": "backgroundColor",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.BACKGROUND_COLOR",
+          "doc": "TRANSLATE.BACKGROUND_COLOR_DESC",
+          "value": ""
         }
       ]
     },

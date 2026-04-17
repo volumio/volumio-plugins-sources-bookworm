@@ -1077,6 +1077,11 @@ ol li {
   pointer-events: none;
 }
 
+/* Allow children to use cqi units relative to the dialog width */
+.dialog {
+  container-type: inline-size;
+}
+
 @keyframes dialogBackdropFadeIn {
   from {
     opacity: 0;
@@ -1105,6 +1110,157 @@ ol li {
 .dialog-full {
   max-width: calc(100vw - 2rem);
   max-height: calc(100vh - 2rem);
+}
+
+/* ── Label / Input — shared structure, visual props from theme vars ── */
+.dialog-label {
+  display: block;
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary, var(--color-gray-500));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.dialog-input {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--input-bg, var(--color-gray-800));
+  border: 1px solid var(--input-border, var(--border-dark));
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+}
+.dialog-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+.dialog-input::placeholder {
+  color: var(--text-secondary, var(--color-gray-600));
+  opacity: 0.6;
+}
+
+/* ── Dialog title — ensure it never touches edges ── */
+.dialog-title {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+/* ── Close button — structural base, theme files add visual overrides only ── */
+.dialog-close {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ── Section title ── */
+.dialog-section-title {
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary, var(--color-gray-500));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+/* ── List Items (playlist rows, favourites) ── */
+.dialog-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid transparent;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 6px;
+  font-family: var(--font-label);
+}
+.dialog-list-item .material-icons {
+  font-size: 18px;
+  color: var(--text-secondary, var(--color-gray-500));
+  flex-shrink: 0;
+}
+.dialog-list-item:hover:not(:disabled) {
+  background: var(--list-item-bg-hover, rgba(255, 255, 255, 0.07));
+  color: var(--list-item-text-hover, var(--color-primary));
+}
+.dialog-list-item:hover:not(:disabled) .material-icons {
+  color: var(--list-item-text-hover, var(--color-primary));
+}
+.dialog-list-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.dialog-list-item.active {
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.dialog-list-item.active .material-icons {
+  color: var(--color-primary);
+}
+
+/* ── Track Info ── */
+.dialog-track-info {
+  padding: 12px 14px;
+  margin-bottom: 1rem;
+  border-radius: var(--radius-md);
+  background: var(--panel-bg-subtle, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border-dark);
+}
+
+.dialog-track-title {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+  line-height: 1.4;
+}
+
+.dialog-track-meta {
+  font-size: var(--text-sm);
+  color: var(--text-secondary, var(--color-gray-500));
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Alerts ── */
+.dialog-alert {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  margin-bottom: 1rem;
+  border: 1px solid;
+}
+.dialog-alert.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+.dialog-alert.success {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+  border-color: rgba(34, 197, 94, 0.3);
 }
 
 :root {
@@ -1344,7 +1500,7 @@ ol li {
 }
 
 /* Base Button Style */
-.btn {
+.btn, .form-select {
   border-radius: 4px;
   /* Slight rounding */
   border: none;
@@ -1353,11 +1509,13 @@ ol li {
   font-family: var(--font-label, "Roboto", sans-serif);
   /* For the button label */
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 8px;
-  font-size: 14px;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 8px 16px;
+  min-height: 32px;
+  font-size: var(--text-sm);
   font-weight: 500;
   user-select: none;
   transition: all 0.1s;
@@ -1367,8 +1525,14 @@ ol li {
   box-shadow: 0 4px 6px var(--shadow-30), inset 0 1px 0 var(--highlight-20), inset 1px 0 0 var(--highlight-10), inset -1px 0 0 var(--shadow-10);
 }
 
-.btn:active,
-.btn.active {
+.btn:hover, .form-select:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 6px 10px var(--shadow-30), inset 0 1px 0 var(--highlight-30), inset 1px 0 0 var(--highlight-15), inset -1px 0 0 var(--shadow-10);
+}
+
+.btn:active, .form-select:active,
+.btn.active,
+.active.form-select {
   transform: translateY(2px);
   box-shadow: 0 2px 3px var(--shadow-20), inset 0 2px 5px var(--shadow-20);
   /* Pressed in shadow */
@@ -1380,15 +1544,22 @@ ol li {
   color: var(--color-gray-100, #ccc);
   border-bottom: 2px solid var(--color-gray-900, #111);
 }
+.btn-black:hover {
+  background: linear-gradient(180deg, #444 0%, #333 100%);
+}
 
-.btn-white {
+.btn-white, .form-select {
   background: linear-gradient(180deg, var(--btn-white-top, #eaeaea) 0%, var(--btn-white-btm, #cdcdcd) 100%);
   color: var(--color-gray-500, #555);
   border-bottom: 2px solid var(--color-gray-250, #999);
   box-shadow: 0 4px 6px var(--shadow-15), inset 0 1px 0 var(--color-white, #fff);
 }
+.btn-white:hover, .form-select:hover {
+  background: linear-gradient(180deg, #f5f5f5 0%, #dcdcdc 100%);
+  box-shadow: 0 6px 10px var(--shadow-20), inset 0 1px 0 var(--color-white, #fff);
+}
 
-.btn-white:active {
+.btn-white:active, .form-select:active {
   background: var(--btn-white-btm, #cdcdcd);
   color: var(--color-gray-600, #444);
 }
@@ -1399,6 +1570,9 @@ ol li {
   border-bottom: 2px solid var(--color-danger-dark, #b71c1c);
   text-shadow: 0 1px 2px var(--shadow-30);
 }
+.btn-primary:hover, .btn-orange:hover {
+  background: linear-gradient(180deg, #ff7c3d 0%, #f55a28 100%);
+}
 
 .btn-primary:active, .btn-orange:active {
   background: var(--btn-primary-btm, #e64a19);
@@ -1406,11 +1580,35 @@ ol li {
 }
 
 /* Backward compatibility alias */
+/* ─── Link / Transparent Button ─────────────────────────────────────── */
+.btn-link {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--color-gray-300, #bbb);
+  padding: 0;
+  min-height: unset;
+}
+.btn-link:hover {
+  background: transparent;
+  filter: none;
+  box-shadow: none;
+  color: var(--color-gray-100, #eee);
+}
+.btn-link:active {
+  background: transparent;
+  transform: none;
+  box-shadow: none;
+}
+
 .btn-secondary {
   background: linear-gradient(180deg, var(--btn-secondary-top, #888) 0%, var(--btn-secondary-btm, #444) 100%);
   color: var(--color-white, #fff);
   border-bottom: 2px solid var(--color-gray-900, #111);
   text-shadow: 0 1px 2px var(--shadow-30);
+}
+.btn-secondary:hover {
+  background: linear-gradient(180deg, #999 0%, #555 100%);
 }
 
 .btn-secondary:active {
@@ -1424,6 +1622,9 @@ ol li {
   border-bottom: 2px solid var(--color-success-dark, #006d00);
   text-shadow: 0 1px 2px var(--shadow-30);
 }
+.btn-success:hover {
+  background: linear-gradient(180deg, #44cc44 0%, #008a00 100%);
+}
 
 .btn-success:active {
   background: var(--btn-success-btm, #006d00);
@@ -1436,6 +1637,9 @@ ol li {
   border-bottom: 2px solid var(--color-warning-dark, #f57c00);
   text-shadow: 0 1px 2px var(--shadow-30);
 }
+.btn-warning:hover {
+  background: linear-gradient(180deg, #ffc56a 0%, #ff9010 100%);
+}
 
 .btn-warning:active {
   background: var(--btn-warning-btm, #f57c00);
@@ -1443,10 +1647,13 @@ ol li {
 }
 
 .btn-danger {
-  background: linear-gradient(180deg, var(--btn-danger-top, #ff6666) 0%, var(--btn-danger-btm, #b71c1c) 100%);
+  background: linear-gradient(180deg, var(--btn-danger-top, #f44336) 0%, var(--btn-danger-btm, #b71c1c) 100%);
   color: var(--color-white, #fff);
-  border-bottom: 2px solid var(--color-danger-dark, #b71c1c);
+  border-bottom: 2px solid var(--color-danger-dark, #7f0000);
   text-shadow: 0 1px 2px var(--shadow-30);
+}
+.btn-danger:hover {
+  background: linear-gradient(180deg, #ef5350 0%, #c62828 100%);
 }
 
 .btn-danger:active {
@@ -1460,6 +1667,9 @@ ol li {
   border-bottom: 2px solid var(--color-info-dark, #1976d2);
   text-shadow: 0 1px 2px var(--shadow-30);
 }
+.btn-info:hover {
+  background: linear-gradient(180deg, #82c4f8 0%, #2286e0 100%);
+}
 
 .btn-info:active {
   background: var(--btn-info-btm, #1976d2);
@@ -1467,12 +1677,12 @@ ol li {
 }
 
 /* Text inside button */
-.btn .primary-text {
+.btn .primary-text, .form-select .primary-text {
   font-size: 18px;
   font-weight: 400;
 }
 
-.btn .secondary-text {
+.btn .secondary-text, .form-select .secondary-text {
   font-size: 10px;
   opacity: 0.7;
   align-self: flex-start;
@@ -1497,9 +1707,9 @@ ol li {
 
 /* Round Button Style */
 .btn-round {
-  width: 60px;
-  height: 60px;
-  /* Default round size in DS */
+  width: 56px;
+  height: 56px;
+  /* Standard round size — consistent across all themes */
   border-radius: 50%;
   justify-content: center;
   align-items: center;
@@ -1550,6 +1760,7 @@ ol li {
 .btn-icon {
   width: 36px;
   height: 36px;
+  min-height: unset;
   border-radius: 50%;
   background: transparent;
   color: var(--color-gray-300, #bbb);
@@ -1620,6 +1831,26 @@ ol li {
   flex-direction: column;
   align-items: center;
   gap: 5px;
+}
+
+/* ─── Small Button ─────────────────────────────────────────────────────── */
+.btn-sm {
+  padding: 3px 10px;
+  font-size: var(--text-xs, 11px);
+  min-height: 24px;
+}
+
+.btn-round.btn-sm {
+  width: 40px;
+  height: 40px;
+}
+
+.btn:disabled, .form-select:disabled,
+.btn.disabled,
+.disabled.form-select {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 :root {
@@ -2204,6 +2435,37 @@ input:checked + .slider:after {
     padding: 20px;
   }
 }
+/* ─── Select / Dropdown ─────────────────────────────────────────────────────── */
+.form-select {
+  appearance: none;
+  display: block;
+  text-align: left;
+  padding: 8px 28px 8px 8px;
+  border-bottom: none;
+  box-shadow: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555555'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.form-select option {
+  background: #e8e8e8;
+  color: #333;
+}
+.form-select:hover {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555555'/%3E%3C/svg%3E"), linear-gradient(180deg, #f5f5f5 0%, #d8d8d8 100%);
+  background-repeat: no-repeat, no-repeat;
+  background-position: right 10px center, 0 0;
+  background-size: auto, cover;
+}
+.form-select:focus {
+  outline: none;
+  box-shadow: 3px 3px 7px rgba(0, 0, 0, 0.2), -1px -1px 4px rgba(255, 255, 255, 0.6), 0 0 0 2px rgba(255, 87, 34, 0.4);
+}
+.form-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE
@@ -3146,7 +3408,7 @@ h2 {
 .vinyl-container,
 .cd-container {
   width: 100%;
-  max-width: 400px;
+  max-width: 460px;
   aspect-ratio: 1;
   display: flex;
   justify-content: center;
@@ -3167,6 +3429,7 @@ h2 {
 }
 
 .track-title {
+  font-family: var(--font-display);
   font-size: clamp(1.25rem, 4.5vw, 2.25rem);
   font-weight: 700;
   margin-bottom: 5px;
@@ -3179,6 +3442,7 @@ h2 {
 
 .artist-name,
 .album-name {
+  font-family: var(--font-display);
   font-size: clamp(0.8rem, 2.2vw, 1.2rem);
   color: var(--color-gray-300, #888);
   white-space: nowrap;
@@ -3264,9 +3528,9 @@ h2 {
 
 .slider-track {
   flex-grow: 1;
-  height: clamp(8px, 1.2vw, 16px);
+  height: 6px;
   background-color: var(--color-gray-850, #1a1a1a);
-  border-radius: 5px;
+  border-radius: 3px;
   box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.7), 0 1px 0 rgba(255, 255, 255, 0.1);
   position: relative;
   cursor: pointer;
@@ -3275,21 +3539,24 @@ h2 {
 .slider-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--color-orange-light, #ff7043), var(--color-orange-dark, #d84315));
-  border-radius: 5px 0 0 5px;
+  border-radius: 3px 0 0 3px;
   width: 30%;
   position: relative;
 }
 
 .slider-cap {
-  width: clamp(12px, 1.4vw, 20px);
-  height: clamp(18px, 2.2vw, 30px);
+  width: 14px;
+  height: 24px;
   background: var(--grad-metallic, linear-gradient(180deg, #e0e0e0, #bdbdbd));
   border-radius: 2px;
   position: absolute;
-  right: calc(clamp(12px, 1.4vw, 20px) / -2);
+  right: -7px;
   top: 50%;
   transform: translateY(-50%);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 1px 1px 0 rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .slider-cap::after {
@@ -3308,6 +3575,11 @@ h2 {
   font-size: clamp(0.6rem, 1.1vw, 0.85rem);
   color: var(--color-gray-500, #555);
   min-width: clamp(28px, 3.5vw, 44px);
+}
+
+/* Align time labels with the slider track edges */
+.seekbar-labels {
+  padding-inline: 0;
 }
 
 /* Utiltiy Controls */
@@ -3361,7 +3633,7 @@ h2 {
   .album-art-container,
   .vinyl-container,
   .cd-container {
-    max-width: 100%;
+    max-width: 460px;
     height: auto;
     aspect-ratio: 1;
     margin-bottom: 20px;
@@ -3400,8 +3672,108 @@ h2 {
     zoom: 1.5;
   }
 }
+/* ── UWLS (ultrawide + short screen): disable 4K zoom & compact overrides ── */
+@media (max-height: 700px) and (min-width: 1440px) and (min-aspect-ratio: 2/1) {
+  body {
+    zoom: 1 !important;
+  }
+  .lsp-top__title {
+    font-size: clamp(1rem, 1.8vw, 1.8rem) !important;
+  }
+  .lsp-top__row2 {
+    font-size: clamp(0.75rem, 1.1vw, 1.1rem) !important;
+  }
+  .lsp-stream-info span {
+    font-size: clamp(0.7rem, 0.9vw, 1rem) !important;
+  }
+  .seekbar-labels,
+  .time-label {
+    font-size: 0.9rem !important;
+  }
+  .context-menu-toggle {
+    width: 48px !important;
+    height: 48px !important;
+  }
+  .context-menu-toggle .material-icons {
+    font-size: 1.6rem !important;
+  }
+  .context-menu-item {
+    font-size: 1.25rem !important;
+    padding: 14px 20px !important;
+  }
+  .context-menu-item .material-icons {
+    font-size: 1.4rem !important;
+  }
+  .context-menu {
+    min-width: 220px !important;
+  }
+  .dialog-title {
+    font-size: 1.3rem !important;
+  }
+  .dialog-close {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  .dialog-close .material-icons {
+    font-size: 1.4rem !important;
+  }
+  .dialog-body {
+    font-size: 1rem !important;
+  }
+  .dialog-list-item {
+    font-size: 1rem !important;
+    padding: 0.5rem 0.85rem !important;
+  }
+  .dialog-section-title {
+    font-size: 0.8rem !important;
+  }
+  .dialog-track-title {
+    font-size: 1.1rem !important;
+  }
+  .dialog-track-meta {
+    font-size: 0.9rem !important;
+  }
+  .dialog .btn, .dialog .form-select {
+    font-size: 1rem !important;
+    padding: 0.5rem 1rem !important;
+  }
+  .playlist-track-title {
+    font-size: 1.1rem !important;
+  }
+  .playlist-track-meta {
+    font-size: 0.9rem !important;
+  }
+  .slide-panel-header .btn-icon,
+  .slide-panel-header .btn-link,
+  .slide-panel-header .dialog-close {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  .slide-panel-header .btn-icon .material-icons,
+  .slide-panel-header .btn-link .material-icons,
+  .slide-panel-header .dialog-close .material-icons {
+    font-size: 1.5rem !important;
+  }
+  .track-menu {
+    min-width: 200px !important;
+  }
+  .track-menu__item {
+    font-size: 1.2rem !important;
+    padding: 12px 18px !important;
+    gap: 10px !important;
+  }
+  .track-menu__item .material-icons {
+    font-size: 1.3rem !important;
+  }
+}
 .read-only .slider-track {
   cursor: default;
+}
+
+/* ─── Volume label spacing ─────────────────────────────────────────────── */
+.volume-manager .small {
+  min-width: 3.5ch;
+  padding-left: 0.4rem;
 }
 
 /* Page-level wrapper — apply to the element that wraps the entire album browser */
@@ -3417,7 +3789,8 @@ h2 {
 .browser-casing {
   width: 100%;
   flex: 1;
-  min-height: 0; /* allow flex child to shrink below intrinsic height */
+  min-height: 0;
+  /* allow flex child to shrink below intrinsic height */
   max-width: none;
   background-color: var(--device-surface);
   border-radius: 30px;
@@ -3439,7 +3812,8 @@ h2 {
   padding: 20px;
   box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.6), inset -1px -1px 2px rgba(255, 255, 255, 0.1), 0 1px 0 rgba(255, 255, 255, 0.1);
   flex: 1;
-  min-height: 0; /* allow flex child to shrink below intrinsic height */
+  min-height: 0;
+  /* allow flex child to shrink below intrinsic height */
   overflow: hidden;
   position: relative;
   display: flex;
@@ -3484,7 +3858,8 @@ h2 {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding-right: 4px; /* prevent content from touching the scrollbar */
+  padding-right: 4px;
+  /* prevent content from touching the scrollbar */
 }
 
 .album-list-scroll::-webkit-scrollbar {
@@ -3577,28 +3952,6 @@ h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.btn-square {
-  width: 50px;
-  height: 50px;
-  border-radius: 4px;
-  background: linear-gradient(180deg, #eaeaea 0%, #cdcdcd 100%);
-  color: #444;
-  border-bottom: 2px solid #999;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2), inset 0 1px 0 #fff;
-  border: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-
-.btn-square:active {
-  background: #cdcdcd;
-  transform: translateY(2px);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
-  border-bottom: 0;
 }
 
 :root {
@@ -3839,15 +4192,16 @@ h2 {
 
 /* ── Playlist Items ── */
 .playlist-list {
+  padding-left: 0;
   padding-bottom: 1rem;
 }
 
 .playlist-item {
   border-bottom: 1px solid var(--highlight-05);
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 0;
   transition: background 0.15s;
-  padding: 8px 4px;
+  padding: 8px 8px 8px 16px;
 }
 
 .playlist-item:hover {
@@ -3911,21 +4265,8 @@ h2 {
   line-height: 1.3;
 }
 
-/* ── Remove Button ── */
-.playlist-remove {
-  flex-shrink: 0;
-  transition: color 0.15s;
-  text-decoration: none !important;
-}
-
-.playlist-remove:hover {
-  color: var(--color-red-vivid) !important;
-}
-
-.playlist-remove .material-icons {
-  font-size: 1.1rem;
-}
-
+/* ─── Edge-to-edge rows ─── */
+/* padding and border-radius set directly on .playlist-item above */
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE
@@ -4166,7 +4507,7 @@ h2 {
 .slide-panel-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 1040;
+  z-index: 3000;
   background: transparent;
   pointer-events: none;
   transition: background 0.3s ease;
@@ -4183,7 +4524,7 @@ h2 {
   top: 0;
   left: 0;
   bottom: 0;
-  z-index: 1050;
+  z-index: 3010;
   display: flex;
   flex-direction: column;
   max-width: 80vw;
@@ -4216,14 +4557,14 @@ h2 {
 }
 
 .slide-panel-subtitle {
-  font-size: 0.7rem;
+  font-size: 0.53rem;
   color: var(--text-secondary);
   font-family: var(--font-label);
   opacity: 0.8;
 }
 
 .slide-panel-title {
-  font-size: 1rem;
+  font-size: clamp(0.75rem, 0.975vw, 0.86rem);
   font-weight: 600;
   letter-spacing: 0.03em;
   color: var(--text-light);
@@ -4232,8 +4573,17 @@ h2 {
 /* ── Body ── */
 .slide-panel-body {
   color: var(--text-light);
-  font-size: 0.9rem;
-  padding: 12px 16px;
+  font-size: 0.68rem;
+  padding: 12px 0;
+}
+.slide-panel-body::-webkit-scrollbar {
+  width: 8px;
+  background: var(--color-gray-800, #222);
+}
+.slide-panel-body::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--color-gray-500, #777) 0%, var(--color-gray-600, #555) 100%);
+  border-radius: 4px;
+  border: 1px solid var(--color-gray-700, #333);
 }
 
 :root {
@@ -4629,6 +4979,27 @@ h2 {
   color: #ff6b6b;
 }
 
+/* ─── Responsive sizing at ≥1980px ───────────────────────────────────────── */
+@media (min-width: 1980px) {
+  .context-menu-toggle {
+    width: clamp(40px, 3vw, 72px);
+    height: clamp(40px, 3vw, 72px);
+  }
+  .context-menu-toggle .material-icons {
+    font-size: clamp(20px, 1.8vw, 34px);
+  }
+  .context-menu {
+    min-width: clamp(180px, 16vw, 360px);
+  }
+  .context-menu-item {
+    font-size: clamp(13px, 1.1vw, 1.6rem);
+    gap: clamp(10px, 0.8vw, 18px);
+    padding: clamp(8px, 0.6vw, 14px) clamp(12px, 1vw, 22px);
+  }
+  .context-menu-item .material-icons {
+    font-size: clamp(18px, 1.5vw, 2.2rem);
+  }
+}
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE
@@ -4888,7 +5259,8 @@ h2 {
   width: 100%;
   pointer-events: auto;
   outline: none;
-  overflow: hidden; /* Prevents border clipping on corners */
+  overflow: hidden;
+  /* Prevents border clipping on corners */
   /* Industrial metallic surface */
   background: var(--device-surface);
   border-radius: 8px;
@@ -4935,27 +5307,12 @@ h2 {
 }
 
 .dialog-close {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  margin-left: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
   border-radius: 4px;
-  cursor: pointer;
-  color: var(--text-muted);
+  color: var(--text-light);
   transition: all 0.15s ease;
-  flex-shrink: 0;
-}
-.dialog-close .material-icons {
-  font-size: 20px;
 }
 .dialog-close:hover {
   background: var(--highlight-15);
-  color: var(--text-light);
 }
 .dialog-close:active {
   background: var(--shadow-20);
@@ -5180,19 +5537,14 @@ h2 {
   }
 }
 /* ── Browse Tiles ── */
-.browse-tile {
-  color: var(--text-secondary);
-  background: transparent;
-}
-.browse-tile:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--color-primary);
-}
 .browse-tile .browse-tile__icon {
-  color: var(--color-primary);
+  font-size: clamp(18px, 3cqi, 30px) !important;
+  display: block;
+  margin-bottom: 4px;
 }
 .browse-tile .browse-tile__label {
-  color: var(--text-secondary);
+  font-size: clamp(0.75rem, 1.5cqi, 1.1rem) !important;
+  font-weight: 600;
 }
 
 /* ── Digital LCD Clock ─────────────────────────────────────────────────────── */
@@ -5204,7 +5556,7 @@ h2 {
   justify-content: center;
   width: 90vw;
   height: 90dvh;
-  max-width: none;
+  max-width: 180dvh;
   margin: 0 auto;
   container-type: size;
 }
@@ -5233,7 +5585,7 @@ h2 {
 }
 
 .lcd-date {
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.8rem, 2cqw, 3rem);
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -5253,7 +5605,7 @@ h2 {
 }
 
 .lcd-weather-temp {
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.8rem, 2cqw, 3rem);
   font-weight: 700;
   color: #2c3e50;
@@ -5277,7 +5629,7 @@ h2 {
   justify-content: space-between;
   gap: 0.8cqw;
   margin-bottom: 0.8cqw;
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.6rem, 1.2cqw, 2rem);
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -5307,7 +5659,7 @@ h2 {
 }
 
 .lcd-ampm {
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.8rem, 2.5cqw, 4rem);
   font-weight: 700;
   color: #2c3e50;
@@ -5471,7 +5823,7 @@ h2 {
 .clock-hour-digit {
   position: absolute;
   transform: translate(-50%, -50%);
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.7rem, 3.5cqi, 1.4rem);
   font-weight: 700;
   color: var(--color-gray-800, #222);
@@ -5537,16 +5889,16 @@ h2 {
 }
 
 .clock-face-day {
-  font-family: var(--font-label, "Roboto", sans-serif);
-  font-size: clamp(0.8rem, 4cqi, 1.5rem);
+  font-family: var(--font-display);
+  font-size: clamp(0.6rem, 3cqi, 1rem);
   font-weight: 600;
   color: var(--color-gray-300, #bbb);
   letter-spacing: 0.1em;
 }
 
 .clock-face-date {
-  font-family: var(--font-label, "Roboto", sans-serif);
-  font-size: clamp(0.8rem, 4cqi, 1.5rem);
+  font-family: var(--font-display);
+  font-size: clamp(0.6rem, 3cqi, 1rem);
   font-weight: 700;
   color: var(--color-gray-700, #333);
 }
@@ -5559,7 +5911,7 @@ h2 {
 }
 
 .clock-face-weather-temp {
-  font-family: var(--font-label, "Roboto", sans-serif);
+  font-family: var(--font-display);
   font-size: clamp(0.7rem, 3.5cqi, 1.4rem);
   font-weight: 700;
   color: var(--color-gray-700, #333);
@@ -5607,14 +5959,143 @@ h2 {
   color: #d8b880;
 }
 
+.tick-flip-panel {
+  font-family: var(--font-display);
+}
+
 .tick-flip-panel-front-text .tick-flip-panel-text-wrapper {
-  transform: translateY(-10%);
+  transform: translateX(-15%) translateY(-10%);
 }
 
 .tick-flip-panel-back-text .tick-flip-panel-text-wrapper {
-  transform: translateY(-5%);
+  transform: translateX(-15%) translateY(-5%);
 }
 
+/* ── Weather — Skeuomorphic Theme ──────────────────────────────────────
+ * Reduced font sizes for hourly and daily screens so content fits cards.
+ * ─────────────────────────────────────────────────────────────────────── */
+/* Use display font (Michroma) for all weather values and temperatures */
+.weather-current-temp,
+.weather-current-desc,
+.weather-detail-value,
+.weather-detail-label,
+.weather-hourly-temp,
+.weather-hourly-time,
+.weather-daily-day,
+.weather-daily-date,
+.weather-daily-temps,
+.weather-daily-desc,
+.weather-daily-meta,
+.weather-daily-sun-item,
+.weather-full-hero-location,
+.weather-full-hero-temp,
+.weather-full-hero-desc,
+.weather-full-hero-hilow,
+.weather-full-tenday-row,
+.weather-full-tenday-day,
+.weather-full-tenday-lo,
+.weather-full-tenday-hi,
+.weather-full-hourly-time,
+.weather-full-tile-value,
+.weather-full-tile-sub {
+  font-family: var(--font-display);
+}
+
+/* Use secondary font (Roboto) for time and day labels on full weather screen */
+.weather-full-hourly-time,
+.weather-full-tenday-day,
+.weather-full-tenday-lo,
+.weather-full-tenday-hi,
+.weather-full-hourly-temp,
+.weather-full-tenday-row {
+  font-family: var(--font-label);
+}
+
+/* ── Hourly ──────────────────────────────────────────────────────────── */
+.weather-hourly-time {
+  font-size: clamp(0.55rem, 1.2cqw, 1.8rem);
+}
+
+.weather-hourly-icon {
+  font-size: clamp(1.1rem, 2.8cqw, 4rem);
+}
+
+.weather-hourly-temp {
+  font-size: clamp(0.7rem, 1.6cqw, 2.5rem);
+}
+
+.weather-hourly-wind {
+  font-size: clamp(0.5rem, 1cqw, 1.4rem);
+}
+
+/* ── Daily ───────────────────────────────────────────────────────────── */
+.weather-daily-day {
+  font-size: clamp(0.55rem, 1.8dvh, 1.3rem);
+}
+
+.weather-daily-date {
+  font-size: clamp(0.5rem, 1.3dvh, 1rem);
+}
+
+.weather-daily-icon {
+  font-size: clamp(1.1rem, 5.5dvh, 3.8rem);
+}
+
+.weather-daily-desc {
+  font-size: clamp(0.48rem, 1.1dvh, 0.9rem);
+}
+
+.weather-daily-temps {
+  font-size: clamp(0.6rem, 2.2dvh, 1.8rem);
+}
+
+.weather-daily-meta {
+  font-size: clamp(0.45rem, 1.1dvh, 0.9rem);
+}
+
+.weather-daily-sun-item {
+  font-size: clamp(0.42rem, 1dvh, 0.85rem);
+}
+
+/* ── Full weather — UWS + short screen adjustments ───────────────────── */
+@media (max-height: 700px) and (min-width: 1440px) and (min-aspect-ratio: 2/1), (max-height: 650px) {
+  .weather-full-hero {
+    padding: 1rem 1.5rem;
+  }
+  .weather-full-hero-temp {
+    font-size: clamp(2rem, min(8cqw, 18cqh), 5rem);
+  }
+  .weather-full-hero-desc {
+    font-size: clamp(0.7rem, min(2cqw, 3.5cqh), 1.2rem);
+  }
+  .weather-full-hero-hilow {
+    font-size: clamp(0.65rem, min(1.5cqw, 2.8cqh), 1rem);
+  }
+  .weather-full-hero-location {
+    font-size: clamp(0.65rem, min(1.5cqw, 2.8cqh), 1rem);
+  }
+  .weather-full-hero-icon {
+    font-size: clamp(3rem, min(12cqw, 22cqh), 7rem) !important;
+  }
+  .weather-full-tile-label {
+    font-size: clamp(0.6rem, min(1.1cqw, 2.2cqh), 1rem);
+  }
+  .weather-full-tile-value {
+    font-size: clamp(0.8rem, min(2cqw, 4cqh), 1.8rem);
+  }
+  .weather-full-tile-sub {
+    font-size: clamp(0.8rem, min(2cqw, 4cqh), 1.8rem);
+  }
+  .weather-full-tile-unit {
+    font-size: 0.65em;
+  }
+  .weather-full-hourly-time {
+    font-size: clamp(0.6rem, min(1cqw, 2.5cqh), 1rem);
+  }
+  .weather-full-hourly-temp {
+    font-size: clamp(0.65rem, min(1.1cqw, 2.8cqh), 1.1rem);
+  }
+}
 body {
   background-color: var(--bg-color);
 }

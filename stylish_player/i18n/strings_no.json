@@ -77,8 +77,10 @@
   "SHOW_PLAYER_CONTROLS_DESC": "Når deaktivert, skjules avspillerknappene og søkelinjen blir en skrivebeskyttet fremdriftsindikator.",
   "OPEN_APP": "Åpne app",
   "OPEN_APP_DESC": "Åpne Stylish Player-grensesnittet i en ny fane.",
-  "VIZ_TYPE_VU_METER_4": "VU-meter 4 (Sort)",  "SPECTRUM_OPTIONS": "Spektrumanalysator-innstillinger (JSON)",
-  "SPECTRUM_OPTIONS_DESC": "Overstyr AudioMotion Analyzer-innstillinger med et JSON-objekt. La stå tomt for å bruke standardverdier. Generer innstillinger med getOptions() på denne siden https://audiomotion.dev/demo/fluid.html",  "NONE": "Ingen",
+  "VIZ_TYPE_VU_METER_4": "VU-meter 4 (Sort)",
+  "SPECTRUM_OPTIONS": "Spektrumanalysator-innstillinger (JSON)",
+  "SPECTRUM_OPTIONS_DESC": "Overstyr AudioMotion Analyzer-innstillinger med et JSON-objekt. La stå tomt for å bruke standardverdier. Generer innstillinger med getOptions() på denne siden https://audiomotion.dev/demo/fluid.html",
+  "NONE": "Ingen",
   "KIOSK": "Kioskmodus",
   "KIOSK_NOT_FOUND": "Volumio Kiosk er ikke installert på dette systemet. Installer kiosk-tjenesten for å bruke denne funksjonen.",
   "KIOSK_SHOWING_DEFAULT": "Kiosk-displayet viser for øyeblikket standard Volumio-grensesnittet.",
@@ -90,5 +92,9 @@
   "KIOSK_RESTORE_BAK_LABEL": "Gjenopprett fra sikkerhetskopi",
   "KIOSK_RESTORE_BAK_BTN": "Gjenopprett",
   "USE_24_HOUR": "24-timers format",
-  "USE_24_HOUR_DESC": "Vis tid i 24-timers (militær) format i stedet for 12-timers AM/PM."
+  "USE_24_HOUR_DESC": "Vis tid i 24-timers (militær) format i stedet for 12-timers AM/PM.",
+  "ALBUM_ART_MAX_SPACE": "Bruk maksimal plass",
+  "ALBUM_ART_MAX_SPACE_DESC": "Når aktivert, strekker albumomslaget seg over hele venstre panel og utvider sporinformasjon og kontroller for å fylle all tilgjengelig plass.",
+  "BACKGROUND_COLOR": "Background Color (hex)",
+  "BACKGROUND_COLOR_DESC": "Set a solid background color instead of the blurred album art. Enter a hex code (e.g. #1a1a2e). Leave empty to use the album art background."
 }
