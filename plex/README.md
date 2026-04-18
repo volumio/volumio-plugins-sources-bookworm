@@ -8,12 +8,13 @@ A Volumio music service plugin that lets you browse and play music from your Ple
 - Browse Plex music libraries and albums
 - Browse Plex playlists
 - Search for tracks and albums
+- Tested on Volumio 3 and works on node 14+.
 
 ## Prerequisites
 
-- A running Volumio 3 device (Node 14+, ARM or x86)
+- A running Volumio 3 or higher device (Node 14+, ARM or x86)
 - A Plex Media Server on your network with at least one music library
-- A Plex authentication token ([how to find your token](https://support.plex.tv/articles/204059436/))
+- A Plex account or authentication token ([how to find your token](https://support.plex.tv/articles/204059436/))
 
 ## Development/Building
 
@@ -31,6 +32,8 @@ npm test
 ```
 
 ## Installing on Volumio
+
+If you don't want to build the plugin yourself, switch to release branch that has pre-built dist/ folder. The following installation instructions apply to both the release branch and if you build the plugin yourself on the main branch.
 
 ### Option 1: volumio plugin install (recommended)
 
@@ -140,3 +143,4 @@ sudo systemctl restart volumio
 
 - Added shuffle function that mimics the behavior of Plex's shuffle (Fisher-Yates algorithm) but is added as an entry inside playlists and albums. It can turned off inside the plugin settings.
 - Added crossfade option but it is not strongly supported by Volumio and might not behave as expected. The plugin will attempt to overlap tracks by the specified duration, but due to technical limitations, the maximum effective crossfade is probably around 2 seconds. Perhaps future versions of Volumio will have better support for crossfading.
+- Supports reporting back to the server when tracks are played. It should show up in the Plex dashboard. It will update play counts, last played and scrobbling if that is set up. To enable this, go to the Plex plugin settings and turn on "Send Playback Data to Plex" in settings.

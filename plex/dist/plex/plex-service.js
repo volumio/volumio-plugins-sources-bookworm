@@ -26,8 +26,8 @@ class PlexService {
         return (0, parser_js_1.parseArtists)(raw);
     }
     /** Get a page of artists in a library section. */
-    async getArtistsPaginated(libraryKey, offset, limit) {
-        const raw = await this.apiClient.getArtists(libraryKey, { offset, limit });
+    async getArtistsPaginated(libraryKey, offset, limit, sort) {
+        const raw = await this.apiClient.getArtists(libraryKey, { offset, limit }, sort);
         return {
             items: (0, parser_js_1.parseArtists)(raw),
             totalSize: raw.MediaContainer.totalSize ?? raw.MediaContainer.size,
@@ -46,8 +46,8 @@ class PlexService {
         return (0, parser_js_1.parseAlbums)(raw);
     }
     /** Get a page of albums in a library section. */
-    async getAlbumsPaginated(libraryKey, offset, limit) {
-        const raw = await this.apiClient.getAlbums(libraryKey, { offset, limit });
+    async getAlbumsPaginated(libraryKey, offset, limit, sort) {
+        const raw = await this.apiClient.getAlbums(libraryKey, { offset, limit }, sort);
         return {
             items: (0, parser_js_1.parseAlbums)(raw),
             totalSize: raw.MediaContainer.totalSize ?? raw.MediaContainer.size,
