@@ -1,6 +1,6 @@
 {
   "name": "plex",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Volumio plugin for Plex Music",
   "main": "index.js",
   "scripts": {
@@ -23,7 +23,7 @@
             "bookworm"
     ],
     "details": "Play music from Plex media server.",
-    "changelog": "Sorting. Reporting back to server. Action bar"
+    "changelog": "Fix for using track artist instead of album artist"
   },
   "keywords": ["plex"],
   "engines": {
