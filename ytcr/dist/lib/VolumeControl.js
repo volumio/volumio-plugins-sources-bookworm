@@ -91,4 +91,3 @@ class VolumeControl {
 }
 _VolumeControl_commandRouter = new WeakMap(), _VolumeControl_logger = new WeakMap(), _VolumeControl_currentVolume = new WeakMap(), _VolumeControl_volumioVolumeChangeListener = new WeakMap();
 exports.default = VolumeControl;
-//# sourceMappingURL=VolumeControl.js.map

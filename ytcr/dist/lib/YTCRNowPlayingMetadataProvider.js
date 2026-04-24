@@ -132,4 +132,3 @@ _YTCRNowPlayingMetadataProvider_player = new WeakMap(), _YTCRNowPlayingMetadataP
     return plugin && typeof plugin['getNowPlayingMetadataProvider'] === 'function';
 };
 exports.default = YTCRNowPlayingMetadataProvider;
-//# sourceMappingURL=YTCRNowPlayingMetadataProvider.js.map
