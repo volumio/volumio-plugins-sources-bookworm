@@ -32,17 +32,16 @@ const BEST_AUDIO_FORMAT = {
 // Clients:
 // WEB_EMBEDDED now throws "This video is unavailable" error.
 // ANDROID_VR, MWEB and TV work, but:
+// - ANDROID_VR returns 400 error if cookies used (signed-in);
 // - MWEB URLs have a 4-second delay before they become valid;
 // - TV requires sign-in.
 const CLIENTS_WHEN_SIGNED_IN = [
     'WEB',
-    'ANDROID_VR',
     'TV',
     'MWEB'
 ];
 const CLIENTS_WHEN_SIGNED_IN_AND_PREFETCH = [
     'WEB',
-    'ANDROID_VR',
     'TV'
     // No MWEB here, because of the 4-second delay.
     // This delay coupled with the actual fetch time is enough to screw up
