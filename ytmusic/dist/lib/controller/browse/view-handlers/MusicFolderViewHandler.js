@@ -27,4 +27,3 @@ class MusicFolderViewHandler extends GenericViewHandler_1.default {
     }
 }
 exports.default = MusicFolderViewHandler;
-//# sourceMappingURL=MusicFolderViewHandler.js.map

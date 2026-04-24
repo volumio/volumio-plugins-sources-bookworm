@@ -22,4 +22,3 @@ class PlaylistViewHandler extends MusicFolderViewHandler_1.default {
     }
 }
 exports.default = PlaylistViewHandler;
-//# sourceMappingURL=PlaylistViewHandler.js.map

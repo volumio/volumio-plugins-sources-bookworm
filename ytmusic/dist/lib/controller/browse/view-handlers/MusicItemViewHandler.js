@@ -14,4 +14,3 @@ class MusicItemViewHandler extends ExplodableViewHandler_1.default {
     }
 }
 exports.default = MusicItemViewHandler;
-//# sourceMappingURL=MusicItemViewHandler.js.map

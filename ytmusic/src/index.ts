@@ -17,7 +17,10 @@ import ViewHelper from './lib/controller/browse/view-handlers/ViewHelper';
 import InnertubeLoader from './lib/model/InnertubeLoader';
 import YTMusicNowPlayingMetadataProvider from './lib/util/YTMusicNowPlayingMetadataProvider';
 import { type NowPlayingPluginSupport } from 'now-playing-common';
-import { Parser } from 'volumio-youtubei.js';
+import { Parser } from 'volumio-yt-support/dist/innertube';
+import { existsSync, readFileSync } from 'fs';
+import UIConfigHelper from './config/UIConfigHelper';
+import { YtDlpWrapper } from './lib/util/YtDlp';
 
 interface GotoParams extends QueueItem {
   type: 'album' | 'artist';
@@ -28,11 +31,11 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
   #config: any;
   #commandRouter: any;
 
-  #browseController: BrowseController | null;
-  #searchController: SearchController | null;
-  #playController: PlayController | null;
+  #browseController: BrowseController | null = null;
+  #searchController: SearchController | null = null;
+  #playController: PlayController | null = null;
 
-  #nowPlayingMetadataProvider: YTMusicNowPlayingMetadataProvider | null;
+  #nowPlayingMetadataProvider: YTMusicNowPlayingMetadataProvider | null = null;
 
   constructor(context: any) {
     this.#context = context;
@@ -40,91 +43,134 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
   }
 
   getUIConfig() {
-    const defer = libQ.defer();
+    return jsPromiseToKew(this.#doGetUIConfig()).fail((error: any) => {
+      ytmusic
+        .getLogger()
+        .error(`[ytmusic] getUIConfig(): Cannot populate configuration - ${error}`);
+      throw error;
+    });
+  }
 
+
+  async #doGetUIConfig() {
+    const hasAcceptedDisclaimer = ytmusic.getConfigValue('hasAcceptedDisclaimer');
     const langCode = this.#commandRouter.sharedVars.get('language_code');
-    const loadConfigPromises = [
-      kewToJSPromise(this.#commandRouter.i18nJson(`${__dirname}/i18n/strings_${langCode}.json`,
+    const _uiconf = await kewToJSPromise(
+      this.#commandRouter.i18nJson(
+        `${__dirname}/i18n/strings_${langCode}.json`,
         `${__dirname}/i18n/strings_en.json`,
-        `${__dirname}/UIConfig.json`)),
-      this.#getConfigI18nOptions(),
-      this.#getConfigAccountInfo()
-    ] as const;
+        `${__dirname}/UIConfig.json`
+      )
+    );
+    const i18nOptions = hasAcceptedDisclaimer ? await this.#getConfigI18nOptions() : null;
+    const account = hasAcceptedDisclaimer ? await this.#getConfigAccountInfo() : null;
+    const uiconf = UIConfigHelper.observe(_uiconf);
 
-    Promise.all(loadConfigPromises)
-      .then(([ uiconf, i18nOptions, account ]) => {
-        const i18nUIConf = uiconf.sections[0];
-        const accountUIConf = uiconf.sections[1];
-        const browseUIConf = uiconf.sections[2];
-        const playbackUIConf = uiconf.sections[3];
+    const disclaimerUIConf = uiconf.section_disclaimer;
+    const i18nUIConf = uiconf.section_i18n;
+    const accountUIConf = uiconf.section_account;
+    const browseUIConf = uiconf.section_browse;
+    const playbackUIConf = uiconf.section_playback;
+    const ytDlpUIConf = uiconf.section_yt_dlp;
 
-        // I18n
-        // -- region
-        i18nUIConf.content[0].label = i18nOptions.options.region.label;
-        i18nUIConf.content[0].options = i18nOptions.options.region.optionValues;
-        i18nUIConf.content[0].value = i18nOptions.selected.region;
-        i18nUIConf.content[1].label = i18nOptions.options.language.label;
-        i18nUIConf.content[1].options = i18nOptions.options.language.optionValues;
-        i18nUIConf.content[1].value = i18nOptions.selected.language;
+    // Disclaimer
+    disclaimerUIConf.content.hasAcceptedDisclaimer.value = hasAcceptedDisclaimer;
 
-        // Account
-        const cookie = ytmusic.getConfigValue('cookie');
-        let authStatusDescription;
-        if (account?.isSignedIn && account.active) {
-          authStatusDescription = ytmusic.getI18n('YTMUSIC_AUTH_STATUS_SIGNED_IN_AS', account.active.name);
-          if (account.list.length > 1) {
-            const accountSelect = {
-              id: 'activeChannelHandle',
-              element: 'select',
-              label: ytmusic.getI18n('YTMUSIC_ACTIVE_CHANNEL'),
-              value: {
-                label: account.active.name,
-                value: account.active.handle
-              },
-              options: account.list.map((ac) => ({
-                label: ac.name,
-                value: ac.handle
-              }))
-            };
-            accountUIConf.content = [
-              accountUIConf.content[0],
-              accountSelect,
-              ...accountUIConf.content.slice(1)
-            ];
-            accountUIConf.saveButton.data.push('activeChannelHandle');
-          }
-        }
-        else if (cookie) {
-          authStatusDescription = ytmusic.getI18n('YTMUSIC_AUTH_STATUS_SIGNED_OUT');
-        }
-        accountUIConf.description = authStatusDescription;
-        accountUIConf.content[0].value = cookie;
+    if (!hasAcceptedDisclaimer) {
+      // hasAcceptedDisclaimer is false
+      uiconf.sections = [ disclaimerUIConf ];
+      return uiconf;
+    }
 
-        // Browse
-        const loadFullPlaylists = ytmusic.getConfigValue('loadFullPlaylists');
-        browseUIConf.content[0].value = loadFullPlaylists;
+    // I18n
+    // -- region
+    i18nUIConf.content.region.label = i18nOptions!.options.region.label;
+    i18nUIConf.content.region.options = i18nOptions!.options.region.optionValues;
+    i18nUIConf.content.region.value = i18nOptions!.selected.region;
+    i18nUIConf.content.language.label = i18nOptions!.options.language.label;
+    i18nUIConf.content.language.options = i18nOptions!.options.language.optionValues;
+    i18nUIConf.content.language.value = i18nOptions!.selected.language;
 
-        // Playback
-        const autoplay = ytmusic.getConfigValue('autoplay');
-        const autoplayClearQueue = ytmusic.getConfigValue('autoplayClearQueue');
-        const addToHistory = ytmusic.getConfigValue('addToHistory');
-        const prefetchEnabled = ytmusic.getConfigValue('prefetch');
-        const preferOpus = ytmusic.getConfigValue('preferOpus');
-        playbackUIConf.content[0].value = autoplay;
-        playbackUIConf.content[1].value = autoplayClearQueue;
-        playbackUIConf.content[2].value = addToHistory;
-        playbackUIConf.content[3].value = prefetchEnabled;
-        playbackUIConf.content[4].value = preferOpus;
-
-        defer.resolve(uiconf);
-      })
-      .catch((error: unknown) => {
-        ytmusic.getLogger().error(ytmusic.getErrorMessage('[ytmusic] getUIConfig(): Cannot populate YouTube Music configuration:', error));
-        defer.reject(Error());
+    // Account
+    const cookie = ytmusic.getConfigValue('cookie');
+    let authStatusDescription;
+    if (!account?.isSignedIn || !account.active || account.list.length <= 1) {
+        accountUIConf.content.activeChannelHandle.hidden = true;
+    }
+    if (account?.isSignedIn && account.active) {
+      authStatusDescription = ytmusic.getI18n('YTMUSIC_AUTH_STATUS_SIGNED_IN_AS', account.active.name);
+      if (account.list.length > 1) {
+        accountUIConf.content.activeChannelHandle.value ={
+          label: account.active.name,
+          value: account.active.handle
+        };
+        accountUIConf.content.activeChannelHandle.options = account.list.map((ac) => ({
+          label: ac.name,
+          value: ac.handle
+        }));
+        (accountUIConf.saveButton!.data as string[]).push('activeChannelHandle');
       }
-      );
+    }
+    else if (cookie) {
+      authStatusDescription = ytmusic.getI18n('YTMUSIC_AUTH_STATUS_SIGNED_OUT');
+    }
+    accountUIConf.description = authStatusDescription;
+    accountUIConf.content.cookie.value = cookie;
 
-    return defer.promise;
+    // Browse
+    const loadFullPlaylists = ytmusic.getConfigValue('loadFullPlaylists');
+    browseUIConf.content.loadFullPlaylists.value = loadFullPlaylists;
+
+    // Playback
+    const player = ytmusic.getConfigValue('player');
+    const autoplay = ytmusic.getConfigValue('autoplay');
+    const autoplayClearQueue = ytmusic.getConfigValue('autoplayClearQueue');
+    const addToHistory = ytmusic.getConfigValue('addToHistory');
+    const prefetchEnabled = ytmusic.getConfigValue('prefetch');
+    const preferOpus = ytmusic.getConfigValue('preferOpus');
+    playbackUIConf.content.player.value =
+      playbackUIConf.content.player.options.find((o) => o.value === player) ||
+      playbackUIConf.content.player.options[0];
+    playbackUIConf.content.autoplay.value = autoplay;
+    playbackUIConf.content.autoplayClearQueue.value = autoplayClearQueue;
+    playbackUIConf.content.addToHistory.value = addToHistory;
+    playbackUIConf.content.prefetch.value = prefetchEnabled;
+    playbackUIConf.content.preferOpus.value = preferOpus;
+
+
+    // yt-dlp
+    ytDlpUIConf.content.useYtDlp.value = ytmusic.getConfigValue('useYtDlp');
+    const ytDlpVersion = ytmusic.getConfigValue('ytDlpVersion');
+    const ytDlp = YtDlpWrapper.getInstance();
+    const installedYDlpVersions = ytDlp.getInstalled();
+    const ytDlpVersionOptions = installedYDlpVersions.length > 0 ? installedYDlpVersions.map(({version}, i) => ({
+      label: i === 0 ? ytmusic.getI18n('YTMUSIC_VERSION_LATEST', version) : version,
+      value: version
+    })) : [{
+      label: ytmusic.getI18n('YTMUSIC_NONE_INSTALLED'),
+      value: ''
+    }];
+    const selectedYtDlpVersionOption = (ytDlpVersion && ytDlpVersionOptions.length > 1 ? ytDlpVersionOptions.find(({value}) => value === ytDlpVersion) : null) || ytDlpVersionOptions[0];
+    ytDlpUIConf.content.ytDlpVersion.options = ytDlpVersionOptions;
+    ytDlpUIConf.content.ytDlpVersion.value = selectedYtDlpVersionOption;
+    let latestAvailable;
+    try {
+      latestAvailable = await ytDlp.getLatestVersion();
+    }
+    catch (error: unknown) {
+      ytmusic.getLogger().error(ytmusic.getErrorMessage('[ytmusic] Failed to get latest yt-dlp version:', error));
+      ytmusic.toast('error', ytmusic.getI18n('YTMUSIC_ERR_GET_LATEST_YT_DLP_VER'));
+      latestAvailable = null;
+    }
+    const latestInstalled = installedYDlpVersions[0]?.version || null;
+    if (latestInstalled && latestAvailable && (new Date(latestAvailable).getTime() - new Date(latestInstalled).getTime() > 0)) {
+      ytDlpUIConf.description = ytmusic.getI18n('YTMUSIC_YT_DLP_NEWER_AVAIL', latestAvailable);
+    }
+    if (!latestAvailable || latestInstalled === latestAvailable) {
+      ytDlpUIConf.content.installLatestYtDlp.hidden = true;
+    }
+
+    return uiconf;
   }
 
   onVolumioStart() {
@@ -160,10 +206,10 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
 
     this.#nowPlayingMetadataProvider = null;
 
-    InnertubeLoader.reset();
-    ytmusic.reset();
-
-    return libQ.resolve();
+    return jsPromiseToKew(
+      InnertubeLoader.reset()
+        .then(() => ytmusic.reset())
+      );
   }
 
   getConfigurationFiles() {
@@ -202,10 +248,10 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
     }
   }
 
-  #getConfigAccountInfo() {
+  async #getConfigAccountInfo() {
     const model = Model.getInstance(ModelType.Account);
     try {
-      return model.getInfo();
+      return await model.getInfo();
     }
     catch (error: unknown) {
       ytmusic.getLogger().warn(ytmusic.getErrorMessage('[ytmusic] Failed to get account config:', error));
@@ -213,7 +259,57 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
     }
   }
 
-  configSaveI18n(data: any) {
+  showDisclaimer() {
+    const langCode = this.#commandRouter.sharedVars.get('language_code');
+    let disclaimerFile = `${__dirname}/i18n/disclaimer_${langCode}.html`;
+    if (!existsSync(disclaimerFile)) {
+      disclaimerFile = `${__dirname}/i18n/disclaimer_en.html`;
+    }
+    try {
+      const contents = readFileSync(disclaimerFile, { encoding: 'utf8' });
+      const modalData = {
+        title: ytmusic.getI18n('YTMUSIC_DISCLAIMER_HEADING'),
+        message: contents,
+        size: 'lg',
+        buttons: [
+          {
+            name: ytmusic.getI18n('YTMUSIC_CLOSE'),
+            class: 'btn btn-warning'
+          },
+          {
+            name: ytmusic.getI18n('YTMUSIC_ACCEPT'),
+            class: 'btn btn-info',
+            emit: 'callMethod',
+            payload: {
+              type: 'controller',
+              endpoint: 'music_service/ytmusic',
+              method:'acceptDisclaimer',
+              data: ''
+            } 
+          }
+        ]
+      };
+      ytmusic.volumioCoreCommand.broadcastMessage("openModal", modalData);
+    }
+    catch (error) {
+      ytmusic.getLogger().error(`[ytmusic] ${ytmusic.getErrorMessage(`Error reading "${disclaimerFile}"`, error, false)}`)
+      ytmusic.toast('error', 'Error loading disclaimer contents');
+    }
+  }
+
+  acceptDisclaimer() {
+    this.configSaveDisclaimer({
+      hasAcceptedDisclaimer: true
+    });
+  }
+
+  configSaveDisclaimer(data: any) {
+    ytmusic.setConfigValue('hasAcceptedDisclaimer', data.hasAcceptedDisclaimer);
+    ytmusic.toast('success', ytmusic.getI18n('YTMUSIC_SETTINGS_SAVED'));
+    ytmusic.refreshUIConfig();
+  }
+
+  async configSaveI18n(data: any) {
     const oldRegion = ytmusic.hasConfigKey('region') ? ytmusic.getConfigValue('region') : null;
     const oldLanguage = ytmusic.hasConfigKey('language') ? ytmusic.getConfigValue('language') : null;
     const region = data.region.value;
@@ -223,7 +319,7 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
       ytmusic.setConfigValue('region', region);
       ytmusic.setConfigValue('language', language);
 
-      InnertubeLoader.applyI18nConfig();
+      await InnertubeLoader.applyI18nConfig();
       Model.getInstance(ModelType.Config).clearCache();
       ytmusic.refreshUIConfig();
     }
@@ -231,7 +327,7 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
     ytmusic.toast('success', ytmusic.getI18n('YTMUSIC_SETTINGS_SAVED'));
   }
 
-  configSaveAccount(data: any) {
+  async configSaveAccount(data: any) {
     const oldCookie = ytmusic.hasConfigKey('cookie') ? ytmusic.getConfigValue('cookie') : null;
     const cookie = data.cookie?.trim();
     const oldActiveChannelHandle = ytmusic.getConfigValue('activeChannelHandle');
@@ -246,9 +342,10 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
       ytmusic.setConfigValue('activeChannelHandle', activeChannelHandle);
       resetInnertube =  true;
     }
+    YtDlpWrapper.refresh();
     ytmusic.toast('success', ytmusic.getI18n('YTMUSIC_SETTINGS_SAVED'));
     if (resetInnertube) {
-      InnertubeLoader.reset();
+      await InnertubeLoader.reset();
       ytmusic.refreshUIConfig();
     }
   }
@@ -260,6 +357,7 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
   }
 
   configSavePlayback(data: any) {
+    ytmusic.setConfigValue('player', data.player.value);
     ytmusic.setConfigValue('autoplay', data.autoplay);
     ytmusic.setConfigValue('autoplayClearQueue', data.autoplayClearQueue);
     ytmusic.setConfigValue('addToHistory', data.addToHistory);
@@ -267,6 +365,38 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
     ytmusic.setConfigValue('preferOpus', data.preferOpus);
 
     ytmusic.toast('success', ytmusic.getI18n('YTMUSIC_SETTINGS_SAVED'));
+  }
+
+
+  configSaveYtDlp(data: any) {
+    const useYtDlp = data.useYtDlp;
+    if (useYtDlp) {
+      const installed = YtDlpWrapper.getInstance().getInstalled();
+      if (installed.length === 0) {
+        ytmusic.toast('error', ytmusic.getI18n('YTMUSIC_ERR_USE_YT_DLP_BUT_NONE_INSTALLED'));
+        ytmusic.setConfigValue('useYtDlp', false);
+        return ytmusic.refreshUIConfig();
+      }
+    }
+    ytmusic.setConfigValue('useYtDlp', useYtDlp);
+    const ytDlpVersion = data.ytDlpVersion.value || null;
+    ytmusic.setConfigValue('ytDlpVersion', ytDlpVersion);
+    ytmusic.toast('success', ytmusic.getI18n('YTMUSIC_SETTINGS_SAVED'));
+  }
+
+  async installLatestYtDlp() {
+    const ytDlp = YtDlpWrapper.getInstance();
+    ytmusic.toast('info', ytmusic.getI18n('YTMUSIC_YT_DLP_INSTALLING'));
+    try {
+      const result = await ytDlp.install();
+      ytmusic.toast('success', ytmusic.getI18n('YTMUSIC_YT_DLP_INSTALLED', result.version));
+      ytmusic.setConfigValue('ytDlpVersion', result.version);
+      ytmusic.refreshUIConfig();
+    }
+    catch (error: unknown) {
+      ytmusic.getLogger().log('error', ytmusic.getErrorMessage('Error installing yt-dlp:', error));
+      ytmusic.toast('error', ytmusic.getErrorMessage('Failed to install yt-dlp:', error, false));
+    }
   }
 
   #addToBrowseSources() {
@@ -284,12 +414,21 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
     if (!this.#browseController) {
       return libQ.reject('YouTube Music plugin is not started');
     }
+    if (!ytmusic.getConfigValue('hasAcceptedDisclaimer')) {
+      return libQ.reject({
+        errorMessage: ytmusic.getI18n('YTMUSIC_ERR_ACCEPT_DISCLAIMER_BROWSE')
+      });
+    }
     return jsPromiseToKew(this.#browseController.browseUri(uri));
   }
 
   explodeUri(uri: string) {
     if (!this.#browseController) {
-      return libQ.reject('YouTube Music Discover plugin is not started');
+      return libQ.reject('YouTube Music plugin is not started');
+    }
+    if (!ytmusic.getConfigValue('hasAcceptedDisclaimer')) {
+      ytmusic.toast('error', ytmusic.getI18n('YTMUSIC_ERR_ACCEPT_DISCLAIMER_PLAY'));
+      return libQ.reject(ytmusic.getI18n('YTMUSIC_ERR_ACCEPT_DISCLAIMER_PLAY'));
     }
     return jsPromiseToKew(this.#browseController.explodeUri(uri));
   }
@@ -322,6 +461,13 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
     return this.#playController.resume();
   }
 
+  play() {
+    if (!this.#playController) {
+      return libQ.reject('YouTube Music plugin is not started');
+    }
+    return this.#playController.play();
+  }
+
   seek(position: number) {
     if (!this.#playController) {
       return libQ.reject('YouTube Music plugin is not started');
@@ -348,6 +494,20 @@ class ControllerYTMusic implements NowPlayingPluginSupport {
       return libQ.reject('YouTube Music plugin is not started');
     }
     return jsPromiseToKew(this.#searchController.search(query));
+  }
+
+  random(value: boolean) {
+    if (!this.#playController) {
+      return libQ.reject('YouTube Music plugin is not started');
+    }
+    return this.#playController.setRandom(value);
+  }
+
+  repeat(value: boolean, repeatSingle: boolean) {
+    if (!this.#playController) {
+      return libQ.reject('YouTube Music plugin is not started');
+    }
+    return this.#playController.setRepeat(value, repeatSingle);
   }
 
   prefetch(track: QueueItem) {

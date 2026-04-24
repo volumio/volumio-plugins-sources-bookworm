@@ -12,4 +12,3 @@ class PodcastViewHandler extends MusicFolderViewHandler_1.default {
     }
 }
 exports.default = PodcastViewHandler;
-//# sourceMappingURL=PodcastViewHandler.js.map

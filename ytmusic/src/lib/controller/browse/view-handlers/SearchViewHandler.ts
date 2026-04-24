@@ -85,7 +85,7 @@ export default class SearchViewHandler extends GenericViewHandler<SearchView> {
       if (item.type === 'section') {
         spliced = this.#spliceShowingResultsFor(item);
       }
-      else if (item.type === 'endpointLink' && item.icon === 'YT2_SHOWING_RESULTS_FOR') {
+      else if (item.type === 'endpointLink' && item.icon === 'YTMUSIC_SHOWING_RESULTS_FOR') {
         spliced = section.items.splice(itemIndex, 1);
       }
       return !!spliced;

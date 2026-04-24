@@ -6,6 +6,26 @@ Credit goes to the [YouTube.js](https://github.com/LuanRT/YouTube.js) project. T
 
 ## Changelog
 
+2.6.0
+- Add option to use VLC or mpv for playback.
+
+2.5.2
+- Fix "Active profile" setting not applied.
+
+2.5.1
+- No changes. Version increment to work around Volumio plugin backend issue.
+
+2.5.0
+- Fix issues caused by YT changes:
+  - Streams returning 403 / unavailable errors.
+  - Lyrics always showing up as unavailable due to requests returning status 400 errors.
+- Add option to use [yt-dlp](https://github.com/yt-dlp/yt-dlp) to fetch streams.
+
+2.4.0
+- Fix stream errors due to YT changes
+- Improve autoplay reliability
+- Add disclaimer, which users need to accept in the plugin settings
+
 2.3.5
 - Test stream URL before returning playback info (sometimes requires multiple tries due to YT imposing a delay)
 - Abort prefetches that didn't resolve in time

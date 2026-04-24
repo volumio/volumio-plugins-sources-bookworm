@@ -15,13 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
@@ -36,7 +46,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _PlayController_instances, _a, _PlayController_mpdPlugin, _PlayController_autoplayListener, _PlayController_lastPlaybackInfo, _PlayController_prefetchPlaybackStateFixer, _PlayController_prefetchAborter, _PlayController_addAutoplayListener, _PlayController_removeAutoplayListener, _PlayController_updateTrackWithPlaybackInfo, _PlayController_doPlay, _PlayController_appendTrackTypeToStreamUrl, _PlayController_mpdAddTags, _PlayController_handleAutoplay, _PlayController_findLastPlayedTrackQueueIndex, _PlayController_getAutoplayItems, _PlayController_cancelPrefetch, _PrefetchPlaybackStateFixer_instances, _PrefetchPlaybackStateFixer_positionAtPrefetch, _PrefetchPlaybackStateFixer_prefetchedTrack, _PrefetchPlaybackStateFixer_volumioPushStateListener, _PrefetchPlaybackStateFixer_addPushStateListener, _PrefetchPlaybackStateFixer_removePushStateListener, _PrefetchPlaybackStateFixer_handleVolumioPushState;
+var _PlayController_instances, _a, _PlayController_mpdPlugin, _PlayController_prefetchPlaybackStateFixer, _PlayController_prefetchAborter, _PlayController_externalPlayerManager, _PlayController_autoplayManager, _PlayController_updateTrackWithPlaybackInfo, _PlayController_doPlay, _PlayController_appendTrackTypeToStreamUrl, _PlayController_mpdAddTags, _PlayController_getAutoplayItems, _PlayController_cancelPrefetch, _PrefetchPlaybackStateFixer_instances, _PrefetchPlaybackStateFixer_positionAtPrefetch, _PrefetchPlaybackStateFixer_prefetchedTrack, _PrefetchPlaybackStateFixer_volumioPushStateListener, _PrefetchPlaybackStateFixer_addPushStateListener, _PrefetchPlaybackStateFixer_removePushStateListener, _PrefetchPlaybackStateFixer_handleVolumioPushState;
 Object.defineProperty(exports, "__esModule", { value: true });
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -49,24 +59,62 @@ const ViewHelper_1 = __importDefault(require("../browse/view-handlers/ViewHelper
 const ExplodeHelper_1 = __importDefault(require("../../util/ExplodeHelper"));
 const AutoplayHelper_1 = __importDefault(require("../../util/AutoplayHelper"));
 const events_1 = __importDefault(require("events"));
+const volumio_yt_support_1 = require("volumio-yt-support");
 class PlayController {
     constructor() {
         _PlayController_instances.add(this);
         _PlayController_mpdPlugin.set(this, void 0);
-        _PlayController_autoplayListener.set(this, void 0);
-        _PlayController_lastPlaybackInfo.set(this, void 0);
         _PlayController_prefetchPlaybackStateFixer.set(this, void 0);
         _PlayController_prefetchAborter.set(this, void 0);
+        _PlayController_externalPlayerManager.set(this, void 0);
+        _PlayController_autoplayManager.set(this, void 0);
         __classPrivateFieldSet(this, _PlayController_mpdPlugin, YTMusicContext_1.default.getMpdPlugin(), "f");
-        __classPrivateFieldSet(this, _PlayController_autoplayListener, null, "f");
         __classPrivateFieldSet(this, _PlayController_prefetchPlaybackStateFixer, new PrefetchPlaybackStateFixer(), "f");
-        __classPrivateFieldGet(this, _PlayController_prefetchPlaybackStateFixer, "f").on('playPrefetch', (info) => {
-            __classPrivateFieldSet(this, _PlayController_lastPlaybackInfo, info, "f");
-        });
         __classPrivateFieldSet(this, _PlayController_prefetchAborter, null, "f");
+        __classPrivateFieldSet(this, _PlayController_externalPlayerManager, new volumio_yt_support_1.ExternalPlayerManager({
+            serviceName: 'ytmusic',
+            logger: {
+                info: (msg) => YTMusicContext_1.default.getLogger().info(`[ytmusic] ${msg}`),
+                warn: (msg) => YTMusicContext_1.default.getLogger().warn(`[ytmusic] ${msg}`),
+                error: (msg) => YTMusicContext_1.default.getLogger().error(`[ytmusic] ${msg}`),
+            },
+            volumioCoreCommand: YTMusicContext_1.default.volumioCoreCommand,
+            stateMachine: YTMusicContext_1.default.getStateMachine(),
+            mpdPlugin: YTMusicContext_1.default.getMpdPlugin(),
+            i18n: {
+                prefix: 'YTMUSIC',
+                get: (key, ...args) => YTMusicContext_1.default.getI18n(key, ...args)
+            },
+            toast: (type, message) => YTMusicContext_1.default.toast(type, message)
+        }), "f");
+        __classPrivateFieldSet(this, _PlayController_autoplayManager, new volumio_yt_support_1.AutoplayManager({
+            serviceName: 'ytmusic',
+            volumioCoreCommand: YTMusicContext_1.default.volumioCoreCommand,
+            stateMachine: YTMusicContext_1.default.getStateMachine(),
+            mpdPlugin: YTMusicContext_1.default.getMpdPlugin(),
+            getConfigValue: (key) => YTMusicContext_1.default.getConfigValue(key),
+            getAutoplayItems: __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_getAutoplayItems).bind(this),
+            externalPlayerManager: __classPrivateFieldGet(this, _PlayController_externalPlayerManager, "f"),
+            logger: {
+                info: (msg) => YTMusicContext_1.default.getLogger().info(`[ytmusic] ${msg}`),
+                warn: (msg) => YTMusicContext_1.default.getLogger().warn(`[ytmusic] ${msg}`),
+                error: (msg) => YTMusicContext_1.default.getLogger().error(`[ytmusic] ${msg}`),
+            }
+        }), "f");
+        __classPrivateFieldGet(this, _PlayController_autoplayManager, "f").on('queued', ({ items }) => {
+            if (items.length === 0) {
+                YTMusicContext_1.default.toast('info', YTMusicContext_1.default.getI18n('YTMUSIC_AUTOPLAY_NO_ITEMS'));
+            }
+            else if (items.length > 1) {
+                YTMusicContext_1.default.toast('success', YTMusicContext_1.default.getI18n('YTMUSIC_AUTOPLAY_ADDED', items.length));
+            }
+            else {
+                YTMusicContext_1.default.toast('success', YTMusicContext_1.default.getI18n('YTMUSIC_AUTOPLAY_ADDED_SINGLE', items[0].title));
+            }
+        });
     }
     reset() {
-        __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_removeAutoplayListener).call(this);
+        __classPrivateFieldGet(this, _PlayController_autoplayManager, "f").disable();
         __classPrivateFieldGet(this, _PlayController_prefetchPlaybackStateFixer, "f")?.reset();
         __classPrivateFieldSet(this, _PlayController_prefetchPlaybackStateFixer, null, "f");
     }
@@ -79,6 +127,10 @@ class PlayController {
         YTMusicContext_1.default.getLogger().info(`[ytmusic-play] clearAddPlayTrack: ${track.uri}`);
         __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_cancelPrefetch).call(this);
         __classPrivateFieldGet(this, _PlayController_prefetchPlaybackStateFixer, "f")?.notifyPrefetchCleared();
+        if (!YTMusicContext_1.default.getConfigValue('hasAcceptedDisclaimer')) {
+            YTMusicContext_1.default.toast('error', YTMusicContext_1.default.getI18n('YTMUSIC_ERR_ACCEPT_DISCLAIMER_PLAY'));
+            return;
+        }
         const { videoId, info: playbackInfo } = await _a.getPlaybackInfoFromUri(track.uri);
         if (!playbackInfo) {
             throw Error(`Could not obtain playback info for: ${videoId})`);
@@ -99,56 +151,95 @@ class PlayController {
              */
             sm.currentSongDuration = playbackInfo.duration * 1000;
         }
-        __classPrivateFieldSet(this, _PlayController_lastPlaybackInfo, {
-            track,
-            position: sm.getState().position
-        }, "f");
+        __classPrivateFieldGet(this, _PlayController_autoplayManager, "f").enable();
         const safeStreamUrl = stream.url.replace(/"/g, '\\"');
         await __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_doPlay).call(this, safeStreamUrl, track);
-        if (YTMusicContext_1.default.getConfigValue('autoplay')) {
-            __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_addAutoplayListener).call(this);
-        }
         if (YTMusicContext_1.default.getConfigValue('addToHistory')) {
-            try {
-                void playbackInfo.addToHistory();
-            }
-            catch (error) {
-                YTMusicContext_1.default.getLogger().error(YTMusicContext_1.default.getErrorMessage(`[ytmusic-play] Error: could not add to history (${videoId}): `, error));
-            }
+            playbackInfo.addToHistory().catch((error) => {
+                YTMusicContext_1.default.getLogger().error(YTMusicContext_1.default.getErrorMessage(`[ytmusic] Error: could not add to history (videoId: ${videoId}): `, error));
+            });
         }
     }
     // Returns kew promise!
     stop() {
-        __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_removeAutoplayListener).call(this);
+        __classPrivateFieldGet(this, _PlayController_autoplayManager, "f").disable();
+        const player = __classPrivateFieldGet(this, _PlayController_externalPlayerManager, "f").getActive();
+        if (player) {
+            return (0, util_1.jsPromiseToKew)(player.stop());
+        }
         YTMusicContext_1.default.getStateMachine().setConsumeUpdateService('mpd', true, false);
         return __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").stop();
     }
     // Returns kew promise!
     pause() {
+        const player = __classPrivateFieldGet(this, _PlayController_externalPlayerManager, "f").getActive();
+        if (player) {
+            return (0, util_1.jsPromiseToKew)(player.pause());
+        }
         YTMusicContext_1.default.getStateMachine().setConsumeUpdateService('mpd', true, false);
         return __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").pause();
     }
     // Returns kew promise!
     resume() {
+        const player = __classPrivateFieldGet(this, _PlayController_externalPlayerManager, "f").getActive();
+        if (player) {
+            return (0, util_1.jsPromiseToKew)(player.resume());
+        }
         YTMusicContext_1.default.getStateMachine().setConsumeUpdateService('mpd', true, false);
         return __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").resume();
     }
+    play() {
+        const player = __classPrivateFieldGet(this, _PlayController_externalPlayerManager, "f").getActive();
+        if (player) {
+            return (0, util_1.jsPromiseToKew)((async () => {
+                if (player.getStatus()?.state === 'paused') {
+                    return player.resume();
+                }
+            })());
+        }
+        YTMusicContext_1.default.getStateMachine().setConsumeUpdateService('mpd', true, false);
+        return __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").play();
+    }
     // Returns kew promise!
     seek(position) {
+        const player = __classPrivateFieldGet(this, _PlayController_externalPlayerManager, "f").getActive();
+        if (player) {
+            return (0, util_1.jsPromiseToKew)(player.seek(position / 1000));
+        }
         YTMusicContext_1.default.getStateMachine().setConsumeUpdateService('mpd', true, false);
         return __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").seek(position);
     }
     // Returns kew promise!
     next() {
+        const player = __classPrivateFieldGet(this, _PlayController_externalPlayerManager, "f").getActive();
+        if (player) {
+            return (0, util_1.jsPromiseToKew)(player.next());
+        }
         YTMusicContext_1.default.getStateMachine().setConsumeUpdateService('mpd', true, false);
         return __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").next();
     }
     // Returns kew promise!
     previous() {
+        const player = __classPrivateFieldGet(this, _PlayController_externalPlayerManager, "f").getActive();
+        if (player) {
+            return (0, util_1.jsPromiseToKew)(player.previous());
+        }
         YTMusicContext_1.default.getStateMachine().setConsumeUpdateService(undefined);
         return YTMusicContext_1.default.getStateMachine().previous();
     }
-    static async getPlaybackInfoFromUri(uri, signal) {
+    setRandom(value) {
+        const player = __classPrivateFieldGet(this, _PlayController_externalPlayerManager, "f").getActive();
+        if (player) {
+            player.setRandom(value);
+        }
+    }
+    setRepeat(value, repeatSingle) {
+        const player = __classPrivateFieldGet(this, _PlayController_externalPlayerManager, "f").getActive();
+        if (player) {
+            return (0, util_1.jsPromiseToKew)(player.setRepeat(value, repeatSingle));
+        }
+    }
+    static async getPlaybackInfoFromUri(uri, isPrefetch = false, skipStream = false, signal) {
         const endpoint = ExplodeHelper_1.default.getExplodedTrackInfoFromUri(uri)?.endpoint;
         const videoId = endpoint?.payload?.videoId;
         if (!videoId) {
@@ -157,14 +248,16 @@ class PlayController {
         const model = model_1.default.getInstance(model_1.ModelType.MusicItem);
         return {
             videoId,
-            info: await model.getPlaybackInfo(endpoint, signal)
+            info: await model.getPlaybackInfo(endpoint, isPrefetch, skipStream, signal)
         };
     }
     async prefetch(track) {
         // Cancel any ongoing prefetch
         __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_cancelPrefetch).call(this);
         const prefetchEnabled = YTMusicContext_1.default.getConfigValue('prefetch');
-        if (!prefetchEnabled) {
+        const cfgPlayer = YTMusicContext_1.default.getConfigValue('player');
+        const isExternalPlayer = cfgPlayer === 'vlc' || cfgPlayer === 'mpv' || __classPrivateFieldGet(this, _PlayController_externalPlayerManager, "f").getActive() !== null;
+        if (!prefetchEnabled || isExternalPlayer) {
             /**
              * Volumio doesn't check whether `prefetch()` is actually performed or
              * successful (such as inspecting the result of the function call) -
@@ -174,7 +267,12 @@ class PlayController {
              * `prefetchDone` variable to `false` and only set it to `true` when
              * prefetch is successful.
              */
-            YTMusicContext_1.default.getLogger().info('[ytmusic-play] Prefetch disabled');
+            if (!prefetchEnabled) {
+                YTMusicContext_1.default.getLogger().info('[ytmusic-play] Prefetch disabled');
+            }
+            else {
+                YTMusicContext_1.default.getLogger().info('[ytmusic-play] Prefetch not supported by current player configuration');
+            }
             YTMusicContext_1.default.getStateMachine().prefetchDone = false;
             return;
         }
@@ -187,7 +285,7 @@ class PlayController {
         __classPrivateFieldSet(this, _PlayController_prefetchAborter, new AbortController(), "f");
         const signal = __classPrivateFieldGet(this, _PlayController_prefetchAborter, "f").signal;
         try {
-            const { videoId, info: playbackInfo } = await _a.getPlaybackInfoFromUri(track.uri, signal);
+            const { videoId, info: playbackInfo } = await _a.getPlaybackInfoFromUri(track.uri, true, false, signal);
             streamUrl = playbackInfo?.stream?.url;
             if (!streamUrl || !playbackInfo) {
                 throw Error(`Stream not found for: '${videoId}'`);
@@ -217,7 +315,7 @@ class PlayController {
         return res;
     }
     async getGotoUri(type, uri) {
-        const playbackInfo = (await _a.getPlaybackInfoFromUri(uri))?.info;
+        const playbackInfo = (await _a.getPlaybackInfoFromUri(uri, false, true))?.info;
         if (!playbackInfo) {
             return null;
         }
@@ -257,24 +355,7 @@ class PlayController {
         return null;
     }
 }
-_a = PlayController, _PlayController_mpdPlugin = new WeakMap(), _PlayController_autoplayListener = new WeakMap(), _PlayController_lastPlaybackInfo = new WeakMap(), _PlayController_prefetchPlaybackStateFixer = new WeakMap(), _PlayController_prefetchAborter = new WeakMap(), _PlayController_instances = new WeakSet(), _PlayController_addAutoplayListener = function _PlayController_addAutoplayListener() {
-    if (!__classPrivateFieldGet(this, _PlayController_autoplayListener, "f")) {
-        __classPrivateFieldSet(this, _PlayController_autoplayListener, () => {
-            __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").getState().then((state) => {
-                if (state.status === 'stop') {
-                    void __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_handleAutoplay).call(this);
-                    __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_removeAutoplayListener).call(this);
-                }
-            });
-        }, "f");
-        __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").clientMpd.on('system-player', __classPrivateFieldGet(this, _PlayController_autoplayListener, "f"));
-    }
-}, _PlayController_removeAutoplayListener = function _PlayController_removeAutoplayListener() {
-    if (__classPrivateFieldGet(this, _PlayController_autoplayListener, "f")) {
-        __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").clientMpd.removeListener('system-player', __classPrivateFieldGet(this, _PlayController_autoplayListener, "f"));
-        __classPrivateFieldSet(this, _PlayController_autoplayListener, null, "f");
-    }
-}, _PlayController_updateTrackWithPlaybackInfo = function _PlayController_updateTrackWithPlaybackInfo(track, playbackInfo) {
+_a = PlayController, _PlayController_mpdPlugin = new WeakMap(), _PlayController_prefetchPlaybackStateFixer = new WeakMap(), _PlayController_prefetchAborter = new WeakMap(), _PlayController_externalPlayerManager = new WeakMap(), _PlayController_autoplayManager = new WeakMap(), _PlayController_instances = new WeakSet(), _PlayController_updateTrackWithPlaybackInfo = function _PlayController_updateTrackWithPlaybackInfo(track, playbackInfo) {
     track.title = playbackInfo.title || track.title;
     track.name = playbackInfo.title || track.title;
     track.artist = playbackInfo.artist?.name || track.artist;
@@ -285,20 +366,38 @@ _a = PlayController, _PlayController_mpdPlugin = new WeakMap(), _PlayController_
         track.samplerate = playbackInfo.stream.bitrate;
     }
     return track;
-}, _PlayController_doPlay = function _PlayController_doPlay(streamUrl, track) {
-    const mpdPlugin = __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f");
-    return (0, util_1.kewToJSPromise)(mpdPlugin.sendMpdCommand('stop', [])
-        .then(() => {
-        return mpdPlugin.sendMpdCommand('clear', []);
-    })
-        .then(() => {
-        return mpdPlugin.sendMpdCommand(`addid "${__classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_appendTrackTypeToStreamUrl).call(this, streamUrl)}"`, []);
-    })
-        .then((addIdResp) => __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_mpdAddTags).call(this, addIdResp, track))
-        .then(() => {
-        YTMusicContext_1.default.getStateMachine().setConsumeUpdateService('mpd', true, false);
-        return mpdPlugin.sendMpdCommand('play', []);
-    }));
+}, _PlayController_doPlay = async function _PlayController_doPlay(streamUrl, track) {
+    // If the other player is active, stop it first to free up audio device.
+    const playerName = YTMusicContext_1.default.getConfigValue('player');
+    if (playerName === 'vlc') {
+        await __classPrivateFieldGet(this, _PlayController_externalPlayerManager, "f").stop('mpv');
+    }
+    else if (playerName === 'mpv') {
+        await __classPrivateFieldGet(this, _PlayController_externalPlayerManager, "f").stop('vlc');
+    }
+    const player = playerName === 'vlc' || playerName === 'mpv' ? await __classPrivateFieldGet(this, _PlayController_externalPlayerManager, "f").get(playerName) : null;
+    if (player) {
+        return await player.play({
+            ...track,
+            streamUrl,
+            trackType: 'YouTube'
+        });
+    }
+    else {
+        const mpdPlugin = __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f");
+        return await (0, util_1.kewToJSPromise)(mpdPlugin.sendMpdCommand('stop', [])
+            .then(() => {
+            return mpdPlugin.sendMpdCommand('clear', []);
+        })
+            .then(() => {
+            return mpdPlugin.sendMpdCommand(`addid "${__classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_appendTrackTypeToStreamUrl).call(this, streamUrl)}"`, []);
+        })
+            .then((addIdResp) => __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_mpdAddTags).call(this, addIdResp, track))
+            .then(() => {
+            YTMusicContext_1.default.getStateMachine().setConsumeUpdateService('mpd', true, false);
+            return mpdPlugin.sendMpdCommand('play', []);
+        }));
+    }
 }, _PlayController_appendTrackTypeToStreamUrl = function _PlayController_appendTrackTypeToStreamUrl(url) {
     /**
      * Fool MPD plugin to return correct `trackType` in `parseTrackInfo()` by adding
@@ -326,52 +425,8 @@ _a = PlayController, _PlayController_mpdPlugin = new WeakMap(), _PlayController_
         return __classPrivateFieldGet(this, _PlayController_mpdPlugin, "f").sendMpdCommandArray(cmds);
     }
     return kew_1.default.resolve();
-}, _PlayController_handleAutoplay = async function _PlayController_handleAutoplay() {
-    const lastPlayedQueueIndex = __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_findLastPlayedTrackQueueIndex).call(this);
-    if (lastPlayedQueueIndex < 0) {
-        return;
-    }
-    const stateMachine = YTMusicContext_1.default.getStateMachine(), state = stateMachine.getState(), isLastTrack = stateMachine.getQueue().length - 1 === lastPlayedQueueIndex, currentPositionChanged = state.position !== lastPlayedQueueIndex; // True if client clicks on another item in the queue
-    const noAutoplayConditions = !YTMusicContext_1.default.getConfigValue('autoplay') || currentPositionChanged || !isLastTrack || state.random || state.repeat || state.repeatSingle;
-    const getAutoplayItemsPromise = noAutoplayConditions ? Promise.resolve(null) : __classPrivateFieldGet(this, _PlayController_instances, "m", _PlayController_getAutoplayItems).call(this);
-    if (!noAutoplayConditions) {
-        YTMusicContext_1.default.toast('info', YTMusicContext_1.default.getI18n('YTMUSIC_AUTOPLAY_FETCH'));
-    }
-    const items = await getAutoplayItemsPromise;
-    if (items && items.length > 0) {
-        // Add items to queue and play
-        const clearQueue = YTMusicContext_1.default.getConfigValue('autoplayClearQueue');
-        if (clearQueue) {
-            stateMachine.clearQueue();
-        }
-        stateMachine.addQueueItems(items).then((result) => {
-            if (items.length > 1) {
-                YTMusicContext_1.default.toast('success', YTMusicContext_1.default.getI18n('YTMUSIC_AUTOPLAY_ADDED', items.length));
-            }
-            else {
-                YTMusicContext_1.default.toast('success', YTMusicContext_1.default.getI18n('YTMUSIC_AUTOPLAY_ADDED_SINGLE', items[0].title));
-            }
-            stateMachine.play(result.firstItemIndex);
-        });
-    }
-    else if (!noAutoplayConditions) {
-        YTMusicContext_1.default.toast('info', YTMusicContext_1.default.getI18n('YTMUSIC_AUTOPLAY_NO_ITEMS'));
-    }
-}, _PlayController_findLastPlayedTrackQueueIndex = function _PlayController_findLastPlayedTrackQueueIndex() {
-    if (!__classPrivateFieldGet(this, _PlayController_lastPlaybackInfo, "f")) {
-        return -1;
-    }
-    const queue = YTMusicContext_1.default.getStateMachine().getQueue();
-    const trackUri = __classPrivateFieldGet(this, _PlayController_lastPlaybackInfo, "f").track.uri;
-    const endIndex = __classPrivateFieldGet(this, _PlayController_lastPlaybackInfo, "f").position;
-    for (let i = endIndex; i >= 0; i--) {
-        if (queue[i]?.uri === trackUri) {
-            return i;
-        }
-    }
-    return -1;
-}, _PlayController_getAutoplayItems = async function _PlayController_getAutoplayItems() {
-    const explodedTrackInfo = ExplodeHelper_1.default.getExplodedTrackInfoFromUri(__classPrivateFieldGet(this, _PlayController_lastPlaybackInfo, "f")?.track?.uri);
+}, _PlayController_getAutoplayItems = async function _PlayController_getAutoplayItems(lastPlaybackInfo) {
+    const explodedTrackInfo = ExplodeHelper_1.default.getExplodedTrackInfoFromUri(lastPlaybackInfo.track.uri);
     const autoplayContext = explodedTrackInfo?.autoplayContext;
     if (autoplayContext) {
         YTMusicContext_1.default.getLogger().info(`[ytmusic-play] Obtaining autoplay videos from endpoint: ${JSON.stringify(autoplayContext.fetchEndpoint)}`);
@@ -421,7 +476,7 @@ _a = PlayController, _PlayController_mpdPlugin = new WeakMap(), _PlayController_
     }
     if (autoplayItems.length === 0) {
         // Fetch from radio endpoint as last resort.
-        const playbackInfo = await _a.getPlaybackInfoFromUri(__classPrivateFieldGet(this, _PlayController_lastPlaybackInfo, "f").track.uri);
+        const playbackInfo = await _a.getPlaybackInfoFromUri(lastPlaybackInfo.track.uri, false, true);
         const radioEndpoint = playbackInfo.info?.radioEndpoint;
         if (radioEndpoint && (!autoplayContext || radioEndpoint.payload.playlistId !== autoplayContext.fetchEndpoint.payload.playlistId)) {
             const radioContents = await endpointModel.getContents(radioEndpoint);
@@ -474,6 +529,7 @@ class PrefetchPlaybackStateFixer extends events_1.default {
         _PrefetchPlaybackStateFixer_volumioPushStateListener.set(this, void 0);
         __classPrivateFieldSet(this, _PrefetchPlaybackStateFixer_positionAtPrefetch, -1, "f");
         __classPrivateFieldSet(this, _PrefetchPlaybackStateFixer_prefetchedTrack, null, "f");
+        __classPrivateFieldSet(this, _PrefetchPlaybackStateFixer_volumioPushStateListener, null, "f");
     }
     reset() {
         __classPrivateFieldGet(this, _PrefetchPlaybackStateFixer_instances, "m", _PrefetchPlaybackStateFixer_removePushStateListener).call(this);
@@ -534,4 +590,3 @@ _PrefetchPlaybackStateFixer_positionAtPrefetch = new WeakMap(), _PrefetchPlaybac
         }
     }
 };
-//# sourceMappingURL=PlayController.js.map

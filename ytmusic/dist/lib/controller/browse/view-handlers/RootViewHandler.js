@@ -83,4 +83,3 @@ _RootViewHandler_instances = new WeakSet(), _RootViewHandler_constructUri = func
     return `ytmusic/${ViewHelper_1.default.constructUriSegmentFromView(targetView)}`;
 };
 exports.default = RootViewHandler;
-//# sourceMappingURL=RootViewHandler.js.map
