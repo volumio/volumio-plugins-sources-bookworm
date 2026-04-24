@@ -15,13 +15,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _WeatherAPI_instances, _WeatherAPI_api, _WeatherAPI_fetchPromises, _WeatherAPI_cache, _WeatherAPI_config, _WeatherAPI_getFetchPromise, _WeatherAPI_getWeatherIconPath, _WeatherAPI_getWeatherIconUrls, _WeatherAPI_getTemperatureText, _WeatherAPI_getWindSpeedText, _WeatherAPI_getHumidityText, _WeatherAPI_parseLocation, _WeatherAPI_parseCurrent, _WeatherAPI_parseForecast, _WeatherAPI_parseHourly, _WeatherAPI_doFetchInfo, _WeatherAPI_isConfigValid;
 Object.defineProperty(exports, "__esModule", { value: true });
-const openweathermap_1 = __importDefault(require("./openweathermap"));
 const md5_1 = __importDefault(require("md5"));
 const NowPlayingContext_1 = __importDefault(require("../NowPlayingContext"));
 const Cache_1 = __importDefault(require("../utils/Cache"));
 const ConfigHelper_1 = __importDefault(require("../config/ConfigHelper"));
 const System_1 = require("../utils/System");
+const open_meteo_1 = __importDefault(require("./open-meteo"));
 const WEATHER_ICONS_BASE_PATH = '/assets/weather-icons';
+/**
+ * The codes were from OpenWeatherMap API, before moving to Open-Meteo.
+ * We map Open-Meteo's WMO codes to these codes simply out of convenience.
+ * See OpenMeteoAPI#getWeatherIconName().
+ */
 const ICON_CODE_MAPPINGS = {
     '01d': 'clear-day.svg',
     '01n': 'clear-night.svg',
@@ -51,25 +56,36 @@ class WeatherAPI {
         _WeatherAPI_fetchPromises.set(this, void 0);
         _WeatherAPI_cache.set(this, void 0);
         _WeatherAPI_config.set(this, void 0);
-        __classPrivateFieldSet(this, _WeatherAPI_api, new openweathermap_1.default(), "f");
+        __classPrivateFieldSet(this, _WeatherAPI_api, new open_meteo_1.default(), "f");
         __classPrivateFieldSet(this, _WeatherAPI_fetchPromises, {}, "f");
         __classPrivateFieldSet(this, _WeatherAPI_cache, new Cache_1.default({ weather: 600 }, { weather: 10 }), "f");
-        __classPrivateFieldSet(this, _WeatherAPI_config, {}, "f");
+        __classPrivateFieldSet(this, _WeatherAPI_config, {
+            units: 'metric'
+        }, "f");
     }
     clearCache() {
         __classPrivateFieldGet(this, _WeatherAPI_cache, "f").clear();
     }
     setConfig(opts) {
-        const { coordinates, units, apiKey, cacheMinutes } = opts;
-        __classPrivateFieldGet(this, _WeatherAPI_api, "f").setApiKey(apiKey ?? null);
+        const { coordinates, locale, timezone, units, cacheMinutes } = opts;
         const minutes = Math.min(1440, Math.max(10, cacheMinutes ?? 10));
         __classPrivateFieldGet(this, _WeatherAPI_cache, "f").setTTL('weather', minutes * 60);
         const coord = ConfigHelper_1.default.parseCoordinates(coordinates);
         let configChanged = false;
-        const { coordinates: currentCoordinates, units: currentUnits } = __classPrivateFieldGet(this, _WeatherAPI_config, "f");
+        const { coordinates: currentCoordinates, locale: currentLocale, timezone: currentTimezone, units: currentUnits } = __classPrivateFieldGet(this, _WeatherAPI_config, "f");
         if (coord && (coord.lat !== currentCoordinates?.lat || coord.lon !== currentCoordinates?.lon)) {
             __classPrivateFieldGet(this, _WeatherAPI_api, "f").setCoordinates(coord.lat, coord.lon);
             __classPrivateFieldGet(this, _WeatherAPI_config, "f").coordinates = coord;
+            configChanged = true;
+        }
+        if (currentLocale !== locale) {
+            __classPrivateFieldGet(this, _WeatherAPI_api, "f").setLang(locale);
+            __classPrivateFieldGet(this, _WeatherAPI_config, "f").locale = locale;
+            configChanged = true;
+        }
+        if (currentTimezone !== timezone) {
+            __classPrivateFieldGet(this, _WeatherAPI_api, "f").setTimzone(timezone);
+            __classPrivateFieldGet(this, _WeatherAPI_config, "f").timezone = timezone;
             configChanged = true;
         }
         if (currentUnits !== units) {
@@ -160,8 +176,6 @@ _WeatherAPI_api = new WeakMap(), _WeatherAPI_fetchPromises = new WeakMap(), _Wea
             return `${valueText}°C`;
         case 'imperial':
             return `${valueText}°F`;
-        default: // 'standard'
-            return `${valueText}K`;
     }
 }, _WeatherAPI_getWindSpeedText = function _WeatherAPI_getWindSpeedText(value) {
     if (value === undefined) {
@@ -173,8 +187,6 @@ _WeatherAPI_api = new WeakMap(), _WeatherAPI_fetchPromises = new WeakMap(), _Wea
             return `${valueText} m/s`;
         case 'imperial': // Miles per hour
             return `${valueText} mph`;
-        default: // 'standard' - meter/s
-            return `${valueText} m/s`;
     }
 }, _WeatherAPI_getHumidityText = function _WeatherAPI_getHumidityText(value) {
     if (value === undefined) {
@@ -312,4 +324,3 @@ _WeatherAPI_api = new WeakMap(), _WeatherAPI_fetchPromises = new WeakMap(), _Wea
 };
 const weatherAPI = new WeatherAPI();
 exports.default = weatherAPI;
-//# sourceMappingURL=WeatherAPI.js.map

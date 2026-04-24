@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunknow_playing_reactjs_client=globalThis.webpackChunknow_playing_reactjs_client||[]).push([[258],{1258(o){o.exports=JSON.parse('{"action":{"addToFavorites":"Add to Favourites","removeFromFavorites":"Remove from Favourites","addWebRadioToFavorites":"Add to Favourite Radios","removeWebRadioFromFavorites":"Remove from Favourite Radios"}}')}}]);

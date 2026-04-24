@@ -188,4 +188,3 @@ function renderView(name, req, data = {}) {
         });
     });
 }
-//# sourceMappingURL=Handler.js.map

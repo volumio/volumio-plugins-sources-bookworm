@@ -140,4 +140,3 @@ async function restartVolumioKioskService() {
         }
     }
 }
-//# sourceMappingURL=Kiosk.js.map

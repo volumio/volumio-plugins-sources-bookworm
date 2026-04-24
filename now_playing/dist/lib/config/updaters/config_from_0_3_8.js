@@ -51,4 +51,3 @@ function updateThemeSetting() {
         NowPlayingContext_1.default.getLogger().info(`[now-playing] Updated config value for 'theme': ${JSON.stringify(updateValue)}`);
     }
 }
-//# sourceMappingURL=config_from_0_3_8.js.map

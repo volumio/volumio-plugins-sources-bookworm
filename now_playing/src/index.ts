@@ -163,7 +163,6 @@ class ControllerNowPlaying {
      * Weather Service conf
      */
     const weatherOptions = np.getConfigValue('weather');
-    weatherServiceUIConf.content.openWeatherMapApiKey.value = weatherOptions?.openWeatherMapApiKey ?? '';
     const weatherCacheOptions = [
       { value: 10, labelKey: 'NOW_PLAYING_WEATHER_CACHE_10_MIN' },
       { value: 30, labelKey: 'NOW_PLAYING_WEATHER_CACHE_30_MIN' },
@@ -1903,8 +1902,9 @@ class ControllerNowPlaying {
     const weather = np.getConfigValue('weather');
     weatherAPI.setConfig({
       coordinates: localization.geoCoordinates,
+      locale: localization.resolvedLocale || ConfigHelper.getVolumioLocale(),
+      timezone: localization.resolvedTimezone || localization.geoTimezone || undefined,
       units: localization.unitSystem,
-      apiKey: weather?.openWeatherMapApiKey ?? '',
       cacheMinutes: weather?.cacheMinutes ?? 10
     });
   }
@@ -1915,7 +1915,6 @@ class ControllerNowPlaying {
     const allowedCacheValues = [10, 30, 60, 120, 360, 720, 1440];
     const cacheMinutes = (Number.isInteger(num) && allowedCacheValues.includes(num)) ? num : 10;
     const settings = {
-      openWeatherMapApiKey: (data['openWeatherMapApiKey'] ?? '').trim(),
       cacheMinutes
     };
     np.setConfigValue('weather', settings);

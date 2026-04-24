@@ -386,7 +386,6 @@ class ControllerNowPlaying {
         const allowedCacheValues = [10, 30, 60, 120, 360, 720, 1440];
         const cacheMinutes = (Number.isInteger(num) && allowedCacheValues.includes(num)) ? num : 10;
         const settings = {
-            openWeatherMapApiKey: (data['openWeatherMapApiKey'] ?? '').trim(),
             cacheMinutes
         };
         NowPlayingContext_1.default.setConfigValue('weather', settings);
@@ -672,7 +671,6 @@ _ControllerNowPlaying_context = new WeakMap(), _ControllerNowPlaying_config = ne
      * Weather Service conf
      */
     const weatherOptions = NowPlayingContext_1.default.getConfigValue('weather');
-    weatherServiceUIConf.content.openWeatherMapApiKey.value = weatherOptions?.openWeatherMapApiKey ?? '';
     const weatherCacheOptions = [
         { value: 10, labelKey: 'NOW_PLAYING_WEATHER_CACHE_10_MIN' },
         { value: 30, labelKey: 'NOW_PLAYING_WEATHER_CACHE_30_MIN' },
@@ -2019,8 +2017,9 @@ _ControllerNowPlaying_context = new WeakMap(), _ControllerNowPlaying_config = ne
     const weather = NowPlayingContext_1.default.getConfigValue('weather');
     WeatherAPI_1.default.setConfig({
         coordinates: localization.geoCoordinates,
+        locale: localization.resolvedLocale || ConfigHelper_1.default.getVolumioLocale(),
+        timezone: localization.resolvedTimezone || localization.geoTimezone || undefined,
         units: localization.unitSystem,
-        apiKey: weather?.openWeatherMapApiKey ?? '',
         cacheMinutes: weather?.cacheMinutes ?? 10
     });
 }, _ControllerNowPlaying_broadcastPluginInfo = function _ControllerNowPlaying_broadcastPluginInfo() {
@@ -2089,4 +2088,3 @@ _ControllerNowPlaying_context = new WeakMap(), _ControllerNowPlaying_config = ne
     NowPlayingContext_1.default.getLogger().error(NowPlayingContext_1.default.getErrorMessage(`[now-playing] Caught error in ${fn}:`, error, false));
 };
 module.exports = ControllerNowPlaying;
-//# sourceMappingURL=index.js.map

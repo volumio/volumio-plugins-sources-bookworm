@@ -47,4 +47,3 @@ _a = CommonSettingsLoader, _CommonSettingsLoader_getLocalizationSettings = funct
     return localization;
 };
 exports.default = CommonSettingsLoader;
-//# sourceMappingURL=CommonSettingsLoader.js.map
