@@ -1,0 +1,15 @@
+{
+  "PI5_LED_CONTROL": "Pi5 RGB LED Control",
+  "SAVE": "Save Settings",
+  "SUCCESS_MESSAGE": "LED Settings Applied",
+  "SEC_HARDWARE": "1. Hardware Setup (GPIO Pins)",
+  "SEC_PLAYBACK": "2. Playback Color Tiers",
+  "SEC_BEHAVIOR": "3. Standby & Pause Behavior",
+  "SEC_ALERTS": "4. Scanning & Error Behavior",
+  "SEC_SHUTDOWN": "5. Singularity Shutdown Sequence",
+  "SHUTDOWN_COLOR": "Singularity Glow Color",
+  "SHUTDOWN_SPEED": "Animation Speed",
+  "SPEED_SLOW": "Slow (10s)",
+  "SPEED_MED": "Medium (6s)",
+  "SPEED_FAST": "Fast (3s)"
+}

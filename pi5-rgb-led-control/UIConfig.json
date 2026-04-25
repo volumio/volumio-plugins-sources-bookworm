@@ -1,0 +1,174 @@
+{
+  "page": { "label": "Pi5 RGB Status Link" },
+  "sections": [
+    {
+      "id": "sec_hardware",
+      "type": "section",
+      "label": "1. Hardware Setup (GPIO Pins)",
+      "onSave": { "type": "plugin", "endpoint": "system_controller/pi5-rgb-led-control", "method": "saveLEDConfig" },
+      "saveButton": { "label": "Save Hardware", "data": ["ENABLED", "PIN_R", "PIN_G", "PIN_B"] },
+      "content": [
+        { "id": "ENABLED", "element": "switch", "label": "Enable LED Output", "value": true },
+        { "id": "PIN_R", "label": "Red GPIO Pin", "element": "input", "type": "number", "value": 17 },
+        { "id": "PIN_G", "label": "Green GPIO Pin", "element": "input", "type": "number", "value": 27 },
+        { "id": "PIN_B", "label": "Blue GPIO Pin", "element": "input", "type": "number", "value": 22 }
+      ]
+    },
+    {
+      "id": "sec_playback",
+      "type": "section",
+      "label": "2. Playback Colour Tiers",
+      "onSave": { "type": "plugin", "endpoint": "system_controller/pi5-rgb-led-control", "method": "saveLEDConfig" },
+      "saveButton": { "label": "Save Colours", "data": ["C16_R", "C16_G", "C16_B", "C24H_R", "C24H_G", "C24H_B", "C24U_R", "C24U_G", "C24U_B", "CDSD_R", "CDSD_G", "CDSD_B"] },
+      "content": [
+        { "id": "sep1", "element": "section", "label": "16-BIT (Standard Res / Up to 48kHz)" },
+        { "id": "C16_R", "label": "Red Level", "element": "input", "type": "number", "value": 35 },
+        { "id": "C16_G", "label": "Green Level", "element": "input", "type": "number", "value": 75 },
+        { "id": "C16_B", "label": "Blue Level", "element": "input", "type": "number", "value": 100 },
+        
+        { "id": "sep2", "element": "section", "label": "24-BIT HIGH-RES (Up to 96kHz)" },
+        { "id": "C24H_R", "label": "Red Level", "element": "input", "type": "number", "value": 0 },
+        { "id": "C24H_G", "label": "Green Level", "element": "input", "type": "number", "value": 30 },
+        { "id": "C24H_B", "label": "Blue Level", "element": "input", "type": "number", "value": 100 },
+        
+        { "id": "sep3", "element": "section", "label": "24-BIT ULTRA-RES (Over 96kHz)" },
+        { "id": "C24U_R", "label": "Red Level", "element": "input", "type": "number", "value": 0 },
+        { "id": "C24U_G", "label": "Green Level", "element": "input", "type": "number", "value": 0 },
+        { "id": "C24U_B", "label": "Blue Level", "element": "input", "type": "number", "value": 100 },
+        
+        { "id": "sep4", "element": "section", "label": "DSD / 1-BIT" },
+        { "id": "CDSD_R", "label": "Red Level", "element": "input", "type": "number", "value": 25 },
+        { "id": "CDSD_G", "label": "Green Level", "element": "input", "type": "number", "value": 0 },
+        { "id": "CDSD_B", "label": "Blue Level", "element": "input", "type": "number", "value": 100 }
+      ]
+    },
+    {
+      "id": "sec_behavior",
+      "type": "section",
+      "label": "3. Standby & Pause Behaviour",
+      "onSave": { "type": "plugin", "endpoint": "system_controller/pi5-rgb-led-control", "method": "saveLEDConfig" },
+      "saveButton": { "label": "Save Behaviour", "data": ["STB_R", "STB_G", "STB_B", "STBY_PATT", "STBY_SPD", "PAUSE_PATT", "PAUSE_SPD"] },
+      "content": [
+        { "id": "sep5", "element": "section", "label": "STANDBY" },
+        {
+          "id": "STBY_PATT", "element": "select", "label": "Pattern", "value": { "value": "breath", "label": "Breath" },
+          "options": [
+            { "value": "solid", "label": "Solid" },
+            { "value": "breath", "label": "Breath" },
+            { "value": "strobe", "label": "Strobe" },
+            { "value": "heartbeat", "label": "Heartbeat" }
+          ]
+        },
+        {
+          "id": "STBY_SPD", "element": "select", "label": "Speed", "value": { "value": 0.05, "label": "Medium" },
+          "options": [
+            { "value": 0.1, "label": "Slow" },
+            { "value": 0.05, "label": "Medium" },
+            { "value": 0.02, "label": "Fast" }
+          ]
+        },
+        { "id": "STB_R", "label": "Red Level", "element": "input", "type": "number", "value": 47 },
+        { "id": "STB_G", "label": "Green Level", "element": "input", "type": "number", "value": 60 },
+        { "id": "STB_B", "label": "Blue Level", "element": "input", "type": "number", "value": 0 },
+        
+        { "id": "sep_ps", "element": "section", "label": "PAUSE" },
+        {
+          "id": "PAUSE_PATT", "element": "select", "label": "Pattern", "value": { "value": "breath", "label": "Breath" },
+          "options": [
+            { "value": "solid", "label": "Solid" },
+            { "value": "breath", "label": "Breath" },
+            { "value": "strobe", "label": "Strobe" },
+            { "value": "heartbeat", "label": "Heartbeat" }
+          ]
+        },
+        {
+          "id": "PAUSE_SPD", "element": "select", "label": "Speed", "value": { "value": 0.05, "label": "Medium" },
+          "options": [
+            { "value": 0.1, "label": "Slow" },
+            { "value": 0.05, "label": "Medium" },
+            { "value": 0.02, "label": "Fast" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sec_alerts",
+      "type": "section",
+      "label": "4. Scanning & Error Behaviour",
+      "onSave": { "type": "plugin", "endpoint": "system_controller/pi5-rgb-led-control", "method": "saveLEDConfig" },
+      "saveButton": { "label": "Save Alerts", "data": ["SCA_R", "SCA_G", "SCA_B", "SCB_R", "SCB_G", "SCB_B", "SCC_R", "SCC_G", "SCC_B", "ERR_R", "ERR_G", "ERR_B", "ERR_PATT", "ERR_SPD", "SCAN_PATT", "SCAN_SPD"] },
+      "content": [
+        { "id": "sep7", "element": "section", "label": "LIBRARY SCANNING" },
+        {
+          "id": "SCAN_PATT", "element": "select", "label": "Pattern", "value": { "value": "strobe", "label": "Strobe" },
+          "options": [
+            { "value": "solid", "label": "Solid" },
+            { "value": "breath", "label": "Breath" },
+            { "value": "strobe", "label": "Strobe" },
+            { "value": "heartbeat", "label": "Heartbeat" }
+          ]
+        },
+        {
+          "id": "SCAN_SPD", "element": "select", "label": "Speed", "value": { "value": 0.06, "label": "Medium" },
+          "options": [
+            { "value": 0.12, "label": "Slow" },
+            { "value": 0.06, "label": "Medium" },
+            { "value": 0.03, "label": "Fast" }
+          ]
+        },
+        { "id": "SCA_R", "label": "Phase A Red", "element": "input", "type": "number", "value": 0 },
+        { "id": "SCA_G", "label": "Phase A Green", "element": "input", "type": "number", "value": 30 },
+        { "id": "SCA_B", "label": "Phase A Blue", "element": "input", "type": "number", "value": 100 },
+        { "id": "SCB_R", "label": "Phase B Red", "element": "input", "type": "number", "value": 0 },
+        { "id": "SCB_G", "label": "Phase B Green", "element": "input", "type": "number", "value": 100 },
+        { "id": "SCB_B", "label": "Phase B Blue", "element": "input", "type": "number", "value": 0 },
+        { "id": "SCC_R", "label": "Phase C Red", "element": "input", "type": "number", "value": 40 },
+        { "id": "SCC_G", "label": "Phase C Green", "element": "input", "type": "number", "value": 100 },
+        { "id": "SCC_B", "label": "Phase C Blue", "element": "input", "type": "number", "value": 0 },
+        
+        { "id": "sep_err", "element": "section", "label": "INTERNET / SYSTEM ERROR" },
+        {
+          "id": "ERR_PATT", "element": "select", "label": "Pattern", "value": { "value": "strobe", "label": "Strobe" },
+          "options": [
+            { "value": "solid", "label": "Solid" },
+            { "value": "breath", "label": "Breath" },
+            { "value": "strobe", "label": "Strobe" },
+            { "value": "heartbeat", "label": "Heartbeat" }
+          ]
+        },
+        {
+          "id": "ERR_SPD", "element": "select", "label": "Speed", "value": { "value": 0.025, "label": "Fast" },
+          "options": [
+            { "value": 0.1, "label": "Slow" },
+            { "value": 0.05, "label": "Medium" },
+            { "value": 0.025, "label": "Fast" }
+          ]
+        },
+        { "id": "ERR_R", "label": "Red Level", "element": "input", "type": "number", "value": 100 },
+        { "id": "ERR_G", "label": "Green Level", "element": "input", "type": "number", "value": 0 },
+        { "id": "ERR_B", "label": "Blue Level", "element": "input", "type": "number", "value": 0 }
+      ]
+    },
+    {
+      "id": "sec_shutdown",
+      "type": "section",
+      "label": "5. Singularity Shutdown Sequence",
+      "onSave": { "type": "plugin", "endpoint": "system_controller/pi5-rgb-led-control", "method": "saveLEDConfig" },
+      "saveButton": { "label": "Save Shutdown", "data": ["SHUT_R", "SHUT_G", "SHUT_B", "SHUT_SPD"] },
+      "content": [
+        { "id": "sep_shut", "element": "section", "label": "SINGULARITY GLOW COLOUR" },
+        { "id": "SHUT_R", "label": "Red Level", "element": "input", "type": "number", "value": 100 },
+        { "id": "SHUT_G", "label": "Green Level", "element": "input", "type": "number", "value": 100 },
+        { "id": "SHUT_B", "label": "Blue Level", "element": "input", "type": "number", "value": 100 },
+        {
+          "id": "SHUT_SPD", "element": "select", "label": "Animation Speed", "value": { "value": "medium", "label": "Medium (6s)" },
+          "options": [
+            { "value": "slow", "label": "Slow (10s)" },
+            { "value": "medium", "label": "Medium (6s)" },
+            { "value": "fast", "label": "Fast (3s)" }
+          ]
+        }
+      ]
+    }
+  ]
+}
