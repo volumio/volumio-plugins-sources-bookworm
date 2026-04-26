@@ -15,13 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -53,11 +63,11 @@ function execCommand(cmd, sudo = false) {
         SqueezeliteMCContext_1.default.getLogger().info(`[squeezelite_mc] Executing ${cmd}`);
         (0, child_process_1.exec)(sudo ? `echo volumio | sudo -S ${cmd}` : cmd, { uid: 1000, gid: 1000 }, function (error, stdout, stderr) {
             if (error) {
-                SqueezeliteMCContext_1.default.getLogger().error(SqueezeliteMCContext_1.default.getErrorMessage(`[squeezelite_mc] Failed to execute ${cmd}: ${stderr.toString()}`, error));
+                SqueezeliteMCContext_1.default.getLogger().error(SqueezeliteMCContext_1.default.getErrorMessage(`[squeezelite_mc] Failed to execute ${cmd}: ${stderr}`, error));
                 reject(error);
             }
             else {
-                resolve(stdout.toString());
+                resolve(stdout);
             }
         });
     });
@@ -70,7 +80,9 @@ async function restartSqueezeliteService() {
     const status = await getSqueezeliteServiceStatus();
     const stopPromise = status === 'active' ? stopSqueezeliteService() : Promise.resolve();
     await stopPromise;
-    const rmLogPromise = fs.existsSync(exports.SQUEEZELITE_LOG_FILE) ? execCommand(`rm ${exports.SQUEEZELITE_LOG_FILE}`, true) : Promise.resolve();
+    const rmLogPromise = fs.existsSync(exports.SQUEEZELITE_LOG_FILE) ?
+        execCommand(`rm ${exports.SQUEEZELITE_LOG_FILE}`, true)
+        : Promise.resolve();
     await rmLogPromise;
     await systemctl('start', 'squeezelite');
     try {
@@ -127,7 +139,9 @@ function resolveOnSqueezeliteServiceStatusMatch(status, matchConsecutive = 1, re
     });
 }
 async function updateSqueezeliteService(params) {
-    const startupOpts = params.type === 'basic' ? (0, Util_1.basicPlayerStartupParamsToSqueezeliteOpts)(params) : params.startupOptions;
+    const startupOpts = params.type === 'basic' ?
+        (0, Util_1.basicPlayerStartupParamsToSqueezeliteOpts)(params)
+        : params.startupOptions;
     const template = fs.readFileSync(SYSTEMD_TEMPLATE_FILE).toString();
     const out = template.replace('${STARTUP_OPTS}', startupOpts);
     fs.writeFileSync(`${SYSTEMD_TEMPLATE_FILE}.out`, out);
@@ -170,7 +184,9 @@ async function getSqueezeliteServiceStatus() {
     const regex = /Active: (.*) \(.*\)/gm;
     const out = await systemctl('status', 'squeezelite');
     const matches = [...out.matchAll(regex)];
-    if (matches[0] && matches[0][1] && recognizedStatuses.includes(matches[0][1])) {
+    if (matches[0] &&
+        matches[0][1] &&
+        recognizedStatuses.includes(matches[0][1])) {
         return matches[0][1];
     }
     return 'inactive';
@@ -189,7 +205,9 @@ async function getAlsaFormats(card) {
     }
     else {
         const formatsListMatches = [...output.matchAll(regExFormatsList)];
-        const formatsList = formatsListMatches[0] && formatsListMatches[0][1] ? formatsListMatches[0][1] : null;
+        const formatsList = formatsListMatches[0] && formatsListMatches[0][1] ?
+            formatsListMatches[0][1]
+            : null;
         if (formatsList) {
             const formatsMatches = [...formatsList.matchAll(regExFormats)];
             const formats = formatsMatches.map((match) => (match[1] || '').trim());
@@ -200,4 +218,3 @@ async function getAlsaFormats(card) {
         return [];
     }
 }
-//# sourceMappingURL=System.js.map

@@ -2,12 +2,15 @@ import type I18nSchema from '../i18n/strings_en.json';
 import format from 'string-format';
 import fs from 'fs-extra';
 import type winston from 'winston';
-import { PLUGIN_CONFIG_SCHEMA, type PluginConfigKey, type PluginConfigValue } from './Config';
+import {
+  PLUGIN_CONFIG_SCHEMA,
+  type PluginConfigKey,
+  type PluginConfigValue
+} from './Config';
 
 export type I18nKey = keyof typeof I18nSchema;
 
 class SqueezeliteMCContext {
-
   #singletons: Record<string, any>;
   #data: Record<string, any>;
   #pluginContext?: any;
@@ -34,7 +37,9 @@ class SqueezeliteMCContext {
   get<T>(key: string): T | null;
   get<T>(key: string, defaultValue: T): T;
   get<T>(key: string, defaultValue?: T): T | null {
-    return (this.#data[key] !== undefined) ? this.#data[key] : (defaultValue || null);
+    return this.#data[key] !== undefined ?
+        this.#data[key]
+      : defaultValue || null;
   }
 
   delete(key: string) {
@@ -47,19 +52,31 @@ class SqueezeliteMCContext {
 
     this.#loadI18n();
     if (!this.#i18CallbackRegistered) {
-      this.#pluginContext.coreCommand.sharedVars.registerCallback('language_code', this.#onSystemLanguageChanged.bind(this));
+      this.#pluginContext.coreCommand.sharedVars.registerCallback(
+        'language_code',
+        this.#onSystemLanguageChanged.bind(this)
+      );
       this.#i18CallbackRegistered = true;
     }
   }
 
-  toast(type: 'success' | 'info' | 'error' | 'warning', message: string, title = 'Squeezelite MC') {
+  toast(
+    type: 'success' | 'info' | 'error' | 'warning',
+    message: string,
+    title = 'Squeezelite MC'
+  ) {
     this.#pluginContext.coreCommand.pushToastMessage(type, title, message);
   }
 
   refreshUIConfig() {
-    return this.#pluginContext.coreCommand.getUIConfigOnPlugin('music_service', 'squeezelite_mc', {}).then((config: any) => {
-      this.#pluginContext.coreCommand.broadcastMessage('pushUiConfig', config);
-    });
+    return this.#pluginContext.coreCommand
+      .getUIConfigOnPlugin('music_service', 'squeezelite_mc', {})
+      .then((config: any) => {
+        this.#pluginContext.coreCommand.broadcastMessage(
+          'pushUiConfig',
+          config
+        );
+      });
   }
 
   getLogger(): winston.Logger {
@@ -75,8 +92,7 @@ class SqueezeliteMCContext {
       if (stack && error.stack) {
         result += ` ${error.stack}`;
       }
-    }
-    else if (typeof error == 'string') {
+    } else if (typeof error == 'string') {
       result += ` ${error}`;
     }
     return result.trim();
@@ -86,7 +102,10 @@ class SqueezeliteMCContext {
     return this.#pluginConfig.has(key);
   }
 
-  getConfigValue<T extends PluginConfigKey>(key: T, getDefault = false): PluginConfigValue<T> {
+  getConfigValue<T extends PluginConfigKey>(
+    key: T,
+    getDefault = false
+  ): PluginConfigValue<T> {
     const schema = PLUGIN_CONFIG_SCHEMA[key];
     if (getDefault) {
       return schema.defaultValue;
@@ -97,16 +116,13 @@ class SqueezeliteMCContext {
       if (schema.json) {
         try {
           return JSON.parse(val);
-        }
-        catch (e) {
+        } catch (e) {
           return schema.defaultValue;
         }
-      }
-      else {
+      } else {
         return val;
       }
-    }
-    else {
+    } else {
       return schema.defaultValue;
     }
   }
@@ -115,17 +131,30 @@ class SqueezeliteMCContext {
     this.#pluginConfig.delete(key);
   }
 
-  setConfigValue<T extends PluginConfigKey>(key: T, value: PluginConfigValue<T>) {
+  setConfigValue<T extends PluginConfigKey>(
+    key: T,
+    value: PluginConfigValue<T>
+  ) {
     const schema = PLUGIN_CONFIG_SCHEMA[key];
     this.#pluginConfig.set(key, schema.json ? JSON.stringify(value) : value);
   }
 
   getAlbumArtPlugin() {
-    return this.#getSingleton('albumArtPlugin', () => this.#pluginContext.coreCommand.pluginManager.getPlugin('miscellanea', 'albumart'));
+    return this.#getSingleton('albumArtPlugin', () =>
+      this.#pluginContext.coreCommand.pluginManager.getPlugin(
+        'miscellanea',
+        'albumart'
+      )
+    );
   }
 
   getMpdPlugin(): any {
-    return this.#getSingleton('mpdPlugin', () => this.#pluginContext.coreCommand.pluginManager.getPlugin('music_service', 'mpd'));
+    return this.#getSingleton('mpdPlugin', () =>
+      this.#pluginContext.coreCommand.pluginManager.getPlugin(
+        'music_service',
+        'mpd'
+      )
+    );
   }
 
   getStateMachine(): any {
@@ -152,11 +181,11 @@ class SqueezeliteMCContext {
     if (key.indexOf('.') > 0) {
       const mainKey = key.split('.')[0];
       const secKey = key.split('.')[1];
-      str = (this.#i18n[mainKey] as Record<string, string>)?.[secKey] ||
+      str =
+        (this.#i18n[mainKey] as Record<string, string>)?.[secKey] ||
         (this.#i18nDefaults[mainKey] as Record<string, string>)?.[secKey] ||
         key;
-    }
-    else {
+    } else {
       str = (this.#i18n[key] || this.#i18nDefaults[key] || key) as string;
     }
 
@@ -173,16 +202,17 @@ class SqueezeliteMCContext {
 
       try {
         this.#i18nDefaults = fs.readJsonSync(`${i18nPath}/strings_en.json`);
-      }
-      catch (e) {
+      } catch (e) {
         this.#i18nDefaults = {};
       }
 
       try {
-        const language_code = this.#pluginContext.coreCommand.sharedVars.get('language_code');
-        this.#i18n = fs.readJsonSync(`${i18nPath}/strings_${language_code}.json`);
-      }
-      catch (e) {
+        const language_code =
+          this.#pluginContext.coreCommand.sharedVars.get('language_code');
+        this.#i18n = fs.readJsonSync(
+          `${i18nPath}/strings_${language_code}.json`
+        );
+      } catch (e) {
         this.#i18n = this.#i18nDefaults;
       }
     }

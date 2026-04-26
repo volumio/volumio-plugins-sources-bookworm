@@ -1,15 +1,19 @@
 import { type ServerConnectParams, encodeBase64 } from './Util';
 
 const BASE_REQUEST_BODY = {
-  'id': 1,
-  'method': 'slim.request'
+  id: 1,
+  method: 'slim.request'
 };
 
 const BASE_HEADERS = {
   'Content-Type': 'application/json'
 };
 
-export async function sendRpcRequest(connectParams: ServerConnectParams, params: any, abortController?: AbortController | null) {
+export async function sendRpcRequest(
+  connectParams: ServerConnectParams,
+  params: any,
+  abortController?: AbortController | null
+) {
   const body = {
     ...BASE_REQUEST_BODY,
     params
@@ -25,7 +29,7 @@ export async function sendRpcRequest(connectParams: ServerConnectParams, params:
       method: 'post',
       body: JSON.stringify(body),
       headers,
-      signal: abortController ? abortController.signal as any : undefined
+      signal: abortController ? abortController.signal : undefined
     });
 
     if (response.ok) {
@@ -33,15 +37,12 @@ export async function sendRpcRequest(connectParams: ServerConnectParams, params:
     }
 
     throw new Error(`${response.status} - ${response.statusText}`);
-
-  }
-  catch (error) {
+  } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
       return { _requestAborted: true };
     }
 
     throw error;
-
   }
 }
 

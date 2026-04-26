@@ -7,8 +7,21 @@ import vconf from 'v-conf';
 
 import os from 'os';
 import sm from './lib/SqueezeliteMCContext';
-import { basicPlayerStartupParamsToSqueezeliteOpts, getNetworkInterfaces, jsPromiseToKew, kewToJSPromise, PlaybackTimer } from './lib/Util';
-import { getAlsaFormats, getSqueezeliteServiceStatus, initSqueezeliteService, stopSqueezeliteService, SystemError, SystemErrorCode } from './lib/System';
+import {
+  basicPlayerStartupParamsToSqueezeliteOpts,
+  getNetworkInterfaces,
+  jsPromiseToKew,
+  kewToJSPromise,
+  PlaybackTimer
+} from './lib/Util';
+import {
+  getAlsaFormats,
+  getSqueezeliteServiceStatus,
+  initSqueezeliteService,
+  stopSqueezeliteService,
+  SystemError,
+  SystemErrorCode
+} from './lib/System';
 import PlayerStatusMonitor from './lib/PlayerStatusMonitor';
 import serverDiscovery from 'lms-discovery';
 import CommandDispatcher from './lib/CommandDispatcher';
@@ -16,10 +29,19 @@ import Proxy, { ProxyStatus } from './lib/Proxy';
 import PlayerFinder, { PlayerFinderStatus } from './lib/PlayerFinder';
 import equal from 'fast-deep-equal';
 import { type ServerCredentials } from './lib/types/Server';
-import {type AlsaConfig, type BasicPlayerStartupParams, type PlayerStartupParams, type PlayerStatus} from './lib/types/Player';
+import {
+  type AlsaConfig,
+  type BasicPlayerStartupParams,
+  type PlayerStartupParams,
+  type PlayerStatus
+} from './lib/types/Player';
 import type Player from './lib/types/Player';
 import { PlayerRunState } from './lib/types/Player';
-import { type BasicPlayerConfig, type ManualPlayerConfig, type PlayerConfig } from './lib/Config';
+import {
+  type BasicPlayerConfig,
+  type ManualPlayerConfig,
+  type PlayerConfig
+} from './lib/Config';
 
 interface VolumioState {
   service: string;
@@ -62,11 +84,11 @@ const EMPTY_STATE = {
 };
 
 const LMS_TRACK_TYPE_TO_VOLUMIO: Record<string, string> = {
-  'flc': 'flac',
-  'alc': 'alac',
-  'wvp': 'wv',
-  'aif': 'aiff',
-  'ops': 'opus'
+  flc: 'flac',
+  alc: 'alac',
+  wvp: 'wv',
+  aif: 'aiff',
+  ops: 'opus'
 };
 
 const LMS_REPEAT_OFF = 0;
@@ -114,6 +136,7 @@ class ControllerSqueezeliteMC {
     this.#volatileCallback = null;
     this.#volumioSetVolumeCallback = null;
     this.#commandDispatcher = null;
+    this.#proxy = null;
     this.#playerFinder = null;
     this.#playerConfigChangeDelayTimer = null;
     this.#playerConfigChangeHandler = null;
@@ -122,19 +145,23 @@ class ControllerSqueezeliteMC {
   }
 
   getUIConfig() {
-    return jsPromiseToKew(this.#doGetUIConfig())
-      .fail((error: any) => {
-        sm.getLogger().error(`[squeezelite_mc] getUIConfig(): Cannot populate configuration - ${error}`);
-        throw error;
-      });
+    return jsPromiseToKew(this.#doGetUIConfig()).fail((error: any) => {
+      sm.getLogger().error(
+        `[squeezelite_mc] getUIConfig(): Cannot populate configuration - ${error}`
+      );
+      throw error;
+    });
   }
 
   async #doGetUIConfig() {
     const langCode = this.#commandRouter.sharedVars.get('language_code');
-    const uiconf = await kewToJSPromise(this.#commandRouter.i18nJson(
-      `${__dirname}/i18n/strings_${langCode}.json`,
-      `${__dirname}/i18n/strings_en.json`,
-      `${__dirname}/UIConfig.json`));
+    const uiconf = await kewToJSPromise(
+      this.#commandRouter.i18nJson(
+        `${__dirname}/i18n/strings_${langCode}.json`,
+        `${__dirname}/i18n/strings_en.json`,
+        `${__dirname}/UIConfig.json`
+      )
+    );
     const status = await getSqueezeliteServiceStatus();
 
     const statusUIConf = uiconf.sections[0];
@@ -145,8 +172,8 @@ class ControllerSqueezeliteMC {
     const playerConfig = this.#getPlayerConfig();
     if (playerConfig.type === 'basic') {
       uiconf.sections.splice(2, 1);
-    }
-    else { // `manual` playerConfigType
+    } else {
+      // `manual` playerConfigType
       uiconf.sections.splice(1, 1);
     }
 
@@ -154,40 +181,50 @@ class ControllerSqueezeliteMC {
      * Status conf
      */
     let statusDesc, statusButtonType;
-    if (status === 'active' && this.#playerRunState !== PlayerRunState.ConfigRequireRestart) {
-      const player = this.#playerStatusMonitor ? this.#playerStatusMonitor.getPlayer() : null;
-      statusDesc = player ?
-        sm.getI18n('SQUEEZELITE_MC_DESC_STATUS_CONNECTED', player.server.name, player.server.ip) :
-        sm.getI18n('SQUEEZELITE_MC_DESC_STATUS_STARTED');
-    }
-    else if (this.#playerRunState === PlayerRunState.StartError) {
+    if (
+      status === 'active' &&
+      this.#playerRunState !== PlayerRunState.ConfigRequireRestart
+    ) {
+      const player =
+        this.#playerStatusMonitor ?
+          this.#playerStatusMonitor.getPlayer()
+        : null;
+      statusDesc =
+        player ?
+          sm.getI18n(
+            'SQUEEZELITE_MC_DESC_STATUS_CONNECTED',
+            player.server.name,
+            player.server.ip
+          )
+        : sm.getI18n('SQUEEZELITE_MC_DESC_STATUS_STARTED');
+    } else if (this.#playerRunState === PlayerRunState.StartError) {
       statusDesc = sm.getI18n('SQUEEZELITE_MC_DESC_STATUS_ERR_START');
       statusButtonType = 'start';
-    }
-    else if (this.#playerRunState === PlayerRunState.ConfigRequireRestart) {
-      statusDesc = (status === 'active') ?
-        sm.getI18n('SQUEEZELITE_MC_DESC_STATUS_ERR_RESTART_CONFIG') :
-        sm.getI18n('SQUEEZELITE_MC_DESC_STATUS_ERR_START');
-      statusButtonType = (status === 'active') ? 'restart' : 'start';
-    }
-    else if (this.#playerRunState === PlayerRunState.ConfigRequireRevalidate) {
+    } else if (this.#playerRunState === PlayerRunState.ConfigRequireRestart) {
+      statusDesc =
+        status === 'active' ?
+          sm.getI18n('SQUEEZELITE_MC_DESC_STATUS_ERR_RESTART_CONFIG')
+        : sm.getI18n('SQUEEZELITE_MC_DESC_STATUS_ERR_START');
+      statusButtonType = status === 'active' ? 'restart' : 'start';
+    } else if (
+      this.#playerRunState === PlayerRunState.ConfigRequireRevalidate
+    ) {
       statusDesc = sm.getI18n('SQUEEZELITE_MC_DESC_STATUS_ERR_REVALIDATE');
       statusButtonType = 'revalidate';
-    }
-    else {
+    } else {
       statusDesc = sm.getI18n('SQUEEZELITE_MC_DESC_STATUS_STOPPED');
       statusButtonType = 'start';
     }
     let statusButton: any = {
-      'id': 'startSqueezelite',
-      'element': 'button',
-      'onClick': {
-        'type': 'emit',
-        'message': 'callMethod',
-        'data': {
-          'endpoint': 'music_service/squeezelite_mc',
-          'method': 'configStartSqueezelite',
-          'data': {
+      id: 'startSqueezelite',
+      element: 'button',
+      onClick: {
+        type: 'emit',
+        message: 'callMethod',
+        data: {
+          endpoint: 'music_service/squeezelite_mc',
+          method: 'configStartSqueezelite',
+          data: {
             force: true
           }
         }
@@ -208,24 +245,28 @@ class ControllerSqueezeliteMC {
     }
     statusUIConf.description = statusDesc;
     if (statusButton) {
-      statusUIConf.content = [ statusButton ];
+      statusUIConf.content = [statusButton];
     }
 
     /**
      * Squeezelite conf
      */
     if (playerConfig.type === 'basic') {
-      const { playerNameType, playerName, dsdPlayback, fadeOnPauseResume } = playerConfig;
+      const { playerNameType, playerName, dsdPlayback } = playerConfig;
       // Player name
       squeezeliteBasicUIConf.content[1].value = {
         value: playerNameType
       };
       switch (playerNameType) {
         case 'custom':
-          squeezeliteBasicUIConf.content[1].value.label = sm.getI18n('SQUEEZELITE_MC_PLAYER_NAME_CUSTOM');
+          squeezeliteBasicUIConf.content[1].value.label = sm.getI18n(
+            'SQUEEZELITE_MC_PLAYER_NAME_CUSTOM'
+          );
           break;
         default: // 'hostname'
-          squeezeliteBasicUIConf.content[1].value.label = sm.getI18n('SQUEEZELITE_MC_PLAYER_NAME_HOSTNAME');
+          squeezeliteBasicUIConf.content[1].value.label = sm.getI18n(
+            'SQUEEZELITE_MC_PLAYER_NAME_HOSTNAME'
+          );
       }
       squeezeliteBasicUIConf.content[2].value = playerName;
 
@@ -235,53 +276,72 @@ class ControllerSqueezeliteMC {
       };
       switch (dsdPlayback) {
         case 'pcm':
-          squeezeliteBasicUIConf.content[3].value.label = sm.getI18n('SQUEEZELITE_MC_DSD_PLAYBACK_PCM');
+          squeezeliteBasicUIConf.content[3].value.label = sm.getI18n(
+            'SQUEEZELITE_MC_DSD_PLAYBACK_PCM'
+          );
           break;
         case 'dop':
-          squeezeliteBasicUIConf.content[3].value.label = sm.getI18n('SQUEEZELITE_MC_DSD_PLAYBACK_DOP');
+          squeezeliteBasicUIConf.content[3].value.label = sm.getI18n(
+            'SQUEEZELITE_MC_DSD_PLAYBACK_DOP'
+          );
           break;
         case 'DSD_U8':
-          squeezeliteBasicUIConf.content[3].value.label = sm.getI18n('SQUEEZELITE_MC_DSD_PLAYBACK_U8');
+          squeezeliteBasicUIConf.content[3].value.label = sm.getI18n(
+            'SQUEEZELITE_MC_DSD_PLAYBACK_U8'
+          );
           break;
         case 'DSD_U16_LE':
-          squeezeliteBasicUIConf.content[3].value.label = sm.getI18n('SQUEEZELITE_MC_DSD_PLAYBACK_U16_LE');
+          squeezeliteBasicUIConf.content[3].value.label = sm.getI18n(
+            'SQUEEZELITE_MC_DSD_PLAYBACK_U16_LE'
+          );
           break;
         case 'DSD_U16_BE':
-          squeezeliteBasicUIConf.content[3].value.label = sm.getI18n('SQUEEZELITE_MC_DSD_PLAYBACK_U16_BE');
+          squeezeliteBasicUIConf.content[3].value.label = sm.getI18n(
+            'SQUEEZELITE_MC_DSD_PLAYBACK_U16_BE'
+          );
           break;
         case 'DSD_U32_LE':
-          squeezeliteBasicUIConf.content[3].value.label = sm.getI18n('SQUEEZELITE_MC_DSD_PLAYBACK_U32_LE');
+          squeezeliteBasicUIConf.content[3].value.label = sm.getI18n(
+            'SQUEEZELITE_MC_DSD_PLAYBACK_U32_LE'
+          );
           break;
         case 'DSD_U32_BE':
-          squeezeliteBasicUIConf.content[3].value.label = sm.getI18n('SQUEEZELITE_MC_DSD_PLAYBACK_U32_BE');
+          squeezeliteBasicUIConf.content[3].value.label = sm.getI18n(
+            'SQUEEZELITE_MC_DSD_PLAYBACK_U32_BE'
+          );
           break;
         default: // 'auto'
-          squeezeliteBasicUIConf.content[3].value.label = sm.getI18n('SQUEEZELITE_MC_DSD_PLAYBACK_AUTO');
+          squeezeliteBasicUIConf.content[3].value.label = sm.getI18n(
+            'SQUEEZELITE_MC_DSD_PLAYBACK_AUTO'
+          );
       }
-      // Fade on pause / resume
-      squeezeliteBasicUIConf.content[4].value = fadeOnPauseResume;
-    }
-    else { // 'manual' playerConfigType
-      squeezeliteManualUIConf.content[1].value = playerConfig.fadeOnPauseResume;
-      squeezeliteManualUIConf.content[2].value = playerConfig.startupOptions;
+    } else {
+      // 'manual' playerConfigType
+      squeezeliteManualUIConf.content[1].value = playerConfig.startupOptions;
 
       // Get suggested startup options
       let suggestedStartupOptions;
       try {
         const defaultStartupParams = await this.#getPlayerStartupParams(true);
-        suggestedStartupOptions = basicPlayerStartupParamsToSqueezeliteOpts(defaultStartupParams);
-      }
-      catch (error) {
-        if (error instanceof SystemError && error.code === SystemErrorCode.DeviceBusy) {
-          squeezeliteManualUIConf.description = sm.getI18n('SQUEEZELITE_MC_ERR_SUGGESTED_STARTUP_OPTS_DEV_BUSY');
+        suggestedStartupOptions =
+          basicPlayerStartupParamsToSqueezeliteOpts(defaultStartupParams);
+      } catch (error) {
+        if (
+          error instanceof SystemError &&
+          error.code === SystemErrorCode.DeviceBusy
+        ) {
+          squeezeliteManualUIConf.description = sm.getI18n(
+            'SQUEEZELITE_MC_ERR_SUGGESTED_STARTUP_OPTS_DEV_BUSY'
+          );
+        } else {
+          squeezeliteManualUIConf.description = sm.getI18n(
+            'SQUEEZELITE_MC_ERR_SUGGESTED_STARTUP_OPTS'
+          );
         }
-        else {
-          squeezeliteManualUIConf.description = sm.getI18n('SQUEEZELITE_MC_ERR_SUGGESTED_STARTUP_OPTS');
-        }
       }
-      squeezeliteManualUIConf.content[3].value = suggestedStartupOptions;
+      squeezeliteManualUIConf.content[2].value = suggestedStartupOptions;
       // Apply suggested button payload
-      squeezeliteManualUIConf.content[4].onClick.data.data = {
+      squeezeliteManualUIConf.content[3].onClick.data.data = {
         startupOptions: suggestedStartupOptions
       };
     }
@@ -302,7 +362,9 @@ class ControllerSqueezeliteMC {
     });
     // Add servers with assigned credentials but not currently discovered
     Object.keys(serverCredentials).forEach((serverName) => {
-      const discovered = discoveredServers.find((server) => server.name === serverName);
+      const discovered = discoveredServers.find(
+        (server) => server.name === serverName
+      );
       if (!discovered) {
         serversSelectData.push({
           value: serverName,
@@ -314,36 +376,42 @@ class ControllerSqueezeliteMC {
     if (serversSelectData.length > 0) {
       serverCredentialsUIConf.content[0].value = serversSelectData[0] || null;
       // Username and password fields
-      serversSelectData.map((select) => select.value).forEach((serverName) => {
-        const { username = '', password = '' } = serverCredentials[serverName] || {};
-        const usernameField = {
-          id: `${serverName}_username`,
-          type: 'text',
-          element: 'input',
-          label: sm.getI18n('SQUEEZELITE_MC_USERNAME'),
-          value: username,
-          visibleIf: {
-            field: 'server',
-            value: serverName
-          }
-        };
-        const passwordField = {
-          id: `${serverName}_password`,
-          type: 'password',
-          element: 'input',
-          label: sm.getI18n('SQUEEZELITE_MC_PASSWORD'),
-          value: password,
-          visibleIf: {
-            field: 'server',
-            value: serverName
-          }
-        };
-        serverCredentialsUIConf.content.push(usernameField, passwordField);
-        serverCredentialsUIConf.saveButton.data.push(usernameField.id, passwordField.id);
-      });
-    }
-    else {
-      serverCredentialsUIConf.description = sm.getI18n('SQUEEZELITE_MC_NO_SERVERS');
+      serversSelectData
+        .map((select) => select.value)
+        .forEach((serverName) => {
+          const { username, password } = serverCredentials[serverName] || {};
+          const usernameField = {
+            id: `${serverName}_username`,
+            type: 'text',
+            element: 'input',
+            label: sm.getI18n('SQUEEZELITE_MC_USERNAME'),
+            value: username,
+            visibleIf: {
+              field: 'server',
+              value: serverName
+            }
+          };
+          const passwordField = {
+            id: `${serverName}_password`,
+            type: 'password',
+            element: 'input',
+            label: sm.getI18n('SQUEEZELITE_MC_PASSWORD'),
+            value: password,
+            visibleIf: {
+              field: 'server',
+              value: serverName
+            }
+          };
+          serverCredentialsUIConf.content.push(usernameField, passwordField);
+          serverCredentialsUIConf.saveButton.data.push(
+            usernameField.id,
+            passwordField.id
+          );
+        });
+    } else {
+      serverCredentialsUIConf.description = sm.getI18n(
+        'SQUEEZELITE_MC_NO_SERVERS'
+      );
       delete serverCredentialsUIConf.content[0];
       delete serverCredentialsUIConf.saveButton;
     }
@@ -352,11 +420,17 @@ class ControllerSqueezeliteMC {
   }
 
   getConfigurationFiles() {
-    return [ 'config.json' ];
+    return ['config.json'];
   }
 
   #stdLogError(fn: string, error: unknown, stack = false) {
-    sm.getLogger().error(sm.getErrorMessage(`[squeezelite_mc] Caught error in ${fn}:`, error, stack));
+    sm.getLogger().error(
+      sm.getErrorMessage(
+        `[squeezelite_mc] Caught error in ${fn}:`,
+        error,
+        stack
+      )
+    );
   }
 
   /**
@@ -364,7 +438,10 @@ class ControllerSqueezeliteMC {
    */
 
   onVolumioStart() {
-    const configFile = this.#commandRouter.pluginManager.getConfigurationFile(this.#context, 'config.json');
+    const configFile = this.#commandRouter.pluginManager.getConfigurationFile(
+      this.#context,
+      'config.json'
+    );
     this.#config = new vconf();
     this.#config.loadFile(configFile);
     return libQ.resolve(true);
@@ -381,17 +458,7 @@ class ControllerSqueezeliteMC {
     if (!this.#volumioSetVolumeCallback) {
       this.#volumioSetVolumeCallback = (volume) => {
         this.#volumioVolume = volume.vol;
-        if (this.#playbackTimer && this.#commandDispatcher) {
-          /**
-           * Volumioupdatevolume() triggers #pushState() in statemachine after calling
-           * this callback - but volatile state with old 'seek' value (from last push) will be used.
-           * this is undesirable if current status is 'play', so we update the statemachine's volatile state
-           * with seek value obtained from our internal playbackTimer.
-           */
-          sm.getLogger().info(`[squeezelite_mc] Setting Squeezelite volume to ${volume.vol}`);
-          if (this.#lastState && this.#lastState.status === 'play' && this.#lastState.seek !== undefined) {
-            this.#pushState({ ...this.#lastState, seek: this.#playbackTimer.getSeek() });
-          }
+        if (this.#commandDispatcher) {
           this.#commandDispatcher
             .sendVolume(this.#volumioVolume)
             .catch((error: unknown) => {
@@ -399,13 +466,19 @@ class ControllerSqueezeliteMC {
             });
         }
       };
-      this.#commandRouter.addCallback('volumioupdatevolume', this.#volumioSetVolumeCallback);
+      this.#commandRouter.addCallback(
+        'volumioupdatevolume',
+        this.#volumioSetVolumeCallback
+      );
     }
 
     this.#proxy = new Proxy(sm.getConfigValue('serverCredentials'));
-    this.#proxy.start()
+    this.#proxy
+      .start()
       .catch(() => {
-        sm.getLogger().warn('[squeezelite_mc] Unable to start proxy server - requests for artwork on password-protected servers will be denied');
+        sm.getLogger().warn(
+          '[squeezelite_mc] Unable to start proxy server - requests for artwork on password-protected servers will be denied'
+        );
       })
       .then(() => this.#getVolumioVolume())
       .then((volume) => {
@@ -413,15 +486,27 @@ class ControllerSqueezeliteMC {
         return this.#initAndStartPlayerFinder();
       })
       .then(() => {
-        this.#playerConfigChangeHandler = this.#handlePlayerConfigChange.bind(this);
-        this.#commandRouter.sharedVars.registerCallback('alsa.outputdevice', this.#playerConfigChangeHandler);
-        this.#commandRouter.sharedVars.registerCallback('alsa.outputdevicemixer', this.#playerConfigChangeHandler);
-        sm.getMpdPlugin().config.registerCallback('dop', this.#playerConfigChangeHandler);
+        this.#playerConfigChangeHandler =
+          this.#handlePlayerConfigChange.bind(this);
+        this.#commandRouter.sharedVars.registerCallback(
+          'alsa.outputdevice',
+          this.#playerConfigChangeHandler
+        );
+        this.#commandRouter.sharedVars.registerCallback(
+          'alsa.outputdevicemixer',
+          this.#playerConfigChangeHandler
+        );
+        sm.getMpdPlugin().config.registerCallback(
+          'dop',
+          this.#playerConfigChangeHandler
+        );
       })
       .then(() => this.#getPlayerStartupParams())
       .then((config) => {
         this.#playerStartupParams = config;
-        sm.getLogger().info(`[squeezelite_mc] Starting Squeezelite service with params: ${JSON.stringify(this.#playerStartupParams)}`);
+        sm.getLogger().info(
+          `[squeezelite_mc] Starting Squeezelite service with params: ${JSON.stringify(this.#playerStartupParams)}`
+        );
         sm.toast('info', sm.getI18n('SQUEEZELITE_MC_STARTING'));
         return initSqueezeliteService(config);
       })
@@ -432,12 +517,21 @@ class ControllerSqueezeliteMC {
       })
       .catch((error: unknown) => {
         this.#playerRunState = PlayerRunState.StartError;
-        if (error instanceof SystemError && error.code === SystemErrorCode.DeviceBusy) {
+        if (
+          error instanceof SystemError &&
+          error.code === SystemErrorCode.DeviceBusy
+        ) {
           sm.toast('error', sm.getI18n('SQUEEZELITE_MC_ERR_START_DEV_BUSY'));
           defer.resolve();
-        }
-        else {
-          sm.toast('error', sm.getErrorMessage(sm.getI18n('SQUEEZELITE_MC_ERR_START'), error, false));
+        } else {
+          sm.toast(
+            'error',
+            sm.getErrorMessage(
+              sm.getI18n('SQUEEZELITE_MC_ERR_START'),
+              error,
+              false
+            )
+          );
           defer.reject(error);
         }
       });
@@ -447,6 +541,10 @@ class ControllerSqueezeliteMC {
 
   onStop() {
     const defer = libQ.defer();
+
+    if (this.#isCurrentService()) {
+      this.unsetVolatile();
+    }
 
     this.#playerStartupParams = null;
     this.#commandDispatcher = null;
@@ -465,9 +563,18 @@ class ControllerSqueezeliteMC {
 
     // Hack to remove player config change handler
     if (this.#playerConfigChangeHandler) {
-      this.#commandRouter.sharedVars.callbacks.delete('alsa.outputdevice', this.#playerConfigChangeHandler);
-      this.#commandRouter.sharedVars.callbacks.delete('alsa.outputdevicemixer', this.#playerConfigChangeHandler);
-      sm.getMpdPlugin().config.callbacks.delete('dop', this.#playerConfigChangeHandler);
+      this.#commandRouter.sharedVars.callbacks.delete(
+        'alsa.outputdevice',
+        this.#playerConfigChangeHandler
+      );
+      this.#commandRouter.sharedVars.callbacks.delete(
+        'alsa.outputdevicemixer',
+        this.#playerConfigChangeHandler
+      );
+      sm.getMpdPlugin().config.callbacks.delete(
+        'dop',
+        this.#playerConfigChangeHandler
+      );
       this.#playerConfigChangeHandler = null;
     }
 
@@ -483,13 +590,21 @@ class ControllerSqueezeliteMC {
 
     sm.toast('info', sm.getI18n('SQUEEZELITE_MC_STOPPING'));
 
-    Promise.all(promises).then(() => {
-      sm.toast('success', sm.getI18n('SQUEEZELITE_MC_STOPPED'));
-      sm.reset();
-      defer.resolve();
-    })
+    Promise.all(promises)
+      .then(() => {
+        sm.toast('success', sm.getI18n('SQUEEZELITE_MC_STOPPED'));
+        sm.reset();
+        defer.resolve();
+      })
       .catch((error: unknown) => {
-        sm.toast('error', sm.getErrorMessage(sm.getI18n('SQUEEZELITE_MC_ERR_STOP'), error, false));
+        sm.toast(
+          'error',
+          sm.getErrorMessage(
+            sm.getI18n('SQUEEZELITE_MC_ERR_STOP'),
+            error,
+            false
+          )
+        );
         defer.reject(error);
       });
 
@@ -508,33 +623,52 @@ class ControllerSqueezeliteMC {
         void (async () => {
           const serverCredentials = sm.getConfigValue('serverCredentials');
           const player = data[0];
-          sm.getLogger().info(`[squeezelite_mc] Player found: ${JSON.stringify(player)}`);
-          this.#commandDispatcher = new CommandDispatcher(player, serverCredentials);
-  
+          sm.getLogger().info(
+            `[squeezelite_mc] Player found: ${JSON.stringify(player)}`
+          );
+          this.#commandDispatcher = new CommandDispatcher(
+            player,
+            serverCredentials
+          );
+
           // Set Squeezelite's volume to Volumio's
           if (this.#volumioVolume !== undefined) {
             await this.#commandDispatcher.sendVolume(this.#volumioVolume);
           }
-  
-          await this.#applyFadeOnPauseResume();
-  
+
           await this.#clearPlayerStatusMonitor(); // Ensure there is only one monitor instance
-          const playerStatusMonitor = new PlayerStatusMonitor(player, serverCredentials);
+          const playerStatusMonitor = new PlayerStatusMonitor(
+            player,
+            serverCredentials
+          );
           this.#playerStatusMonitor = playerStatusMonitor;
           playerStatusMonitor.on('update', (data) => {
             void (async () => {
               await this.#handlePlayerStatusUpdate(data);
             })();
           });
-          playerStatusMonitor.on('disconnect', this.#handlePlayerDisconnect.bind(this));
+          playerStatusMonitor.on(
+            'disconnect',
+            this.#handlePlayerDisconnect.bind(this)
+          );
           await playerStatusMonitor.start();
-  
-          sm.toast('info', sm.getI18n('SQUEEZELITE_MC_CONNECTED', player.server.name, player.server.ip));
+
+          sm.toast(
+            'info',
+            sm.getI18n(
+              'SQUEEZELITE_MC_CONNECTED',
+              player.server.name,
+              player.server.ip
+            )
+          );
         })();
       });
 
       this.#playerFinder.on('lost', this.#handlePlayerDisconnect.bind(this));
-      this.#playerFinder.on('error', this.#handlePlayerDiscoveryError.bind(this));
+      this.#playerFinder.on(
+        'error',
+        this.#handlePlayerDiscoveryError.bind(this)
+      );
     }
 
     if (this.#playerFinder.getStatus() === PlayerFinderStatus.Stopped) {
@@ -553,25 +687,12 @@ class ControllerSqueezeliteMC {
       }
       return this.#playerFinder.start({
         serverCredentials: sm.getConfigValue('serverCredentials'),
-        eventFilter: { // Only notify when found or lost player matches Volumio device IP and player ID matches mac addr
+        eventFilter: {
+          // Only notify when found or lost player matches Volumio device IP and player ID matches mac addr
           playerIP: ipAddresses,
           playerId: macAddresses
         }
       });
-    }
-  }
-
-  #applyFadeOnPauseResume() {
-    const { fadeOnPauseResume } = this.#getPlayerConfig();
-    if (this.#commandDispatcher && fadeOnPauseResume) {
-      /**
-       * Set LMS Player Settings -> Audio -> Volume Control to 'Output level is fixed at 100%'.
-       * This is to avoid Squeezelite from zero-ing out the volume on pause, which obviously
-       * causes problems with native DSD playback. Also, after Squeezelite mutes the volume on pause,
-       * playing from another Volumio source will not restore the volume to its previous level (i.e.
-       * it stays muted).
-       */
-      return this.#commandDispatcher.sendPref('digitalVolumeControl', 0);
     }
   }
 
@@ -594,7 +715,17 @@ class ControllerSqueezeliteMC {
   #handlePlayerDisconnect() {
     if (this.#playerStatusMonitor) {
       const player = this.#playerStatusMonitor.getPlayer();
-      sm.toast('info', sm.getI18n('SQUEEZELITE_MC_DISCONNECTED', player.server.name, player.server.ip));
+      sm.getLogger().info(
+        `[squeezelite_mc] Player disconnected from ${player.server.name} (${player.server.ip})`
+      );
+      sm.toast(
+        'info',
+        sm.getI18n(
+          'SQUEEZELITE_MC_DISCONNECTED',
+          player.server.name,
+          player.server.ip
+        )
+      );
     }
     void (async () => {
       await this.#clearPlayerStatusMonitor();
@@ -610,10 +741,16 @@ class ControllerSqueezeliteMC {
   }
 
   #handlePlayerDiscoveryError(message: string) {
-    sm.toast('error', sm.getI18n('SQUEEZELITE_MC_ERR_PLAYER_DISCOVER', message));
+    sm.toast(
+      'error',
+      sm.getI18n('SQUEEZELITE_MC_ERR_PLAYER_DISCOVER', message)
+    );
   }
 
-  async #handlePlayerStatusUpdate(data: {player: Player; status: PlayerStatus}) {
+  async #handlePlayerStatusUpdate(data: {
+    player: Player;
+    status: PlayerStatus;
+  }) {
     const { player, status } = data;
     const isCurrentService = this.#isCurrentService();
 
@@ -632,12 +769,10 @@ class ControllerSqueezeliteMC {
         if (track.artworkUrl.startsWith('/imageproxy')) {
           url = `http://${player.server.ip}:${player.server.jsonPort}${track.artworkUrl}`;
           useProxy = true;
-        }
-        else {
+        } else {
           url = track.artworkUrl;
         }
-      }
-      else if (track.coverArt) {
+      } else if (track.coverId) {
         url = `http://${player.server.ip}:${player.server.jsonPort}/music/current/cover.jpg?player=${encodeURIComponent(player.id)}&ms=${Date.now()}`;
         useProxy = true;
       }
@@ -648,12 +783,14 @@ class ControllerSqueezeliteMC {
 
       let proxyIP = null;
       if (useProxy && this.#proxy?.getStatus() === ProxyStatus.Started) {
-        const volumioIPs = this.#commandRouter.getCachedPAddresses ? this.#commandRouter.getCachedPAddresses() : this.#commandRouter.getCachedIPAddresses();
+        const volumioIPs =
+          this.#commandRouter.getCachedPAddresses ?
+            this.#commandRouter.getCachedPAddresses()
+          : this.#commandRouter.getCachedIPAddresses();
         if (volumioIPs) {
           if (volumioIPs.eth0) {
             proxyIP = volumioIPs.eth0;
-          }
-          else if (volumioIPs.wlan0 && volumioIPs.wlan0 !== '192.168.211.1') {
+          } else if (volumioIPs.wlan0 && volumioIPs.wlan0 !== '192.168.211.1') {
             proxyIP = volumioIPs.wlan0;
           }
         }
@@ -673,7 +810,6 @@ class ControllerSqueezeliteMC {
       });
 
       return `http://${proxyAddr}/?${qs.toString()}`;
-
     })();
 
     const isStreaming = track.duration === 0 || !status.canSeek;
@@ -685,10 +821,17 @@ class ControllerSqueezeliteMC {
       album: track.album || track.remoteTitle,
       albumart: albumartUrl,
       uri: '',
-      trackType: track.type ? LMS_TRACK_TYPE_TO_VOLUMIO[track.type] || track.type : undefined,
-      seek: !isStreaming && status.time !== undefined ? Math.ceil(status.time * 1000) : undefined,
+      trackType:
+        track.type ?
+          LMS_TRACK_TYPE_TO_VOLUMIO[track.type] || track.type
+        : undefined,
+      seek:
+        !isStreaming && status.time !== undefined ?
+          Math.ceil(status.time * 1000)
+        : undefined,
       duration: track.duration ? Math.ceil(track.duration) : undefined,
-      samplerate: track.sampleRate ? `${track.sampleRate / 1000} kHz` : undefined,
+      samplerate:
+        track.sampleRate ? `${track.sampleRate / 1000} kHz` : undefined,
       bitdepth: track.sampleSize ? `${track.sampleSize} bit` : undefined,
       channels: undefined,
       isStreaming,
@@ -738,7 +881,9 @@ class ControllerSqueezeliteMC {
     this.#lastState = volumioState;
 
     if (!isCurrentService && volumioState.status === 'play') {
-      sm.getLogger().info('[squeezelite_mc] \'play\' status received while not being the current service.');
+      sm.getLogger().info(
+        "[squeezelite_mc] 'play' status received while not being the current service."
+      );
       await this.#stopCurrentServiceAndSetVolatile();
       this.#pushState(volumioState);
 
@@ -748,8 +893,7 @@ class ControllerSqueezeliteMC {
       setTimeout(() => {
         this.#requestPlayerStatusUpdate();
       }, 3000);
-    }
-    else if (isCurrentService) {
+    } else if (isCurrentService) {
       if (volumioState.status === 'stop') {
         /**
          * Statemachine does weird things when the volatile status is 'stop'. The result is that
@@ -758,16 +902,14 @@ class ControllerSqueezeliteMC {
          * in #pushEmptyState(), playback will appear to have stopped.
          */
         this.#pushEmptyState();
-      }
-      else {
+      } else {
         this.#pushState(volumioState);
 
         if (this.#playbackTimer) {
           // Start or stop internal playbackTimer
           if (!volumioState.isStreaming && volumioState.status === 'play') {
             this.#playbackTimer.start(volumioState.seek);
-          }
-          else {
+          } else {
             this.#playbackTimer.stop();
           }
         }
@@ -778,10 +920,20 @@ class ControllerSqueezeliteMC {
     if (isCurrentService && this.#volumioVolume !== volumioState.volume) {
       this.#commandRouter.volumiosetvolume(volumioState.volume);
     }
+
+    // If player is playing something, we save the volume so we can restore it
+    // in unsetVolatile() if the user switches to another music service while
+    // Squeezelite is *paused* (which will set the mixer volume to 0 - note this is
+    // not the displayed volume, which remains unchanged).
+    if (volumioState.status === 'play') {
+      sm.set('lastPlaybackVolume', volumioState.volume);
+    }
   }
 
   #pushState(state: VolumioState) {
-    sm.getLogger().info(`[squeezelite_mc] #pushState(): ${JSON.stringify(state)}`);
+    sm.getLogger().info(
+      `[squeezelite_mc] #pushState(): ${JSON.stringify(state)}`
+    );
     this.#commandRouter.servicePushState(state, this.#serviceName);
   }
 
@@ -794,7 +946,10 @@ class ControllerSqueezeliteMC {
       try {
         const currentService = this.#getCurrentService();
         const statemachine = sm.getStateMachine();
-        const isPlaybackByMpd = currentService === 'mpd' || (statemachine.isConsume && statemachine.consumeUpdateService === 'mpd');
+        const isPlaybackByMpd =
+          currentService === 'mpd' ||
+          (statemachine.isConsume &&
+            statemachine.consumeUpdateService === 'mpd');
         if (isPlaybackByMpd) {
           /**
            * MpdPlugin pushes 'stop' states which do not get ignored by the statemachine even after we have called setVolatile().
@@ -805,15 +960,21 @@ class ControllerSqueezeliteMC {
           sm.getMpdPlugin().ignoreUpdate(true);
         }
         return kewToJSPromise(this.#commandRouter.volumioStop());
-      }
-      catch (error) {
-        sm.getLogger().error(sm.getErrorMessage('[squeezelite_mc] An error occurred while stopping playback by current service:', error));
+      } catch (error) {
+        sm.getLogger().error(
+          sm.getErrorMessage(
+            '[squeezelite_mc] An error occurred while stopping playback by current service:',
+            error
+          )
+        );
         sm.getLogger().error('[squeezelite_mc] Continuing anyway...');
       }
     };
 
     // Stop any playback by the currently active service
-    sm.getLogger().info('[squeezelite_mc] Stopping playback by current service...');
+    sm.getLogger().info(
+      '[squeezelite_mc] Stopping playback by current service...'
+    );
     sm.getStateMachine().setConsumeUpdateService(undefined);
     await stopCurrentServicePlayback();
 
@@ -824,7 +985,9 @@ class ControllerSqueezeliteMC {
     }
 
     // Set volatile
-    sm.getLogger().info('[squeezelite_mc] Setting ourselves as the current service...');
+    sm.getLogger().info(
+      '[squeezelite_mc] Setting ourselves as the current service...'
+    );
     if (!this.#volatileCallback) {
       this.#volatileCallback = this.onUnsetVolatile.bind(this);
     }
@@ -841,8 +1004,26 @@ class ControllerSqueezeliteMC {
 
   // Callback that gets called by statemachine when unsetting volatile state
   onUnsetVolatile() {
+    const lastPlaybackVolume = sm.get<number>('lastPlaybackVolume');
+    sm.delete('lastPlaybackVolume');
+
     this.#pushEmptyState();
     sm.getMpdPlugin().ignoreUpdate(false);
+
+    // Check if we're paused. If so, Squeezelite would have probably set the mixer volume to 0.
+    // We would have to restore it to the last known playback volume before we got paused.
+    // Below, "lastPlaybackVolume === this.#lastState.volume" returns false if volume was changed during pause,
+    // which would change the mixer volume to the new volume, so no need to restore.
+    if (
+      this.#lastState?.status === 'pause' &&
+      lastPlaybackVolume &&
+      lastPlaybackVolume === this.#lastState.volume
+    ) {
+      sm.getLogger().info(
+        `[squeezelite_mc] Restoring last known playback volume: ${lastPlaybackVolume}`
+      );
+      this.#commandRouter.volumiosetvolume(lastPlaybackVolume);
+    }
 
     /**
      * There is no graceful handling of switching from one music service plugin to another
@@ -866,7 +1047,10 @@ class ControllerSqueezeliteMC {
     sm.getLogger().info('[squeezelite_mc] Pushing empty state...');
     // Need to first push empty state with pause status first so the empty volatileState gets registered
     // By statemachine.
-    this.#commandRouter.servicePushState(Object.assign(EMPTY_STATE, { status: 'pause' }), this.#serviceName);
+    this.#commandRouter.servicePushState(
+      Object.assign(EMPTY_STATE, { status: 'pause' }),
+      this.#serviceName
+    );
     // Then push empty state with stop status. Note that the actual state will remain as 'pause', but trying to
     // Work with the logic of the state machine, or lack thereof, is just too much to bear...
     this.#commandRouter.servicePushState(EMPTY_STATE, this.#serviceName);
@@ -874,7 +1058,9 @@ class ControllerSqueezeliteMC {
 
   #getCurrentService() {
     const currentstate = this.#commandRouter.volumioGetState();
-    return (currentstate !== undefined && currentstate.service !== undefined) ? currentstate.service : null;
+    return currentstate !== undefined && currentstate.service !== undefined ?
+        currentstate.service
+      : null;
   }
 
   #isCurrentService() {
@@ -889,10 +1075,14 @@ class ControllerSqueezeliteMC {
 
   #getPlayerConfig(): PlayerConfig {
     const playerConfigType = sm.getConfigValue('playerConfigType');
-    const playerConfig = playerConfigType === 'basic' ?
-      sm.getConfigValue('basicPlayerConfig') : sm.getConfigValue('manualPlayerConfig');
-    const defaultPlayerConfig = playerConfigType === 'basic' ?
-      sm.getConfigValue('basicPlayerConfig', true) : sm.getConfigValue('manualPlayerConfig', true);
+    const playerConfig =
+      playerConfigType === 'basic' ?
+        sm.getConfigValue('basicPlayerConfig')
+      : sm.getConfigValue('manualPlayerConfig');
+    const defaultPlayerConfig =
+      playerConfigType === 'basic' ?
+        sm.getConfigValue('basicPlayerConfig', true)
+      : sm.getConfigValue('manualPlayerConfig', true);
     return {
       ...defaultPlayerConfig,
       ...playerConfig
@@ -900,22 +1090,39 @@ class ControllerSqueezeliteMC {
   }
 
   #getAlsaConfig(): AlsaConfig {
-    const device: string = this.#commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'getConfigParam', 'outputdevice');
+    const device: string = this.#commandRouter.executeOnPlugin(
+      'audio_interface',
+      'alsa_controller',
+      'getConfigParam',
+      'outputdevice'
+    );
     const card = device.indexOf(',') >= 0 ? device.charAt(0) : device;
-    const mixerType = this.#commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'getConfigParam', 'mixer_type'); // Software / Hardware
+    const mixerType = this.#commandRouter.executeOnPlugin(
+      'audio_interface',
+      'alsa_controller',
+      'getConfigParam',
+      'mixer_type'
+    ); // Software / Hardware
     // `mixer` is for squeezelite -V option:
     // - null for 'None' mixer type (use Squeezelite software volume control)
     // - Otherwise, set to same as Volumio (e.g. 'SoftMaster' for 'Software' mixer type)
-    const mixer = mixerType !== 'None' ? (() => {
-      const mixerDev: string = this.#commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'getConfigParam', 'mixer');
-      if (mixerDev.indexOf(',') >= 0) {
-        const mixerArr = mixerDev.split(',');
-        return `${mixerArr[0]},${mixerArr[1]}`;
-      }
+    const mixer =
+      mixerType !== 'None' ?
+        (() => {
+          const mixerDev: string = this.#commandRouter.executeOnPlugin(
+            'audio_interface',
+            'alsa_controller',
+            'getConfigParam',
+            'mixer'
+          );
+          if (mixerDev.indexOf(',') >= 0) {
+            const mixerArr = mixerDev.split(',');
+            return `${mixerArr[0]},${mixerArr[1]}`;
+          }
 
-      return mixerDev;
-
-    })() : null;
+          return mixerDev;
+        })()
+      : null;
 
     return {
       card,
@@ -924,9 +1131,15 @@ class ControllerSqueezeliteMC {
     };
   }
 
-  async #getPlayerStartupParams(getDefault: true): Promise<BasicPlayerStartupParams>;
-  async #getPlayerStartupParams(getDefault?: boolean): Promise<PlayerStartupParams>;
-  async #getPlayerStartupParams(getDefault = false): Promise<PlayerStartupParams> {
+  async #getPlayerStartupParams(
+    getDefault: true
+  ): Promise<BasicPlayerStartupParams>;
+  async #getPlayerStartupParams(
+    getDefault?: boolean
+  ): Promise<PlayerStartupParams>;
+  async #getPlayerStartupParams(
+    getDefault = false
+  ): Promise<PlayerStartupParams> {
     const alsaConfig = this.#getAlsaConfig();
     const playerConfigType = sm.getConfigValue('playerConfigType');
     if (playerConfigType === 'basic' || getDefault) {
@@ -935,8 +1148,7 @@ class ControllerSqueezeliteMC {
       let playerName: string;
       if (config.playerNameType === 'custom' && config.playerName) {
         playerName = config.playerName;
-      }
-      else {
+      } else {
         // Default - use device hostname. Don't rely on Squeezelite to set this, since it sometimes sets its
         // Name to "SqueezeLite", which is not what we want).
         playerName = os.hostname();
@@ -951,19 +1163,21 @@ class ControllerSqueezeliteMC {
         getBestSupportedDSDFormatCalled = false;
       if (mixerType === 'Software' || dsdPlayback === 'pcm') {
         dsdFormatPromise = Promise.resolve(null);
-      }
-      else if (dsdPlayback === 'dop') {
+      } else if (dsdPlayback === 'dop') {
         dsdFormatPromise = Promise.resolve('dop');
-      }
-      else if (DSD_FORMATS.includes(dsdPlayback)) {
+      } else if (DSD_FORMATS.includes(dsdPlayback)) {
         dsdFormatPromise = Promise.resolve(dsdPlayback);
-      }
-      else { // Auto based on Volumio's "DSD Playback Mode" setting
-        const dop = !!this.#commandRouter.executeOnPlugin('music_service', 'mpd', 'getConfigParam', 'dop');
+      } else {
+        // Auto based on Volumio's "DSD Playback Mode" setting
+        const dop = !!this.#commandRouter.executeOnPlugin(
+          'music_service',
+          'mpd',
+          'getConfigParam',
+          'dop'
+        );
         if (dop) {
           dsdFormatPromise = Promise.resolve('dop');
-        }
-        else {
+        } else {
           dsdFormatPromise = this.#getBestSupportedDSDFormat(card);
           getBestSupportedDSDFormatCalled = true;
         }
@@ -997,12 +1211,20 @@ class ControllerSqueezeliteMC {
   }
 
   async #getBestSupportedDSDFormat(card: string, noErr = false) {
-    const cachedAlsaFormats = sm.get<Record<string, string[]>>('alsaFormats', {});
-    const alsaFormatsPromise = cachedAlsaFormats[card] ? Promise.resolve(cachedAlsaFormats[card]) : getAlsaFormats(card);
+    const cachedAlsaFormats = sm.get<Record<string, string[]>>(
+      'alsaFormats',
+      {}
+    );
+    const alsaFormatsPromise =
+      cachedAlsaFormats[card] ?
+        Promise.resolve(cachedAlsaFormats[card])
+      : getAlsaFormats(card);
     try {
       const alsaFormats = await alsaFormatsPromise;
       if (alsaFormats.length === 0) {
-        sm.getLogger().warn(`[squeezelite_mc] No ALSA formats returned for card ${card}`);
+        sm.getLogger().warn(
+          `[squeezelite_mc] No ALSA formats returned for card ${card}`
+        );
         return null;
       }
 
@@ -1016,24 +1238,22 @@ class ControllerSqueezeliteMC {
         }
       }
       return null;
-
-    }
-    catch (error) {
+    } catch (error) {
       if (noErr) {
         return null;
       }
 
       throw error;
-
     }
   }
 
   async #getVolumioVolume() {
     try {
-      const volumeData = await kewToJSPromise(this.#commandRouter.volumioretrievevolume());
+      const volumeData = await kewToJSPromise(
+        this.#commandRouter.volumioretrievevolume()
+      );
       return volumeData.vol;
-    }
-    catch (error) {
+    } catch (error) {
       return 0;
     }
   }
@@ -1044,13 +1264,21 @@ class ControllerSqueezeliteMC {
     try {
       sm.toast('info', sm.getI18n('SQUEEZELITE_MC_REVALIDATING'));
       startupParams = await this.#getPlayerStartupParams();
-    }
-    catch (error) {
-      if (error instanceof SystemError && error.code === SystemErrorCode.DeviceBusy) {
+    } catch (error) {
+      if (
+        error instanceof SystemError &&
+        error.code === SystemErrorCode.DeviceBusy
+      ) {
         sm.toast('error', sm.getI18n('SQUEEZELITE_MC_ERR_REVALIDATE_DEV_BUSY'));
-      }
-      else {
-        sm.toast('error', sm.getErrorMessage(sm.getI18n('SQUEEZELITE_MC_ERR_REVALIDATE'), error, false));
+      } else {
+        sm.toast(
+          'error',
+          sm.getErrorMessage(
+            sm.getI18n('SQUEEZELITE_MC_ERR_REVALIDATE'),
+            error,
+            false
+          )
+        );
       }
       this.#playerStartupParams = null;
       this.#playerRunState = PlayerRunState.ConfigRequireRevalidate;
@@ -1060,38 +1288,51 @@ class ControllerSqueezeliteMC {
     }
 
     if (startupParams.type === 'basic') {
-      startupParamsChanged = options?.force ||
+      startupParamsChanged =
+        options?.force ||
         !this.#playerStartupParams ||
         this.#playerStartupParams.type !== 'basic' ||
-        (this.#playerStartupParams.playerName !== startupParams.playerName ||
-          this.#playerStartupParams.card !== startupParams.card ||
-          this.#playerStartupParams.mixerType !== startupParams.mixerType ||
-          this.#playerStartupParams.mixer !== startupParams.mixer ||
-          this.#playerStartupParams.dsdFormat !== startupParams.dsdFormat);
-    }
-    else { // `manual` startupParams type
-      startupParamsChanged = options?.force ||
+        this.#playerStartupParams.playerName !== startupParams.playerName ||
+        this.#playerStartupParams.card !== startupParams.card ||
+        this.#playerStartupParams.mixerType !== startupParams.mixerType ||
+        this.#playerStartupParams.mixer !== startupParams.mixer ||
+        this.#playerStartupParams.dsdFormat !== startupParams.dsdFormat;
+    } else {
+      // `manual` startupParams type
+      startupParamsChanged =
+        options?.force ||
         !this.#playerStartupParams ||
         this.#playerStartupParams.type !== 'manual' ||
-        this.#playerStartupParams.startupOptions !== startupParams.startupOptions;
+        this.#playerStartupParams.startupOptions !==
+          startupParams.startupOptions;
     }
 
     if (startupParamsChanged) {
       this.#playerStartupParams = startupParams;
-      sm.getLogger().info(`[squeezelite_mc] Restarting Squeezelite service with params: ${JSON.stringify(startupParams)}`);
+      sm.getLogger().info(
+        `[squeezelite_mc] Restarting Squeezelite service with params: ${JSON.stringify(startupParams)}`
+      );
 
       try {
         await initSqueezeliteService(startupParams);
         sm.toast('success', sm.getI18n('SQUEEZELITE_MC_RESTARTED_CONFIG'));
         this.#playerRunState = PlayerRunState.Normal;
         sm.refreshUIConfig();
-      }
-      catch (error) {
-        if (error instanceof SystemError && error.code === SystemErrorCode.DeviceBusy) {
+      } catch (error) {
+        if (
+          error instanceof SystemError &&
+          error.code === SystemErrorCode.DeviceBusy
+        ) {
           sm.toast('error', sm.getI18n('SQUEEZELITE_MC_ERR_RESTART_DEV_BUSY'));
-        }
-        else {
-          sm.toast('error', sm.getErrorMessage(sm.getI18n('SQUEEZELITE_MC_ERR_RESTART'), error, false));
+        } else {
+          sm.toast(
+            'error',
+            sm.getErrorMessage(
+              sm.getI18n('SQUEEZELITE_MC_ERR_RESTART'),
+              error,
+              false
+            )
+          );
         }
         this.#playerStartupParams = null;
         this.#playerRunState = PlayerRunState.ConfigRequireRestart;
@@ -1108,10 +1349,9 @@ class ControllerSqueezeliteMC {
       this.#playerConfigChangeDelayTimer = null;
     }
     this.#playerConfigChangeDelayTimer = setTimeout(() => {
-      this.#revalidatePlayerConfig()
-        .catch((error: unknown) => {
-          this.#stdLogError('#revalidatePlayerConfig()', error);
-        });
+      this.#revalidatePlayerConfig().catch((error: unknown) => {
+        this.#stdLogError('#revalidatePlayerConfig()', error);
+      });
     }, 1500);
   }
 
@@ -1143,22 +1383,19 @@ class ControllerSqueezeliteMC {
    */
 
   configStartSqueezelite(data: { force?: boolean }) {
-    this.#revalidatePlayerConfig(data)
-      .catch((error: unknown) => {
-        this.#stdLogError('#revalidatePlayerConfig()', error);
-      });
+    this.#revalidatePlayerConfig(data).catch((error: unknown) => {
+      this.#stdLogError('#revalidatePlayerConfig()', error);
+    });
   }
 
   configSaveServerCredentials(data: Record<string, string> = {}) {
     const credentials: ServerCredentials = {};
-    for (const [ fieldName, value ] of Object.entries(data)) {
-      let fieldType: string | undefined,
-        serverName: string | undefined;
+    for (const [fieldName, value] of Object.entries(data)) {
+      let fieldType: string | undefined, serverName: string | undefined;
       if (fieldName.endsWith('_username')) {
         fieldType = 'username';
         serverName = fieldName.substring(0, fieldName.length - 9);
-      }
-      else if (fieldName.endsWith('_password')) {
+      } else if (fieldName.endsWith('_password')) {
         fieldType = 'password';
         serverName = fieldName.substring(0, fieldName.length - 9);
       }
@@ -1171,8 +1408,7 @@ class ControllerSqueezeliteMC {
         }
         if (fieldType === 'username') {
           credentials[serverName].username = value.trim();
-        }
-        else if (fieldType === 'password') {
+        } else if (fieldType === 'password') {
           credentials[serverName].password = value.trim();
         }
       }
@@ -1187,8 +1423,7 @@ class ControllerSqueezeliteMC {
     sm.setConfigValue('serverCredentials', credentials);
     if (equal(credentials, oldCredentials)) {
       sm.toast('success', sm.getI18n('SQUEEZELITE_MC_SETTINGS_SAVED'));
-    }
-    else {
+    } else {
       // Restart components that rely on serverCredentials
       sm.toast('success', sm.getI18n('SQUEEZELITE_MC_APPLY_CONFIG_CHANGE'));
       sm.refreshUIConfig().then(() => {
@@ -1207,21 +1442,19 @@ class ControllerSqueezeliteMC {
 
   configSwitchToBasicSqueezeliteSettings() {
     sm.setConfigValue('playerConfigType', 'basic');
-    this.#revalidatePlayerConfig({ force: true })
-      .catch((error: unknown) => {
-        this.#stdLogError('#revalidatePlayerConfig()', error);
-      });
+    this.#revalidatePlayerConfig({ force: true }).catch((error: unknown) => {
+      this.#stdLogError('#revalidatePlayerConfig()', error);
+    });
   }
 
   configSwitchToManualSqueezeliteSettings() {
     sm.setConfigValue('playerConfigType', 'manual');
-    this.#revalidatePlayerConfig({ force: true })
-      .catch((error: unknown) => {
-        this.#stdLogError('#revalidatePlayerConfig()', error);
-      });
+    this.#revalidatePlayerConfig({ force: true }).catch((error: unknown) => {
+      this.#stdLogError('#revalidatePlayerConfig()', error);
+    });
   }
 
-  async configSaveBasicSqueezeliteSettings(data: any) {
+  configSaveBasicSqueezeliteSettings(data: any) {
     const playerNameType = data.playerNameType.value;
     const playerName = data.playerName.trim();
     const dsdPlayback = data.dsdPlayback.value;
@@ -1240,45 +1473,36 @@ class ControllerSqueezeliteMC {
       type: 'basic',
       playerNameType,
       playerName,
-      dsdPlayback,
-      fadeOnPauseResume: data.fadeOnPauseResume
+      dsdPlayback
     };
     sm.setConfigValue('basicPlayerConfig', newConfig);
 
-    await this.#applyFadeOnPauseResume();
-
     if (!revalidate) {
       sm.toast('success', sm.getI18n('SQUEEZELITE_MC_SETTINGS_SAVED'));
-    }
-    else {
-      this.#revalidatePlayerConfig()
-        .catch((error: unknown) => {
-          this.#stdLogError('#revalidatePlayerConfig()', error);
-        });
+    } else {
+      this.#revalidatePlayerConfig().catch((error: unknown) => {
+        this.#stdLogError('#revalidatePlayerConfig()', error);
+      });
     }
   }
 
-  async configSaveManualSqueezeliteSettings(data: any) {
+  configSaveManualSqueezeliteSettings(data: any) {
     const startupOptions = data.startupOptions.trim();
-    const { startupOptions: oldStartupOptions } = sm.getConfigValue('manualPlayerConfig');
+    const { startupOptions: oldStartupOptions } =
+      sm.getConfigValue('manualPlayerConfig');
 
     const newConfig: ManualPlayerConfig = {
       type: 'manual',
-      fadeOnPauseResume: data.fadeOnPauseResume,
       startupOptions
     };
     sm.setConfigValue('manualPlayerConfig', newConfig);
 
-    await this.#applyFadeOnPauseResume();
-
     if (startupOptions === oldStartupOptions) {
       sm.toast('success', sm.getI18n('SQUEEZELITE_MC_SETTINGS_SAVED'));
-    }
-    else {
-      this.#revalidatePlayerConfig()
-        .catch((error: unknown) => {
-          this.#stdLogError('#revalidatePlayerConfig()', error);
-        });
+    } else {
+      this.#revalidatePlayerConfig().catch((error: unknown) => {
+        this.#stdLogError('#revalidatePlayerConfig()', error);
+      });
     }
   }
 
@@ -1288,10 +1512,9 @@ class ControllerSqueezeliteMC {
 
   stop() {
     if (this.#commandDispatcher) {
-      this.#commandDispatcher.sendStop()
-        .catch((error: unknown) => {
-          this.#stdLogError('#commandDispatcher.sendStop()', error);
-        });
+      this.#commandDispatcher.sendStop().catch((error: unknown) => {
+        this.#stdLogError('#commandDispatcher.sendStop()', error);
+      });
       return this.#resolveOnStatusMode('stop');
     }
     return libQ.resolve(true);
@@ -1299,10 +1522,9 @@ class ControllerSqueezeliteMC {
 
   play() {
     if (this.#commandDispatcher) {
-      this.#commandDispatcher.sendPlay()
-        .catch((error: unknown) => {
-          this.#stdLogError('#commandDispatcher.sendPlay()', error);
-        });
+      this.#commandDispatcher.sendPlay().catch((error: unknown) => {
+        this.#stdLogError('#commandDispatcher.sendPlay()', error);
+      });
       return this.#resolveOnStatusMode('play');
     }
     return libQ.resolve(true);
@@ -1310,10 +1532,9 @@ class ControllerSqueezeliteMC {
 
   pause() {
     if (this.#commandDispatcher) {
-      this.#commandDispatcher.sendPause()
-        .catch((error: unknown) => {
-          this.#stdLogError('#commandDispatcher.sendPause()', error);
-        });
+      this.#commandDispatcher.sendPause().catch((error: unknown) => {
+        this.#stdLogError('#commandDispatcher.sendPause()', error);
+      });
       return this.#resolveOnStatusMode('pause');
     }
     return libQ.resolve(true);
@@ -1321,10 +1542,9 @@ class ControllerSqueezeliteMC {
 
   resume() {
     if (this.#commandDispatcher) {
-      this.#commandDispatcher.sendPlay()
-        .catch((error: unknown) => {
-          this.#stdLogError('#commandDispatcher.sendPlay()', error);
-        });
+      this.#commandDispatcher.sendPlay().catch((error: unknown) => {
+        this.#stdLogError('#commandDispatcher.sendPlay()', error);
+      });
       return this.#resolveOnStatusMode('play');
     }
     return libQ.resolve(true);
@@ -1332,20 +1552,22 @@ class ControllerSqueezeliteMC {
 
   seek(position: number) {
     if (this.#commandDispatcher) {
-      return jsPromiseToKew(this.#commandDispatcher.sendSeek(position)
-        .catch((error: unknown) => {
+      return jsPromiseToKew(
+        this.#commandDispatcher.sendSeek(position).catch((error: unknown) => {
           this.#stdLogError('#commandDispatcher.sendSeek()', error);
-        }));
+        })
+      );
     }
     return libQ.resolve(true);
   }
 
   next() {
     if (this.#commandDispatcher) {
-      return jsPromiseToKew(this.#commandDispatcher.sendNext()
-        .catch((error: unknown) => {
+      return jsPromiseToKew(
+        this.#commandDispatcher.sendNext().catch((error: unknown) => {
           this.#stdLogError('#commandDispatcher.sendNext()', error);
-        }));
+        })
+      );
     }
     return libQ.resolve(true);
   }
@@ -1354,17 +1576,17 @@ class ControllerSqueezeliteMC {
     if (this.#commandDispatcher) {
       if (this.#previousDoubleClickTimeout) {
         this.#previousDoubleClickTimeout = null;
-        return jsPromiseToKew(this.#commandDispatcher.sendPrevious()
-          .catch((error: unknown) => {
+        return jsPromiseToKew(
+          this.#commandDispatcher.sendPrevious().catch((error: unknown) => {
             this.#stdLogError('#commandDispatcher.sendPrevious()', error);
-          }));
+          })
+        );
       }
 
       this.#previousDoubleClickTimeout = setTimeout(() => {
         this.#previousDoubleClickTimeout = null;
       }, 3000);
       return this.seek(0);
-
     }
     return libQ.resolve(true);
   }
@@ -1372,7 +1594,12 @@ class ControllerSqueezeliteMC {
   repeat(value: boolean, repeatSingle: boolean) {
     if (this.#commandDispatcher) {
       this.#commandDispatcher
-        .sendRepeat(value ? (repeatSingle ? LMS_REPEAT_CURRENT_SONG : LMS_REPEAT_PLAYLIST) : LMS_REPEAT_OFF)
+        .sendRepeat(
+          value ?
+            repeatSingle ? LMS_REPEAT_CURRENT_SONG
+            : LMS_REPEAT_PLAYLIST
+          : LMS_REPEAT_OFF
+        )
         .catch((error: unknown) => {
           this.#stdLogError('#commandDispatcher.sendRepeat()', error);
         });
