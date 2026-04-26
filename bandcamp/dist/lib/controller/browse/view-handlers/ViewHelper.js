@@ -78,4 +78,3 @@ _a = ViewHelper, _ViewHelper_getViewFromUriSegment = function _ViewHelper_getVie
     return result;
 };
 exports.default = ViewHelper;
-//# sourceMappingURL=ViewHelper.js.map

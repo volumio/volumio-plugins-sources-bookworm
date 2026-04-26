@@ -80,4 +80,3 @@ _ArticleModel_instances = new WeakSet(), _ArticleModel_getArticlesFetchPromise =
     return EntityConverter_1.default.convertArticle(item);
 };
 exports.default = ArticleModel;
-//# sourceMappingURL=ArticleModel.js.map

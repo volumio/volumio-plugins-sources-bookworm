@@ -262,4 +262,3 @@ class EntityConverter {
     }
 }
 exports.default = EntityConverter;
-//# sourceMappingURL=EntityConverter.js.map

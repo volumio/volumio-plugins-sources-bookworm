@@ -57,4 +57,3 @@ class ArticleRenderer extends BaseRenderer_1.default {
     }
 }
 exports.default = ArticleRenderer;
-//# sourceMappingURL=ArticleRenderer.js.map

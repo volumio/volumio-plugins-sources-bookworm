@@ -37,4 +37,3 @@ class AlbumRenderer extends BaseRenderer_1.default {
     }
 }
 exports.default = AlbumRenderer;
-//# sourceMappingURL=AlbumRenderer.js.map
