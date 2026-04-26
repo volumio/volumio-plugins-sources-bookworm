@@ -11,11 +11,10 @@
   "repository": "https://github.com/phonics9581/volumio-plugins-sources-bookworm",
   "volumio_info": {
     "prettyName": "Pi5 RGB Status Link",
-    "plugin_type": "system_controller",
+    "plugin_type": "system_hardware",
     "icon": "fa-lightbulb-o",
     "architectures": [
-      "armhf",
-      "arm64"
+      "armhf"
     ],
     "os": [
       "bookworm"
