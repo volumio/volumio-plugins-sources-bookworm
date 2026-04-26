@@ -5,7 +5,7 @@
       "id": "sec_hardware",
       "type": "section",
       "label": "1. Hardware Setup (GPIO Pins)",
-      "onSave": { "type": "plugin", "endpoint": "system_controller/pi5-rgb-led-control", "method": "saveLEDConfig" },
+      "onSave": { "type": "plugin", "endpoint": "system_hardware/pi5-rgb-led-control", "method": "saveLEDConfig" },
       "saveButton": { "label": "Save Hardware", "data": ["ENABLED", "PIN_R", "PIN_G", "PIN_B"] },
       "content": [
         { "id": "ENABLED", "element": "switch", "label": "Enable LED Output", "value": true },
@@ -18,7 +18,7 @@
       "id": "sec_playback",
       "type": "section",
       "label": "2. Playback Colour Tiers",
-      "onSave": { "type": "plugin", "endpoint": "system_controller/pi5-rgb-led-control", "method": "saveLEDConfig" },
+      "onSave": { "type": "plugin", "endpoint": "system_hardware/pi5-rgb-led-control", "method": "saveLEDConfig" },
       "saveButton": { "label": "Save Colours", "data": ["C16_R", "C16_G", "C16_B", "C24H_R", "C24H_G", "C24H_B", "C24U_R", "C24U_G", "C24U_B", "CDSD_R", "CDSD_G", "CDSD_B"] },
       "content": [
         { "id": "sep1", "element": "section", "label": "16-BIT (Standard Res / Up to 48kHz)" },
@@ -46,7 +46,7 @@
       "id": "sec_behavior",
       "type": "section",
       "label": "3. Standby & Pause Behaviour",
-      "onSave": { "type": "plugin", "endpoint": "system_controller/pi5-rgb-led-control", "method": "saveLEDConfig" },
+      "onSave": { "type": "plugin", "endpoint": "system_hardware/pi5-rgb-led-control", "method": "saveLEDConfig" },
       "saveButton": { "label": "Save Behaviour", "data": ["STB_R", "STB_G", "STB_B", "STBY_PATT", "STBY_SPD", "PAUSE_PATT", "PAUSE_SPD"] },
       "content": [
         { "id": "sep5", "element": "section", "label": "STANDBY" },
@@ -95,7 +95,7 @@
       "id": "sec_alerts",
       "type": "section",
       "label": "4. Scanning & Error Behaviour",
-      "onSave": { "type": "plugin", "endpoint": "system_controller/pi5-rgb-led-control", "method": "saveLEDConfig" },
+      "onSave": { "type": "plugin", "endpoint": "system_hardware/pi5-rgb-led-control", "method": "saveLEDConfig" },
       "saveButton": { "label": "Save Alerts", "data": ["SCA_R", "SCA_G", "SCA_B", "SCB_R", "SCB_G", "SCB_B", "SCC_R", "SCC_G", "SCC_B", "ERR_R", "ERR_G", "ERR_B", "ERR_PATT", "ERR_SPD", "SCAN_PATT", "SCAN_SPD"] },
       "content": [
         { "id": "sep7", "element": "section", "label": "LIBRARY SCANNING" },
@@ -153,7 +153,7 @@
       "id": "sec_shutdown",
       "type": "section",
       "label": "5. Singularity Shutdown Sequence",
-      "onSave": { "type": "plugin", "endpoint": "system_controller/pi5-rgb-led-control", "method": "saveLEDConfig" },
+      "onSave": { "type": "plugin", "endpoint": "system_hardware/pi5-rgb-led-control", "method": "saveLEDConfig" },
       "saveButton": { "label": "Save Shutdown", "data": ["SHUT_R", "SHUT_G", "SHUT_B", "SHUT_SPD"] },
       "content": [
         { "id": "sep_shut", "element": "section", "label": "SINGULARITY GLOW COLOUR" },
