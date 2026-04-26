@@ -87,4 +87,3 @@ _SearchModel_instances = new WeakSet(), _SearchModel_getSearchResultsFetchPromis
     return null;
 };
 exports.default = SearchModel;
-//# sourceMappingURL=SearchModel.js.map

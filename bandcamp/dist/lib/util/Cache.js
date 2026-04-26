@@ -84,4 +84,3 @@ class Cache {
 }
 _Cache_ttl = new WeakMap(), _Cache_maxEntries = new WeakMap(), _Cache_cache = new WeakMap();
 exports.default = Cache;
-//# sourceMappingURL=Cache.js.map

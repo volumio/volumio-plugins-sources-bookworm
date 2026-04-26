@@ -38,4 +38,3 @@ _TrackModel_instances = new WeakSet(), _TrackModel_doGetTrack = async function _
     return EntityConverter_1.default.convertTrack(item);
 };
 exports.default = TrackModel;
-//# sourceMappingURL=TrackModel.js.map

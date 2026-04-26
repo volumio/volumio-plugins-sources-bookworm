@@ -44,4 +44,3 @@ class TrackRenderer extends BaseRenderer_1.default {
     }
 }
 exports.default = TrackRenderer;
-//# sourceMappingURL=TrackRenderer.js.map

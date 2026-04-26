@@ -33,4 +33,3 @@ function kewToJSPromise(promise) {
         });
     });
 }
-//# sourceMappingURL=index.js.map

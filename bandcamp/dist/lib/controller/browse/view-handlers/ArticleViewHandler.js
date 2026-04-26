@@ -475,4 +475,3 @@ _ArticleViewHandler_instances = new WeakSet(), _ArticleViewHandler_browseList = 
     };
 };
 exports.default = ArticleViewHandler;
-//# sourceMappingURL=ArticleViewHandler.js.map

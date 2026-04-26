@@ -34,6 +34,7 @@ class BandcampContext {
         __classPrivateFieldSet(this, _BandcampContext_i18n, {}, "f");
         __classPrivateFieldSet(this, _BandcampContext_i18nDefaults, {}, "f");
         __classPrivateFieldSet(this, _BandcampContext_i18CallbackRegistered, false, "f");
+        __classPrivateFieldSet(this, _BandcampContext_cache, null, "f");
     }
     set(key, value) {
         __classPrivateFieldGet(this, _BandcampContext_data, "f")[key] = value;
@@ -52,7 +53,6 @@ class BandcampContext {
             __classPrivateFieldGet(this, _BandcampContext_pluginContext, "f").coreCommand.sharedVars.registerCallback('language_code', __classPrivateFieldGet(this, _BandcampContext_instances, "m", _BandcampContext_onSystemLanguageChanged).bind(this));
             __classPrivateFieldSet(this, _BandcampContext_i18CallbackRegistered, true, "f");
         }
-        __classPrivateFieldSet(this, _BandcampContext_cache, new Cache_1.default(this.getConfigValue('cacheTTL', 1800), this.getConfigValue('cacheMaxEntries', 5000)), "f");
     }
     toast(type, message, title = 'Bandcamp Discover') {
         __classPrivateFieldGet(this, _BandcampContext_pluginContext, "f").coreCommand.pushToastMessage(type, title, message);
@@ -95,6 +95,9 @@ class BandcampContext {
         return __classPrivateFieldGet(this, _BandcampContext_pluginContext, "f").coreCommand.stateMachine;
     }
     getCache() {
+        if (!__classPrivateFieldGet(this, _BandcampContext_cache, "f")) {
+            __classPrivateFieldSet(this, _BandcampContext_cache, new Cache_1.default(this.getConfigValue('cacheTTL', 1800), this.getConfigValue('cacheMaxEntries', 5000)), "f");
+        }
         return __classPrivateFieldGet(this, _BandcampContext_cache, "f");
     }
     getPlaylistManager() {
@@ -105,7 +108,8 @@ class BandcampContext {
         __classPrivateFieldSet(this, _BandcampContext_pluginConfig, null, "f");
         __classPrivateFieldSet(this, _BandcampContext_singletons, {}, "f");
         __classPrivateFieldSet(this, _BandcampContext_data, {}, "f");
-        __classPrivateFieldGet(this, _BandcampContext_cache, "f").clear();
+        __classPrivateFieldGet(this, _BandcampContext_cache, "f")?.clear();
+        __classPrivateFieldSet(this, _BandcampContext_cache, null, "f");
     }
     getI18n(key, ...formatValues) {
         let str;
@@ -154,4 +158,3 @@ _BandcampContext_singletons = new WeakMap(), _BandcampContext_data = new WeakMap
     __classPrivateFieldGet(this, _BandcampContext_instances, "m", _BandcampContext_loadI18n).call(this);
 };
 exports.default = new BandcampContext();
-//# sourceMappingURL=BandcampContext.js.map

@@ -117,4 +117,3 @@ _AlbumViewHandler_instances = new WeakSet(), _AlbumViewHandler_addArtistLink = a
     }
 };
 exports.default = AlbumViewHandler;
-//# sourceMappingURL=AlbumViewHandler.js.map
