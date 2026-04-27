@@ -1,0 +1,306 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_CONFIGURATION"
+  },
+  "sections": [
+    {
+      "id": "hardware",
+      "element": "section",
+      "label": "TRANSLATE.HARDWARE.TITLE",
+      "icon": "fa-microchip",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "user_interface/oled_display_ssd1309",
+        "method": "saveConfig"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.HARDWARE.SAVE",
+        "data": [
+          "i2c_bus_number",
+          "i2c_address",
+          "contrast",
+          "rotate_180"
+        ]
+      },
+      "content": [
+        {
+          "id": "i2c_bus_number",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.HARDWARE.I2C_BUS_NUMBER_DOC",
+          "label": "TRANSLATE.HARDWARE.I2C_BUS_NUMBER",
+          "value": 1,
+          "attributes": [
+            { "placeholder": "1" },
+            { "min": 0 },
+            { "max": 10 }
+          ]
+        },
+        {
+          "id": "i2c_address",
+          "type": "text",
+          "element": "select",
+          "doc": "TRANSLATE.HARDWARE.I2C_ADDRESS_DOC",
+          "label": "TRANSLATE.HARDWARE.I2C_ADDRESS",
+          "value": {
+            "value": "0x3C",
+            "label": "0x3C (default)"
+          },
+          "options": [
+            {
+              "value": "0x3C",
+              "label": "0x3C (default)"
+            },
+            {
+              "value": "0x3D",
+              "label": "0x3D"
+            }
+          ]
+        },
+        {
+          "id": "contrast",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.HARDWARE.CONTRAST_DOC",
+          "label": "TRANSLATE.HARDWARE.CONTRAST",
+          "value": 255,
+          "attributes": [
+            { "placeholder": "255" },
+            { "min": 0 },
+            { "max": 255 }
+          ]
+        },
+        {
+          "id": "rotate_180",
+          "type": "switch",
+          "element": "switch",
+          "doc": "TRANSLATE.HARDWARE.ROTATE_180_DOC",
+          "label": "TRANSLATE.HARDWARE.ROTATE_180",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": "display",
+      "element": "section",
+      "label": "TRANSLATE.DISPLAY.TITLE",
+      "icon": "fa-television",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "user_interface/oled_display_ssd1309",
+        "method": "saveConfig"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.DISPLAY.SAVE",
+        "data": [
+          "playback_layout",
+          "scroll_speed",
+          "render_interval_ms",
+          "idle_dim_seconds",
+          "idle_contrast",
+          "clock_24h",
+          "colon_blink",
+          "date_format",
+          "screensaver_mode",
+          "screensaver_seconds",
+          "volume_overlay_seconds"
+        ]
+      },
+      "content": [
+        {
+          "id": "playback_layout",
+          "type": "text",
+          "element": "select",
+          "doc": "TRANSLATE.DISPLAY.PLAYBACK_LAYOUT_DOC",
+          "label": "TRANSLATE.DISPLAY.PLAYBACK_LAYOUT",
+          "value": {
+            "value": "classic",
+            "label": "TRANSLATE.DISPLAY.LAYOUT_CLASSIC"
+          },
+          "options": [
+            {
+              "value": "classic",
+              "label": "TRANSLATE.DISPLAY.LAYOUT_CLASSIC"
+            },
+            {
+              "value": "minimal",
+              "label": "TRANSLATE.DISPLAY.LAYOUT_MINIMAL"
+            },
+            {
+              "value": "clock_focus",
+              "label": "TRANSLATE.DISPLAY.LAYOUT_CLOCK_FOCUS"
+            }
+          ]
+        },
+        {
+          "id": "scroll_speed",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.DISPLAY.SCROLL_SPEED_DOC",
+          "label": "TRANSLATE.DISPLAY.SCROLL_SPEED",
+          "value": 3,
+          "attributes": [
+            { "placeholder": "3" },
+            { "min": 1 },
+            { "max": 10 }
+          ]
+        },
+        {
+          "id": "render_interval_ms",
+          "type": "text",
+          "element": "select",
+          "doc": "TRANSLATE.DISPLAY.REFRESH_INTERVAL_DOC",
+          "label": "TRANSLATE.DISPLAY.REFRESH_INTERVAL",
+          "value": {
+            "value": "500",
+            "label": "TRANSLATE.DISPLAY.REFRESH_500"
+          },
+          "options": [
+            {
+              "value": "200",
+              "label": "TRANSLATE.DISPLAY.REFRESH_200"
+            },
+            {
+              "value": "250",
+              "label": "TRANSLATE.DISPLAY.REFRESH_250"
+            },
+            {
+              "value": "500",
+              "label": "TRANSLATE.DISPLAY.REFRESH_500"
+            },
+            {
+              "value": "1000",
+              "label": "TRANSLATE.DISPLAY.REFRESH_1000"
+            }
+          ]
+        },
+        {
+          "id": "idle_dim_seconds",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.DISPLAY.IDLE_DIM_SECONDS_DOC",
+          "label": "TRANSLATE.DISPLAY.IDLE_DIM_SECONDS",
+          "value": 120,
+          "attributes": [
+            { "placeholder": "120" },
+            { "min": 0 },
+            { "max": 3600 }
+          ]
+        },
+        {
+          "id": "idle_contrast",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.DISPLAY.IDLE_CONTRAST_DOC",
+          "label": "TRANSLATE.DISPLAY.IDLE_CONTRAST",
+          "value": 30,
+          "attributes": [
+            { "placeholder": "30" },
+            { "min": 0 },
+            { "max": 255 }
+          ]
+        },
+        {
+          "id": "clock_24h",
+          "type": "switch",
+          "element": "switch",
+          "doc": "TRANSLATE.DISPLAY.CLOCK_24H_DOC",
+          "label": "TRANSLATE.DISPLAY.CLOCK_24H",
+          "value": true
+        },
+        {
+          "id": "colon_blink",
+          "type": "switch",
+          "element": "switch",
+          "doc": "TRANSLATE.DISPLAY.COLON_BLINK_DOC",
+          "label": "TRANSLATE.DISPLAY.COLON_BLINK",
+          "value": true
+        },
+        {
+          "id": "date_format",
+          "type": "text",
+          "element": "select",
+          "doc": "TRANSLATE.DISPLAY.DATE_FORMAT_DOC",
+          "label": "TRANSLATE.DISPLAY.DATE_FORMAT",
+          "value": {
+            "value": "day_month_name",
+            "label": "TRANSLATE.DISPLAY.DATE_DAY_MONTH_NAME"
+          },
+          "options": [
+            {
+              "value": "day_month_name",
+              "label": "TRANSLATE.DISPLAY.DATE_DAY_MONTH_NAME"
+            },
+            {
+              "value": "dd_mm_yyyy",
+              "label": "TRANSLATE.DISPLAY.DATE_DD_MM_YYYY"
+            },
+            {
+              "value": "mm_dd_yyyy",
+              "label": "TRANSLATE.DISPLAY.DATE_MM_DD_YYYY"
+            },
+            {
+              "value": "yyyy_mm_dd",
+              "label": "TRANSLATE.DISPLAY.DATE_YYYY_MM_DD"
+            }
+          ]
+        },
+        {
+          "id": "screensaver_mode",
+          "type": "text",
+          "element": "select",
+          "doc": "TRANSLATE.DISPLAY.SCREENSAVER_MODE_DOC",
+          "label": "TRANSLATE.DISPLAY.SCREENSAVER_MODE",
+          "value": {
+            "value": "bouncing_clock",
+            "label": "TRANSLATE.DISPLAY.SS_BOUNCING_CLOCK"
+          },
+          "options": [
+            {
+              "value": "none",
+              "label": "TRANSLATE.DISPLAY.SS_NONE"
+            },
+            {
+              "value": "bouncing_clock",
+              "label": "TRANSLATE.DISPLAY.SS_BOUNCING_CLOCK"
+            },
+            {
+              "value": "bouncing_dot",
+              "label": "TRANSLATE.DISPLAY.SS_BOUNCING_DOT"
+            },
+            {
+              "value": "drifting_text",
+              "label": "TRANSLATE.DISPLAY.SS_DRIFTING_TEXT"
+            }
+          ]
+        },
+        {
+          "id": "screensaver_seconds",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.DISPLAY.SCREENSAVER_SECONDS_DOC",
+          "label": "TRANSLATE.DISPLAY.SCREENSAVER_SECONDS",
+          "value": 300,
+          "attributes": [
+            { "placeholder": "300" },
+            { "min": 0 },
+            { "max": 7200 }
+          ]
+        },
+        {
+          "id": "volume_overlay_seconds",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.DISPLAY.VOLUME_OVERLAY_SECONDS_DOC",
+          "label": "TRANSLATE.DISPLAY.VOLUME_OVERLAY_SECONDS",
+          "value": 2,
+          "attributes": [
+            { "placeholder": "2" },
+            { "min": 1 },
+            { "max": 10 }
+          ]
+        }
+      ]
+    }
+  ]
+}
