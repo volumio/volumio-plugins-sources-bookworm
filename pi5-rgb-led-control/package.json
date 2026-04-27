@@ -20,7 +20,8 @@
       "bookworm"
     ],
     "details": "Provides real-time hardware feedback via RGB LEDs for Pi 5 playback and system status.",
-    "changelog": "Initial Bookworm release for Raspberry Pi 5"
+    "changelog": "Initial Bookworm release for Raspberry Pi 5",
+    "manually_installed": true
   },
   "engines": {
     "node": ">=20",
