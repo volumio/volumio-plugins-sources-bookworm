@@ -2,7 +2,6 @@
 
 var libQ = require('kew');
 var fs = require('fs-extra');
-var config = new (require('v-conf'))();
 var exec = require('child_process').exec;
 var path = require('path');
 
@@ -12,16 +11,14 @@ function ControllerPi5Led(context) {
     this.context = context;
     this.commandRouter = this.context.coreCommand;
     this.logger = this.context.logger;
-    this.pythonProcess = null;
 }
 
+// STEP 1: Load config from the "Standard Place"
 ControllerPi5Led.prototype.onVolumioStart = function () {
     var self = this;
-    var configFile = path.join(__dirname, 'config.json');
+    // This line tells Volumio to look in /data/configuration/system_hardware/pi5-rgb-led-control/
+    var configFile = self.commandRouter.pluginManager.getConfigurationFile(this.context, 'config.json');
     this.config = new (require('v-conf'))();
-    if (!fs.existsSync(configFile)) {
-        fs.writeJsonSync(configFile, {});
-    }
     this.config.loadFile(configFile);
     return libQ.resolve();
 };
@@ -33,18 +30,16 @@ ControllerPi5Led.prototype.onStart = function () {
     var isEnabled = self.config.get('ENABLED');
     if (isEnabled === undefined) isEnabled = true; 
 
-    // Kill any stray engines
     exec("pkill -f led_engine.py > /dev/null 2>&1", (error, stdout, stderr) => {
-        
         if (!isEnabled) {
-            self.logger.info("[Pi5-LED] LED Output is DISABLED in settings. Engine not started.");
+            self.logger.info("[Pi5-LED] LED Output is DISABLED. Engine not started.");
             return defer.resolve();
         }
 
         self.logger.info("[Pi5-LED] Starting LED Engine...");
         var enginePath = path.join(__dirname, 'led_engine.py');
         
-        // Start the engine and redirect all output to /dev/null
+        // Start engine
         exec("python3 " + enginePath + " > /dev/null 2>&1 &");
         defer.resolve();
     });
@@ -55,15 +50,12 @@ ControllerPi5Led.prototype.onStart = function () {
 ControllerPi5Led.prototype.onStop = function () {
     var self = this;
     var defer = libQ.defer();
-    
-    self.logger.info("[Pi5-LED] Stopping LED Engine (Singularity)...");
-    
+    self.logger.info("[Pi5-LED] Stopping LED Engine...");
     exec("pkill -15 -f led_engine.py", (error, stdout, stderr) => {
         setTimeout(function() {
             defer.resolve();
-        }, 4000); 
+        }, 2000); 
     });
-    
     return defer.promise;
 };
 
@@ -106,44 +98,35 @@ ControllerPi5Led.prototype.getUIConfig = function () {
     return defer.promise;
 };
 
+// STEP 2: Save using the official self.config.set method
 ControllerPi5Led.prototype.saveLEDConfig = function (data) {
     var self = this;
-    var defer = libQ.defer();
-    var settingsPath = path.join(__dirname, 'led_settings.json');
 
     try {
         for (var key in data) {
-            self.config.set(key, data[key]);
-        }
-
-        var s = {};
-        if (fs.existsSync(settingsPath)) {
-            s = fs.readJsonSync(settingsPath);
-        }
-
-        for (var key in data) {
+            // Handle Dropdowns/Selects like balbuze showed you
             if (data[key] !== null && typeof data[key] === 'object' && data[key].value !== undefined) {
-                s[key] = data[key].value;
+                self.config.set(key, {
+                    value: data[key].value,
+                    label: data[key].label
+                });
             } else {
-                s[key] = data[key];
+                // Handle standard numbers/booleans/strings
+                self.config.set(key, data[key]);
             }
         }
 
-        fs.writeJsonSync(settingsPath, s);
-        fs.chmodSync(settingsPath, '0777'); 
-
-        if (data.ENABLED !== undefined) {
-            self.onStart(); 
-        }
+        // Trigger engine restart to apply settings
+        self.onStop().then(() => {
+            return self.onStart();
+        });
 
         self.commandRouter.pushToastMessage('success', "Pi5 RGB Link", "Settings Applied.");
-        defer.resolve();
     } catch (e) {
         self.logger.error("[Pi5-LED] Save failed: " + e);
         self.commandRouter.pushToastMessage('error', "Save Failed", "Check log for details.");
-        defer.reject(e);
     }
-    return defer.promise;
+    return libQ.resolve();
 };
 
 ControllerPi5Led.prototype.getConfigurationFiles = function() { return ['config.json']; };

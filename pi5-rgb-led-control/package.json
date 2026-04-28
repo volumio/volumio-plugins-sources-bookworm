@@ -11,7 +11,9 @@
   "repository": "https://github.com/phonics9581/volumio-plugins-sources-bookworm",
   "volumio_info": {
     "prettyName": "Pi5 RGB Status Link",
-    "plugin_type": "system_hardware",
+    "name": "pi5-rgb-led-control",
+    "category": "system_hardware",
+    "configuration_path": "system_hardware/pi5-rgb-led-control",
     "icon": "fa-lightbulb-o",
     "architectures": [
       "armhf"
@@ -20,8 +22,7 @@
       "bookworm"
     ],
     "details": "Provides real-time hardware feedback via RGB LEDs for Pi 5 playback and system status.",
-    "changelog": "Initial Bookworm release for Raspberry Pi 5",
-    "manually_installed": true
+    "changelog": "Initial Bookworm release for Raspberry Pi 5"
   },
   "engines": {
     "node": ">=20",

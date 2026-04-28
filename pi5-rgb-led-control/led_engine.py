@@ -10,7 +10,8 @@ import math
 from gpiozero import PWMLED
 
 # --- CONSTANTS ---
-CONFIG_PATH = '/data/plugins/system_controller/pi5-rgb-led-control/led_settings.json'
+# Updated to the "Standard Place" requested by balbuze
+CONFIG_PATH = '/data/configuration/system_hardware/pi5-rgb-led-control/config.json'
 
 # --- GLOBAL STATE ---
 red, grn, blu = None, None, None
@@ -22,7 +23,16 @@ def load_config():
     try:
         if os.path.exists(CONFIG_PATH):
             with open(CONFIG_PATH, 'r') as f:
-                return json.load(f)
+                raw_conf = json.load(f)
+                # This keeps your script working with Volumio's {"value": x} format
+                # It extracts the actual value so your existing logic remains unchanged
+                conf = {}
+                for k, v in raw_conf.items():
+                    if isinstance(v, dict) and 'value' in v:
+                        conf[k] = v['value']
+                    else:
+                        conf[k] = v
+                return conf
     except:
         pass
     return {}
@@ -263,7 +273,6 @@ def handle_exit(signum, frame):
     global stop_all, red, grn, blu
     stop_all = True
     try:
-        # The logic inside run_singularity now handles the bypass
         if red and grn and blu:
             run_singularity()
     except:
