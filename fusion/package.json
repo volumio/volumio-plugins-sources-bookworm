@@ -1,6 +1,6 @@
 {
   "name": "fusiondsp",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "A complete Dsp centre for Volumio",
   "main": "index.js",
   "repository": "https://github.com/balbuze/volumio-plugins/tree/alsa_modular/plugins/audio_interface/FusionDsp",
@@ -16,7 +16,7 @@
     "os": [
       "bookworm"
     ],
-    "changelog": "camilladsp v4.1.3- graphic eq",
+    "changelog": "camilladsp v4.1.3- graphic eq improvement",
     "details": "Multimode Dsp, with graphic equalizer, parametric equalizer, FIR filters, Loudness, AutoEq profile for headphone and more",
     "architectures": [
       "armhf",
