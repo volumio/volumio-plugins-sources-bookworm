@@ -13,13 +13,24 @@ function ControllerPi5Led(context) {
     this.logger = this.context.logger;
 }
 
-// STEP 1: Load config from the "Standard Place"
 ControllerPi5Led.prototype.onVolumioStart = function () {
     var self = this;
-    // This line tells Volumio to look in /data/configuration/system_hardware/pi5-rgb-led-control/
     var configFile = self.commandRouter.pluginManager.getConfigurationFile(this.context, 'config.json');
+    
     this.config = new (require('v-conf'))();
-    this.config.loadFile(configFile);
+
+    // FIXED: Check if the file exists in the Standard Place. 
+    // If not (first run), load from plugin folder and save to create the directory.
+    if (fs.existsSync(configFile)) {
+        this.config.loadFile(configFile);
+    } else {
+        var templateFile = path.join(__dirname, 'config.json');
+        if (fs.existsSync(templateFile)) {
+            this.config.loadFile(templateFile);
+            this.config.save(); 
+        }
+    }
+    
     return libQ.resolve();
 };
 
@@ -39,7 +50,6 @@ ControllerPi5Led.prototype.onStart = function () {
         self.logger.info("[Pi5-LED] Starting LED Engine...");
         var enginePath = path.join(__dirname, 'led_engine.py');
         
-        // Start engine
         exec("python3 " + enginePath + " > /dev/null 2>&1 &");
         defer.resolve();
     });
@@ -98,25 +108,21 @@ ControllerPi5Led.prototype.getUIConfig = function () {
     return defer.promise;
 };
 
-// STEP 2: Save using the official self.config.set method
 ControllerPi5Led.prototype.saveLEDConfig = function (data) {
     var self = this;
 
     try {
         for (var key in data) {
-            // Handle Dropdowns/Selects like balbuze showed you
             if (data[key] !== null && typeof data[key] === 'object' && data[key].value !== undefined) {
                 self.config.set(key, {
                     value: data[key].value,
                     label: data[key].label
                 });
             } else {
-                // Handle standard numbers/booleans/strings
                 self.config.set(key, data[key]);
             }
         }
 
-        // Trigger engine restart to apply settings
         self.onStop().then(() => {
             return self.onStart();
         });
