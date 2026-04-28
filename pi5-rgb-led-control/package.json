@@ -1,0 +1,36 @@
+{
+  "name": "pi5-rgb-led-control",
+  "version": "1.0.0",
+  "description": "RGB LED status indicator for Raspberry Pi 5",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Andy Harlow",
+  "license": "GPL-3.0",
+  "repository": "https://github.com/phonics9581/volumio-plugins-sources-bookworm",
+  "volumio_info": {
+    "prettyName": "Pi5 RGB Status Link",
+    "name": "pi5-rgb-led-control",
+    "category": "system_hardware",
+    "configuration_path": "system_hardware/pi5-rgb-led-control",
+    "icon": "fa-lightbulb-o",
+    "architectures": [
+      "armhf"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "details": "Provides real-time hardware feedback via RGB LEDs for Pi 5 playback and system status.",
+    "changelog": "Initial Bookworm release for Raspberry Pi 5"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "fs-extra": "*",
+    "kew": "*",
+    "v-conf": "*"
+  }
+}
