@@ -13,24 +13,9 @@ function ControllerPi5Led(context) {
     this.logger = this.context.logger;
 }
 
+// Minimal onVolumioStart to prevent crash loops
 ControllerPi5Led.prototype.onVolumioStart = function () {
-    var self = this;
-    var configFile = self.commandRouter.pluginManager.getConfigurationFile(this.context, 'config.json');
-    
     this.config = new (require('v-conf'))();
-
-    // FIXED: Check if the file exists in the Standard Place. 
-    // If not (first run), load from plugin folder and save to create the directory.
-    if (fs.existsSync(configFile)) {
-        this.config.loadFile(configFile);
-    } else {
-        var templateFile = path.join(__dirname, 'config.json');
-        if (fs.existsSync(templateFile)) {
-            this.config.loadFile(templateFile);
-            this.config.save(); 
-        }
-    }
-    
     return libQ.resolve();
 };
 
@@ -38,9 +23,24 @@ ControllerPi5Led.prototype.onStart = function () {
     var self = this;
     var defer = libQ.defer();
 
+    // 1. Load configuration SAFELY here in onStart
+    var configFile = self.commandRouter.pluginManager.getConfigurationFile(this.context, 'config.json');
+    
+    if (fs.existsSync(configFile)) {
+        this.config.loadFile(configFile);
+    } else {
+        // First run: Create the file from template so the UI isn't blank
+        var templateFile = path.join(__dirname, 'config.json');
+        if (fs.existsSync(templateFile)) {
+            this.config.loadFile(templateFile);
+            this.config.save(); 
+        }
+    }
+
     var isEnabled = self.config.get('ENABLED');
     if (isEnabled === undefined) isEnabled = true; 
 
+    // 2. Clear existing engines and start fresh
     exec("pkill -f led_engine.py > /dev/null 2>&1", (error, stdout, stderr) => {
         if (!isEnabled) {
             self.logger.info("[Pi5-LED] LED Output is DISABLED. Engine not started.");
@@ -114,10 +114,7 @@ ControllerPi5Led.prototype.saveLEDConfig = function (data) {
     try {
         for (var key in data) {
             if (data[key] !== null && typeof data[key] === 'object' && data[key].value !== undefined) {
-                self.config.set(key, {
-                    value: data[key].value,
-                    label: data[key].label
-                });
+                self.config.set(key, data[key].value);
             } else {
                 self.config.set(key, data[key]);
             }
@@ -135,4 +132,6 @@ ControllerPi5Led.prototype.saveLEDConfig = function (data) {
     return libQ.resolve();
 };
 
-ControllerPi5Led.prototype.getConfigurationFiles = function() { return ['config.json']; };
+ControllerPi5Led.prototype.getConfigurationFiles = function() {
+    return ['config.json'];
+};
