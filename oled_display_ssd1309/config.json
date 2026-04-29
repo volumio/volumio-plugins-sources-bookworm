@@ -1,0 +1,17 @@
+{
+  "i2c_bus_number": { "type": "number", "value": 1 },
+  "i2c_address": { "type": "string", "value": "0x3C" },
+  "contrast": { "type": "number", "value": 255 },
+  "scroll_speed": { "type": "number", "value": 3 },
+  "render_interval_ms": { "type": "number", "value": 500 },
+  "idle_dim_seconds": { "type": "number", "value": 120 },
+  "idle_contrast": { "type": "number", "value": 30 },
+  "clock_24h": { "type": "boolean", "value": true },
+  "rotate_180": { "type": "boolean", "value": false },
+  "colon_blink": { "type": "boolean", "value": true },
+  "screensaver_mode": { "type": "string", "value": "bouncing_clock" },
+  "screensaver_seconds": { "type": "number", "value": 300 },
+  "volume_overlay_seconds": { "type": "number", "value": 2 },
+  "playback_layout": { "type": "string", "value": "classic" },
+  "date_format": { "type": "string", "value": "day_month_name" }
+}

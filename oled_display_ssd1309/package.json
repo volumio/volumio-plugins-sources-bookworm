@@ -1,0 +1,33 @@
+{
+  "name": "oled_display_ssd1309",
+  "version": "1.7.17",
+  "description": "OLED SSD1309 display plugin for Volumio – shows playback info, clock, progress, audio format, and volume on a 128x64 I2C OLED",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No tests configured\""
+  },
+  "author": "Zhapox",
+  "license": "MIT",
+  "repository": "https://github.com/Zhapox/oled_display_ssd1309",
+  "volumio_info": {
+    "prettyName": "OLED Display (SSD1309)",
+    "plugin_type": "user_interface",
+    "icon": "fa-television",
+    "boot_priority": 10,
+    "architectures": [
+      "armhf"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "details": "Drives a 128x64 SSD1309 I2C OLED display showing playback info, clock, progress bar, audio format, volume overlay, and screensaver. Designed for Raspberry Pi with zero MPD interference.",
+    "changelog": "v1.7.17: install.sh now removes the plugin folder on a failed install (Volumio plugin store compliance)."
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "i2c-bus": "^5.2.3"
+  }
+}
