@@ -1,0 +1,27 @@
+{
+  "COMMON": {
+    "LOGIN": "Accedi",
+    "LOGOUT": "Disconnetti",
+    "LOGGED_IN": "Accesso effettuato con successo",
+    "LOGGED_OUT": "Disconnessione effettuata con successo",
+    "ERROR_LOGGING_IN": "Errore durante l'accesso",
+    "USERNAME": "Nome utente",
+    "PASSWORD": "Password",
+    "CONFIG_SECTION_TITLE": "DMD2 Music"
+  },
+  "HOTELRADIO": {
+    "DMD2 Music": "DMD2 Music",
+    "BROWSE_SOURCES": "DMD2 Music",
+    "SECTION_ACCOUNT": "Account",
+    "ACCOUNT_LOGIN_DESC": "Accedi con il tuo account DMD2 Music",
+    "LOGGED_IN_EMAIL": "Connesso come: ",
+    "USERNAME_DOC": "Il tuo nome utente DMD2 Music",
+    "PASSWORD_DOC": "La tua password DMD2 Music",
+    "FREE_TRIAL": "Prova gratuita",
+    "FREE_TRIAL_DESCR": "Registrati per una prova gratuita",
+    "RESET_PASSWORD": "Reimposta password",
+    "RESET_PASSWORD_DESCR": "Reimposta la tua password DMD2 Music",
+    "GROUPS": "Gruppi",
+    "CHANNELS": "Canali"
+  }
+}
