@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Volumio OLED Display Plugin (v1.7.16)
+ * Volumio OLED Display Plugin (v1.7.17)
  *
  * Changes from v1.7.15:
  *   - Configurable date format dropdown: Day + Month name, DD.MM.YYYY,

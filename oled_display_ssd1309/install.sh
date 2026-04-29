@@ -6,6 +6,27 @@ echo "=== OLED Display Plugin Installer ==="
 echo "Plugin directory: ${PLUGIN_DIR}"
 echo ""
 
+# ── Cleanup on failure ───────────────────────────────────────────────────
+# Per the Volumio plugin guidelines, a failed install must remove the plugin
+# folder so the user is not left with a broken plugin entry.  This trap fires
+# on any non-zero exit; on success (exit 0) it does nothing.  A path-shape
+# safety check prevents accidental removal if PLUGIN_DIR is somehow unset
+# or pointing somewhere unexpected.
+cleanup_on_failure() {
+  local rc=$?
+  if [ $rc -ne 0 ]; then
+    echo ""
+    echo "✗ Installation failed (exit code $rc). Cleaning up plugin folder..."
+    if [ -n "$PLUGIN_DIR" ] && [[ "$PLUGIN_DIR" == */plugins/* ]] && [ -d "$PLUGIN_DIR" ]; then
+      rm -rf "$PLUGIN_DIR"
+      echo "  Removed: $PLUGIN_DIR"
+    else
+      echo "  ⚠ Refused to remove (path check failed): $PLUGIN_DIR"
+    fi
+  fi
+}
+trap cleanup_on_failure EXIT
+
 # ── Step 1: System dependencies ──────────────────────────────────────────
 echo "[1/6] Installing system dependencies…"
 sudo apt-get update -qq

@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * SSD1309 OLED Driver for I2C bus (v1.7.16 – synchronous I2C)
+ * SSD1309 OLED Driver for I2C bus (v1.7.17 – synchronous I2C)
  *
  * Low-level driver using synchronous I2C writes (i2cWriteSync).
  * Pre-allocated framebuffer (1024 bytes) and flush buffer (129 bytes)

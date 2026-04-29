@@ -1,4 +1,4 @@
-# OLED SSD1309 Display Plugin for Volumio – v1.7.16
+# OLED SSD1309 Display Plugin for Volumio – v1.7.17
 
 > **⚠️ Disclaimer**
 >
@@ -42,6 +42,12 @@ Displays playback information on a 128×64 SSD1309 I2C OLED connected to a Raspb
 ---
 
 ## Changelog
+
+### v1.7.17
+
+**Improvement:**
+
+1. **Install script cleanup on failure.**  `install.sh` now removes the plugin folder if installation fails (e.g. native addon compilation error), so users are not left with a broken plugin entry in the Volumio plugin list.  Implemented as an `EXIT` trap that fires only on non-zero exit codes, with a path-shape safety check (`*/plugins/*`) to prevent accidental removal.  Required for Volumio plugin store compliance.
 
 ### v1.7.16
 
@@ -295,11 +301,11 @@ ssh volumio@volumio.local
 mkdir -p /data/plugins/user_interface/oled_display_ssd1309
 
 # 3. Transfer the tarball (run this on your PC, not the Pi)
-scp oled_display_ssd1309-v1.7.16.tar volumio@volumio.local:/tmp/
+scp oled_display_ssd1309-v1.7.17.tar volumio@volumio.local:/tmp/
 
 # 4. Extract on the Pi
 cd /data/plugins/user_interface
-tar xf /tmp/oled_display_ssd1309-v1.7.16.tar
+tar xf /tmp/oled_display_ssd1309-v1.7.17.tar
 # If it extracts into a subdirectory:
 # mv oled_display_ssd1309/* /data/plugins/user_interface/oled_display_ssd1309/
 
