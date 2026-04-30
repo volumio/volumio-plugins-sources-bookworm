@@ -534,12 +534,12 @@ ControllerStylishPlayer.prototype.startServer = function () {
         for (var i = 0; i < entries.length; i++) {
           if (!entries[i].isDirectory()) continue;
           var folderName = entries[i].name;
-          // Parse WxH-Name pattern
-          var match = folderName.match(/^(\d+)x(\d+)-(.+)$/);
+          // Parse WxH prefix (rest is description)
+          var match = folderName.match(/^(\d+)x(\d+)/);
           if (!match) continue;
           var w = parseInt(match[1], 10);
           var h = parseInt(match[2], 10);
-          var name = match[3];
+          var name = folderName.slice(match[0].length).replace(/^[\-+_]/, '') || folderName;
           var models = [];
           var metersPath = path.join(peppyDir, folderName, "meters.txt");
           if (fs.existsSync(metersPath)) {
@@ -572,17 +572,13 @@ ControllerStylishPlayer.prototype.startServer = function () {
         for (var si = 0; si < specEntries.length; si++) {
           if (!specEntries[si].isDirectory()) continue;
           var specFolderName = specEntries[si].name;
-          // Parse WxH+N-Name pattern (N = number of bars)
-          var specMatch = specFolderName.match(/^(\d+)x(\d+)\+(\d+)-(.+)$/);
-          if (!specMatch) {
-            // Also try WxH-Name without bars
-            specMatch = specFolderName.match(/^(\d+)x(\d+)-(.+)$/);
-            if (!specMatch) continue;
-          }
+          // Parse WxH prefix, optionally +N for bars
+          var specMatch = specFolderName.match(/^(\d+)x(\d+)(?:\+(\d+))?/);
+          if (!specMatch) continue;
           var specW = parseInt(specMatch[1], 10);
           var specH = parseInt(specMatch[2], 10);
-          var specBars = specMatch[3] && specMatch[4] ? parseInt(specMatch[3], 10) : 30;
-          var specName = specMatch[4] || specMatch[3];
+          var specBars = specMatch[3] ? parseInt(specMatch[3], 10) : 30;
+          var specName = specFolderName.slice(specMatch[0].length).replace(/^[\-+_]/, '') || specFolderName;
           var specModels = [];
           var spectrumPath = path.join(spectrumDir, specFolderName, "spectrum.txt");
           if (fs.existsSync(spectrumPath)) {
@@ -863,7 +859,7 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
         for (var pi = 0; pi < peppyMeterEntries.length; pi++) {
           if (!peppyMeterEntries[pi].isDirectory()) continue;
           var pmFolder = peppyMeterEntries[pi].name;
-          if (!pmFolder.match(/^\d+x\d+-.+$/)) continue;
+          if (!pmFolder.match(/^\d+x\d+/)) continue;
           uiconf.sections[2].content[8].options.push({ value: pmFolder, label: pmFolder });
         }
       } catch (e) { /* peppy_meter dir may not exist */ }
@@ -909,7 +905,7 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
         for (var sfi = 0; sfi < spectrumEntries.length; sfi++) {
           if (!spectrumEntries[sfi].isDirectory()) continue;
           var psFolder = spectrumEntries[sfi].name;
-          if (!psFolder.match(/^\d+x\d+(\+\d+)?-.+$/)) continue;
+          if (!psFolder.match(/^\d+x\d+/)) continue;
           uiconf.sections[2].content[10].options.push({ value: psFolder, label: psFolder });
         }
       } catch (e) { /* peppy_spectrum dir may not exist */ }
