@@ -375,6 +375,7 @@ ControllerStylishPlayer.prototype.startServer = function () {
     ".webp": "image/webp",
     ".mp3": "audio/mpeg",
     ".wav": "audio/wav",
+    ".txt": "text/plain",
   };
 
   self.server = http.createServer(function (req, res) {
@@ -453,6 +454,12 @@ ControllerStylishPlayer.prototype.startServer = function () {
             res.writeHead(500, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ error: "Failed to extract zip file." }));
             return;
+          }
+
+          // Remove __MACOSX if present
+          var macosxDir = path.join(targetDir, "__MACOSX");
+          if (fs.existsSync(macosxDir)) {
+            try { fs.removeSync(macosxDir); } catch (e) { /* ignore */ }
           }
 
           self.logger.info("Stylish Player: Uploaded and extracted peppy " + packType + " pack to " + targetDir);
@@ -627,6 +634,13 @@ ControllerStylishPlayer.prototype.startServer = function () {
 
     fs.stat(filePath, function (err, stats) {
       if (err || !stats.isFile()) {
+        // Only apply SPA fallback for requests without a file extension (page routes)
+        var ext = path.extname(filePath).toLowerCase();
+        if (ext) {
+          res.writeHead(404);
+          res.end("Not Found");
+          return;
+        }
         // SPA fallback: serve index.html for client-side routes
         var indexPath = path.join(distPath, "index.html");
         fs.readFile(indexPath, function (err2, data) {
@@ -644,13 +658,16 @@ ControllerStylishPlayer.prototype.startServer = function () {
       var ext = path.extname(filePath).toLowerCase();
       var contentType = mimeTypes[ext] || "application/octet-stream";
 
+      // Prevent caching for .txt and config files (meters.txt, spectrum.txt)
+      var cacheHeader = (ext === ".txt" || ext === ".json") ? "no-cache" : "public, max-age=3600";
+
       fs.readFile(filePath, function (readErr, data) {
         if (readErr) {
           res.writeHead(500);
           res.end("Internal Server Error");
           return;
         }
-        res.writeHead(200, { "Content-Type": contentType });
+        res.writeHead(200, { "Content-Type": contentType, "Cache-Control": cacheHeader });
         res.end(data);
       });
     });
@@ -756,6 +773,7 @@ ControllerStylishPlayer.prototype.broadcastConfig = function () {
 ControllerStylishPlayer.prototype.getUIConfig = function () {
   var defer = libQ.defer();
   var self = this;
+  var distPath = path.join(__dirname, "app");
 
   var lang_code = this.commandRouter.sharedVars.get("language_code");
 
