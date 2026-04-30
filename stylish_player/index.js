@@ -405,12 +405,8 @@ ControllerStylishPlayer.prototype.startServer = function () {
         return;
       }
 
-      var targetDir = packType === "meter"
-        ? path.join(distPath, "peppy_meter")
-        : path.join(distPath, "peppy_spectrum");
-
-      // Ensure target directory exists
-      fs.ensureDirSync(targetDir);
+      var meterDir = path.join(distPath, "peppy_meter");
+      var spectrumDir = path.join(distPath, "peppy_spectrum");
 
       var chunks = [];
       var totalSize = 0;
@@ -439,17 +435,20 @@ ControllerStylishPlayer.prototype.startServer = function () {
           return;
         }
 
-        // Write temp file
+        // Write temp file and extract to temp directory
         var tmpFile = path.join(os.tmpdir(), "peppy_upload_" + Date.now() + ".zip");
+        var tmpExtractDir = path.join(os.tmpdir(), "peppy_extract_" + Date.now());
         fs.writeFileSync(tmpFile, buffer);
+        fs.ensureDirSync(tmpExtractDir);
 
         // Extract using Python's zipfile (always available on Volumio)
-        var pyCmd = 'python3 -c "import zipfile,sys; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])" "' + tmpFile + '" "' + targetDir + '"';
+        var pyCmd = 'python3 -c "import zipfile,sys; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])" "' + tmpFile + '" "' + tmpExtractDir + '"';
         exec(pyCmd, function (err, stdout, stderr) {
-          // Clean up temp file
+          // Clean up temp zip file
           try { fs.unlinkSync(tmpFile); } catch (e) { /* ignore */ }
 
           if (err) {
+            try { fs.removeSync(tmpExtractDir); } catch (e) { /* ignore */ }
             self.logger.error("Stylish Player: Failed to extract zip: " + stderr);
             res.writeHead(500, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ error: "Failed to extract zip file." }));
@@ -457,12 +456,59 @@ ControllerStylishPlayer.prototype.startServer = function () {
           }
 
           // Remove __MACOSX if present
-          var macosxDir = path.join(targetDir, "__MACOSX");
+          var macosxDir = path.join(tmpExtractDir, "__MACOSX");
           if (fs.existsSync(macosxDir)) {
             try { fs.removeSync(macosxDir); } catch (e) { /* ignore */ }
           }
 
-          self.logger.info("Stylish Player: Uploaded and extracted peppy " + packType + " pack to " + targetDir);
+          // Check for templates/ and templates_spectrum/ structure (combined pack)
+          var templatesDir = path.join(tmpExtractDir, "templates");
+          var templatesSpectrumDir = path.join(tmpExtractDir, "templates_spectrum");
+          var hasTemplates = fs.existsSync(templatesDir) && fs.statSync(templatesDir).isDirectory();
+          var hasTemplatesSpectrum = fs.existsSync(templatesSpectrumDir) && fs.statSync(templatesSpectrumDir).isDirectory();
+
+          if (hasTemplates || hasTemplatesSpectrum) {
+            // Combined pack: move templates/ subfolders to peppy_meter, templates_spectrum/ to peppy_spectrum
+            if (hasTemplates) {
+              fs.ensureDirSync(meterDir);
+              var tmplEntries = fs.readdirSync(templatesDir, { withFileTypes: true });
+              for (var ti = 0; ti < tmplEntries.length; ti++) {
+                if (!tmplEntries[ti].isDirectory()) continue;
+                var srcFolder = path.join(templatesDir, tmplEntries[ti].name);
+                var destFolder = path.join(meterDir, tmplEntries[ti].name);
+                fs.removeSync(destFolder); // overwrite if exists
+                fs.moveSync(srcFolder, destFolder);
+              }
+            }
+            if (hasTemplatesSpectrum) {
+              fs.ensureDirSync(spectrumDir);
+              var specEntries = fs.readdirSync(templatesSpectrumDir, { withFileTypes: true });
+              for (var si = 0; si < specEntries.length; si++) {
+                if (!specEntries[si].isDirectory()) continue;
+                var srcSpecFolder = path.join(templatesSpectrumDir, specEntries[si].name);
+                var destSpecFolder = path.join(spectrumDir, specEntries[si].name);
+                fs.removeSync(destSpecFolder);
+                fs.moveSync(srcSpecFolder, destSpecFolder);
+              }
+            }
+            self.logger.info("Stylish Player: Uploaded combined pack (templates + spectrum)");
+          } else {
+            // Simple pack: move all extracted content to the target dir based on type
+            var targetDir = packType === "meter" ? meterDir : spectrumDir;
+            fs.ensureDirSync(targetDir);
+            var extractedEntries = fs.readdirSync(tmpExtractDir, { withFileTypes: true });
+            for (var ei = 0; ei < extractedEntries.length; ei++) {
+              var srcPath = path.join(tmpExtractDir, extractedEntries[ei].name);
+              var destPath = path.join(targetDir, extractedEntries[ei].name);
+              fs.removeSync(destPath);
+              fs.moveSync(srcPath, destPath);
+            }
+            self.logger.info("Stylish Player: Uploaded peppy " + packType + " pack");
+          }
+
+          // Clean up temp extract directory
+          try { fs.removeSync(tmpExtractDir); } catch (e) { /* ignore */ }
+
           res.writeHead(200, { "Content-Type": "application/json" });
           res.end(JSON.stringify({ success: true, message: "Pack uploaded and extracted successfully." }));
         });
