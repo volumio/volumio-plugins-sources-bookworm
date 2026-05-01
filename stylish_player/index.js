@@ -727,7 +727,7 @@ ControllerStylishPlayer.prototype.startServer = function () {
       return;
     }
 
-    var safePath = path.normalize(urlPath).replace(/^(\.\.[/\\])+/, "");
+    var safePath = decodeURIComponent(path.normalize(urlPath)).replace(/^(\.\.[/\\])+/, "");
     var filePath = path.join(distPath, safePath);
 
     // Ensure the resolved path is within distPath
