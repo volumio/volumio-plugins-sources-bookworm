@@ -69,6 +69,16 @@ ControllerStylishPlayer.prototype.onVolumioStart = function () {
   this.config = new (require("v-conf"))();
   this.config.loadFile(configFile);
 
+  // The ALSA contribution (has_alsa_contribution=true) references /tmp/stream.mp3
+  // via volumiofifo. Since /tmp is tmpfs and cleared on reboot, the FIFO must
+  // exist before any audio playback — create it here at earliest boot stage.
+  try {
+    try { fs.removeSync('/tmp/stream.mp3'); } catch (e) { /* ignore */ }
+    execSync('/usr/bin/mkfifo -m 646 /tmp/stream.mp3', { uid: 1000, gid: 1000 });
+  } catch (e) {
+    // Non-fatal: onStart will retry
+  }
+
   return libQ.resolve();
 };
 
