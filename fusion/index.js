@@ -38,24 +38,7 @@ const coefQ = [
   1.45, 1.45, 1.45, 1.45, 1.45,
   1.45, 1.45, 1.45, 1.45, 1.45,
   1.40, 1.35, 1.25, 1.10, 0.90
-]/*
-const coefQ = [
-  1.5, // 25
-  1.5, // 40
-  1.5, // 63
-  1.5, // 100
-  1.5, // 160
-  1.5, // 250
-  1.5, // 400
-  1.5, // 630
-  1.5, // 1k
-  1.5, // 1.6k
-  1.45,// 2.5k
-  1.35,// 4k
-  1.2, // 6.3k
-  1.0, // 10k
-  0.8  // 16k
-]//to get a smooth curve*/
+]
 const eq3range = [185, 1300, 5500]// freq for Eq3
 const coefQ3 = [0.82, 0.4, 0.82]//Q for graphic EQ3
 const eq3type = ["Lowshelf2", "Peaking", "Highshelf2"] //Filter type for EQ3
@@ -147,7 +130,7 @@ FusionDsp.prototype.onStart = function () {
     if (self.config.get('loudness')) {
       self.sendvolumelevel();
     }
-  }, 2000);
+  }, 9000);
 
   defer.resolve();
   return defer.promise;
@@ -1233,8 +1216,6 @@ FusionDsp.prototype.getIP = function () {
 FusionDsp.prototype.purecamillagui = function () {
   const self = this;
   let defer = libQ.defer();
-
-  //-----------Experimental CamillaGui
 
   try {
     exec("/usr/bin/sudo /bin/systemctl start fusiondsp.service", {
