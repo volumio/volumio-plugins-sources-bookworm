@@ -1080,8 +1080,9 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
 
       // Populate clock section (index 5)
       uiconf.sections[5].content[0].value = self.config.get("use24Hour", false);
-      uiconf.sections[5].content[1].value = self.config.get("showWeatherInClock", true);
-      uiconf.sections[5].content[2].value = self.config.get("analogClockShowDate", true);
+      uiconf.sections[5].content[1].value = self.config.get("wallpaperShowSeconds", false);
+      uiconf.sections[5].content[2].value = self.config.get("showWeatherInClock", true);
+      uiconf.sections[5].content[3].value = self.config.get("analogClockShowDate", true);
 
       // Populate weather section (index 6)
       uiconf.sections[6].content[0].value = self.config.get("latitude", "");
@@ -1100,9 +1101,8 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       uiconf.sections[7].content[0].value = self.config.get("unsplashApiKey", "");
       uiconf.sections[7].content[1].value = self.config.get("wallpaperUrl", "");
       uiconf.sections[7].content[2].value = self.config.get("wallpaperShowTime", true);
-      uiconf.sections[7].content[3].value = self.config.get("wallpaperShowSeconds", false);
-      uiconf.sections[7].content[4].value = self.config.get("wallpaperShowWeather", true);
-      uiconf.sections[7].content[5].value = self.config.get("slideshowInterval", 30);
+      uiconf.sections[7].content[3].value = self.config.get("wallpaperShowWeather", true);
+      uiconf.sections[7].content[4].value = self.config.get("slideshowInterval", 30);
 
       // Populate kiosk section (index 8) — content is built dynamically based on current kiosk state
       var kioskState = self.checkVolumioKiosk();
@@ -1476,7 +1476,6 @@ ControllerStylishPlayer.prototype.configSaveWallpaper = function (data) {
   self.config.set("unsplashApiKey", (data["unsplashApiKey"] || "").toString().trim());
   self.config.set("wallpaperUrl", (data["wallpaperUrl"] || "").toString().trim());
   self.config.set("wallpaperShowTime", data["wallpaperShowTime"] !== false);
-  self.config.set("wallpaperShowSeconds", data["wallpaperShowSeconds"] === true || data["wallpaperShowSeconds"] === "true");
   self.config.set("wallpaperShowWeather", data["wallpaperShowWeather"] !== false);
   var slideshowInterval = parseInt(data["slideshowInterval"], 10);
   self.config.set("slideshowInterval", isNaN(slideshowInterval) || slideshowInterval < 5 ? 30 : slideshowInterval);
@@ -1489,6 +1488,7 @@ ControllerStylishPlayer.prototype.configSaveClock = function (data) {
   var self = this;
 
   self.config.set("use24Hour", data["use24Hour"] === true || data["use24Hour"] === "true");
+  self.config.set("wallpaperShowSeconds", data["wallpaperShowSeconds"] === true || data["wallpaperShowSeconds"] === "true");
   self.config.set("showWeatherInClock", data["showWeatherInClock"] !== false);
   self.config.set("analogClockShowDate", data["analogClockShowDate"] !== false);
   self.commandRouter.pushToastMessage("success", "Stylish Player", "Clock settings saved.");
