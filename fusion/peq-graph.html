@@ -1999,15 +1999,15 @@
           ctx.globalAlpha = 1.0;
         }
 
-        // Draw combined curves
+        // Draw combined curves with transparent green fill
         if (responses.combinedLR) {
-          drawCurve(responses.combinedLR, '#54C688', 3, dbMin, dbMax);
+          drawCurveWithFill(responses.combinedLR, '#54C688', 3, dbMin, dbMax);
         }
         if (responses.combinedL && showL) {
-          drawCurve(responses.combinedL, '#4CAF50', 2.5, dbMin, dbMax);
+          drawCurveWithFill(responses.combinedL, '#4CAF50', 2.5, dbMin, dbMax);
         }
         if (responses.combinedR && showR) {
-          drawCurve(responses.combinedR, '#2196F3', 2.5, dbMin, dbMax);
+          drawCurveWithFill(responses.combinedR, '#2196F3', 2.5, dbMin, dbMax);
         }
 
         // Draw numbered PEQ markers at each filter's center frequency (on top of all curves)
@@ -2096,6 +2096,92 @@
       }
 
       function drawCurve(curve, color, lineWidth, dbMin, dbMax) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lineWidth;
+        ctx.beginPath();
+        for (var j = 0; j < numPoints; j++) {
+          var x = freqToX(frequencies[j]);
+          var y = dbToY(curve[j], dbMin, dbMax);
+          if (j === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      function drawCurveWithFill(curve, color, lineWidth, dbMin, dbMax) {
+        // Draw transparent fill between curve and zero line
+        // Blue for positive values, green for negative values
+        var zeroY = dbToY(0, dbMin, dbMax);
+
+        // Draw fill areas for positive values (blue)
+        ctx.fillStyle = 'rgba(33, 150, 243, 0.25)'; // Transparent blue for positive
+        ctx.beginPath();
+        var inPositive = false;
+        for (var j = 0; j < numPoints; j++) {
+          var x = freqToX(frequencies[j]);
+          var y = dbToY(curve[j], dbMin, dbMax);
+          var isPositive = curve[j] > 0;
+          
+          if (isPositive && !inPositive && j > 0) {
+            // Start of positive section - draw from zero line
+            var prevX = freqToX(frequencies[j - 1]);
+            ctx.moveTo(prevX, zeroY);
+            ctx.lineTo(x, y);
+            inPositive = true;
+          } else if (isPositive && inPositive) {
+            // Continue in positive section
+            ctx.lineTo(x, y);
+          } else if (!isPositive && inPositive) {
+            // End of positive section - back to zero line
+            ctx.lineTo(x, zeroY);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath();
+            inPositive = false;
+          }
+        }
+        if (inPositive) {
+          var lastX = freqToX(frequencies[numPoints - 1]);
+          ctx.lineTo(lastX, zeroY);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // Draw fill areas for negative values (green)
+        ctx.fillStyle = 'rgba(84, 198, 136, 0.25)'; // Transparent green for negative
+        ctx.beginPath();
+        var inNegative = false;
+        for (var j = 0; j < numPoints; j++) {
+          var x = freqToX(frequencies[j]);
+          var y = dbToY(curve[j], dbMin, dbMax);
+          var isNegative = curve[j] < 0;
+          
+          if (isNegative && !inNegative && j > 0) {
+            // Start of negative section - draw from zero line
+            var prevX = freqToX(frequencies[j - 1]);
+            ctx.moveTo(prevX, zeroY);
+            ctx.lineTo(x, y);
+            inNegative = true;
+          } else if (isNegative && inNegative) {
+            // Continue in negative section
+            ctx.lineTo(x, y);
+          } else if (!isNegative && inNegative) {
+            // End of negative section - back to zero line
+            ctx.lineTo(x, zeroY);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath();
+            inNegative = false;
+          }
+        }
+        if (inNegative) {
+          var lastX = freqToX(frequencies[numPoints - 1]);
+          ctx.lineTo(lastX, zeroY);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // Draw the curve line on top
         ctx.strokeStyle = color;
         ctx.lineWidth = lineWidth;
         ctx.beginPath();
