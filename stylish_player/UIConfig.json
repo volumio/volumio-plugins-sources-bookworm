@@ -358,7 +358,7 @@
       },
       "saveButton": {
         "label": "TRANSLATE.SAVE",
-        "data": ["use24Hour", "showWeatherInClock", "analogClockShowDate"]
+        "data": ["use24Hour", "wallpaperShowSeconds", "showWeatherInClock", "analogClockShowDate"]
       },
       "content": [
         {
@@ -367,6 +367,14 @@
           "element": "switch",
           "label": "TRANSLATE.USE_24_HOUR",
           "doc": "TRANSLATE.USE_24_HOUR_DESC",
+          "value": false
+        },
+        {
+          "id": "wallpaperShowSeconds",
+          "type": "boolean",
+          "element": "switch",
+          "label": "TRANSLATE.WALLPAPER_SHOW_SECONDS",
+          "doc": "TRANSLATE.WALLPAPER_SHOW_SECONDS_DESC",
           "value": false
         },
         {
@@ -454,7 +462,7 @@
       },
       "saveButton": {
         "label": "TRANSLATE.SAVE",
-        "data": ["unsplashApiKey", "wallpaperUrl", "wallpaperShowTime", "wallpaperShowSeconds", "wallpaperShowWeather", "slideshowInterval"]
+        "data": ["unsplashApiKey", "wallpaperUrl", "wallpaperShowTime", "wallpaperShowWeather", "slideshowInterval"]
       },
       "content": [
         {
@@ -480,14 +488,6 @@
           "label": "TRANSLATE.WALLPAPER_SHOW_TIME",
           "doc": "TRANSLATE.WALLPAPER_SHOW_TIME_DESC",
           "value": true
-        },
-        {
-          "id": "wallpaperShowSeconds",
-          "type": "boolean",
-          "element": "switch",
-          "label": "TRANSLATE.WALLPAPER_SHOW_SECONDS",
-          "doc": "TRANSLATE.WALLPAPER_SHOW_SECONDS_DESC",
-          "value": false
         },
         {
           "id": "wallpaperShowWeather",
