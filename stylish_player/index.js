@@ -585,6 +585,46 @@ ControllerStylishPlayer.prototype.startServer = function () {
       return;
     }
 
+    // API endpoint: delete a peppy pack folder (meter, spectrum, or both)
+    if (urlPath === "/api/delete-peppy-pack" && req.method === "POST") {
+      var delParams = new URL(req.url, "http://localhost").searchParams;
+      var delFolder = delParams.get("folder");
+      if (!delFolder || /[\/\\]/.test(delFolder)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid folder name." }));
+        return;
+      }
+      var delMeterPath = path.join(distPath, "peppy_meter", delFolder);
+      var delSpectrumPath = path.join(distPath, "peppy_spectrum", delFolder);
+      var deletedMeter = false;
+      var deletedSpectrum = false;
+      try {
+        if (fs.existsSync(delMeterPath)) {
+          fs.removeSync(delMeterPath);
+          deletedMeter = true;
+        }
+        if (fs.existsSync(delSpectrumPath)) {
+          fs.removeSync(delSpectrumPath);
+          deletedSpectrum = true;
+        }
+      } catch (delErr) {
+        self.logger.error("Stylish Player: Failed to delete pack: " + delErr.message);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Failed to delete: " + delErr.message }));
+        return;
+      }
+      if (!deletedMeter && !deletedSpectrum) {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Folder not found." }));
+        return;
+      }
+      var delMsg = deletedMeter && deletedSpectrum ? "Deleted meter + spectrum pack." : deletedMeter ? "Deleted meter pack." : "Deleted spectrum pack.";
+      self.logger.info("Stylish Player: " + delMsg + " (" + delFolder + ")");
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ success: true, message: delMsg }));
+      return;
+    }
+
     // API endpoint: list peppy_meter asset folders and their meter models
     if (urlPath === "/api/peppy-folders") {
       var peppyDir = path.join(distPath, "peppy_meter");
