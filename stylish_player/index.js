@@ -178,6 +178,11 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
       self._currentFifoFmt = p.fmt;
       self._currentFifoRate = p.inputRate;
       self._currentIsDSD = p.isDSD;
+      // Cancel any pending graceful shutdown since we're force-restarting.
+      if (self._ffmpegShutdownTimer) {
+        clearTimeout(self._ffmpegShutdownTimer);
+        self._ffmpegShutdownTimer = null;
+      }
       // Close stream clients so browsers reconnect cleanly after the restart.
       var clients = self.streamClients.slice();
       self.streamClients = [];
@@ -299,6 +304,12 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
       });
 
       self.streamClients.push(res);
+      // Cancel any pending FFmpeg shutdown — a client reconnected (e.g. page refresh).
+      if (self._ffmpegShutdownTimer) {
+        clearTimeout(self._ffmpegShutdownTimer);
+        self._ffmpegShutdownTimer = null;
+        self.logger.info('Stylish Player: Client reconnected — cancelled FFmpeg shutdown');
+      }
       // Start FFmpeg if not already running. _startAudioFfmpeg stops the drain
       // internally just before spawning, so the FIFO never has a read-gap that
       // would cause ALSA's volumiofifo plugin to block and report "device busy".
@@ -310,10 +321,17 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
         self.logger.info("Stylish Player: Stream client disconnected");
         self.streamClients = self.streamClients.filter(function (r) { return r !== res; });
         res.end();
-        // Last client: terminate FFmpeg; the exit handler will start the FIFO drain.
+        // Last client: use a grace period before stopping FFmpeg so a page
+        // refresh can reconnect without interrupting the audio pipeline.
         if (self.streamClients.length === 0 && self._audioFfmpeg) {
-          self.logger.info('Stylish Player: Last stream client left — stopping FFmpeg');
-          self._audioFfmpeg.kill('SIGTERM');
+          self.logger.info('Stylish Player: Last stream client left — scheduling FFmpeg shutdown (3s grace)');
+          self._ffmpegShutdownTimer = setTimeout(function () {
+            self._ffmpegShutdownTimer = null;
+            if (self.streamClients.length === 0 && self._audioFfmpeg) {
+              self.logger.info('Stylish Player: Grace period expired — stopping FFmpeg');
+              self._audioFfmpeg.kill('SIGTERM');
+            }
+          }, 3000);
         }
       });
 
@@ -814,6 +832,11 @@ ControllerStylishPlayer.prototype.stopServer = function () {
 
 ControllerStylishPlayer.prototype.stopAudioServer = function () {
   var self = this;
+
+  if (self._ffmpegShutdownTimer) {
+    clearTimeout(self._ffmpegShutdownTimer);
+    self._ffmpegShutdownTimer = null;
+  }
 
   if (self._audioFfmpeg) {
     self._audioFfmpeg.kill('SIGTERM');
