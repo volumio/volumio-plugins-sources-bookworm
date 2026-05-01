@@ -472,24 +472,24 @@ ControllerStylishPlayer.prototype.startServer = function () {
               // Combined pack: move templates/ subfolders to peppy_meter, templates_spectrum/ to peppy_spectrum
               if (hasTemplates) {
                 fs.ensureDirSync(meterDir);
-                var tmplEntries = fs.readdirSync(templatesDir, { withFileTypes: true });
+                var tmplEntries = fs.readdirSync(templatesDir);
                 for (var ti = 0; ti < tmplEntries.length; ti++) {
-                  if (!tmplEntries[ti].isDirectory()) continue;
-                  var srcFolder = path.join(templatesDir, tmplEntries[ti].name);
-                  var destFolder = path.join(meterDir, tmplEntries[ti].name);
+                  var srcFolder = path.join(templatesDir, tmplEntries[ti]);
+                  if (!fs.statSync(srcFolder).isDirectory()) continue;
+                  var destFolder = path.join(meterDir, tmplEntries[ti]);
                   fs.removeSync(destFolder); // overwrite if exists
-                  fs.moveSync(srcFolder, destFolder);
+                  fs.copySync(srcFolder, destFolder);
                 }
               }
               if (hasTemplatesSpectrum) {
                 fs.ensureDirSync(spectrumDir);
-                var specEntries = fs.readdirSync(templatesSpectrumDir, { withFileTypes: true });
+                var specEntries = fs.readdirSync(templatesSpectrumDir);
                 for (var si = 0; si < specEntries.length; si++) {
-                  if (!specEntries[si].isDirectory()) continue;
-                  var srcSpecFolder = path.join(templatesSpectrumDir, specEntries[si].name);
-                  var destSpecFolder = path.join(spectrumDir, specEntries[si].name);
+                  var srcSpecFolder = path.join(templatesSpectrumDir, specEntries[si]);
+                  if (!fs.statSync(srcSpecFolder).isDirectory()) continue;
+                  var destSpecFolder = path.join(spectrumDir, specEntries[si]);
                   fs.removeSync(destSpecFolder);
-                  fs.moveSync(srcSpecFolder, destSpecFolder);
+                  fs.copySync(srcSpecFolder, destSpecFolder);
                 }
               }
               self.logger.info("Stylish Player: Uploaded combined pack (templates + spectrum)");
@@ -497,12 +497,12 @@ ControllerStylishPlayer.prototype.startServer = function () {
               // Simple pack: move all extracted content to the target dir based on type
               var targetDir = packType === "meter" ? meterDir : spectrumDir;
               fs.ensureDirSync(targetDir);
-              var extractedEntries = fs.readdirSync(tmpExtractDir, { withFileTypes: true });
+              var extractedEntries = fs.readdirSync(tmpExtractDir);
               for (var ei = 0; ei < extractedEntries.length; ei++) {
-                var srcPath = path.join(tmpExtractDir, extractedEntries[ei].name);
-                var destPath = path.join(targetDir, extractedEntries[ei].name);
+                var srcPath = path.join(tmpExtractDir, extractedEntries[ei]);
+                var destPath = path.join(targetDir, extractedEntries[ei]);
                 fs.removeSync(destPath);
-                fs.moveSync(srcPath, destPath);
+                fs.copySync(srcPath, destPath);
               }
               self.logger.info("Stylish Player: Uploaded peppy " + packType + " pack");
             }
