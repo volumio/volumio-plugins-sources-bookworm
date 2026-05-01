@@ -462,6 +462,12 @@ ControllerStylishPlayer.prototype.startServer = function () {
           }
 
           try {
+            // If zip extracted into a single wrapper folder, descend into it
+            var extractedTop = fs.readdirSync(tmpExtractDir).filter(function (n) { return n !== "__MACOSX" && n !== ".DS_Store"; });
+            if (extractedTop.length === 1 && fs.statSync(path.join(tmpExtractDir, extractedTop[0])).isDirectory()) {
+              tmpExtractDir = path.join(tmpExtractDir, extractedTop[0]);
+            }
+
             // Check for templates/ and templates_spectrum/ structure (combined pack)
             var templatesDir = path.join(tmpExtractDir, "templates");
             var templatesSpectrumDir = path.join(tmpExtractDir, "templates_spectrum");
