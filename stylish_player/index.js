@@ -464,8 +464,10 @@ ControllerStylishPlayer.prototype.startServer = function () {
           try {
             // If zip extracted into a single wrapper folder, descend into it
             var extractedTop = fs.readdirSync(tmpExtractDir).filter(function (n) { return n !== "__MACOSX" && n !== ".DS_Store"; });
+            var wrapperName = null;
             if (extractedTop.length === 1 && fs.statSync(path.join(tmpExtractDir, extractedTop[0])).isDirectory()) {
-              tmpExtractDir = path.join(tmpExtractDir, extractedTop[0]);
+              wrapperName = extractedTop[0];
+              tmpExtractDir = path.join(tmpExtractDir, wrapperName);
             }
 
             // Check for templates/ and templates_spectrum/ structure (combined pack)
@@ -500,15 +502,27 @@ ControllerStylishPlayer.prototype.startServer = function () {
               }
               self.logger.info("Stylish Player: Uploaded combined pack (templates + spectrum)");
             } else {
-              // Simple pack: move all extracted content to the target dir based on type
+              // Simple pack: the extracted content IS the pack folder itself.
+              // If we descended into a wrapper, use that folder name as the pack name.
+              // Otherwise, look for subdirectories that match the WxH pattern.
               var targetDir = packType === "meter" ? meterDir : spectrumDir;
               fs.ensureDirSync(targetDir);
-              var extractedEntries = fs.readdirSync(tmpExtractDir);
-              for (var ei = 0; ei < extractedEntries.length; ei++) {
-                var srcPath = path.join(tmpExtractDir, extractedEntries[ei]);
-                var destPath = path.join(targetDir, extractedEntries[ei]);
-                fs.removeSync(destPath);
-                fs.copySync(srcPath, destPath);
+
+              if (wrapperName) {
+                // The wrapper folder name IS the pack name (e.g. "800x480_g5_1020_sm")
+                // Copy the entire contents as a subfolder of targetDir
+                var destPack = path.join(targetDir, wrapperName);
+                fs.removeSync(destPack);
+                fs.copySync(tmpExtractDir, destPack);
+              } else {
+                // No wrapper — copy each top-level directory into targetDir
+                var extractedEntries = fs.readdirSync(tmpExtractDir);
+                for (var ei = 0; ei < extractedEntries.length; ei++) {
+                  var srcPath = path.join(tmpExtractDir, extractedEntries[ei]);
+                  var destPath = path.join(targetDir, extractedEntries[ei]);
+                  fs.removeSync(destPath);
+                  fs.copySync(srcPath, destPath);
+                }
               }
               self.logger.info("Stylish Player: Uploaded peppy " + packType + " pack");
             }
