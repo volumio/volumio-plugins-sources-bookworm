@@ -139,30 +139,18 @@ ControllerStylishPlayer.prototype.loadalsastuff = function () {
  * Return the FFmpeg input parameters needed to read the ALSA FIFO for the
  * current track format.
  *
- * PCM (flac, mp3, aac, …): ALSA plug writes S16LE at 44100 Hz.
- * DSD (dsf, dff): ALSA plug converts DoP to S16LE at 44100 Hz.
- * Spotify (320 kbps OGG): The softvol chain in Volumio outputs S32LE through
- *   the ALSA multi plugin. Without a plug wrapper on sp_out, the
- *   sp_out_pipe_fixed plug may not convert format/rate reliably for Spotify.
- *   We therefore tell FFmpeg to read S32LE at 44100 Hz and let FFmpeg handle
- *   the conversion to the output MP3 stream.
+ * The ALSA plug wrapper (sp_out_pipe_fixed) always resamples ALL audio —
+ * including DSD/DoP and Spotify — to 44100 Hz S16LE before writing to the FIFO.
+ * FFmpeg therefore always reads at this fixed rate regardless of the source
+ * format, sample rate, or whether the original track is PCM, DSD, or Spotify.
  *
- * Returns { fmt, inputRate, isDSD, isSpotify }
+ * Returns { fmt, inputRate, isDSD }
  */
 ControllerStylishPlayer.prototype._fifoParams = function (samplerate, trackType) {
   var type = (trackType || '').toLowerCase();
   var isDSD = (type === 'dsf' || type === 'dff');
-  var isSpotify = (type === 'spotify');
 
-  if (isSpotify) {
-    // Spotify 320 kbps OGG decodes to 44100 Hz PCM. Volumio's softvol processes
-    // audio in S32_LE, which reaches the FIFO when sp_out_pipe_fixed cannot
-    // negotiate a format conversion. FFmpeg reads S32LE and resamples to 44100.
-    return { fmt: 's32le', inputRate: 44100, isDSD: false, isSpotify: true };
-  }
-
-  // For all other formats, sp_out_pipe_fixed converts to 44100 Hz S16LE.
-  return { fmt: 's16le', inputRate: 44100, isDSD: isDSD, isSpotify: false };
+  return { fmt: 's16le', inputRate: 44100, isDSD: isDSD };
 };
 
 ControllerStylishPlayer.prototype.streamOutViz = function () {
@@ -176,24 +164,20 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
   self._currentFifoFmt = 's16le';
   self._currentFifoRate = 44100;
   self._currentIsDSD = false;
-  self._currentIsSpotify = false;
   self._fifoDrainStream = null;
 
-  // Restart FFmpeg when the track switches format (PCM/DSD/Spotify), because
-  // the FIFO data format may change between these modes.
+  // Restart FFmpeg when the track switches between PCM and DSD (DoP), because
+  // the FIFO format and sample rate change.
   self.commandRouter.addCallback('volumioPushState', function (state) {
     if (!state) return;
     var p = self._fifoParams(state.samplerate, state.trackType);
-    self.logger.info('Stylish Player: pushState → fmt=' + p.fmt + ' rate=' + p.inputRate +
-      ' isDSD=' + p.isDSD + ' isSpotify=' + p.isSpotify);
-    if (p.fmt !== self._currentFifoFmt || p.inputRate !== self._currentFifoRate ||
-        p.isSpotify !== self._currentIsSpotify) {
+    self.logger.info('Stylish Player: pushState → fmt=' + p.fmt + ' rate=' + p.inputRate + ' isDSD=' + p.isDSD);
+    if (p.fmt !== self._currentFifoFmt || p.inputRate !== self._currentFifoRate) {
       self.logger.info('Stylish Player: FIFO format changed, restarting FFmpeg (' +
         self._currentFifoFmt + '/' + self._currentFifoRate + ' → ' + p.fmt + '/' + p.inputRate + ')');
       self._currentFifoFmt = p.fmt;
       self._currentFifoRate = p.inputRate;
       self._currentIsDSD = p.isDSD;
-      self._currentIsSpotify = p.isSpotify;
       // Close stream clients so browsers reconnect cleanly after the restart.
       var clients = self.streamClients.slice();
       self.streamClients = [];
@@ -243,32 +227,22 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
     self._stopFifoDrain();
 
     self.logger.info('Stylish Player: Starting FFmpeg — fmt=' + self._currentFifoFmt +
-      ' inputRate=' + self._currentFifoRate +
-      (self._currentIsDSD ? ' (DoP DSD)' : '') +
-      (self._currentIsSpotify ? ' (Spotify)' : '') +
-      ' → output 44100 Hz MP3');
+      ' inputRate=' + self._currentFifoRate + (self._currentIsDSD ? ' (DoP DSD)' : '') + ' → output 44100 Hz MP3');
 
     var ffArgs = [
       '-loglevel', 'error',
-      '-fflags', '+discardcorrupt',
+      '-fflags', '+genpts+discardcorrupt+igndts',
+      '-err_detect', 'ignore_err',
       '-f', self._currentFifoFmt,
       '-ar', String(self._currentFifoRate),
       '-ac', '2',
-      '-i', self.pipePath
-    ];
-
-    // For Spotify, the FIFO may contain S32LE data from Volumio's softvol chain.
-    // Add an explicit audio filter to convert sample format and resample to
-    // ensure clean 44100 Hz 16-bit output regardless of input format.
-    if (self._currentIsSpotify) {
-      ffArgs.push('-af', 'aresample=44100,aformat=sample_fmts=s16:channel_layouts=stereo');
-    }
-
-    ffArgs.push(
+      '-thread_queue_size', '512',
+      '-i', self.pipePath,
+      '-af', 'aresample=async=1:first_pts=0',
       '-ar', '44100',
       '-codec:a', 'libmp3lame', '-b:a', '128k',
       '-f', 'mp3', 'pipe:1'
-    );
+    ];
 
     var proc = spawn('ffmpeg', ffArgs, { stdio: ['ignore', 'pipe', 'pipe'] });
     self._audioFfmpeg = proc;
