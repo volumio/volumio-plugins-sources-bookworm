@@ -75,13 +75,18 @@ ControllerStylishPlayer.prototype.onVolumioStart = function () {
 ControllerStylishPlayer.prototype.onStart = function () {
   var self = this;
   var defer = libQ.defer();
-// 1. Update ALSA first (Synchronous or returns promise)
-  self.commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'updateALSAConfigFile');
-  self.loadalsastuff();
-  self.streamOutViz();
-  // 2. Start the sequence
 
-   self
+  // 1. Ensure FIFO exists BEFORE updating ALSA (which references it)
+  self.loadalsastuff();
+
+  // 2. Update ALSA config to include our contribution
+  self.commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'updateALSAConfigFile');
+
+  // 3. Start audio streaming
+  self.streamOutViz();
+
+  // 4. Start the HTTP server
+  self
     .startServer()
     .then(function () {
       defer.resolve();
@@ -107,23 +112,17 @@ ControllerStylishPlayer.prototype.onRestart = function () {
 
 // Server Management -------------------------------------------------------------------
 ControllerStylishPlayer.prototype.loadalsastuff = function () {
-  // execSync(`rm /tmp/stream.mp3 || true`, {
-  //   uid: 1000,
-  //   gid: 1000
-  // });
   const self = this;
-  var defer = libQ.defer();
   try {
-    execSync(`/usr/bin/mkfifo -m 646 /tmp/stream.mp3`, {
+    // Remove stale FIFO if it exists, then recreate
+    try { fs.removeSync('/tmp/stream.mp3'); } catch (e) { /* ignore */ }
+    execSync('/usr/bin/mkfifo -m 646 /tmp/stream.mp3', {
       uid: 1000,
       gid: 1000
     });
-    defer.resolve();
   } catch (err) {
-    self.logger.error(' ----failed to create fifo :' + err);
-    defer.reject(err);
+    self.logger.error('Stylish Player: Failed to create FIFO: ' + err);
   }
-  return defer.promise;
 };
 
 /**
