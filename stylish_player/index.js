@@ -783,7 +783,8 @@ ControllerStylishPlayer.prototype.startServer = function () {
           var specBars = specMatch[3] ? parseInt(specMatch[3], 10) : 30;
           var specName = specFolderName.slice(specMatch[0].length).replace(/^[\-+_]/, '') || specFolderName;
           var specModels = [];
-          var spectrumPath = path.join(spectrumDir, specFolderName, "meters.txt");
+          var spectrumPath = path.join(spectrumDir, specFolderName, "spectrum.txt");
+          if (!fs.existsSync(spectrumPath)) spectrumPath = path.join(spectrumDir, specFolderName, "meters.txt");
           if (fs.existsSync(spectrumPath)) {
             var specContent = fs.readFileSync(spectrumPath, "utf8");
             var specLines = specContent.split("\n");
@@ -1151,6 +1152,7 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       var peppySpectrumModel = self.config.get("peppySpectrumModel", "random");
       if (peppySpectrumFolder) {
         var spectrumTxtPath = path.join(PEPPY_DATA_PATH, "peppy_spectrum", peppySpectrumFolder, "spectrum.txt");
+        if (!fs.existsSync(spectrumTxtPath)) spectrumTxtPath = path.join(PEPPY_DATA_PATH, "peppy_spectrum", peppySpectrumFolder, "meters.txt");
         if (fs.existsSync(spectrumTxtPath)) {
           var specTxtContent = fs.readFileSync(spectrumTxtPath, "utf8");
           var specTxtLines = specTxtContent.split("\n");
