@@ -783,7 +783,7 @@ ControllerStylishPlayer.prototype.startServer = function () {
           var specBars = specMatch[3] ? parseInt(specMatch[3], 10) : 30;
           var specName = specFolderName.slice(specMatch[0].length).replace(/^[\-+_]/, '') || specFolderName;
           var specModels = [];
-          var spectrumPath = path.join(spectrumDir, specFolderName, "spectrum.txt");
+          var spectrumPath = path.join(spectrumDir, specFolderName, "meters.txt");
           if (fs.existsSync(spectrumPath)) {
             var specContent = fs.readFileSync(spectrumPath, "utf8");
             var specLines = specContent.split("\n");
