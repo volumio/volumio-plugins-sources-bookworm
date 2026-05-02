@@ -590,6 +590,31 @@ ControllerStylishPlayer.prototype.startServer = function () {
               var targetDir = packType === "meter" ? meterDir : spectrumDir;
               fs.ensureDirSync(targetDir);
 
+              // Validate spectrum packs: must contain spectrum.txt, not meters.txt
+              if (packType === "spectrum") {
+                var hasSpectrumTxt = fs.existsSync(path.join(tmpExtractDir, "spectrum.txt"));
+                var hasMetersTxt = fs.existsSync(path.join(tmpExtractDir, "meters.txt"));
+                if (!hasSpectrumTxt && hasMetersTxt) {
+                  try { fs.removeSync(tmpExtractDir); } catch (e) { /* ignore */ }
+                  res.writeHead(400, { "Content-Type": "application/json" });
+                  res.end(JSON.stringify({ error: "This looks like a meter pack (contains meters.txt instead of spectrum.txt). Please upload it as a Peppy Meter pack instead." }));
+                  return;
+                }
+                if (!hasSpectrumTxt) {
+                  // Also check subdirectories for spectrum.txt
+                  var subDirs = fs.readdirSync(tmpExtractDir).filter(function (n) { return fs.statSync(path.join(tmpExtractDir, n)).isDirectory(); });
+                  var anySubHasMetersOnly = subDirs.some(function (d) {
+                    return !fs.existsSync(path.join(tmpExtractDir, d, "spectrum.txt")) && fs.existsSync(path.join(tmpExtractDir, d, "meters.txt"));
+                  });
+                  if (anySubHasMetersOnly) {
+                    try { fs.removeSync(tmpExtractDir); } catch (e) { /* ignore */ }
+                    res.writeHead(400, { "Content-Type": "application/json" });
+                    res.end(JSON.stringify({ error: "This looks like a meter pack (contains meters.txt instead of spectrum.txt). Please upload it as a Peppy Meter pack instead." }));
+                    return;
+                  }
+                }
+              }
+
               if (wrapperName) {
                 // The wrapper folder name IS the pack name (e.g. "800x480_g5_1020_sm")
                 // Copy the entire contents as a subfolder of targetDir
@@ -784,7 +809,6 @@ ControllerStylishPlayer.prototype.startServer = function () {
           var specName = specFolderName.slice(specMatch[0].length).replace(/^[\-+_]/, '') || specFolderName;
           var specModels = [];
           var spectrumPath = path.join(spectrumDir, specFolderName, "spectrum.txt");
-          if (!fs.existsSync(spectrumPath)) spectrumPath = path.join(spectrumDir, specFolderName, "meters.txt");
           if (fs.existsSync(spectrumPath)) {
             var specContent = fs.readFileSync(spectrumPath, "utf8");
             var specLines = specContent.split("\n");
@@ -851,15 +875,6 @@ ControllerStylishPlayer.prototype.startServer = function () {
     }
 
     fs.stat(filePath, function (err, stats) {
-      // Fallback: spectrum.txt → meters.txt for peppy_spectrum folders
-      if ((err || !stats || !stats.isFile()) && safePath.startsWith("/peppy_spectrum/") && safePath.endsWith("/spectrum.txt")) {
-        var fallbackPath = filePath.replace(/spectrum\.txt$/, "meters.txt");
-        try {
-          stats = fs.statSync(fallbackPath);
-          if (stats.isFile()) { filePath = fallbackPath; err = null; }
-        } catch (e) { /* no fallback either */ }
-      }
-
       if (err || !stats || !stats.isFile()) {
         // Only apply SPA fallback for requests without a file extension (page routes)
         var ext = path.extname(filePath).toLowerCase();
@@ -1161,7 +1176,6 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       var peppySpectrumModel = self.config.get("peppySpectrumModel", "random");
       if (peppySpectrumFolder) {
         var spectrumTxtPath = path.join(PEPPY_DATA_PATH, "peppy_spectrum", peppySpectrumFolder, "spectrum.txt");
-        if (!fs.existsSync(spectrumTxtPath)) spectrumTxtPath = path.join(PEPPY_DATA_PATH, "peppy_spectrum", peppySpectrumFolder, "meters.txt");
         if (fs.existsSync(spectrumTxtPath)) {
           var specTxtContent = fs.readFileSync(spectrumTxtPath, "utf8");
           var specTxtLines = specTxtContent.split("\n");
