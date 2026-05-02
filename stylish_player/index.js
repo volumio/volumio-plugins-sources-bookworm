@@ -851,7 +851,16 @@ ControllerStylishPlayer.prototype.startServer = function () {
     }
 
     fs.stat(filePath, function (err, stats) {
-      if (err || !stats.isFile()) {
+      // Fallback: spectrum.txt → meters.txt for peppy_spectrum folders
+      if ((err || !stats || !stats.isFile()) && safePath.startsWith("/peppy_spectrum/") && safePath.endsWith("/spectrum.txt")) {
+        var fallbackPath = filePath.replace(/spectrum\.txt$/, "meters.txt");
+        try {
+          stats = fs.statSync(fallbackPath);
+          if (stats.isFile()) { filePath = fallbackPath; err = null; }
+        } catch (e) { /* no fallback either */ }
+      }
+
+      if (err || !stats || !stats.isFile()) {
         // Only apply SPA fallback for requests without a file extension (page routes)
         var ext = path.extname(filePath).toLowerCase();
         if (ext) {
