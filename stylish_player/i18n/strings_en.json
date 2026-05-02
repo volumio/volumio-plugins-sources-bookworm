@@ -70,7 +70,7 @@
   "SLIDESHOW_INTERVAL": "Slideshow Interval (seconds)",
   "SLIDESHOW_INTERVAL_DESC": "Time in seconds between wallpaper transitions when multiple images are available. Minimum 5 seconds.",
   "VIZ_TYPE": "Visualization",
-  "VIZ_TYPE_DESC": "Select the visualization displayed in the bottom-right panel of the player screen.",
+  "VIZ_TYPE_DESC": "Visualization type, double click to toggle fullscreen.",
   "VIZ_TYPE_SPECTRUM": "Spectrum Analyzer",
   "VIZ_TYPE_PEPPY_METER": "Peppy Meter",
   "VIZ_TYPE_PEPPY_SPECTRUM": "Peppy Spectrum",

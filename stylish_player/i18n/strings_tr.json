@@ -68,7 +68,7 @@
   "SLIDESHOW_INTERVAL": "Slayt Gösterisi Aralığı (saniye)",
   "SLIDESHOW_INTERVAL_DESC": "Birden fazla görüntü mevcut olduğunda duvar kağıdı geçişleri arasındaki saniye cinsinden süre. En az 5 saniye.",
   "VIZ_TYPE": "Görselleştirme",
-  "VIZ_TYPE_DESC": "Oynatıcı ekranının sağ alt panelinde görüntülenecek görselleştirmeyi seçin.",
+  "VIZ_TYPE_DESC": "Görselleştirme türü, tam ekranı açıp kapatmak için çift tıklayın.",
   "VIZ_TYPE_SPECTRUM": "Spektrum Analizörü",
   "SHOW_PLAYER_CONTROLS": "Oynatıcı Kontrollerini Göster",
   "SHOW_PLAYER_CONTROLS_DESC": "Devre dışı bırakıldığında, oynatıcı düğmeleri gizlenir ve arama çubuğu salt okunur bir ilerleme göstergesine dönüşür.",

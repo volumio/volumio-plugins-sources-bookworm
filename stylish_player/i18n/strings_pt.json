@@ -68,7 +68,7 @@
   "SLIDESHOW_INTERVAL": "Intervalo da Apresentação (segundos)",
   "SLIDESHOW_INTERVAL_DESC": "Tempo em segundos entre transições de papel de parede quando várias imagens estão disponíveis. Mínimo de 5 segundos.",
   "VIZ_TYPE": "Visualização",
-  "VIZ_TYPE_DESC": "Selecione a visualização exibida no painel inferior direito da tela do reprodutor.",
+  "VIZ_TYPE_DESC": "Tipo de visualização, clique duplo para alternar tela cheia.",
   "VIZ_TYPE_SPECTRUM": "Analisador de espectro",
   "SHOW_PLAYER_CONTROLS": "Mostrar controles do reprodutor",
   "SHOW_PLAYER_CONTROLS_DESC": "Quando desativado, os botões do reprodutor são ocultados e a barra de busca torna-se um indicador de progresso somente leitura.",

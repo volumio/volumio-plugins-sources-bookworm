@@ -68,7 +68,7 @@
   "SLIDESHOW_INTERVAL": "Interval prezentácie (sekundy)",
   "SLIDESHOW_INTERVAL_DESC": "Čas v sekundách medzi prechodmi tapiet, keď je k dispozícii viacero obrázkov. Minimálne 5 sekúnd.",
   "VIZ_TYPE": "Vizualizácia",
-  "VIZ_TYPE_DESC": "Vyberte vizualizáciu zobrazenú v pravom dolnom paneli obrazovky prehrávača.",
+  "VIZ_TYPE_DESC": "Typ vizualizácie, dvojklikom prepnete celú obrazovku.",
   "VIZ_TYPE_SPECTRUM": "Analyzátor spektra",
   "SHOW_PLAYER_CONTROLS": "Zobraziť ovládacie prvky prehrávača",
   "SHOW_PLAYER_CONTROLS_DESC": "Keď je zakázané, tlačidlá prehrávača sú skryté a vyhľadávacia lišta sa stane iba indikátorom priebehu.",

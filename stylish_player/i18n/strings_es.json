@@ -68,7 +68,7 @@
   "SLIDESHOW_INTERVAL": "Intervalo de Presentación (segundos)",
   "SLIDESHOW_INTERVAL_DESC": "Tiempo en segundos entre transiciones de fondo de pantalla cuando hay múltiples imágenes disponibles. Mínimo 5 segundos.",
   "VIZ_TYPE": "Visualización",
-  "VIZ_TYPE_DESC": "Seleccione la visualización que se muestra en el panel inferior derecho de la pantalla del reproductor.",
+  "VIZ_TYPE_DESC": "Tipo de visualización, doble clic para alternar pantalla completa.",
   "VIZ_TYPE_SPECTRUM": "Analizador de espectro",
   "SHOW_PLAYER_CONTROLS": "Mostrar controles del reproductor",
   "SHOW_PLAYER_CONTROLS_DESC": "Cuando está desactivado, los botones del reproductor se ocultan y la barra de búsqueda se convierte en un indicador de progreso de solo lectura.",

@@ -68,7 +68,7 @@
   "SLIDESHOW_INTERVAL": "Slideshow-interval (sekunder)",
   "SLIDESHOW_INTERVAL_DESC": "Tid i sekunder mellem baggrundsbilledovergange, når flere billeder er tilgængelige. Minimum 5 sekunder.",
   "VIZ_TYPE": "Visualisering",
-  "VIZ_TYPE_DESC": "Vælg den visualisering, der vises i det nederste højre panel på afspillerskærmen.",
+  "VIZ_TYPE_DESC": "Visualiseringstype, dobbeltklik for at skifte fuld skærm.",
   "VIZ_TYPE_SPECTRUM": "Spektrumanalysator",
   "SHOW_PLAYER_CONTROLS": "Vis afspillerkontroller",
   "SHOW_PLAYER_CONTROLS_DESC": "Når deaktiveret, skjules afspillerknapperne, og søgelinjen bliver en skrivebeskyttet fremdriftsindikator.",

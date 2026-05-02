@@ -68,7 +68,7 @@
   "SLIDESHOW_INTERVAL": "Diaesityksen aikaväli (sekuntia)",
   "SLIDESHOW_INTERVAL_DESC": "Aika sekunneissa taustakuvan vaihtojen välillä, kun useita kuvia on saatavilla. Vähintään 5 sekuntia.",
   "VIZ_TYPE": "Visualisointi",
-  "VIZ_TYPE_DESC": "Valitse soittajan näytön oikeassa alakulmassa näytettävä visualisointi.",
+  "VIZ_TYPE_DESC": "Visualisointityyppi, kaksoisnapsauta vaihtaaksesi koko näytön tilaan.",
   "VIZ_TYPE_SPECTRUM": "Spektrianalysaattori",
   "SHOW_PLAYER_CONTROLS": "Näytä soittinohjaimet",
   "SHOW_PLAYER_CONTROLS_DESC": "Kun käytöstä poistettu, soittimen painikkeet piilotetaan ja hakupalkki muuttuu vain luku -tilaiseksi edistymisen ilmaisimeksi.",

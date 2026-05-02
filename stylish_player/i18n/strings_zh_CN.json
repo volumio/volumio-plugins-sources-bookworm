@@ -68,7 +68,7 @@
   "SLIDESHOW_INTERVAL": "幻灯片间隔（秒）",
   "SLIDESHOW_INTERVAL_DESC": "当有多张图片可用时，壁纸之间的切换时间（秒）。最少 5 秒。",
   "VIZ_TYPE": "可视化",
-  "VIZ_TYPE_DESC": "选择在播放器屏幕右下角面板显示的可视化效果。",
+  "VIZ_TYPE_DESC": "可视化类型，双击切换全屏。",
   "VIZ_TYPE_SPECTRUM": "频谱分析仪",
   "SHOW_PLAYER_CONTROLS": "显示播放控制",
   "SHOW_PLAYER_CONTROLS_DESC": "禁用后，播放器按钮将被隐藏，进度条将变为只读进度指示器。",

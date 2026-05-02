@@ -68,7 +68,7 @@
   "SLIDESHOW_INTERVAL": "Diashow-Intervall (Sekunden)",
   "SLIDESHOW_INTERVAL_DESC": "Zeit in Sekunden zwischen Hintergrundbild-Übergängen, wenn mehrere Bilder verfügbar sind. Mindestens 5 Sekunden.",
   "VIZ_TYPE": "Visualisierung",
-  "VIZ_TYPE_DESC": "Wählen Sie die Visualisierung aus, die im unteren rechten Bereich des Player-Bildschirms angezeigt wird.",
+  "VIZ_TYPE_DESC": "Visualisierungstyp, Doppelklick zum Umschalten des Vollbilds.",
   "VIZ_TYPE_SPECTRUM": "Spektrumanalysator",
   "SHOW_PLAYER_CONTROLS": "Steuerelemente anzeigen",
   "SHOW_PLAYER_CONTROLS_DESC": "Wenn deaktiviert, werden die Tasten des Players ausgeblendet und die Suchleiste wird zu einem schreibgeschützten Fortschrittsbalken.",

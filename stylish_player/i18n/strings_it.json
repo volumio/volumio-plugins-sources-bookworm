@@ -68,7 +68,7 @@
   "SLIDESHOW_INTERVAL": "Intervallo Slideshow (secondi)",
   "SLIDESHOW_INTERVAL_DESC": "Tempo in secondi tra le transizioni dello sfondo quando sono disponibili più immagini. Minimo 5 secondi.",
   "VIZ_TYPE": "Visualizzazione",
-  "VIZ_TYPE_DESC": "Seleziona la visualizzazione mostrata nel pannello in basso a destra della schermata del lettore.",
+  "VIZ_TYPE_DESC": "Tipo di visualizzazione, doppio clic per attivare lo schermo intero.",
   "VIZ_TYPE_SPECTRUM": "Analizzatore di spettro",
   "SHOW_PLAYER_CONTROLS": "Mostra controlli del lettore",
   "SHOW_PLAYER_CONTROLS_DESC": "Quando disabilitato, i pulsanti del lettore sono nascosti e la barra di ricerca diventa un indicatore di avanzamento di sola lettura.",

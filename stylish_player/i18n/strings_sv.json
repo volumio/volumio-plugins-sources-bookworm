@@ -68,7 +68,7 @@
   "SLIDESHOW_INTERVAL": "Bildspelsintervall (sekunder)",
   "SLIDESHOW_INTERVAL_DESC": "Tid i sekunder mellan bakgrundsbildsövergångar när flera bilder är tillgängliga. Minst 5 sekunder.",
   "VIZ_TYPE": "Visualisering",
-  "VIZ_TYPE_DESC": "Välj visualiseringen som visas i det nedre högra panelen på spelskärmen.",
+  "VIZ_TYPE_DESC": "Visualiseringstyp, dubbelklicka för att växla helskärm.",
   "VIZ_TYPE_SPECTRUM": "Spektrumanalysator",
   "SHOW_PLAYER_CONTROLS": "Visa spelarstyrning",
   "SHOW_PLAYER_CONTROLS_DESC": "När inaktiverat döljs spelarknapparna och sökfältet blir en skrivskyddad förloppsindikator.",

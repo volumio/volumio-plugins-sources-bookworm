@@ -68,7 +68,7 @@
   "SLIDESHOW_INTERVAL": "Intervalle du Diaporama (secondes)",
   "SLIDESHOW_INTERVAL_DESC": "Durée en secondes entre les transitions de fond d'écran lorsque plusieurs images sont disponibles. Minimum 5 secondes.",
   "VIZ_TYPE": "Visualisation",
-  "VIZ_TYPE_DESC": "Sélectionnez la visualisation affichée dans le panneau inférieur droit de l'écran du lecteur.",
+  "VIZ_TYPE_DESC": "Type de visualisation, double-cliquez pour basculer en plein écran.",
   "VIZ_TYPE_SPECTRUM": "Analyseur de spectre",
   "SHOW_PLAYER_CONTROLS": "Afficher les contrôles du lecteur",
   "SHOW_PLAYER_CONTROLS_DESC": "Lorsqu'il est désactivé, les boutons du lecteur sont masqués et la barre de progression devient un indicateur de progression en lecture seule.",

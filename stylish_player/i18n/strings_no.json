@@ -68,7 +68,7 @@
   "SLIDESHOW_INTERVAL": "Lysbildevisningsintervall (sekunder)",
   "SLIDESHOW_INTERVAL_DESC": "Tid i sekunder mellom bakgrunnsbildeoverganger når flere bilder er tilgjengelige. Minimum 5 sekunder.",
   "VIZ_TYPE": "Visualisering",
-  "VIZ_TYPE_DESC": "Velg visualiseringen som vises i nedre høyre panel på avspillingsskjermen.",
+  "VIZ_TYPE_DESC": "Visualiseringstype, dobbeltklikk for å veksle fullskjerm.",
   "VIZ_TYPE_SPECTRUM": "Spektrumanalysator",
   "SHOW_PLAYER_CONTROLS": "Vis avspillingskontroller",
   "SHOW_PLAYER_CONTROLS_DESC": "Når deaktivert, skjules avspillerknappene og søkelinjen blir en skrivebeskyttet fremdriftsindikator.",

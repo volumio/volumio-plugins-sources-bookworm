@@ -68,7 +68,7 @@
   "SLIDESHOW_INTERVAL": "スライドショー間隔（秒）",
   "SLIDESHOW_INTERVAL_DESC": "複数の画像が利用可能な場合の壁紙遷移間の時間（秒）。最小5秒。",
   "VIZ_TYPE": "ビジュアライザー",
-  "VIZ_TYPE_DESC": "プレーヤー画面の右下パネルに表示するビジュアライザーを選択します。",
+  "VIZ_TYPE_DESC": "ビジュアライゼーションの種類。ダブルクリックでフルスクリーンを切り替えます。",
   "VIZ_TYPE_SPECTRUM": "スペクトラムアナライザー",
   "SHOW_PLAYER_CONTROLS": "プレイヤーコントロールを表示",
   "SHOW_PLAYER_CONTROLS_DESC": "無効にすると、プレイヤーボタンが非表示になり、シークバーは読み取り専用の進行状況インジケーターになります。",

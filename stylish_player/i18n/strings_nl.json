@@ -68,7 +68,7 @@
   "SLIDESHOW_INTERVAL": "Diavoorstellingsinterval (seconden)",
   "SLIDESHOW_INTERVAL_DESC": "Tijd in seconden tussen achtergrondovergangen wanneer meerdere afbeeldingen beschikbaar zijn. Minimaal 5 seconden.",
   "VIZ_TYPE": "Visualisatie",
-  "VIZ_TYPE_DESC": "Selecteer de visualisatie die wordt weergegeven in het rechtsonder paneel van het afspeelscherm.",
+  "VIZ_TYPE_DESC": "Visualisatietype, dubbelklik om volledig scherm in of uit te schakelen.",
   "VIZ_TYPE_SPECTRUM": "Spectrumanalysator",
   "SHOW_PLAYER_CONTROLS": "Spelerbesturingen weergeven",
   "SHOW_PLAYER_CONTROLS_DESC": "Wanneer uitgeschakeld, worden de knoppen van de speler verborgen en wordt de zoekbalk een alleen-lezen voortgangsindicator.",

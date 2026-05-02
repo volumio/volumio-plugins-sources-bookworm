@@ -68,7 +68,7 @@
   "SLIDESHOW_INTERVAL": "Diavetítés időköze (másodperc)",
   "SLIDESHOW_INTERVAL_DESC": "Idő másodpercben a háttérkép-átmenetek között, amikor több kép áll rendelkezésre. Minimum 5 másodperc.",
   "VIZ_TYPE": "Vizualizáció",
-  "VIZ_TYPE_DESC": "Válassza ki a lejátszó képernyő jobb alsó paneljén megjelenő vizualizációt.",
+  "VIZ_TYPE_DESC": "Vizualizáció típusa, dupla kattintás a teljes képernyő váltásához.",
   "VIZ_TYPE_SPECTRUM": "Spektrumanalizátor",
   "SHOW_PLAYER_CONTROLS": "Lejátszóvezérlők megjelenítése",
   "SHOW_PLAYER_CONTROLS_DESC": "Ha letiltva, a lejátszó gombjai rejtve vannak, és a keresősáv csak olvasható haladásjelzővé válik.",

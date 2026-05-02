@@ -68,7 +68,7 @@
   "SLIDESHOW_INTERVAL": "Interwał Pokazu Slajdów (sekundy)",
   "SLIDESHOW_INTERVAL_DESC": "Czas w sekundach między przejściami tapet, gdy dostępnych jest wiele obrazów. Minimum 5 sekund.",
   "VIZ_TYPE": "Wizualizacja",
-  "VIZ_TYPE_DESC": "Wybierz wizualizację wyświetlaną w prawym dolnym panelu ekranu odtwarzacza.",
+  "VIZ_TYPE_DESC": "Typ wizualizacji, kliknij dwukrotnie, aby przełączyć tryb pełnoekranowy.",
   "VIZ_TYPE_SPECTRUM": "Analizator widma",
   "SHOW_PLAYER_CONTROLS": "Pokaż elementy sterowania odtwarzaczem",
   "SHOW_PLAYER_CONTROLS_DESC": "Gdy wyłączone, przyciski odtwarzacza są ukryte, a pasek wyszukiwania staje się wskaźnikiem postępu tylko do odczytu.",

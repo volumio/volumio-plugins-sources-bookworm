@@ -68,7 +68,7 @@
   "SLIDESHOW_INTERVAL": "投影片間隔（秒）",
   "SLIDESHOW_INTERVAL_DESC": "當有多張圖片可用時，桌布之間的切換時間（秒）。最少 5 秒。",
   "VIZ_TYPE": "視覺化",
-  "VIZ_TYPE_DESC": "選擇在播放器畫面右下角面板顯示的視覺化效果。",
+  "VIZ_TYPE_DESC": "視覺化類型，雙擊切換全螢幕。",
   "VIZ_TYPE_SPECTRUM": "頻譜分析儀",
   "SHOW_PLAYER_CONTROLS": "顯示播放控制",
   "SHOW_PLAYER_CONTROLS_DESC": "停用後，播放器按鈕將被隱藏，進度條將變為唯讀進度指示器。",
