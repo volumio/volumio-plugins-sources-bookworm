@@ -741,9 +741,16 @@ ControllerStylishPlayer.prototype.startServer = function () {
           if (fs.existsSync(metersPath)) {
             var content = fs.readFileSync(metersPath, "utf8");
             var lines = content.split("\n");
+            var currentModel = null;
             for (var j = 0; j < lines.length; j++) {
               var sectionMatch = lines[j].trim().match(/^\[(.+)\]$/);
-              if (sectionMatch) models.push(sectionMatch[1]);
+              if (sectionMatch) {
+                currentModel = { name: sectionMatch[1], bgr: '' };
+                models.push(currentModel);
+              } else if (currentModel) {
+                var bgrMatch = lines[j].trim().match(/^bgr\.filename\s*=\s*(.+)$/);
+                if (bgrMatch) currentModel.bgr = bgrMatch[1].trim();
+              }
             }
           }
           result.push({ folder: folderName, width: w, height: h, name: name, models: models });
@@ -780,9 +787,16 @@ ControllerStylishPlayer.prototype.startServer = function () {
           if (fs.existsSync(spectrumPath)) {
             var specContent = fs.readFileSync(spectrumPath, "utf8");
             var specLines = specContent.split("\n");
+            var currentSpecModel = null;
             for (var sj = 0; sj < specLines.length; sj++) {
               var specSectionMatch = specLines[sj].trim().match(/^\[(.+)\]$/);
-              if (specSectionMatch) specModels.push(specSectionMatch[1]);
+              if (specSectionMatch) {
+                currentSpecModel = { name: specSectionMatch[1], bgr: '' };
+                specModels.push(currentSpecModel);
+              } else if (currentSpecModel) {
+                var specBgrMatch = specLines[sj].trim().match(/^bgr\.filename\s*=\s*(.+)$/);
+                if (specBgrMatch) currentSpecModel.bgr = specBgrMatch[1].trim();
+              }
             }
           }
           spectrumResult.push({ folder: specFolderName, width: specW, height: specH, bars: specBars, name: specName, models: specModels });
