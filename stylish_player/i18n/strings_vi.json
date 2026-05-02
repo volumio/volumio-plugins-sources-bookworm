@@ -120,5 +120,16 @@
   "PEPPY_SPECTRUM_FOLDER": "Peppy Spectrum Pack",
   "PEPPY_SPECTRUM_FOLDER_DESC": "Select the spectrum asset pack.",
   "PEPPY_SPECTRUM_MODEL": "Peppy Spectrum Model",
-  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change."
+  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change.",
+  "UPLOAD_METER_PACK": "Tải lên gói đồng hồ (.zip)",
+  "UPLOAD_SPECTRUM_PACK": "Tải lên gói phổ (.zip)",
+  "UPLOAD_BTN": "Tải lên",
+  "UPLOAD_BTN_UPLOADING": "Đang tải…",
+  "UPLOAD_SUCCESS": "Tải lên thành công.",
+  "UPLOAD_FAILED": "Tải lên thất bại.",
+  "UPLOAD_ZIP_ONLY": "Chỉ chấp nhận tệp .zip.",
+  "BROWSE_PEPPY_TEMPLATES": "Duyệt mẫu Peppy",
+  "BROWSE_SPECTRUM_PACKS": "Duyệt gói phổ",
+  "DELETE_PACK_CONFIRM": "Xóa \"{name}\"?\nĐiều này sẽ xóa vĩnh viễn gói khỏi máy chủ.",
+  "DELETE_PACK_FAILED": "Không thể xóa gói."
 }

@@ -7,6 +7,8 @@ var path = require("path");
 var os = require("os");
 const { spawn, spawnSync, exec, execSync } = require('child_process');
 var STREAM_PORT = 9993;
+// Persistent data directory — survives Volumio version updates
+var PEPPY_DATA_PATH = '/data/INTERNAL/stylish_player';
 // Kiosk constants
 var VOLUMIO_KIOSK_PATH = "/opt/volumiokiosk.sh";
 var VOLUMIO_KIOSK_BAK_PATH = "/home/volumio/.stylish_player/volumiokiosk.sh.bak";
@@ -86,6 +88,9 @@ ControllerStylishPlayer.prototype.onStart = function () {
   var self = this;
   var defer = libQ.defer();
 
+  // 0. Ensure persistent peppy data directory exists and migrate old data
+  self._ensurePeppyDataDir();
+
   // 1. Ensure FIFO exists BEFORE updating ALSA (which references it)
   self.loadalsastuff();
 
@@ -118,6 +123,59 @@ ControllerStylishPlayer.prototype.onStop = function () {
 
 ControllerStylishPlayer.prototype.onRestart = function () {
   // Optional
+};
+
+// Ensure the persistent peppy data directory exists. If peppy folders exist in
+// the old location (inside the plugin's app/ dir), move them to the persistent
+// path so they survive Volumio version updates.
+ControllerStylishPlayer.prototype._ensurePeppyDataDir = function () {
+  var self = this;
+  var meterDest = path.join(PEPPY_DATA_PATH, 'peppy_meter');
+  var spectrumDest = path.join(PEPPY_DATA_PATH, 'peppy_spectrum');
+  fs.ensureDirSync(meterDest);
+  fs.ensureDirSync(spectrumDest);
+
+  // Migrate from old location (plugin app/ dir) if data exists there
+  var oldMeter = path.join(__dirname, 'app', 'peppy_meter');
+  var oldSpectrum = path.join(__dirname, 'app', 'peppy_spectrum');
+
+  try {
+    if (fs.existsSync(oldMeter) && !fs.lstatSync(oldMeter).isSymbolicLink()) {
+      var entries = fs.readdirSync(oldMeter, { withFileTypes: true });
+      for (var i = 0; i < entries.length; i++) {
+        if (!entries[i].isDirectory()) continue;
+        var src = path.join(oldMeter, entries[i].name);
+        var dest = path.join(meterDest, entries[i].name);
+        if (!fs.existsSync(dest)) {
+          fs.moveSync(src, dest);
+          self.logger.info('Stylish Player: Migrated peppy_meter/' + entries[i].name + ' to persistent storage');
+        }
+      }
+      fs.removeSync(oldMeter);
+    }
+  } catch (e) {
+    self.logger.error('Stylish Player: Error migrating peppy_meter: ' + e);
+  }
+
+  try {
+    if (fs.existsSync(oldSpectrum) && !fs.lstatSync(oldSpectrum).isSymbolicLink()) {
+      var entries = fs.readdirSync(oldSpectrum, { withFileTypes: true });
+      for (var i = 0; i < entries.length; i++) {
+        if (!entries[i].isDirectory()) continue;
+        var src = path.join(oldSpectrum, entries[i].name);
+        var dest = path.join(spectrumDest, entries[i].name);
+        if (!fs.existsSync(dest)) {
+          fs.moveSync(src, dest);
+          self.logger.info('Stylish Player: Migrated peppy_spectrum/' + entries[i].name + ' to persistent storage');
+        }
+      }
+      fs.removeSync(oldSpectrum);
+    }
+  } catch (e) {
+    self.logger.error('Stylish Player: Error migrating peppy_spectrum: ' + e);
+  }
+
+  self.logger.info('Stylish Player: Peppy data path ready at ' + PEPPY_DATA_PATH);
 };
 
 // Server Management -------------------------------------------------------------------
@@ -429,8 +487,8 @@ ControllerStylishPlayer.prototype.startServer = function () {
         return;
       }
 
-      var meterDir = path.join(distPath, "peppy_meter");
-      var spectrumDir = path.join(distPath, "peppy_spectrum");
+      var meterDir = path.join(PEPPY_DATA_PATH, "peppy_meter");
+      var spectrumDir = path.join(PEPPY_DATA_PATH, "peppy_spectrum");
 
       var chunks = [];
       var totalSize = 0;
@@ -632,8 +690,8 @@ ControllerStylishPlayer.prototype.startServer = function () {
         res.end(JSON.stringify({ error: "Invalid folder name." }));
         return;
       }
-      var delMeterPath = path.join(distPath, "peppy_meter", delFolder);
-      var delSpectrumPath = path.join(distPath, "peppy_spectrum", delFolder);
+      var delMeterPath = path.join(PEPPY_DATA_PATH, "peppy_meter", delFolder);
+      var delSpectrumPath = path.join(PEPPY_DATA_PATH, "peppy_spectrum", delFolder);
       var deletedMeter = false;
       var deletedSpectrum = false;
       try {
@@ -665,7 +723,7 @@ ControllerStylishPlayer.prototype.startServer = function () {
 
     // API endpoint: list peppy_meter asset folders and their meter models
     if (urlPath === "/api/peppy-folders") {
-      var peppyDir = path.join(distPath, "peppy_meter");
+      var peppyDir = path.join(PEPPY_DATA_PATH, "peppy_meter");
       var result = [];
       try {
         var entries = fs.readdirSync(peppyDir, { withFileTypes: true });
@@ -703,7 +761,7 @@ ControllerStylishPlayer.prototype.startServer = function () {
 
     // API endpoint: return peppy spectrum folder list with models
     if (urlPath === "/api/peppy-spectrum-folders") {
-      var spectrumDir = path.join(distPath, "peppy_spectrum");
+      var spectrumDir = path.join(PEPPY_DATA_PATH, "peppy_spectrum");
       var spectrumResult = [];
       try {
         var specEntries = fs.readdirSync(spectrumDir, { withFileTypes: true });
@@ -752,13 +810,24 @@ ControllerStylishPlayer.prototype.startServer = function () {
     }
 
     var safePath = decodeURIComponent(path.normalize(urlPath)).replace(/^(\.\.[/\\])+/, "");
-    var filePath = path.join(distPath, safePath);
 
-    // Ensure the resolved path is within distPath
-    if (!filePath.startsWith(distPath)) {
-      res.writeHead(403);
-      res.end("Forbidden");
-      return;
+    // Serve peppy assets from the persistent data directory
+    var filePath;
+    if (safePath.startsWith("/peppy_meter/") || safePath.startsWith("/peppy_spectrum/")) {
+      filePath = path.join(PEPPY_DATA_PATH, safePath);
+      if (!filePath.startsWith(PEPPY_DATA_PATH)) {
+        res.writeHead(403);
+        res.end("Forbidden");
+        return;
+      }
+    } else {
+      filePath = path.join(distPath, safePath);
+      // Ensure the resolved path is within distPath
+      if (!filePath.startsWith(distPath)) {
+        res.writeHead(403);
+        res.end("Forbidden");
+        return;
+      }
     }
 
     // Default to index.html for SPA routing
@@ -996,7 +1065,7 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       uiconf.sections[2].content[7].value = self.config.get("spectrumOptions", "");
 
       // Dynamically populate peppy meter folder options from disk
-      var peppyMeterDir = path.join(distPath, "peppy_meter");
+      var peppyMeterDir = path.join(PEPPY_DATA_PATH, "peppy_meter");
       try {
         var peppyMeterEntries = fs.readdirSync(peppyMeterDir, { withFileTypes: true });
         for (var pi = 0; pi < peppyMeterEntries.length; pi++) {
@@ -1021,7 +1090,7 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       // Dynamically populate model options from meters.txt of the selected folder
       var peppyMeterModel = self.config.get("peppyMeterModel", "random");
       if (peppyMeterFolder) {
-        var metersPath = path.join(distPath, "peppy_meter", peppyMeterFolder, "meters.txt");
+        var metersPath = path.join(PEPPY_DATA_PATH, "peppy_meter", peppyMeterFolder, "meters.txt");
         if (fs.existsSync(metersPath)) {
           var metersContent = fs.readFileSync(metersPath, "utf8");
           var metersLines = metersContent.split("\n");
@@ -1042,7 +1111,7 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       }
 
       // Dynamically populate peppy spectrum folder options from disk
-      var peppySpectrumDir = path.join(distPath, "peppy_spectrum");
+      var peppySpectrumDir = path.join(PEPPY_DATA_PATH, "peppy_spectrum");
       try {
         var spectrumEntries = fs.readdirSync(peppySpectrumDir, { withFileTypes: true });
         for (var sfi = 0; sfi < spectrumEntries.length; sfi++) {
@@ -1067,7 +1136,7 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       // Dynamically populate model options from spectrum.txt of the selected folder
       var peppySpectrumModel = self.config.get("peppySpectrumModel", "random");
       if (peppySpectrumFolder) {
-        var spectrumTxtPath = path.join(distPath, "peppy_spectrum", peppySpectrumFolder, "spectrum.txt");
+        var spectrumTxtPath = path.join(PEPPY_DATA_PATH, "peppy_spectrum", peppySpectrumFolder, "spectrum.txt");
         if (fs.existsSync(spectrumTxtPath)) {
           var specTxtContent = fs.readFileSync(spectrumTxtPath, "utf8");
           var specTxtLines = specTxtContent.split("\n");

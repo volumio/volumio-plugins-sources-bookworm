@@ -120,5 +120,16 @@
   "PEPPY_SPECTRUM_FOLDER": "Peppy Spectrum Pack",
   "PEPPY_SPECTRUM_FOLDER_DESC": "Select the spectrum asset pack.",
   "PEPPY_SPECTRUM_MODEL": "Peppy Spectrum Model",
-  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change."
+  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change.",
+  "UPLOAD_METER_PACK": "Upload målerpakke (.zip)",
+  "UPLOAD_SPECTRUM_PACK": "Upload spektrumpakke (.zip)",
+  "UPLOAD_BTN": "Upload",
+  "UPLOAD_BTN_UPLOADING": "Uploader…",
+  "UPLOAD_SUCCESS": "Upload lykkedes.",
+  "UPLOAD_FAILED": "Upload mislykkedes.",
+  "UPLOAD_ZIP_ONLY": "Kun .zip-filer accepteres.",
+  "BROWSE_PEPPY_TEMPLATES": "Gennemse Peppy-skabeloner",
+  "BROWSE_SPECTRUM_PACKS": "Gennemse spektrumpakker",
+  "DELETE_PACK_CONFIRM": "Slet \"{name}\"?\nDette vil permanent fjerne pakken fra serveren.",
+  "DELETE_PACK_FAILED": "Kunne ikke slette pakken."
 }

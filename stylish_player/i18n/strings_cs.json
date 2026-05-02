@@ -120,5 +120,16 @@
   "PEPPY_SPECTRUM_FOLDER": "Peppy Spectrum Pack",
   "PEPPY_SPECTRUM_FOLDER_DESC": "Select the spectrum asset pack.",
   "PEPPY_SPECTRUM_MODEL": "Peppy Spectrum Model",
-  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change."
+  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change.",
+  "UPLOAD_METER_PACK": "Nahrát balíček měřičů (.zip)",
+  "UPLOAD_SPECTRUM_PACK": "Nahrát balíček spektra (.zip)",
+  "UPLOAD_BTN": "Nahrát",
+  "UPLOAD_BTN_UPLOADING": "Nahrávání…",
+  "UPLOAD_SUCCESS": "Nahrávání úspěšné.",
+  "UPLOAD_FAILED": "Nahrávání selhalo.",
+  "UPLOAD_ZIP_ONLY": "Jsou přijímány pouze soubory .zip.",
+  "BROWSE_PEPPY_TEMPLATES": "Procházet šablony Peppy",
+  "BROWSE_SPECTRUM_PACKS": "Procházet balíčky spektra",
+  "DELETE_PACK_CONFIRM": "Smazat \"{name}\"?\nToto trvale odstraní balíček ze serveru.",
+  "DELETE_PACK_FAILED": "Nepodařilo se smazat balíček."
 }

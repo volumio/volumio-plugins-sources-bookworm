@@ -120,5 +120,16 @@
   "PEPPY_SPECTRUM_FOLDER": "Peppy Spectrum Pack",
   "PEPPY_SPECTRUM_FOLDER_DESC": "Select the spectrum asset pack.",
   "PEPPY_SPECTRUM_MODEL": "Peppy Spectrum Model",
-  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change."
+  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change.",
+  "UPLOAD_METER_PACK": "上傳儀表包 (.zip)",
+  "UPLOAD_SPECTRUM_PACK": "上傳頻譜包 (.zip)",
+  "UPLOAD_BTN": "上傳",
+  "UPLOAD_BTN_UPLOADING": "上傳中…",
+  "UPLOAD_SUCCESS": "上傳成功。",
+  "UPLOAD_FAILED": "上傳失敗。",
+  "UPLOAD_ZIP_ONLY": "僅接受 .zip 檔案。",
+  "BROWSE_PEPPY_TEMPLATES": "瀏覽 Peppy 範本",
+  "BROWSE_SPECTRUM_PACKS": "瀏覽頻譜包",
+  "DELETE_PACK_CONFIRM": "刪除「{name}」？\n這將從伺服器永久刪除該包。",
+  "DELETE_PACK_FAILED": "刪除包失敗。"
 }

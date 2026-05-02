@@ -120,5 +120,16 @@
   "PEPPY_SPECTRUM_FOLDER": "Peppy Spectrum Pack",
   "PEPPY_SPECTRUM_FOLDER_DESC": "Select the spectrum asset pack.",
   "PEPPY_SPECTRUM_MODEL": "Peppy Spectrum Model",
-  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change."
+  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change.",
+  "UPLOAD_METER_PACK": "Загрузить пакет измерителя (.zip)",
+  "UPLOAD_SPECTRUM_PACK": "Загрузить пакет спектра (.zip)",
+  "UPLOAD_BTN": "Загрузить",
+  "UPLOAD_BTN_UPLOADING": "Загрузка…",
+  "UPLOAD_SUCCESS": "Загрузка выполнена.",
+  "UPLOAD_FAILED": "Ошибка загрузки.",
+  "UPLOAD_ZIP_ONLY": "Принимаются только файлы .zip.",
+  "BROWSE_PEPPY_TEMPLATES": "Обзор шаблонов Peppy",
+  "BROWSE_SPECTRUM_PACKS": "Обзор пакетов спектра",
+  "DELETE_PACK_CONFIRM": "Удалить \"{name}\"?\nЭто навсегда удалит пакет с сервера.",
+  "DELETE_PACK_FAILED": "Не удалось удалить пакет."
 }

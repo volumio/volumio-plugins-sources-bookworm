@@ -120,5 +120,16 @@
   "PEPPY_SPECTRUM_FOLDER": "Peppy Spectrum Pack",
   "PEPPY_SPECTRUM_FOLDER_DESC": "Select the spectrum asset pack.",
   "PEPPY_SPECTRUM_MODEL": "Peppy Spectrum Model",
-  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change."
+  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change.",
+  "UPLOAD_METER_PACK": "Mérő csomag feltöltése (.zip)",
+  "UPLOAD_SPECTRUM_PACK": "Spektrum csomag feltöltése (.zip)",
+  "UPLOAD_BTN": "Feltöltés",
+  "UPLOAD_BTN_UPLOADING": "Feltöltés…",
+  "UPLOAD_SUCCESS": "Feltöltés sikeres.",
+  "UPLOAD_FAILED": "Feltöltés sikertelen.",
+  "UPLOAD_ZIP_ONLY": "Csak .zip fájlok fogadhatók el.",
+  "BROWSE_PEPPY_TEMPLATES": "Peppy sablonok böngészése",
+  "BROWSE_SPECTRUM_PACKS": "Spektrum csomagok böngészése",
+  "DELETE_PACK_CONFIRM": "Törli a(z) \"{name}\" csomagot?\nEz véglegesen eltávolítja a csomagot a szerverről.",
+  "DELETE_PACK_FAILED": "Nem sikerült törölni a csomagot."
 }

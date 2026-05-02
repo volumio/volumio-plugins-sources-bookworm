@@ -120,5 +120,16 @@
   "PEPPY_SPECTRUM_FOLDER": "Peppy Spectrum Pack",
   "PEPPY_SPECTRUM_FOLDER_DESC": "Select the spectrum asset pack.",
   "PEPPY_SPECTRUM_MODEL": "Peppy Spectrum Model",
-  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change."
+  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change.",
+  "UPLOAD_METER_PACK": "อัปโหลดแพ็คมิเตอร์ (.zip)",
+  "UPLOAD_SPECTRUM_PACK": "อัปโหลดแพ็คสเปกตรัม (.zip)",
+  "UPLOAD_BTN": "อัปโหลด",
+  "UPLOAD_BTN_UPLOADING": "กำลังอัปโหลด…",
+  "UPLOAD_SUCCESS": "อัปโหลดสำเร็จ",
+  "UPLOAD_FAILED": "อัปโหลดล้มเหลว",
+  "UPLOAD_ZIP_ONLY": "รับเฉพาะไฟล์ .zip เท่านั้น",
+  "BROWSE_PEPPY_TEMPLATES": "เรียกดูเทมเพลต Peppy",
+  "BROWSE_SPECTRUM_PACKS": "เรียกดูแพ็คสเปกตรัม",
+  "DELETE_PACK_CONFIRM": "ลบ \"{name}\"?\nจะลบแพ็คออกจากเซิร์ฟเวอร์อย่างถาวร",
+  "DELETE_PACK_FAILED": "ไม่สามารถลบแพ็คได้"
 }

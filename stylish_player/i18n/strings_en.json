@@ -119,5 +119,16 @@
   "KIOSK_RESTORE_BAK_LABEL": "Restore from Backup",
   "KIOSK_RESTORE_BAK_BTN": "Restore",
   "USE_24_HOUR": "24-Hour Time",
-  "USE_24_HOUR_DESC": "Display time in 24-hour (military) format instead of 12-hour AM/PM."
+  "USE_24_HOUR_DESC": "Display time in 24-hour (military) format instead of 12-hour AM/PM.",
+  "UPLOAD_METER_PACK": "Upload Meter Pack (.zip)",
+  "UPLOAD_SPECTRUM_PACK": "Upload Spectrum Pack (.zip)",
+  "UPLOAD_BTN": "Upload",
+  "UPLOAD_BTN_UPLOADING": "Uploading…",
+  "UPLOAD_SUCCESS": "Upload successful.",
+  "UPLOAD_FAILED": "Upload failed.",
+  "UPLOAD_ZIP_ONLY": "Only .zip files are accepted.",
+  "BROWSE_PEPPY_TEMPLATES": "Browse Peppy Templates",
+  "BROWSE_SPECTRUM_PACKS": "Browse Spectrum Packs",
+  "DELETE_PACK_CONFIRM": "Delete \"{name}\"?\nThis will permanently remove the pack from the server.",
+  "DELETE_PACK_FAILED": "Failed to delete pack."
 }

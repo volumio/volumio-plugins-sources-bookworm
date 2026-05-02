@@ -120,5 +120,16 @@
   "PEPPY_SPECTRUM_FOLDER": "Peppy Spectrum Pack",
   "PEPPY_SPECTRUM_FOLDER_DESC": "Select the spectrum asset pack.",
   "PEPPY_SPECTRUM_MODEL": "Peppy Spectrum Model",
-  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change."
+  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change.",
+  "UPLOAD_METER_PACK": "Téléverser un pack VU-mètre (.zip)",
+  "UPLOAD_SPECTRUM_PACK": "Téléverser un pack spectre (.zip)",
+  "UPLOAD_BTN": "Téléverser",
+  "UPLOAD_BTN_UPLOADING": "Envoi en cours…",
+  "UPLOAD_SUCCESS": "Téléversement réussi.",
+  "UPLOAD_FAILED": "Échec du téléversement.",
+  "UPLOAD_ZIP_ONLY": "Seuls les fichiers .zip sont acceptés.",
+  "BROWSE_PEPPY_TEMPLATES": "Parcourir les modèles Peppy",
+  "BROWSE_SPECTRUM_PACKS": "Parcourir les packs spectre",
+  "DELETE_PACK_CONFIRM": "Supprimer \"{name}\" ?\nCela supprimera définitivement le pack du serveur.",
+  "DELETE_PACK_FAILED": "Échec de la suppression du pack."
 }

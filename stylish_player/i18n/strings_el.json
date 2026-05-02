@@ -120,5 +120,16 @@
   "PEPPY_SPECTRUM_FOLDER": "Peppy Spectrum Pack",
   "PEPPY_SPECTRUM_FOLDER_DESC": "Select the spectrum asset pack.",
   "PEPPY_SPECTRUM_MODEL": "Peppy Spectrum Model",
-  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change."
+  "PEPPY_SPECTRUM_MODEL_DESC": "Select a specific spectrum design, or Random to cycle on each track change.",
+  "UPLOAD_METER_PACK": "Μεταφόρτωση πακέτου μετρητή (.zip)",
+  "UPLOAD_SPECTRUM_PACK": "Μεταφόρτωση πακέτου φάσματος (.zip)",
+  "UPLOAD_BTN": "Μεταφόρτωση",
+  "UPLOAD_BTN_UPLOADING": "Μεταφόρτωση…",
+  "UPLOAD_SUCCESS": "Η μεταφόρτωση ολοκληρώθηκε.",
+  "UPLOAD_FAILED": "Η μεταφόρτωση απέτυχε.",
+  "UPLOAD_ZIP_ONLY": "Γίνονται δεκτά μόνο αρχεία .zip.",
+  "BROWSE_PEPPY_TEMPLATES": "Περιήγηση προτύπων Peppy",
+  "BROWSE_SPECTRUM_PACKS": "Περιήγηση πακέτων φάσματος",
+  "DELETE_PACK_CONFIRM": "Διαγραφή \"{name}\";\nΑυτό θα αφαιρέσει μόνιμα το πακέτο από τον διακομιστή.",
+  "DELETE_PACK_FAILED": "Αποτυχία διαγραφής πακέτου."
 }
