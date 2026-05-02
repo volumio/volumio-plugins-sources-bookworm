@@ -492,7 +492,7 @@ ControllerStylishPlayer.prototype.startServer = function () {
 
       var chunks = [];
       var totalSize = 0;
-      var MAX_UPLOAD_SIZE = 50 * 1024 * 1024; // 50MB limit
+      var MAX_UPLOAD_SIZE = 100 * 1024 * 1024; // 100MB limit
 
       req.on("data", function (chunk) {
         totalSize += chunk.length;
