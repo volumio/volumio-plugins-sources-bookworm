@@ -4210,6 +4210,14 @@ h2 {
   .browse-dialog--lsp .browse-toolbar .btn-icon {
     width: clamp(44px, 3.5cqi, 60px) !important;
     height: clamp(44px, 3.5cqi, 60px) !important;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .browse-dialog--lsp .browse-toolbar .btn-icon:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .browse-dialog--lsp .browse-toolbar .btn-icon.active {
+    color: var(--color-primary-light);
   }
   .browse-dialog--lsp .browse-toolbar .btn-icon .material-icons,
   .browse-dialog--lsp .browse-toolbar .material-icons {
@@ -4252,6 +4260,9 @@ h2 {
   .browse-dialog--lsp .album-footer__format-text {
     font-size: clamp(0.85rem, 1cqi, 1.3rem) !important;
   }
+  .browse-dialog--lsp .album-footer__format-logo {
+    filter: brightness(0) invert(0);
+  }
   .track-menu {
     min-width: 280px !important;
   }
@@ -4264,6 +4275,10 @@ h2 {
     font-size: 1.9rem !important;
   }
 }
+.album-footer__format-logo {
+  filter: brightness(0) invert(0);
+}
+
 /* ═══════════════════════════════════════════════════════════════════════
    WEATHER SCREENS - Light brushed metal background with dark inset fonts
    ═══════════════════════════════════════════════════════════════════════ */
@@ -6313,26 +6328,26 @@ h2 {
 
 .dialog-close {
   border-radius: 6px;
-  color: var(--color-gray-700);
+  color: rgba(255, 255, 255, 0.85);
   transition: all 0.15s ease;
 }
 .dialog-close .material-icons {
-  -webkit-text-fill-color: var(--color-gray-800);
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.85);
   background-image: none;
   -webkit-background-clip: unset;
   background-clip: unset;
   filter: none;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5), 0 -1px 0 rgba(0, 0, 0, 0.08);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 .dialog-close:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: var(--color-gray-900);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 .dialog-close:hover .material-icons {
-  -webkit-text-fill-color: var(--color-gray-900);
+  -webkit-text-fill-color: #fff;
 }
 .dialog-close:active {
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.05);
   transform: scale(0.95);
 }
 
@@ -6343,6 +6358,17 @@ h2 {
   background-clip: unset;
   filter: none;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5), 0 -1px 0 rgba(0, 0, 0, 0.08);
+}
+
+.dialog-header .dialog-close .material-icons,
+.dialog-header__actions .btn-icon .material-icons {
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.85) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.dialog-header .dialog-close:hover .material-icons,
+.dialog-header__actions .btn-icon:hover .material-icons {
+  -webkit-text-fill-color: #fff !important;
 }
 
 /* ── Toolbar ─────────────────────────────────────────────────────────── */
@@ -6379,6 +6405,20 @@ h2 {
 }
 .dialog-toolbar .browse-search__clear {
   color: var(--color-gray-600);
+}
+
+/* ── Browse toolbar (inside dialog body, dark background) ────────────── */
+.browse-toolbar .btn-icon {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.browse-toolbar .btn-icon:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.browse-toolbar .btn-icon.active {
+  color: var(--color-primary-light);
 }
 
 /* ── Body ─────────────────────────────────────────────────────────────── */
