@@ -32,7 +32,7 @@
       padding: 10px 15px;
       background: #090909;
       border-bottom: 1px solid #3C3C3C;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       gap: 8px;
     }
 
@@ -40,7 +40,11 @@
       font-size: 16px;
       font-weight: 500;
       color: #54C688;
-      min-width: 200px;
+      min-width: auto;
+      flex: 0 1 auto;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     #back-btn {
@@ -225,21 +229,23 @@
     }
 
     #filter-popup {
-      position: absolute;
+      position: fixed;
       display: none;
       background: rgba(30, 30, 30, 0.95);
       border: 1px solid #54C688;
       border-radius: 6px;
-      padding: 12px;
+      padding: 6px;
       z-index: 10;
       min-width: 280px;
       max-width: 320px;
-      max-height: 40vh;
+      max-height: 25vh;
       overflow-y: auto;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-      left: 50%;
-      bottom: 10px;
-      transform: translateX(-50%);
+      left: auto;
+      right: auto;
+      top: auto;
+      bottom: auto;
+      transform: none;
       touch-action: manipulation;
     }
 
@@ -258,25 +264,25 @@
         max-width: calc(100vw - 32px);
         width: auto;
         min-height: auto;
-        max-height: 35vh;
-        padding: 12px 10px;
-        left: 50% !important;
+        max-height: 32vh;
+        padding: 6px;
+        left: auto !important;
         right: auto !important;
-        bottom: 8px !important;
         top: auto !important;
-        transform: translateX(-50%) !important;
+        bottom: auto !important;
+        transform: none !important;
         margin: 0 !important;
       }
 
       #filter-popup .popup-row {
         flex-direction: column;
         align-items: flex-start;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
       }
 
       #filter-popup .popup-row label {
         margin-bottom: 4px;
-        font-size: 13px;
+        font-size: 10px;
       }
 
       #filter-popup .popup-row input,
@@ -287,29 +293,29 @@
     }
 
     #filter-popup .popup-title {
-      font-size: 13px;
+      font-size: 10px;
       font-weight: 600;
       color: #54C688;
-      margin-bottom: 8px;
+      margin-bottom: 2px;
     }
 
     #filter-popup .popup-row {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
+      gap: 6px;
+      margin-bottom: 2px;
     }
 
     #filter-popup .popup-row label {
-      font-size: 12px;
+      font-size: 10px;
       color: #aaa;
       min-width: 80px;
     }
 
     #filter-popup .popup-row input {
-      width: 90px;
+      width: 70px;
       padding: 3px 6px;
-      font-size: 12px;
+      font-size: 10px;
       background: #333;
       border: 1px solid #7C7C7C;
       border-radius: 3px;
@@ -325,7 +331,7 @@
     #filter-popup .popup-row select {
       width: 200px;
       padding: 3px 6px;
-      font-size: 12px;
+      font-size: 10px;
       background: #333;
       border: 1px solid #7C7C7C;
       border-radius: 3px;
@@ -342,14 +348,14 @@
 
     #filter-popup .popup-buttons {
       display: flex;
-      gap: 8px;
-      margin-top: 8px;
+      gap: 6px;
+      margin-top: 2px;
     }
 
     #filter-popup .popup-buttons button {
       flex: 1;
-      padding: 8px 10px;
-      font-size: 12px;
+      padding: 5px 8px;
+      font-size: 11px;
       border: 1px solid #7C7C7C;
       border-radius: 3px;
       cursor: pointer;
@@ -357,7 +363,7 @@
       color: #fff;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
-      min-height: 44px;
+      min-height: 38px;
     }
 
     #filter-popup .popup-buttons button:hover,
@@ -635,6 +641,9 @@
       #header {
         padding: 6px 10px;
         gap: 4px;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
       }
 
       #header h1 {
@@ -642,6 +651,10 @@
         order: 0;
         width: auto;
         flex: 1;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       #back-btn {
@@ -649,13 +662,17 @@
         font-size: 11px;
         min-width: 40px;
         order: -1;
+        flex-shrink: 0;
       }
 
       #header-controls {
         order: 1;
-        width: 100%;
+        width: auto;
         gap: 4px;
         margin-top: 6px;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
       }
 
       .header-btn {
@@ -692,18 +709,18 @@
         min-width: auto;
         max-width: calc(100vw - 24px);
         width: auto;
-        max-height: 30vh;
-        padding: 10px 8px;
-        left: 50% !important;
+        max-height: 34vh;
+        padding: 6px;
+        left: auto !important;
         right: auto !important;
-        bottom: 6px !important;
         top: auto !important;
-        transform: translateX(-50%) !important;
+        bottom: auto !important;
+        transform: none !important;
         margin: 0 !important;
       }
 
       #filter-popup .popup-row label {
-        font-size: 12px;
+        font-size: 10px;
         min-width: auto;
       }
 
@@ -714,6 +731,148 @@
       .knob-value-input {
         width: 48px;
         font-size: 10px;
+      }
+    }
+
+    /* Mobile landscape (max-height for landscape orientation) */
+    @media (max-width: 768px) and (max-height: 400px) {
+      #header {
+        padding: 3px 4px !important;
+        gap: 2px !important;
+        flex-wrap: nowrap !important;
+        height: auto !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+
+      #header h1 {
+        font-size: 11px !important;
+        min-width: 0 !important;
+        flex: 1 1 0 !important;
+        margin: 0 2px !important;
+        order: 0 !important;
+        width: auto !important;
+        flex-basis: 0 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+
+      #back-btn {
+        padding: 2px 4px !important;
+        font-size: 8px !important;
+        min-width: 28px !important;
+        min-height: 28px !important;
+        flex-shrink: 0 !important;
+        order: -1 !important;
+      }
+
+      #header-controls {
+        display: flex !important;
+        gap: 2px !important;
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        width: auto !important;
+        order: 1 !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+      }
+
+      #header-controls > * {
+        flex-shrink: 0 !important;
+      }
+
+      #info {
+        display: none !important;
+        order: 2 !important;
+        width: auto !important;
+        margin: 0 !important;
+      }
+
+      .header-btn {
+        padding: 2px 3px !important;
+        font-size: 7px !important;
+        min-height: 28px !important;
+        min-width: 28px !important;
+        flex: 0 0 auto !important;
+      }
+
+      #filter-popup {
+        max-width: calc(400vw - 16px);
+        max-height: 48vh;
+        padding: 12px;
+      }
+
+      #filter-popup .popup-title {
+        font-size: 11px;
+        margin-bottom: 4px;
+      }
+
+      #filter-popup .popup-row {
+        margin-bottom: 2px;
+        gap: 4px;
+      }
+
+      #filter-popup .popup-row label {
+        font-size: 11px;
+        min-width: 70px;
+      }
+
+      #filter-popup .popup-row input,
+      #filter-popup .popup-row select {
+        font-size: 11px;
+        padding: 2px 4px;
+      }
+
+      #filter-popup .popup-row select {
+        width: 160px;
+      }
+
+      #filter-popup .popup-error {
+        font-size: 10px;
+      }
+
+      #filter-popup .popup-buttons {
+        gap: 4px;
+        margin-top: 2px;
+      }
+
+      #filter-popup .popup-buttons button {
+        padding: 4px 6px;
+        font-size: 10px;
+        min-height: 38px;
+      }
+
+      .knob-container {
+        width: 52px;
+      }
+
+      .knob-label {
+        font-size: 8px;
+        margin-top: 1px;
+      }
+
+      .knob-value-input {
+        width: 44px;
+        font-size: 9px;
+        padding: 1px 2px;
+      }
+
+      #unsaved-dot {
+        width: 5px;
+        height: 5px;
+      }
+
+      #crosshair-info {
+        font-size: 9px;
+        padding: 2px 4px;
       }
     }
 
@@ -2065,8 +2224,8 @@
           ctx.globalAlpha = 1.0;
         }
 
-        // Draw crosshair (with snap support)
-        if (mouseX >= margin.left && mouseX <= w - margin.right &&
+        // Draw crosshair (with snap support) only while dragging
+        if (dragging && mouseX >= margin.left && mouseX <= w - margin.right &&
           mouseY >= margin.top && mouseY <= h - margin.bottom) {
           var crossX = (snappedState) ? snappedState.x : mouseX;
           // Vertical line
@@ -2437,40 +2596,49 @@
         popupEl.innerHTML = html;
         popupEl.style.display = 'block';
 
-        // Position near the dot, clamped to container bounds
+        // Build initial parameter fields before measuring popup height.
+        rebuildPopupParams(ind.type, ind.params.slice(), ind);
+
+        // Position popup based on gain value to avoid hiding the edited curve
         var markerFreq = ind.type === 'Tilt' ? 1000 : ind.params[0];
         var markerDb = ind.type === 'Tilt' ? 0 : evalBiquadMagnitudeDb(ind.biquads, markerFreq, lastResponses.sampleRate);
-        var dotX = freqToX(markerFreq);
-        var dotY = dbToY(markerDb, lastDbMin, lastDbMax);
         var containerRect = container.getBoundingClientRect();
         var cw = containerRect.width;
         var ch = containerRect.height;
         var popupRect = popupEl.getBoundingClientRect();
         var pw = popupRect.width;
         var ph = popupRect.height;
-        var pLeft = dotX + 20;
-        var pTop = dotY + 10;
 
-        // Prefer placing popup below the dragged point, but move above if there is no room.
-        if (pTop + ph > ch - 4) {
-          pTop = dotY - ph - 10;
+        // Position horizontally centered in viewport
+        var pLeft = Math.max(4, Math.min(window.innerWidth - pw - 4, containerRect.left + (cw - pw) / 2));
+
+        // Position vertically based on gain value
+        var pTop;
+        if (markerDb > 0) {
+          // Positive gain (boost) - anchor popup near the screen bottom.
+          pTop = window.innerHeight - ph - 10;
+        } else {
+          // Negative or zero gain (cut) - put popup near the top.
+          pTop = 10;
         }
 
-        if (pLeft + pw > cw) {
-          pLeft = dotX - pw - 10;
-        }
-        if (pLeft < 4) {
-          pLeft = 4;
-        }
-        if (pTop < 4) {
-          pTop = 4;
-        }
+        var minTop = 10;
+        var maxTop = Math.max(10, window.innerHeight - ph - 10);
+        pTop = Math.min(Math.max(pTop, minTop), maxTop);
 
-        popupEl.style.left = pLeft + 'px';
-        popupEl.style.top = pTop + 'px';
+        popupEl.style.setProperty('position', 'fixed', 'important');
+        popupEl.style.setProperty('left', pLeft + 'px', 'important');
+        popupEl.style.setProperty('top', pTop + 'px', 'important');
+        popupEl.style.setProperty('right', 'auto', 'important');
+        popupEl.style.setProperty('bottom', 'auto', 'important');
+        popupEl.style.setProperty('transform', 'none', 'important');
 
-        // Build initial parameter fields
-        rebuildPopupParams(ind.type, ind.params.slice(), ind);
+        var finalRect = popupEl.getBoundingClientRect();
+        if (finalRect.bottom > window.innerHeight - 10) {
+          var overflow = finalRect.bottom - (window.innerHeight - 10);
+          pTop = Math.max(minTop, pTop - overflow);
+          popupEl.style.setProperty('top', pTop + 'px', 'important');
+        }
 
         // Type change handler (not available in EQ15 mode)
         var typeSelect = document.getElementById('popup-type-select');
