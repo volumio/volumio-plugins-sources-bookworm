@@ -6590,7 +6590,6 @@ input[type=range]::-moz-range-thumb:active {
 
 /* ── Browse Tiles ── */
 .browse-tile .browse-tile__icon {
-  font-size: clamp(18px, 3cqi, 30px) !important;
   display: block;
   margin-bottom: 4px;
 }
