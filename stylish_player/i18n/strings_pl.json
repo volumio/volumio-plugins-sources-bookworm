@@ -112,6 +112,8 @@
   "STREAM_INFO_COLOR_DESC": "Nadpisz kolor tekstu informacji o strumieniu (częstotliwość próbkowania, głębia bitowa itp.). Wpisz kod hex (np. #cccccc). Pozostaw puste, aby użyć domyślnego koloru motywu.",
   "CONTROL_COLOR": "Kolor kontrolek",
   "CONTROL_COLOR_DESC": "Nadpisz kolor przycisków odtwarzacza, suwaków i etykiet. Wpisz kod hex (np. #ff6600). Pozostaw puste, aby użyć domyślnego koloru motywu.",
+  "HIDE_SEEK_HANDLE": "Ukryj uchwyt paska",
+  "HIDE_SEEK_HANDLE_DESC": "Ukryj przeciągany uchwyt na pasku wyszukiwania dla czystszego wyglądu.",
   "SHOW_REMAINING_TIME": "Pokaż pozostały czas",
   "SHOW_REMAINING_TIME_DESC": "Pokaż pozostały czas zamiast całkowitego czasu trwania po prawej stronie paska wyszukiwania.",
   "CLOCK": "Clock",

@@ -112,6 +112,8 @@
   "STREAM_INFO_COLOR_DESC": "覆蓋串流資訊文字顏色（取樣率、位元深度等）。輸入十六進制代碼（例如 #cccccc）。留空使用主題預設顏色。",
   "CONTROL_COLOR": "控制項顏色",
   "CONTROL_COLOR_DESC": "覆蓋播放器按鈕、滑桿和標籤的顏色。輸入十六進制代碼（例如 #ff6600）。留空使用主題預設顏色。",
+  "HIDE_SEEK_HANDLE": "隱藏進度條滑塊",
+  "HIDE_SEEK_HANDLE_DESC": "隱藏進度條上的可拖動滑塊以獲得更簡潔的外觀。",
   "SHOW_REMAINING_TIME": "顯示剩餘時間",
   "SHOW_REMAINING_TIME_DESC": "在搜尋列右側顯示剩餘時間而非總時長。",
   "CLOCK": "Clock",

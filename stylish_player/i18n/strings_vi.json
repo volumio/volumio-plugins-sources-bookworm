@@ -112,6 +112,8 @@
   "STREAM_INFO_COLOR_DESC": "Ghi đè màu văn bản thông tin luồng (tần số lấy mẫu, độ sâu bit, v.v.). Nhập mã hex (ví dụ: #cccccc). Để trống để dùng mặc định của chủ đề.",
   "CONTROL_COLOR": "Màu điều khiển",
   "CONTROL_COLOR_DESC": "Ghi đè màu nút, thanh trượt và nhãn của trình phát. Nhập mã hex (ví dụ: #ff6600). Để trống để dùng mặc định của chủ đề.",
+  "HIDE_SEEK_HANDLE": "Ẩn tay nắm thanh tìm kiếm",
+  "HIDE_SEEK_HANDLE_DESC": "Ẩn tay nắm kéo trên thanh tìm kiếm để giao diện gọn gàng hơn.",
   "SHOW_REMAINING_TIME": "Hiển thị thời gian còn lại",
   "SHOW_REMAINING_TIME_DESC": "Hiển thị thời gian còn lại thay vì tổng thời lượng ở bên phải thanh tìm kiếm.",
   "CLOCK": "Clock",

@@ -112,6 +112,8 @@
   "STREAM_INFO_COLOR_DESC": "A stream info szöveg színének felülírása (mintavételi frekvencia, bitmélység stb.). Adjon meg hex kódot (pl. #cccccc). Hagyja üresen a téma alapértelmezéséhez.",
   "CONTROL_COLOR": "Vezérlők színe",
   "CONTROL_COLOR_DESC": "A lejátszó gombok, csúszkák és címkék színének felülírása. Adjon meg hex kódot (pl. #ff6600). Hagyja üresen a téma alapértelmezéséhez.",
+  "HIDE_SEEK_HANDLE": "Kereső sáv fogantyú elrejtése",
+  "HIDE_SEEK_HANDLE_DESC": "A kereső sáv húzható fogantyújának elrejtése a tisztább megjelenés érdekében.",
   "SHOW_REMAINING_TIME": "Hátralévő idő mutatása",
   "SHOW_REMAINING_TIME_DESC": "A hátralévő idő megjelenítése a teljes időtartam helyett a kereső sáv jobb oldalán.",
   "CLOCK": "Clock",

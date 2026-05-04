@@ -112,6 +112,8 @@
   "STREAM_INFO_COLOR_DESC": "Sostituire il colore del testo info stream (frequenza di campionamento, profondità di bit, ecc.). Inserire un codice hex (es. #cccccc). Lasciare vuoto per il colore predefinito del tema.",
   "CONTROL_COLOR": "Colore controlli",
   "CONTROL_COLOR_DESC": "Sostituire il colore dei pulsanti, slider ed etichette del lettore. Inserire un codice hex (es. #ff6600). Lasciare vuoto per il colore predefinito del tema.",
+  "HIDE_SEEK_HANDLE": "Nascondi maniglia barra",
+  "HIDE_SEEK_HANDLE_DESC": "Nascondi la maniglia trascinabile sulla barra di ricerca per un aspetto più pulito.",
   "SHOW_REMAINING_TIME": "Mostra tempo rimanente",
   "SHOW_REMAINING_TIME_DESC": "Mostra il tempo rimanente invece della durata totale sul lato destro della barra di ricerca.",
   "CLOCK": "Clock",

@@ -112,6 +112,8 @@
   "STREAM_INFO_COLOR_DESC": "Prepísať farbu textu informácií o streame (vzorkovacia frekvencia, bitová hĺbka atď.). Zadajte hex kód (napr. #cccccc). Ponechajte prázdne pre predvolenú farbu témy.",
   "CONTROL_COLOR": "Farba ovládacích prvkov",
   "CONTROL_COLOR_DESC": "Prepísať farbu tlačidiel prehrávača, posuvníkov a popiskov. Zadajte hex kód (napr. #ff6600). Ponechajte prázdne pre predvolenú farbu témy.",
+  "HIDE_SEEK_HANDLE": "Skryť rukoväť ukazovateľa",
+  "HIDE_SEEK_HANDLE_DESC": "Skryť ťahateľnú rukoväť na ukazovateľi priebehu pre čistejší vzhľad.",
   "SHOW_REMAINING_TIME": "Zobraziť zostávajúci čas",
   "SHOW_REMAINING_TIME_DESC": "Zobraziť zostávajúci čas namiesto celkovej dĺžky na pravej strane ukazovateľa priebehu.",
   "CLOCK": "Clock",

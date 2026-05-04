@@ -112,6 +112,8 @@
   "STREAM_INFO_COLOR_DESC": "Akış bilgisi metin rengini geçersiz kıl (örnekleme hızı, bit derinliği vb.). Bir hex kodu girin (ör. #cccccc). Tema varsayılanını kullanmak için boş bırakın.",
   "CONTROL_COLOR": "Kontrol rengi",
   "CONTROL_COLOR_DESC": "Oynatıcı düğmeleri, kaydırıcıları ve etiketlerin rengini geçersiz kıl. Bir hex kodu girin (ör. #ff6600). Tema varsayılanını kullanmak için boş bırakın.",
+  "HIDE_SEEK_HANDLE": "Arama çubuğu tutamağını gizle",
+  "HIDE_SEEK_HANDLE_DESC": "Daha temiz bir görünüm için arama çubuğundaki sürüklenebilir tutamağı gizle.",
   "SHOW_REMAINING_TIME": "Kalan süreyi göster",
   "SHOW_REMAINING_TIME_DESC": "Arama çubuğunun sağ tarafında toplam süre yerine kalan süreyi göster.",
   "CLOCK": "Clock",

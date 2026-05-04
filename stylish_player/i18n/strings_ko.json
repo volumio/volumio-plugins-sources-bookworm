@@ -112,6 +112,8 @@
   "STREAM_INFO_COLOR_DESC": "스트림 정보 텍스트 색상을 재정의합니다 (샘플레이트, 비트 깊이 등). 16진수 코드를 입력하세요 (예: #cccccc). 테마 기본값을 사용하려면 비워두세요.",
   "CONTROL_COLOR": "컨트롤 색상",
   "CONTROL_COLOR_DESC": "플레이어 버튼, 슬라이더 및 라벨 색상을 재정의합니다. 16진수 코드를 입력하세요 (예: #ff6600). 테마 기본값을 사용하려면 비워두세요.",
+  "HIDE_SEEK_HANDLE": "탐색 바 핸들 숨기기",
+  "HIDE_SEEK_HANDLE_DESC": "깔끔한 외관을 위해 탐색 바의 드래그 핸들을 숨깁니다.",
   "SHOW_REMAINING_TIME": "남은 시간 표시",
   "SHOW_REMAINING_TIME_DESC": "탐색 바 오른쪽에 전체 길이 대신 남은 시간을 표시합니다.",
   "CLOCK": "Clock",

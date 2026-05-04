@@ -23,6 +23,10 @@
     "type": "boolean",
     "value": true
   },
+  "hideSeekHandle": {
+    "type": "boolean",
+    "value": false
+  },
   "showRemainingTime": {
     "type": "boolean",
     "value": false

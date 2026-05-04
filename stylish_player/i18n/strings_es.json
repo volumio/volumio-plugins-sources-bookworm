@@ -112,6 +112,8 @@
   "STREAM_INFO_COLOR_DESC": "Anular el color del texto de información de stream (frecuencia de muestreo, profundidad de bits, etc.). Ingrese un código hex (ej. #cccccc). Deje vacío para usar el predeterminado del tema.",
   "CONTROL_COLOR": "Color de controles",
   "CONTROL_COLOR_DESC": "Anular el color de botones, deslizadores y etiquetas del reproductor. Ingrese un código hex (ej. #ff6600). Deje vacío para usar el predeterminado del tema.",
+  "HIDE_SEEK_HANDLE": "Ocultar control de búsqueda",
+  "HIDE_SEEK_HANDLE_DESC": "Ocultar el control deslizante de la barra de búsqueda para un aspecto más limpio.",
   "SHOW_REMAINING_TIME": "Mostrar tiempo restante",
   "SHOW_REMAINING_TIME_DESC": "Mostrar el tiempo restante en lugar de la duración total en el lado derecho de la barra de búsqueda.",
   "CLOCK": "Clock",

@@ -663,6 +663,7 @@ ControllerStylishPlayer.prototype.startServer = function () {
         playerType: self.config.get("playerType", "albumArt"),
         theme: self.config.get("theme", "skeuomorphic"),
         showPlayerControls: self.config.get("showPlayerControls", true),
+        hideSeekHandle: self.config.get("hideSeekHandle", false),
         showRemainingTime: self.config.get("showRemainingTime", false),
         albumArtMaxSpace: self.config.get("albumArtMaxSpace", false),
         showTrackPanel: self.config.get("showTrackPanel", false),
@@ -977,6 +978,7 @@ ControllerStylishPlayer.prototype.broadcastConfig = function () {
     playerType: self.config.get("playerType", "albumArt"),
     theme: self.config.get("theme", "skeuomorphic"),
     showPlayerControls: self.config.get("showPlayerControls", true),
+    hideSeekHandle: self.config.get("hideSeekHandle", false),
     showRemainingTime: self.config.get("showRemainingTime", false),
     albumArtMaxSpace: self.config.get("albumArtMaxSpace", false),
     showTrackPanel: self.config.get("showTrackPanel", false),
@@ -1081,27 +1083,30 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       // Populate show player controls (Index 2)
       uiconf.sections[2].content[2].value = self.config.get("showPlayerControls", true);
 
-      // Populate show remaining time (Index 3)
-      uiconf.sections[2].content[3].value = self.config.get("showRemainingTime", false);
+      // Populate hide seek handle (Index 3)
+      uiconf.sections[2].content[3].value = self.config.get("hideSeekHandle", false);
 
-      // Populate album art max space (Index 4)
-      uiconf.sections[2].content[4].value = self.config.get("albumArtMaxSpace", false);
+      // Populate show remaining time (Index 4)
+      uiconf.sections[2].content[4].value = self.config.get("showRemainingTime", false);
 
-      // Populate show track panel (Index 5)
-      uiconf.sections[2].content[5].value = self.config.get("showTrackPanel", false);
+      // Populate album art max space (Index 5)
+      uiconf.sections[2].content[5].value = self.config.get("albumArtMaxSpace", false);
 
-      // Populate viz type select (Index 6)
+      // Populate show track panel (Index 6)
+      uiconf.sections[2].content[6].value = self.config.get("showTrackPanel", false);
+
+      // Populate viz type select (Index 7)
       var vizType = self.config.get("vizType", "spectrum");
-      var vizTypeOptions = uiconf.sections[2].content[6].options;
+      var vizTypeOptions = uiconf.sections[2].content[7].options;
       var matchVizType = vizTypeOptions.find(function (opt) {
         return opt.value === vizType;
       });
       if (matchVizType) {
-        uiconf.sections[2].content[6].value = matchVizType;
+        uiconf.sections[2].content[7].value = matchVizType;
       }
 
-      // Populate spectrum options (Index 7)
-      uiconf.sections[2].content[7].value = self.config.get("spectrumOptions", "");
+      // Populate spectrum options (Index 8)
+      uiconf.sections[2].content[8].value = self.config.get("spectrumOptions", "");
 
       // Dynamically populate peppy meter folder options from disk
       var peppyMeterDir = path.join(PEPPY_DATA_PATH, "peppy_meter");
@@ -1111,21 +1116,21 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
           if (!peppyMeterEntries[pi].isDirectory()) continue;
           var pmFolder = peppyMeterEntries[pi].name;
           if (!pmFolder.match(/^\d+x\d+/)) continue;
-          uiconf.sections[2].content[8].options.push({ value: pmFolder, label: pmFolder });
+          uiconf.sections[2].content[9].options.push({ value: pmFolder, label: pmFolder });
         }
       } catch (e) { /* peppy_meter dir may not exist */ }
 
-      // Populate peppy meter folder (Index 8)
+      // Populate peppy meter folder (Index 9)
       var peppyMeterFolder = self.config.get("peppyMeterFolder", "");
-      var peppyMeterFolderOptions = uiconf.sections[2].content[8].options;
+      var peppyMeterFolderOptions = uiconf.sections[2].content[9].options;
       var matchPeppyFolder = peppyMeterFolderOptions.find(function (opt) {
         return opt.value === peppyMeterFolder;
       });
       if (matchPeppyFolder) {
-        uiconf.sections[2].content[8].value = matchPeppyFolder;
+        uiconf.sections[2].content[9].value = matchPeppyFolder;
       }
 
-      // Populate peppy meter model (Index 9)
+      // Populate peppy meter model (Index 10)
       // Dynamically populate model options from meters.txt of the selected folder
       var peppyMeterModel = self.config.get("peppyMeterModel", "random");
       if (peppyMeterFolder) {
@@ -1136,17 +1141,17 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
           for (var mi = 0; mi < metersLines.length; mi++) {
             var meterSection = metersLines[mi].trim().match(/^\[(.+)\]$/);
             if (meterSection) {
-              uiconf.sections[2].content[9].options.push({ value: meterSection[1], label: meterSection[1] });
+              uiconf.sections[2].content[10].options.push({ value: meterSection[1], label: meterSection[1] });
             }
           }
         }
       }
-      var peppyMeterModelOptions = uiconf.sections[2].content[9].options;
+      var peppyMeterModelOptions = uiconf.sections[2].content[10].options;
       var matchPeppyModel = peppyMeterModelOptions.find(function (opt) {
         return opt.value === peppyMeterModel;
       });
       if (matchPeppyModel) {
-        uiconf.sections[2].content[9].value = matchPeppyModel;
+        uiconf.sections[2].content[10].value = matchPeppyModel;
       }
 
       // Dynamically populate peppy spectrum folder options from disk
@@ -1157,21 +1162,21 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
           if (!spectrumEntries[sfi].isDirectory()) continue;
           var psFolder = spectrumEntries[sfi].name;
           if (!psFolder.match(/^\d+x\d+/)) continue;
-          uiconf.sections[2].content[10].options.push({ value: psFolder, label: psFolder });
+          uiconf.sections[2].content[11].options.push({ value: psFolder, label: psFolder });
         }
       } catch (e) { /* peppy_spectrum dir may not exist */ }
 
-      // Populate peppy spectrum folder (Index 10)
+      // Populate peppy spectrum folder (Index 11)
       var peppySpectrumFolder = self.config.get("peppySpectrumFolder", "");
-      var peppySpectrumFolderOptions = uiconf.sections[2].content[10].options;
+      var peppySpectrumFolderOptions = uiconf.sections[2].content[11].options;
       var matchSpectrumFolder = peppySpectrumFolderOptions.find(function (opt) {
         return opt.value === peppySpectrumFolder;
       });
       if (matchSpectrumFolder) {
-        uiconf.sections[2].content[10].value = matchSpectrumFolder;
+        uiconf.sections[2].content[11].value = matchSpectrumFolder;
       }
 
-      // Populate peppy spectrum model (Index 11)
+      // Populate peppy spectrum model (Index 12)
       // Dynamically populate model options from spectrum.txt of the selected folder
       var peppySpectrumModel = self.config.get("peppySpectrumModel", "random");
       if (peppySpectrumFolder) {
@@ -1182,17 +1187,17 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
           for (var smi = 0; smi < specTxtLines.length; smi++) {
             var specSection = specTxtLines[smi].trim().match(/^\[(.+)\]$/);
             if (specSection) {
-              uiconf.sections[2].content[11].options.push({ value: specSection[1], label: specSection[1] });
+              uiconf.sections[2].content[12].options.push({ value: specSection[1], label: specSection[1] });
             }
           }
         }
       }
-      var peppySpectrumModelOptions = uiconf.sections[2].content[11].options;
+      var peppySpectrumModelOptions = uiconf.sections[2].content[12].options;
       var matchSpectrumModel = peppySpectrumModelOptions.find(function (opt) {
         return opt.value === peppySpectrumModel;
       });
       if (matchSpectrumModel) {
-        uiconf.sections[2].content[11].value = matchSpectrumModel;
+        uiconf.sections[2].content[12].value = matchSpectrumModel;
       }
 
       // Populate colors section (index 3)
@@ -1374,6 +1379,7 @@ ControllerStylishPlayer.prototype.configSavePlayerConfig = function (data) {
   var theme = data["theme"] ? data["theme"].value : "skeuomorphic";
   var playerType = data["playerType"] ? data["playerType"].value : "albumArt";
   var showPlayerControls = data["showPlayerControls"] !== false;
+  var hideSeekHandle = data["hideSeekHandle"] === true;
   var showRemainingTime = data["showRemainingTime"] === true;
   var albumArtMaxSpace = data["albumArtMaxSpace"] === true;
   var showTrackPanel = data["showTrackPanel"] === true;
@@ -1393,6 +1399,7 @@ ControllerStylishPlayer.prototype.configSavePlayerConfig = function (data) {
   self.config.set("theme", theme);
   self.config.set("playerType", playerType);
   self.config.set("showPlayerControls", showPlayerControls);
+  self.config.set("hideSeekHandle", hideSeekHandle);
   self.config.set("showRemainingTime", showRemainingTime);
   self.config.set("albumArtMaxSpace", albumArtMaxSpace);
   self.config.set("showTrackPanel", showTrackPanel);

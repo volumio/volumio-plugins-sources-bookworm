@@ -112,6 +112,8 @@
   "STREAM_INFO_COLOR_DESC": "Stream-Info-Textfarbe überschreiben (Abtastrate, Bittiefe usw.). Hex-Code eingeben (z.B. #cccccc). Leer lassen für Theme-Standard.",
   "CONTROL_COLOR": "Steuerelementfarbe",
   "CONTROL_COLOR_DESC": "Farbe der Player-Tasten, Schieberegler und Beschriftungen überschreiben. Hex-Code eingeben (z.B. #ff6600). Leer lassen für Theme-Standard.",
+  "HIDE_SEEK_HANDLE": "Suchleisten-Griff ausblenden",
+  "HIDE_SEEK_HANDLE_DESC": "Den ziehbaren Griff der Suchleiste für ein saubereres Aussehen ausblenden.",
   "SHOW_REMAINING_TIME": "Restzeit anzeigen",
   "SHOW_REMAINING_TIME_DESC": "Restzeit statt Gesamtdauer auf der rechten Seite der Suchleiste anzeigen.",
   "CLOCK": "Clock",

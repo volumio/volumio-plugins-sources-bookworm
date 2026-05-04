@@ -112,6 +112,8 @@
   "STREAM_INFO_COLOR_DESC": "Tilsidesæt farven på stream-info tekst (samplerate, bitdybde osv.). Indtast en hex-kode (f.eks. #cccccc). Lad stå tom for at bruge temaets standard.",
   "CONTROL_COLOR": "Kontrolfarve",
   "CONTROL_COLOR_DESC": "Tilsidesæt farven på afspillerknapper, skydere og etiketter. Indtast en hex-kode (f.eks. #ff6600). Lad stå tom for at bruge temaets standard.",
+  "HIDE_SEEK_HANDLE": "Skjul søgebjælkehåndtag",
+  "HIDE_SEEK_HANDLE_DESC": "Skjul det trækbare håndtag på søgebjælken for et renere udseende.",
   "SHOW_REMAINING_TIME": "Vis resterende tid",
   "SHOW_REMAINING_TIME_DESC": "Vis resterende tid i stedet for samlet varighed på højre side af søgebjælken.",
   "CLOCK": "Clock",

@@ -112,6 +112,8 @@
   "STREAM_INFO_COLOR_DESC": "Overstyr fargen på strøm-info tekst (samplingsfrekvens, bitdybde osv.). Skriv inn en hex-kode (f.eks. #cccccc). La stå tom for å bruke temaets standard.",
   "CONTROL_COLOR": "Kontrollfarge",
   "CONTROL_COLOR_DESC": "Overstyr fargen på spillerknapper, glidebrytere og etiketter. Skriv inn en hex-kode (f.eks. #ff6600). La stå tom for å bruke temaets standard.",
+  "HIDE_SEEK_HANDLE": "Skjul søkefelt-håndtak",
+  "HIDE_SEEK_HANDLE_DESC": "Skjul det drabare håndtaket på søkefeltet for et renere utseende.",
   "SHOW_REMAINING_TIME": "Vis gjenværende tid",
   "SHOW_REMAINING_TIME_DESC": "Vis gjenværende tid i stedet for total varighet på høyre side av søkefeltet.",
   "CLOCK": "Clock",

@@ -117,6 +117,13 @@
           "value": true
         },
         {
+          "id": "hideSeekHandle",
+          "element": "switch",
+          "label": "TRANSLATE.HIDE_SEEK_HANDLE",
+          "doc": "TRANSLATE.HIDE_SEEK_HANDLE_DESC",
+          "value": false
+        },
+        {
           "id": "showRemainingTime",
           "element": "switch",
           "label": "TRANSLATE.SHOW_REMAINING_TIME",

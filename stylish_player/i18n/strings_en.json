@@ -99,6 +99,8 @@
   "CONTROL_COLOR_DESC": "Override the color of player buttons, sliders, and labels next to sliders. Enter a hex code (e.g. #ff6600). Leave empty to use the theme default.",
   "SHOW_PLAYER_CONTROLS": "Show Player Controls",
   "SHOW_PLAYER_CONTROLS_DESC": "When disabled, player buttons are hidden and the seek bar becomes a read-only progress indicator.",
+  "HIDE_SEEK_HANDLE": "Hide Seek Bar Handle",
+  "HIDE_SEEK_HANDLE_DESC": "Hide the draggable handle on the seek bar for a cleaner look.",
   "SHOW_REMAINING_TIME": "Show Remaining Time",
   "SHOW_REMAINING_TIME_DESC": "Show remaining time instead of total duration on the right side of the seek bar.",
   "ALBUM_ART_MAX_SPACE": "Use Maximum Space",

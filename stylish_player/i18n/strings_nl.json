@@ -112,6 +112,8 @@
   "STREAM_INFO_COLOR_DESC": "Overschrijf de kleur van de streaminformatietekst (samplerate, bitdiepte, enz.). Voer een hexcode in (bijv. #cccccc). Laat leeg voor de standaardkleur van het thema.",
   "CONTROL_COLOR": "Kleur bediening",
   "CONTROL_COLOR_DESC": "Overschrijf de kleur van speler knoppen, schuifregelaars en labels. Voer een hexcode in (bijv. #ff6600). Laat leeg voor de standaardkleur van het thema.",
+  "HIDE_SEEK_HANDLE": "Zoekbalk-handvat verbergen",
+  "HIDE_SEEK_HANDLE_DESC": "Verberg het sleepbare handvat op de zoekbalk voor een schoner uiterlijk.",
   "SHOW_REMAINING_TIME": "Resterende tijd tonen",
   "SHOW_REMAINING_TIME_DESC": "Toon de resterende tijd in plaats van de totale duur aan de rechterkant van de zoekbalk.",
   "CLOCK": "Clock",

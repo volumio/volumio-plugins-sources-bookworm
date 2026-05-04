@@ -112,6 +112,8 @@
   "STREAM_INFO_COLOR_DESC": "覆盖流信息文本颜色（采样率、位深度等）。输入十六进制代码（例如 #cccccc）。留空使用主题默认颜色。",
   "CONTROL_COLOR": "控制颜色",
   "CONTROL_COLOR_DESC": "覆盖播放器按钮、滑块和标签的颜色。输入十六进制代码（例如 #ff6600）。留空使用主题默认颜色。",
+  "HIDE_SEEK_HANDLE": "隐藏进度条滑块",
+  "HIDE_SEEK_HANDLE_DESC": "隐藏进度条上的可拖动滑块以获得更简洁的外观。",
   "SHOW_REMAINING_TIME": "显示剩余时间",
   "SHOW_REMAINING_TIME_DESC": "在进度条右侧显示剩余时间而非总时长。",
   "CLOCK": "Clock",

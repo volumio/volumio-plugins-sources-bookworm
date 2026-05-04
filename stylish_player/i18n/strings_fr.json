@@ -112,6 +112,8 @@
   "STREAM_INFO_COLOR_DESC": "Remplacer la couleur du texte des infos de flux (fréquence, profondeur de bits, etc.). Entrez un code hex (ex. #cccccc). Laissez vide pour utiliser la couleur par défaut du thème.",
   "CONTROL_COLOR": "Couleur des contrôles",
   "CONTROL_COLOR_DESC": "Remplacer la couleur des boutons, curseurs et libellés du lecteur. Entrez un code hex (ex. #ff6600). Laissez vide pour utiliser la couleur par défaut du thème.",
+  "HIDE_SEEK_HANDLE": "Masquer le curseur de lecture",
+  "HIDE_SEEK_HANDLE_DESC": "Masquer le curseur déplaçable de la barre de lecture pour un aspect plus épuré.",
   "SHOW_REMAINING_TIME": "Afficher le temps restant",
   "SHOW_REMAINING_TIME_DESC": "Afficher le temps restant au lieu de la durée totale à droite de la barre de lecture.",
   "CLOCK": "Clock",

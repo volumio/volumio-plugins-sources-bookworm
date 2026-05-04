@@ -112,6 +112,8 @@
   "STREAM_INFO_COLOR_DESC": "Ohita stream-tiedon tekstin väri (näytteenottotaajuus, bittisyvyys jne.). Syötä hex-koodi (esim. #cccccc). Jätä tyhjäksi käyttääksesi teeman oletusta.",
   "CONTROL_COLOR": "Ohjainten väri",
   "CONTROL_COLOR_DESC": "Ohita soittimen painikkeiden, liukusäätimien ja nimikkeiden väri. Syötä hex-koodi (esim. #ff6600). Jätä tyhjäksi käyttääksesi teeman oletusta.",
+  "HIDE_SEEK_HANDLE": "Piilota hakupalkin kahva",
+  "HIDE_SEEK_HANDLE_DESC": "Piilota hakupalkin vedettävä kahva siistimmän ulkoasun saavuttamiseksi.",
   "SHOW_REMAINING_TIME": "Näytä jäljellä oleva aika",
   "SHOW_REMAINING_TIME_DESC": "Näytä jäljellä oleva aika kokonaiskeston sijaan hakupalkin oikealla puolella.",
   "CLOCK": "Clock",
