@@ -252,10 +252,33 @@
     #filter-popup .popup-row input,
     #filter-popup .popup-row select {
       touch-action: manipulation;
-      -webkit-appearance: none;
-      appearance: none;
       font-size: 14px;
       padding: 6px 8px;
+    }
+
+    #filter-popup .popup-row input[type="number"] {
+      -webkit-appearance: textfield;
+      -moz-appearance: textfield;
+      appearance: textfield;
+      text-align: right;
+      padding-right: 10px;
+    }
+
+    #filter-popup .popup-row input[type="number"]::-webkit-inner-spin-button,
+    #filter-popup .popup-row input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: inner-spin-button;
+      appearance: inner-spin-button;
+      display: block;
+      width: auto;
+      margin: 0;
+    }
+
+    #filter-popup .popup-row input[type="number"]::-webkit-outer-spin-button {
+      margin-right: 2px;
+    }
+
+    #filter-popup .popup-row input[type="number"]::-moz-focus-inner {
+      border: 0;
     }
 
     @media (max-width: 600px) {
@@ -2192,36 +2215,90 @@
           var label = '' + ind.index;
           var isActive = (fi === dragFilterIndex || fi === selectedFilterIndex || fi === hoveredFilterIndex);
           var isMuted = eqBypassed || ind.muted;
-          var radius = isActive ? 13 : 10;
-          // Glow effect for active dot
-          if (isActive && !isMuted) {
-            ctx.save();
-            ctx.shadowColor = color;
-            ctx.shadowBlur = 12;
+          var isEQ15Mode = (currentMode === 'EQ15' || currentMode === '2XEQ15');
+
+          if (isEQ15Mode) {
+            // Draw vertical slider line for EQ15/2XEQ15 modes (between ±10dB)
+            var lineTopY = dbToY(10, dbMin, dbMax);
+            var lineBottomY = dbToY(-10, dbMin, dbMax);
+            
+            // Draw thin vertical line above handle
+            ctx.globalAlpha = isMuted ? 0.2 : 0.35;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(mx, lineTopY);
+            ctx.lineTo(mx, my);
+            ctx.stroke();
+            
+            // Draw thicker vertical line below handle
+            ctx.lineWidth = 20;
+            ctx.beginPath();
+            ctx.moveTo(mx, my);
+            ctx.lineTo(mx, lineBottomY);
+            ctx.stroke();
+            ctx.globalAlpha = 1.0;
+
+            // Draw larger handle (circle) at current gain position
+            var handleRadius = isActive ? 11 : 9;
+            if (isActive && !isMuted) {
+              ctx.save();
+              ctx.shadowColor = color;
+              ctx.shadowBlur = 12;
+            }
+            ctx.globalAlpha = isMuted ? 0.35 : 1.0;
+            ctx.beginPath();
+            ctx.arc(mx, my, handleRadius, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = isMuted ? '#999' : '#333';
+            ctx.lineWidth = isActive ? 2 : 1.5;
+            ctx.stroke();
+            ctx.globalAlpha = 1.0;
+            if (isActive && !isMuted) {
+              ctx.restore();
+            }
+
+            // Number label (at bottom)
+            ctx.globalAlpha = isMuted ? 0.5 : 1.0;
+            ctx.fillStyle = '#fff';
+            ctx.font = isActive ? 'bold 11px Lato, sans-serif' : 'bold 10px Lato, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, mx, lineBottomY + 14);
+            ctx.globalAlpha = 1.0;
+          } else {
+            // Draw point marker for non-EQ15 modes
+            var radius = isActive ? 13 : 10;
+            // Glow effect for active dot
+            if (isActive && !isMuted) {
+              ctx.save();
+              ctx.shadowColor = color;
+              ctx.shadowBlur = 12;
+            }
+            // Filled circle
+            ctx.globalAlpha = isMuted ? 0.35 : 1.0;
+            ctx.beginPath();
+            ctx.arc(mx, my, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.fill();
+            // Dark outline for contrast (dashed for muted)
+            ctx.strokeStyle = isMuted ? '#999' : '#333';
+            ctx.lineWidth = isActive ? 2 : 1.5;
+            if (isMuted) ctx.setLineDash([3, 3]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.globalAlpha = 1.0;
+            if (isActive && !isMuted) {
+              ctx.restore();
+            }
+            // Number label
+            ctx.globalAlpha = isMuted ? 0.5 : 1.0;
+            ctx.fillStyle = '#fff';
+            ctx.font = isActive ? 'bold 11px Lato, sans-serif' : 'bold 10px Lato, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, mx, my + 3.5);
+            ctx.globalAlpha = 1.0;
           }
-          // Filled circle
-          ctx.globalAlpha = isMuted ? 0.35 : 1.0;
-          ctx.beginPath();
-          ctx.arc(mx, my, radius, 0, 2 * Math.PI);
-          ctx.fillStyle = color;
-          ctx.fill();
-          // Dark outline for contrast (dashed for muted)
-          ctx.strokeStyle = isMuted ? '#999' : '#333';
-          ctx.lineWidth = isActive ? 2 : 1.5;
-          if (isMuted) ctx.setLineDash([3, 3]);
-          ctx.stroke();
-          ctx.setLineDash([]);
-          ctx.globalAlpha = 1.0;
-          if (isActive && !isMuted) {
-            ctx.restore();
-          }
-          // Number label
-          ctx.globalAlpha = isMuted ? 0.5 : 1.0;
-          ctx.fillStyle = '#fff';
-          ctx.font = isActive ? 'bold 11px Lato, sans-serif' : 'bold 10px Lato, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(label, mx, my + 3.5);
-          ctx.globalAlpha = 1.0;
         }
 
         // Draw crosshair (with snap support) only while dragging
@@ -2359,6 +2436,7 @@
         if (!responses) return -1;
         var w = canvas.width / dpr;
         var h = canvas.height / dpr;
+        var isEQ15Mode = (currentMode === 'EQ15' || currentMode === '2XEQ15');
         // Iterate in reverse so topmost (last drawn) is tested first
         for (var fi = responses.individual.length - 1; fi >= 0; fi--) {
           var ind = responses.individual[fi];
@@ -2377,9 +2455,23 @@
           var dotY = dbToY(markerDb, lastDbMin, lastDbMax);
           if (dotY < margin.top) dotY = margin.top;
           if (dotY > h - margin.bottom) dotY = h - margin.bottom;
-          var dx = mx - dotX;
-          var dy = my - dotY;
-          if (dx * dx + dy * dy <= 14 * 14) return fi;
+
+          if (isEQ15Mode) {
+            // For EQ15/2XEQ15, hit test the vertical slider line with tolerance
+            var sliderTolerance = 12;  // pixels on either side of the line
+            var sliderTopY = margin.top;
+            var sliderBottomY = h - margin.bottom;
+            // Check if click is within tolerance of the vertical line and within the plot area
+            if (Math.abs(mx - dotX) <= sliderTolerance &&
+              my >= sliderTopY && my <= sliderBottomY) {
+              return fi;
+            }
+          } else {
+            // For non-EQ15 modes, hit test the circular marker
+            var dx = mx - dotX;
+            var dy = my - dotY;
+            if (dx * dx + dy * dy <= 14 * 14) return fi;
+          }
         }
         return -1;
       }
@@ -3134,7 +3226,8 @@
         }
         var hit = hitTestMarker(mx, my, lastResponses);
         if (hit >= 0) {
-          canvas.style.cursor = 'pointer';
+          var isEQ15Mode = (currentMode === 'EQ15' || currentMode === '2XEQ15');
+          canvas.style.cursor = isEQ15Mode ? 'ns-resize' : 'pointer';
           if (hoveredFilterIndex !== hit) {
             hoveredFilterIndex = hit;
             renderLocal();
