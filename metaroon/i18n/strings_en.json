@@ -1,0 +1,15 @@
+{
+  "PLUGIN_CONFIGURATION": "MetaRoon Configuration",
+
+  "ROON_VITALS_SECTION": "Roon Connection Status",
+  "CORE_NAME": "Roon Core Name",
+  "CORE_HOST": "Roon Core Address",
+  "CURRENT_ZONE": "Active Zone",
+  "BROWSE_STATUS": "Library Browse",
+
+  "ZONE_SELECTION_SECTION": "Zone Selection",
+  "ZONE_SELECTION_DESC": "Select which Roon zone this Volumio device should monitor and control. This allows you to use multiple Roon zones without conflicts.",
+  "SELECT_ZONE": "Select Zone",
+  "SELECT_ZONE_LABEL": "Roon Zone",
+  "SELECT_ZONE_DESC": "Choose the zone you want to control from this Volumio device"
+}
