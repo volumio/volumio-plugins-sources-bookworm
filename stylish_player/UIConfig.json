@@ -62,7 +62,7 @@
       },
       "saveButton": {
         "label": "TRANSLATE.SAVE",
-        "data": ["playerType", "theme", "showPlayerControls", "showRemainingTime", "albumArtMaxSpace", "showTrackPanel", "vizType", "spectrumOptions", "peppyMeterFolder", "peppyMeterModel", "peppySpectrumFolder", "peppySpectrumModel"]
+        "data": ["playerType", "theme", "showPlayerControls", "showRemainingTime", "albumArtMaxSpace", "albumArtAnimated", "showTrackPanel", "vizType", "spectrumOptions", "peppyMeterFolder", "peppyMeterModel", "peppySpectrumFolder", "peppySpectrumModel"]
       },
       "content": [
         {
@@ -136,6 +136,17 @@
           "label": "TRANSLATE.ALBUM_ART_MAX_SPACE",
           "doc": "TRANSLATE.ALBUM_ART_MAX_SPACE_DESC",
           "value": false,
+          "visibleIf": {
+            "field": "playerType",
+            "value": "albumArt"
+          }
+        },
+        {
+          "id": "albumArtAnimated",
+          "element": "switch",
+          "label": "TRANSLATE.ALBUM_ART_ANIMATED",
+          "doc": "TRANSLATE.ALBUM_ART_ANIMATED_DESC",
+          "value": true,
           "visibleIf": {
             "field": "playerType",
             "value": "albumArt"
