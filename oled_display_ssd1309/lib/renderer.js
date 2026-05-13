@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Renderer for the 128x64 OLED display (v1.7.17).
+ * Renderer for the 128x64 OLED display (v1.7.27).
  *
  * Three playback layouts (Classic, Minimal, Clock Focus), idle screen
  * with large clock digits, volume overlay, screensavers with randomised
@@ -49,7 +49,10 @@ var SKIP_TRACK_TYPES = {
   'tidal': true,
   'qobuz': true,
   'upnp': true,
-  'bluetooth': true
+  'bluetooth': true,
+  'bt': true        // Volumio's Bluetooth plugin emits trackType='bt' — a
+                    // transport indicator, not a codec name. Skip it to
+                    // avoid bogus "BT" prefix on the audio-info line.
 };
 
 // Maximum characters that fit on the display (128px / 6px per char)
@@ -812,7 +815,7 @@ Renderer.prototype._formatAudioInfo = function (bitdepth, samplerate, bitrate, t
     parts.push(sr);
   }
 
-  var audioStr;
+  var audioStr = '';
   if (parts.length > 0) {
     audioStr = parts.join(' / ');
   } else if (bitrate) {
@@ -820,24 +823,35 @@ Renderer.prototype._formatAudioInfo = function (bitdepth, samplerate, bitrate, t
     var br = String(bitrate).trim();
     if (/^\d+$/.test(br)) br += ' Kbps';
     audioStr = br;
-  } else {
-    audioStr = 'PCM';
   }
+  // Note: do NOT default to 'PCM' here when params are missing. If we did,
+  // and trackType happened to be a real codec like 'flac' (which Volumio
+  // populates immediately on track change, before bitdepth/samplerate are
+  // resolved), the codec prefix below would produce nonsense like
+  // "FLAC PCM" during that transient window. Leave audioStr empty here and
+  // handle the codec-without-params case explicitly below.
 
   // Prefix with codec name if trackType is a real codec (not in skip list)
   if (trackType) {
     var tt = String(trackType).trim().toLowerCase();
     if (tt && !SKIP_TRACK_TYPES[tt]) {
       var codec = tt.toUpperCase();
-      var combined = codec + ' ' + audioStr;
-      // Only add if it fits on the display; otherwise show audio info alone
-      if (combined.length <= MAX_DISPLAY_CHARS) {
-        return combined;
+      if (audioStr) {
+        var combined = codec + ' ' + audioStr;
+        // Only combine if it fits on the display; otherwise show audio info alone
+        if (combined.length <= MAX_DISPLAY_CHARS) {
+          return combined;
+        }
+        return audioStr;
       }
+      // Codec known but stream params not yet — show codec alone. This is
+      // brief (usually <100ms) and is overwritten by the next pushState.
+      return codec;
     }
   }
 
-  return audioStr;
+  // Truly nothing known about the stream — last-resort placeholder.
+  return audioStr || 'PCM';
 };
 
 /**
@@ -846,7 +860,7 @@ Renderer.prototype._formatAudioInfo = function (bitdepth, samplerate, bitrate, t
  * Fits within ~8 characters to coexist with "02:34 / 05:12" on 128px.
  */
 Renderer.prototype._formatAudioInfoCompact = function (bitdepth, samplerate, bitrate, trackType) {
-  var parts = [];
+  var audioStr = '';
 
   if (bitdepth && samplerate) {
     // Compact: "24/192k" or "16/44.1k"
@@ -863,28 +877,29 @@ Renderer.prototype._formatAudioInfoCompact = function (bitdepth, samplerate, bit
     } else {
       sr = sr.replace(/kHz$/i, 'k').replace(/Hz$/i, '');
     }
-    parts.push(bd + '/' + sr);
+    audioStr = bd + '/' + sr;
   } else if (bitrate) {
     var br = String(bitrate).trim().replace(/\s+/g, '');
     if (/^\d+$/.test(br)) br += 'Kbps';
-    parts.push(br);
-  } else {
-    parts.push('PCM');
+    audioStr = br;
   }
-
-  var audioStr = parts.join('/');
+  // Note: do NOT default to 'PCM' here — see _formatAudioInfo for rationale.
 
   // Prefix with codec if trackType is a real codec
   if (trackType) {
     var tt = String(trackType).trim().toLowerCase();
     if (tt && !SKIP_TRACK_TYPES[tt]) {
       var codec = tt.toUpperCase();
-      var combined = codec + ' ' + audioStr;
-      if (combined.length <= 12) return combined;
+      if (audioStr) {
+        var combined = codec + ' ' + audioStr;
+        if (combined.length <= 12) return combined;
+        return audioStr;
+      }
+      return codec;
     }
   }
 
-  return audioStr;
+  return audioStr || 'PCM';
 };
 
 module.exports = Renderer;

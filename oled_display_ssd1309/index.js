@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Volumio OLED Display Plugin (v1.7.17)
+ * Volumio OLED Display Plugin (v1.7.27)
  *
  * Changes from v1.7.15:
  *   - Configurable date format dropdown: Day + Month name, DD.MM.YYYY,
@@ -9,7 +9,8 @@
  *   - Fixed i18nJson parameter order (language file first, default second).
  *   - UIConfig.json uses TRANSLATE. prefix per Volumio's documented pattern.
  *
- * NOTE: Lifecycle methods (onVolumioStart, onStart, onStop, getUIConfig,
+ * NOTE: Lifecycle methods (onVolumioStart, onStart, onStop, onVolumioReboot,
+ *       onVolumioShutdown, getUIConfig,
  * saveConfig) MUST return kew promises — Volumio 4's plugin manager
  * rejects native Promises with "does not return adequate promise".
  * Internal methods (_startPlugin, _stopPlugin) use native Promises.
@@ -130,6 +131,47 @@ ControllerOledDisplay.prototype.onStop = function () {
     });
 
   return defer.promise;
+};
+
+// Volumio fires onVolumioReboot and onVolumioShutdown on each enabled plugin
+// during the system reboot/poweroff sequence (look for "PLUGINS: Run
+// onVolumioReboot Tasks" / "PLUGINS: Run Shutdown Tasks" in the volumio log).
+// These hooks run BEFORE systemctl reboot/poweroff is invoked, so we have
+// plenty of time to clear and power off the display synchronously without
+// racing the kill signal. This is the reliable path; the SIGTERM and socket
+// 'shutdown' handlers remain as defensive backups.
+//
+// NB: the human-readable log lines say "PLUGIN onReboot" / "PLUGIN onShutdown"
+// but the actual method names Volumio looks up on the plugin prototype are
+// onVolumioReboot / onVolumioShutdown — see volumio3-backend
+// app/pluginmanager.js lines 636 and 682.
+ControllerOledDisplay.prototype.onVolumioReboot = function () {
+  return this._systemPowerOff('reboot');
+};
+
+ControllerOledDisplay.prototype.onVolumioShutdown = function () {
+  return this._systemPowerOff('shutdown');
+};
+
+ControllerOledDisplay.prototype._systemPowerOff = function (reason) {
+  var self = this;
+  self.logger.info('OLED: System ' + reason + ' \u2013 clearing display');
+  self._stopped = true;
+  if (self._renderTimerId) {
+    clearTimeout(self._renderTimerId);
+    self._renderTimerId = null;
+  }
+  if (self.display && self.display.bus) {
+    try {
+      self.display.clearBuffer();
+      self.display.flush();
+      self.display.setPower(false);
+    } catch (err) {
+      self.logger.error('OLED: ' + reason + ' cleanup error: ' +
+        ((err && err.message) ? err.message : err));
+    }
+  }
+  return libQ.resolve();
 };
 
 
@@ -705,8 +747,16 @@ ControllerOledDisplay.prototype._renderFrameSync = function () {
   // leave status as 'play' or 'pause' with empty metadata and zero duration.
   // Treat this as effectively stopped to avoid showing "Unknown Title" with
   // a runaway seek counter.
+  //
+  // The !state.service guard is important: a real ghost state has no service
+  // field, but music-source plugins (Tidal, Spotify, 80s80s, etc.) set service
+  // immediately on play and only fill in title/artist/duration after their
+  // metadata API call returns. Without this guard, those plugins would briefly
+  // be misclassified as ghost states during their initial loading window,
+  // causing the OLED to show idle instead of the expected playback screen.
   var isGhostState = (state.status === 'play' || state.status === 'pause') &&
-                     !state.title && !state.artist && state.duration === 0;
+                     !state.title && !state.artist && state.duration === 0 &&
+                     !state.service;
   if (isGhostState) {
     state.status = 'stop';
     state.seek = 0;

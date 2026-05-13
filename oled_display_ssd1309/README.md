@@ -1,4 +1,4 @@
-# OLED SSD1309 Display Plugin for Volumio – v1.7.17
+# OLED SSD1309 Display Plugin for Volumio – v1.7.27
 
 > **⚠️ Disclaimer**
 >
@@ -42,6 +42,59 @@ Displays playback information on a 128×64 SSD1309 I2C OLED connected to a Raspb
 ---
 
 ## Changelog
+
+### v1.7.27
+
+**Rollback / cleanup:**
+
+1. **Bluetooth no-metadata screens removed (v1.7.24 — v1.7.26).** These were added to handle a Volumio Bluetooth-plugin issue where playback state isn't broadcast over the socket.io `pushState` channel. The Volumio team has been notified and is investigating; their fix will restore normal `pushState` behavior for Bluetooth, after which the regular playback layouts will render BT correctly with no special-case code needed in this plugin. The v1.7.26 polling backstop (which made the Bluetooth screens actually appear by emitting `getState` every 3 seconds) introduced race conditions on track changes and seek-counter jitter, and represented behavior foreign to the Volumio plugin ecosystem — none of that was worth keeping for a workaround that the upstream fix will obsolete. The three layout-specific Bluetooth render methods (Classic/Clock Focus/Minimal) are preserved outside the codebase in case they're needed for a different purpose later.
+2. **Retained:** the `'bt'` entry in `SKIP_TRACK_TYPES` (added in v1.7.24). Once Volumio starts broadcasting BT state correctly, `trackType: 'bt'` will arrive as part of normal pushState events. This entry prevents the codec-prefix logic from labeling the audio-info line "BT 24bit / 96kHz" — `'bt'` is a transport indicator, not a codec name, and skipping it produces a cleaner display.
+
+### v1.7.26
+
+Removed in v1.7.27. State-polling backstop for the Bluetooth-screen feature. See v1.7.27 changelog for rationale.
+
+### v1.7.25
+
+Removed in v1.7.27. Layout-specific Bluetooth screen variants (Classic/Clock Focus/Minimal). See v1.7.27 changelog for rationale.
+
+### v1.7.24
+
+Removed in v1.7.27 (except for the `'bt'` skip-list entry, which is retained). Initial Bluetooth-no-metadata screen. See v1.7.27 changelog for rationale.
+
+### v1.7.23
+
+**Bug fix:**
+
+1. **"FLAC PCM" no longer appears momentarily after track changes.** When Volumio's `pushState` populates `trackType` (the codec name) before `bitdepth` / `samplerate` / `bitrate` have been resolved by the player backend — a window of typically <100ms but occasionally longer for gapless transitions or slow NAS reads — the audio-info formatter previously combined the codec prefix with its "PCM" placeholder fallback, producing nonsense strings like `"FLAC PCM"`, `"MP3 PCM"`, or `"DSD PCM"`. The formatter now shows the codec alone during the transient (`"FLAC"`), then upgrades to the full string (`"FLAC 24bit / 96kHz"`) on the next state update. The `"PCM"` placeholder is still used as a last-resort fallback when nothing is known about the stream. Same fix applied to the compact variant used by the time-sharing playback layout.
+
+### v1.7.22
+
+**Documentation only:**
+
+1. **Install instructions clarify the store-vs-source distinction and add `build-essential` as a prerequisite for source installs.** When installing from source via `volumio plugin install`, the Volumio plugin manager runs `npm install` before `install.sh`, which means the build toolchain has to already be present on the Pi.  On a fresh Volumio image (or right after a factory reset), `build-essential` is not installed by default and `i2c-bus`'s native compile step fails with `not found: make`.  The README now lists `build-essential` as a one-time prereq for source installs and explains that store users (once the plugin is published) don't need it because the store delivers a pre-built archive with the native binary already compiled.  The "Alternative: manual install" section also notes that `install.sh` self-installs `build-essential` before `npm install`, so that path doesn't need the prereq either.
+
+### v1.7.21
+
+**Documentation only:**
+
+1. **Install instructions updated** to recommend `volumio plugin install`.  This is Volumio's own plugin manager command — invoked from inside the extracted source folder, it copies files into place, runs `install.sh`, and registers the plugin.  No manual folder creation and no manual file copying.  A reboot is still required after install for the I2C baudrate change in `/boot/userconfig.txt` to take effect, but the reason is now documented honestly.  The previous manual-extraction method is kept as a fallback section for older Volumio versions where the CLI may not work.
+
+### v1.7.20
+
+**Bug fix (corrects v1.7.19):**
+
+1. **Display now reliably powers off on system reboot and shutdown.** v1.7.19 attempted to fix this by adding `onReboot` and `onShutdown` lifecycle methods, but those names don't match what Volumio actually looks up. The Volumio log lines `PLUGIN onReboot : <name>` and `PLUGIN onShutdown : <name>` are human-readable shorthand — the real method names checked on the plugin prototype are `onVolumioReboot` and `onVolumioShutdown` (see `volumio3-backend/app/pluginmanager.js` lines 636 and 682). v1.7.20 uses the correct names. The shared `_systemPowerOff(reason)` helper clears the framebuffer, flushes, and powers off the display synchronously inside the hook, before Volumio invokes `systemctl reboot`/`poweroff`. The previous SIGTERM and socket-event handlers are retained as defensive backups.
+
+### v1.7.19
+
+Initial attempt at the reboot/shutdown power-off fix. Used the wrong method names (`onReboot`/`onShutdown`) — Volumio silently ignored them. **Superseded by v1.7.20.**
+
+### v1.7.18
+
+**Bug fix:**
+
+1. **Ghost state detection no longer misclassifies music-service plugins during their loading window.** Music-source plugins (Tidal, Spotify, internet radio plugins like 80s80s/90s90s, etc.) set the `service` field immediately when playback starts but only populate `title`, `artist`, and `duration` after their metadata API call returns. The previous ghost-state check matched on `status=play` + empty metadata + `duration=0` alone, which was the same shape these plugins briefly produce during loading — causing the OLED to fall back to the idle screen instead of showing the expected playback screen. The check now also requires `service` to be empty, so only genuine ghost states (left behind by AirPlay or Bluetooth disconnect, where no service field is set) are caught.
 
 ### v1.7.17
 
@@ -280,6 +333,8 @@ Displays playback information on a 128×64 SSD1309 I2C OLED connected to a Raspb
 
 ## Installation Guide
 
+> **For end users:** once this plugin is published to Volumio's plugin store, the easiest way to install it is **Settings → Plugins → Search Plugins** in the Volumio web UI.  In that case Volumio downloads a pre-built archive that already includes the compiled native I2C driver, so none of the steps below are needed.  The instructions in this section are for installing **from source** — useful for development, beta testing, or running newer versions before they reach the store.
+
 ### Prerequisites
 
 - Raspberry Pi 4 running Volumio 3 (latest)
@@ -289,34 +344,36 @@ Displays playback information on a 128×64 SSD1309 I2C OLED connected to a Raspb
   - VCC → 3.3V (pin 1)
   - GND → GND (pin 9)
 - SSH enabled in Volumio (Settings → Network → SSH)
+- **Build tools** installed on the Pi (one-time, source-install only):
 
-### Step-by-step
+  ```bash
+  sudo apt-get update && sudo apt-get install -y build-essential
+  ```
+
+  This is required because the `i2c-bus` Node module is a native addon and must be compiled on the device when installing from source.  `volumio plugin install` runs `npm install` *before* it runs `install.sh`, so the build tools have to already be present.  This step is **only needed when installing from source** — store users get a pre-built archive and don't need it.  It's also a one-time setup; once installed, `build-essential` stays until you factory-reset Volumio.
+
+### Recommended: install via Volumio's plugin manager
 
 ```bash
-# 1. SSH into your Volumio
+# 1. Transfer the tarball to Volumio (run on your PC, not the Pi)
+scp oled_display_ssd1309-v1.7.27.tar volumio@volumio.local:~/
+
+# 2. SSH into Volumio
 ssh volumio@volumio.local
 # password: volumio
 
-# 2. Create the plugin directory
-mkdir -p /data/plugins/user_interface/oled_display_ssd1309
+# 3. Extract the source folder (anywhere works — home directory is fine)
+tar xf oled_display_ssd1309-v1.7.27.tar
+cd oled_display_ssd1309
 
-# 3. Transfer the tarball (run this on your PC, not the Pi)
-scp oled_display_ssd1309-v1.7.17.tar volumio@volumio.local:/tmp/
+# 4. Install via Volumio's plugin manager
+volumio plugin install
 
-# 4. Extract on the Pi
-cd /data/plugins/user_interface
-tar xf /tmp/oled_display_ssd1309-v1.7.17.tar
-# If it extracts into a subdirectory:
-# mv oled_display_ssd1309/* /data/plugins/user_interface/oled_display_ssd1309/
-
-# 5. Run the installer
-cd /data/plugins/user_interface/oled_display_ssd1309
-chmod +x install.sh diagnose.sh uninstall.sh
-bash install.sh
-
-# 6. Reboot (required for I2C and plugin registration)
+# 5. Reboot for the I2C baudrate change to take effect
 sudo reboot
 ```
+
+The `volumio plugin install` command reads the plugin's metadata, copies files into `/data/plugins/user_interface/oled_display_ssd1309/`, runs `install.sh` in the destination, and registers the plugin with Volumio.  The reboot at step 5 is needed because `install.sh` adds `dtparam=i2c_arm_baudrate=400000` to `/boot/userconfig.txt`, and that kernel parameter is only applied at boot.  Without it, the I2C bus runs at the default 100kHz and the display refresh visibly drags.
 
 ### After reboot
 
@@ -326,8 +383,35 @@ sudo reboot
 4. Toggle the slider to **enable**
 5. Click **Settings** to configure I2C address, contrast, etc.
 
-> **Do NOT manually edit plugins.json.** Volumio discovers and registers
-> the plugin automatically when it finds the directory at boot.
+### Alternative: manual install
+
+Use this method only if `volumio plugin install` is unavailable or fails on your Volumio version.  Note that the manual method does not require `build-essential` to be pre-installed: `install.sh` runs `apt-get install build-essential` itself before invoking `npm install`, so the toolchain is always available when needed.
+
+```bash
+# 1. SSH into Volumio
+ssh volumio@volumio.local
+
+# 2. Create the destination folder
+mkdir -p /data/plugins/user_interface/oled_display_ssd1309
+
+# 3. Transfer the tarball (run on your PC, not the Pi)
+scp oled_display_ssd1309-v1.7.27.tar volumio@volumio.local:/tmp/
+
+# 4. Extract directly into the plugins directory
+cd /data/plugins/user_interface
+tar xf /tmp/oled_display_ssd1309-v1.7.27.tar
+
+# 5. Run the installer manually
+cd /data/plugins/user_interface/oled_display_ssd1309
+chmod +x install.sh diagnose.sh uninstall.sh
+bash install.sh
+
+# 6. Reboot so Volumio discovers the new plugin folder, and so the
+#    I2C baudrate change takes effect
+sudo reboot
+```
+
+> When using the manual method, do NOT edit `plugins.json` by hand — Volumio discovers the plugin automatically on boot when it finds the directory.
 
 ---
 
