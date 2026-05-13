@@ -582,8 +582,18 @@ function addPeqButtons(self, uiconf, ncontent) {
     });
   }
 
-  const url = 'http://' + self.config.get('address') + ':' + peqGraphPort;
+  const IPaddress = self.config.get('address');
+  const showPeqCurveButton = {
 
+      id: 'showpeqcurve',
+      element: 'button',
+      label: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
+      doc: self.commandRouter.getI18nString('SHOW_PEQ_CURVE_DOC'),
+      onClick: { type: 'openUrl', url: `http://${IPaddress}:10015` }
+
+      // visibleIf: { field: 'showeq', value: true }
+    };
+  /*    }
   const showPeqCurveButton = {
     id: 'showpeqcurve',
     element: 'button',
@@ -599,7 +609,7 @@ function addPeqButtons(self, uiconf, ncontent) {
 
     //  visibleIf: { field: 'showeq', value: true }
   };
-
+*/
   buttons.push({
     id: 'resetpeq',
     element: 'button',
@@ -629,6 +639,8 @@ function configureEq15Section(self, uiconf, selectedsp) {
     const geq15 = self.config.get(eq).split(',');
     const muteKey = eq === 'x2geq15' ? 'x2geq15mute' : 'geq15mute';
     const mutedBands = (self.config.get(muteKey) || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
+    const IPaddress = self.config.get('address');
+
     const bars = eq15range.map((label, idx) => ({
       min: -10,
       max: 10,
@@ -638,18 +650,15 @@ function configureEq15Section(self, uiconf, selectedsp) {
       tooltip: 'show',
       muted: mutedBands[idx] === '1'
     }));
+
     uiconf.sections[1].content.push({
       id: 'showpeqcurve',
       element: 'button',
       label: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
       doc: self.commandRouter.getI18nString('SHOW_PEQ_CURVE_DOC'),
-      onClick: {
-        type: 'plugin',
-        endpoint: 'audio_interface/fusiondsp',
-        method: 'showPeqGraph',
-        data: []
-      },
-     // visibleIf: { field: 'showeq', value: true }
+      onClick: { type: 'openUrl', url: `http://${IPaddress}:10015` }
+
+      // visibleIf: { field: 'showeq', value: true }
     });
     uiconf.sections[1].content.push({
       id: eq,
@@ -671,20 +680,21 @@ function configureEq15Section(self, uiconf, selectedsp) {
     onClick: { type: 'plugin', endpoint: 'audio_interface/fusiondsp', method: 'reseteq', data: [] },
     visibleIf: { field: 'showeq', value: true }
   });
-
-  uiconf.sections[1].content.push({
-    id: 'showpeqcurve',
-    element: 'button',
-    label: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
-    doc: self.commandRouter.getI18nString('SHOW_PEQ_CURVE_DOC'),
-    onClick: {
-      type: 'plugin',
-      endpoint: 'audio_interface/fusiondsp',
-      method: 'showPeqGraph',
-      data: []
-    },
-    visibleIf: { field: 'showeq', value: true }
-  });
+  /*
+    uiconf.sections[1].content.push({
+      id: 'showpeqcurve',
+      element: 'button',
+      label: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
+      doc: self.commandRouter.getI18nString('SHOW_PEQ_CURVE_DOC'),
+      onClick: {
+        type: 'plugin',
+        endpoint: 'audio_interface/fusiondsp',
+        method: 'showPeqGraph',
+        data: []
+      },
+      visibleIf: { field: 'showeq', value: true }
+    });
+    */
 }
 
 function configureEq3Section(self, uiconf) {

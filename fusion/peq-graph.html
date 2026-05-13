@@ -928,7 +928,7 @@
 
 <body>
   <div id="header">
-    <a id="back-btn" onclick="history.back()">&#9664; Back to Volumio</a>
+    <a id="back-btn" href="#" onclick="window.close(); setTimeout(function(){ if (!window.closed) history.back(); }, 100); return false;">&#9664; Back to Volumio</a>
     <h1>FusionDSP - PEQ Frequency Response</h1>
     <div id="header-controls">
       <span id="status-msg"></span>
@@ -1372,13 +1372,7 @@
             knobDragState = null;
             document.removeEventListener('mousemove', onMove);
             document.removeEventListener('mouseup', onUp);
-            // Auto-close popup after dragging stops
-            setTimeout(function () {
-              if (popupEl.style.display === 'block' && selectedFilterIndex >= 0) {
-                closePopup();
-              }
-            }, 300);
-          }
+}
           document.addEventListener('mousemove', onMove);
           document.addEventListener('mouseup', onUp);
         });
@@ -1392,13 +1386,7 @@
             knobDragState = null;
             document.removeEventListener('touchmove', onMove);
             document.removeEventListener('touchend', onEnd);
-            // Auto-close popup after dragging stops
-            setTimeout(function () {
-              if (popupEl.style.display === 'block' && selectedFilterIndex >= 0) {
-                closePopup();
-              }
-            }, 300);
-          }
+}
           document.addEventListener('touchmove', onMove, { passive: false });
           document.addEventListener('touchend', onEnd);
         }, { passive: false });
