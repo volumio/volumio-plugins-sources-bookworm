@@ -1,6 +1,6 @@
 {
   "name": "recently_added",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Recently Added view for Volumio's local music library — uses MPD's built-in modified-since query",
   "main": "index.js",
   "scripts": {
@@ -8,6 +8,10 @@
   },
   "author": "Zhapox",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zhapox/recently_added"
+  },
   "volumio_info": {
     "prettyName": "Recently Added",
     "plugin_type": "music_service",
@@ -15,12 +19,11 @@
     "boot_priority": 10,
     "architectures": [
       "armhf",
-      "arm64",
       "amd64",
       "i386"
     ],
     "details": "Adds a 'Recently Added' entry to the Browse menu showing albums added to your library within configurable time windows. Reads directly from MPD's database — no separate index, no watcher, no native modules.",
-    "changelog": "v0.5.0: configurable sort order for albums and artists. Two new settings under Display: Albums sort (Newest first / Alphabetical) and Artists sort (Newest first / Alphabetical), each defaulting to Newest first. The Albums setting also applies to the album list inside artist drill-downs. Track ordering within an album is unchanged (always disc/track number). Alphabetical artist sort pins the Unknown Artist sentinel to the end. All new strings translated across all seven supported languages. v0.4.4: README install instructions now recommend the 'volumio plugin install' CLI."
+    "changelog": "v0.5.1: packaging metadata only. Added 'repository' field pointing to the GitHub project. Removed arm64 from supported architectures (not accepted by Volumio's plugin store at this time). v0.5.0: configurable sort order for albums and artists — two new settings under Display (Albums sort, Artists sort), each offering Newest first or Alphabetical. The Albums setting also applies to artist drill-downs."
   },
   "engines": {
     "node": ">=20",
