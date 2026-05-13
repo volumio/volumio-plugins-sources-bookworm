@@ -1,0 +1,8 @@
+{
+  "mpd_host": { "type": "string", "value": "localhost" },
+  "mpd_port": { "type": "number", "value": 6600 },
+  "query_timeout_ms": { "type": "number", "value": 10000 },
+  "view_mode": { "type": "string", "value": "both" },
+  "albums_sort": { "type": "string", "value": "recency" },
+  "artists_sort": { "type": "string", "value": "recency" }
+}
