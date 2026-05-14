@@ -1,4 +1,4 @@
-# Recently Added Plugin for Volumio – v0.5.1
+# Recently Added Plugin for Volumio – v0.5.2
 
 > **⚠️ Disclaimer**
 >
@@ -45,6 +45,13 @@ Adds a "Recently Added" entry to Volumio's Browse menu showing albums and artist
 ---
 
 ## Changelog
+
+### v0.5.2
+
+**Packaging metadata only — preparation for Volumio plugin store submission:**
+
+1. **Added `"os": ["bookworm"]`** in `package.json` to match the [volumio-plugins-sources-bookworm](https://github.com/volumio/volumio-plugins-sources-bookworm) submission target.
+2. **Removed `i386`** from the architectures list, leaving `armhf` and `amd64`.  The bookworm plugin store accepts these two only.
 
 ### v0.5.1
 
@@ -167,14 +174,14 @@ Initial SQLite + watcher implementation.  Works in principle but suffers the syn
 
 ```bash
 # 1. Transfer the tarball to Volumio (run on your PC, not the Pi)
-scp recently_added-v0.5.1.tar volumio@volumio.local:~/
+scp recently_added-v0.5.2.tar volumio@volumio.local:~/
 
 # 2. SSH into Volumio
 ssh volumio@volumio.local
 # password: volumio
 
 # 3. Extract the source folder (anywhere works — home directory is fine)
-tar xf recently_added-v0.5.1.tar
+tar xf recently_added-v0.5.2.tar
 cd recently_added
 
 # 4. Install via Volumio's plugin manager
@@ -205,11 +212,11 @@ ssh volumio@volumio.local
 mkdir -p /data/plugins/music_service/recently_added
 
 # 3. Transfer the tarball (run on your PC, not the Pi)
-scp recently_added-v0.5.1.tar volumio@volumio.local:/tmp/
+scp recently_added-v0.5.2.tar volumio@volumio.local:/tmp/
 
 # 4. Extract directly into the plugins directory
 cd /data/plugins/music_service
-tar xf /tmp/recently_added-v0.5.1.tar
+tar xf /tmp/recently_added-v0.5.2.tar
 
 # 5. Run the installer manually
 cd /data/plugins/music_service/recently_added
