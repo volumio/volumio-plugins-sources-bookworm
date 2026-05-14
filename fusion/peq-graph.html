@@ -712,16 +712,16 @@
         display: none;
       }
 
-       #crosshair-info {
-    font-size: 10px;
-    padding: 3px 6px;
-    margin: 0 12px;
-    max-width: calc(100vw - 24px);
-    left: 12px !important;
-    right: 12px !important;
-    white-space: normal;
-    word-break: break-all;
-  }
+      #crosshair-info {
+        font-size: 10px;
+        padding: 3px 6px;
+        margin: 0 12px;
+        max-width: calc(100vw - 24px);
+        left: 12px !important;
+        right: 12px !important;
+        white-space: normal;
+        word-break: break-all;
+      }
 
       #unsaved-dot {
         width: 6px;
@@ -808,7 +808,7 @@
         white-space: nowrap !important;
       }
 
-      #header-controls > * {
+      #header-controls>* {
         flex-shrink: 0 !important;
       }
 
@@ -928,7 +928,9 @@
 
 <body>
   <div id="header">
-    <a id="back-btn" href="#" onclick="window.close(); setTimeout(function(){ if (!window.closed) history.back(); }, 100); return false;">&#9664; Back to Volumio</a>
+    <a id="back-btn" href="#"
+      onclick="window.close(); setTimeout(function(){ if (!window.closed) history.back(); }, 100); return false;">&#9664;
+      Back to Volumio</a>
     <h1>FusionDSP - PEQ Frequency Response</h1>
     <div id="header-controls">
       <span id="status-msg"></span>
@@ -1372,7 +1374,7 @@
             knobDragState = null;
             document.removeEventListener('mousemove', onMove);
             document.removeEventListener('mouseup', onUp);
-}
+          }
           document.addEventListener('mousemove', onMove);
           document.addEventListener('mouseup', onUp);
         });
@@ -1386,7 +1388,7 @@
             knobDragState = null;
             document.removeEventListener('touchmove', onMove);
             document.removeEventListener('touchend', onEnd);
-}
+          }
           document.addEventListener('touchmove', onMove, { passive: false });
           document.addEventListener('touchend', onEnd);
         }, { passive: false });
@@ -2209,7 +2211,7 @@
             // Draw vertical slider line for EQ15/2XEQ15 modes (between ±10dB)
             var lineTopY = dbToY(10, dbMin, dbMax);
             var lineBottomY = dbToY(-10, dbMin, dbMax);
-            
+
             // Draw thin vertical line above handle
             ctx.globalAlpha = isMuted ? 0.2 : 0.35;
             ctx.strokeStyle = color;
@@ -2218,7 +2220,7 @@
             ctx.moveTo(mx, lineTopY);
             ctx.lineTo(mx, my);
             ctx.stroke();
-            
+
             // Draw thicker vertical line below handle
             ctx.lineWidth = 20;
             ctx.beginPath();
@@ -2228,7 +2230,7 @@
             ctx.globalAlpha = 1.0;
 
             // Draw larger handle (circle) at current gain position
-            var handleRadius = isActive ? 11 : 9;
+            var handleRadius = isActive ? 16 : 9;
             if (isActive && !isMuted) {
               ctx.save();
               ctx.shadowColor = color;
@@ -2256,7 +2258,7 @@
             ctx.globalAlpha = 1.0;
           } else {
             // Draw point marker for non-EQ15 modes
-            var radius = isActive ? 13 : 10;
+            var radius = isActive ? 18 : 10;
             // Glow effect for active dot
             if (isActive && !isMuted) {
               ctx.save();
@@ -2345,7 +2347,7 @@
           var x = freqToX(frequencies[j]);
           var y = dbToY(curve[j], dbMin, dbMax);
           var isPositive = curve[j] > 0;
-          
+
           if (isPositive && !inPositive && j > 0) {
             // Start of positive section - draw from zero line
             var prevX = freqToX(frequencies[j - 1]);
@@ -2379,7 +2381,7 @@
           var x = freqToX(frequencies[j]);
           var y = dbToY(curve[j], dbMin, dbMax);
           var isNegative = curve[j] < 0;
-          
+
           if (isNegative && !inNegative && j > 0) {
             // Start of negative section - draw from zero line
             var prevX = freqToX(frequencies[j - 1]);
@@ -2690,16 +2692,23 @@
         var ph = popupRect.height;
 
         // Position horizontally centered in viewport
-        var pLeft = Math.max(4, Math.min(window.innerWidth - pw - 4, containerRect.left + (cw - pw) / 2));
+        // var pLeft = Math.max(4, Math.min(window.innerWidth - pw - 4, containerRect.left + (cw - pw) / 2));
+        // 1. Calculate the X position of the filter handle relative to the screen
+        var pointX = containerRect.left + freqToX(markerFreq);
 
+        // 2. Center the popup width (pw) on that point
+        var pLeft = pointX - (pw / 2);
+
+        // 3. Clamp the value so the box doesn't go off the screen edges
+        pLeft = Math.max(4, Math.min(window.innerWidth - pw - 4, pLeft));
         // Position vertically based on gain value
         var pTop;
         if (markerDb > 0) {
           // Positive gain (boost) - anchor popup near the screen bottom.
-          pTop = window.innerHeight - ph - 10;
+          pTop = window.innerHeight - ph - 50;
         } else {
           // Negative or zero gain (cut) - put popup near the top.
-          pTop = 10;
+          pTop = 70;
         }
 
         var minTop = 10;
@@ -2712,6 +2721,38 @@
         popupEl.style.setProperty('right', 'auto', 'important');
         popupEl.style.setProperty('bottom', 'auto', 'important');
         popupEl.style.setProperty('transform', 'none', 'important');
+
+// --- Start of Connector Line Logic ---
+var lineSvg = document.getElementById('popup-connector-svg');
+var lineEl = document.getElementById('popup-connector-line');
+
+var filterColor = '#e9a645'; // Default orange for 'Both'
+if (fi.scope === 'L') {
+    filterColor = '#4fc3f7'; // Blue for Left
+} else if (fi.scope === 'R') {
+    filterColor = '#ff5252'; // Red for Right
+}
+
+// 1. Calculate Point Position (Screen Pixels)
+var isEQ15Mode = (currentMode === 'EQ15' || currentMode === '2XEQ15');
+var dMin = isEQ15Mode ? -15 : -15;
+var dMax = isEQ15Mode ? 15 : 15;
+var pointX = containerRect.left + freqToX(markerFreq);
+var pointY = containerRect.top + dbToY(markerDb, dMin, dMax);
+
+// 2. Calculate Popup Connector Position (Center of the nearest edge)
+var connectorX = pLeft + (pw / 2);
+var connectorY = (markerDb > 0) ? pTop : (pTop + ph);
+
+// 3. Update and Show Line
+lineEl.setAttribute('x1', pointX);
+lineEl.setAttribute('y1', pointY);
+lineEl.setAttribute('x2', connectorX);
+lineEl.setAttribute('y2', connectorY);
+lineEl.style.stroke = filterColor;
+lineSvg.style.display = 'block';
+// --- End of Connector Line Logic ---
+
 
         var finalRect = popupEl.getBoundingClientRect();
         if (finalRect.bottom > window.innerHeight - 10) {
@@ -2844,6 +2885,7 @@
         popupEl.style.display = 'none';
         popupEl.innerHTML = '';
         selectedFilterIndex = -1;
+        document.getElementById('popup-connector-svg').style.display = 'none';
         popupCurrentType = null;
       }
 
@@ -3623,6 +3665,10 @@
 
     })();
   </script>
+<svg id="popup-connector-svg" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9998; display:none;">
+  <line id="popup-connector-line" x1="0" y1="0" x2="0" y2="0" style="stroke:rgba(255,255,255,0.6); stroke-width:1.5;" />
+</svg>
+
 </body>
 
 </html>
