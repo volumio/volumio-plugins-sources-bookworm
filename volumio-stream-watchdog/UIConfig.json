@@ -1,0 +1,69 @@
+{
+  "page": {
+    "label": "TRANSLATE.STREAM_WATCHDOG.SETTINGS_LABEL"
+  },
+  "sections": [
+    {
+      "id": "section_settings",
+      "element": "section",
+      "label": "TRANSLATE.STREAM_WATCHDOG.SECTION_SETTINGS",
+      "icon": "fa-wifi",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "miscellanea/volumio-stream-watchdog",
+        "method": "savePluginConfig"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.STREAM_WATCHDOG.SAVE",
+        "data": [
+          "offlinePlaylistName",
+          "streamCheckInterval",
+          "restoreCheckInterval",
+          "autoRestore"
+        ]
+      },
+      "content": [
+        {
+          "id": "offlinePlaylistName",
+          "element": "input",
+          "doc": "",
+          "label": "TRANSLATE.STREAM_WATCHDOG.OFFLINE_PLAYLIST_NAME",
+          "description": "TRANSLATE.STREAM_WATCHDOG.OFFLINE_PLAYLIST_NAME_DESC",
+          "placeholder": "Offline",
+          "type": {
+            "name": "text"
+          }
+        },
+        {
+          "id": "streamCheckInterval",
+          "element": "input",
+          "doc": "",
+          "label": "TRANSLATE.STREAM_WATCHDOG.STREAM_CHECK_INTERVAL",
+          "description": "TRANSLATE.STREAM_WATCHDOG.STREAM_CHECK_INTERVAL_DESC",
+          "placeholder": "30",
+          "type": {
+            "name": "number"
+          }
+        },
+        {
+          "id": "restoreCheckInterval",
+          "element": "input",
+          "doc": "",
+          "label": "TRANSLATE.STREAM_WATCHDOG.RESTORE_CHECK_INTERVAL",
+          "description": "TRANSLATE.STREAM_WATCHDOG.RESTORE_CHECK_INTERVAL_DESC",
+          "placeholder": "60",
+          "type": {
+            "name": "number"
+          }
+        },
+        {
+          "id": "autoRestore",
+          "element": "switch",
+          "doc": "",
+          "label": "TRANSLATE.STREAM_WATCHDOG.AUTO_RESTORE",
+          "description": "TRANSLATE.STREAM_WATCHDOG.AUTO_RESTORE_DESC"
+        }
+      ]
+    }
+  ]
+}
