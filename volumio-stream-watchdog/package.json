@@ -14,7 +14,7 @@
   "volumio_info": {
     "prettyName": "Stream Watchdog",
     "icon": "fa-wifi",
-    "plugin_type": "miscellanea",
+    "plugin_type": "system_controller",
     "architectures": [
       "amd64",
       "armhf"

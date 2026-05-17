@@ -65,7 +65,7 @@ Navigate to **Plugins → Miscellanea** and search for "Stream Watchdog".
 ssh volumio@volumio.local
 
 # Clone the repo into the plugins directory
-cd /data/plugins/miscellanea
+cd /data/plugins/system_controller
 git clone https://github.com/josemathias/volumio-stream-watchdog volumio-stream-watchdog
 
 # Install dependencies

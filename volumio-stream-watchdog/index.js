@@ -1,7 +1,7 @@
 'use strict';
 
 // =============================================================================
-// Stream Watchdog — Volumio 4 miscellanea plugin
+// Stream Watchdog — Volumio 4 system_controller plugin
 //
 // Phase 1: Internal socket.io state watcher.
 //   - Connects to Volumio's socket.io interface at localhost:3000

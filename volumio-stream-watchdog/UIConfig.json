@@ -10,7 +10,7 @@
       "icon": "fa-wifi",
       "onSave": {
         "type": "controller",
-        "endpoint": "miscellanea/volumio-stream-watchdog",
+        "endpoint": "system_controller/volumio-stream-watchdog",
         "method": "savePluginConfig"
       },
       "saveButton": {
