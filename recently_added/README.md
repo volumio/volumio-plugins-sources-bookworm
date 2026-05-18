@@ -1,4 +1,4 @@
-# Recently Added Plugin for Volumio – v0.5.2
+# Recently Added Plugin for Volumio – v0.5.3
 
 > **⚠️ Disclaimer**
 >
@@ -45,6 +45,14 @@ Adds a "Recently Added" entry to Volumio's Browse menu showing albums and artist
 ---
 
 ## Changelog
+
+### v0.5.3
+
+**Code cleanup applying Volumio reviewer feedback (from the plugin store submission PR):**
+
+1. **`install.sh` stripped to the bare minimum.**  Previous versions ran `npm install --production` and verified the `mpd` module loaded.  Volumio's plugin manager already handles `npm install` from the plugin's `package.json` as part of the standard `volumio plugin install` pipeline, so the install script just needs to print `plugininstallend`.  From ~35 lines down to 7.
+
+2. **Configuration persistence simplified.**  Previous versions wrote the managed config file directly with `fs.writeFileSync`, bypassing v-conf because of an earlier-encountered bug where `self.config.set()` calls were apparently overwritten by v-conf's deferred autosave.  Root cause re-examination revealed the bug was caused *by* mixing manual writes with v-conf rather than by v-conf itself.  The fix is to use v-conf's standard `self.config.set(key, value)` API exclusively, with a `self.config.save()` to flush synchronously for power-loss safety.  The custom `_persistToManagedConfig` and `_reloadConfig` methods (~95 lines combined) are gone.  Net code reduction: ~100 lines, no functional change.
 
 ### v0.5.2
 
@@ -174,14 +182,14 @@ Initial SQLite + watcher implementation.  Works in principle but suffers the syn
 
 ```bash
 # 1. Transfer the tarball to Volumio (run on your PC, not the Pi)
-scp recently_added-v0.5.2.tar volumio@volumio.local:~/
+scp recently_added-v0.5.3.tar volumio@volumio.local:~/
 
 # 2. SSH into Volumio
 ssh volumio@volumio.local
 # password: volumio
 
 # 3. Extract the source folder (anywhere works — home directory is fine)
-tar xf recently_added-v0.5.2.tar
+tar xf recently_added-v0.5.3.tar
 cd recently_added
 
 # 4. Install via Volumio's plugin manager
@@ -212,11 +220,11 @@ ssh volumio@volumio.local
 mkdir -p /data/plugins/music_service/recently_added
 
 # 3. Transfer the tarball (run on your PC, not the Pi)
-scp recently_added-v0.5.2.tar volumio@volumio.local:/tmp/
+scp recently_added-v0.5.3.tar volumio@volumio.local:/tmp/
 
 # 4. Extract directly into the plugins directory
 cd /data/plugins/music_service
-tar xf /tmp/recently_added-v0.5.2.tar
+tar xf /tmp/recently_added-v0.5.3.tar
 
 # 5. Run the installer manually
 cd /data/plugins/music_service/recently_added

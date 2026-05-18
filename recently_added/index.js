@@ -21,9 +21,11 @@
  * Architectural notes from the OLED plugin still apply:
  *   - Lifecycle methods MUST return kew promises (Volumio 4 plugin
  *     manager rejects native Promises).
- *   - Config persistence bypasses v-conf's auto-save (see
- *     _persistToManagedConfig) because v-conf overwrites synchronous
- *     writes with stale values.
+ *   - Config persistence uses v-conf's standard self.config.set() API
+ *     end-to-end.  An earlier workaround that wrote the managed config
+ *     file directly with fs.writeFileSync caused races with v-conf's
+ *     deferred autosave; the simpler approach (use v-conf, don't fight
+ *     it) is the supported one.
  *   - onStart resolves even on failure (with a toast) — rejecting from
  *     onStart confuses the plugin manager.
  */
@@ -219,16 +221,6 @@ ControllerRecentlyAdded.prototype._ensureConfig = function () {
   }
 };
 
-/**
- * Discard the in-memory v-conf instance and reload from disk.  Required
- * after a saveConfig because v-conf's deferred auto-save would otherwise
- * overwrite our synchronous write with stale values.  H4 review item.
- */
-ControllerRecentlyAdded.prototype._reloadConfig = function () {
-  this.config = null;
-  this._ensureConfig();
-};
-
 ControllerRecentlyAdded.prototype.getConfigurationFiles = function () {
   return ['config.json'];
 };
@@ -379,11 +371,53 @@ ControllerRecentlyAdded.prototype._findSelectValue = function (element, value) {
   return { value: value, label: value };
 };
 
+/**
+ * Save settings from the Volumio UI form.
+ *
+ * Hands each value to v-conf via `self.config.set(key, value)` and then
+ * forces a synchronous flush with `self.config.save()` so changes survive
+ * an immediate power loss.  v-conf handles both the on-disk format and
+ * the reload semantics — we don't write the file ourselves.
+ *
+ * After persistence, tear down and re-initialize the MPD client so new
+ * host/port/timeout values take effect.
+ */
 ControllerRecentlyAdded.prototype.saveConfig = function (data) {
   var self = this;
 
-  self._persistToManagedConfig(data);
-  self._reloadConfig();
+  try {
+    if (data.mpd_host !== undefined) {
+      self.config.set('mpd_host', String(data.mpd_host));
+    }
+    if (data.mpd_port !== undefined) {
+      self.config.set('mpd_port', parseInt(data.mpd_port, 10));
+    }
+    if (data.query_timeout_ms !== undefined) {
+      self.config.set('query_timeout_ms', parseInt(data.query_timeout_ms, 10));
+    }
+    // Select elements: UI sends { value, label } — extract the value.
+    ['view_mode', 'albums_sort', 'artists_sort'].forEach(function (key) {
+      if (data[key] !== undefined) {
+        var v = (typeof data[key] === 'object' && data[key] !== null)
+          ? data[key].value
+          : data[key];
+        self.config.set(key, String(v));
+      }
+    });
+    // Force synchronous flush so a power loss between save and v-conf's
+    // deferred timer firing doesn't lose the new values.
+    if (typeof self.config.save === 'function') {
+      self.config.save();
+    }
+  } catch (err) {
+    var msg = (err && err.message) ? err.message : String(err);
+    self.logger.error('RecentlyAdded: failed to persist config: ' + msg);
+    try {
+      self.commandRouter.pushToastMessage('error', 'Recently Added',
+        self._t('TOAST.SAVE_FAILED', { message: msg }));
+    } catch (_) { }
+    return libQ.resolve();
+  }
 
   self.commandRouter.pushToastMessage('success', 'Recently Added',
     self._t('TOAST.RECONNECTING'));
@@ -396,99 +430,13 @@ ControllerRecentlyAdded.prototype.saveConfig = function (data) {
     }
     self._startPlugin();
   } catch (err) {
-    var msg = (err && err.message) ? err.message : String(err);
-    self.logger.error('RecentlyAdded: reconnect failed: ' + msg);
+    var msg2 = (err && err.message) ? err.message : String(err);
+    self.logger.error('RecentlyAdded: reconnect failed: ' + msg2);
     self.commandRouter.pushToastMessage('error', 'Recently Added',
-      self._t('TOAST.RECONNECT_FAILED', { message: msg }));
+      self._t('TOAST.RECONNECT_FAILED', { message: msg2 }));
   }
 
   return libQ.resolve();
-};
-
-/**
- * Write config to the Volumio-managed config file, bypassing v-conf.
- * See oled_display_ssd1309 v1.7.17 for the rationale — v-conf's deferred
- * auto-save overwrites synchronous writes with stale values.
- */
-ControllerRecentlyAdded.prototype._persistToManagedConfig = function (data) {
-  try {
-    var managedPath = this.commandRouter.pluginManager.getConfigurationFile(
-      this.context, 'config.json'
-    );
-
-    var keyTypes = {
-      'mpd_host': 'string',
-      'mpd_port': 'number',
-      'query_timeout_ms': 'number',
-      'view_mode': 'string',
-      'albums_sort': 'string',
-      'artists_sort': 'string'
-    };
-
-    // Start from whatever's on disk so we preserve keys not in this save.
-    var raw = {};
-    try {
-      raw = JSON.parse(fs.readFileSync(managedPath, 'utf8'));
-    } catch (_) {
-      try {
-        raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json'), 'utf8'));
-      } catch (_2) {
-        raw = {};
-      }
-    }
-
-    // Unwrap any v-conf {type, value} entries to plain values for merging
-    var snapshot = {};
-    var rawKeys = Object.keys(raw);
-    for (var k = 0; k < rawKeys.length; k++) {
-      var val = raw[rawKeys[k]];
-      if (val && typeof val === 'object' && val.value !== undefined && val.type) {
-        snapshot[rawKeys[k]] = val.value;
-      } else {
-        snapshot[rawKeys[k]] = val;
-      }
-    }
-
-    if (data.mpd_host !== undefined) snapshot.mpd_host = String(data.mpd_host);
-    if (data.mpd_port !== undefined) snapshot.mpd_port = parseInt(data.mpd_port, 10);
-    if (data.query_timeout_ms !== undefined) {
-      snapshot.query_timeout_ms = parseInt(data.query_timeout_ms, 10);
-    }
-    // Select elements: UI sends { value, label } — extract the value.
-    // Same shape for all three.
-    ['view_mode', 'albums_sort', 'artists_sort'].forEach(function (key) {
-      if (data[key] !== undefined) {
-        snapshot[key] = (typeof data[key] === 'object' && data[key] !== null)
-          ? data[key].value
-          : String(data[key]);
-      }
-    });
-
-    // Re-wrap into v-conf format for writing
-    var vconfData = {};
-    var snapshotKeys = Object.keys(snapshot);
-    for (var i = 0; i < snapshotKeys.length; i++) {
-      var sKey = snapshotKeys[i];
-      var sVal = snapshot[sKey];
-      var sType = keyTypes[sKey] || (typeof sVal);
-      vconfData[sKey] = { type: sType, value: sVal };
-    }
-
-    var dir = path.dirname(managedPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
-    fs.writeFileSync(managedPath, JSON.stringify(vconfData, null, 2), 'utf8');
-    this.logger.info('RecentlyAdded: config persisted to ' + managedPath);
-  } catch (err) {
-    var msg = (err && err.message) ? err.message : String(err);
-    this.logger.error('RecentlyAdded: failed to persist config: ' + msg);
-    try {
-      this.commandRouter.pushToastMessage('error', 'Recently Added',
-        this._t('TOAST.SAVE_FAILED', { message: msg }));
-    } catch (_) { }
-  }
 };
 
 
