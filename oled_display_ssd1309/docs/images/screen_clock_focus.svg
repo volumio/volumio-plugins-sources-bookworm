@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="408" height="216" viewBox="0 0 408 216">
+  <rect width="408" height="216" rx="8" fill="#111" stroke="#333" stroke-width="1"/>
+  <rect x="12" y="12" width="384" height="192" fill="#000"/>
+  <text x="204" y="52.8" font-family="Courier New,monospace" font-size="48" fill="#fff" text-anchor="middle">14:35</text>
+  <line x1="12" y1="81" x2="396" y2="81" stroke="#444" stroke-width="1.5"/>
+  <polygon points="15,93 15,111 27.6,102.0" fill="#fff"/>
+  <text x="42" y="105.75" font-family="Courier New,monospace" font-size="15" fill="#fff" text-anchor="start">Bohemian Rhapsody</text>
+  <text x="12" y="135.75" font-family="Courier New,monospace" font-size="15" fill="#fff" text-anchor="start">Queen</text>
+  <line x1="12" y1="156" x2="396" y2="156" stroke="#fff" stroke-width="1.5"/>
+  <line x1="12" y1="165" x2="396" y2="165" stroke="#fff" stroke-width="1.5"/>
+  <rect x="12" y="159" width="3" height="6" fill="#fff"/>
+  <rect x="393" y="159" width="3" height="6" fill="#fff"/>
+  <rect x="18" y="159" width="174" height="6" fill="#fff"/>
+  <text x="12" y="189.75" font-family="Courier New,monospace" font-size="15" fill="#fff" text-anchor="start">02:34/05:12</text>
+  <text x="396" y="189.75" font-family="Courier New,monospace" font-size="15" fill="#fff" text-anchor="end">24/192k</text>
+</svg>

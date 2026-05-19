@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="408" height="216" viewBox="0 0 408 216">
+  <rect width="408" height="216" rx="8" fill="#111" stroke="#333" stroke-width="1"/>
+  <rect x="12" y="12" width="384" height="192" fill="#000"/>
+  <text x="204" y="70.8" font-family="Courier New,monospace" font-size="48" fill="#fff" text-anchor="middle">14:35</text>
+  <text x="204" y="129.75" font-family="Courier New,monospace" font-size="15" fill="#fff" text-anchor="middle">Thu 02 Apr 2026</text>
+  <text x="204" y="171.75" font-family="Courier New,monospace" font-size="15" fill="#fff" text-anchor="middle">Vol: 72%</text>
+</svg>
