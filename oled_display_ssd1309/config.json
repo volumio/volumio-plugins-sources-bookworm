@@ -1,6 +1,6 @@
 {
   "i2c_bus_number": { "type": "number", "value": 1 },
-  "i2c_address": { "type": "string", "value": "0x3C" },
+  "i2c_address": { "type": "string", "value": "" },
   "contrast": { "type": "number", "value": 255 },
   "scroll_speed": { "type": "number", "value": 3 },
   "render_interval_ms": { "type": "number", "value": 500 },

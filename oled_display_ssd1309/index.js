@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Volumio OLED Display Plugin (v1.7.27)
+ * Volumio OLED Display Plugin (v1.7.28)
  *
  * Changes from v1.7.15:
  *   - Configurable date format dropdown: Day + Month name, DD.MM.YYYY,
@@ -18,6 +18,7 @@
 
 var fs = require('fs');
 var path = require('path');
+var execSync = require('child_process').execSync;
 var libQ = require('/volumio/node_modules/kew');  // Required: Volumio's plugin manager checks for kew promises
 
 module.exports = ControllerOledDisplay;
@@ -214,6 +215,54 @@ ControllerOledDisplay.prototype._cacheConfig = function () {
   this._cachedDateFormat = this._getStr('date_format', 'day_month_name');
 };
 
+/**
+ * Detect an SSD1309 OLED display on the I2C bus using the i2c-bus Node
+ * module's scanSync() method.  Called from _startPlugin when no address
+ * is configured.  Returns the detected address as a hex string ("0x3C"
+ * or "0x3D"), or empty string if neither standard address responds.
+ *
+ * This is invoked only when the bundled config's empty default is in
+ * effect — i.e. fresh install before any address has been persisted.
+ * Once an address is set (whether by detection or by the user via the
+ * settings UI), this is not called again, so user-set addresses are
+ * never overridden.
+ */
+ControllerOledDisplay.prototype._detectAddress = function (busNumber) {
+  var self = this;
+  var i2c;
+  try {
+    i2c = require('i2c-bus');
+  } catch (loadErr) {
+    self.logger.error('OLED: Cannot load i2c-bus module: ' +
+      ((loadErr && loadErr.message) ? loadErr.message : loadErr));
+    return '';
+  }
+
+  var bus;
+  try {
+    bus = i2c.openSync(busNumber);
+  } catch (openErr) {
+    self.logger.error('OLED: Cannot open I2C bus ' + busNumber + ': ' +
+      ((openErr && openErr.message) ? openErr.message : openErr));
+    return '';
+  }
+
+  var detected = '';
+  try {
+    var addrs = bus.scanSync();  // Returns array of decimal addresses present on bus
+    self.logger.info('OLED: I2C bus ' + busNumber + ' scan found: ' +
+      addrs.map(function (a) { return '0x' + a.toString(16).toUpperCase(); }).join(', '));
+    if (addrs.indexOf(0x3C) !== -1) detected = '0x3C';
+    else if (addrs.indexOf(0x3D) !== -1) detected = '0x3D';
+  } catch (scanErr) {
+    self.logger.error('OLED: I2C scan failed: ' +
+      ((scanErr && scanErr.message) ? scanErr.message : scanErr));
+  } finally {
+    try { bus.closeSync(); } catch (_) {}
+  }
+  return detected;
+};
+
 ControllerOledDisplay.prototype._ensureConfig = function () {
   if (this.config) return;
 
@@ -374,21 +423,71 @@ ControllerOledDisplay.prototype._findSelectValue = function (element, value) {
 ControllerOledDisplay.prototype.saveConfig = function (data) {
   var self = this;
 
-  // Step 1: Write new values directly to the Volumio-managed config file.
-  // We bypass v-conf's set() entirely because its deferred auto-save
-  // overwrites our file with stale values after our synchronous write.
-  self._persistToManagedConfig(data);
+  // UI select fields arrive as { value, label }; unwrap to plain value.
+  var pick = function (v) {
+    return (v && typeof v === 'object' && 'value' in v) ? v.value : v;
+  };
 
-  // Step 2: Discard the current v-conf instance so _ensureConfig will
-  // reload from the file we just wrote.
-  self.config = null;
-  self._ensureConfig();
+  // Number fields
+  if (data.i2c_bus_number !== undefined) {
+    self.config.set('i2c_bus_number', parseInt(pick(data.i2c_bus_number), 10));
+  }
+  if (data.contrast !== undefined) {
+    self.config.set('contrast', parseInt(data.contrast, 10));
+  }
+  if (data.scroll_speed !== undefined) {
+    self.config.set('scroll_speed', parseInt(data.scroll_speed, 10));
+  }
+  if (data.render_interval_ms !== undefined) {
+    self.config.set('render_interval_ms', parseInt(pick(data.render_interval_ms), 10));
+  }
+  if (data.idle_dim_seconds !== undefined) {
+    self.config.set('idle_dim_seconds', parseInt(data.idle_dim_seconds, 10));
+  }
+  if (data.idle_contrast !== undefined) {
+    self.config.set('idle_contrast', parseInt(data.idle_contrast, 10));
+  }
+  if (data.screensaver_seconds !== undefined) {
+    self.config.set('screensaver_seconds', parseInt(data.screensaver_seconds, 10));
+  }
+  if (data.volume_overlay_seconds !== undefined) {
+    self.config.set('volume_overlay_seconds', parseInt(data.volume_overlay_seconds, 10));
+  }
 
-  // Step 3: Refresh cached values from the freshly loaded config.
+  // Boolean fields
+  if (data.clock_24h !== undefined) {
+    self.config.set('clock_24h', !!data.clock_24h);
+  }
+  if (data.rotate_180 !== undefined) {
+    self.config.set('rotate_180', !!data.rotate_180);
+  }
+  if (data.colon_blink !== undefined) {
+    self.config.set('colon_blink', !!data.colon_blink);
+  }
+
+  // String/select fields
+  if (data.i2c_address !== undefined) {
+    self.config.set('i2c_address', String(pick(data.i2c_address)));
+  }
+  if (data.screensaver_mode !== undefined) {
+    self.config.set('screensaver_mode', String(pick(data.screensaver_mode)));
+  }
+  if (data.playback_layout !== undefined) {
+    self.config.set('playback_layout', String(pick(data.playback_layout)));
+  }
+  if (data.date_format !== undefined) {
+    self.config.set('date_format', String(pick(data.date_format)));
+  }
+
+  // Force immediate write to disk (v-conf otherwise debounces by 1s)
+  self.config.save();
+
+  // Refresh cached config values for the render loop
   self._cacheConfig();
 
   self.commandRouter.pushToastMessage('success', 'OLED Display', 'Settings saved. Restarting display…');
 
+  // Restart the plugin so all settings (renderer, i2c address, contrast, etc.) re-initialize
   self._stopPlugin()
     .then(function () {
       self._stopped = false;
@@ -407,135 +506,6 @@ ControllerOledDisplay.prototype.getConfigurationFiles = function () {
   return ['config.json'];
 };
 
-/**
- * Write config to the Volumio-managed config file, bypassing v-conf.
- *
- * v-conf expects values in wrapped format: {"type":"number","value":30}.
- * Plain JSON values like 30 are silently ignored by v-conf's loadFile().
- *
- * This method reads the existing file, unwraps any v-conf values to get
- * plain values for merging, applies the new UI data, then re-wraps
- * everything into v-conf format before writing.
- *
- * @param {Object} data  Raw save data from the Volumio settings UI
- */
-ControllerOledDisplay.prototype._persistToManagedConfig = function (data) {
-  try {
-    var managedPath = this.commandRouter.pluginManager.getConfigurationFile(
-      this.context, 'config.json'
-    );
-
-    // Type definitions for each config key (used for v-conf wrapping)
-    var keyTypes = {
-      'i2c_bus_number': 'number',
-      'i2c_address': 'string',
-      'contrast': 'number',
-      'scroll_speed': 'number',
-      'render_interval_ms': 'number',
-      'idle_dim_seconds': 'number',
-      'idle_contrast': 'number',
-      'clock_24h': 'boolean',
-      'rotate_180': 'boolean',
-      'colon_blink': 'boolean',
-      'screensaver_mode': 'string',
-      'screensaver_seconds': 'number',
-      'volume_overlay_seconds': 'number',
-      'playback_layout': 'string',
-      'date_format': 'string'
-    };
-
-    // Start with existing config from disk (preserves keys not in this save)
-    var raw = {};
-    try {
-      raw = JSON.parse(fs.readFileSync(managedPath, 'utf8'));
-    } catch (_) {
-      try {
-        raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json'), 'utf8'));
-      } catch (_2) {
-        raw = {};
-      }
-    }
-
-    // Unwrap existing v-conf formatted values to plain values for merging
-    var snapshot = {};
-    var rawKeys = Object.keys(raw);
-    for (var k = 0; k < rawKeys.length; k++) {
-      var val = raw[rawKeys[k]];
-      if (val && typeof val === 'object' && val.value !== undefined && val.type) {
-        snapshot[rawKeys[k]] = val.value;
-      } else {
-        snapshot[rawKeys[k]] = val;
-      }
-    }
-
-    // Merge integer values from UI data
-    var intKeys = [
-      'i2c_bus_number', 'contrast', 'scroll_speed',
-      'idle_dim_seconds', 'idle_contrast',
-      'screensaver_seconds', 'volume_overlay_seconds'
-    ];
-    intKeys.forEach(function (key) {
-      if (data[key] !== undefined) {
-        snapshot[key] = parseInt(data[key], 10);
-      }
-    });
-
-    // Merge boolean values from UI data
-    var boolKeys = ['clock_24h', 'rotate_180', 'colon_blink'];
-    boolKeys.forEach(function (key) {
-      if (data[key] !== undefined) {
-        snapshot[key] = !!data[key];
-      }
-    });
-
-    // Merge select values (come as { value: "...", label: "..." } from UI)
-    if (data.i2c_address) {
-      snapshot.i2c_address = (typeof data.i2c_address === 'object')
-        ? data.i2c_address.value : data.i2c_address;
-    }
-    if (data.render_interval_ms) {
-      var riRaw = (typeof data.render_interval_ms === 'object')
-        ? data.render_interval_ms.value : data.render_interval_ms;
-      snapshot.render_interval_ms = parseInt(riRaw, 10);
-    }
-    if (data.screensaver_mode) {
-      snapshot.screensaver_mode = (typeof data.screensaver_mode === 'object')
-        ? data.screensaver_mode.value : data.screensaver_mode;
-    }
-    if (data.playback_layout) {
-      snapshot.playback_layout = (typeof data.playback_layout === 'object')
-        ? data.playback_layout.value : data.playback_layout;
-    }
-    if (data.date_format) {
-      snapshot.date_format = (typeof data.date_format === 'object')
-        ? data.date_format.value : data.date_format;
-    }
-
-    // Re-wrap all values in v-conf format: {"type":"number","value":N}
-    var vconfData = {};
-    var snapshotKeys = Object.keys(snapshot);
-    for (var i = 0; i < snapshotKeys.length; i++) {
-      var sKey = snapshotKeys[i];
-      var sVal = snapshot[sKey];
-      var sType = keyTypes[sKey] || (typeof sVal);
-      vconfData[sKey] = { type: sType, value: sVal };
-    }
-
-    // Ensure directory exists
-    var dir = path.dirname(managedPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
-    fs.writeFileSync(managedPath, JSON.stringify(vconfData, null, 2), 'utf8');
-    this.logger.info('OLED: Config persisted to ' + managedPath);
-  } catch (err) {
-    this.logger.error('OLED: Failed to persist config: ' +
-      ((err && err.message) ? err.message : err));
-  }
-};
-
-
 // ═══════════════════════════════════════════════════════════════════════════
 // Start / Stop
 // ═══════════════════════════════════════════════════════════════════════════
@@ -544,12 +514,43 @@ ControllerOledDisplay.prototype._startPlugin = function () {
   var self = this;
 
   try {
+    // Ensure the I2C kernel module is loaded. Reviewer feedback: this used
+    // to be a one-time edit to /etc/modules in install.sh, but Volumio
+    // recommends doing it at runtime instead. modprobe is idempotent —
+    // it's a no-op if the module is already loaded.
+    try {
+      execSync('sudo modprobe i2c-dev', { stdio: 'ignore' });
+    } catch (modErr) {
+      // Non-fatal: log a warning. The bus may still work if the module is
+      // already loaded by another means.
+      self.logger.warn('OLED: modprobe i2c-dev failed (continuing): ' +
+        ((modErr && modErr.message) ? modErr.message : modErr));
+    }
+
     self._ensureConfig();
     self._cacheConfig();
 
     var busNumber = self._getInt('i2c_bus_number', 1);
-    var addrStr = self._getStr('i2c_address', '0x3C');
+
+    // I2C address: scan the bus only when no address has been configured.
+    // The bundled config ships with i2c_address = "" so that the very first
+    // start auto-detects the display.  Once an address is persisted (either
+    // by detection or by user choice in the UI), the plugin always uses
+    // that value — it never silently overrides a configured address.
+    var addrStr = self._getStr('i2c_address', '');
+    if (!addrStr) {
+      addrStr = self._detectAddress(busNumber);
+      if (!addrStr) {
+        throw new Error('No SSD1309 display detected on I2C bus ' + busNumber +
+          ' (expected at 0x3C or 0x3D). Check wiring: SDA→GPIO2, SCL→GPIO3, VCC→3.3V, GND→GND.');
+      }
+      // Persist the detected address so the scan only happens once.
+      self.config.set('i2c_address', addrStr);
+      self.config.save();
+      self.logger.info('OLED: Detected display at ' + addrStr + ' — saved to config');
+    }
     var address = parseInt(addrStr, 16);
+
     var contrast = self._cachedContrast;
     var scrollSpeed = self._getInt('scroll_speed', 3);
     var rotate = self._getBool('rotate_180', false);

@@ -1,4 +1,4 @@
-# OLED SSD1309 Display Plugin for Volumio – v1.7.27
+# OLED SSD1309 Display Plugin for Volumio – v1.7.28
 
 > **⚠️ Disclaimer**
 >
@@ -42,6 +42,16 @@ Displays playback information on a 128×64 SSD1309 I2C OLED connected to a Raspb
 ---
 
 ## Changelog
+
+### v1.7.28
+
+**Plugin store reviewer feedback applied:**
+
+1. **install.sh slimmed from 194 lines to 65.** Removed everything that doesn't belong at install time: `apt-get install build-essential python3 i2c-tools` (build tools are provided by Volumio's build pipeline; python3 and i2c-tools are no longer needed at runtime), `npm install --production` (handled by `volumio plugin install`), the I2C bus scan via `i2cdetect`, and the Python helper that wrote a detected address into `config.json`.  install.sh now only enables I2C and sets the bus baudrate in `/boot/userconfig.txt`, with the cleanup-on-failure trap retained for safety.  The `/boot/config.txt` fallback is gone — we only ever touch `userconfig.txt`, the user-owned boot config file.
+2. **I2C kernel module is loaded at runtime, not install time.** `sudo modprobe i2c-dev` runs at the start of `_startPlugin()` (no-op if already loaded), replacing the previous `/etc/modules` edit in install.sh.
+3. **Display auto-detection moved into the plugin.** When `i2c_address` is empty in the configuration (the new bundled default), `_startPlugin()` opens the configured I2C bus and uses `i2c-bus`'s `scanSync()` to detect a display at 0x3C or 0x3D, then persists the result so the scan happens only once.  If the user later sets an explicit address via the settings UI, the plugin uses it as-is and never overrides it.  This replaces the previous shell-side `i2cdetect` scan and the Python config-writer that ran at install time.
+4. **Config saving uses v-conf's standard API.** `saveConfig()` now calls `self.config.set(key, value)` with plain values for each field, then `self.config.save()` to force immediate write.  The 115-line `_persistToManagedConfig()` helper that manually unwrapped/re-wrapped values and bypassed v-conf via direct `fs.writeFileSync` calls has been deleted — that complexity was based on a partial diagnosis of the earlier persistence bug.  v-conf's `set()` handles the `{type, value}` wrapping internally as long as `config.json` starts in the wrapped format (which it does).
+5. **Bundled `i2c_address` default is now empty (`""`)** rather than `"0x3C"`, so first-run detection has a clear signal to fire.  Once a value is persisted (by detection or user choice), it is treated as authoritative — the plugin never silently rewrites it.
 
 ### v1.7.27
 
@@ -356,14 +366,14 @@ Initial attempt at the reboot/shutdown power-off fix. Used the wrong method name
 
 ```bash
 # 1. Transfer the tarball to Volumio (run on your PC, not the Pi)
-scp oled_display_ssd1309-v1.7.27.tar volumio@volumio.local:~/
+scp oled_display_ssd1309-v1.7.28.tar volumio@volumio.local:~/
 
 # 2. SSH into Volumio
 ssh volumio@volumio.local
 # password: volumio
 
 # 3. Extract the source folder (anywhere works — home directory is fine)
-tar xf oled_display_ssd1309-v1.7.27.tar
+tar xf oled_display_ssd1309-v1.7.28.tar
 cd oled_display_ssd1309
 
 # 4. Install via Volumio's plugin manager
@@ -385,7 +395,7 @@ The `volumio plugin install` command reads the plugin's metadata, copies files i
 
 ### Alternative: manual install
 
-Use this method only if `volumio plugin install` is unavailable or fails on your Volumio version.  Note that the manual method does not require `build-essential` to be pre-installed: `install.sh` runs `apt-get install build-essential` itself before invoking `npm install`, so the toolchain is always available when needed.
+Use this method only if `volumio plugin install` is unavailable or fails on your Volumio version.  The same `build-essential` prerequisite from the recommended method applies here too — `install.sh` no longer installs build tooling itself (per Volumio plugin store guidelines), so make sure you have run `sudo apt-get install -y build-essential` before proceeding.
 
 ```bash
 # 1. SSH into Volumio
@@ -395,11 +405,11 @@ ssh volumio@volumio.local
 mkdir -p /data/plugins/user_interface/oled_display_ssd1309
 
 # 3. Transfer the tarball (run on your PC, not the Pi)
-scp oled_display_ssd1309-v1.7.27.tar volumio@volumio.local:/tmp/
+scp oled_display_ssd1309-v1.7.28.tar volumio@volumio.local:/tmp/
 
 # 4. Extract directly into the plugins directory
 cd /data/plugins/user_interface
-tar xf /tmp/oled_display_ssd1309-v1.7.27.tar
+tar xf /tmp/oled_display_ssd1309-v1.7.28.tar
 
 # 5. Run the installer manually
 cd /data/plugins/user_interface/oled_display_ssd1309

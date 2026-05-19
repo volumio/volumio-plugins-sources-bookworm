@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Renderer for the 128x64 OLED display (v1.7.27).
+ * Renderer for the 128x64 OLED display (v1.7.28).
  *
  * Three playback layouts (Classic, Minimal, Clock Focus), idle screen
  * with large clock digits, volume overlay, screensavers with randomised

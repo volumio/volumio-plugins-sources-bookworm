@@ -1,6 +1,6 @@
 {
   "name": "oled_display_ssd1309",
-  "version": "1.7.27",
+  "version": "1.7.28",
   "description": "OLED SSD1309 display plugin for Volumio – shows playback info, clock, progress, audio format, and volume on a 128x64 I2C OLED",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
       "bookworm"
     ],
     "details": "Drives a 128x64 SSD1309 I2C OLED display showing playback info, clock, progress bar, audio format, volume overlay, and screensaver. Designed for Raspberry Pi with zero MPD interference.",
-    "changelog": "v1.7.27: Bluetooth no-metadata screens (v1.7.24-v1.7.26) removed. Root cause is a Volumio Bluetooth-plugin issue (pushState not broadcast over socket.io); once Volumio fixes it, the regular playback layouts will render BT correctly without special-case code. Retained the 'bt' SKIP_TRACK_TYPES entry from v1.7.24 — it stays useful when BT state starts arriving normally. v1.7.23: 'FLAC PCM' no longer appears momentarily after track changes."
+    "changelog": "v1.7.28: Plugin store reviewer feedback applied — install.sh slimmed from 194 to 65 lines, I2C module load + display auto-detection moved to runtime, saveConfig now uses v-conf's standard set()/save() API, bundled i2c_address default is empty for first-run detection. v1.7.27: Bluetooth no-metadata screens (v1.7.24-v1.7.26) removed; retained the 'bt' SKIP_TRACK_TYPES entry."
   },
   "engines": {
     "node": ">=20",
