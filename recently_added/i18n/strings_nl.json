@@ -1,0 +1,54 @@
+{
+  "PLUGIN_CONFIGURATION": "Recently Added instellingen",
+  "DISPLAY": {
+    "TITLE": "Weergave",
+    "SAVE": "Opslaan",
+    "VIEW_MODE": "Weergavemodus",
+    "VIEW_MODE_DOC": "Bepaalt wat er wordt getoond als je op een tijdsvenster tikt. 'Beide' is handig wanneer er weinig nieuwe muziek is toegevoegd; kies 'Alleen albums' of 'Alleen artiesten' als er in één keer veel is toegevoegd en je een gefocuste lijst wilt.",
+    "VIEW_ALBUMS": "Alleen albums",
+    "VIEW_ARTISTS": "Alleen artiesten",
+    "VIEW_BOTH": "Albums en artiesten",
+    "ALBUMS_SORT": "Albums sorteren",
+    "ALBUMS_SORT_DOC": "Volgorde van albums binnen elke sectie. Geldt voor de Albums-sectie in tijdvensterweergaven en voor de albumlijst binnen artiestendetailweergaven.",
+    "ARTISTS_SORT": "Artiesten sorteren",
+    "ARTISTS_SORT_DOC": "Volgorde van artiesten binnen de Artiesten-sectie.",
+    "SORT_RECENCY": "Nieuwste eerst",
+    "SORT_ALPHABETICAL": "Alfabetisch"
+  },
+  "CONNECTION": {
+    "TITLE": "MPD-verbinding",
+    "SAVE": "Opslaan",
+    "MPD_HOST": "MPD-host",
+    "MPD_HOST_DOC": "Hostnaam of IP-adres van de MPD-server. Gebruik 'localhost' voor de lokale MPD van Volumio (standaard).",
+    "MPD_PORT": "MPD-poort",
+    "MPD_PORT_DOC": "TCP-poort van de MPD-server. De standaardwaarde van Volumio is 6600.",
+    "QUERY_TIMEOUT": "Wachttijd query (ms)",
+    "QUERY_TIMEOUT_DOC": "Maximale wachttijd op een antwoord op een 'find'-query voordat wordt opgegeven. 10000 ms is een veilige standaardwaarde voor bibliotheken tot enkele duizenden bestanden."
+  },
+  "BROWSE": {
+    "ROOT_TITLE": "Recent toegevoegd",
+    "WINDOW_7D": "Laatste 7 dagen",
+    "WINDOW_14D": "Laatste 14 dagen",
+    "WINDOW_30D": "Laatste 30 dagen",
+    "WINDOW_90D": "Laatste 90 dagen",
+    "ALBUMS_SECTION": "Albums",
+    "ARTISTS_SECTION": "Artiesten",
+    "ALBUMS_HEADER": "Albums — {window} ({count})",
+    "ARTISTS_HEADER": "Artiesten — {window} ({count})",
+    "ARTIST_HEADER": "{artist} — {window} ({count})",
+    "ALBUM_COUNT_ONE": "1 album",
+    "ALBUM_COUNT_MANY": "{n} albums",
+    "ARTIST_COUNT_ONE": "1 artiest",
+    "ARTIST_COUNT_MANY": "{n} artiesten",
+    "UNKNOWN_ARTIST": "Onbekende artiest",
+    "UNKNOWN_ALBUM": "Onbekend album",
+    "ERROR_TITLE": "{window} — fout",
+    "MPD_UNREACHABLE": "MPD niet bereikbaar — controleer de plugin-instellingen."
+  },
+  "TOAST": {
+    "START_FAILED": "Starten mislukt: {message}",
+    "RECONNECTING": "Instellingen opgeslagen. Opnieuw verbinden met MPD...",
+    "RECONNECT_FAILED": "Opnieuw verbinden mislukt: {message}",
+    "SAVE_FAILED": "Opslaan van instellingen mislukt: {message}"
+  }
+}
