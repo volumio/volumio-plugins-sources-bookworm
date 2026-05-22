@@ -26,9 +26,9 @@ fi
 mkdir -p $SQUEEZELITE_BIN_PATH
 
 if [ $ARCH = "armv6l" ] || [ $ARCH = "armv7l" ] || [ $ARCH = "aarch64" ]; then
-    ARCHIVE="squeezelite-1.9.9.1403-ffmpeg-armhf.tar.gz"
+    ARCHIVE="squeezelite-ffmpeg-2.0.0.1541-armhf.tar.gz"
 elif [ $ARCH = "x86_64" ]; then
-    ARCHIVE="squeezelite-1.9.9.1392-x86_64.tar.gz"
+    ARCHIVE="squeezelite-2.0.0.1541-x86_64.tar.gz"
 fi
 
 if [ -z $ARCHIVE ]; then

@@ -4,19 +4,19 @@
 
 A plugin that installs and runs Squeezelite with (M)onitoring and (C)ontrol. Aims to work with minimal configuration, displays playback status on Volumio and provides basic player controls (play / pause / next / previous / random / repeat / volume adjust).
 
-Squeezelite is a client player for the Logitech Media Server. The plugin installs the Squeezelite binary obtained from the [LMS Clients](https://sourceforge.net/projects/lmsclients/) repo.
+Squeezelite is a client player for the [Lyrion Music Server](https://lyrion.org/) (formerly Logitech Media Server). The plugin installs the Squeezelite binary obtained from the [LMS Clients](https://sourceforge.net/projects/lmsclients/) repo.
 
 Before installing this plugin, ensure there are no other Squeezelite plugins or binaries installed on the system.
 
-This plugin has been tested to work with Logitech Media Server v8.5.2.
+This plugin has been tested to work with Lyrion Music Server v9.1.0.
 
 ## Getting Started
 
-The following instructions assume you have at least one working Logitech Media Server running on your network.
+The following instructions assume you have at least one working Lyrion Music Server running on your network.
 
 1. Install the Squeezelite MC plugin from Volumio plugin store.
 2. Enable the plugin. Volumio will notify you when Squeezelite has started.
-3. Access the web interface of Logitech Media Server. If you have multiple client players on the network, choose the one that shows Volumio's hostname -- this is the default player name assigned to Squeezelite running on Volumio (configurable in the plugin settings).
+3. Access the web interface of Lyrion Music Server. If you have multiple client players on the network, choose the one that shows Volumio's hostname -- this is the default player name assigned to Squeezelite running on Volumio (configurable in the plugin settings).
 4. When you play a song, Volumio should display its cover art, title, artist, etc.
 
 ## Configuration
@@ -40,6 +40,12 @@ In the plugin settings, you can configure the following:
 - If you try to play a track belonging to another music service at a time when Squeezelite is already playing something, you will likely encounter a "Device or resource busy" error. What happens is, the plugin will tell Squeezelite to stop playback, but there is at least a 1-second delay before the output device is actually released. Since there is no mechanism for the plugin to inform Volumio of this delay, Volumio will just instruct the next music service to start playback immediately. If the output device is still being occupied by Squeezelite (very likely to be the case), then the "Device or resource busy" error will occur. You should therefore pause or stop the Squeezelite playback and wait approximately one second before moving on to another music service.
 
 ## Changelog
+
+2.1.0
+- Update Squeezelite v2.0.0.
+- Fix radio ICY metadata changes missing for LMS v9.x.
+- Remove `fadeOnPauseResume` setting. It's no longer necessary given volume is now restored when switching to another music service while paused (LMS sets volume to zero on pause).
+- Fix wrong seek value on UI refresh.
 
 2.0.0
 - Release for Bookworm-based Volumio

@@ -15,13 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
@@ -36,7 +46,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _ControllerSqueezeliteMC_instances, _ControllerSqueezeliteMC_serviceName, _ControllerSqueezeliteMC_context, _ControllerSqueezeliteMC_config, _ControllerSqueezeliteMC_commandRouter, _ControllerSqueezeliteMC_playerRunState, _ControllerSqueezeliteMC_playerStatusMonitor, _ControllerSqueezeliteMC_playbackTimer, _ControllerSqueezeliteMC_lastState, _ControllerSqueezeliteMC_volatileCallback, _ControllerSqueezeliteMC_volumioSetVolumeCallback, _ControllerSqueezeliteMC_commandDispatcher, _ControllerSqueezeliteMC_proxy, _ControllerSqueezeliteMC_playerFinder, _ControllerSqueezeliteMC_volumioVolume, _ControllerSqueezeliteMC_playerConfigChangeDelayTimer, _ControllerSqueezeliteMC_playerConfigChangeHandler, _ControllerSqueezeliteMC_playerStartupParams, _ControllerSqueezeliteMC_previousDoubleClickTimeout, _ControllerSqueezeliteMC_doGetUIConfig, _ControllerSqueezeliteMC_stdLogError, _ControllerSqueezeliteMC_initAndStartPlayerFinder, _ControllerSqueezeliteMC_applyFadeOnPauseResume, _ControllerSqueezeliteMC_clearPlayerStatusMonitor, _ControllerSqueezeliteMC_clearPlayerFinder, _ControllerSqueezeliteMC_handlePlayerDisconnect, _ControllerSqueezeliteMC_handlePlayerDiscoveryError, _ControllerSqueezeliteMC_handlePlayerStatusUpdate, _ControllerSqueezeliteMC_pushState, _ControllerSqueezeliteMC_stopCurrentServiceAndSetVolatile, _ControllerSqueezeliteMC_pushEmptyState, _ControllerSqueezeliteMC_getCurrentService, _ControllerSqueezeliteMC_isCurrentService, _ControllerSqueezeliteMC_requestPlayerStatusUpdate, _ControllerSqueezeliteMC_getPlayerConfig, _ControllerSqueezeliteMC_getAlsaConfig, _ControllerSqueezeliteMC_getPlayerStartupParams, _ControllerSqueezeliteMC_getBestSupportedDSDFormat, _ControllerSqueezeliteMC_getVolumioVolume, _ControllerSqueezeliteMC_revalidatePlayerConfig, _ControllerSqueezeliteMC_handlePlayerConfigChange, _ControllerSqueezeliteMC_resolveOnStatusMode;
+var _ControllerSqueezeliteMC_instances, _ControllerSqueezeliteMC_serviceName, _ControllerSqueezeliteMC_context, _ControllerSqueezeliteMC_config, _ControllerSqueezeliteMC_commandRouter, _ControllerSqueezeliteMC_playerRunState, _ControllerSqueezeliteMC_playerStatusMonitor, _ControllerSqueezeliteMC_playbackTimer, _ControllerSqueezeliteMC_lastState, _ControllerSqueezeliteMC_volatileCallback, _ControllerSqueezeliteMC_volumioSetVolumeCallback, _ControllerSqueezeliteMC_commandDispatcher, _ControllerSqueezeliteMC_proxy, _ControllerSqueezeliteMC_playerFinder, _ControllerSqueezeliteMC_volumioVolume, _ControllerSqueezeliteMC_playerConfigChangeDelayTimer, _ControllerSqueezeliteMC_playerConfigChangeHandler, _ControllerSqueezeliteMC_playerStartupParams, _ControllerSqueezeliteMC_previousDoubleClickTimeout, _ControllerSqueezeliteMC_doGetUIConfig, _ControllerSqueezeliteMC_stdLogError, _ControllerSqueezeliteMC_initAndStartPlayerFinder, _ControllerSqueezeliteMC_clearPlayerStatusMonitor, _ControllerSqueezeliteMC_clearPlayerFinder, _ControllerSqueezeliteMC_handlePlayerDisconnect, _ControllerSqueezeliteMC_handlePlayerDiscoveryError, _ControllerSqueezeliteMC_handlePlayerStatusUpdate, _ControllerSqueezeliteMC_pushState, _ControllerSqueezeliteMC_stopCurrentServiceAndSetVolatile, _ControllerSqueezeliteMC_pushEmptyState, _ControllerSqueezeliteMC_getCurrentService, _ControllerSqueezeliteMC_isCurrentService, _ControllerSqueezeliteMC_requestPlayerStatusUpdate, _ControllerSqueezeliteMC_getPlayerConfig, _ControllerSqueezeliteMC_getAlsaConfig, _ControllerSqueezeliteMC_getPlayerStartupParams, _ControllerSqueezeliteMC_getBestSupportedDSDFormat, _ControllerSqueezeliteMC_getVolumioVolume, _ControllerSqueezeliteMC_revalidatePlayerConfig, _ControllerSqueezeliteMC_handlePlayerConfigChange, _ControllerSqueezeliteMC_resolveOnStatusMode;
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 const kew_1 = __importDefault(require("kew"));
@@ -71,11 +81,11 @@ const EMPTY_STATE = {
     channels: undefined
 };
 const LMS_TRACK_TYPE_TO_VOLUMIO = {
-    'flc': 'flac',
-    'alc': 'alac',
-    'wvp': 'wv',
-    'aif': 'aiff',
-    'ops': 'opus'
+    flc: 'flac',
+    alc: 'alac',
+    wvp: 'wv',
+    aif: 'aiff',
+    ops: 'opus'
 };
 const LMS_REPEAT_OFF = 0;
 const LMS_REPEAT_CURRENT_SONG = 1;
@@ -120,6 +130,7 @@ class ControllerSqueezeliteMC {
         __classPrivateFieldSet(this, _ControllerSqueezeliteMC_volatileCallback, null, "f");
         __classPrivateFieldSet(this, _ControllerSqueezeliteMC_volumioSetVolumeCallback, null, "f");
         __classPrivateFieldSet(this, _ControllerSqueezeliteMC_commandDispatcher, null, "f");
+        __classPrivateFieldSet(this, _ControllerSqueezeliteMC_proxy, null, "f");
         __classPrivateFieldSet(this, _ControllerSqueezeliteMC_playerFinder, null, "f");
         __classPrivateFieldSet(this, _ControllerSqueezeliteMC_playerConfigChangeDelayTimer, null, "f");
         __classPrivateFieldSet(this, _ControllerSqueezeliteMC_playerConfigChangeHandler, null, "f");
@@ -127,8 +138,7 @@ class ControllerSqueezeliteMC {
         __classPrivateFieldSet(this, _ControllerSqueezeliteMC_previousDoubleClickTimeout, null, "f");
     }
     getUIConfig() {
-        return (0, Util_1.jsPromiseToKew)(__classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_doGetUIConfig).call(this))
-            .fail((error) => {
+        return (0, Util_1.jsPromiseToKew)(__classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_doGetUIConfig).call(this)).fail((error) => {
             SqueezeliteMCContext_1.default.getLogger().error(`[squeezelite_mc] getUIConfig(): Cannot populate configuration - ${error}`);
             throw error;
         });
@@ -154,17 +164,7 @@ class ControllerSqueezeliteMC {
         if (!__classPrivateFieldGet(this, _ControllerSqueezeliteMC_volumioSetVolumeCallback, "f")) {
             __classPrivateFieldSet(this, _ControllerSqueezeliteMC_volumioSetVolumeCallback, (volume) => {
                 __classPrivateFieldSet(this, _ControllerSqueezeliteMC_volumioVolume, volume.vol, "f");
-                if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_playbackTimer, "f") && __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f")) {
-                    /**
-                     * Volumioupdatevolume() triggers #pushState() in statemachine after calling
-                     * this callback - but volatile state with old 'seek' value (from last push) will be used.
-                     * this is undesirable if current status is 'play', so we update the statemachine's volatile state
-                     * with seek value obtained from our internal playbackTimer.
-                     */
-                    SqueezeliteMCContext_1.default.getLogger().info(`[squeezelite_mc] Setting Squeezelite volume to ${volume.vol}`);
-                    if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_lastState, "f") && __classPrivateFieldGet(this, _ControllerSqueezeliteMC_lastState, "f").status === 'play' && __classPrivateFieldGet(this, _ControllerSqueezeliteMC_lastState, "f").seek !== undefined) {
-                        __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_pushState).call(this, { ...__classPrivateFieldGet(this, _ControllerSqueezeliteMC_lastState, "f"), seek: __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playbackTimer, "f").getSeek() });
-                    }
+                if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f")) {
                     __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f")
                         .sendVolume(__classPrivateFieldGet(this, _ControllerSqueezeliteMC_volumioVolume, "f"))
                         .catch((error) => {
@@ -175,7 +175,8 @@ class ControllerSqueezeliteMC {
             __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandRouter, "f").addCallback('volumioupdatevolume', __classPrivateFieldGet(this, _ControllerSqueezeliteMC_volumioSetVolumeCallback, "f"));
         }
         __classPrivateFieldSet(this, _ControllerSqueezeliteMC_proxy, new Proxy_1.default(SqueezeliteMCContext_1.default.getConfigValue('serverCredentials')), "f");
-        __classPrivateFieldGet(this, _ControllerSqueezeliteMC_proxy, "f").start()
+        __classPrivateFieldGet(this, _ControllerSqueezeliteMC_proxy, "f")
+            .start()
             .catch(() => {
             SqueezeliteMCContext_1.default.getLogger().warn('[squeezelite_mc] Unable to start proxy server - requests for artwork on password-protected servers will be denied');
         })
@@ -204,7 +205,8 @@ class ControllerSqueezeliteMC {
         })
             .catch((error) => {
             __classPrivateFieldSet(this, _ControllerSqueezeliteMC_playerRunState, Player_1.PlayerRunState.StartError, "f");
-            if (error instanceof System_1.SystemError && error.code === System_1.SystemErrorCode.DeviceBusy) {
+            if (error instanceof System_1.SystemError &&
+                error.code === System_1.SystemErrorCode.DeviceBusy) {
                 SqueezeliteMCContext_1.default.toast('error', SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_ERR_START_DEV_BUSY'));
                 defer.resolve();
             }
@@ -217,6 +219,9 @@ class ControllerSqueezeliteMC {
     }
     onStop() {
         const defer = kew_1.default.defer();
+        if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_isCurrentService).call(this)) {
+            this.unsetVolatile();
+        }
         __classPrivateFieldSet(this, _ControllerSqueezeliteMC_playerStartupParams, null, "f");
         __classPrivateFieldSet(this, _ControllerSqueezeliteMC_commandDispatcher, null, "f");
         if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_playbackTimer, "f")) {
@@ -246,7 +251,8 @@ class ControllerSqueezeliteMC {
             (0, System_1.stopSqueezeliteService)()
         ];
         SqueezeliteMCContext_1.default.toast('info', SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_STOPPING'));
-        Promise.all(promises).then(() => {
+        Promise.all(promises)
+            .then(() => {
             SqueezeliteMCContext_1.default.toast('success', SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_STOPPED'));
             SqueezeliteMCContext_1.default.reset();
             defer.resolve();
@@ -262,8 +268,20 @@ class ControllerSqueezeliteMC {
     }
     // Callback that gets called by statemachine when unsetting volatile state
     onUnsetVolatile() {
+        const lastPlaybackVolume = SqueezeliteMCContext_1.default.get('lastPlaybackVolume');
+        SqueezeliteMCContext_1.default.delete('lastPlaybackVolume');
         __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_pushEmptyState).call(this);
         SqueezeliteMCContext_1.default.getMpdPlugin().ignoreUpdate(false);
+        // Check if we're paused. If so, Squeezelite would have probably set the mixer volume to 0.
+        // We would have to restore it to the last known playback volume before we got paused.
+        // Below, "lastPlaybackVolume === this.#lastState.volume" returns false if volume was changed during pause,
+        // which would change the mixer volume to the new volume, so no need to restore.
+        if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_lastState, "f")?.status === 'pause' &&
+            lastPlaybackVolume &&
+            lastPlaybackVolume === __classPrivateFieldGet(this, _ControllerSqueezeliteMC_lastState, "f").volume) {
+            SqueezeliteMCContext_1.default.getLogger().info(`[squeezelite_mc] Restoring last known playback volume: ${lastPlaybackVolume}`);
+            __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandRouter, "f").volumiosetvolume(lastPlaybackVolume);
+        }
         /**
          * There is no graceful handling of switching from one music service plugin to another
          * in Volumio. Statemachine calls volatile callbacks in unsetVolatile(), but does not
@@ -282,8 +300,7 @@ class ControllerSqueezeliteMC {
      * Config functions
      */
     configStartSqueezelite(data) {
-        __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_revalidatePlayerConfig).call(this, data)
-            .catch((error) => {
+        __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_revalidatePlayerConfig).call(this, data).catch((error) => {
             __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_stdLogError).call(this, '#revalidatePlayerConfig()', error);
         });
     }
@@ -342,19 +359,17 @@ class ControllerSqueezeliteMC {
     }
     configSwitchToBasicSqueezeliteSettings() {
         SqueezeliteMCContext_1.default.setConfigValue('playerConfigType', 'basic');
-        __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_revalidatePlayerConfig).call(this, { force: true })
-            .catch((error) => {
+        __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_revalidatePlayerConfig).call(this, { force: true }).catch((error) => {
             __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_stdLogError).call(this, '#revalidatePlayerConfig()', error);
         });
     }
     configSwitchToManualSqueezeliteSettings() {
         SqueezeliteMCContext_1.default.setConfigValue('playerConfigType', 'manual');
-        __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_revalidatePlayerConfig).call(this, { force: true })
-            .catch((error) => {
+        __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_revalidatePlayerConfig).call(this, { force: true }).catch((error) => {
             __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_stdLogError).call(this, '#revalidatePlayerConfig()', error);
         });
     }
-    async configSaveBasicSqueezeliteSettings(data) {
+    configSaveBasicSqueezeliteSettings(data) {
         const playerNameType = data.playerNameType.value;
         const playerName = data.playerName.trim();
         const dsdPlayback = data.dsdPlayback.value;
@@ -370,37 +385,31 @@ class ControllerSqueezeliteMC {
             type: 'basic',
             playerNameType,
             playerName,
-            dsdPlayback,
-            fadeOnPauseResume: data.fadeOnPauseResume
+            dsdPlayback
         };
         SqueezeliteMCContext_1.default.setConfigValue('basicPlayerConfig', newConfig);
-        await __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_applyFadeOnPauseResume).call(this);
         if (!revalidate) {
             SqueezeliteMCContext_1.default.toast('success', SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_SETTINGS_SAVED'));
         }
         else {
-            __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_revalidatePlayerConfig).call(this)
-                .catch((error) => {
+            __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_revalidatePlayerConfig).call(this).catch((error) => {
                 __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_stdLogError).call(this, '#revalidatePlayerConfig()', error);
             });
         }
     }
-    async configSaveManualSqueezeliteSettings(data) {
+    configSaveManualSqueezeliteSettings(data) {
         const startupOptions = data.startupOptions.trim();
         const { startupOptions: oldStartupOptions } = SqueezeliteMCContext_1.default.getConfigValue('manualPlayerConfig');
         const newConfig = {
             type: 'manual',
-            fadeOnPauseResume: data.fadeOnPauseResume,
             startupOptions
         };
         SqueezeliteMCContext_1.default.setConfigValue('manualPlayerConfig', newConfig);
-        await __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_applyFadeOnPauseResume).call(this);
         if (startupOptions === oldStartupOptions) {
             SqueezeliteMCContext_1.default.toast('success', SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_SETTINGS_SAVED'));
         }
         else {
-            __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_revalidatePlayerConfig).call(this)
-                .catch((error) => {
+            __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_revalidatePlayerConfig).call(this).catch((error) => {
                 __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_stdLogError).call(this, '#revalidatePlayerConfig()', error);
             });
         }
@@ -410,8 +419,7 @@ class ControllerSqueezeliteMC {
      */
     stop() {
         if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f")) {
-            __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f").sendStop()
-                .catch((error) => {
+            __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f").sendStop().catch((error) => {
                 __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_stdLogError).call(this, '#commandDispatcher.sendStop()', error);
             });
             return __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_resolveOnStatusMode).call(this, 'stop');
@@ -420,8 +428,7 @@ class ControllerSqueezeliteMC {
     }
     play() {
         if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f")) {
-            __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f").sendPlay()
-                .catch((error) => {
+            __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f").sendPlay().catch((error) => {
                 __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_stdLogError).call(this, '#commandDispatcher.sendPlay()', error);
             });
             return __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_resolveOnStatusMode).call(this, 'play');
@@ -430,8 +437,7 @@ class ControllerSqueezeliteMC {
     }
     pause() {
         if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f")) {
-            __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f").sendPause()
-                .catch((error) => {
+            __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f").sendPause().catch((error) => {
                 __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_stdLogError).call(this, '#commandDispatcher.sendPause()', error);
             });
             return __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_resolveOnStatusMode).call(this, 'pause');
@@ -440,8 +446,7 @@ class ControllerSqueezeliteMC {
     }
     resume() {
         if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f")) {
-            __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f").sendPlay()
-                .catch((error) => {
+            __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f").sendPlay().catch((error) => {
                 __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_stdLogError).call(this, '#commandDispatcher.sendPlay()', error);
             });
             return __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_resolveOnStatusMode).call(this, 'play');
@@ -450,8 +455,7 @@ class ControllerSqueezeliteMC {
     }
     seek(position) {
         if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f")) {
-            return (0, Util_1.jsPromiseToKew)(__classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f").sendSeek(position)
-                .catch((error) => {
+            return (0, Util_1.jsPromiseToKew)(__classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f").sendSeek(position).catch((error) => {
                 __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_stdLogError).call(this, '#commandDispatcher.sendSeek()', error);
             }));
         }
@@ -459,8 +463,7 @@ class ControllerSqueezeliteMC {
     }
     next() {
         if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f")) {
-            return (0, Util_1.jsPromiseToKew)(__classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f").sendNext()
-                .catch((error) => {
+            return (0, Util_1.jsPromiseToKew)(__classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f").sendNext().catch((error) => {
                 __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_stdLogError).call(this, '#commandDispatcher.sendNext()', error);
             }));
         }
@@ -470,8 +473,7 @@ class ControllerSqueezeliteMC {
         if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f")) {
             if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_previousDoubleClickTimeout, "f")) {
                 __classPrivateFieldSet(this, _ControllerSqueezeliteMC_previousDoubleClickTimeout, null, "f");
-                return (0, Util_1.jsPromiseToKew)(__classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f").sendPrevious()
-                    .catch((error) => {
+                return (0, Util_1.jsPromiseToKew)(__classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f").sendPrevious().catch((error) => {
                     __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_stdLogError).call(this, '#commandDispatcher.sendPrevious()', error);
                 }));
             }
@@ -485,7 +487,10 @@ class ControllerSqueezeliteMC {
     repeat(value, repeatSingle) {
         if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f")) {
             __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f")
-                .sendRepeat(value ? (repeatSingle ? LMS_REPEAT_CURRENT_SONG : LMS_REPEAT_PLAYLIST) : LMS_REPEAT_OFF)
+                .sendRepeat(value ?
+                repeatSingle ? LMS_REPEAT_CURRENT_SONG
+                    : LMS_REPEAT_PLAYLIST
+                : LMS_REPEAT_OFF)
                 .catch((error) => {
                 __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_stdLogError).call(this, '#commandDispatcher.sendRepeat()', error);
             });
@@ -515,28 +520,34 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
     if (playerConfig.type === 'basic') {
         uiconf.sections.splice(2, 1);
     }
-    else { // `manual` playerConfigType
+    else {
+        // `manual` playerConfigType
         uiconf.sections.splice(1, 1);
     }
     /**
      * Status conf
      */
     let statusDesc, statusButtonType;
-    if (status === 'active' && __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerRunState, "f") !== Player_1.PlayerRunState.ConfigRequireRestart) {
-        const player = __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStatusMonitor, "f") ? __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStatusMonitor, "f").getPlayer() : null;
-        statusDesc = player ?
-            SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_DESC_STATUS_CONNECTED', player.server.name, player.server.ip) :
-            SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_DESC_STATUS_STARTED');
+    if (status === 'active' &&
+        __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerRunState, "f") !== Player_1.PlayerRunState.ConfigRequireRestart) {
+        const player = __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStatusMonitor, "f") ?
+            __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStatusMonitor, "f").getPlayer()
+            : null;
+        statusDesc =
+            player ?
+                SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_DESC_STATUS_CONNECTED', player.server.name, player.server.ip)
+                : SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_DESC_STATUS_STARTED');
     }
     else if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerRunState, "f") === Player_1.PlayerRunState.StartError) {
         statusDesc = SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_DESC_STATUS_ERR_START');
         statusButtonType = 'start';
     }
     else if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerRunState, "f") === Player_1.PlayerRunState.ConfigRequireRestart) {
-        statusDesc = (status === 'active') ?
-            SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_DESC_STATUS_ERR_RESTART_CONFIG') :
-            SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_DESC_STATUS_ERR_START');
-        statusButtonType = (status === 'active') ? 'restart' : 'start';
+        statusDesc =
+            status === 'active' ?
+                SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_DESC_STATUS_ERR_RESTART_CONFIG')
+                : SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_DESC_STATUS_ERR_START');
+        statusButtonType = status === 'active' ? 'restart' : 'start';
     }
     else if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerRunState, "f") === Player_1.PlayerRunState.ConfigRequireRevalidate) {
         statusDesc = SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_DESC_STATUS_ERR_REVALIDATE');
@@ -547,15 +558,15 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
         statusButtonType = 'start';
     }
     let statusButton = {
-        'id': 'startSqueezelite',
-        'element': 'button',
-        'onClick': {
-            'type': 'emit',
-            'message': 'callMethod',
-            'data': {
-                'endpoint': 'music_service/squeezelite_mc',
-                'method': 'configStartSqueezelite',
-                'data': {
+        id: 'startSqueezelite',
+        element: 'button',
+        onClick: {
+            type: 'emit',
+            message: 'callMethod',
+            data: {
+                endpoint: 'music_service/squeezelite_mc',
+                method: 'configStartSqueezelite',
+                data: {
                     force: true
                 }
             }
@@ -582,7 +593,7 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
      * Squeezelite conf
      */
     if (playerConfig.type === 'basic') {
-        const { playerNameType, playerName, dsdPlayback, fadeOnPauseResume } = playerConfig;
+        const { playerNameType, playerName, dsdPlayback } = playerConfig;
         // Player name
         squeezeliteBasicUIConf.content[1].value = {
             value: playerNameType
@@ -624,29 +635,29 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
             default: // 'auto'
                 squeezeliteBasicUIConf.content[3].value.label = SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_DSD_PLAYBACK_AUTO');
         }
-        // Fade on pause / resume
-        squeezeliteBasicUIConf.content[4].value = fadeOnPauseResume;
     }
-    else { // 'manual' playerConfigType
-        squeezeliteManualUIConf.content[1].value = playerConfig.fadeOnPauseResume;
-        squeezeliteManualUIConf.content[2].value = playerConfig.startupOptions;
+    else {
+        // 'manual' playerConfigType
+        squeezeliteManualUIConf.content[1].value = playerConfig.startupOptions;
         // Get suggested startup options
         let suggestedStartupOptions;
         try {
             const defaultStartupParams = await __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_getPlayerStartupParams).call(this, true);
-            suggestedStartupOptions = (0, Util_1.basicPlayerStartupParamsToSqueezeliteOpts)(defaultStartupParams);
+            suggestedStartupOptions =
+                (0, Util_1.basicPlayerStartupParamsToSqueezeliteOpts)(defaultStartupParams);
         }
         catch (error) {
-            if (error instanceof System_1.SystemError && error.code === System_1.SystemErrorCode.DeviceBusy) {
+            if (error instanceof System_1.SystemError &&
+                error.code === System_1.SystemErrorCode.DeviceBusy) {
                 squeezeliteManualUIConf.description = SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_ERR_SUGGESTED_STARTUP_OPTS_DEV_BUSY');
             }
             else {
                 squeezeliteManualUIConf.description = SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_ERR_SUGGESTED_STARTUP_OPTS');
             }
         }
-        squeezeliteManualUIConf.content[3].value = suggestedStartupOptions;
+        squeezeliteManualUIConf.content[2].value = suggestedStartupOptions;
         // Apply suggested button payload
-        squeezeliteManualUIConf.content[4].onClick.data.data = {
+        squeezeliteManualUIConf.content[3].onClick.data.data = {
             startupOptions: suggestedStartupOptions
         };
     }
@@ -678,8 +689,10 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
     if (serversSelectData.length > 0) {
         serverCredentialsUIConf.content[0].value = serversSelectData[0] || null;
         // Username and password fields
-        serversSelectData.map((select) => select.value).forEach((serverName) => {
-            const { username = '', password = '' } = serverCredentials[serverName] || {};
+        serversSelectData
+            .map((select) => select.value)
+            .forEach((serverName) => {
+            const { username, password } = serverCredentials[serverName] || {};
             const usernameField = {
                 id: `${serverName}_username`,
                 type: 'text',
@@ -727,7 +740,6 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
                 if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_volumioVolume, "f") !== undefined) {
                     await __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f").sendVolume(__classPrivateFieldGet(this, _ControllerSqueezeliteMC_volumioVolume, "f"));
                 }
-                await __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_applyFadeOnPauseResume).call(this);
                 await __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_clearPlayerStatusMonitor).call(this); // Ensure there is only one monitor instance
                 const playerStatusMonitor = new PlayerStatusMonitor_1.default(player, serverCredentials);
                 __classPrivateFieldSet(this, _ControllerSqueezeliteMC_playerStatusMonitor, playerStatusMonitor, "f");
@@ -761,22 +773,11 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
         return __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerFinder, "f").start({
             serverCredentials: SqueezeliteMCContext_1.default.getConfigValue('serverCredentials'),
             eventFilter: {
+                // Only notify when found or lost player matches Volumio device IP and player ID matches mac addr
                 playerIP: ipAddresses,
                 playerId: macAddresses
             }
         });
-    }
-}, _ControllerSqueezeliteMC_applyFadeOnPauseResume = function _ControllerSqueezeliteMC_applyFadeOnPauseResume() {
-    const { fadeOnPauseResume } = __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_getPlayerConfig).call(this);
-    if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f") && fadeOnPauseResume) {
-        /**
-         * Set LMS Player Settings -> Audio -> Volume Control to 'Output level is fixed at 100%'.
-         * This is to avoid Squeezelite from zero-ing out the volume on pause, which obviously
-         * causes problems with native DSD playback. Also, after Squeezelite mutes the volume on pause,
-         * playing from another Volumio source will not restore the volume to its previous level (i.e.
-         * it stays muted).
-         */
-        return __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandDispatcher, "f").sendPref('digitalVolumeControl', 0);
     }
 }, _ControllerSqueezeliteMC_clearPlayerStatusMonitor = async function _ControllerSqueezeliteMC_clearPlayerStatusMonitor() {
     if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStatusMonitor, "f")) {
@@ -793,6 +794,7 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
 }, _ControllerSqueezeliteMC_handlePlayerDisconnect = function _ControllerSqueezeliteMC_handlePlayerDisconnect() {
     if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStatusMonitor, "f")) {
         const player = __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStatusMonitor, "f").getPlayer();
+        SqueezeliteMCContext_1.default.getLogger().info(`[squeezelite_mc] Player disconnected from ${player.server.name} (${player.server.ip})`);
         SqueezeliteMCContext_1.default.toast('info', SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_DISCONNECTED', player.server.name, player.server.ip));
     }
     void (async () => {
@@ -830,7 +832,7 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
                 url = track.artworkUrl;
             }
         }
-        else if (track.coverArt) {
+        else if (track.coverId) {
             url = `http://${player.server.ip}:${player.server.jsonPort}/music/current/cover.jpg?player=${encodeURIComponent(player.id)}&ms=${Date.now()}`;
             useProxy = true;
         }
@@ -839,7 +841,9 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
         }
         let proxyIP = null;
         if (useProxy && __classPrivateFieldGet(this, _ControllerSqueezeliteMC_proxy, "f")?.getStatus() === Proxy_1.ProxyStatus.Started) {
-            const volumioIPs = __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandRouter, "f").getCachedPAddresses ? __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandRouter, "f").getCachedPAddresses() : __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandRouter, "f").getCachedIPAddresses();
+            const volumioIPs = __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandRouter, "f").getCachedPAddresses ?
+                __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandRouter, "f").getCachedPAddresses()
+                : __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandRouter, "f").getCachedIPAddresses();
             if (volumioIPs) {
                 if (volumioIPs.eth0) {
                     proxyIP = volumioIPs.eth0;
@@ -870,8 +874,12 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
         album: track.album || track.remoteTitle,
         albumart: albumartUrl,
         uri: '',
-        trackType: track.type ? LMS_TRACK_TYPE_TO_VOLUMIO[track.type] || track.type : undefined,
-        seek: !isStreaming && status.time !== undefined ? Math.ceil(status.time * 1000) : undefined,
+        trackType: track.type ?
+            LMS_TRACK_TYPE_TO_VOLUMIO[track.type] || track.type
+            : undefined,
+        seek: !isStreaming && status.time !== undefined ?
+            Math.ceil(status.time * 1000)
+            : undefined,
         duration: track.duration ? Math.ceil(track.duration) : undefined,
         samplerate: track.sampleRate ? `${track.sampleRate / 1000} kHz` : undefined,
         bitdepth: track.sampleSize ? `${track.sampleSize} bit` : undefined,
@@ -918,7 +926,7 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
     }
     __classPrivateFieldSet(this, _ControllerSqueezeliteMC_lastState, volumioState, "f");
     if (!isCurrentService && volumioState.status === 'play') {
-        SqueezeliteMCContext_1.default.getLogger().info('[squeezelite_mc] \'play\' status received while not being the current service.');
+        SqueezeliteMCContext_1.default.getLogger().info("[squeezelite_mc] 'play' status received while not being the current service.");
         await __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_stopCurrentServiceAndSetVolatile).call(this);
         __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_pushState).call(this, volumioState);
         // Squeezelite might not be able to start playing immediately, such as when
@@ -955,6 +963,13 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
     if (isCurrentService && __classPrivateFieldGet(this, _ControllerSqueezeliteMC_volumioVolume, "f") !== volumioState.volume) {
         __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandRouter, "f").volumiosetvolume(volumioState.volume);
     }
+    // If player is playing something, we save the volume so we can restore it
+    // in unsetVolatile() if the user switches to another music service while
+    // Squeezelite is *paused* (which will set the mixer volume to 0 - note this is
+    // not the displayed volume, which remains unchanged).
+    if (volumioState.status === 'play') {
+        SqueezeliteMCContext_1.default.set('lastPlaybackVolume', volumioState.volume);
+    }
 }, _ControllerSqueezeliteMC_pushState = function _ControllerSqueezeliteMC_pushState(state) {
     SqueezeliteMCContext_1.default.getLogger().info(`[squeezelite_mc] #pushState(): ${JSON.stringify(state)}`);
     __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandRouter, "f").servicePushState(state, __classPrivateFieldGet(this, _ControllerSqueezeliteMC_serviceName, "f"));
@@ -966,7 +981,9 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
         try {
             const currentService = __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_getCurrentService).call(this);
             const statemachine = SqueezeliteMCContext_1.default.getStateMachine();
-            const isPlaybackByMpd = currentService === 'mpd' || (statemachine.isConsume && statemachine.consumeUpdateService === 'mpd');
+            const isPlaybackByMpd = currentService === 'mpd' ||
+                (statemachine.isConsume &&
+                    statemachine.consumeUpdateService === 'mpd');
             if (isPlaybackByMpd) {
                 /**
                  * MpdPlugin pushes 'stop' states which do not get ignored by the statemachine even after we have called setVolatile().
@@ -1015,7 +1032,9 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
     __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandRouter, "f").servicePushState(EMPTY_STATE, __classPrivateFieldGet(this, _ControllerSqueezeliteMC_serviceName, "f"));
 }, _ControllerSqueezeliteMC_getCurrentService = function _ControllerSqueezeliteMC_getCurrentService() {
     const currentstate = __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandRouter, "f").volumioGetState();
-    return (currentstate !== undefined && currentstate.service !== undefined) ? currentstate.service : null;
+    return currentstate !== undefined && currentstate.service !== undefined ?
+        currentstate.service
+        : null;
 }, _ControllerSqueezeliteMC_isCurrentService = function _ControllerSqueezeliteMC_isCurrentService() {
     return __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_getCurrentService).call(this) === __classPrivateFieldGet(this, _ControllerSqueezeliteMC_serviceName, "f");
 }, _ControllerSqueezeliteMC_requestPlayerStatusUpdate = function _ControllerSqueezeliteMC_requestPlayerStatusUpdate() {
@@ -1025,9 +1044,11 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
 }, _ControllerSqueezeliteMC_getPlayerConfig = function _ControllerSqueezeliteMC_getPlayerConfig() {
     const playerConfigType = SqueezeliteMCContext_1.default.getConfigValue('playerConfigType');
     const playerConfig = playerConfigType === 'basic' ?
-        SqueezeliteMCContext_1.default.getConfigValue('basicPlayerConfig') : SqueezeliteMCContext_1.default.getConfigValue('manualPlayerConfig');
+        SqueezeliteMCContext_1.default.getConfigValue('basicPlayerConfig')
+        : SqueezeliteMCContext_1.default.getConfigValue('manualPlayerConfig');
     const defaultPlayerConfig = playerConfigType === 'basic' ?
-        SqueezeliteMCContext_1.default.getConfigValue('basicPlayerConfig', true) : SqueezeliteMCContext_1.default.getConfigValue('manualPlayerConfig', true);
+        SqueezeliteMCContext_1.default.getConfigValue('basicPlayerConfig', true)
+        : SqueezeliteMCContext_1.default.getConfigValue('manualPlayerConfig', true);
     return {
         ...defaultPlayerConfig,
         ...playerConfig
@@ -1039,14 +1060,16 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
     // `mixer` is for squeezelite -V option:
     // - null for 'None' mixer type (use Squeezelite software volume control)
     // - Otherwise, set to same as Volumio (e.g. 'SoftMaster' for 'Software' mixer type)
-    const mixer = mixerType !== 'None' ? (() => {
-        const mixerDev = __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandRouter, "f").executeOnPlugin('audio_interface', 'alsa_controller', 'getConfigParam', 'mixer');
-        if (mixerDev.indexOf(',') >= 0) {
-            const mixerArr = mixerDev.split(',');
-            return `${mixerArr[0]},${mixerArr[1]}`;
-        }
-        return mixerDev;
-    })() : null;
+    const mixer = mixerType !== 'None' ?
+        (() => {
+            const mixerDev = __classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandRouter, "f").executeOnPlugin('audio_interface', 'alsa_controller', 'getConfigParam', 'mixer');
+            if (mixerDev.indexOf(',') >= 0) {
+                const mixerArr = mixerDev.split(',');
+                return `${mixerArr[0]},${mixerArr[1]}`;
+            }
+            return mixerDev;
+        })()
+        : null;
     return {
         card,
         mixerType,
@@ -1081,7 +1104,8 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
         else if (DSD_FORMATS.includes(dsdPlayback)) {
             dsdFormatPromise = Promise.resolve(dsdPlayback);
         }
-        else { // Auto based on Volumio's "DSD Playback Mode" setting
+        else {
+            // Auto based on Volumio's "DSD Playback Mode" setting
             const dop = !!__classPrivateFieldGet(this, _ControllerSqueezeliteMC_commandRouter, "f").executeOnPlugin('music_service', 'mpd', 'getConfigParam', 'dop');
             if (dop) {
                 dsdFormatPromise = Promise.resolve('dop');
@@ -1116,7 +1140,9 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
     };
 }, _ControllerSqueezeliteMC_getBestSupportedDSDFormat = async function _ControllerSqueezeliteMC_getBestSupportedDSDFormat(card, noErr = false) {
     const cachedAlsaFormats = SqueezeliteMCContext_1.default.get('alsaFormats', {});
-    const alsaFormatsPromise = cachedAlsaFormats[card] ? Promise.resolve(cachedAlsaFormats[card]) : (0, System_1.getAlsaFormats)(card);
+    const alsaFormatsPromise = cachedAlsaFormats[card] ?
+        Promise.resolve(cachedAlsaFormats[card])
+        : (0, System_1.getAlsaFormats)(card);
     try {
         const alsaFormats = await alsaFormatsPromise;
         if (alsaFormats.length === 0) {
@@ -1155,7 +1181,8 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
         startupParams = await __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_getPlayerStartupParams).call(this);
     }
     catch (error) {
-        if (error instanceof System_1.SystemError && error.code === System_1.SystemErrorCode.DeviceBusy) {
+        if (error instanceof System_1.SystemError &&
+            error.code === System_1.SystemErrorCode.DeviceBusy) {
             SqueezeliteMCContext_1.default.toast('error', SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_ERR_REVALIDATE_DEV_BUSY'));
         }
         else {
@@ -1167,20 +1194,24 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
         return;
     }
     if (startupParams.type === 'basic') {
-        startupParamsChanged = options?.force ||
-            !__classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStartupParams, "f") ||
-            __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStartupParams, "f").type !== 'basic' ||
-            (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStartupParams, "f").playerName !== startupParams.playerName ||
+        startupParamsChanged =
+            options?.force ||
+                !__classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStartupParams, "f") ||
+                __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStartupParams, "f").type !== 'basic' ||
+                __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStartupParams, "f").playerName !== startupParams.playerName ||
                 __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStartupParams, "f").card !== startupParams.card ||
                 __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStartupParams, "f").mixerType !== startupParams.mixerType ||
                 __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStartupParams, "f").mixer !== startupParams.mixer ||
-                __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStartupParams, "f").dsdFormat !== startupParams.dsdFormat);
+                __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStartupParams, "f").dsdFormat !== startupParams.dsdFormat;
     }
-    else { // `manual` startupParams type
-        startupParamsChanged = options?.force ||
-            !__classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStartupParams, "f") ||
-            __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStartupParams, "f").type !== 'manual' ||
-            __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStartupParams, "f").startupOptions !== startupParams.startupOptions;
+    else {
+        // `manual` startupParams type
+        startupParamsChanged =
+            options?.force ||
+                !__classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStartupParams, "f") ||
+                __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStartupParams, "f").type !== 'manual' ||
+                __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStartupParams, "f").startupOptions !==
+                    startupParams.startupOptions;
     }
     if (startupParamsChanged) {
         __classPrivateFieldSet(this, _ControllerSqueezeliteMC_playerStartupParams, startupParams, "f");
@@ -1192,7 +1223,8 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
             SqueezeliteMCContext_1.default.refreshUIConfig();
         }
         catch (error) {
-            if (error instanceof System_1.SystemError && error.code === System_1.SystemErrorCode.DeviceBusy) {
+            if (error instanceof System_1.SystemError &&
+                error.code === System_1.SystemErrorCode.DeviceBusy) {
                 SqueezeliteMCContext_1.default.toast('error', SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_ERR_RESTART_DEV_BUSY'));
             }
             else {
@@ -1211,8 +1243,7 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
         __classPrivateFieldSet(this, _ControllerSqueezeliteMC_playerConfigChangeDelayTimer, null, "f");
     }
     __classPrivateFieldSet(this, _ControllerSqueezeliteMC_playerConfigChangeDelayTimer, setTimeout(() => {
-        __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_revalidatePlayerConfig).call(this)
-            .catch((error) => {
+        __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_revalidatePlayerConfig).call(this).catch((error) => {
             __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_stdLogError).call(this, '#revalidatePlayerConfig()', error);
         });
     }, 1500), "f");
@@ -1237,4 +1268,3 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
     return defer.promise;
 };
 module.exports = ControllerSqueezeliteMC;
-//# sourceMappingURL=index.js.map

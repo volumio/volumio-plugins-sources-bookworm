@@ -1,42 +1,53 @@
 import EventEmitter from 'events';
 import sm from './SqueezeliteMCContext';
-import { type Notification, NotificationListener } from 'lms-cli-notifications';
-import {type PlayerStatus} from './types/Player';
+import { type PlayerStatus } from './types/Player';
 import type Player from './types/Player';
 import { type ServerCredentials } from './types/Server';
-import { getServerConnectParams } from './Util';
-import { sendRpcRequest } from './RPC';
+import { getLmsPlayerMonitorConfig } from './Util';
+import {
+  LmsPlayerMonitor,
+  type PlayerStatus as MonitoredPlayerStatus
+} from 'lms-player-monitor';
 
 export default class PlayerStatusMonitor extends EventEmitter {
   #player: Player;
   #serverCredentials: ServerCredentials;
-  #notificationListener: NotificationListener | null;
-  #statusRequestTimer: NodeJS.Timeout | null;
-  #statusRequestController: AbortController | null;
-  #syncMaster: string | null;
+  #monitor: LmsPlayerMonitor | null;
+  #deferredEmitTimer: NodeJS.Timeout | null;
 
   constructor(player: Player, serverCredentials: ServerCredentials) {
     super();
     this.#player = player;
     this.#serverCredentials = serverCredentials;
-    this.#notificationListener = null;
-    this.#statusRequestTimer = null;
-    this.#statusRequestController = null;
-    this.#syncMaster = null;
+    this.#monitor = null;
+    this.#deferredEmitTimer = null;
   }
 
   async start() {
-    this.#notificationListener = await this.#createAndStartNotificationListener();
-    this.#syncMaster = (await this.#getPlayerSyncMaster()).syncMaster;
-    if (this.#syncMaster) {
-      sm.getLogger().info(`[squeezelite_mc] Squeezelite in sync group with sync master ${this.#syncMaster}.`);
+    this.#monitor = await this.#createAndStartMonitor();
+    try {
+      const status = await this.#monitor.getPlayerStatus(this.#player.id);
+      this.#emitStatus(status);
+    } catch (error: unknown) {
+      sm.getLogger().error(
+        sm.getErrorMessage(
+          '[squeezelite_mc] Error getting player status:',
+          error
+        )
+      );
     }
-    await this.#getStatusAndEmit();
   }
 
   async stop() {
-    if (this.#notificationListener) {
-      await this.#notificationListener.stop();
+    if (!this.#monitor) {
+      return;
+    }
+    try {
+      await this.#monitor.stop();
+    } catch (error: unknown) {
+      sm.getLogger().error(
+        sm.getErrorMessage('Error stopping player monitor:', error, false)
+      );
     }
   }
 
@@ -45,179 +56,118 @@ export default class PlayerStatusMonitor extends EventEmitter {
   }
 
   requestUpdate() {
-    this.#getStatusAndEmit()
+    if (!this.#monitor) {
+      return;
+    }
+    this.#monitor
+      .getPlayerStatus(this.#player.id)
+      .then((status) => {
+        this.#emitStatus(status);
+      })
       .catch((error: unknown) => {
-        this.#stdLogError('#getStatusAndEmit()', error);
+        sm.getLogger().error(
+          sm.getErrorMessage(
+            '[squeezelite_mc]: Error handling update request:',
+            error
+          )
+        );
       });
   }
 
-  #stdLogError(fn: string, error: unknown, stack = false) {
-    sm.getLogger().error(sm.getErrorMessage(`[squeezelite_mc] Caught error in ${fn}:`, error, stack));
-  }
-
   #handleDisconnect() {
-    if (!this.#notificationListener) {
+    if (!this.#monitor) {
       return;
     }
-    this.#notificationListener.removeAllListeners('notification');
-    this.#notificationListener.removeAllListeners('disconnect');
-    this.#notificationListener = null;
-    this.#abortCurrentAndPendingStatusRequest();
+    this.#monitor.removeAllListeners('playerStatus');
+    this.#monitor.removeAllListeners('playerSync');
+    this.#monitor.removeAllListeners('serverDisconnect');
+    this.#monitor = null;
+    this.#cancelPendingEmit();
 
     this.emit('disconnect', this.#player);
   }
 
-  #handleNotification(data: Notification) {
-    let preRequestStatus = Promise.resolve();
-    if (data.notification === 'sync') {
-      if (data.params[0] === '-') {
-        if (data.playerId === this.#player.id) { // Unsynced
-          sm.getLogger().info('[squeezelite_mc] Squeezelite removed from sync group.');
-          this.#syncMaster = null;
-        }
-        else if (data.playerId === this.#syncMaster) { // Sync master itself unsynced
-          sm.getLogger().info(`[squeezelite_mc] Squeezelite's sync master (${this.#syncMaster}) removed from sync group.`);
-          // Need to get updated sync master, if any.
-          preRequestStatus = this.#getPlayerSyncMaster().then((result) => {
-            if (result.syncMaster) {
-              sm.getLogger().info(`[squeezelite_mc] Squeezelite is now in sync group with sync master ${result.syncMaster}.`);
-            }
-            else if (!result.error) {
-              sm.getLogger().info('[squeezelite_mc] Squeezelite is now unsynced or in a sync group with itself as the sync master.');
-            }
-            this.#syncMaster = result.syncMaster;
-          });
-        }
-      }
-      else if (data.playerId && data.params[0] === this.#player.id) { // Synced
-        this.#syncMaster = data.playerId;
-        sm.getLogger().info(`[squeezelite_mc] Squeezelite joined sync group with sync master ${this.#syncMaster}.`);
-      }
-    }
-    if (data.playerId === this.#player.id || data.notification === 'sync' ||
-      (this.#syncMaster && data.playerId === this.#syncMaster)) {
-      this.#abortCurrentAndPendingStatusRequest();
-      preRequestStatus
-        .catch((error: unknown) => {
-          this.#stdLogError('preRequestStatus', error);
-        })
-        .finally(() => {
-          this.#abortCurrentAndPendingStatusRequest();
-          this.#statusRequestTimer = setTimeout(() => {
-            this.#getStatusAndEmit()
-              .catch((error: unknown) => {
-                this.#stdLogError('#getStatusAndEmit()', error);
-              });
-          }, 200);
-        });
+  #handleStatusUpdate(status: MonitoredPlayerStatus) {
+    if (status.playerId === this.#player.id) {
+      this.#emitStatusAfterDelay(status);
     }
   }
 
-  async #getStatusAndEmit() {
-    this.#abortCurrentAndPendingStatusRequest();
-    this.#statusRequestController = new AbortController();
+  #emitStatusAfterDelay(status: MonitoredPlayerStatus) {
+    this.#cancelPendingEmit();
+    this.#deferredEmitTimer = setTimeout(() => {
+      this.#emitStatus(status);
+    }, 200);
+  }
 
-    const playerStatus = await this.#requestPlayerStatus(this.#statusRequestController);
-    if (playerStatus._requestAborted !== undefined && playerStatus._requestAborted) {
-      return;
-    }
+  #emitStatus(status: MonitoredPlayerStatus) {
     this.emit('update', {
       player: this.#player,
-      status: this.#parsePlayerStatusResult(playerStatus.result)
+      status: this.#mapMonitoredPlayerStatus(status)
     });
   }
 
-  #abortCurrentAndPendingStatusRequest() {
-    if (this.#statusRequestTimer) {
-      clearTimeout(this.#statusRequestTimer);
-      this.#statusRequestTimer = null;
-    }
-    if (this.#statusRequestController) {
-      this.#statusRequestController.abort();
-      this.#statusRequestController = null;
+  #cancelPendingEmit() {
+    if (this.#deferredEmitTimer) {
+      clearTimeout(this.#deferredEmitTimer);
+      this.#deferredEmitTimer = null;
     }
   }
 
-  async #createAndStartNotificationListener() {
-    const notificationListener = new NotificationListener({
-      server: getServerConnectParams(this.#player.server, this.#serverCredentials, 'cli'),
-      subscribe: [ 'play', 'stop', 'pause', 'playlist', 'mixer', 'sync' ]
-    });
-    notificationListener.on('notification', this.#handleNotification.bind(this));
-    notificationListener.on('disconnect', this.#handleDisconnect.bind(this));
-    await notificationListener.start();
-    return notificationListener;
-  }
-
-  async #requestPlayerStatus(abortController: AbortController) {
-    const connectParams = getServerConnectParams(this.#player.server, this.#serverCredentials, 'rpc');
-    return sendRpcRequest(connectParams, [
-      this.#player.id,
-      [
-        'status',
-        '-',
-        1,
-        'tags:cgAABbehldiqtyrTISSuoKLNJj'
-      ]
-    ], abortController);
-  }
-
-  // If player is in a sync group, then get the master player of the group.
-  // Returns null if player is not in a sync group or it is the master player itself.
-  async #getPlayerSyncMaster() {
-    const connectParams = getServerConnectParams(this.#player.server, this.#serverCredentials, 'rpc');
-    try {
-      const status = await sendRpcRequest(connectParams, [
-        this.#player.id,
-        [
-          'status'
-        ]
-      ]);
-      return {
-        syncMaster: status.result.sync_master !== this.#player.id ? status.result.sync_master : null
-      };
-    }
-    catch (error) {
-      sm.getLogger().error(sm.getErrorMessage('[squeezelite_mc] Error in getting Squeezelite\'s sync master: ', error));
-      return {
-        error: error
-      };
-    }
-  }
-
-  #parsePlayerStatusResult(data: any) {
-    const result: PlayerStatus = {
-      mode: data.mode,
-      time: data.time,
-      volume: data['mixer volume'],
-      repeatMode: data['playlist repeat'],
-      shuffleMode: data['playlist shuffle'],
-      canSeek: data['can_seek']
+  #mapMonitoredPlayerStatus(status: MonitoredPlayerStatus) {
+    const mapped: PlayerStatus = {
+      mode: status.status ?? 'stop',
+      time: status.currentTime,
+      volume: status.volume,
+      repeatMode: status.repeatMode,
+      shuffleMode: status.shuffleMode,
+      canSeek: status.canSeek
     };
 
-    const track = data.playlist_loop?.[0];
+    const track = status.track;
     if (track) {
-      result.currentTrack = {
-        type: track.type,
+      mapped.currentTrack = {
+        type: track.audioFormat,
         title: track.title,
         artist: track.artist,
-        trackArtist: track.trackartist,
-        albumArtist: track.albumartist,
+        trackArtist: track.trackArtist,
+        albumArtist: track.albumArtist,
         album: track.album,
-        remoteTitle: track.remote_title,
-        artworkUrl: track.artwork_url,
-        coverArt: track.coverart,
+        remoteTitle: track.remoteTitle,
+        artworkUrl: track.artworkUrl,
+        coverId: track.coverId,
         duration: track.duration,
-        sampleRate: track.samplerate,
-        sampleSize: track.samplesize,
+        sampleRate: track.sampleRate,
+        sampleSize: track.sampleSize,
         bitrate: track.bitrate
       };
     }
-
-    return result;
+    return mapped;
   }
 
-  on(event: 'update', listener: (data: {player: Player; status: PlayerStatus}) => void): this;
+  async #createAndStartMonitor() {
+    const monitor = new LmsPlayerMonitor(
+      getLmsPlayerMonitorConfig(this.#player.server, this.#serverCredentials)
+    );
+    monitor.on('playerStatus', (status) => this.#handleStatusUpdate(status));
+    monitor.on('serverDisconnect', () => this.#handleDisconnect());
+    await monitor.start();
+    return monitor;
+  }
+
+  emit(
+    event: 'update',
+    data: { player: Player; status: PlayerStatus }
+  ): boolean;
+  emit(event: 'disconnect', player: Player): boolean;
+  emit<K>(eventName: string | symbol, ...args: any[]): boolean {
+    return super.emit(eventName, ...args);
+  }
+
+  on(
+    event: 'update',
+    listener: (data: { player: Player; status: PlayerStatus }) => void
+  ): this;
   on(event: 'disconnect', listener: (player: Player) => void): this;
   on(event: string | symbol, listener: (...args: any[]) => void): this {
     return super.on(event, listener);

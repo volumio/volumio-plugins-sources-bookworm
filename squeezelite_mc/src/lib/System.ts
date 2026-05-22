@@ -23,15 +23,23 @@ export enum SystemErrorCode {
 function execCommand(cmd: string, sudo = false) {
   return new Promise<string>((resolve, reject) => {
     sm.getLogger().info(`[squeezelite_mc] Executing ${cmd}`);
-    exec(sudo ? `echo volumio | sudo -S ${cmd}` : cmd, { uid: 1000, gid: 1000 }, function (error, stdout, stderr) {
-      if (error) {
-        sm.getLogger().error(sm.getErrorMessage(`[squeezelite_mc] Failed to execute ${cmd}: ${stderr.toString()}`, error));
-        reject(error);
+    exec(
+      sudo ? `echo volumio | sudo -S ${cmd}` : cmd,
+      { uid: 1000, gid: 1000 },
+      function (error, stdout, stderr) {
+        if (error) {
+          sm.getLogger().error(
+            sm.getErrorMessage(
+              `[squeezelite_mc] Failed to execute ${cmd}: ${stderr}`,
+              error
+            )
+          );
+          reject(error);
+        } else {
+          resolve(stdout);
+        }
       }
-      else {
-        resolve(stdout.toString());
-      }
-    });
+    );
   });
 }
 
@@ -42,15 +50,18 @@ function systemctl(cmd: string, service = '') {
 
 async function restartSqueezeliteService() {
   const status = await getSqueezeliteServiceStatus();
-  const stopPromise = status === 'active' ? stopSqueezeliteService() : Promise.resolve();
+  const stopPromise =
+    status === 'active' ? stopSqueezeliteService() : Promise.resolve();
   await stopPromise;
-  const rmLogPromise = fs.existsSync(SQUEEZELITE_LOG_FILE) ? execCommand(`rm ${SQUEEZELITE_LOG_FILE}`, true) : Promise.resolve();
+  const rmLogPromise =
+    fs.existsSync(SQUEEZELITE_LOG_FILE) ?
+      execCommand(`rm ${SQUEEZELITE_LOG_FILE}`, true)
+    : Promise.resolve();
   await rmLogPromise;
   await systemctl('start', 'squeezelite');
   try {
     await resolveOnSqueezeliteServiceStatusMatch('active', 5);
-  }
-  catch (error) {
+  } catch (error) {
     // Look for recognizable error in log file
     const throwErr = new SystemError();
     if (fs.existsSync(SQUEEZELITE_LOG_FILE)) {
@@ -63,42 +74,45 @@ async function restartSqueezeliteService() {
   }
 }
 
-function resolveOnSqueezeliteServiceStatusMatch(status: string | string[], matchConsecutive = 1, retries = 5) {
+function resolveOnSqueezeliteServiceStatusMatch(
+  status: string | string[],
+  matchConsecutive = 1,
+  retries = 5
+) {
   let consecutiveCount = 0;
   let tryCount = 0;
 
-  const startCheckTimer = (resolve: (value?: unknown) => void, reject: () => void) => {
+  const startCheckTimer = (
+    resolve: (value?: unknown) => void,
+    reject: () => void
+  ) => {
     setTimeout(() => {
       void (async () => {
         const _status = await getSqueezeliteServiceStatus();
-        if (Array.isArray(status) ? status.includes(_status) : _status === status) {
+        if (
+          Array.isArray(status) ? status.includes(_status) : _status === status
+        ) {
           consecutiveCount++;
           if (consecutiveCount === matchConsecutive) {
             resolve();
-          }
-          else {
+          } else {
             startCheckTimer(resolve, reject);
           }
-        }
-        else if (_status === 'failed') {
+        } else if (_status === 'failed') {
           reject();
-        }
-        else if (_status === 'activating') {
+        } else if (_status === 'activating') {
           consecutiveCount = 0;
           startCheckTimer(resolve, reject);
-        }
-        else if (tryCount < retries - 1) {
+        } else if (tryCount < retries - 1) {
           consecutiveCount = 0;
           tryCount++;
           startCheckTimer(resolve, reject);
-        }
-        else {
+        } else {
           reject();
-        }  
+        }
       })();
     }, 500);
   };
-
 
   return new Promise((resolve, reject) => {
     startCheckTimer(resolve, reject);
@@ -106,9 +120,12 @@ function resolveOnSqueezeliteServiceStatusMatch(status: string | string[], match
 }
 
 async function updateSqueezeliteService(params: PlayerStartupParams) {
-  const startupOpts = params.type === 'basic' ? basicPlayerStartupParamsToSqueezeliteOpts(params) : params.startupOptions;
+  const startupOpts =
+    params.type === 'basic' ?
+      basicPlayerStartupParamsToSqueezeliteOpts(params)
+    : params.startupOptions;
   const template = fs.readFileSync(SYSTEMD_TEMPLATE_FILE).toString();
-   
+
   const out = template.replace('${STARTUP_OPTS}', startupOpts);
   fs.writeFileSync(`${SYSTEMD_TEMPLATE_FILE}.out`, out);
   const cpCmd = `cp ${SYSTEMD_TEMPLATE_FILE}.out ${SYSTEMD_SERVICE_FILE}`;
@@ -125,11 +142,10 @@ async function updateAlsaConf(conf: AlsaConfig) {
           type hw
           card ${conf.card}
       }`;
-  }
-  else {
+  } else {
     ctl = '';
   }
-   
+
   const out = template.replace('${CTL}', ctl);
   fs.writeFileSync(`${ALSA_CONF_TEMPLATE_FILE}.out`, out);
   const cpCmd = `cp ${ALSA_CONF_TEMPLATE_FILE}.out ${ALSA_CONF_FILE}`;
@@ -147,20 +163,23 @@ export async function initSqueezeliteService(params: PlayerStartupParams) {
 
 export async function stopSqueezeliteService() {
   await systemctl('stop', 'squeezelite');
-  return resolveOnSqueezeliteServiceStatusMatch([ 'inactive', 'failed' ]);
+  return resolveOnSqueezeliteServiceStatusMatch(['inactive', 'failed']);
 }
 
 export async function getSqueezeliteServiceStatus() {
-  const recognizedStatuses = [ 'inactive', 'active', 'activating', 'failed' ];
+  const recognizedStatuses = ['inactive', 'active', 'activating', 'failed'];
   const regex = /Active: (.*) \(.*\)/gm;
   const out = await systemctl('status', 'squeezelite');
-  const matches = [ ...out.matchAll(regex) ];
-  if (matches[0] && matches[0][1] && recognizedStatuses.includes(matches[0][1])) {
+  const matches = [...out.matchAll(regex)];
+  if (
+    matches[0] &&
+    matches[0][1] &&
+    recognizedStatuses.includes(matches[0][1])
+  ) {
     return matches[0][1];
   }
 
   return 'inactive';
-
 }
 
 export async function getAlsaFormats(card: string): Promise<string[]> {
@@ -170,23 +189,30 @@ export async function getAlsaFormats(card: string): Promise<string[]> {
   const cmd = `aplay -D hw:${card} --nonblock -f MPEG /dev/zero  2>&1 || true`;
   const output = await execCommand(cmd);
   if (output.indexOf('Device or resource busy') >= 0) {
-    sm.getLogger().error(`[squeezelite_mc] Could not query supported ALSA formats for card ${card} because device is busy`);
+    sm.getLogger().error(
+      `[squeezelite_mc] Could not query supported ALSA formats for card ${card} because device is busy`
+    );
     const err = new SystemError();
     err.code = SystemErrorCode.DeviceBusy;
     throw err;
-  }
-  else {
-    const formatsListMatches = [ ...output.matchAll(regExFormatsList) ];
-    const formatsList = formatsListMatches[0] && formatsListMatches[0][1] ? formatsListMatches[0][1] : null;
+  } else {
+    const formatsListMatches = [...output.matchAll(regExFormatsList)];
+    const formatsList =
+      formatsListMatches[0] && formatsListMatches[0][1] ?
+        formatsListMatches[0][1]
+      : null;
     if (formatsList) {
-      const formatsMatches = [ ...formatsList.matchAll(regExFormats) ];
+      const formatsMatches = [...formatsList.matchAll(regExFormats)];
       const formats = formatsMatches.map((match) => (match[1] || '').trim());
-      sm.getLogger().info(`[squeezelite_mc] Card ${card} supports the following ALSA formats: ${JSON.stringify(formats)}`);
+      sm.getLogger().info(
+        `[squeezelite_mc] Card ${card} supports the following ALSA formats: ${JSON.stringify(formats)}`
+      );
       return formats;
     }
 
-    sm.getLogger().warn(`[squeezelite_mc] No supported ALSA formats found for card ${card}`);
+    sm.getLogger().warn(
+      `[squeezelite_mc] No supported ALSA formats found for card ${card}`
+    );
     return [];
-
   }
 }

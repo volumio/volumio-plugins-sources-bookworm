@@ -48,13 +48,14 @@ class Proxy {
             SqueezeliteMCContext_1.default.getLogger().info('[squeezelite_mc] Proxy server already started');
             return Promise.resolve();
         }
-        else if (this.getStatus() === ProxyStatus.Starting && __classPrivateFieldGet(this, _Proxy_startPromise, "f")) {
+        else if (this.getStatus() === ProxyStatus.Starting &&
+            __classPrivateFieldGet(this, _Proxy_startPromise, "f")) {
             return __classPrivateFieldGet(this, _Proxy_startPromise, "f");
         }
         __classPrivateFieldSet(this, _Proxy_status, ProxyStatus.Starting, "f");
         __classPrivateFieldSet(this, _Proxy_startPromise, new Promise((resolve, reject) => {
             SqueezeliteMCContext_1.default.getLogger().info('[squeezelite_mc] Starting proxy server...');
-            const server = __classPrivateFieldSet(this, _Proxy_server, http_1.default.createServer(__classPrivateFieldGet(this, _Proxy_app, "f")), "f");
+            const server = (__classPrivateFieldSet(this, _Proxy_server, http_1.default.createServer(__classPrivateFieldGet(this, _Proxy_app, "f")), "f"));
             server.on('error', (error) => {
                 if (this.getStatus() === ProxyStatus.Starting) {
                     SqueezeliteMCContext_1.default.getLogger().error(SqueezeliteMCContext_1.default.getErrorMessage('[squeezelite_mc] An error occurred while starting proxy server:', error));
@@ -123,22 +124,34 @@ _Proxy_serverCredentials = new WeakMap(), _Proxy_server = new WeakMap(), _Proxy_
     /**
      * Volumio's Manifest UI sometimes URI-encodes the already encoded `url`
      * so it becomes malformed. We need to check whether this is the case.
-     * Fortunately, it seems a request with double-encoded `url` is preceded by
-     * one with the correct, untampered value.
      */
-    if (typeof url !== 'string' || !__classPrivateFieldGet(this, _Proxy_instances, "m", _Proxy_validateURL).call(this, url)) {
+    let sanitizedUrl = null;
+    if (typeof url === 'string') {
+        if (__classPrivateFieldGet(this, _Proxy_instances, "m", _Proxy_validateURL).call(this, url)) {
+            sanitizedUrl = url;
+        }
+        else {
+            const altUrl = decodeURIComponent(url);
+            if (__classPrivateFieldGet(this, _Proxy_instances, "m", _Proxy_validateURL).call(this, altUrl)) {
+                sanitizedUrl = altUrl;
+            }
+        }
+    }
+    if (!sanitizedUrl) {
         SqueezeliteMCContext_1.default.getLogger().error(`[squeezelite_mc] Proxy: invalid URL (${String(url)})`);
         return res.status(400).end();
     }
     void (async () => {
-        SqueezeliteMCContext_1.default.getLogger().info(`[squeezelite_mc] Proxy request for ${String(serverName)}, URL: ${url}`);
+        SqueezeliteMCContext_1.default.getLogger().info(`[squeezelite_mc] Proxy request for ${String(serverName)}, URL: ${sanitizedUrl}`);
         const headers = {};
-        const credentials = serverName ? __classPrivateFieldGet(this, _Proxy_serverCredentials, "f")[serverName.toString()] : null;
+        const credentials = serverName ?
+            __classPrivateFieldGet(this, _Proxy_serverCredentials, "f")[serverName.toString()]
+            : null;
         if (credentials) {
             headers.Authorization = `Basic ${(0, Util_1.encodeBase64)(`${credentials.username}:${credentials.password || ''}`)}`;
         }
         try {
-            const response = await fetch(url, { headers });
+            const response = await fetch(sanitizedUrl, { headers });
             if (!response.ok) {
                 SqueezeliteMCContext_1.default.getLogger().error(`[squeezelite_mc] Proxy received unexpected response: ${response.status} - ${response.statusText}`);
                 if (typeof fallback === 'string') {
@@ -179,4 +192,3 @@ _Proxy_serverCredentials = new WeakMap(), _Proxy_server = new WeakMap(), _Proxy_
     }
 };
 exports.default = Proxy;
-//# sourceMappingURL=Proxy.js.map
