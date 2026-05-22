@@ -1,0 +1,230 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_NAME"
+  },
+  "sections": [
+    {
+      "id": "section_current",
+      "element": "section",
+      "label": "TRANSLATE.CURRENT_RADIO",
+      "icon": "fa-radio",
+      "description": "TRANSLATE.CURRENT_RADIO_DESC",
+      "content": [
+        {
+          "id": "current_radio_display",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.CURRENT_STATION",
+          "value": "",
+          "description": "",
+          "readonly": true
+        },
+        {
+          "id": "refresh_button",
+          "element": "button",
+          "label": "TRANSLATE.REFRESH",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "miscellanea/radio2playlist",
+            "method": "refreshCurrentRadio"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_no_playlists",
+      "element": "section",
+      "label": "TRANSLATE.NO_PLAYLISTS_TITLE",
+      "icon": "fa-exclamation-circle",
+      "description": "TRANSLATE.NO_PLAYLISTS_TEXT",
+      "hidden": true,
+      "content": []
+    },
+    {
+      "id": "section_add_existing",
+      "element": "section",
+      "label": "TRANSLATE.ADD_TO_EXISTING",
+      "icon": "fa-plus-circle",
+      "description": "TRANSLATE.ADD_TO_EXISTING_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "miscellanea/radio2playlist",
+        "method": "addToExistingPlaylist"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE_TO_PLAYLIST",
+        "data": [
+          "radio_name",
+          "playlist_select"
+        ]
+      },
+      "content": [
+        {
+          "id": "radio_name",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.STATION_NAME",
+          "value": "",
+          "description": "TRANSLATE.STATION_NAME_DESC"
+        },
+        {
+          "id": "playlist_select",
+          "element": "select",
+          "label": "TRANSLATE.SELECT_PLAYLIST",
+          "value": {
+            "value": "",
+            "label": "TRANSLATE.SELECT_PLAYLIST_PLACEHOLDER"
+          },
+          "options": []
+        }
+      ]
+    },
+    {
+      "id": "section_create_new",
+      "element": "section",
+      "label": "TRANSLATE.CREATE_NEW_PLAYLIST",
+      "icon": "fa-file-o",
+      "description": "TRANSLATE.CREATE_NEW_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "miscellanea/radio2playlist",
+        "method": "createNewPlaylist"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.CREATE_AND_ADD",
+        "data": [
+          "radio_name_new",
+          "new_playlist_name"
+        ]
+      },
+      "content": [
+        {
+          "id": "radio_name_new",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.STATION_NAME",
+          "value": "",
+          "description": "TRANSLATE.STATION_NAME_DESC"
+        },
+        {
+          "id": "new_playlist_name",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.NEW_PLAYLIST_NAME",
+          "value": "",
+          "description": "TRANSLATE.NEW_PLAYLIST_NAME_DESC"
+        }
+      ]
+    },
+    {
+      "id": "section_settings",
+      "element": "section",
+      "label": "TRANSLATE.AUTO_MODE",
+      "icon": "fa-magic",
+      "description": "TRANSLATE.AUTO_MODE_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "miscellanea/radio2playlist",
+        "method": "saveSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "auto_mode_enabled",
+          "auto_mode_playlist_select",
+          "auto_mode_playlist_custom"
+        ]
+      },
+      "content": [
+        {
+          "id": "auto_mode_enabled",
+          "element": "switch",
+          "label": "TRANSLATE.AUTO_MODE_ENABLED",
+          "value": false
+        },
+        {
+          "id": "auto_mode_playlist_select",
+          "element": "select",
+          "label": "TRANSLATE.AUTO_MODE_PLAYLIST",
+          "value": {
+            "value": "",
+            "label": "TRANSLATE.SELECT_PLAYLIST_PLACEHOLDER"
+          },
+          "options": []
+        },
+        {
+          "id": "auto_mode_playlist_custom",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.NEW_PLAYLIST_NAME",
+          "value": "",
+          "description": "TRANSLATE.AUTO_MODE_PLAYLIST_DESC"
+        }
+      ]
+    },
+    {
+      "id": "section_favorites",
+      "element": "section",
+      "label": "TRANSLATE.FAVORITES",
+      "icon": "fa-heart",
+      "description": "TRANSLATE.FAVORITES_DESC",
+      "content": [
+        {
+          "id": "favorite_playlist_select",
+          "element": "select",
+          "label": "TRANSLATE.FAVORITE_PLAYLIST_NAME",
+          "value": {
+            "value": "",
+            "label": "TRANSLATE.SELECT_PLAYLIST_PLACEHOLDER"
+          },
+          "options": []
+        },
+        {
+          "id": "favorite_playlist_custom",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.NEW_PLAYLIST_NAME",
+          "value": "",
+          "description": "TRANSLATE.FAVORITE_PLAYLIST_NAME_DESC"
+        },
+        {
+          "id": "fav_button",
+          "element": "button",
+          "label": "TRANSLATE.ADD_TO_FAVORITES",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "miscellanea/radio2playlist",
+            "method": "addToFavorites"
+          }
+        }
+      ],
+      "onSave": {
+        "type": "controller",
+        "endpoint": "miscellanea/radio2playlist",
+        "method": "saveFavoritesSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "favorite_playlist_select",
+          "favorite_playlist_custom"
+        ]
+      }
+    },
+    {
+      "id": "section_info",
+      "element": "section",
+      "label": "TRANSLATE.INFO",
+      "icon": "fa-info-circle",
+      "content": [
+        {
+          "id": "info_text",
+          "element": "section",
+          "label": "TRANSLATE.HOW_TO_USE",
+          "description": "TRANSLATE.HOW_TO_USE_TEXT"
+        }
+      ],
+      "description": "TRANSLATE.WORKFLOW_TIP_TEXT"
+    }
+  ]
+}
