@@ -1,0 +1,38 @@
+{
+  "battery_type": {
+    "value": "Custom",
+    "type": "string"
+  },
+  "current_limit": {
+    "value": "safe",
+    "type": "string"
+  },
+  "custom_v_100": {
+    "value": 8100,
+    "type": "number"
+  },
+  "custom_v_75": {
+    "value": 7800,
+    "type": "number"
+  },
+  "custom_v_50": {
+    "value": 7400,
+    "type": "number"
+  },
+  "custom_v_25": {
+    "value": 7000,
+    "type": "number"
+  },
+  "custom_v_0": {
+    "value": 6700,
+    "type": "number"
+  },
+  "custom_th_warning": {
+    "value": 7000,
+    "type": "number"
+  },
+  "custom_th_shutdown": {
+    "value": 6700,
+    "type": "number"
+  }
+}
