@@ -71,12 +71,14 @@ class NowPlayingContext {
     getLogger() {
         return __classPrivateFieldGet(this, _NowPlayingContext_pluginContext, "f").logger;
     }
-    getDeviceInfo() {
-        if (!this.get('deviceInfo', null)) {
-            const deviceInfo = __classPrivateFieldGet(this, _NowPlayingContext_pluginContext, "f").coreCommand.executeOnPlugin('system_controller', 'volumiodiscovery', 'getThisDevice');
-            this.set('deviceInfo', deviceInfo);
+    getDeviceInfo(nocache = false) {
+        let deviceInfo = this.get('deviceInfo', null);
+        if (!deviceInfo || nocache) {
+            deviceInfo = __classPrivateFieldGet(this, _NowPlayingContext_pluginContext, "f").coreCommand.executeOnPlugin('system_controller', 'volumiodiscovery', 'getThisDevice');
+            if (!nocache) {
+                this.set('deviceInfo', deviceInfo);
+            }
         }
-        const deviceInfo = this.get('deviceInfo', null);
         if (!deviceInfo) {
             this.getLogger().warn('[now-playing] Failed to get device info!');
             return DUMMY_DEVICE_INFO;
