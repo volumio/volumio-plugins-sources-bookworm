@@ -16,6 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PlexApiClient = exports.PlexConnectionError = exports.PlexAuthError = exports.PlexApiError = void 0;
 const http_1 = __importDefault(require("http"));
 const https_1 = __importDefault(require("https"));
+const os_1 = __importDefault(require("os"));
 // ── Error classes ───────────────────────────────────────────────────
 /** Base error for non-successful Plex API responses. */
 class PlexApiError extends Error {
@@ -50,24 +51,27 @@ class PlexApiClient {
         this.token = options.token;
         this.https = options.https ?? false;
         this.timeoutMs = options.timeoutMs ?? 10000;
+        this.deviceName = options.deviceName ?? os_1.default.hostname();
     }
     /** Fetch all library sections. */
     async getLibraries() {
         return this.request("/library/sections");
     }
     /** Fetch artists for a library section (type=8 requests artist-level items). */
-    async getArtists(libraryKey, pagination) {
+    async getArtists(libraryKey, pagination, sort) {
         const paginationQuery = pagination
             ? `&X-Plex-Container-Start=${pagination.offset}&X-Plex-Container-Size=${pagination.limit}`
             : "";
-        return this.request(`/library/sections/${encodeURIComponent(libraryKey)}/all?type=8${paginationQuery}`);
+        const sortQuery = sort ? `&sort=${encodeURIComponent(sort)}` : "";
+        return this.request(`/library/sections/${encodeURIComponent(libraryKey)}/all?type=8${paginationQuery}${sortQuery}`);
     }
     /** Fetch albums for a library section (type=9 requests album-level items). */
-    async getAlbums(libraryKey, pagination) {
+    async getAlbums(libraryKey, pagination, sort) {
         const paginationQuery = pagination
             ? `&X-Plex-Container-Start=${pagination.offset}&X-Plex-Container-Size=${pagination.limit}`
             : "";
-        return this.request(`/library/sections/${encodeURIComponent(libraryKey)}/all?type=9${paginationQuery}`);
+        const sortQuery = sort ? `&sort=${encodeURIComponent(sort)}` : "";
+        return this.request(`/library/sections/${encodeURIComponent(libraryKey)}/all?type=9${paginationQuery}${sortQuery}`);
     }
     /** Fetch tracks for an album. `albumKey` is the full path from Album.trackListKey. */
     async getTracks(albumKey) {
@@ -116,7 +120,56 @@ class PlexApiClient {
     async searchArtists(query) {
         return this.request(`/search?type=8&query=${encodeURIComponent(query)}`);
     }
+    /**
+     * Report current playback state to the Plex server.
+     * Returns a Promise that rejects on network error or non-2xx response.
+     * Used for playback reporting: Plex marks a track as played once enough of it
+     * has been reported as played via the timeline endpoint.
+     */
+    reportTimeline(params) {
+        const { ratingKey, state, time, duration } = params;
+        const enc = encodeURIComponent;
+        const path = `/:/timeline?ratingKey=${enc(ratingKey)}` +
+            `&key=${enc(`/library/metadata/${ratingKey}`)}` +
+            `&state=${enc(state)}` +
+            `&time=${Math.round(time)}` +
+            `&duration=${Math.round(duration)}` +
+            `&identifier=com.plexapp.plugins.library`;
+        return this.fireAndForget(path);
+    }
     // ── Internal ────────────────────────────────────────────────────
+    /** Make a GET request and discard the response body. Rejects on network error or non-2xx. */
+    fireAndForget(path) {
+        const separator = path.includes("?") ? "&" : "?";
+        const fullPath = `${path}${separator}X-Plex-Token=${encodeURIComponent(this.token)}`;
+        const httpModule = this.https ? https_1.default : http_1.default;
+        return new Promise((resolve, reject) => {
+            const req = httpModule.get({
+                hostname: this.host,
+                port: this.port,
+                path: fullPath,
+                headers: {
+                    "X-Plex-Product": "Volumio",
+                    "X-Plex-Version": "1.0",
+                    "X-Plex-Platform": "Volumio",
+                    "X-Plex-Device-Name": this.deviceName,
+                    "X-Plex-Client-Identifier": `volumio-plex-${this.deviceName}`,
+                },
+                timeout: this.timeoutMs,
+            }, (res) => {
+                res.resume();
+                const statusCode = res.statusCode ?? 0;
+                if (statusCode < 200 || statusCode >= 300) {
+                    reject(new Error(`HTTP ${statusCode}`));
+                }
+                else {
+                    resolve();
+                }
+            });
+            req.on("error", reject);
+            req.on("timeout", () => { req.destroy(); reject(new Error("timeout")); });
+        });
+    }
     request(path) {
         const separator = path.includes("?") ? "&" : "?";
         const fullPath = `${path}${separator}X-Plex-Token=${encodeURIComponent(this.token)}`;
