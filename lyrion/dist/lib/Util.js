@@ -10,7 +10,8 @@ exports.kewToJSPromise = kewToJSPromise;
 const kew_1 = __importDefault(require("kew"));
 function jsPromiseToKew(promise) {
     const defer = kew_1.default.defer();
-    promise.then((result) => {
+    promise
+        .then((result) => {
         defer.resolve(result);
     })
         .catch((error) => {
@@ -20,12 +21,14 @@ function jsPromiseToKew(promise) {
 }
 function kewToJSPromise(promise) {
     // Guard against a JS promise from being passed to this function.
-    if (typeof promise.catch === 'function' && typeof promise.fail === 'undefined') {
+    if (typeof promise.catch === 'function' &&
+        typeof promise.fail === 'undefined') {
         // JS promise - return as is
         return promise;
     }
     return new Promise((resolve, reject) => {
-        promise.then((result) => {
+        promise
+            .then((result) => {
             resolve(result);
         })
             .fail((error) => {
@@ -33,4 +36,3 @@ function kewToJSPromise(promise) {
         });
     });
 }
-//# sourceMappingURL=Util.js.map
