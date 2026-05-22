@@ -1,0 +1,103 @@
+{
+	"page": {
+		"label": "TRANSLATE.PLUGIN_CONFIGURATION"
+	},
+	"sections": [
+		{
+			"id": "remote_control_amplifier_setup",
+			"element": "section",
+			"label": "TRANSLATE.PLUGIN_DESCRIPTION",
+			"icon": "fa-plug",
+			"onSave": {
+				"type": "controller",
+				"endpoint": "system_controller\/remote_control_amplifier",
+				"method": "saveConfig"
+			},
+			"saveButton": {
+				"label": "TRANSLATE.SAVE",
+				"data": [
+					"deviceName",
+					"startButton",
+					"stopButton",
+					"volUpButton",
+					"volDownButton",
+					"powerOnOnPlay",
+					"powerOffOnStop",
+					"powerOffOnPause",
+					"powerOffDelay"
+				]
+			},
+			"content": [
+				{
+					"id": "deviceName",
+					"element": "input",
+					"type": "text",
+					"label": "TRANSLATE.DEVICE_NAME",
+					"doc": "TRANSLATE.DEVICE_NAME_DOC",
+					"value": "RAV300"
+				},
+				{
+					"id": "startButton",
+					"element": "input",
+					"type": "text",
+					"label": "TRANSLATE.START_BUTTON",
+					"doc": "TRANSLATE.START_BUTTON_DOC",
+					"value": "KEY_POWER"
+				},
+				{
+					"id": "stopButton",
+					"element": "input",
+					"type": "text",
+					"label": "TRANSLATE.STOP_BUTTON",
+					"doc": "TRANSLATE.STOP_BUTTON_DOC",
+					"value": "KEY_POWER2"
+				},
+				{
+					"id": "volUpButton",
+					"element": "input",
+					"type": "text",
+					"label": "TRANSLATE.VOL_UP_BUTTON",
+					"doc": "TRANSLATE.VOL_UP_BUTTON_DOC",
+					"value": "KEY_VOLUMEUP"
+				},
+				{
+					"id": "volDownButton",
+					"element": "input",
+					"type": "text",
+					"label": "TRANSLATE.VOL_DOWN_BUTTON",
+					"doc": "TRANSLATE.VOL_DOWN_BUTTON_DOC",
+					"value": "KEY_VOLUMEDOWN"
+				},
+				{
+					"id": "powerOnOnPlay",
+					"element": "switch",
+					"label": "TRANSLATE.POWER_ON_ON_PLAY",
+					"doc": "TRANSLATE.POWER_ON_ON_PLAY_DOC",
+					"value": true
+				},
+				{
+					"id": "powerOffOnStop",
+					"element": "switch",
+					"label": "TRANSLATE.POWER_OFF_ON_STOP",
+					"doc": "TRANSLATE.POWER_OFF_ON_STOP_DOC",
+					"value": true
+				},
+				{
+					"id": "powerOffOnPause",
+					"element": "switch",
+					"label": "TRANSLATE.POWER_OFF_ON_PAUSE",
+					"doc": "TRANSLATE.POWER_OFF_ON_PAUSE_DOC",
+					"value": true
+				},
+				{
+					"id": "powerOffDelay",
+					"element": "input",
+					"type": "text",
+					"label": "TRANSLATE.POWER_OFF_DELAY",
+					"doc": "TRANSLATE.POWER_OFF_DELAY_DOC",
+					"value": "60"
+				}
+			]
+		}
+	]
+}
