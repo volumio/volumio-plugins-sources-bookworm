@@ -704,6 +704,7 @@ ControllerStylishPlayer.prototype.startServer = function () {
         bitrateFontSize: self.config.get("bitrateFontSize", ""),
         progressFontSize: self.config.get("progressFontSize", ""),
         volumeFontSize: self.config.get("volumeFontSize", ""),
+        weatherBackgroundColor: self.config.get("weatherBackgroundColor", ""),
         language: self.commandRouter.sharedVars.get("language_code") || 'en',
       };
       res.writeHead(200, {
@@ -1005,6 +1006,7 @@ ControllerStylishPlayer.prototype.broadcastConfig = function () {
     idleTimeout: self.config.get("idleTimeout", 5),
     showWeatherInClock: self.config.get("showWeatherInClock", true),
     analogClockShowDate: self.config.get("analogClockShowDate", true),
+    weatherBackgroundColor: self.config.get("weatherBackgroundColor", ""),
     unsplashApiKey: self.config.get("unsplashApiKey", ""),
     wallpaperUrl: self.config.get("wallpaperUrl", ""),
     wallpaperShowTime: self.config.get("wallpaperShowTime", true),
@@ -1244,17 +1246,26 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       uiconf.sections[5].content[3].value = self.config.get("analogClockShowDate", true);
 
       // Populate weather section (index 6)
-      uiconf.sections[6].content[0].value = self.config.get("latitude", "");
-      uiconf.sections[6].content[1].value = self.config.get("longitude", "");
-      uiconf.sections[6].content[2].value = self.config.get("weatherApiKey", "");
-      var unitSystem = self.config.get("unitSystem", "metric");
-      var unitSystemOptions = uiconf.sections[6].content[3].options;
-      var matchUnitSystem = unitSystemOptions.find(function (opt) {
-        return opt.value === unitSystem;
-      });
-      if (matchUnitSystem) {
-        uiconf.sections[6].content[3].value = matchUnitSystem;
-      }
+      try {
+        var weatherSection = uiconf.sections.find(function (s) { return s.id === 'section_weather'; });
+        if (weatherSection && weatherSection.content) {
+          var latField = weatherSection.content.find(function (c) { return c.id === 'latitude'; });
+          if (latField) latField.value = self.config.get("latitude", "");
+          var lonField = weatherSection.content.find(function (c) { return c.id === 'longitude'; });
+          if (lonField) lonField.value = self.config.get("longitude", "");
+          var apiField = weatherSection.content.find(function (c) { return c.id === 'weatherApiKey'; });
+          if (apiField) apiField.value = self.config.get("weatherApiKey", "");
+          var bgField = weatherSection.content.find(function (c) { return c.id === 'weatherBackgroundColor'; });
+          if (bgField) bgField.value = self.config.get("weatherBackgroundColor", "");
+
+          var unitField = weatherSection.content.find(function (c) { return c.id === 'unitSystem'; });
+          var unitSystem = self.config.get("unitSystem", "metric");
+          if (unitField && unitField.options) {
+            var matchUnitSystem = unitField.options.find(function (opt) { return opt.value === unitSystem; });
+            if (matchUnitSystem) unitField.value = matchUnitSystem;
+          }
+        }
+      } catch (e) { /* ignore */ }
 
       // Populate wallpaper section (index 7)
       uiconf.sections[7].content[0].value = self.config.get("unsplashApiKey", "");
@@ -1539,6 +1550,13 @@ ControllerStylishPlayer.prototype.configSaveWeather = function (data) {
   self.config.set("longitude", longitude);
   self.config.set("weatherApiKey", apiKey);
   self.config.set("unitSystem", unitSystem);
+  var bgColor = (data["weatherBackgroundColor"] || "").toString().trim();
+  var hexPattern = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+  if (bgColor && !hexPattern.test(bgColor)) {
+    self.commandRouter.pushToastMessage("error", "Stylish Player", "Weather background color must be a valid hex code (e.g. #1a2b3c).");
+    return;
+  }
+  self.config.set("weatherBackgroundColor", bgColor);
   self.commandRouter.pushToastMessage("success", "Stylish Player", "Weather settings saved.");
 
   self.broadcastConfig();

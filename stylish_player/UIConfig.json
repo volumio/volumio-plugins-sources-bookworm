@@ -490,7 +490,7 @@
       },
       "saveButton": {
         "label": "TRANSLATE.SAVE",
-        "data": ["latitude", "longitude", "weatherApiKey", "unitSystem"]
+        "data": ["latitude", "longitude", "weatherApiKey", "unitSystem", "weatherBackgroundColor"]
       },
       "content": [
         {
@@ -517,6 +517,14 @@
           "doc": "TRANSLATE.WEATHER_API_KEY_DESC",
           "value": ""
         },
+          {
+            "id": "weatherBackgroundColor",
+            "type": "text",
+            "element": "input",
+            "label": "TRANSLATE.WEATHER_BACKGROUND_COLOR",
+            "doc": "TRANSLATE.WEATHER_BACKGROUND_COLOR_DESC",
+            "value": ""
+          },
         {
           "id": "unitSystem",
           "element": "select",

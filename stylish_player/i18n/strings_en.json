@@ -31,6 +31,8 @@
   "WEATHER": "Weather",
   "WEATHER_API_KEY": "API Key (Optional)",
   "WEATHER_API_KEY_DESC": "Open-Meteo API key. The free tier does not require a key. Only needed for commercial plans.",
+  "WEATHER_BACKGROUND_COLOR": "Weather Background Color",
+  "WEATHER_BACKGROUND_COLOR_DESC": "Override the background color used on all weather screens. Enter a hex code (e.g. #1a2b3c) or leave empty to use the theme default gradients.",
   "UNIT_SYSTEM": "Unit System",
   "UNIT_SYSTEM_DESC": "Metric uses °C and km/h. Imperial uses °F and mph.",
   "UNIT_METRIC": "Metric (°C, km/h)",
