@@ -698,6 +698,12 @@ ControllerStylishPlayer.prototype.startServer = function () {
         slideshowInterval: self.config.get("slideshowInterval", 30),
         externalUrl: self.config.get("externalUrl", ""),
         use24Hour: self.config.get("use24Hour", false),
+        titleFontSize: self.config.get("titleFontSize", ""),
+        albumFontSize: self.config.get("albumFontSize", ""),
+        artistFontSize: self.config.get("artistFontSize", ""),
+        bitrateFontSize: self.config.get("bitrateFontSize", ""),
+        progressFontSize: self.config.get("progressFontSize", ""),
+        volumeFontSize: self.config.get("volumeFontSize", ""),
         language: self.commandRouter.sharedVars.get("language_code") || 'en',
       };
       res.writeHead(200, {
@@ -1257,7 +1263,7 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       uiconf.sections[7].content[3].value = self.config.get("wallpaperShowWeather", true);
       uiconf.sections[7].content[4].value = self.config.get("slideshowInterval", 30);
 
-      // Populate kiosk section (index 8) — content is built dynamically based on current kiosk state
+      // Populate kiosk section — find by id so section ordering is not fragile
       var kioskState = self.checkVolumioKiosk();
       var kioskDesc, kioskButton;
       if (!kioskState.exists) {
@@ -1311,9 +1317,10 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
           };
         }
       }
-      uiconf.sections[8].description = kioskDesc;
-      if (kioskButton) {
-        uiconf.sections[8].content = [kioskButton];
+      var kioskSection = uiconf.sections.find(function (s) { return s.id === 'section_kiosk'; });
+      if (kioskSection) {
+        kioskSection.description = kioskDesc;
+        if (kioskButton) kioskSection.content = [kioskButton];
       }
 
       // Populate fonts section (last section)
@@ -1472,6 +1479,7 @@ ControllerStylishPlayer.prototype.configSaveColors = function (data) {
 ControllerStylishPlayer.prototype.configSaveFonts = function (data) {
   var self = this;
   var fields = ["titleFontSize", "albumFontSize", "artistFontSize", "bitrateFontSize", "progressFontSize", "volumeFontSize"];
+  //self.logger.info("Stylish Player: configSaveFonts called with data: " + JSON.stringify(data));
 
   for (var i = 0; i < fields.length; i++) {
     var val = (data[fields[i]] || "").toString().trim();
@@ -1480,6 +1488,12 @@ ControllerStylishPlayer.prototype.configSaveFonts = function (data) {
 
   self.commandRouter.pushToastMessage("success", "Stylish Player", "Font settings saved.");
   self.broadcastConfig();
+  // // Refresh UI so Volumio core settings page re-reads UIConfig and shows saved values
+  // try {
+  //   self.refreshUI();
+  // } catch (e) {
+  //   self.logger.error("Stylish Player: Failed to refresh UI after saving fonts: " + e.message);
+  // }
 };
 
 ControllerStylishPlayer.prototype.configSaveLocation = function (data) {
