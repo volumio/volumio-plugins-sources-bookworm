@@ -303,6 +303,71 @@
       ]
     },
     {
+      "id": "section_fonts",
+      "element": "section",
+      "label": "TRANSLATE.FONTS",
+      "icon": "fa-font",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "user_interface/stylish_player",
+        "method": "configSaveFonts"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["titleFontSize", "albumFontSize", "artistFontSize", "bitrateFontSize", "progressFontSize", "volumeFontSize"]
+      },
+      "content": [
+        {
+          "id": "titleFontSize",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.TITLE_FONT_SIZE",
+          "doc": "TRANSLATE.TITLE_FONT_SIZE_DESC",
+          "value": ""
+        },
+        {
+          "id": "albumFontSize",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.ALBUM_FONT_SIZE",
+          "doc": "TRANSLATE.ALBUM_FONT_SIZE_DESC",
+          "value": ""
+        },
+        {
+          "id": "artistFontSize",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.ARTIST_FONT_SIZE",
+          "doc": "TRANSLATE.ARTIST_FONT_SIZE_DESC",
+          "value": ""
+        },
+        {
+          "id": "bitrateFontSize",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.BITRATE_FONT_SIZE",
+          "doc": "TRANSLATE.BITRATE_FONT_SIZE_DESC",
+          "value": ""
+        },
+        {
+          "id": "progressFontSize",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.PROGRESS_FONT_SIZE",
+          "doc": "TRANSLATE.PROGRESS_FONT_SIZE_DESC",
+          "value": ""
+        },
+        {
+          "id": "volumeFontSize",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.VOLUME_FONT_SIZE",
+          "doc": "TRANSLATE.VOLUME_FONT_SIZE_DESC",
+          "value": ""
+        }
+      ]
+    },
+    {
       "id": "section_idle_screen",
       "element": "section",
       "label": "TRANSLATE.IDLE_SCREEN",
@@ -531,71 +596,6 @@
       "label": "TRANSLATE.KIOSK",
       "icon": "fa-desktop"
     }
-    ,
-    {
-      "id": "section_fonts",
-      "element": "section",
-      "label": "TRANSLATE.FONTS",
-      "icon": "fa-font",
-      "onSave": {
-        "type": "controller",
-        "endpoint": "user_interface/stylish_player",
-        "method": "configSaveFonts"
-      },
-      "saveButton": {
-        "label": "TRANSLATE.SAVE",
-        "data": ["titleFontSize", "albumFontSize", "artistFontSize", "bitrateFontSize", "progressFontSize", "volumeFontSize"]
-      },
-      "content": [
-        {
-          "id": "titleFontSize",
-          "type": "text",
-          "element": "input",
-          "label": "TRANSLATE.TITLE_FONT_SIZE",
-          "doc": "TRANSLATE.TITLE_FONT_SIZE_DESC",
-          "value": ""
-        },
-        {
-          "id": "albumFontSize",
-          "type": "text",
-          "element": "input",
-          "label": "TRANSLATE.ALBUM_FONT_SIZE",
-          "doc": "TRANSLATE.ALBUM_FONT_SIZE_DESC",
-          "value": ""
-        },
-        {
-          "id": "artistFontSize",
-          "type": "text",
-          "element": "input",
-          "label": "TRANSLATE.ARTIST_FONT_SIZE",
-          "doc": "TRANSLATE.ARTIST_FONT_SIZE_DESC",
-          "value": ""
-        },
-        {
-          "id": "bitrateFontSize",
-          "type": "text",
-          "element": "input",
-          "label": "TRANSLATE.BITRATE_FONT_SIZE",
-          "doc": "TRANSLATE.BITRATE_FONT_SIZE_DESC",
-          "value": ""
-        },
-        {
-          "id": "progressFontSize",
-          "type": "text",
-          "element": "input",
-          "label": "TRANSLATE.PROGRESS_FONT_SIZE",
-          "doc": "TRANSLATE.PROGRESS_FONT_SIZE_DESC",
-          "value": ""
-        },
-        {
-          "id": "volumeFontSize",
-          "type": "text",
-          "element": "input",
-          "label": "TRANSLATE.VOLUME_FONT_SIZE",
-          "doc": "TRANSLATE.VOLUME_FONT_SIZE_DESC",
-          "value": ""
-        }
-      ]
-    }
+
   ]
 }
