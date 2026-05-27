@@ -133,5 +133,20 @@
   "BROWSE_PEPPY_TEMPLATES": "浏览 Peppy 模板",
   "BROWSE_SPECTRUM_PACKS": "浏览频谱包",
   "DELETE_PACK_CONFIRM": "删除{name}？\n这将从服务器永久删除该包。",
-  "DELETE_PACK_FAILED": "删除包失败。"
+  "DELETE_PACK_FAILED": "删除包失败。",
+  "WEATHER_BACKGROUND_COLOR": "Weather Background Color",
+  "WEATHER_BACKGROUND_COLOR_DESC": "Override the background color used on all weather screens. Enter a hex code (e.g. #1a2b3c) or leave empty to use the theme default gradients.",
+  "FONTS": "Fonts",
+  "TITLE_FONT_SIZE": "Track Title Font Size",
+  "TITLE_FONT_SIZE_DESC": "CSS font size for the track title (e.g. 18px, 1.2rem). Leave empty to use the theme default.",
+  "ALBUM_FONT_SIZE": "Album Name Font Size",
+  "ALBUM_FONT_SIZE_DESC": "CSS font size for the album name (e.g. 14px, 1rem). Leave empty to use the theme default.",
+  "ARTIST_FONT_SIZE": "Artist Name Font Size",
+  "ARTIST_FONT_SIZE_DESC": "CSS font size for the artist name (e.g. 14px, 1rem). Leave empty to use the theme default.",
+  "BITRATE_FONT_SIZE": "Bitrate/Stream Info Font Size",
+  "BITRATE_FONT_SIZE_DESC": "CSS font size for bitrate and stream info text (e.g. 12px). Leave empty to use the theme default.",
+  "PROGRESS_FONT_SIZE": "Progress Bar Font Size",
+  "PROGRESS_FONT_SIZE_DESC": "CSS font size for labels near the progress bar (e.g. 12px). Leave empty to use the theme default.",
+  "VOLUME_FONT_SIZE": "Volume Label Font Size",
+  "VOLUME_FONT_SIZE_DESC": "CSS font size for the volume label and value (e.g. 12px). Leave empty to use the theme default."
 }
