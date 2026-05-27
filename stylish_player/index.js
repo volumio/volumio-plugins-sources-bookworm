@@ -1013,6 +1013,12 @@ ControllerStylishPlayer.prototype.broadcastConfig = function () {
     albumColor: self.config.get("albumColor", ""),
     streamInfoColor: self.config.get("streamInfoColor", ""),
     controlColor: self.config.get("controlColor", ""),
+    titleFontSize: self.config.get("titleFontSize", ""),
+    albumFontSize: self.config.get("albumFontSize", ""),
+    artistFontSize: self.config.get("artistFontSize", ""),
+    bitrateFontSize: self.config.get("bitrateFontSize", ""),
+    progressFontSize: self.config.get("progressFontSize", ""),
+    volumeFontSize: self.config.get("volumeFontSize", ""),
     language: self.commandRouter.sharedVars.get("language_code") || 'en',
   };
   self.commandRouter.broadcastMessage("pushStylishPlayerConfig", configData);
@@ -1310,6 +1316,19 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
         uiconf.sections[8].content = [kioskButton];
       }
 
+      // Populate fonts section (last section)
+      try {
+        var fontsSection = uiconf.sections.find(function (s) { return s.id === 'section_fonts'; });
+        if (fontsSection && fontsSection.content) {
+          fontsSection.content[0].value = self.config.get("titleFontSize", "");
+          fontsSection.content[1].value = self.config.get("albumFontSize", "");
+          fontsSection.content[2].value = self.config.get("artistFontSize", "");
+          fontsSection.content[3].value = self.config.get("bitrateFontSize", "");
+          fontsSection.content[4].value = self.config.get("progressFontSize", "");
+          fontsSection.content[5].value = self.config.get("volumeFontSize", "");
+        }
+      } catch (e) { /* ignore if fonts section not present */ }
+
       defer.resolve(uiconf);
     })
     .fail(function () {
@@ -1447,6 +1466,19 @@ ControllerStylishPlayer.prototype.configSaveColors = function (data) {
   }
 
   self.commandRouter.pushToastMessage("success", "Stylish Player", "Color settings saved.");
+  self.broadcastConfig();
+};
+
+ControllerStylishPlayer.prototype.configSaveFonts = function (data) {
+  var self = this;
+  var fields = ["titleFontSize", "albumFontSize", "artistFontSize", "bitrateFontSize", "progressFontSize", "volumeFontSize"];
+
+  for (var i = 0; i < fields.length; i++) {
+    var val = (data[fields[i]] || "").toString().trim();
+    self.config.set(fields[i], val);
+  }
+
+  self.commandRouter.pushToastMessage("success", "Stylish Player", "Font settings saved.");
   self.broadcastConfig();
 };
 
