@@ -62,7 +62,7 @@
       },
       "saveButton": {
         "label": "TRANSLATE.SAVE",
-        "data": ["playerType", "theme", "showPlayerControls", "albumArtMaxSpace", "vizType", "spectrumOptions", "backgroundColor"]
+        "data": ["playerType", "theme", "showPlayerControls", "showRemainingTime", "albumArtMaxSpace", "albumArtAnimated", "showTrackPanel", "vizType", "spectrumOptions", "peppyMeterFolder", "peppyMeterModel", "peppySpectrumFolder", "peppySpectrumModel"]
       },
       "content": [
         {
@@ -80,7 +80,9 @@
             { "value": "aqua", "label": "Aqua" },
             { "value": "flat", "label": "Flat" },
             { "value": "win95", "label": "Windows 95" },
-            { "value": "casio", "label": "Casio 80s" }
+            { "value": "casio", "label": "Casio 80s" },
+            { "value": "oled", "label": "OLED" },
+            { "value": "brushed-metal", "label": "Brushed Metal" }
           ]
         },
         {
@@ -103,7 +105,8 @@
             { "value": "radio", "label": "TRANSLATE.PLAYER_TYPE_RADIO" },
             { "value": "globe", "label": "TRANSLATE.PLAYER_TYPE_GLOBE" },
             { "value": "matchSource", "label": "TRANSLATE.PLAYER_TYPE_MATCH_SOURCE" },
-            { "value": "random", "label": "TRANSLATE.PLAYER_TYPE_RANDOM" }
+            { "value": "random", "label": "TRANSLATE.PLAYER_TYPE_RANDOM" },
+            { "value": "none", "label": "TRANSLATE.PLAYER_TYPE_NONE" }
           ]
         },
         {
@@ -112,6 +115,20 @@
           "label": "TRANSLATE.SHOW_PLAYER_CONTROLS",
           "doc": "TRANSLATE.SHOW_PLAYER_CONTROLS_DESC",
           "value": true
+        },
+        {
+          "id": "hideSeekHandle",
+          "element": "switch",
+          "label": "TRANSLATE.HIDE_SEEK_HANDLE",
+          "doc": "TRANSLATE.HIDE_SEEK_HANDLE_DESC",
+          "value": false
+        },
+        {
+          "id": "showRemainingTime",
+          "element": "switch",
+          "label": "TRANSLATE.SHOW_REMAINING_TIME",
+          "doc": "TRANSLATE.SHOW_REMAINING_TIME_DESC",
+          "value": false
         },
         {
           "id": "albumArtMaxSpace",
@@ -125,6 +142,24 @@
           }
         },
         {
+          "id": "albumArtAnimated",
+          "element": "switch",
+          "label": "TRANSLATE.ALBUM_ART_ANIMATED",
+          "doc": "TRANSLATE.ALBUM_ART_ANIMATED_DESC",
+          "value": true,
+          "visibleIf": {
+            "field": "playerType",
+            "value": "albumArt"
+          }
+        },
+        {
+          "id": "showTrackPanel",
+          "element": "switch",
+          "label": "TRANSLATE.SHOW_TRACK_PANEL",
+          "doc": "TRANSLATE.SHOW_TRACK_PANEL_DESC",
+          "value": false
+        },
+        {
           "id": "vizType",
           "element": "select",
           "label": "TRANSLATE.VIZ_TYPE",
@@ -135,10 +170,8 @@
           },
           "options": [
             { "value": "spectrum",  "label": "TRANSLATE.VIZ_TYPE_SPECTRUM" },
-            { "value": "vuMeter1",  "label": "TRANSLATE.VIZ_TYPE_VU_METER_1" },
-            { "value": "vuMeter2",  "label": "TRANSLATE.VIZ_TYPE_VU_METER_2" },
-            { "value": "vuMeter3",  "label": "TRANSLATE.VIZ_TYPE_VU_METER_3" },
-            { "value": "vuMeter4",  "label": "TRANSLATE.VIZ_TYPE_VU_METER_4" },
+            { "value": "peppyMeter", "label": "TRANSLATE.VIZ_TYPE_PEPPY_METER" },
+            { "value": "peppySpectrum", "label": "TRANSLATE.VIZ_TYPE_PEPPY_SPECTRUM" },
             { "value": "none",      "label": "TRANSLATE.NONE" }
           ]
         },
@@ -155,84 +188,182 @@
           }
         },
         {
+          "id": "peppyMeterFolder",
+          "element": "select",
+          "label": "TRANSLATE.PEPPY_METER_FOLDER",
+          "doc": "TRANSLATE.PEPPY_METER_FOLDER_DESC",
+          "value": { "value": "", "label": "" },
+          "options": [],
+          "visibleIf": {
+            "field": "vizType",
+            "value": "peppyMeter"
+          }
+        },
+        {
+          "id": "peppyMeterModel",
+          "element": "select",
+          "label": "TRANSLATE.PEPPY_METER_MODEL",
+          "doc": "TRANSLATE.PEPPY_METER_MODEL_DESC",
+          "value": { "value": "random", "label": "Random" },
+          "options": [{ "value": "random", "label": "Random" }],
+          "visibleIf": {
+            "field": "vizType",
+            "value": "peppyMeter"
+          }
+        },
+        {
+          "id": "peppySpectrumFolder",
+          "element": "select",
+          "label": "TRANSLATE.PEPPY_SPECTRUM_FOLDER",
+          "doc": "TRANSLATE.PEPPY_SPECTRUM_FOLDER_DESC",
+          "value": { "value": "", "label": "" },
+          "options": [],
+          "visibleIf": {
+            "field": "vizType",
+            "value": "peppySpectrum"
+          }
+        },
+        {
+          "id": "peppySpectrumModel",
+          "element": "select",
+          "label": "TRANSLATE.PEPPY_SPECTRUM_MODEL",
+          "doc": "TRANSLATE.PEPPY_SPECTRUM_MODEL_DESC",
+          "value": { "value": "random", "label": "Random" },
+          "options": [{ "value": "random", "label": "Random" }],
+          "visibleIf": {
+            "field": "vizType",
+            "value": "peppySpectrum"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_colors",
+      "element": "section",
+      "label": "TRANSLATE.COLORS",
+      "icon": "fa-paint-brush",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "user_interface/stylish_player",
+        "method": "configSaveColors"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["backgroundColor", "trackColor", "artistColor", "albumColor", "streamInfoColor", "controlColor"]
+      },
+      "content": [
+        {
           "id": "backgroundColor",
           "type": "text",
           "element": "input",
           "label": "TRANSLATE.BACKGROUND_COLOR",
           "doc": "TRANSLATE.BACKGROUND_COLOR_DESC",
           "value": ""
+        },
+        {
+          "id": "trackColor",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.TRACK_COLOR",
+          "doc": "TRANSLATE.TRACK_COLOR_DESC",
+          "value": ""
+        },
+        {
+          "id": "artistColor",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.ARTIST_COLOR",
+          "doc": "TRANSLATE.ARTIST_COLOR_DESC",
+          "value": ""
+        },
+        {
+          "id": "albumColor",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.ALBUM_COLOR",
+          "doc": "TRANSLATE.ALBUM_COLOR_DESC",
+          "value": ""
+        },
+        {
+          "id": "streamInfoColor",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.STREAM_INFO_COLOR",
+          "doc": "TRANSLATE.STREAM_INFO_COLOR_DESC",
+          "value": ""
+        },
+        {
+          "id": "controlColor",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.CONTROL_COLOR",
+          "doc": "TRANSLATE.CONTROL_COLOR_DESC",
+          "value": ""
         }
       ]
     },
     {
-      "id": "section_location",
+      "id": "section_fonts",
       "element": "section",
-      "label": "TRANSLATE.LOCATION",
-      "icon": "fa-map-marker",
+      "label": "TRANSLATE.FONTS",
+      "icon": "fa-font",
       "onSave": {
         "type": "controller",
         "endpoint": "user_interface/stylish_player",
-        "method": "configSaveLocation"
+        "method": "configSaveFonts"
       },
       "saveButton": {
         "label": "TRANSLATE.SAVE",
-        "data": ["latitude", "longitude"]
+        "data": ["titleFontSize", "albumFontSize", "artistFontSize", "bitrateFontSize", "progressFontSize", "volumeFontSize"]
       },
       "content": [
         {
-          "id": "latitude",
+          "id": "titleFontSize",
           "type": "text",
           "element": "input",
-          "label": "TRANSLATE.LATITUDE",
-          "doc": "TRANSLATE.LATITUDE_DESC",
+          "label": "TRANSLATE.TITLE_FONT_SIZE",
+          "doc": "TRANSLATE.TITLE_FONT_SIZE_DESC",
           "value": ""
         },
         {
-          "id": "longitude",
+          "id": "albumFontSize",
           "type": "text",
           "element": "input",
-          "label": "TRANSLATE.LONGITUDE",
-          "doc": "TRANSLATE.LONGITUDE_DESC",
-          "value": ""
-        }
-      ]
-    },
-    {
-      "id": "section_weather",
-      "element": "section",
-      "label": "TRANSLATE.WEATHER",
-      "icon": "fa-cloud",
-      "onSave": {
-        "type": "controller",
-        "endpoint": "user_interface/stylish_player",
-        "method": "configSaveWeather"
-      },
-      "saveButton": {
-        "label": "TRANSLATE.SAVE",
-        "data": ["weatherApiKey", "unitSystem"]
-      },
-      "content": [
-        {
-          "id": "weatherApiKey",
-          "type": "text",
-          "element": "input",
-          "label": "TRANSLATE.WEATHER_API_KEY",
-          "doc": "TRANSLATE.WEATHER_API_KEY_DESC",
+          "label": "TRANSLATE.ALBUM_FONT_SIZE",
+          "doc": "TRANSLATE.ALBUM_FONT_SIZE_DESC",
           "value": ""
         },
         {
-          "id": "unitSystem",
-          "element": "select",
-          "label": "TRANSLATE.UNIT_SYSTEM",
-          "doc": "TRANSLATE.UNIT_SYSTEM_DESC",
-          "value": {
-            "value": "metric",
-            "label": "TRANSLATE.UNIT_METRIC"
-          },
-          "options": [
-            { "value": "metric", "label": "TRANSLATE.UNIT_METRIC" },
-            { "value": "imperial", "label": "TRANSLATE.UNIT_IMPERIAL" }
-          ]
+          "id": "artistFontSize",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.ARTIST_FONT_SIZE",
+          "doc": "TRANSLATE.ARTIST_FONT_SIZE_DESC",
+          "value": ""
+        },
+        {
+          "id": "bitrateFontSize",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.BITRATE_FONT_SIZE",
+          "doc": "TRANSLATE.BITRATE_FONT_SIZE_DESC",
+          "value": ""
+        },
+        {
+          "id": "progressFontSize",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.PROGRESS_FONT_SIZE",
+          "doc": "TRANSLATE.PROGRESS_FONT_SIZE_DESC",
+          "value": ""
+        },
+        {
+          "id": "volumeFontSize",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.VOLUME_FONT_SIZE",
+          "doc": "TRANSLATE.VOLUME_FONT_SIZE_DESC",
+          "value": ""
         }
       ]
     },
@@ -240,7 +371,7 @@
       "id": "section_idle_screen",
       "element": "section",
       "label": "TRANSLATE.IDLE_SCREEN",
-      "icon": "fa-clock-o",
+      "icon": "fa-pause-circle",
       "onSave": {
         "type": "controller",
         "endpoint": "user_interface/stylish_player",
@@ -251,16 +382,7 @@
         "data": [
           "idleScreen",
           "idleTimeout",
-          "externalUrl",
-          "showWeatherInClock",
-          "analogClockShowDate",
-          "unsplashApiKey",
-          "wallpaperUrl",
-          "wallpaperShowTime",
-          "wallpaperShowSeconds",
-          "wallpaperShowWeather",
-          "slideshowInterval",
-          "use24Hour"
+          "externalUrl"
         ]
       },
       "content": [
@@ -304,6 +426,39 @@
           "label": "TRANSLATE.IDLE_TIMEOUT",
           "doc": "TRANSLATE.IDLE_TIMEOUT_DESC",
           "value": 5
+        }
+      ]
+    },
+    {
+      "id": "section_clock",
+      "element": "section",
+      "label": "TRANSLATE.CLOCK",
+      "icon": "fa-clock-o",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "user_interface/stylish_player",
+        "method": "configSaveClock"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["use24Hour", "wallpaperShowSeconds", "showWeatherInClock", "analogClockShowDate"]
+      },
+      "content": [
+        {
+          "id": "use24Hour",
+          "type": "boolean",
+          "element": "switch",
+          "label": "TRANSLATE.USE_24_HOUR",
+          "doc": "TRANSLATE.USE_24_HOUR_DESC",
+          "value": false
+        },
+        {
+          "id": "wallpaperShowSeconds",
+          "type": "boolean",
+          "element": "switch",
+          "label": "TRANSLATE.WALLPAPER_SHOW_SECONDS",
+          "doc": "TRANSLATE.WALLPAPER_SHOW_SECONDS_DESC",
+          "value": false
         },
         {
           "id": "showWeatherInClock",
@@ -320,7 +475,87 @@
           "label": "TRANSLATE.ANALOG_CLOCK_SHOW_DATE",
           "doc": "TRANSLATE.ANALOG_CLOCK_SHOW_DATE_DESC",
           "value": true
+        }
+      ]
+    },
+    {
+      "id": "section_weather",
+      "element": "section",
+      "label": "TRANSLATE.WEATHER",
+      "icon": "fa-cloud",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "user_interface/stylish_player",
+        "method": "configSaveWeather"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["latitude", "longitude", "weatherApiKey", "unitSystem", "weatherBackgroundColor"]
+      },
+      "content": [
+        {
+          "id": "latitude",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.LATITUDE",
+          "doc": "TRANSLATE.LATITUDE_DESC",
+          "value": ""
         },
+        {
+          "id": "longitude",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.LONGITUDE",
+          "doc": "TRANSLATE.LONGITUDE_DESC",
+          "value": ""
+        },
+        {
+          "id": "weatherApiKey",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.WEATHER_API_KEY",
+          "doc": "TRANSLATE.WEATHER_API_KEY_DESC",
+          "value": ""
+        },
+          {
+            "id": "weatherBackgroundColor",
+            "type": "text",
+            "element": "input",
+            "label": "TRANSLATE.WEATHER_BACKGROUND_COLOR",
+            "doc": "TRANSLATE.WEATHER_BACKGROUND_COLOR_DESC",
+            "value": ""
+          },
+        {
+          "id": "unitSystem",
+          "element": "select",
+          "label": "TRANSLATE.UNIT_SYSTEM",
+          "doc": "TRANSLATE.UNIT_SYSTEM_DESC",
+          "value": {
+            "value": "metric",
+            "label": "TRANSLATE.UNIT_METRIC"
+          },
+          "options": [
+            { "value": "metric", "label": "TRANSLATE.UNIT_METRIC" },
+            { "value": "imperial", "label": "TRANSLATE.UNIT_IMPERIAL" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section_wallpaper",
+      "element": "section",
+      "label": "TRANSLATE.WALLPAPER",
+      "icon": "fa-picture-o",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "user_interface/stylish_player",
+        "method": "configSaveWallpaper"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["unsplashApiKey", "wallpaperUrl", "wallpaperShowTime", "wallpaperShowWeather", "slideshowInterval"]
+      },
+      "content": [
         {
           "id": "unsplashApiKey",
           "type": "text",
@@ -346,14 +581,6 @@
           "value": true
         },
         {
-          "id": "wallpaperShowSeconds",
-          "type": "boolean",
-          "element": "switch",
-          "label": "TRANSLATE.WALLPAPER_SHOW_SECONDS",
-          "doc": "TRANSLATE.WALLPAPER_SHOW_SECONDS_DESC",
-          "value": false
-        },
-        {
           "id": "wallpaperShowWeather",
           "type": "boolean",
           "element": "switch",
@@ -368,14 +595,6 @@
           "label": "TRANSLATE.SLIDESHOW_INTERVAL",
           "doc": "TRANSLATE.SLIDESHOW_INTERVAL_DESC",
           "value": 30
-        },
-        {
-          "id": "use24Hour",
-          "type": "boolean",
-          "element": "switch",
-          "label": "TRANSLATE.USE_24_HOUR",
-          "doc": "TRANSLATE.USE_24_HOUR_DESC",
-          "value": false
         }
       ]
     },
@@ -385,5 +604,6 @@
       "label": "TRANSLATE.KIOSK",
       "icon": "fa-desktop"
     }
+
   ]
 }

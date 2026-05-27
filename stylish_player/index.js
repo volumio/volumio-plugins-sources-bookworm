@@ -7,6 +7,8 @@ var path = require("path");
 var os = require("os");
 const { spawn, spawnSync, exec, execSync } = require('child_process');
 var STREAM_PORT = 9993;
+// Persistent data directory — survives Volumio version updates
+var PEPPY_DATA_PATH = '/data/INTERNAL/stylish_player';
 // Kiosk constants
 var VOLUMIO_KIOSK_PATH = "/opt/volumiokiosk.sh";
 var VOLUMIO_KIOSK_BAK_PATH = "/home/volumio/.stylish_player/volumiokiosk.sh.bak";
@@ -55,10 +57,29 @@ ControllerStylishPlayer.prototype.getI18n = function (key) {
   return self.i18nStrings[key] || self.i18nDefaults[key] || key;
 };
 
+ControllerStylishPlayer.prototype.getTranslations = function () {
+  var self = this;
+  // Force reload to pick up any language change
+  self.i18nStrings = null;
+  self.getI18n('_'); // triggers lazy load
+  // Merge defaults with language-specific overrides
+  return Object.assign({}, self.i18nDefaults || {}, self.i18nStrings || {});
+};
+
 ControllerStylishPlayer.prototype.onVolumioStart = function () {
   var configFile = this.commandRouter.pluginManager.getConfigurationFile(this.context, "config.json");
   this.config = new (require("v-conf"))();
   this.config.loadFile(configFile);
+
+  // The ALSA contribution (has_alsa_contribution=true) references /tmp/stream.mp3
+  // via volumiofifo. Since /tmp is tmpfs and cleared on reboot, the FIFO must
+  // exist before any audio playback — create it here at earliest boot stage.
+  try {
+    try { fs.removeSync('/tmp/stream.mp3'); } catch (e) { /* ignore */ }
+    execSync('/usr/bin/mkfifo -m 646 /tmp/stream.mp3', { uid: 1000, gid: 1000 });
+  } catch (e) {
+    // Non-fatal: onStart will retry
+  }
 
   return libQ.resolve();
 };
@@ -66,13 +87,21 @@ ControllerStylishPlayer.prototype.onVolumioStart = function () {
 ControllerStylishPlayer.prototype.onStart = function () {
   var self = this;
   var defer = libQ.defer();
-// 1. Update ALSA first (Synchronous or returns promise)
-  self.commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'updateALSAConfigFile');
-  self.loadalsastuff();
-  self.streamOutViz();
-  // 2. Start the sequence
 
-   self
+  // 0. Ensure persistent peppy data directory exists and migrate old data
+  self._ensurePeppyDataDir();
+
+  // 1. Ensure FIFO exists BEFORE updating ALSA (which references it)
+  self.loadalsastuff();
+
+  // 2. Update ALSA config to include our contribution
+  self.commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'updateALSAConfigFile');
+
+  // 3. Start audio streaming
+  self.streamOutViz();
+
+  // 4. Start the HTTP server
+  self
     .startServer()
     .then(function () {
       defer.resolve();
@@ -96,37 +125,82 @@ ControllerStylishPlayer.prototype.onRestart = function () {
   // Optional
 };
 
+// Ensure the persistent peppy data directory exists. If peppy folders exist in
+// the old location (inside the plugin's app/ dir), move them to the persistent
+// path so they survive Volumio version updates.
+ControllerStylishPlayer.prototype._ensurePeppyDataDir = function () {
+  var self = this;
+  var meterDest = path.join(PEPPY_DATA_PATH, 'peppy_meter');
+  var spectrumDest = path.join(PEPPY_DATA_PATH, 'peppy_spectrum');
+  fs.ensureDirSync(meterDest);
+  fs.ensureDirSync(spectrumDest);
+
+  // Migrate from old location (plugin app/ dir) if data exists there
+  var oldMeter = path.join(__dirname, 'app', 'peppy_meter');
+  var oldSpectrum = path.join(__dirname, 'app', 'peppy_spectrum');
+
+  try {
+    if (fs.existsSync(oldMeter) && !fs.lstatSync(oldMeter).isSymbolicLink()) {
+      var entries = fs.readdirSync(oldMeter, { withFileTypes: true });
+      for (var i = 0; i < entries.length; i++) {
+        if (!entries[i].isDirectory()) continue;
+        var src = path.join(oldMeter, entries[i].name);
+        var dest = path.join(meterDest, entries[i].name);
+        if (!fs.existsSync(dest)) {
+          fs.moveSync(src, dest);
+          self.logger.info('Stylish Player: Migrated peppy_meter/' + entries[i].name + ' to persistent storage');
+        }
+      }
+      fs.removeSync(oldMeter);
+    }
+  } catch (e) {
+    self.logger.error('Stylish Player: Error migrating peppy_meter: ' + e);
+  }
+
+  try {
+    if (fs.existsSync(oldSpectrum) && !fs.lstatSync(oldSpectrum).isSymbolicLink()) {
+      var entries = fs.readdirSync(oldSpectrum, { withFileTypes: true });
+      for (var i = 0; i < entries.length; i++) {
+        if (!entries[i].isDirectory()) continue;
+        var src = path.join(oldSpectrum, entries[i].name);
+        var dest = path.join(spectrumDest, entries[i].name);
+        if (!fs.existsSync(dest)) {
+          fs.moveSync(src, dest);
+          self.logger.info('Stylish Player: Migrated peppy_spectrum/' + entries[i].name + ' to persistent storage');
+        }
+      }
+      fs.removeSync(oldSpectrum);
+    }
+  } catch (e) {
+    self.logger.error('Stylish Player: Error migrating peppy_spectrum: ' + e);
+  }
+
+  self.logger.info('Stylish Player: Peppy data path ready at ' + PEPPY_DATA_PATH);
+};
+
 // Server Management -------------------------------------------------------------------
 ControllerStylishPlayer.prototype.loadalsastuff = function () {
-  // execSync(`rm /tmp/stream.mp3 || true`, {
-  //   uid: 1000,
-  //   gid: 1000
-  // });
   const self = this;
-  var defer = libQ.defer();
   try {
-    execSync(`/usr/bin/mkfifo -m 646 /tmp/stream.mp3`, {
+    // Remove stale FIFO if it exists, then recreate
+    try { fs.removeSync('/tmp/stream.mp3'); } catch (e) { /* ignore */ }
+    execSync('/usr/bin/mkfifo -m 646 /tmp/stream.mp3', {
       uid: 1000,
       gid: 1000
     });
-    defer.resolve();
   } catch (err) {
-    self.logger.error(' ----failed to create fifo :' + err);
-    defer.reject(err);
+    self.logger.error('Stylish Player: Failed to create FIFO: ' + err);
   }
-  return defer.promise;
 };
 
 /**
  * Return the FFmpeg input parameters needed to read the ALSA FIFO for the
  * current track format.
  *
- * PCM (flac, mp3, aac, …): ALSA plug writes S16LE at the track's native rate.
- * DSD (dsf, dff): Volumio sends DoP (DSD-over-PCM) — S32LE at the reduced
- *   DoP sample rate (native DSD rate ÷ 16):
- *     DSD64  (~2.82 MHz native) → S32LE 176400 Hz
- *     DSD128 (~5.64 MHz native) → S32LE 352800 Hz
- *     DSD256 (~11.2 MHz native) → S32LE 705600 Hz
+ * The ALSA plug wrapper (sp_out_pipe_fixed) always resamples ALL audio —
+ * including DSD/DoP and Spotify — to 44100 Hz S16LE before writing to the FIFO.
+ * FFmpeg therefore always reads at this fixed rate regardless of the source
+ * format, sample rate, or whether the original track is PCM, DSD, or Spotify.
  *
  * Returns { fmt, inputRate, isDSD }
  */
@@ -134,28 +208,7 @@ ControllerStylishPlayer.prototype._fifoParams = function (samplerate, trackType)
   var type = (trackType || '').toLowerCase();
   var isDSD = (type === 'dsf' || type === 'dff');
 
-  if (isDSD) {
-    var srStr = String(samplerate || '');
-    var nativeRate = 0;
-    var mhzMatch = srStr.match(/^(\d+\.?\d*)\s*[Mm][Hh][Zz]/);
-    if (mhzMatch) {
-      nativeRate = Math.round(parseFloat(mhzMatch[1]) * 1000000);
-    } else {
-      nativeRate = parseInt(srStr, 10) || 0;
-    }
-    var dopRate;
-    if (nativeRate >= 10000000) dopRate = 705600;      // DSD256
-    else if (nativeRate >= 5000000) dopRate = 352800;  // DSD128
-    else dopRate = 176400;                             // DSD64 + fallback
-    return { fmt: 's32le', inputRate: dopRate, isDSD: true };
-  }
-
-  // PCM: parse "44.1 kHz" / "96 kHz" / raw Hz integer
-  var rate = parseInt(String(samplerate || ''), 10) || 44100;
-  var khzMatch = String(samplerate || '').match(/^(\d+\.?\d*)\s*[Kk][Hh][Zz]/);
-  if (khzMatch) rate = Math.round(parseFloat(khzMatch[1]) * 1000);
-  rate = (rate > 0 && rate <= 768000) ? rate : 44100;
-  return { fmt: 's16le', inputRate: rate, isDSD: false };
+  return { fmt: 's16le', inputRate: 44100, isDSD: isDSD };
 };
 
 ControllerStylishPlayer.prototype.streamOutViz = function () {
@@ -172,7 +225,7 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
   self._fifoDrainStream = null;
 
   // Restart FFmpeg when the track switches between PCM and DSD (DoP), because
-  // the FIFO format and sample rate change (S16LE/44100 vs S32LE/176400+).
+  // the FIFO format and sample rate change.
   self.commandRouter.addCallback('volumioPushState', function (state) {
     if (!state) return;
     var p = self._fifoParams(state.samplerate, state.trackType);
@@ -183,6 +236,11 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
       self._currentFifoFmt = p.fmt;
       self._currentFifoRate = p.inputRate;
       self._currentIsDSD = p.isDSD;
+      // Cancel any pending graceful shutdown since we're force-restarting.
+      if (self._ffmpegShutdownTimer) {
+        clearTimeout(self._ffmpegShutdownTimer);
+        self._ffmpegShutdownTimer = null;
+      }
       // Close stream clients so browsers reconnect cleanly after the restart.
       var clients = self.streamClients.slice();
       self.streamClients = [];
@@ -236,11 +294,14 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
 
     var ffArgs = [
       '-loglevel', 'error',
-      '-fflags', '+discardcorrupt',
+      '-fflags', '+genpts+discardcorrupt+igndts',
+      '-err_detect', 'ignore_err',
       '-f', self._currentFifoFmt,
       '-ar', String(self._currentFifoRate),
       '-ac', '2',
+      '-thread_queue_size', '512',
       '-i', self.pipePath,
+      '-af', 'aresample=async=1:first_pts=0',
       '-ar', '44100',
       '-codec:a', 'libmp3lame', '-b:a', '128k',
       '-f', 'mp3', 'pipe:1'
@@ -301,6 +362,12 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
       });
 
       self.streamClients.push(res);
+      // Cancel any pending FFmpeg shutdown — a client reconnected (e.g. page refresh).
+      if (self._ffmpegShutdownTimer) {
+        clearTimeout(self._ffmpegShutdownTimer);
+        self._ffmpegShutdownTimer = null;
+        self.logger.info('Stylish Player: Client reconnected — cancelled FFmpeg shutdown');
+      }
       // Start FFmpeg if not already running. _startAudioFfmpeg stops the drain
       // internally just before spawning, so the FIFO never has a read-gap that
       // would cause ALSA's volumiofifo plugin to block and report "device busy".
@@ -312,10 +379,17 @@ ControllerStylishPlayer.prototype.streamOutViz = function () {
         self.logger.info("Stylish Player: Stream client disconnected");
         self.streamClients = self.streamClients.filter(function (r) { return r !== res; });
         res.end();
-        // Last client: terminate FFmpeg; the exit handler will start the FIFO drain.
+        // Last client: use a grace period before stopping FFmpeg so a page
+        // refresh can reconnect without interrupting the audio pipeline.
         if (self.streamClients.length === 0 && self._audioFfmpeg) {
-          self.logger.info('Stylish Player: Last stream client left — stopping FFmpeg');
-          self._audioFfmpeg.kill('SIGTERM');
+          self.logger.info('Stylish Player: Last stream client left — scheduling FFmpeg shutdown (3s grace)');
+          self._ffmpegShutdownTimer = setTimeout(function () {
+            self._ffmpegShutdownTimer = null;
+            if (self.streamClients.length === 0 && self._audioFfmpeg) {
+              self.logger.info('Stylish Player: Grace period expired — stopping FFmpeg');
+              self._audioFfmpeg.kill('SIGTERM');
+            }
+          }, 3000);
         }
       });
 
@@ -383,12 +457,13 @@ ControllerStylishPlayer.prototype.startServer = function () {
     ".webp": "image/webp",
     ".mp3": "audio/mpeg",
     ".wav": "audio/wav",
+    ".txt": "text/plain",
   };
 
   self.server = http.createServer(function (req, res) {
     // CORS headers
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
     // Handle preflight requests
@@ -401,16 +476,210 @@ ControllerStylishPlayer.prototype.startServer = function () {
     // Parse the URL and resolve to prevent directory traversal
     var urlPath = new URL(req.url, "http://localhost").pathname;
 
+    // ── Upload endpoint: accept zip files for peppy_meter or peppy_spectrum ──
+    if (urlPath === "/api/upload-peppy-pack" && req.method === "POST") {
+      var searchParams = new URL(req.url, "http://localhost").searchParams;
+      var packType = searchParams.get("type"); // "meter" or "spectrum"
+
+      if (packType !== "meter" && packType !== "spectrum") {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid type parameter. Use 'meter' or 'spectrum'." }));
+        return;
+      }
+
+      var meterDir = path.join(PEPPY_DATA_PATH, "peppy_meter");
+      var spectrumDir = path.join(PEPPY_DATA_PATH, "peppy_spectrum");
+
+      var chunks = [];
+      var totalSize = 0;
+      var MAX_UPLOAD_SIZE = 100 * 1024 * 1024; // 100MB limit
+
+      req.on("data", function (chunk) {
+        totalSize += chunk.length;
+        if (totalSize > MAX_UPLOAD_SIZE) {
+          req.destroy();
+          res.writeHead(413, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "File too large. Maximum 50MB." }));
+          return;
+        }
+        chunks.push(chunk);
+      });
+
+      req.on("end", function () {
+        if (totalSize > MAX_UPLOAD_SIZE) return;
+
+        var buffer = Buffer.concat(chunks);
+
+        // Validate zip magic bytes (PK\x03\x04)
+        if (buffer.length < 4 || buffer[0] !== 0x50 || buffer[1] !== 0x4B || buffer[2] !== 0x03 || buffer[3] !== 0x04) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Invalid file. Only ZIP files are accepted." }));
+          return;
+        }
+
+        // Write temp file and extract to temp directory
+        var tmpFile = path.join(os.tmpdir(), "peppy_upload_" + Date.now() + ".zip");
+        var tmpExtractDir = path.join(os.tmpdir(), "peppy_extract_" + Date.now());
+        fs.writeFileSync(tmpFile, buffer);
+        fs.ensureDirSync(tmpExtractDir);
+
+        // Extract using Python's zipfile (always available on Volumio)
+        var pyCmd = 'python3 -c "import zipfile,sys; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])" "' + tmpFile + '" "' + tmpExtractDir + '"';
+        exec(pyCmd, function (err, stdout, stderr) {
+          // Clean up temp zip file
+          try { fs.unlinkSync(tmpFile); } catch (e) { /* ignore */ }
+
+          if (err) {
+            try { fs.removeSync(tmpExtractDir); } catch (e) { /* ignore */ }
+            self.logger.error("Stylish Player: Failed to extract zip: " + stderr);
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: "Failed to extract zip file." }));
+            return;
+          }
+
+          // Remove __MACOSX if present
+          var macosxDir = path.join(tmpExtractDir, "__MACOSX");
+          if (fs.existsSync(macosxDir)) {
+            try { fs.removeSync(macosxDir); } catch (e) { /* ignore */ }
+          }
+
+          try {
+            // If zip extracted into a single wrapper folder, descend into it
+            var extractedTop = fs.readdirSync(tmpExtractDir).filter(function (n) { return n !== "__MACOSX" && n !== ".DS_Store"; });
+            var wrapperName = null;
+            if (extractedTop.length === 1 && fs.statSync(path.join(tmpExtractDir, extractedTop[0])).isDirectory()) {
+              wrapperName = extractedTop[0];
+              tmpExtractDir = path.join(tmpExtractDir, wrapperName);
+            }
+
+            // Check for templates/ and templates_spectrum/ structure (combined pack)
+            var templatesDir = path.join(tmpExtractDir, "templates");
+            var templatesSpectrumDir = path.join(tmpExtractDir, "templates_spectrum");
+            var hasTemplates = fs.existsSync(templatesDir) && fs.statSync(templatesDir).isDirectory();
+            var hasTemplatesSpectrum = fs.existsSync(templatesSpectrumDir) && fs.statSync(templatesSpectrumDir).isDirectory();
+
+            if (hasTemplates || hasTemplatesSpectrum) {
+              // Combined pack: move templates/ subfolders to peppy_meter, templates_spectrum/ to peppy_spectrum
+              if (hasTemplates) {
+                fs.ensureDirSync(meterDir);
+                var tmplEntries = fs.readdirSync(templatesDir);
+                for (var ti = 0; ti < tmplEntries.length; ti++) {
+                  var srcFolder = path.join(templatesDir, tmplEntries[ti]);
+                  if (!fs.statSync(srcFolder).isDirectory()) continue;
+                  var destFolder = path.join(meterDir, tmplEntries[ti]);
+                  fs.removeSync(destFolder); // overwrite if exists
+                  fs.copySync(srcFolder, destFolder);
+                }
+              }
+              if (hasTemplatesSpectrum) {
+                fs.ensureDirSync(spectrumDir);
+                var specEntries = fs.readdirSync(templatesSpectrumDir);
+                for (var si = 0; si < specEntries.length; si++) {
+                  var srcSpecFolder = path.join(templatesSpectrumDir, specEntries[si]);
+                  if (!fs.statSync(srcSpecFolder).isDirectory()) continue;
+                  var destSpecFolder = path.join(spectrumDir, specEntries[si]);
+                  fs.removeSync(destSpecFolder);
+                  fs.copySync(srcSpecFolder, destSpecFolder);
+                }
+              }
+              self.logger.info("Stylish Player: Uploaded combined pack (templates + spectrum)");
+            } else {
+              // Simple pack: the extracted content IS the pack folder itself.
+              // If we descended into a wrapper, use that folder name as the pack name.
+              // Otherwise, look for subdirectories that match the WxH pattern.
+              var targetDir = packType === "meter" ? meterDir : spectrumDir;
+              fs.ensureDirSync(targetDir);
+
+              // Validate spectrum packs: must contain spectrum.txt, not meters.txt
+              if (packType === "spectrum") {
+                var hasSpectrumTxt = fs.existsSync(path.join(tmpExtractDir, "spectrum.txt"));
+                var hasMetersTxt = fs.existsSync(path.join(tmpExtractDir, "meters.txt"));
+                if (!hasSpectrumTxt && hasMetersTxt) {
+                  try { fs.removeSync(tmpExtractDir); } catch (e) { /* ignore */ }
+                  res.writeHead(400, { "Content-Type": "application/json" });
+                  res.end(JSON.stringify({ error: "This looks like a meter pack (contains meters.txt instead of spectrum.txt). Please upload it as a Peppy Meter pack instead." }));
+                  return;
+                }
+                if (!hasSpectrumTxt) {
+                  // Also check subdirectories for spectrum.txt
+                  var subDirs = fs.readdirSync(tmpExtractDir).filter(function (n) { return fs.statSync(path.join(tmpExtractDir, n)).isDirectory(); });
+                  var anySubHasMetersOnly = subDirs.some(function (d) {
+                    return !fs.existsSync(path.join(tmpExtractDir, d, "spectrum.txt")) && fs.existsSync(path.join(tmpExtractDir, d, "meters.txt"));
+                  });
+                  if (anySubHasMetersOnly) {
+                    try { fs.removeSync(tmpExtractDir); } catch (e) { /* ignore */ }
+                    res.writeHead(400, { "Content-Type": "application/json" });
+                    res.end(JSON.stringify({ error: "This looks like a meter pack (contains meters.txt instead of spectrum.txt). Please upload it as a Peppy Meter pack instead." }));
+                    return;
+                  }
+                }
+              }
+
+              if (wrapperName) {
+                // The wrapper folder name IS the pack name (e.g. "800x480_g5_1020_sm")
+                // Copy the entire contents as a subfolder of targetDir
+                var destPack = path.join(targetDir, wrapperName);
+                fs.removeSync(destPack);
+                fs.copySync(tmpExtractDir, destPack);
+              } else {
+                // No wrapper — copy each top-level directory into targetDir
+                var extractedEntries = fs.readdirSync(tmpExtractDir);
+                for (var ei = 0; ei < extractedEntries.length; ei++) {
+                  var srcPath = path.join(tmpExtractDir, extractedEntries[ei]);
+                  var destPath = path.join(targetDir, extractedEntries[ei]);
+                  fs.removeSync(destPath);
+                  fs.copySync(srcPath, destPath);
+                }
+              }
+              self.logger.info("Stylish Player: Uploaded peppy " + packType + " pack");
+            }
+          } catch (moveErr) {
+            self.logger.error("Stylish Player: Failed to move extracted files: " + moveErr.message);
+            try { fs.removeSync(tmpExtractDir); } catch (e) { /* ignore */ }
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: "Failed to move extracted files: " + moveErr.message }));
+            return;
+          }
+
+          // Clean up temp extract directory
+          try { fs.removeSync(tmpExtractDir); } catch (e) { /* ignore */ }
+
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ success: true, message: "Pack uploaded and extracted successfully." }));
+        });
+      });
+
+      req.on("error", function () {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Upload failed." }));
+      });
+
+      return;
+    }
+
     // API endpoint: return saved plugin config as JSON
     if (urlPath === "/api/config") {
       var configData = {
         playerType: self.config.get("playerType", "albumArt"),
         theme: self.config.get("theme", "skeuomorphic"),
         showPlayerControls: self.config.get("showPlayerControls", true),
+        hideSeekHandle: self.config.get("hideSeekHandle", false),
+        showRemainingTime: self.config.get("showRemainingTime", false),
         albumArtMaxSpace: self.config.get("albumArtMaxSpace", false),
+        albumArtAnimated: self.config.get("albumArtAnimated", true),
+        showTrackPanel: self.config.get("showTrackPanel", false),
         vizType: self.config.get("vizType", "spectrum"),
         spectrumOptions: self.config.get("spectrumOptions", ""),
+        peppyMeterFolder: self.config.get("peppyMeterFolder", ""),
+        peppyMeterModel: self.config.get("peppyMeterModel", "random"),
+        peppySpectrumFolder: self.config.get("peppySpectrumFolder", ""),
+        peppySpectrumModel: self.config.get("peppySpectrumModel", "random"),
         backgroundColor: self.config.get("backgroundColor", ""),
+        trackColor: self.config.get("trackColor", ""),
+        artistColor: self.config.get("artistColor", ""),
+        albumColor: self.config.get("albumColor", ""),
+        streamInfoColor: self.config.get("streamInfoColor", ""),
+        controlColor: self.config.get("controlColor", ""),
         port: self.config.get("port", 3339),
         latitude: self.config.get("latitude", ""),
         longitude: self.config.get("longitude", ""),
@@ -429,6 +698,13 @@ ControllerStylishPlayer.prototype.startServer = function () {
         slideshowInterval: self.config.get("slideshowInterval", 30),
         externalUrl: self.config.get("externalUrl", ""),
         use24Hour: self.config.get("use24Hour", false),
+        titleFontSize: self.config.get("titleFontSize", ""),
+        albumFontSize: self.config.get("albumFontSize", ""),
+        artistFontSize: self.config.get("artistFontSize", ""),
+        bitrateFontSize: self.config.get("bitrateFontSize", ""),
+        progressFontSize: self.config.get("progressFontSize", ""),
+        volumeFontSize: self.config.get("volumeFontSize", ""),
+        weatherBackgroundColor: self.config.get("weatherBackgroundColor", ""),
         language: self.commandRouter.sharedVars.get("language_code") || 'en',
       };
       res.writeHead(200, {
@@ -439,14 +715,167 @@ ControllerStylishPlayer.prototype.startServer = function () {
       return;
     }
 
-    var safePath = path.normalize(urlPath).replace(/^(\.\.[/\\])+/, "");
-    var filePath = path.join(distPath, safePath);
-
-    // Ensure the resolved path is within distPath
-    if (!filePath.startsWith(distPath)) {
-      res.writeHead(403);
-      res.end("Forbidden");
+    // API endpoint: delete a peppy pack folder (meter, spectrum, or both)
+    if (urlPath === "/api/delete-peppy-pack" && req.method === "POST") {
+      var delParams = new URL(req.url, "http://localhost").searchParams;
+      var delFolder = delParams.get("folder");
+      if (!delFolder || /[\/\\]/.test(delFolder)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid folder name." }));
+        return;
+      }
+      var delMeterPath = path.join(PEPPY_DATA_PATH, "peppy_meter", delFolder);
+      var delSpectrumPath = path.join(PEPPY_DATA_PATH, "peppy_spectrum", delFolder);
+      var deletedMeter = false;
+      var deletedSpectrum = false;
+      try {
+        if (fs.existsSync(delMeterPath)) {
+          fs.removeSync(delMeterPath);
+          deletedMeter = true;
+        }
+        if (fs.existsSync(delSpectrumPath)) {
+          fs.removeSync(delSpectrumPath);
+          deletedSpectrum = true;
+        }
+      } catch (delErr) {
+        self.logger.error("Stylish Player: Failed to delete pack: " + delErr.message);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Failed to delete: " + delErr.message }));
+        return;
+      }
+      if (!deletedMeter && !deletedSpectrum) {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Folder not found." }));
+        return;
+      }
+      var delMsg = deletedMeter && deletedSpectrum ? "Deleted meter + spectrum pack." : deletedMeter ? "Deleted meter pack." : "Deleted spectrum pack.";
+      self.logger.info("Stylish Player: " + delMsg + " (" + delFolder + ")");
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ success: true, message: delMsg }));
       return;
+    }
+
+    // API endpoint: list peppy_meter asset folders and their meter models
+    if (urlPath === "/api/peppy-folders") {
+      var peppyDir = path.join(PEPPY_DATA_PATH, "peppy_meter");
+      var result = [];
+      try {
+        var entries = fs.readdirSync(peppyDir, { withFileTypes: true });
+        for (var i = 0; i < entries.length; i++) {
+          if (!entries[i].isDirectory()) continue;
+          var folderName = entries[i].name;
+          // Parse WxH prefix (rest is description)
+          var match = folderName.match(/^(\d+)x(\d+)/);
+          if (!match) continue;
+          var w = parseInt(match[1], 10);
+          var h = parseInt(match[2], 10);
+          var name = folderName.slice(match[0].length).replace(/^[\-+_]/, '') || folderName;
+          var models = [];
+          var metersPath = path.join(peppyDir, folderName, "meters.txt");
+          if (fs.existsSync(metersPath)) {
+            var content = fs.readFileSync(metersPath, "utf8");
+            var lines = content.split("\n");
+            var currentModel = null;
+            for (var j = 0; j < lines.length; j++) {
+              var sectionMatch = lines[j].trim().match(/^\[(.+)\]$/);
+              if (sectionMatch) {
+                currentModel = { name: sectionMatch[1], bgr: '' };
+                models.push(currentModel);
+              } else if (currentModel) {
+                var bgrMatch = lines[j].trim().match(/^bgr\.filename\s*=\s*(.+)$/);
+                if (bgrMatch) currentModel.bgr = bgrMatch[1].trim();
+              }
+            }
+          }
+          result.push({ folder: folderName, width: w, height: h, name: name, models: models });
+        }
+      } catch (e) {
+        // peppy_meter dir may not exist yet
+      }
+      res.writeHead(200, {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+      });
+      res.end(JSON.stringify(result));
+      return;
+    }
+
+    // API endpoint: return peppy spectrum folder list with models
+    if (urlPath === "/api/peppy-spectrum-folders") {
+      var spectrumDir = path.join(PEPPY_DATA_PATH, "peppy_spectrum");
+      var spectrumResult = [];
+      try {
+        var specEntries = fs.readdirSync(spectrumDir, { withFileTypes: true });
+        for (var si = 0; si < specEntries.length; si++) {
+          if (!specEntries[si].isDirectory()) continue;
+          var specFolderName = specEntries[si].name;
+          // Parse WxH prefix, optionally +N for bars
+          var specMatch = specFolderName.match(/^(\d+)x(\d+)(?:\+(\d+))?/);
+          if (!specMatch) continue;
+          var specW = parseInt(specMatch[1], 10);
+          var specH = parseInt(specMatch[2], 10);
+          var specBars = specMatch[3] ? parseInt(specMatch[3], 10) : 30;
+          var specName = specFolderName.slice(specMatch[0].length).replace(/^[\-+_]/, '') || specFolderName;
+          var specModels = [];
+          var spectrumPath = path.join(spectrumDir, specFolderName, "spectrum.txt");
+          if (fs.existsSync(spectrumPath)) {
+            var specContent = fs.readFileSync(spectrumPath, "utf8");
+            var specLines = specContent.split("\n");
+            var currentSpecModel = null;
+            for (var sj = 0; sj < specLines.length; sj++) {
+              var specSectionMatch = specLines[sj].trim().match(/^\[(.+)\]$/);
+              if (specSectionMatch) {
+                currentSpecModel = { name: specSectionMatch[1], bgr: '' };
+                specModels.push(currentSpecModel);
+              } else if (currentSpecModel) {
+                var specBgrMatch = specLines[sj].trim().match(/^bgr\.filename\s*=\s*(.+)$/);
+                if (specBgrMatch) currentSpecModel.bgr = specBgrMatch[1].trim();
+              }
+            }
+          }
+          spectrumResult.push({ folder: specFolderName, width: specW, height: specH, bars: specBars, name: specName, models: specModels });
+        }
+      } catch (e) {
+        // peppy_spectrum dir may not exist yet
+      }
+      res.writeHead(200, {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+      });
+      res.end(JSON.stringify(spectrumResult));
+      return;
+    }
+
+    // API endpoint: return i18n translations for current language
+    if (urlPath === "/api/translations") {
+      var translations = self.getTranslations();
+      res.writeHead(200, {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+      });
+      res.end(JSON.stringify(translations));
+      return;
+    }
+
+    var safePath = decodeURIComponent(path.normalize(urlPath)).replace(/^(\.\.[/\\])+/, "");
+
+    // Serve peppy assets from the persistent data directory
+    var filePath;
+    if (safePath.startsWith("/peppy_meter/") || safePath.startsWith("/peppy_spectrum/")) {
+      filePath = path.join(PEPPY_DATA_PATH, safePath);
+      if (!filePath.startsWith(PEPPY_DATA_PATH)) {
+        res.writeHead(403);
+        res.end("Forbidden");
+        return;
+      }
+    } else {
+      filePath = path.join(distPath, safePath);
+      // Ensure the resolved path is within distPath
+      if (!filePath.startsWith(distPath)) {
+        res.writeHead(403);
+        res.end("Forbidden");
+        return;
+      }
     }
 
     // Default to index.html for SPA routing
@@ -455,7 +884,14 @@ ControllerStylishPlayer.prototype.startServer = function () {
     }
 
     fs.stat(filePath, function (err, stats) {
-      if (err || !stats.isFile()) {
+      if (err || !stats || !stats.isFile()) {
+        // Only apply SPA fallback for requests without a file extension (page routes)
+        var ext = path.extname(filePath).toLowerCase();
+        if (ext) {
+          res.writeHead(404);
+          res.end("Not Found");
+          return;
+        }
         // SPA fallback: serve index.html for client-side routes
         var indexPath = path.join(distPath, "index.html");
         fs.readFile(indexPath, function (err2, data) {
@@ -473,13 +909,16 @@ ControllerStylishPlayer.prototype.startServer = function () {
       var ext = path.extname(filePath).toLowerCase();
       var contentType = mimeTypes[ext] || "application/octet-stream";
 
+      // Prevent caching for .txt and config files (meters.txt, spectrum.txt)
+      var cacheHeader = (ext === ".txt" || ext === ".json") ? "no-cache" : "public, max-age=3600";
+
       fs.readFile(filePath, function (readErr, data) {
         if (readErr) {
           res.writeHead(500);
           res.end("Internal Server Error");
           return;
         }
-        res.writeHead(200, { "Content-Type": contentType });
+        res.writeHead(200, { "Content-Type": contentType, "Cache-Control": cacheHeader });
         res.end(data);
       });
     });
@@ -510,6 +949,11 @@ ControllerStylishPlayer.prototype.stopServer = function () {
 
 ControllerStylishPlayer.prototype.stopAudioServer = function () {
   var self = this;
+
+  if (self._ffmpegShutdownTimer) {
+    clearTimeout(self._ffmpegShutdownTimer);
+    self._ffmpegShutdownTimer = null;
+  }
 
   if (self._audioFfmpeg) {
     self._audioFfmpeg.kill('SIGTERM');
@@ -542,9 +986,17 @@ ControllerStylishPlayer.prototype.broadcastConfig = function () {
     playerType: self.config.get("playerType", "albumArt"),
     theme: self.config.get("theme", "skeuomorphic"),
     showPlayerControls: self.config.get("showPlayerControls", true),
+    hideSeekHandle: self.config.get("hideSeekHandle", false),
+    showRemainingTime: self.config.get("showRemainingTime", false),
     albumArtMaxSpace: self.config.get("albumArtMaxSpace", false),
+    albumArtAnimated: self.config.get("albumArtAnimated", true),
+    showTrackPanel: self.config.get("showTrackPanel", false),
     vizType: self.config.get("vizType", "spectrum"),
     spectrumOptions: self.config.get("spectrumOptions", ""),
+    peppyMeterFolder: self.config.get("peppyMeterFolder", ""),
+    peppyMeterModel: self.config.get("peppyMeterModel", "random"),
+    peppySpectrumFolder: self.config.get("peppySpectrumFolder", ""),
+    peppySpectrumModel: self.config.get("peppySpectrumModel", "random"),
     port: self.config.get("port", 3339),
     latitude: self.config.get("latitude", ""),
     longitude: self.config.get("longitude", ""),
@@ -554,6 +1006,7 @@ ControllerStylishPlayer.prototype.broadcastConfig = function () {
     idleTimeout: self.config.get("idleTimeout", 5),
     showWeatherInClock: self.config.get("showWeatherInClock", true),
     analogClockShowDate: self.config.get("analogClockShowDate", true),
+    weatherBackgroundColor: self.config.get("weatherBackgroundColor", ""),
     unsplashApiKey: self.config.get("unsplashApiKey", ""),
     wallpaperUrl: self.config.get("wallpaperUrl", ""),
     wallpaperShowTime: self.config.get("wallpaperShowTime", true),
@@ -562,6 +1015,18 @@ ControllerStylishPlayer.prototype.broadcastConfig = function () {
     slideshowInterval: self.config.get("slideshowInterval", 30),
     externalUrl: self.config.get("externalUrl", ""),
     use24Hour: self.config.get("use24Hour", false),
+    backgroundColor: self.config.get("backgroundColor", ""),
+    trackColor: self.config.get("trackColor", ""),
+    artistColor: self.config.get("artistColor", ""),
+    albumColor: self.config.get("albumColor", ""),
+    streamInfoColor: self.config.get("streamInfoColor", ""),
+    controlColor: self.config.get("controlColor", ""),
+    titleFontSize: self.config.get("titleFontSize", ""),
+    albumFontSize: self.config.get("albumFontSize", ""),
+    artistFontSize: self.config.get("artistFontSize", ""),
+    bitrateFontSize: self.config.get("bitrateFontSize", ""),
+    progressFontSize: self.config.get("progressFontSize", ""),
+    volumeFontSize: self.config.get("volumeFontSize", ""),
     language: self.commandRouter.sharedVars.get("language_code") || 'en',
   };
   self.commandRouter.broadcastMessage("pushStylishPlayerConfig", configData);
@@ -573,6 +1038,7 @@ ControllerStylishPlayer.prototype.broadcastConfig = function () {
 ControllerStylishPlayer.prototype.getUIConfig = function () {
   var defer = libQ.defer();
   var self = this;
+  var distPath = path.join(__dirname, "app");
 
   var lang_code = this.commandRouter.sharedVars.get("language_code");
 
@@ -633,41 +1099,135 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       // Populate show player controls (Index 2)
       uiconf.sections[2].content[2].value = self.config.get("showPlayerControls", true);
 
-      // Populate album art max space (Index 3)
-      uiconf.sections[2].content[3].value = self.config.get("albumArtMaxSpace", false);
+      // Populate hide seek handle (Index 3)
+      uiconf.sections[2].content[3].value = self.config.get("hideSeekHandle", false);
 
-      // Populate viz type select (Index 4)
+      // Populate show remaining time (Index 4)
+      uiconf.sections[2].content[4].value = self.config.get("showRemainingTime", false);
+
+      // Populate album art max space (Index 5)
+      uiconf.sections[2].content[5].value = self.config.get("albumArtMaxSpace", false);
+
+      // Populate album art animated (Index 6)
+      uiconf.sections[2].content[6].value = self.config.get("albumArtAnimated", true);
+
+      // Populate show track panel (Index 7)
+      uiconf.sections[2].content[7].value = self.config.get("showTrackPanel", false);
+
+      // Populate viz type select (Index 8)
       var vizType = self.config.get("vizType", "spectrum");
-      var vizTypeOptions = uiconf.sections[2].content[4].options;
+      var vizTypeOptions = uiconf.sections[2].content[8].options;
       var matchVizType = vizTypeOptions.find(function (opt) {
         return opt.value === vizType;
       });
       if (matchVizType) {
-        uiconf.sections[2].content[4].value = matchVizType;
+        uiconf.sections[2].content[8].value = matchVizType;
       }
 
-      // Populate spectrum options (Index 5)
-      uiconf.sections[2].content[5].value = self.config.get("spectrumOptions", "");
+      // Populate spectrum options (Index 9)
+      uiconf.sections[2].content[9].value = self.config.get("spectrumOptions", "");
 
-      // Populate background color (Index 6)
-      uiconf.sections[2].content[6].value = self.config.get("backgroundColor", "");
+      // Dynamically populate peppy meter folder options from disk
+      var peppyMeterDir = path.join(PEPPY_DATA_PATH, "peppy_meter");
+      try {
+        var peppyMeterEntries = fs.readdirSync(peppyMeterDir, { withFileTypes: true });
+        for (var pi = 0; pi < peppyMeterEntries.length; pi++) {
+          if (!peppyMeterEntries[pi].isDirectory()) continue;
+          var pmFolder = peppyMeterEntries[pi].name;
+          if (!pmFolder.match(/^\d+x\d+/)) continue;
+          uiconf.sections[2].content[10].options.push({ value: pmFolder, label: pmFolder });
+        }
+      } catch (e) { /* peppy_meter dir may not exist */ }
 
-      // Populate location section (index 3)
-      uiconf.sections[3].content[0].value = self.config.get("latitude", "");
-      uiconf.sections[3].content[1].value = self.config.get("longitude", "");
-
-      // Populate weather section (index 4)
-      uiconf.sections[4].content[0].value = self.config.get("weatherApiKey", "");
-      var unitSystem = self.config.get("unitSystem", "metric");
-      var unitSystemOptions = uiconf.sections[4].content[1].options;
-      var matchUnitSystem = unitSystemOptions.find(function (opt) {
-        return opt.value === unitSystem;
+      // Populate peppy meter folder (Index 10)
+      var peppyMeterFolder = self.config.get("peppyMeterFolder", "");
+      var peppyMeterFolderOptions = uiconf.sections[2].content[10].options;
+      var matchPeppyFolder = peppyMeterFolderOptions.find(function (opt) {
+        return opt.value === peppyMeterFolder;
       });
-      if (matchUnitSystem) {
-        uiconf.sections[4].content[1].value = matchUnitSystem;
+      if (matchPeppyFolder) {
+        uiconf.sections[2].content[10].value = matchPeppyFolder;
       }
 
-      // Populate idle screen section (index 5)
+      // Populate peppy meter model (Index 11)
+      // Dynamically populate model options from meters.txt of the selected folder
+      var peppyMeterModel = self.config.get("peppyMeterModel", "random");
+      if (peppyMeterFolder) {
+        var metersPath = path.join(PEPPY_DATA_PATH, "peppy_meter", peppyMeterFolder, "meters.txt");
+        if (fs.existsSync(metersPath)) {
+          var metersContent = fs.readFileSync(metersPath, "utf8");
+          var metersLines = metersContent.split("\n");
+          for (var mi = 0; mi < metersLines.length; mi++) {
+            var meterSection = metersLines[mi].trim().match(/^\[(.+)\]$/);
+            if (meterSection) {
+              uiconf.sections[2].content[11].options.push({ value: meterSection[1], label: meterSection[1] });
+            }
+          }
+        }
+      }
+      var peppyMeterModelOptions = uiconf.sections[2].content[11].options;
+      var matchPeppyModel = peppyMeterModelOptions.find(function (opt) {
+        return opt.value === peppyMeterModel;
+      });
+      if (matchPeppyModel) {
+        uiconf.sections[2].content[11].value = matchPeppyModel;
+      }
+
+      // Dynamically populate peppy spectrum folder options from disk
+      var peppySpectrumDir = path.join(PEPPY_DATA_PATH, "peppy_spectrum");
+      try {
+        var spectrumEntries = fs.readdirSync(peppySpectrumDir, { withFileTypes: true });
+        for (var sfi = 0; sfi < spectrumEntries.length; sfi++) {
+          if (!spectrumEntries[sfi].isDirectory()) continue;
+          var psFolder = spectrumEntries[sfi].name;
+          if (!psFolder.match(/^\d+x\d+/)) continue;
+          uiconf.sections[2].content[12].options.push({ value: psFolder, label: psFolder });
+        }
+      } catch (e) { /* peppy_spectrum dir may not exist */ }
+
+      // Populate peppy spectrum folder (Index 12)
+      var peppySpectrumFolder = self.config.get("peppySpectrumFolder", "");
+      var peppySpectrumFolderOptions = uiconf.sections[2].content[12].options;
+      var matchSpectrumFolder = peppySpectrumFolderOptions.find(function (opt) {
+        return opt.value === peppySpectrumFolder;
+      });
+      if (matchSpectrumFolder) {
+        uiconf.sections[2].content[12].value = matchSpectrumFolder;
+      }
+
+      // Populate peppy spectrum model (Index 13)
+      // Dynamically populate model options from spectrum.txt of the selected folder
+      var peppySpectrumModel = self.config.get("peppySpectrumModel", "random");
+      if (peppySpectrumFolder) {
+        var spectrumTxtPath = path.join(PEPPY_DATA_PATH, "peppy_spectrum", peppySpectrumFolder, "spectrum.txt");
+        if (fs.existsSync(spectrumTxtPath)) {
+          var specTxtContent = fs.readFileSync(spectrumTxtPath, "utf8");
+          var specTxtLines = specTxtContent.split("\n");
+          for (var smi = 0; smi < specTxtLines.length; smi++) {
+            var specSection = specTxtLines[smi].trim().match(/^\[(.+)\]$/);
+            if (specSection) {
+              uiconf.sections[2].content[13].options.push({ value: specSection[1], label: specSection[1] });
+            }
+          }
+        }
+      }
+      var peppySpectrumModelOptions = uiconf.sections[2].content[13].options;
+      var matchSpectrumModel = peppySpectrumModelOptions.find(function (opt) {
+        return opt.value === peppySpectrumModel;
+      });
+      if (matchSpectrumModel) {
+        uiconf.sections[2].content[13].value = matchSpectrumModel;
+      }
+
+      // Populate colors section (index 3)
+      uiconf.sections[3].content[0].value = self.config.get("backgroundColor", "");
+      uiconf.sections[3].content[1].value = self.config.get("trackColor", "");
+      uiconf.sections[3].content[2].value = self.config.get("artistColor", "");
+      uiconf.sections[3].content[3].value = self.config.get("albumColor", "");
+      uiconf.sections[3].content[4].value = self.config.get("streamInfoColor", "");
+      uiconf.sections[3].content[5].value = self.config.get("controlColor", "");
+
+      // Populate idle screen section (index 4)
       var idleScreen = self.config.get("idleScreen", "analogClock");
       var idleScreenOptions = uiconf.sections[5].content[0].options;
       var matchIdleScreen = idleScreenOptions.find(function (opt) {
@@ -678,17 +1238,43 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       }
       uiconf.sections[5].content[1].value = self.config.get("externalUrl", "");
       uiconf.sections[5].content[2].value = self.config.get("idleTimeout", 5);
-      uiconf.sections[5].content[3].value = self.config.get("showWeatherInClock", true);
-      uiconf.sections[5].content[4].value = self.config.get("analogClockShowDate", true);
-      uiconf.sections[5].content[5].value = self.config.get("unsplashApiKey", "");
-      uiconf.sections[5].content[6].value = self.config.get("wallpaperUrl", "");
-      uiconf.sections[5].content[7].value = self.config.get("wallpaperShowTime", true);
-      uiconf.sections[5].content[8].value = self.config.get("wallpaperShowSeconds", false);
-      uiconf.sections[5].content[9].value = self.config.get("wallpaperShowWeather", true);
-      uiconf.sections[5].content[10].value = self.config.get("slideshowInterval", 30);
-      uiconf.sections[5].content[11].value = self.config.get("use24Hour", false);
 
-      // Populate kiosk section (index 6) — content is built dynamically based on current kiosk state
+      // Populate clock section (index 5)
+      uiconf.sections[6].content[0].value = self.config.get("use24Hour", false);
+      uiconf.sections[6].content[1].value = self.config.get("wallpaperShowSeconds", false);
+      uiconf.sections[6].content[2].value = self.config.get("showWeatherInClock", true);
+      uiconf.sections[6].content[3].value = self.config.get("analogClockShowDate", true);
+
+      // Populate weather section (index 6)
+      try {
+        var weatherSection = uiconf.sections.find(function (s) { return s.id === 'section_weather'; });
+        if (weatherSection && weatherSection.content) {
+          var latField = weatherSection.content.find(function (c) { return c.id === 'latitude'; });
+          if (latField) latField.value = self.config.get("latitude", "");
+          var lonField = weatherSection.content.find(function (c) { return c.id === 'longitude'; });
+          if (lonField) lonField.value = self.config.get("longitude", "");
+          var apiField = weatherSection.content.find(function (c) { return c.id === 'weatherApiKey'; });
+          if (apiField) apiField.value = self.config.get("weatherApiKey", "");
+          var bgField = weatherSection.content.find(function (c) { return c.id === 'weatherBackgroundColor'; });
+          if (bgField) bgField.value = self.config.get("weatherBackgroundColor", "");
+
+          var unitField = weatherSection.content.find(function (c) { return c.id === 'unitSystem'; });
+          var unitSystem = self.config.get("unitSystem", "metric");
+          if (unitField && unitField.options) {
+            var matchUnitSystem = unitField.options.find(function (opt) { return opt.value === unitSystem; });
+            if (matchUnitSystem) unitField.value = matchUnitSystem;
+          }
+        }
+      } catch (e) { /* ignore */ }
+
+      // Populate wallpaper section (index 8)
+      uiconf.sections[8].content[0].value = self.config.get("unsplashApiKey", "");
+      uiconf.sections[8].content[1].value = self.config.get("wallpaperUrl", "");
+      uiconf.sections[8].content[2].value = self.config.get("wallpaperShowTime", true);
+      uiconf.sections[8].content[3].value = self.config.get("wallpaperShowWeather", true);
+      uiconf.sections[8].content[4].value = self.config.get("slideshowInterval", 30);
+
+      // Populate kiosk section — find by id so section ordering is not fragile
       var kioskState = self.checkVolumioKiosk();
       var kioskDesc, kioskButton;
       if (!kioskState.exists) {
@@ -742,10 +1328,24 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
           };
         }
       }
-      uiconf.sections[6].description = kioskDesc;
-      if (kioskButton) {
-        uiconf.sections[6].content = [kioskButton];
+      var kioskSection = uiconf.sections.find(function (s) { return s.id === 'section_kiosk'; });
+      if (kioskSection) {
+        kioskSection.description = kioskDesc;
+        if (kioskButton) kioskSection.content = [kioskButton];
       }
+
+      // Populate fonts section (last section)
+      try {
+        var fontsSection = uiconf.sections.find(function (s) { return s.id === 'section_fonts'; });
+        if (fontsSection && fontsSection.content) {
+          fontsSection.content[0].value = self.config.get("titleFontSize", "");
+          fontsSection.content[1].value = self.config.get("albumFontSize", "");
+          fontsSection.content[2].value = self.config.get("artistFontSize", "");
+          fontsSection.content[3].value = self.config.get("bitrateFontSize", "");
+          fontsSection.content[4].value = self.config.get("progressFontSize", "");
+          fontsSection.content[5].value = self.config.get("volumeFontSize", "");
+        }
+      } catch (e) { /* ignore if fonts section not present */ }
 
       defer.resolve(uiconf);
     })
@@ -821,10 +1421,13 @@ ControllerStylishPlayer.prototype.configSavePlayerConfig = function (data) {
   var theme = data["theme"] ? data["theme"].value : "skeuomorphic";
   var playerType = data["playerType"] ? data["playerType"].value : "albumArt";
   var showPlayerControls = data["showPlayerControls"] !== false;
+  var hideSeekHandle = data["hideSeekHandle"] === true;
+  var showRemainingTime = data["showRemainingTime"] === true;
   var albumArtMaxSpace = data["albumArtMaxSpace"] === true;
+  var albumArtAnimated = data["albumArtAnimated"] !== false;
+  var showTrackPanel = data["showTrackPanel"] === true;
   var vizType = data["vizType"] ? data["vizType"].value : "spectrum";
   var spectrumOptions = (data["spectrumOptions"] || "").toString().trim();
-  var backgroundColor = (data["backgroundColor"] || "").toString().trim();
 
   // Validate JSON if a value is provided
   if (spectrumOptions) {
@@ -836,22 +1439,72 @@ ControllerStylishPlayer.prototype.configSavePlayerConfig = function (data) {
     }
   }
 
-  // Validate backgroundColor hex format if provided
-  if (backgroundColor && !/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(backgroundColor)) {
-    self.commandRouter.pushToastMessage("error", "Stylish Player", "Background Color must be a valid hex code (e.g. #1a2b3c).");
-    return;
-  }
-
   self.config.set("theme", theme);
   self.config.set("playerType", playerType);
   self.config.set("showPlayerControls", showPlayerControls);
+  self.config.set("hideSeekHandle", hideSeekHandle);
+  self.config.set("showRemainingTime", showRemainingTime);
   self.config.set("albumArtMaxSpace", albumArtMaxSpace);
+  self.config.set("albumArtAnimated", albumArtAnimated);
+  self.config.set("showTrackPanel", showTrackPanel);
   self.config.set("vizType", vizType);
   self.config.set("spectrumOptions", spectrumOptions);
-  self.config.set("backgroundColor", backgroundColor);
+
+  if (vizType === "peppyMeter") {
+    var peppyMeterFolder = data["peppyMeterFolder"] ? (typeof data["peppyMeterFolder"] === 'object' ? data["peppyMeterFolder"].value : data["peppyMeterFolder"]) : "";
+    var peppyMeterModel = data["peppyMeterModel"] ? (typeof data["peppyMeterModel"] === 'object' ? data["peppyMeterModel"].value : data["peppyMeterModel"]) : "random";
+    self.config.set("peppyMeterFolder", peppyMeterFolder);
+    self.config.set("peppyMeterModel", peppyMeterModel);
+  }
+
+  if (vizType === "peppySpectrum") {
+    var peppySpectrumFolder = data["peppySpectrumFolder"] ? (typeof data["peppySpectrumFolder"] === 'object' ? data["peppySpectrumFolder"].value : data["peppySpectrumFolder"]) : "";
+    var peppySpectrumModel = data["peppySpectrumModel"] ? (typeof data["peppySpectrumModel"] === 'object' ? data["peppySpectrumModel"].value : data["peppySpectrumModel"]) : "random";
+    self.config.set("peppySpectrumFolder", peppySpectrumFolder);
+    self.config.set("peppySpectrumModel", peppySpectrumModel);
+  }
+
   self.commandRouter.pushToastMessage("success", "Stylish Player", "Player configuration saved.");
 
   self.broadcastConfig();
+};
+
+ControllerStylishPlayer.prototype.configSaveColors = function (data) {
+  var self = this;
+  var hexPattern = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+  var fields = ["backgroundColor", "trackColor", "artistColor", "albumColor", "streamInfoColor", "controlColor"];
+
+  for (var i = 0; i < fields.length; i++) {
+    var val = (data[fields[i]] || "").toString().trim();
+    if (val && !hexPattern.test(val)) {
+      self.commandRouter.pushToastMessage("error", "Stylish Player", fields[i] + " must be a valid hex code (e.g. #1a2b3c).");
+      return;
+    }
+    self.config.set(fields[i], val);
+  }
+
+  self.commandRouter.pushToastMessage("success", "Stylish Player", "Color settings saved.");
+  self.broadcastConfig();
+};
+
+ControllerStylishPlayer.prototype.configSaveFonts = function (data) {
+  var self = this;
+  var fields = ["titleFontSize", "albumFontSize", "artistFontSize", "bitrateFontSize", "progressFontSize", "volumeFontSize"];
+  //self.logger.info("Stylish Player: configSaveFonts called with data: " + JSON.stringify(data));
+
+  for (var i = 0; i < fields.length; i++) {
+    var val = (data[fields[i]] || "").toString().trim();
+    self.config.set(fields[i], val);
+  }
+
+  self.commandRouter.pushToastMessage("success", "Stylish Player", "Font settings saved.");
+  self.broadcastConfig();
+  // // Refresh UI so Volumio core settings page re-reads UIConfig and shows saved values
+  // try {
+  //   self.refreshUI();
+  // } catch (e) {
+  //   self.logger.error("Stylish Player: Failed to refresh UI after saving fonts: " + e.message);
+  // }
 };
 
 ControllerStylishPlayer.prototype.configSaveLocation = function (data) {
@@ -879,11 +1532,31 @@ ControllerStylishPlayer.prototype.configSaveLocation = function (data) {
 ControllerStylishPlayer.prototype.configSaveWeather = function (data) {
   var self = this;
 
+  var latitude = (data["latitude"] || "").toString().trim();
+  var longitude = (data["longitude"] || "").toString().trim();
   var apiKey = (data["weatherApiKey"] || "").toString().trim();
   var unitSystem = data["unitSystem"] ? data["unitSystem"].value : "metric";
 
+  if (latitude && (isNaN(parseFloat(latitude)) || parseFloat(latitude) < -90 || parseFloat(latitude) > 90)) {
+    self.commandRouter.pushToastMessage("error", "Stylish Player", "Latitude must be between -90 and 90.");
+    return;
+  }
+  if (longitude && (isNaN(parseFloat(longitude)) || parseFloat(longitude) < -180 || parseFloat(longitude) > 180)) {
+    self.commandRouter.pushToastMessage("error", "Stylish Player", "Longitude must be between -180 and 180.");
+    return;
+  }
+
+  self.config.set("latitude", latitude);
+  self.config.set("longitude", longitude);
   self.config.set("weatherApiKey", apiKey);
   self.config.set("unitSystem", unitSystem);
+  var bgColor = (data["weatherBackgroundColor"] || "").toString().trim();
+  var hexPattern = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+  if (bgColor && !hexPattern.test(bgColor)) {
+    self.commandRouter.pushToastMessage("error", "Stylish Player", "Weather background color must be a valid hex code (e.g. #1a2b3c).");
+    return;
+  }
+  self.config.set("weatherBackgroundColor", bgColor);
   self.commandRouter.pushToastMessage("success", "Stylish Player", "Weather settings saved.");
 
   self.broadcastConfig();
@@ -999,25 +1672,41 @@ ControllerStylishPlayer.prototype.configSaveIdleScreen = function (data) {
   var idleScreen = data["idleScreen"] ? data["idleScreen"].value : "analogClock";
   var idleTimeout = parseInt(data["idleTimeout"], 10);
 
-  if (isNaN(idleTimeout) || idleTimeout < 0) {
-    self.commandRouter.pushToastMessage("error", "Stylish Player", "Idle timeout must be 0 or greater.");
+  if (isNaN(idleTimeout) || idleTimeout < 1) {
+    self.commandRouter.pushToastMessage("error", "Stylish Player", "Idle timeout must be at least 1 minute.");
     return;
   }
 
   self.config.set("idleScreen", idleScreen);
   self.config.set("idleTimeout", idleTimeout);
-  self.config.set("showWeatherInClock", data["showWeatherInClock"] !== false);
-  self.config.set("analogClockShowDate", data["analogClockShowDate"] !== false);
+  self.config.set("externalUrl", (data["externalUrl"] || "").toString().trim());
+  self.commandRouter.pushToastMessage("success", "Stylish Player", "Idle screen settings saved.");
+
+  self.broadcastConfig();
+};
+
+ControllerStylishPlayer.prototype.configSaveWallpaper = function (data) {
+  var self = this;
+
   self.config.set("unsplashApiKey", (data["unsplashApiKey"] || "").toString().trim());
   self.config.set("wallpaperUrl", (data["wallpaperUrl"] || "").toString().trim());
   self.config.set("wallpaperShowTime", data["wallpaperShowTime"] !== false);
-  self.config.set("wallpaperShowSeconds", data["wallpaperShowSeconds"] === true || data["wallpaperShowSeconds"] === "true");
   self.config.set("wallpaperShowWeather", data["wallpaperShowWeather"] !== false);
-  self.config.set("externalUrl", (data["externalUrl"] || "").toString().trim());
   var slideshowInterval = parseInt(data["slideshowInterval"], 10);
   self.config.set("slideshowInterval", isNaN(slideshowInterval) || slideshowInterval < 5 ? 30 : slideshowInterval);
+  self.commandRouter.pushToastMessage("success", "Stylish Player", "Wallpaper settings saved.");
+
+  self.broadcastConfig();
+};
+
+ControllerStylishPlayer.prototype.configSaveClock = function (data) {
+  var self = this;
+
   self.config.set("use24Hour", data["use24Hour"] === true || data["use24Hour"] === "true");
-  self.commandRouter.pushToastMessage("success", "Stylish Player", "Idle screen settings saved.");
+  self.config.set("wallpaperShowSeconds", data["wallpaperShowSeconds"] === true || data["wallpaperShowSeconds"] === "true");
+  self.config.set("showWeatherInClock", data["showWeatherInClock"] !== false);
+  self.config.set("analogClockShowDate", data["analogClockShowDate"] !== false);
+  self.commandRouter.pushToastMessage("success", "Stylish Player", "Clock settings saved.");
 
   self.broadcastConfig();
 };

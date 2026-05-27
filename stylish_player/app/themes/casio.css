@@ -926,6 +926,38 @@ p {
   border-color: rgba(34, 197, 94, 0.3);
 }
 
+/* ── Mobile compact (≤ 768px) ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .dialog-container {
+    padding: 0;
+  }
+  .dialog {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    margin: 0;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .dialog-header {
+    padding: 0.875rem 1rem;
+    border-radius: 0;
+  }
+  .dialog-body {
+    padding: 1rem;
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+  .dialog-footer {
+    padding: 0.875rem 1rem;
+    border-radius: 0;
+  }
+  .dialog-title {
+    font-size: 1rem;
+  }
+}
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE — 80s Casio Theme
@@ -1125,6 +1157,7 @@ p {
   transform: translateY(2px);
 }
 .btn:focus-visible, .form-select:focus-visible {
+  background: radial-gradient(ellipse 80% 55% at 50% 20%, #4a5260 0%, #323848 50%, #242c3a 100%);
   outline: 2px solid var(--casio-red);
   outline-offset: 2px;
 }
@@ -1293,7 +1326,7 @@ p {
   cursor: pointer;
   transition: background 0.1s, color 0.1s;
 }
-.btn-icon:hover {
+.btn-icon:hover, .btn-icon:focus-visible {
   background: rgba(68, 221, 168, 0.18);
   color: var(--casio-lcd-bg-alt);
 }
@@ -1544,7 +1577,8 @@ p {
 .section-title {
   font-family: var(--font-label);
   font-size: var(--text-xs);
-  color: var(--casio-lcd-bg); /* LCD-green accent labels */
+  color: var(--casio-lcd-bg);
+  /* LCD-green accent labels */
   text-transform: uppercase;
   letter-spacing: var(--tracking-wider);
   border-bottom: 1px solid var(--casio-ridge);
@@ -1632,10 +1666,99 @@ input[type=checkbox] {
 }
 
 input[type=radio] {
-  width: 14px;
-  height: 14px;
-  accent-color: var(--casio-red);
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--casio-key-face);
+  border-top: 2px solid var(--casio-key-hi);
+  border-left: 2px solid var(--casio-key-hi);
+  border-bottom: 2px solid var(--casio-key-sh);
+  border-right: 2px solid var(--casio-key-sh);
   cursor: pointer;
+  position: relative;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+input[type=radio]:checked {
+  background: var(--casio-red);
+  border-top-color: var(--casio-red-hi);
+  border-left-color: var(--casio-red-hi);
+  border-bottom-color: var(--casio-red-sh);
+  border-right-color: var(--casio-red-sh);
+}
+input[type=radio]:checked::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+input[type=radio]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--casio-red);
+}
+
+/* ─── Toggle Switch (Bootstrap form-switch) ──────────────────────────── */
+.form-check.form-switch .form-check-input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 44px;
+  height: 22px;
+  border-radius: 2px;
+  background-image: none;
+  background: #3a4560;
+  border-top: 2px solid #4d5a72;
+  border-left: 2px solid #4d5a72;
+  border-bottom: 2px solid var(--casio-key-sh);
+  border-right: 2px solid var(--casio-key-sh);
+  cursor: pointer;
+  position: relative;
+}
+.form-check.form-switch .form-check-input::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 14px;
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 2px;
+  background: var(--casio-ridge);
+  border-top: 1px solid var(--casio-sheen);
+  border-left: 1px solid var(--casio-sheen);
+  border-bottom: 1px solid var(--casio-edge);
+  border-right: 1px solid var(--casio-edge);
+  transition: left 0.15s;
+}
+.form-check.form-switch .form-check-input:checked {
+  background: var(--casio-red);
+  border-top-color: var(--casio-red-sh);
+  border-left-color: var(--casio-red-sh);
+  border-bottom-color: var(--casio-red-hi);
+  border-right-color: var(--casio-red-hi);
+  background-image: none;
+}
+.form-check.form-switch .form-check-input:checked::before {
+  left: 22px;
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.15);
+}
+.form-check.form-switch .form-check-input:focus {
+  box-shadow: none;
+  outline: none;
+}
+.form-check.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--casio-red);
+}
+.form-check.form-switch .form-check-input::after {
+  display: none;
 }
 
 /* ─── Range ──────────────────────────────────────────────────────────── */
@@ -2993,7 +3116,6 @@ input[type=range]::-webkit-slider-thumb {
 /* Art displayed in a LCD panel-bordered frame — album art only */
 .album-art-image {
   border-radius: 2px;
-  border: 2px solid var(--casio-lcd-frame);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
@@ -3023,10 +3145,9 @@ input[type=range]::-webkit-slider-thumb {
   display: block;
 }
 
-/* ─── Track Info Group — 80s watch face with glass cover ─────────────── */
-.track-info-group {
+/* ─── Track Info Group — 80s watch face with glass cover (only when panel enabled) ── */
+.track-panel {
   border-radius: 6px;
-  padding: 14px 18px 12px;
   position: relative;
   /* needed for ::before glass sheen */
   overflow: hidden;
@@ -3046,7 +3167,7 @@ input[type=range]::-webkit-slider-thumb {
   /* bright glass rim — more prominent */
   /* Glass sheen overlay — convex highlight spanning the top ~45% */
 }
-.track-info-group::before {
+.track-panel::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -3055,59 +3176,78 @@ input[type=range]::-webkit-slider-thumb {
   pointer-events: none;
   z-index: 1;
 }
-.track-info-group {
+.track-panel {
   /* Children sit above the sheen */
 }
-.track-info-group > * {
+.track-panel > * {
   position: relative;
   z-index: 2;
 }
 
-/* ─── Track Info — dark digits on light panel ─────────────────────── */
+/* ─── Track Info — light text when panel off, dark digits when panel on ── */
 .track-info {
   font-family: var(--font-display);
-  color: var(--casio-lcd-panel);
+  color: rgba(255, 255, 255, 0.9);
   text-align: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  margin-bottom: 4px;
   -webkit-font-smoothing: antialiased;
+  padding: 14px 18px 12px;
+}
+
+/* Restore dark LCD colours when panel is enabled */
+.track-panel .track-info {
+  color: var(--casio-lcd-panel);
 }
 
 .track-title {
   font-family: var(--font-display);
   font-style: italic;
-  font-size: clamp(1.2rem, 4.5vw, 2.2rem);
+  font-size: clamp(1.4rem, 4.5vw, 2.2rem);
   font-weight: 700;
-  margin-bottom: 2px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: inherit;
+  text-shadow: none;
+}
+
+.track-panel .track-title {
   color: var(--casio-lcd-panel);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 -1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .artist-name,
 .album-name {
-  font-size: clamp(0.9rem, 2.5vw, 1.3rem);
-  color: #3a5850;
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow: none;
+}
+
+.track-panel .artist-name,
+.track-panel .album-name {
+  color: #3a5850;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15), 0 -1px 0 rgba(255, 255, 255, 0.55);
 }
 
 .responsive-title {
-  font-size: clamp(1.2rem, 5cqw, 3.2rem);
+  font-size: clamp(1.4rem, 5cqw, 3.2rem);
 }
 
 .responsive-artist {
-  font-size: clamp(0.9rem, 3cqw, 2rem);
+  font-size: clamp(1.05rem, 3cqw, 2rem);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.track-panel .responsive-artist {
   color: var(--casio-lcd-off);
 }
 
@@ -3225,12 +3365,9 @@ input[type=range]::-webkit-slider-thumb {
   color: var(--casio-lcd-off);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  /* Displayed inside the LCD panel if present */
-  background: var(--casio-lcd-panel);
   padding: 2px 6px;
   width: fit-content;
   margin: 10px auto 0;
-  border: 1px solid var(--casio-lcd-frame);
   border-radius: 1px;
 }
 
@@ -3294,13 +3431,23 @@ input[type=range]::-webkit-slider-thumb {
   padding-left: 0.4rem;
 }
 
-/* ─── Mobile compact (portrait ≤ 768px) ─────────────────────────────────── */
-/* .track-info-group has a multi-layer box-shadow that spreads 6px outward.
-   On mobile the controls container starts from the top edge of overflow:hidden
-   panel, clipping the top shadow. Add padding-top so the shadow has room. */
-@media (max-width: 768px) {
+/* ── Very short screens (800×480, 800×400 etc.): compact the Casio player ── */
+@media (max-height: 600px) {
+  .track-info {
+    padding: 6px 10px 6px !important;
+    margin-bottom: 0;
+  }
   .player-controls-container {
-    padding-top: 8px;
+    padding-top: 4px;
+  }
+  .responsive-title {
+    font-size: clamp(0.9rem, min(5cqw, 8cqh), 3.2rem) !important;
+  }
+  .responsive-artist {
+    font-size: clamp(0.7rem, min(3cqw, 6cqh), 2rem) !important;
+  }
+  .format-logo-responsive {
+    height: clamp(0.9rem, min(2.8cqw, 3cqh), 2.2rem) !important;
   }
 }
 :root {
@@ -4663,6 +4810,9 @@ input[type=range]::-webkit-slider-thumb {
 .dialog-toolbar .browse-search__icon {
   color: var(--casio-on-dark-dim);
 }
+.dialog-toolbar .browse-search__clear {
+  color: var(--casio-on-dark-dim);
+}
 
 /* Body — dark panel */
 .dialog-body {
@@ -4684,6 +4834,17 @@ input[type=range]::-webkit-slider-thumb {
   border-top: 2px solid var(--casio-edge);
   box-shadow: 0 -1px 0 var(--casio-sheen);
   flex-shrink: 0;
+}
+
+/* ── Focus ring — bright red on dark Casio background ── */
+.dialog :focus-visible,
+.slide-panel :focus-visible {
+  outline: 5px solid #ff4444;
+  outline-offset: 2px;
+}
+.dialog [tabindex="-1"]:focus-visible,
+.slide-panel [tabindex="-1"]:focus-visible {
+  outline: none;
 }
 
 /* ── Digital Clock — 80s Casio Theme ──────────────────────────────────────

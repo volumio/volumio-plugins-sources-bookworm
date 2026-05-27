@@ -1263,6 +1263,202 @@ ol li {
   border-color: rgba(34, 197, 94, 0.3);
 }
 
+/* ── Mobile compact (≤ 768px) ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .dialog-container {
+    padding: 0;
+  }
+  .dialog {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    margin: 0;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .dialog-header {
+    padding: 0.875rem 1rem;
+    border-radius: 0;
+  }
+  .dialog-body {
+    padding: 1rem;
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+  .dialog-footer {
+    padding: 0.875rem 1rem;
+    border-radius: 0;
+  }
+  .dialog-title {
+    font-size: 1rem;
+  }
+}
+/* ═══════════════════════════════════════════════════════════════════════
+   PLAYER LAYOUT — Common structural layout for all themes
+   ═══════════════════════════════════════════════════════════════════════
+   This file defines the base layout for shared player components.
+   Themes should only add typography and visual styling (colors,
+   backgrounds, borders, shadows, fonts) — NOT layout properties.
+   ═══════════════════════════════════════════════════════════════════════ */
+/* ── Media Containers (album art, vinyl, CD) ────────────────────────── */
+.album-art-container,
+.vinyl-container,
+.cd-container {
+  width: 100%;
+  max-width: 460px;
+  aspect-ratio: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  margin: 0 auto;
+}
+
+/* ── Screen Frame (layout) ──────────────────────────────────────────── */
+.screen-frame {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  height: 100%;
+  justify-content: center;
+}
+
+/* ── Track Info ──────────────────────────────────────────────────────── */
+.track-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+/* ── Slider Components ──────────────────────────────────────────────── */
+.slider-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 0 1em;
+}
+
+.slider-track {
+  flex-grow: 1;
+  position: relative;
+  cursor: pointer;
+}
+
+.slider-fill {
+  height: 100%;
+  position: relative;
+}
+
+.slider-cap {
+  position: absolute;
+  right: -7px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.slider-cap::after {
+  content: "";
+  position: absolute;
+}
+
+.read-only .slider-fill::after {
+  display: none;
+}
+
+.read-only .slider-track {
+  cursor: default;
+}
+
+/* ── Seekbar Labels ─────────────────────────────────────────────────── */
+.seekbar-labels {
+  padding-inline: 0;
+}
+
+/* ── Volume Label Spacing ───────────────────────────────────────────── */
+.volume-manager .small {
+  min-width: 3.5ch;
+  padding-left: 0.4rem;
+}
+
+/* ── Mobile compact (≤ 768px) ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .player-controls-container {
+    padding-top: 8px;
+  }
+  .track-info {
+    padding: 14px 16px;
+  }
+  .player-controls {
+    padding: 10px 16px;
+    gap: 10px;
+  }
+  .volume-control {
+    padding: 10px 14px;
+  }
+  .track-info-group {
+    width: calc(100% - 1rem) !important;
+    margin: 0 0.5rem;
+  }
+}
+/* ── Mobile forms (≤ 600px) ─────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .form-group {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    align-items: start;
+  }
+  .settings-panel {
+    padding: 20px;
+  }
+}
+/* ── Context Drawer (mobile slide-in menu) ──────────────────────────── */
+.context-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0);
+  pointer-events: none;
+  transition: background 0.25s ease;
+}
+.context-drawer-backdrop.open {
+  background: rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+}
+
+.context-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(280px, 75vw);
+  z-index: 2001;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Inherit context-menu styling from the active theme */
+  background: var(--drawer-bg, var(--panel-bg, #1a1a1a));
+  border-right: 1px solid var(--border-dark, rgba(255, 255, 255, 0.08));
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.4);
+}
+.context-drawer.open {
+  transform: translateX(0);
+}
+.context-drawer .context-menu-item {
+  width: 100%;
+  text-align: left;
+}
+
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE
@@ -1538,6 +1734,13 @@ ol li {
   /* Pressed in shadow */
 }
 
+.btn:focus-visible, .form-select:focus-visible {
+  filter: brightness(1.08);
+  box-shadow: 0 6px 10px var(--shadow-30), inset 0 1px 0 var(--highlight-30), inset 1px 0 0 var(--highlight-15), inset -1px 0 0 var(--shadow-10);
+  outline: 2px solid var(--color-primary, #ff6622);
+  outline-offset: 2px;
+}
+
 /* Button Colors */
 .btn-black {
   background: linear-gradient(180deg, var(--btn-black-top, #333) 0%, var(--btn-black-btm, #222) 100%);
@@ -1707,9 +1910,8 @@ ol li {
 
 /* Round Button Style */
 .btn-round {
-  width: 56px;
-  height: 56px;
-  /* Standard round size — consistent across all themes */
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   justify-content: center;
   align-items: center;
@@ -1758,8 +1960,8 @@ ol li {
 /* Icon-only Button — ghost style for secondary actions (shuffle, repeat, playlist, etc.)
    Transparent background, subtle hover/active feedback, inherits icon color. */
 .btn-icon {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   min-height: unset;
   border-radius: 50%;
   background: transparent;
@@ -1776,7 +1978,8 @@ ol li {
   box-shadow: none;
 }
 
-.btn-icon:hover {
+.btn-icon:hover,
+.btn-icon:focus-visible {
   background: rgba(255, 255, 255, 0.08);
   color: var(--color-gray-100, #eee);
 }
@@ -1841,8 +2044,8 @@ ol li {
 }
 
 .btn-round.btn-sm {
-  width: 40px;
-  height: 40px;
+  width: 56px;
+  height: 56px;
 }
 
 .btn:disabled, .form-select:disabled,
@@ -2424,17 +2627,6 @@ input:checked + .slider:after {
   margin-bottom: 2px;
 }
 
-/* Responsive Adjustments */
-@media (max-width: 600px) {
-  .form-group {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    align-items: start;
-  }
-  .settings-panel {
-    padding: 20px;
-  }
-}
 /* ─── Select / Dropdown ─────────────────────────────────────────────────────── */
 .form-select {
   appearance: none;
@@ -2464,6 +2656,151 @@ input:checked + .slider:after {
 .form-select:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ─── Bootstrap form-check switch override ───────────────────────────────── */
+.form-check.form-switch {
+  padding-left: 0;
+}
+.form-check.form-switch .form-check-input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 60px;
+  height: 30px;
+  margin: 0;
+  background-color: #2b2b2b;
+  background-image: none;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.7), 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: background-color 0.4s, box-shadow 0.4s;
+}
+.form-check.form-switch .form-check-input::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(180deg, #d0d0d0 0%, #a0a0a0 100%);
+  border-radius: 50%;
+  transition: all 0.4s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.form-check.form-switch .form-check-input::after {
+  content: "OFF";
+  position: absolute;
+  right: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #777;
+  font-size: 7px;
+  font-weight: 700;
+  font-family: var(--font-tech, "Roboto", sans-serif);
+  letter-spacing: 1px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.05);
+  pointer-events: none;
+}
+.form-check.form-switch .form-check-input:checked {
+  background-color: #1a1a1a;
+  background-image: none;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.7), 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.form-check.form-switch .form-check-input:checked::before {
+  left: 34px;
+  background: linear-gradient(180deg, #ff5722 0%, #d84315 100%);
+  box-shadow: 0 0 10px rgba(255, 87, 34, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.form-check.form-switch .form-check-input:checked::after {
+  content: "ON";
+  right: auto;
+  left: 10px;
+  color: #ff7043;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-shadow: 0 0 6px rgba(255, 87, 34, 0.7);
+}
+.form-check.form-switch .form-check-input:focus {
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.7), 0 0 0 2px rgba(255, 87, 34, 0.4);
+}
+
+/* ─── Settings page title overrides ────────────────────────────────────── */
+.settings-topbar__title {
+  color: var(--color-gray-800) !important;
+  text-shadow: none !important;
+}
+
+.settings-section__title {
+  color: var(--color-gray-050) !important;
+  text-shadow: none !important;
+}
+
+.settings-label {
+  color: var(--color-gray-050) !important;
+}
+
+/* ─── Settings page tab overrides (Skeuomorphic) ───────────────────────── */
+.settings-tabs {
+  background-color: var(--device-surface);
+  border-bottom: 1px solid var(--highlight-40);
+  box-shadow: 0 2px 6px var(--shadow-10), inset 0 -1px 0 var(--shadow-05);
+  background-image: linear-gradient(var(--highlight-03), var(--shadow-03)), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23000000' fill-opacity='0.03' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'/%3E%3C/svg%3E");
+}
+
+.settings-tab {
+  border: 1px solid var(--shadow-05);
+  border-radius: 0;
+  margin-left: -1px;
+  background: linear-gradient(180deg, var(--highlight-10) 0%, var(--shadow-05) 100%);
+  box-shadow: 2px 2px 4px var(--shadow-10), inset 1px 1px 0 var(--highlight-20);
+  color: var(--color-gray-600);
+  font-family: var(--font-label);
+}
+.settings-tab:first-child {
+  margin-left: 0;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+.settings-tab:last-child {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+.settings-tab:hover:not(.settings-tab--active) {
+  background: linear-gradient(180deg, var(--highlight-20) 0%, var(--shadow-02) 100%);
+  color: var(--text-orange);
+}
+.settings-tab {
+  /* LED indicator dot */
+}
+.settings-tab::after {
+  content: "";
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--color-gray-500);
+  box-shadow: inset 0 1px 1px var(--shadow-50);
+  transition: all 0.3s;
+}
+
+.settings-tab--active {
+  background-color: var(--device-surface);
+  box-shadow: inset 2px 2px 5px var(--shadow-30), inset -1px -1px 2px var(--highlight-60);
+  border: 1px solid transparent;
+  color: var(--text-orange);
+}
+.settings-tab--active .settings-tab__icon {
+  text-shadow: 0 0 10px var(--glow-orange-40);
+}
+.settings-tab--active {
+  /* Active LED dot */
+}
+.settings-tab--active::after {
+  background-color: var(--led-red-on);
+  box-shadow: 0 0 5px var(--led-red-on);
 }
 
 :root {
@@ -3353,86 +3690,41 @@ h2 {
   text-align: center;
 }
 
-/* Media Player Layout & Common Components */
-.player-casing {
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  background-color: var(--device-surface);
-  border-radius: 30px;
-  padding: 30px;
-  box-shadow: 20px 20px 40px rgba(0, 0, 0, 0.25), -5px -5px 15px rgba(255, 255, 255, 0.6), inset 1px 1px 0 rgba(255, 255, 255, 0.4);
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  position: relative;
-  /* Texture */
-  background-image: linear-gradient(rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.03)), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23000000' fill-opacity='0.03' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'/%3E%3C/svg%3E");
-  transition: max-width 0.3s ease;
-}
-
-/* Layout wrappers for RWD */
-.media-section {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.controls-section {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-/* Screen Area */
+/* ═══════════════════════════════════════════════════════════════════════
+   MEDIA PLAYER — Skeuomorphic Theme
+   Typography and visual styling only. Layout is in common/_player-layout.
+   ═══════════════════════════════════════════════════════════════════════ */
+/* ── Screen Frame (visual) ────────────────────────────────────────────── */
 .screen-frame {
   background-color: var(--color-gray-800, #222);
   border-radius: 6px;
   padding: 15px;
   box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.6), inset -1px -1px 2px rgba(255, 255, 255, 0.1), 0 1px 0 rgba(255, 255, 255, 0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  height: 100%;
-  justify-content: center;
 }
 
-/* Common Media Container Base Styles */
-.album-art-container,
-.vinyl-container,
-.cd-container {
-  width: 100%;
-  max-width: 460px;
-  aspect-ratio: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  margin: 0 auto;
-}
-
-/* Track Info Typography */
+/* ── Track Info Typography ────────────────────────────────────────────── */
 .track-info {
   font-family: var(--font-label, "Roboto", sans-serif);
   color: var(--color-gray-600);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  margin-bottom: 15px;
+}
+
+/* ── Track Panel — recessed inset display (enabled via setting) ───────── */
+.track-panel {
+  border-radius: 8px;
+}
+
+.track-panel .track-info {
+  background-color: var(--color-gray-800, #222);
+  border-radius: 8px;
+  padding: clamp(10px, 2cqh, 20px) clamp(12px, 1.5cqw, 24px);
+  box-shadow: inset 0 -12px 20px -10px rgba(255, 140, 40, 0.245), inset 0 -4px 8px -4px rgba(255, 180, 80, 0.14), inset 2px 2px 6px rgba(0, 0, 0, 0.6), inset -1px -1px 2px rgba(255, 255, 255, 0.08), 0 1px 0 rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--color-gray-900, #111);
 }
 
 .track-title {
   font-family: var(--font-display);
   font-size: clamp(1.25rem, 4.5vw, 2.25rem);
   font-weight: 700;
-  margin-bottom: 5px;
   letter-spacing: 0.5px;
   white-space: nowrap;
   overflow: hidden;
@@ -3456,6 +3748,7 @@ h2 {
   color: var(--color-gray-400, #666);
 }
 
+/* ── Responsive Font Sizes (container-query based) ────────────────────── */
 .responsive-title {
   font-size: clamp(1rem, 4.5cqw, 3rem);
 }
@@ -3465,51 +3758,199 @@ h2 {
 }
 
 .responsive-album {
-  font-size: clamp(0.7rem, 1.8cqw, 0.95rem);
+  font-size: clamp(0.7rem, 2.1cqw, 1.96rem);
 }
 
 .responsive-stream-info {
   font-size: clamp(0.7rem, 2.1cqw, 1.96rem);
+  color: var(--color-gray-400, #666);
 }
 
+/* 15% bigger track-info fonts on large mobile (excludes ≤654px height) */
+@media (max-width: 768px) and (min-height: 655px) {
+  .area-track-info {
+    overflow: visible !important;
+  }
+  .responsive-title {
+    font-size: clamp(1.84rem, 9.2vw, 3.45rem) !important;
+  }
+  .responsive-artist {
+    font-size: clamp(1.265rem, 6.325vw, 2.3rem) !important;
+  }
+  .responsive-album {
+    font-size: clamp(1.15rem, 4.6vw, 1.84rem) !important;
+  }
+  .responsive-stream-info {
+    font-size: clamp(1.15rem, 4.6vw, 1.84rem) !important;
+  }
+}
+/* 10% bigger track-info fonts on 654px height mobile */
+@media (max-width: 768px) and (max-height: 654px) {
+  .responsive-title {
+    font-size: clamp(1.76rem, 8.8vw, 3.3rem) !important;
+  }
+  .responsive-artist {
+    font-size: clamp(1.21rem, 6.05vw, 2.2rem) !important;
+  }
+  .responsive-album {
+    font-size: clamp(1.1rem, 4.4vw, 1.76rem) !important;
+  }
+  .responsive-stream-info {
+    font-size: clamp(1rem, 3.96vw, 1.58rem) !important;
+  }
+}
+/* 15% bigger track-info fonts + spacing on tablet/small desktop (~800px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .responsive-title {
+    font-size: clamp(1.15rem, 5.175cqw, 3.45rem) !important;
+  }
+  .responsive-artist {
+    font-size: clamp(0.86rem, 4.025cqw, 2.875rem) !important;
+  }
+  .responsive-album {
+    font-size: clamp(0.8rem, 2.415cqw, 2.25rem) !important;
+  }
+  .responsive-stream-info {
+    font-size: clamp(0.8rem, 2.415cqw, 2.25rem) !important;
+  }
+  .cq-track-info {
+    gap: clamp(2px, 1cqh, 12px) !important;
+  }
+  .track-info-group {
+    margin-bottom: clamp(4px, 1cqh, 12px) !important;
+  }
+  .tp-max-space .tp-right .responsive-title {
+    font-size: clamp(1.36rem, min(8.5cqw, 11.9cqh), 6.8rem) !important;
+  }
+  .tp-max-space .tp-right .responsive-artist {
+    font-size: clamp(1.02rem, min(5.95cqw, 9.35cqh), 4.25rem) !important;
+  }
+  .tp-max-space .tp-right .responsive-album {
+    font-size: clamp(1rem, min(4cqw, 6cqh), 3.5rem) !important;
+  }
+  /* Tighter controls spacing on tablet */
+  .tp-max-space .tp-controls .player-controls-container {
+    gap: clamp(1px, 0.5cqh, 8px) !important;
+    padding-top: clamp(1px, 0.3cqh, 4px) !important;
+    padding-bottom: clamp(2px, 0.5cqh, 6px) !important;
+  }
+  .tp-max-space .tp-controls .seekbar-container-wrap {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  .tp-max-space .tp-controls .volume-manager-wrap {
+    padding-bottom: clamp(2px, 0.5cqh, 8px) !important;
+  }
+  .tp-max-space .tp-controls .player-controls {
+    margin-block: clamp(1px, 0.5cqh, 8px) !important;
+  }
+  .tp-max-space .tp-controls .controls-transport-row {
+    margin-bottom: clamp(1px, 0.5cqh, 8px) !important;
+  }
+}
+/* Skeuomorphic overrides for 800×480 (doubled selector for specificity) */
+@media (max-height: 480px) {
+  .tp-max-space .tp-right .responsive-title {
+    font-size: clamp(0.765rem, min(5.95cqw, 6.8cqh), 2.55rem) !important;
+  }
+  .tp-max-space .tp-right .responsive-artist {
+    font-size: clamp(0.67rem, min(5cqw, 6cqh), 1.79rem) !important;
+  }
+  .tp-max-space .tp-right .responsive-album {
+    font-size: clamp(0.62rem, min(3.33cqw, 2.85cqh), 1.43rem) !important;
+  }
+  .tp-max-space .tp-right .responsive-stream-info {
+    font-size: clamp(1rem, min(5cqw, 6cqh), 3.5rem) !important;
+  }
+  .tp-max-space .tp-right .cq-track-info {
+    gap: clamp(4px, 0.8cqh, 14px) !important;
+  }
+  .tp-max-space .tp-right .track-info-group {
+    margin-bottom: clamp(4px, 0.8cqh, 12px) !important;
+  }
+  .tp-max-space .tp-right .stream-info-row {
+    padding-top: clamp(5px, 1cqh, 14px) !important;
+    padding-bottom: clamp(3px, 0.5cqh, 8px) !important;
+  }
+  .tp-max-space .tp-right .format-logo-responsive {
+    height: clamp(1rem, min(5cqw, 5cqh), 3.5rem) !important;
+  }
+  .tp-max-space .tp-right .stream-info-row .service-logo-icon {
+    font-size: clamp(1.2rem, min(5cqw, 6cqh), 3.5rem) !important;
+  }
+}
 .format-logo-responsive {
   height: clamp(1.3rem, 3.8cqw, 4.2rem);
   display: block;
 }
 
-/* Audio Format & Bitrate Info */
-.audio-meta {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  height: 20px;
+/* Service logo icon: bump cqh from 4→6 (doubled selector beats global) */
+.tp-max-space.tp-max-space .tp-right .stream-info-row .service-logo-icon {
+  font-size: clamp(1.2rem, min(5cqw, 6cqh), 3.5rem) !important;
 }
 
-.format-logo-icon {
-  height: clamp(0.85rem, 1.6vw, 1.4rem);
-  width: auto;
-  display: block;
-  opacity: 0.9;
+/* Format logo: bump cqh from 4→6 (doubled selector beats global) */
+.tp-max-space.tp-max-space .tp-right .format-logo-responsive {
+  height: clamp(1rem, min(5cqw, 6cqh), 3.5rem) !important;
 }
 
-.bitrate-info {
-  font-family: var(--font-tech, "Michroma", sans-serif);
-  font-size: clamp(0.55rem, 1vw, 0.75rem);
-  color: var(--color-gray-500, #555);
-  letter-spacing: 0.5px;
+/* Prevent track-info clipping of stream row logos */
+.tp-max-space .tp-track-info {
+  overflow: visible !important;
 }
 
+/* ── Max space: higher line-heights for breathing room ──────────────── */
+.tp-max-space .responsive-title {
+  line-height: 1.35 !important;
+}
+
+/* Override ≥1200px title line-height for skeuomorphic */
+@media (min-width: 1200px) {
+  .tp-max-space .tp-right .responsive-title {
+    line-height: 1.35 !important;
+  }
+  .tp-max-space .tp-track-info {
+    flex: 0 0 60% !important;
+    overflow: visible !important;
+  }
+  .tp-max-space .tp-right .stream-info-row {
+    padding-top: clamp(4px, 1cqh, 14px) !important;
+    justify-content: flex-start !important;
+  }
+  .tp-max-space .tp-controls .time-label {
+    font-size: clamp(1.5rem, min(2.5cqw, 3cqh), 1.4rem) !important;
+  }
+  .tp-max-space .tp-controls .volume-manager .small {
+    font-size: 1.5rem !important;
+  }
+  .tp-grid:not(.tp-max-space) .tp-controls .volume-manager .small {
+    font-size: 1rem !important;
+  }
+}
+@media (max-height: 600px) {
+  .tp-max-space .tp-controls .time-label {
+    font-size: clamp(1rem, min(2.5cqw, 4.5cqh), 0.9rem) !important;
+  }
+}
+.tp-max-space .responsive-artist {
+  line-height: 1.35 !important;
+}
+
+.tp-max-space .responsive-album {
+  line-height: 1.35 !important;
+}
+
+.tp-max-space .tp-right .responsive-album {
+  font-size: clamp(1rem, min(5cqw, 6cqh), 3.5rem) !important;
+}
+
+.tp-max-space .responsive-stream-info {
+  line-height: 1.35 !important;
+}
+
+/* ── Icon Sizes ───────────────────────────────────────────────────────── */
 .material-icons {
   font-size: 24px;
-}
-
-.transport-controls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
 }
 
 .btn-primary .material-icons, .btn-orange .material-icons {
@@ -3517,31 +3958,17 @@ h2 {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-/* Progress Sliders */
-.slider-container {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 0 1em;
-}
-
+/* ── Slider Visual Styling ────────────────────────────────────────────── */
 .slider-track {
-  flex-grow: 1;
   height: 6px;
   background-color: var(--color-gray-850, #1a1a1a);
   border-radius: 3px;
   box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.7), 0 1px 0 rgba(255, 255, 255, 0.1);
-  position: relative;
-  cursor: pointer;
 }
 
 .slider-fill {
-  height: 100%;
   background: linear-gradient(90deg, var(--color-orange-light, #ff7043), var(--color-orange-dark, #d84315));
   border-radius: 3px 0 0 3px;
-  width: 30%;
-  position: relative;
 }
 
 .slider-cap {
@@ -3549,19 +3976,10 @@ h2 {
   height: 24px;
   background: var(--grad-metallic, linear-gradient(180deg, #e0e0e0, #bdbdbd));
   border-radius: 2px;
-  position: absolute;
-  right: -7px;
-  top: 50%;
-  transform: translateY(-50%);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 1px 1px 0 rgba(255, 255, 255, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .slider-cap::after {
-  content: "";
-  position: absolute;
   top: 25%;
   left: 3px;
   right: 3px;
@@ -3570,210 +3988,17 @@ h2 {
   border-bottom: 2px solid var(--color-gray-300, #888);
 }
 
+/* ── Time Labels ──────────────────────────────────────────────────────── */
 .time-label {
   font-family: var(--font-tech);
   font-size: clamp(0.6rem, 1.1vw, 0.85rem);
-  color: var(--color-gray-500, #555);
+  color: var(--text-secondary);
   min-width: clamp(28px, 3.5vw, 44px);
 }
 
-/* Align time labels with the slider track edges */
-.seekbar-labels {
-  padding-inline: 0;
-}
-
-/* Utiltiy Controls */
-.controls-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 10px;
-}
-
-.utility-row {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 5px;
-}
-
-.utility-btn {
-  width: 40px;
-  height: 40px;
-}
-
-.utility-btn .material-icons {
-  font-size: 18px;
-}
-
-/* ---------------------------------------------------- */
-/* RESPONSIVE MEDIA QUERIES                             */
-/* ---------------------------------------------------- */
-/* Landscape / Desktop / Ultrawide */
-@media (min-width: 768px) and (min-aspect-ratio: 4/3) {
-  .player-casing {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: 60px;
-    gap: 60px;
-  }
-  .media-section {
-    flex: 1;
-    max-width: none;
-    height: 100%;
-    justify-content: center;
-    align-items: center;
-  }
-  .screen-frame {
-    width: 100%;
-    height: auto;
-    justify-content: center;
-  }
-  /* Common container size override */
-  .album-art-container,
-  .vinyl-container,
-  .cd-container {
-    max-width: 460px;
-    height: auto;
-    aspect-ratio: 1;
-    margin-bottom: 20px;
-  }
-  .controls-section {
-    flex: 1;
-    height: 100%;
-    justify-content: center;
-    align-items: center;
-    max-width: none;
-    gap: 40px;
-  }
-  .controls-section > * {
-    width: 100%;
-    max-width: 500px;
-  }
-  .utility-row {
-    margin-top: 20px;
-  }
-}
-/* Ultrawide 2560x720 specific optimization */
-@media (min-aspect-ratio: 21/9) {
-  .player-casing {
-    max-width: none;
-  }
-  .transport-controls .btn-round {
-    transform: scale(1.1);
-  }
-  .transport-controls .btn-primary, .transport-controls .btn-orange {
-    transform: scale(1.1);
-  }
-}
-/* 4K Scaling / High DPI Large Screens */
-@media (min-width: 2500px) {
-  body {
-    zoom: 1.5;
-  }
-}
-/* ── UWLS (ultrawide + short screen): disable 4K zoom & compact overrides ── */
-@media (max-height: 700px) and (min-width: 1440px) and (min-aspect-ratio: 2/1) {
-  body {
-    zoom: 1 !important;
-  }
-  .lsp-top__title {
-    font-size: clamp(1rem, 1.8vw, 1.8rem) !important;
-  }
-  .lsp-top__row2 {
-    font-size: clamp(0.75rem, 1.1vw, 1.1rem) !important;
-  }
-  .lsp-stream-info span {
-    font-size: clamp(0.7rem, 0.9vw, 1rem) !important;
-  }
-  .seekbar-labels,
-  .time-label {
-    font-size: 0.9rem !important;
-  }
-  .context-menu-toggle {
-    width: 48px !important;
-    height: 48px !important;
-  }
-  .context-menu-toggle .material-icons {
-    font-size: 1.6rem !important;
-  }
-  .context-menu-item {
-    font-size: 1.25rem !important;
-    padding: 14px 20px !important;
-  }
-  .context-menu-item .material-icons {
-    font-size: 1.4rem !important;
-  }
-  .context-menu {
-    min-width: 220px !important;
-  }
-  .dialog-title {
-    font-size: 1.3rem !important;
-  }
-  .dialog-close {
-    width: 40px !important;
-    height: 40px !important;
-  }
-  .dialog-close .material-icons {
-    font-size: 1.4rem !important;
-  }
-  .dialog-body {
-    font-size: 1rem !important;
-  }
-  .dialog-list-item {
-    font-size: 1rem !important;
-    padding: 0.5rem 0.85rem !important;
-  }
-  .dialog-section-title {
-    font-size: 0.8rem !important;
-  }
-  .dialog-track-title {
-    font-size: 1.1rem !important;
-  }
-  .dialog-track-meta {
-    font-size: 0.9rem !important;
-  }
-  .dialog .btn, .dialog .form-select {
-    font-size: 1rem !important;
-    padding: 0.5rem 1rem !important;
-  }
-  .playlist-track-title {
-    font-size: 1.1rem !important;
-  }
-  .playlist-track-meta {
-    font-size: 0.9rem !important;
-  }
-  .slide-panel-header .btn-icon,
-  .slide-panel-header .btn-link,
-  .slide-panel-header .dialog-close {
-    width: 40px !important;
-    height: 40px !important;
-  }
-  .slide-panel-header .btn-icon .material-icons,
-  .slide-panel-header .btn-link .material-icons,
-  .slide-panel-header .dialog-close .material-icons {
-    font-size: 1.5rem !important;
-  }
-  .track-menu {
-    min-width: 200px !important;
-  }
-  .track-menu__item {
-    font-size: 1.2rem !important;
-    padding: 12px 18px !important;
-    gap: 10px !important;
-  }
-  .track-menu__item .material-icons {
-    font-size: 1.3rem !important;
-  }
-}
-.read-only .slider-track {
-  cursor: default;
-}
-
-/* ─── Volume label spacing ─────────────────────────────────────────────── */
+/* ── Volume label — match seekbar time-label colour ──────────────────── */
 .volume-manager .small {
-  min-width: 3.5ch;
-  padding-left: 0.4rem;
+  color: var(--text-secondary) !important;
 }
 
 /* Page-level wrapper — apply to the element that wraps the entire album browser */
@@ -5521,30 +5746,25 @@ h2 {
   line-height: 1.4;
 }
 
-/* ── Responsive ── */
-@media (max-width: 768px) {
-  .dialog {
-    max-width: calc(100vw - 1rem);
-    margin: 0.5rem;
-  }
-  .dialog-header,
-  .dialog-body,
-  .dialog-footer {
-    padding: 0.875rem 1rem;
-  }
-  .dialog-title {
-    font-size: 1rem;
-  }
-}
 /* ── Browse Tiles ── */
 .browse-tile .browse-tile__icon {
-  font-size: clamp(18px, 3cqi, 30px) !important;
   display: block;
   margin-bottom: 4px;
 }
 .browse-tile .browse-tile__label {
   font-size: clamp(0.75rem, 1.5cqi, 1.1rem) !important;
   font-weight: 600;
+}
+
+/* ── Focus ring — dark on light device-surface background ── */
+.dialog :focus-visible,
+.slide-panel :focus-visible {
+  outline: 5px solid #c04400;
+  outline-offset: 2px;
+}
+.dialog [tabindex="-1"]:focus-visible,
+.slide-panel [tabindex="-1"]:focus-visible {
+  outline: none;
 }
 
 /* ── Digital LCD Clock ─────────────────────────────────────────────────────── */

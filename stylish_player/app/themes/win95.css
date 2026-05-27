@@ -1076,6 +1076,38 @@ code, pre {
   border-color: rgba(34, 197, 94, 0.3);
 }
 
+/* ── Mobile compact (≤ 768px) ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .dialog-container {
+    padding: 0;
+  }
+  .dialog {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    margin: 0;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .dialog-header {
+    padding: 0.875rem 1rem;
+    border-radius: 0;
+  }
+  .dialog-body {
+    padding: 1rem;
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+  .dialog-footer {
+    padding: 0.875rem 1rem;
+    border-radius: 0;
+  }
+  .dialog-title {
+    font-size: 1rem;
+  }
+}
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE - Windows 95 Theme
@@ -1336,7 +1368,8 @@ code, pre {
   padding-right: 15px;
 }
 .btn:focus-visible, .form-select:focus-visible {
-  outline: 1px dotted var(--text-primary);
+  background: var(--win95-light);
+  outline: 2px dotted #000000;
   outline-offset: -4px;
 }
 
@@ -1477,7 +1510,7 @@ code, pre {
   transition: background 0.1s, border-color 0.1s;
   box-shadow: none;
 }
-.btn-icon:hover {
+.btn-icon:hover, .btn-icon:focus-visible {
   background: rgba(0, 0, 128, 0.08);
   border-color: var(--win95-shadow);
   color: var(--win95-shadow);
@@ -1802,7 +1835,7 @@ select::placeholder {
 input:focus,
 textarea:focus,
 select:focus {
-  outline: 1px dotted var(--text-primary);
+  outline: 2px solid var(--text-primary);
   outline-offset: -3px;
 }
 input:disabled,
@@ -1877,7 +1910,7 @@ label {
   display: block;
 }
 .form-check-input[type=checkbox]:focus-visible {
-  outline: 1px dotted var(--text-primary);
+  outline: 2px solid var(--text-primary);
 }
 
 .form-select {
@@ -1897,7 +1930,7 @@ label {
   background: var(--win95-face) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23000000'/%3E%3C/svg%3E") no-repeat right 8px center;
 }
 .form-select:focus {
-  outline: 1px dotted var(--text-primary);
+  outline: 2px solid var(--text-primary);
   outline-offset: -3px;
 }
 .form-select:disabled {
@@ -1928,6 +1961,102 @@ label {
 .input-group .form-control {
   min-height: 28px;
   border-radius: 0;
+}
+
+/* ─── Settings Knob ──────────────────────────────────────────────────── */
+.settings-knob {
+  background: var(--win95-face, #c0c0c0);
+  border: none;
+  border-radius: 50%;
+  border-top: 2px solid var(--win95-highlight, #ffffff);
+  border-left: 2px solid var(--win95-highlight, #ffffff);
+  border-bottom: 2px solid var(--win95-dark, #000000);
+  border-right: 2px solid var(--win95-dark, #000000);
+  box-shadow: inset 1px 1px 0 var(--win95-highlight, #ffffff), inset -1px -1px 0 var(--win95-shadow, #808080);
+}
+.settings-knob:active {
+  border-top-color: var(--win95-dark, #000000);
+  border-left-color: var(--win95-dark, #000000);
+  border-bottom-color: var(--win95-highlight, #ffffff);
+  border-right-color: var(--win95-highlight, #ffffff);
+  box-shadow: inset 1px 1px 0 var(--win95-shadow, #808080), inset -1px -1px 0 var(--win95-highlight, #ffffff);
+}
+.settings-knob:focus-visible {
+  outline: 1px dotted #000;
+  outline-offset: -4px;
+  box-shadow: inset 1px 1px 0 var(--win95-highlight, #ffffff), inset -1px -1px 0 var(--win95-shadow, #808080);
+}
+
+.settings-knob__indicator {
+  background: var(--color-primary, #000080);
+  box-shadow: none;
+  border-radius: 0;
+  width: 4px;
+  height: 10px;
+  top: 8px;
+}
+
+.settings-knob-value {
+  color: var(--text-primary, #000);
+  font-family: "MS Sans Serif", "Trebuchet MS", sans-serif;
+}
+
+.settings-knob-scale {
+  color: var(--text-secondary, #808080);
+}
+
+/* ─── Settings page tab overrides (Windows 95) ─────────────────────────── */
+.settings-tabs {
+  background: var(--win95-face);
+  border-bottom: 2px solid var(--win95-shadow);
+  box-shadow: none;
+  background-image: none;
+  padding: 0 0.5rem;
+  padding-bottom: 0;
+  gap: 2px;
+  align-items: flex-end;
+}
+
+.settings-tab {
+  background: var(--win95-face);
+  border: none;
+  border-radius: 3px 3px 0 0;
+  margin-left: 0;
+  box-shadow: none;
+  color: var(--text-primary);
+  font-family: "MS Sans Serif", "Trebuchet MS", sans-serif;
+  text-shadow: none;
+  position: relative;
+  margin-bottom: -2px;
+  padding: 0.35rem 0.75rem;
+  /* Win95 double 3D bevel — raised tab */
+  border-top: 2px solid var(--win95-highlight);
+  border-left: 2px solid var(--win95-highlight);
+  border-right: 1px solid var(--win95-shadow);
+  border-bottom: none;
+  box-shadow: inset -1px 0 0 var(--win95-light), 1px 0 0 var(--win95-dark);
+}
+.settings-tab:first-child {
+  border-radius: 3px 3px 0 0;
+}
+.settings-tab:last-child {
+  border-radius: 3px 3px 0 0;
+}
+.settings-tab:hover:not(.settings-tab--active) {
+  background: var(--win95-light);
+  color: var(--text-primary);
+}
+
+.settings-tab--active {
+  background: var(--win95-face);
+  border-top: 2px solid var(--win95-highlight);
+  border-left: 2px solid var(--win95-highlight);
+  border-right: 1px solid var(--win95-shadow);
+  border-bottom: 2px solid var(--win95-face);
+  box-shadow: inset -1px 0 0 var(--win95-light), 1px 0 0 var(--win95-dark);
+  z-index: 2;
+  color: var(--win95-titlebar);
+  padding: 0.45rem 0.75rem 0.35rem;
 }
 
 :root {
@@ -3393,16 +3522,20 @@ input[type=range]::-webkit-slider-runnable-track {
 /* ─── Track Info ───────────────────────────────────────────────────────── */
 .track-info {
   font-family: var(--font-body);
-  color: var(--text-primary);
+  color: rgba(255, 255, 255, 0.9);
   text-align: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
   margin-bottom: 6px;
   width: 100%;
-  /* Win95 window panel */
-  background: var(--win95-face);
   padding: 0;
+}
+
+/* Win95 window panel — only shown when track panel setting is enabled */
+.track-panel .track-info {
+  color: var(--text-primary);
+  background: var(--win95-face);
   /* Raised outer bevel */
   border-top: 2px solid var(--win95-highlight);
   border-left: 2px solid var(--win95-highlight);
@@ -3410,8 +3543,8 @@ input[type=range]::-webkit-slider-runnable-track {
   border-right: 2px solid var(--win95-dark);
 }
 
-/* Navy title-bar header inside the panel */
-.track-info::before {
+/* Navy title-bar header inside the panel — only when panel enabled */
+.track-panel .track-info::before {
   content: "♪ Now Playing";
   display: block;
   background: linear-gradient(90deg, var(--win95-titlebar), #1084d0);
@@ -3426,34 +3559,33 @@ input[type=range]::-webkit-slider-runnable-track {
   width: 100%;
 }
 
-/* Inner content area */
-.track-info > * {
+/* Inner content area — only when panel enabled */
+.track-panel .track-info > * {
   padding: 0 10px;
 }
 
-.track-info > *:first-child {
+.track-panel .track-info > *:first-child {
   padding-top: 8px;
 }
 
-.track-info > *:last-child {
+.track-panel .track-info > *:last-child {
   padding-bottom: 8px;
 }
 
 .track-title {
   font-size: clamp(1.1rem, 4vw, 2rem);
   font-weight: 700;
-  margin-bottom: 2px;
   letter-spacing: var(--tracking-normal);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--text-primary);
+  color: inherit;
 }
 
 .artist-name,
 .album-name {
   font-size: clamp(0.8rem, 2.2vw, 1.1rem);
-  color: var(--text-primary);
+  color: inherit;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3469,7 +3601,7 @@ input[type=range]::-webkit-slider-runnable-track {
 }
 
 .responsive-album {
-  font-size: clamp(0.7rem, 1.8cqw, 0.95rem);
+  font-size: clamp(0.7rem, 2.1cqw, 1.96rem);
 }
 
 .responsive-stream-info {
@@ -3587,6 +3719,13 @@ input[type=range]::-webkit-slider-runnable-track {
   accent-color: var(--win95-titlebar);
 }
 
+/* ─── Seekbar labels — white on LSP dark backgrounds ───────────────────── */
+.seekbar-labels,
+.time-label {
+  color: var(--color-white) !important;
+  opacity: 1 !important;
+}
+
 /* ─── Audio info ────────────────────────────────────────────────────────── */
 .audio-meta {
   display: flex;
@@ -3608,6 +3747,105 @@ input[type=range]::-webkit-slider-runnable-track {
   gap: 12px;
 }
 
+/* ── Controls panel: flush the Win95 title bar to the panel edges ────── */
+.player-controls-container {
+  padding-top: 0 !important;
+}
+
+.track-info-group {
+  width: calc(100% - 16px) !important;
+  margin: 0 auto !important;
+}
+
+.track-info {
+  padding: 0 !important;
+}
+
+/* Same overrides scoped under album-art-max-space to beat home-responsive specificity */
+.album-art-max-space .area-controls .player-controls-container {
+  padding-top: 0 !important;
+}
+
+.album-art-max-space .right-column .track-info-group {
+  width: calc(100% - 16px) !important;
+  margin: 0 auto !important;
+}
+.album-art-max-space .right-column .track-info {
+  padding: 0 !important;
+}
+
+/* ── Album-art-max-space on short screens: aggressive compaction ──── */
+@media (max-height: 600px) {
+  .album-art-max-space .right-column .track-info {
+    margin-bottom: 0 !important;
+    padding: 0 !important;
+  }
+  .album-art-max-space .right-column .track-info::before {
+    padding: 1px 6px;
+    font-size: var(--text-sm, 12px);
+    height: 18px;
+  }
+  .album-art-max-space .right-column .track-info > *:first-child {
+    padding-top: 2px;
+  }
+  .album-art-max-space .right-column .track-info > *:last-child {
+    padding-bottom: 2px;
+  }
+  .album-art-max-space .right-column .track-info > * {
+    padding: 0 4px;
+  }
+  .album-art-max-space .area-controls {
+    overflow: visible !important;
+  }
+  .album-art-max-space .area-controls .player-controls-container {
+    gap: clamp(1px, 0.8cqh, 8px) !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  .album-art-max-space .area-controls .player-controls {
+    margin-block: clamp(1px, 0.8cqh, 8px) !important;
+    gap: 2px !important;
+  }
+  .album-art-max-space .area-controls .controls-transport-row {
+    margin-bottom: clamp(1px, 0.8cqh, 8px) !important;
+  }
+  .album-art-max-space .area-controls .volume-manager-wrap {
+    padding-bottom: clamp(1px, 0.5cqh, 6px) !important;
+  }
+}
+/* ── Very short screens (800×480, 800×400 etc.): compact the Win95 player ── */
+@media (max-height: 600px) {
+  .track-info {
+    margin-bottom: 2px;
+  }
+  .track-info > *:first-child {
+    padding-top: 4px;
+  }
+  .track-info > *:last-child {
+    padding-bottom: 4px;
+  }
+  .track-info > * {
+    padding: 0 6px;
+  }
+  .player-controls {
+    gap: 4px;
+  }
+  .responsive-title {
+    font-size: clamp(0.9rem, min(4.5cqw, 8cqh), 3rem) !important;
+  }
+  .responsive-artist {
+    font-size: clamp(0.7rem, min(3.5cqw, 6cqh), 2.5rem) !important;
+  }
+  .responsive-album {
+    font-size: clamp(0.65rem, min(2.1cqw, 3cqh), 1.96rem) !important;
+  }
+  .responsive-stream-info {
+    font-size: clamp(0.65rem, min(2.1cqw, 3cqh), 1.96rem) !important;
+  }
+  .format-logo-responsive {
+    height: clamp(1rem, min(3cqw, 3.5cqh), 4.2rem) !important;
+  }
+}
 /* ═══════════════════════════════════════════════════════════════════════
    WEATHER - Windows 95 Overrides
    Replace dark-theme glass panels with Win95 silver bevel panels
@@ -4891,6 +5129,7 @@ input[type=range]::-webkit-slider-runnable-track {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  color: #ffffff;
   background: rgba(192, 192, 192, 0.2);
   border-top: 2px solid var(--win95-highlight);
   border-left: 2px solid var(--win95-highlight);
@@ -4907,12 +5146,9 @@ input[type=range]::-webkit-slider-runnable-track {
   background: rgba(192, 192, 192, 0.2);
   border: 2px solid var(--win95-shadow);
 }
-.context-menu-toggle--no-shadow .material-icons {
-  color: var(--text-primary);
-}
 .context-menu-toggle .material-icons {
   font-size: 18px;
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .context-menu {
@@ -5340,13 +5576,23 @@ input[type=range]::-webkit-slider-runnable-track {
 
 /* ── Browse Tiles ── */
 .browse-tile .browse-tile__icon {
-  font-size: clamp(18px, 3cqi, 30px) !important;
   display: block;
   margin-bottom: 4px;
 }
 .browse-tile .browse-tile__label {
   font-size: clamp(0.75rem, 1.5cqi, 1.1rem) !important;
   font-weight: 600;
+}
+
+/* ── Focus ring — navy on silver Win95 background ── */
+.dialog :focus-visible,
+.slide-panel :focus-visible {
+  outline: 5px solid #000080;
+  outline-offset: 1px;
+}
+.dialog [tabindex="-1"]:focus-visible,
+.slide-panel [tabindex="-1"]:focus-visible {
+  outline: none;
 }
 
 /* ── Digital Clock — Windows 95 Theme ──────────────────────────────────────
