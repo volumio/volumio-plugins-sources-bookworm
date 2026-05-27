@@ -1229,21 +1229,21 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
 
       // Populate idle screen section (index 4)
       var idleScreen = self.config.get("idleScreen", "analogClock");
-      var idleScreenOptions = uiconf.sections[4].content[0].options;
+      var idleScreenOptions = uiconf.sections[5].content[0].options;
       var matchIdleScreen = idleScreenOptions.find(function (opt) {
         return opt.value === idleScreen;
       });
       if (matchIdleScreen) {
-        uiconf.sections[4].content[0].value = matchIdleScreen;
+        uiconf.sections[5].content[0].value = matchIdleScreen;
       }
-      uiconf.sections[4].content[1].value = self.config.get("externalUrl", "");
-      uiconf.sections[4].content[2].value = self.config.get("idleTimeout", 5);
+      uiconf.sections[5].content[1].value = self.config.get("externalUrl", "");
+      uiconf.sections[5].content[2].value = self.config.get("idleTimeout", 5);
 
       // Populate clock section (index 5)
-      uiconf.sections[5].content[0].value = self.config.get("use24Hour", false);
-      uiconf.sections[5].content[1].value = self.config.get("wallpaperShowSeconds", false);
-      uiconf.sections[5].content[2].value = self.config.get("showWeatherInClock", true);
-      uiconf.sections[5].content[3].value = self.config.get("analogClockShowDate", true);
+      uiconf.sections[6].content[0].value = self.config.get("use24Hour", false);
+      uiconf.sections[6].content[1].value = self.config.get("wallpaperShowSeconds", false);
+      uiconf.sections[6].content[2].value = self.config.get("showWeatherInClock", true);
+      uiconf.sections[6].content[3].value = self.config.get("analogClockShowDate", true);
 
       // Populate weather section (index 6)
       try {
@@ -1267,12 +1267,12 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
         }
       } catch (e) { /* ignore */ }
 
-      // Populate wallpaper section (index 7)
-      uiconf.sections[7].content[0].value = self.config.get("unsplashApiKey", "");
-      uiconf.sections[7].content[1].value = self.config.get("wallpaperUrl", "");
-      uiconf.sections[7].content[2].value = self.config.get("wallpaperShowTime", true);
-      uiconf.sections[7].content[3].value = self.config.get("wallpaperShowWeather", true);
-      uiconf.sections[7].content[4].value = self.config.get("slideshowInterval", 30);
+      // Populate wallpaper section (index 8)
+      uiconf.sections[8].content[0].value = self.config.get("unsplashApiKey", "");
+      uiconf.sections[8].content[1].value = self.config.get("wallpaperUrl", "");
+      uiconf.sections[8].content[2].value = self.config.get("wallpaperShowTime", true);
+      uiconf.sections[8].content[3].value = self.config.get("wallpaperShowWeather", true);
+      uiconf.sections[8].content[4].value = self.config.get("slideshowInterval", 30);
 
       // Populate kiosk section — find by id so section ordering is not fragile
       var kioskState = self.checkVolumioKiosk();
