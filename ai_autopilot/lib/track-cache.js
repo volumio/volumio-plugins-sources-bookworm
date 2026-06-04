@@ -1,0 +1,145 @@
+'use strict';
+
+/**
+ * Local track cache: download a (already-resolved) stream URL to local disk,
+ * make MPD index it, and play it as a local file — so playback is fully local
+ * (no streaming/buffering).
+ *
+ * The "track id -> signed stream URL" step is intentionally injected
+ * (`resolveStreamUrl`) so the credential/resolution strategy can be chosen
+ * separately (preferred: the device's existing Qobuz session via an internal
+ * plugin call; alternatives: official API login, etc.).
+ *
+ * Confirmed on-device (Phase 0 spike):
+ *   - download dir under MPD music root, e.g. /mnt/INTERNAL/qobuz-tap
+ *   - `mpc update INTERNAL/qobuz-tap` indexes new files
+ *   - POST /api/v1/replaceAndPlay {item:{uri:"music-library/INTERNAL/.../x.flac",
+ *       service:"mpd"}} plays the local file
+ */
+
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+const fetch = require('node-fetch');
+
+const REST = 'http://localhost:3000';
+
+function sanitize(s) {
+  return String(s || '').replace(/[\/\\:*?"<>|\x00-\x1f]/g, '_').trim().slice(0, 120);
+}
+
+class TrackCache {
+  /**
+   * @param {object} opts
+   * @param {string} opts.dir            absolute download dir, e.g. /mnt/INTERNAL/qobuz-tap
+   * @param {function} opts.resolveStreamUrl  async (trackId) => signed stream URL string
+   * @param {object} [opts.logger]
+   */
+  constructor({ dir, resolveStreamUrl, logger }) {
+    this.dir = dir || '/mnt/INTERNAL/qobuz-tap';
+    this.resolveStreamUrl = resolveStreamUrl;
+    this.logger = logger || console;
+  }
+
+  _log(m) { try { this.logger.info('[ai_autopilot][cache] ' + m); } catch (e) {} }
+
+  ensureDir() { fs.mkdirSync(this.dir, { recursive: true }); }
+
+  /** Map an absolute /mnt/... path to a Volumio music-library uri. */
+  libraryUri(absPath) {
+    let p = absPath.replace(/^\/+/, '');            // mnt/INTERNAL/...
+    if (p.indexOf('mnt/') === 0) p = p.slice(4);    // INTERNAL/...
+    return 'music-library/' + p;
+  }
+
+  /** Map an absolute /mnt/<root>/... path to the mpc-relative path (root is symlinked under MPD music dir). */
+  mpcPath(absPath) {
+    let p = absPath.replace(/^\/+/, '');
+    if (p.indexOf('mnt/') === 0) p = p.slice(4);    // INTERNAL/qobuz-tap/x.flac
+    return p;
+  }
+
+  /** Is this track already downloaded? Returns the file path or null. */
+  existing(trackId) {
+    try {
+      const prefix = String(trackId) + '.';
+      const hit = fs.readdirSync(this.dir).find((f) => f.indexOf(prefix) === 0 && !/\.part$/i.test(f));
+      return hit ? path.join(this.dir, hit) : null;
+    } catch (e) { return null; }
+  }
+
+  async _fetchToFile(url, destPath, onProgress) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('stream download ' + res.status);
+    const ct = (res.headers.get('content-type') || '').toLowerCase();
+    const total = Number(res.headers.get('content-length')) || 0;
+    let received = 0;
+    const tmp = destPath + '.part';
+    await new Promise((resolve, reject) => {
+      const out = fs.createWriteStream(tmp);
+      res.body.on('data', (c) => { received += c.length; if (onProgress && total) onProgress(received / total); });
+      res.body.on('error', reject);
+      out.on('error', reject);
+      out.on('finish', resolve);
+      res.body.pipe(out);
+    });
+    fs.renameSync(tmp, destPath);
+    return { bytes: received, contentType: ct };
+  }
+
+  /** Trigger MPD to index our folder and wait (briefly) until the file appears. */
+  _indexAndWait(absPath) {
+    const rel = this.mpcPath(absPath);
+    const folder = path.dirname(rel);
+    try { execSync('mpc update ' + JSON.stringify(folder), { timeout: 15000 }); } catch (e) { this._log('mpc update warn: ' + e.message); }
+    const deadline = Date.now() + 12000;
+    while (Date.now() < deadline) {
+      try {
+        const out = execSync('mpc listall ' + JSON.stringify(folder), { timeout: 5000 }).toString();
+        if (out.split('\n').some((l) => l.trim() === rel)) return true;
+      } catch (e) {}
+      try { execSync('sleep 0.5'); } catch (e) {}
+    }
+    this._log('index wait timed out for ' + rel);
+    return false;
+  }
+
+  /**
+   * Download a track to the local cache. meta = { artist, title, ext }.
+   * Returns { trackId, file, libraryUri }.
+   */
+  async download(trackId, meta, onProgress) {
+    if (typeof this.resolveStreamUrl !== 'function') throw new Error('resolveStreamUrl not configured');
+    this.ensureDir();
+
+    const cached = this.existing(trackId);
+    if (cached) { this._log('cache hit ' + trackId); return { trackId, file: cached, libraryUri: this.libraryUri(cached), cached: true }; }
+
+    const url = await this.resolveStreamUrl(trackId);
+    if (!url) throw new Error('could not resolve stream URL for ' + trackId);
+
+    meta = meta || {};
+    const ext = meta.ext || 'flac';
+    // Filename is the track id only (no spaces/special chars -> robust mpc + URI handling).
+    // Display metadata comes from the FLAC's embedded tags, not the filename.
+    const file = path.join(this.dir, sanitize(trackId) + '.' + ext);
+
+    this._log('downloading ' + trackId + ' -> ' + file);
+    await this._fetchToFile(url, file, onProgress);
+    this._indexAndWait(file);
+    return { trackId, file, libraryUri: this.libraryUri(file), cached: false };
+  }
+
+  /** Play an already-downloaded local file via Volumio. */
+  async playLocal(libraryUri) {
+    const res = await fetch(REST + '/api/v1/replaceAndPlay', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item: { uri: libraryUri, service: 'mpd' } })
+    });
+    if (!res.ok) throw new Error('replaceAndPlay ' + res.status);
+    return res.json().catch(() => ({}));
+  }
+}
+
+module.exports = { TrackCache, sanitize };
