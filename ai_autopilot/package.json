@@ -8,6 +8,10 @@
   },
   "author": "Daeyeol <samadhy81@gmail.com>",
   "license": "MIT",
+  "engines": {
+    "volumio": ">=3",
+    "node": ">=20.5.1"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/samadi81/volumio-ai-autopilot.git"
@@ -29,7 +33,6 @@
     "architectures": [
       "amd64",
       "armhf",
-      "arm64",
       "i386"
     ],
     "os": [
