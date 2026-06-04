@@ -1,23 +1,4 @@
-# runtime data — user-specific, do not commit
-history.json
-feedback.json
-
-# dependency artifacts
-node_modules/
+.gitignore
+node_modules
+*.zip
 package-lock.json
-
-# logs & caches
-*.log
-npm-debug.log*
-.npm
-.eslintcache
-
-# OS junk
-.DS_Store
-Thumbs.db
-
-# editor
-.vscode/
-.idea/
-*.swp
-*.swo
