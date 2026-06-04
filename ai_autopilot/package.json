@@ -36,8 +36,6 @@
       "i386"
     ],
     "os": [
-      "buster",
-      "bullseye",
       "bookworm"
     ],
     "has_alsa_contribution": false,
