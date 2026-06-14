@@ -1,12 +1,14 @@
 {
 	"name": "bandcamp",
-	"version": "2.2.0",
+	"version": "2.3.0",
 	"description": "Discover Bandcamp music",
 	"main": "./dist/index.js",
 	"scripts": {
 		"build": "rm -rf dist && npx tsc --build src && bash fixup.sh",
 		"lint": "npx eslint ./src",
-		"lint:fix": "npx eslint ./src --fix"
+		"lint:fix": "npx eslint ./src --fix",
+		"format": "prettier --write \"src/**/*.{js,ts,jsx,tsx}\"",
+    	"format:check": "prettier --check \"src/**/*.{js,ts,jsx,tsx}\""
 	},
 	"repository": {
 		"type": "git",
@@ -34,19 +36,22 @@
 		"volumio": ">=0"
 	},
 	"devDependencies": {
+		"@eslint/js": "^10.0.1",
 		"@types/fs-extra": "^8.1.2",
 		"@types/md5": "^2.3.2",
 		"@types/node": "^20.5.1",
 		"@types/string-format": "^2.0.0",
-		"@typescript-eslint/eslint-plugin": "^8.6.0",
-		"@typescript-eslint/parser": "^8.6.0",
-		"eslint": "^9.10.0",
-		"typescript": "^5.5.4",
-		"typescript-eslint": "^8.6.0",
+		"@typescript-eslint/eslint-plugin": "^8.61.0",
+		"@typescript-eslint/parser": "^8.61.0",
+		"eslint": "^10.5.0",
+		"eslint-plugin-unused-imports": "^4.4.1",
+		"prettier": "^3.8.4",
+		"typescript": "^5.9.3",
+		"typescript-eslint": "^8.61.0",
 		"winston": "^3.8.2"
 	},
 	"dependencies": {
-		"bandcamp-fetch": "^3.1.0",
+		"bandcamp-fetch": "^3.2.0",
 		"kew": "^0.7.0",
 		"md5": "^2.3.0",
 		"node-cache": "^5.1.2",

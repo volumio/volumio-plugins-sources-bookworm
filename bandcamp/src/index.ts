@@ -7,20 +7,18 @@ import vconf from 'v-conf';
 
 import bandcamp from './lib/BandcampContext';
 import BrowseController from './lib/controller/browse';
-import SearchController, { type SearchQuery } from './lib/controller/search/SearchController';
+import SearchController, {
+  type SearchQuery
+} from './lib/controller/search/SearchController';
 import PlayController from './lib/controller/play/PlayController';
-import { type ExplodedTrackInfo } from './lib/controller/browse/view-handlers/ExplodableViewHandler';
+import { type QueueItem } from './lib/controller/browse/view-handlers/ExplodableViewHandler';
 import { jsPromiseToKew } from './lib/util';
 import { type RenderedPage } from './lib/controller/browse/view-handlers/ViewHandler';
 import ViewHelper from './lib/controller/browse/view-handlers/ViewHelper';
-import { type AlbumView } from './lib/controller/browse/view-handlers/AlbumViewHandler';
 import type View from './lib/controller/browse/view-handlers/View';
-import { type BandView } from './lib/controller/browse/view-handlers/BandViewHandler';
-import { type ShowView } from './lib/controller/browse/view-handlers/ShowViewHandler';
-import { type ArticleView } from './lib/controller/browse/view-handlers/ArticleViewHandler';
-import Model from './lib/model';
+import Model, { ModelType } from './lib/model';
 
-interface GotoParams extends ExplodedTrackInfo {
+interface GotoParams extends QueueItem {
   type: 'album' | 'artist';
 }
 
@@ -44,67 +42,122 @@ class ControllerBandcamp {
     const lang_code = this.#commandRouter.sharedVars.get('language_code');
 
     const configPrepTasks = [
-      this.#commandRouter.i18nJson(`${__dirname}/i18n/strings_${lang_code}.json`,
+      this.#commandRouter.i18nJson(
+        `${__dirname}/i18n/strings_${lang_code}.json`,
         `${__dirname}/i18n/strings_en.json`,
-        `${__dirname}/UIConfig.json`)
+        `${__dirname}/UIConfig.json`
+      )
     ];
 
-    libQ.all(configPrepTasks).then((configParams: [any, string]) => {
-      const [ uiconf ] = configParams;
-      const generalUIConf = uiconf.sections[0];
-      const myBandcampUIConf = uiconf.sections[1];
-      const cacheUIConf = uiconf.sections[2];
+    libQ
+      .all(configPrepTasks)
+      .then((configParams: [any, string]) => {
+        const [uiconf] = configParams;
+        const generalUIConf = uiconf.sections[0];
+        const myBandcampUIConf = uiconf.sections[1];
+        const cacheUIConf = uiconf.sections[2];
 
-      // General
-      generalUIConf.content[0].value = bandcamp.getConfigValue('itemsPerPage', 47);
-      generalUIConf.content[1].value = bandcamp.getConfigValue('combinedSearchResults', 17);
-      generalUIConf.content[2].value = bandcamp.getConfigValue('searchByItemType', true);
-      generalUIConf.content[3].value = bandcamp.getConfigValue('prefetch', true);
+        // General
+        generalUIConf.content[0].value = bandcamp.getConfigValue(
+          'itemsPerPage',
+          47
+        );
+        generalUIConf.content[1].value = bandcamp.getConfigValue(
+          'combinedSearchResults',
+          17
+        );
+        generalUIConf.content[2].value = bandcamp.getConfigValue(
+          'searchByItemType',
+          true
+        );
+        generalUIConf.content[3].value = bandcamp.getConfigValue(
+          'prefetch',
+          true
+        );
+        generalUIConf.content[4].value = bandcamp.getConfigValue(
+          'logDebugMessages',
+          false
+        );
 
-      // My Bandcamp
-      const myBandcampType = bandcamp.getConfigValue('myBandcampType', 'cookie');
-      const myBandcampTypeLabel = myBandcampType === 'cookie' ? bandcamp.getI18n('BANDCAMP_COOKIE') : bandcamp.getI18n('BANDCAMP_USERNAME');
-      myBandcampUIConf.content[0].value = {
-        value: myBandcampType,
-        label: myBandcampTypeLabel
-      };
-      myBandcampUIConf.content[1].value = bandcamp.getConfigValue('myCookie', '');
-      myBandcampUIConf.content[2].value = bandcamp.getConfigValue('myUsername', '');
+        // My Bandcamp
+        const myBandcampType = bandcamp.getConfigValue(
+          'myBandcampType',
+          'cookie'
+        );
+        const myBandcampTypeLabel =
+          myBandcampType === 'cookie' ?
+            bandcamp.getI18n('BANDCAMP_COOKIE')
+          : bandcamp.getI18n('BANDCAMP_USERNAME');
+        myBandcampUIConf.content[0].value = {
+          value: myBandcampType,
+          label: myBandcampTypeLabel
+        };
+        myBandcampUIConf.content[1].value = bandcamp.getConfigValue(
+          'myCookie',
+          ''
+        );
+        myBandcampUIConf.content[2].value = bandcamp.getConfigValue(
+          'myUsername',
+          ''
+        );
 
-      // Cache
-      const cacheMaxEntries = bandcamp.getConfigValue('cacheMaxEntries', 5000);
-      const cacheTTL = bandcamp.getConfigValue('cacheTTL', 1800);
-      const cacheEntryCount = bandcamp.getCache().getEntryCount();
-      cacheUIConf.content[0].value = cacheMaxEntries;
-      cacheUIConf.content[1].value = cacheTTL;
-      cacheUIConf.description = cacheEntryCount > 0 ? bandcamp.getI18n('BANDCAMP_CACHE_STATS', cacheEntryCount, Math.round(bandcamp.getCache().getMemoryUsageInKB()).toLocaleString()) : bandcamp.getI18n('BANDCAMP_CACHE_EMPTY');
+        // Cache
+        const cacheMaxEntries = bandcamp.getConfigValue(
+          'cacheMaxEntries',
+          5000
+        );
+        const cacheTTL = bandcamp.getConfigValue('cacheTTL', 1800);
+        const cacheEntryCount = bandcamp.getCache().getEntryCount();
+        cacheUIConf.content[0].value = cacheMaxEntries;
+        cacheUIConf.content[1].value = cacheTTL;
+        cacheUIConf.description =
+          cacheEntryCount > 0 ?
+            bandcamp.getI18n(
+              'BANDCAMP_CACHE_STATS',
+              cacheEntryCount,
+              Math.round(
+                bandcamp.getCache().getMemoryUsageInKB()
+              ).toLocaleString()
+            )
+          : bandcamp.getI18n('BANDCAMP_CACHE_EMPTY');
 
-      defer.resolve(uiconf);
-    })
+        defer.resolve(uiconf);
+      })
       .fail((error: any) => {
-        bandcamp.getLogger().error(`[bandcamp] getUIConfig(): Cannot populate Bandcamp configuration - ${error}`);
+        bandcamp
+          .getLogger()
+          .error(
+            `[bandcamp] getUIConfig(): Cannot populate Bandcamp configuration - ${error}`
+          );
         defer.reject(new Error());
-      }
-      );
+      });
 
     return defer.promise;
   }
 
   refreshUIConfig() {
-    this.#commandRouter.getUIConfigOnPlugin('music_service', 'bandcamp', {}).then((config: any) => {
-      this.#commandRouter.broadcastMessage('pushUiConfig', config);
-    });
+    this.#commandRouter
+      .getUIConfigOnPlugin('music_service', 'bandcamp', {})
+      .then((config: any) => {
+        this.#commandRouter.broadcastMessage('pushUiConfig', config);
+      });
   }
 
   configSaveGeneralSettings(data: any) {
     const itemsPerPage = parseInt(data['itemsPerPage'], 10);
     const combinedSearchResults = parseInt(data['combinedSearchResults'], 10);
     if (!itemsPerPage) {
-      bandcamp.toast('error', bandcamp.getI18n('BANDCAMP_SETTINGS_ERR_ITEMS_PER_PAGE'));
+      bandcamp.toast(
+        'error',
+        bandcamp.getI18n('BANDCAMP_SETTINGS_ERR_ITEMS_PER_PAGE')
+      );
       return;
     }
     if (!combinedSearchResults) {
-      bandcamp.toast('error', bandcamp.getI18n('BANDCAMP_SETTINGS_ERR_COMBINED_SEARCH_RESULTS'));
+      bandcamp.toast(
+        'error',
+        bandcamp.getI18n('BANDCAMP_SETTINGS_ERR_COMBINED_SEARCH_RESULTS')
+      );
       return;
     }
 
@@ -112,6 +165,9 @@ class ControllerBandcamp {
     bandcamp.setConfigValue('combinedSearchResults', combinedSearchResults);
     bandcamp.setConfigValue('searchByItemType', data.searchByItemType);
     bandcamp.setConfigValue('prefetch', data.prefetch);
+    bandcamp.setConfigValue('logDebugMessages', data.logDebugMessages);
+
+    Model.setLogDebugMessages(data.logDebugMessages);
 
     bandcamp.toast('success', bandcamp.getI18n('BANDCAMP_SETTINGS_SAVED'));
   }
@@ -127,8 +183,7 @@ class ControllerBandcamp {
 
     if (type === 'cookie') {
       Model.setCookie(myCookie);
-    }
-    else {
+    } else {
       Model.setCookie();
     }
 
@@ -143,11 +198,17 @@ class ControllerBandcamp {
     const cacheMaxEntries = parseInt(data['cacheMaxEntries'], 10);
     const cacheTTL = parseInt(data['cacheTTL'], 10);
     if (cacheMaxEntries < 1000) {
-      bandcamp.toast('error', bandcamp.getI18n('BANDCAMP_SETTINGS_ERR_CACHE_MAX_ENTRIES'));
+      bandcamp.toast(
+        'error',
+        bandcamp.getI18n('BANDCAMP_SETTINGS_ERR_CACHE_MAX_ENTRIES')
+      );
       return;
     }
     if (cacheTTL < 600) {
-      bandcamp.toast('error', bandcamp.getI18n('BANDCAMP_SETTINGS_ERR_CACHE_TTL'));
+      bandcamp.toast(
+        'error',
+        bandcamp.getI18n('BANDCAMP_SETTINGS_ERR_CACHE_TTL')
+      );
       return;
     }
 
@@ -169,7 +230,10 @@ class ControllerBandcamp {
   }
 
   onVolumioStart() {
-    const configFile = this.#commandRouter.pluginManager.getConfigurationFile(this.#context, 'config.json');
+    const configFile = this.#commandRouter.pluginManager.getConfigurationFile(
+      this.#context,
+      'config.json'
+    );
     this.#config = new vconf();
     this.#config.loadFile(configFile);
     return libQ.resolve();
@@ -185,6 +249,9 @@ class ControllerBandcamp {
         Model.setCookie(myCookie);
       }
     }
+    Model.setLogDebugMessages(
+      bandcamp.getConfigValue('logDebugMessages', false)
+    );
 
     this.#browseController = new BrowseController();
     this.#searchController = new SearchController();
@@ -210,7 +277,7 @@ class ControllerBandcamp {
   }
 
   getConfigurationFiles() {
-    return [ 'config.json' ];
+    return ['config.json'];
   }
 
   #addToBrowseSources() {
@@ -219,7 +286,8 @@ class ControllerBandcamp {
       uri: 'bandcamp',
       plugin_type: 'music_service',
       plugin_name: 'bandcamp',
-      albumart: '/albumart?sourceicon=music_service/bandcamp/dist/assets/images/bandcamp.png'
+      albumart:
+        '/albumart?sourceicon=music_service/bandcamp/dist/assets/images/bandcamp.png'
     };
     this.#commandRouter.volumioAddToBrowseSources(data);
   }
@@ -302,56 +370,68 @@ class ControllerBandcamp {
   }
 
   goto(data: GotoParams) {
-    return jsPromiseToKew(((): Promise<RenderedPage> => {
-      if (!this.#browseController) {
-        throw Error('Bandcamp Discover plugin is not started');
-      }
-      try {
-        const views = ViewHelper.getViewsFromUri(data.uri);
-        const trackView = views[1];
-        if (!trackView) {
-          return this.#browseController.browseUri('bandcamp');
+    return jsPromiseToKew(
+      (async (): Promise<RenderedPage> => {
+        if (!this.#browseController) {
+          throw Error('Bandcamp Discover plugin is not started');
         }
-        let gotoView: View | null;
-        if (data.type === 'album' && trackView.albumUrl) {
-          gotoView = {
-            name: 'album',
-            albumUrl: trackView.albumUrl
-          } as AlbumView;
-        }
-        else if (data.type === 'artist' && trackView.artistUrl) {
-          gotoView = {
-            name: 'band',
-            bandUrl: trackView.artistUrl
-          } as BandView;
-        }
-        else if (trackView.name === 'show' && trackView.showUrl) {
-          gotoView = {
-            name: 'show',
-            showUrl: trackView.showUrl
-          } as ShowView;
-        }
-        else if (trackView.name === 'article' && trackView.articleUrl) {
-          gotoView = {
-            name: 'article',
-            articleUrl: trackView.articleUrl
-          } as ArticleView;
-        }
-        else {
-          gotoView = null;
-        }
+        try {
+          const views = ViewHelper.getViewsFromUri(data.uri);
+          const trackView = views[1];
+          if (!trackView) {
+            return await this.#browseController.browseUri('bandcamp');
+          }
+          let gotoView: View | null = null;
+          if (data.type === 'album' && trackView.albumUrl) {
+            gotoView = {
+              name: 'album',
+              albumUrl: trackView.albumUrl
+            };
+          } else if (data.type === 'artist' && trackView.artistUrl) {
+            gotoView = {
+              name: 'band',
+              bandUrl: trackView.artistUrl
+            };
+          } else if (trackView.name === 'show' && trackView.showUrl) {
+            gotoView = {
+              name: 'show',
+              showUrl: trackView.showUrl
+            };
+          } else if (trackView.name === 'article' && trackView.articleUrl) {
+            gotoView = {
+              name: 'article',
+              articleUrl: trackView.articleUrl
+            };
+          } else if (trackView.trackUrl) {
+            const model = Model.getInstance(ModelType.Track);
+            const trackInfo = await model.getTrack(trackView.trackUrl);
+            if (data.type === 'artist' && trackInfo.artist?.url) {
+              gotoView = {
+                name: 'band',
+                bandUrl: trackInfo.artist.url
+              };
+            } else if (data.type === 'album' && trackInfo.album?.url) {
+              gotoView = {
+                name: 'album',
+                albumUrl: trackInfo.album.url
+              };
+            }
+          }
 
-        if (gotoView) {
-          return this.#browseController.browseUri(`bandcamp/${ViewHelper.constructUriSegmentFromView(gotoView)}`);
+          if (gotoView) {
+            return await this.#browseController.browseUri(
+              `bandcamp/${ViewHelper.constructUriSegmentFromView(gotoView)}`
+            );
+          }
+
+          return await this.#browseController.browseUri('bandcamp');
+        } catch (error: any) {
+          throw Error(`Failed to fetch requested info: ${error.message}`, {
+            cause: error
+          });
         }
-
-        return this.#browseController.browseUri('bandcamp');
-
-      }
-      catch (error: any) {
-        throw Error(`Failed to fetch requested info: ${error.message}`);
-      }
-    })());
+      })()
+    );
   }
 
   saveDefaultDiscoverParams(data: any) {

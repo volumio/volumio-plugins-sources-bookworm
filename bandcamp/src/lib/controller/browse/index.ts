@@ -1,12 +1,11 @@
 import bandcamp from '../../BandcampContext';
 import type BaseViewHandler from './view-handlers/BaseViewHandler';
-import { type ExplodedTrackInfo } from './view-handlers/ExplodableViewHandler';
+import { type QueueItem } from './view-handlers/ExplodableViewHandler';
 import type View from './view-handlers/View';
 import { type RenderedPage } from './view-handlers/ViewHandler';
 import ViewHandlerFactory from './view-handlers/ViewHandlerFactory';
 
 export default class BrowseController {
-
   /*
    *  Uri follows a hierarchical view structure, starting with 'bandcamp'.
    * - If nothing follows 'bandcamp', the view would be 'root'.
@@ -37,7 +36,7 @@ export default class BrowseController {
    * - shows[@showUrl=...]
    * - discover[@...]
    */
-  explodeUri(uri: string): Promise<ExplodedTrackInfo[]> {
+  explodeUri(uri: string): Promise<QueueItem[]> {
     bandcamp.getLogger().info(`[bandcamp-browse] explodeUri: ${uri}`);
 
     const handler = this.#getHandler(uri);

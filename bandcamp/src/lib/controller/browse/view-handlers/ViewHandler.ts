@@ -1,4 +1,7 @@
-import { type RenderedHeader, type RenderedListItem } from './renderers/BaseRenderer';
+import {
+  type RenderedHeader,
+  type RenderedListItem
+} from './renderers/BaseRenderer';
 
 export interface RenderedPage {
   navigation?: RenderedPageContents;
@@ -6,7 +9,7 @@ export interface RenderedPage {
 
 export interface RenderedPageContents {
   prev?: {
-    uri?: string
+    uri?: string;
   };
   info?: RenderedHeader | null;
   lists?: RenderedList[];
