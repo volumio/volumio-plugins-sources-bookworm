@@ -615,7 +615,7 @@ class ControllerSqueezeliteMC {
    * Workflow logic
    */
 
-  #initAndStartPlayerFinder() {
+  async #initAndStartPlayerFinder() {
     if (!this.#playerFinder) {
       this.#playerFinder = new PlayerFinder();
 
@@ -651,7 +651,18 @@ class ControllerSqueezeliteMC {
             'disconnect',
             this.#handlePlayerDisconnect.bind(this)
           );
-          await playerStatusMonitor.start();
+
+          try {
+            await playerStatusMonitor.start();
+          } catch (error) {
+            sm.getLogger().error(
+              sm.getErrorMessage(
+                '[squeezelite_mc] Error starting player status monitor:',
+                error
+              )
+            );
+            return;
+          }
 
           sm.toast(
             'info',
@@ -685,14 +696,23 @@ class ControllerSqueezeliteMC {
           }
         }
       }
-      return this.#playerFinder.start({
-        serverCredentials: sm.getConfigValue('serverCredentials'),
-        eventFilter: {
-          // Only notify when found or lost player matches Volumio device IP and player ID matches mac addr
-          playerIP: ipAddresses,
-          playerId: macAddresses
-        }
-      });
+      try {
+        return await this.#playerFinder.start({
+          serverCredentials: sm.getConfigValue('serverCredentials'),
+          eventFilter: {
+            // Only notify when found or lost player matches Volumio device IP and player ID matches mac addr
+            playerIP: ipAddresses,
+            playerId: macAddresses
+          }
+        });
+      } catch (error) {
+        sm.getLogger().error(
+          sm.getErrorMessage(
+            '[squeezelite_mc] Error starting player finder:',
+            error
+          )
+        );
+      }
     }
   }
 

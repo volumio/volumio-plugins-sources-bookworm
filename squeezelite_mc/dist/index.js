@@ -727,7 +727,11 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
     return uiconf;
 }, _ControllerSqueezeliteMC_stdLogError = function _ControllerSqueezeliteMC_stdLogError(fn, error, stack = false) {
     SqueezeliteMCContext_1.default.getLogger().error(SqueezeliteMCContext_1.default.getErrorMessage(`[squeezelite_mc] Caught error in ${fn}:`, error, stack));
-}, _ControllerSqueezeliteMC_initAndStartPlayerFinder = function _ControllerSqueezeliteMC_initAndStartPlayerFinder() {
+}, _ControllerSqueezeliteMC_initAndStartPlayerFinder = 
+/**
+ * Workflow logic
+ */
+async function _ControllerSqueezeliteMC_initAndStartPlayerFinder() {
     if (!__classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerFinder, "f")) {
         __classPrivateFieldSet(this, _ControllerSqueezeliteMC_playerFinder, new PlayerFinder_1.default(), "f");
         __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerFinder, "f").on('found', (data) => {
@@ -749,7 +753,13 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
                     })();
                 });
                 playerStatusMonitor.on('disconnect', __classPrivateFieldGet(this, _ControllerSqueezeliteMC_instances, "m", _ControllerSqueezeliteMC_handlePlayerDisconnect).bind(this));
-                await playerStatusMonitor.start();
+                try {
+                    await playerStatusMonitor.start();
+                }
+                catch (error) {
+                    SqueezeliteMCContext_1.default.getLogger().error(SqueezeliteMCContext_1.default.getErrorMessage('[squeezelite_mc] Error starting player status monitor:', error));
+                    return;
+                }
                 SqueezeliteMCContext_1.default.toast('info', SqueezeliteMCContext_1.default.getI18n('SQUEEZELITE_MC_CONNECTED', player.server.name, player.server.ip));
             })();
         });
@@ -770,14 +780,19 @@ _ControllerSqueezeliteMC_serviceName = new WeakMap(), _ControllerSqueezeliteMC_c
                 }
             }
         }
-        return __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerFinder, "f").start({
-            serverCredentials: SqueezeliteMCContext_1.default.getConfigValue('serverCredentials'),
-            eventFilter: {
-                // Only notify when found or lost player matches Volumio device IP and player ID matches mac addr
-                playerIP: ipAddresses,
-                playerId: macAddresses
-            }
-        });
+        try {
+            return await __classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerFinder, "f").start({
+                serverCredentials: SqueezeliteMCContext_1.default.getConfigValue('serverCredentials'),
+                eventFilter: {
+                    // Only notify when found or lost player matches Volumio device IP and player ID matches mac addr
+                    playerIP: ipAddresses,
+                    playerId: macAddresses
+                }
+            });
+        }
+        catch (error) {
+            SqueezeliteMCContext_1.default.getLogger().error(SqueezeliteMCContext_1.default.getErrorMessage('[squeezelite_mc] Error starting player finder:', error));
+        }
     }
 }, _ControllerSqueezeliteMC_clearPlayerStatusMonitor = async function _ControllerSqueezeliteMC_clearPlayerStatusMonitor() {
     if (__classPrivateFieldGet(this, _ControllerSqueezeliteMC_playerStatusMonitor, "f")) {

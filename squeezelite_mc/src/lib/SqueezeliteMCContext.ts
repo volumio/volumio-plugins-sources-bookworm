@@ -7,6 +7,7 @@ import {
   type PluginConfigKey,
   type PluginConfigValue
 } from './Config';
+import { getErrorMessage } from './Util';
 
 export type I18nKey = keyof typeof I18nSchema;
 
@@ -84,18 +85,7 @@ class SqueezeliteMCContext {
   }
 
   getErrorMessage(message: string, error: any, stack = true): string {
-    let result = message;
-    if (typeof error == 'object') {
-      if (error.message) {
-        result += ` ${error.message}`;
-      }
-      if (stack && error.stack) {
-        result += ` ${error.stack}`;
-      }
-    } else if (typeof error == 'string') {
-      result += ` ${error}`;
-    }
-    return result.trim();
+    return getErrorMessage(message, error, stack);
   }
 
   hasConfigKey(key: PluginConfigKey): boolean {

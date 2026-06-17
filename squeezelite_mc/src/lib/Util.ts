@@ -8,7 +8,7 @@ import type Server from './types/Server';
 import { type BasicPlayerStartupParams } from './types/Player';
 import { SQUEEZELITE_LOG_FILE } from './System';
 import sm from './SqueezeliteMCContext';
-import { type LmsPlayerMonitorConfig } from 'lms-player-monitor';
+import type { Logger, LmsPlayerMonitorConfig } from 'lms-player-monitor';
 
 const DSD_FORMAT_TO_SQUEEZELITE_OPT: Record<string, string> = {
   dop: 'dop',
@@ -167,7 +167,8 @@ export function basicPlayerStartupParamsToSqueezeliteOpts(
 
 export function getLmsPlayerMonitorConfig(
   server: Server,
-  serverCredentials?: ServerCredentials
+  serverCredentials?: ServerCredentials,
+  logger?: Logger
 ): LmsPlayerMonitorConfig {
   const connectParams = getServerConnectParams(
     server,
@@ -181,15 +182,27 @@ export function getLmsPlayerMonitorConfig(
       username: connectParams.username,
       password: connectParams.password
     },
-    logger: {
-      debug: (msg) =>
-        sm.getLogger().debug(`[squeezelite_mc] (lms-player-monitor) ${msg}`),
-      info: (msg) =>
-        sm.getLogger().info(`[squeezelite_mc] (lms-player-monitor) ${msg}`),
-      warn: (msg) =>
-        sm.getLogger().warn(`[squeezelite_mc] (lms-player-monitor) ${msg}`),
-      error: (msg) =>
-        sm.getLogger().error(`[squeezelite_mc] (lms-player-monitor) ${msg}`)
-    }
+    logger
   };
+}
+
+export function getErrorMessage(
+  message: string,
+  error: unknown,
+  stack = false
+) {
+  let result = message;
+  if (error instanceof Error) {
+    if (error.message) {
+      result += ` ${error.message}`;
+    }
+    if (stack && error.stack) {
+      result += ` ${error.stack}`;
+    }
+  } else if (typeof error == 'string') {
+    result += ` ${error}`;
+  } else {
+    result += ` ${String(error)}`;
+  }
+  return result.trim();
 }

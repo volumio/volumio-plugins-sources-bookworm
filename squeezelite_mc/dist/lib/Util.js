@@ -23,6 +23,7 @@ exports.jsPromiseToKew = jsPromiseToKew;
 exports.kewToJSPromise = kewToJSPromise;
 exports.basicPlayerStartupParamsToSqueezeliteOpts = basicPlayerStartupParamsToSqueezeliteOpts;
 exports.getLmsPlayerMonitorConfig = getLmsPlayerMonitorConfig;
+exports.getErrorMessage = getErrorMessage;
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 const kew_1 = __importDefault(require("kew"));
@@ -146,7 +147,7 @@ function basicPlayerStartupParamsToSqueezeliteOpts(params) {
     parts.push(`-f ${System_1.SQUEEZELITE_LOG_FILE}`);
     return parts.join(' ');
 }
-function getLmsPlayerMonitorConfig(server, serverCredentials) {
+function getLmsPlayerMonitorConfig(server, serverCredentials, logger) {
     const connectParams = getServerConnectParams(server, serverCredentials, 'rpc');
     return {
         server: {
@@ -155,11 +156,24 @@ function getLmsPlayerMonitorConfig(server, serverCredentials) {
             username: connectParams.username,
             password: connectParams.password
         },
-        logger: {
-            debug: (msg) => SqueezeliteMCContext_1.default.getLogger().debug(`[squeezelite_mc] (lms-player-monitor) ${msg}`),
-            info: (msg) => SqueezeliteMCContext_1.default.getLogger().info(`[squeezelite_mc] (lms-player-monitor) ${msg}`),
-            warn: (msg) => SqueezeliteMCContext_1.default.getLogger().warn(`[squeezelite_mc] (lms-player-monitor) ${msg}`),
-            error: (msg) => SqueezeliteMCContext_1.default.getLogger().error(`[squeezelite_mc] (lms-player-monitor) ${msg}`)
-        }
+        logger
     };
+}
+function getErrorMessage(message, error, stack = false) {
+    let result = message;
+    if (error instanceof Error) {
+        if (error.message) {
+            result += ` ${error.message}`;
+        }
+        if (stack && error.stack) {
+            result += ` ${error.stack}`;
+        }
+    }
+    else if (typeof error == 'string') {
+        result += ` ${error}`;
+    }
+    else {
+        result += ` ${String(error)}`;
+    }
+    return result.trim();
 }

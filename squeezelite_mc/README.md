@@ -41,6 +41,9 @@ In the plugin settings, you can configure the following:
 
 ## Changelog
 
+2.2.0
+- Fix MyVolumio authentication loop when plugin enabled.
+
 2.1.0
 - Update Squeezelite v2.0.0.
 - Fix radio ICY metadata changes missing for LMS v9.x.

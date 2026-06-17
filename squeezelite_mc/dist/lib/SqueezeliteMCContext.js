@@ -18,6 +18,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const string_format_1 = __importDefault(require("string-format"));
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const Config_1 = require("./Config");
+const Util_1 = require("./Util");
 class SqueezeliteMCContext {
     constructor() {
         _SqueezeliteMCContext_instances.add(this);
@@ -69,19 +70,7 @@ class SqueezeliteMCContext {
         return __classPrivateFieldGet(this, _SqueezeliteMCContext_pluginContext, "f").logger;
     }
     getErrorMessage(message, error, stack = true) {
-        let result = message;
-        if (typeof error == 'object') {
-            if (error.message) {
-                result += ` ${error.message}`;
-            }
-            if (stack && error.stack) {
-                result += ` ${error.stack}`;
-            }
-        }
-        else if (typeof error == 'string') {
-            result += ` ${error}`;
-        }
-        return result.trim();
+        return (0, Util_1.getErrorMessage)(message, error, stack);
     }
     hasConfigKey(key) {
         return __classPrivateFieldGet(this, _SqueezeliteMCContext_pluginConfig, "f").has(key);

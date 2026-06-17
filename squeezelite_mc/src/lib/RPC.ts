@@ -45,7 +45,3 @@ export async function sendRpcRequest(
     throw error;
   }
 }
-
-module.exports = {
-  sendRpcRequest
-};

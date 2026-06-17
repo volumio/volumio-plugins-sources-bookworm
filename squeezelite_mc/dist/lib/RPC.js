@@ -38,6 +38,3 @@ async function sendRpcRequest(connectParams, params, abortController) {
         throw error;
     }
 }
-module.exports = {
-    sendRpcRequest
-};
