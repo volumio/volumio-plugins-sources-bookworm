@@ -1,4 +1,3 @@
-import OpenWeatherMapAPI, { type OpenWeatherMapAPIGetWeatherResult } from './openweathermap';
 import md5 from 'md5';
 import np from '../NowPlayingContext';
 import Cache from '../utils/Cache';
@@ -6,8 +5,15 @@ import ConfigHelper from '../config/ConfigHelper';
 import { type DeepRequired } from 'now-playing-common';
 import { getPluginInfo } from '../utils/System';
 import { type WeatherData, type WeatherDataCurrent, type WeatherDataForecastDay, type WeatherDataHourly, type WeatherDataLocation } from 'now-playing-common';
+import OpenMeteoAPI, { type OpenMeteoAPIGetWeatherResult } from './open-meteo';
 
 const WEATHER_ICONS_BASE_PATH = '/assets/weather-icons';
+
+/**
+ * The codes were from OpenWeatherMap API, before moving to Open-Meteo.
+ * We map Open-Meteo's WMO codes to these codes simply out of convenience.
+ * See OpenMeteoAPI#getWeatherIconName().
+ */
 const ICON_CODE_MAPPINGS: Record<string, string> = {
   '01d': 'clear-day.svg',
   '01n': 'clear-night.svg',
@@ -33,8 +39,9 @@ const ICON_CODE_MAPPINGS: Record<string, string> = {
 
 export interface WeatherAPIConfig {
   coordinates: string;
-  units: 'imperial' | 'metric' | 'standard';
-  apiKey?: string | null;
+  locale: string;
+  timezone?: string;
+  units: 'imperial' | 'metric';
   cacheMinutes?: number;
 }
 
@@ -43,12 +50,14 @@ export interface WeatherAPIParsedConfig {
     lon: number;
     lat: number;
   };
-  units?: 'imperial' | 'metric' | 'standard';
+  locale?: string;
+  timezone?: string;
+  units: 'imperial' | 'metric';
 }
 
 class WeatherAPI {
 
-  #api: OpenWeatherMapAPI;
+  #api: OpenMeteoAPI;
   #fetchPromises: {
     [key: string]: Promise<WeatherData>;
   };
@@ -56,10 +65,12 @@ class WeatherAPI {
   #config: WeatherAPIParsedConfig;
 
   constructor() {
-    this.#api = new OpenWeatherMapAPI();
+    this.#api = new OpenMeteoAPI();
     this.#fetchPromises = {};
     this.#cache = new Cache({ weather: 600 }, { weather: 10 });
-    this.#config = {};
+    this.#config = {
+      units: 'metric'
+    };
   }
 
   clearCache() {
@@ -67,16 +78,30 @@ class WeatherAPI {
   }
 
   setConfig(opts: WeatherAPIConfig) {
-    const { coordinates, units, apiKey, cacheMinutes } = opts;
-    this.#api.setApiKey(apiKey ?? null);
+    const { coordinates, locale, timezone, units, cacheMinutes } = opts;
     const minutes = Math.min(1440, Math.max(10, cacheMinutes ?? 10));
     this.#cache.setTTL('weather', minutes * 60);
     const coord = ConfigHelper.parseCoordinates(coordinates);
     let configChanged = false;
-    const {coordinates: currentCoordinates, units: currentUnits} = this.#config;
+    const {
+      coordinates: currentCoordinates,
+      locale: currentLocale,
+      timezone: currentTimezone,
+      units: currentUnits
+    } = this.#config;
     if (coord && (coord.lat !== currentCoordinates?.lat || coord.lon !== currentCoordinates?.lon)) {
       this.#api.setCoordinates(coord.lat, coord.lon);
       this.#config.coordinates = coord;
+      configChanged = true;
+    }
+    if (currentLocale !== locale) {
+      this.#api.setLang(locale);
+      this.#config.locale = locale;
+      configChanged = true;
+    }
+    if (currentTimezone !== timezone ){
+      this.#api.setTimzone(timezone);
+      this.#config.timezone = timezone;
       configChanged = true;
     }
     if (currentUnits !== units) {
@@ -155,8 +180,6 @@ class WeatherAPI {
         return `${valueText}°C`;
       case 'imperial':
         return `${valueText}°F`;
-      default: // 'standard'
-        return `${valueText}K`;
     }
   }
 
@@ -170,8 +193,6 @@ class WeatherAPI {
         return `${valueText} m/s`;
       case 'imperial': // Miles per hour
         return `${valueText} mph`;
-      default: // 'standard' - meter/s
-        return `${valueText} m/s`;
     }
   }
 
@@ -182,7 +203,7 @@ class WeatherAPI {
     return `${value.toFixed(0)}%`;
   }
 
-  #parseLocation(data: OpenWeatherMapAPIGetWeatherResult): WeatherDataLocation {
+  #parseLocation(data: OpenMeteoAPIGetWeatherResult): WeatherDataLocation {
     const locationData = data.location;
     return {
       name: locationData.name || '',
@@ -190,7 +211,7 @@ class WeatherAPI {
     };
   }
 
-  #parseCurrent(data: OpenWeatherMapAPIGetWeatherResult) {
+  #parseCurrent(data: OpenMeteoAPIGetWeatherResult) {
     const currentData = data.current;
     const appUrl = getPluginInfo().appUrl;
     const temp = currentData.temp.now;
@@ -233,7 +254,7 @@ class WeatherAPI {
     return result;
   }
 
-  #parseForecast(data: OpenWeatherMapAPIGetWeatherResult) {
+  #parseForecast(data: OpenMeteoAPIGetWeatherResult) {
     const appUrl = getPluginInfo().appUrl;
     const forecast: WeatherDataForecastDay[] = [];
     for (const dailyWeather of data.daily) {
@@ -273,7 +294,7 @@ class WeatherAPI {
     return forecast.slice(1); // First day of forecast is actually current day
   }
 
-  #parseHourly(data: OpenWeatherMapAPIGetWeatherResult) {
+  #parseHourly(data: OpenMeteoAPIGetWeatherResult) {
     const appUrl = getPluginInfo().appUrl;
     const hourly: WeatherDataHourly[] = [];
     for (const hourlyWeather of data.hourly) {

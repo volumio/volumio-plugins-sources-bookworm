@@ -7,6 +7,7 @@ export interface PluginConfigSchemaEntry<T, U = false> {
 }
 
 export interface PluginConfigSchema {
+  hasAcceptedDisclaimer: PluginConfigSchemaEntry<boolean>;
   region: PluginConfigSchemaEntry<string>;
   language: PluginConfigSchemaEntry<string>;
   loadFullPlaylists: PluginConfigSchemaEntry<boolean>;
@@ -16,7 +17,10 @@ export interface PluginConfigSchema {
   prefetch: PluginConfigSchemaEntry<boolean>;
   preferOpus: PluginConfigSchemaEntry<boolean>;
   cookie: PluginConfigSchemaEntry<string>;
-  activeChannelHandle: PluginConfigSchemaEntry<string>
+  activeChannelHandle: PluginConfigSchemaEntry<string>;
+  useYtDlp: PluginConfigSchemaEntry<boolean>;
+  ytDlpVersion: PluginConfigSchemaEntry<string | null>;
+  player: PluginConfigSchemaEntry<'mpd' | 'vlc' | 'mpv'>;
 }
 
 export interface I18nOptions {

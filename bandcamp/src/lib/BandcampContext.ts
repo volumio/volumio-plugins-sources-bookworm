@@ -14,7 +14,7 @@ class BandcampContext {
   #i18nDefaults: Record<string, string | Record<string, string>>;
   #i18CallbackRegistered: boolean;
 
-  #cache: Cache;
+  #cache: Cache | null;
 
   constructor() {
     this.#singletons = {};
@@ -22,6 +22,7 @@ class BandcampContext {
     this.#i18n = {};
     this.#i18nDefaults = {};
     this.#i18CallbackRegistered = false;
+    this.#cache = null;
   }
 
   set(key: string, value: any) {
@@ -46,8 +47,6 @@ class BandcampContext {
       this.#pluginContext.coreCommand.sharedVars.registerCallback('language_code', this.#onSystemLanguageChanged.bind(this));
       this.#i18CallbackRegistered = true;
     }
-
-    this.#cache = new Cache(this.getConfigValue('cacheTTL', 1800), this.getConfigValue('cacheMaxEntries', 5000));
   }
 
   toast(type: 'success' | 'info' | 'error' | 'warning', message: string, title = 'Bandcamp Discover') {
@@ -99,6 +98,9 @@ class BandcampContext {
   }
 
   getCache() {
+    if (!this.#cache) {
+      this.#cache = new Cache(this.getConfigValue('cacheTTL', 1800), this.getConfigValue('cacheMaxEntries', 5000));
+    }
     return this.#cache;
   }
 
@@ -113,7 +115,8 @@ class BandcampContext {
     this.#singletons = {};
     this.#data = {};
 
-    this.#cache.clear();
+    this.#cache?.clear();
+    this.#cache = null;
   }
 
   #getSingleton(key: string, getValue: () => any): any {

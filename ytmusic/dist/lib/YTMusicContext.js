@@ -54,6 +54,21 @@ class YTMusicContext {
         }
     }
     toast(type, message, title = 'YouTube Music') {
+        // Suppress duplicate toasts if an identical one was shown within the last 5 seconds
+        const previousToast = this.get('previousToast');
+        if (previousToast &&
+            previousToast.type === type &&
+            previousToast.message === message &&
+            previousToast.title === title &&
+            Date.now() - previousToast.dt <= 5000) {
+            return;
+        }
+        this.set('previousToast', {
+            type,
+            message,
+            title,
+            dt: Date.now()
+        });
         __classPrivateFieldGet(this, _YTMusicContext_pluginContext, "f").coreCommand.pushToastMessage(type, title, message);
     }
     refreshUIConfig() {
@@ -69,6 +84,9 @@ class YTMusicContext {
         if (typeof error == 'object') {
             if (error.message) {
                 result += ` ${error.message}`;
+            }
+            if (error.info) { // InnertubeError has this
+                result += `: ${error.info}`;
             }
             if (stack && error.stack) {
                 result += ` ${error.stack}`;
@@ -171,4 +189,3 @@ _YTMusicContext_singletons = new WeakMap(), _YTMusicContext_data = new WeakMap()
     __classPrivateFieldGet(this, _YTMusicContext_instances, "m", _YTMusicContext_loadI18n).call(this);
 };
 exports.default = new YTMusicContext();
-//# sourceMappingURL=YTMusicContext.js.map

@@ -1,0 +1,18 @@
+{
+  "PLUGIN_CONFIGURATION": "RaspDacMini LCD beállítások",
+  "LCD_DISPLAY": "LCD kijelző",
+  "ENABLE_LCD": "LCD kijelző bekapcsolása",
+  "ENABLE_LCD_DOC": "LCD képkimenet be- vagy kikapcsolása",
+  "BOOT_SPLASH": "Indítóképernyő",
+  "BOOT_SPLASH_DOC": "Volumio logó megjelenítése az LCD-n rendszerindításkor (Booting…), a megjelenítő szolgáltatás indulásakor (Starting…), valamint leállításkor vagy újraindításkor",
+  "SLEEP_AFTER": "Képernyő időkorlát (másodperc)",
+  "SLEEP_AFTER_DOC": "Tétlen idő másodpercben a képernyő kikapcsolása előtt (0 = soha)",
+  "LCD_ACTIONS": "LCD műveletek",
+  "RESTART_LCD": "LCD szolgáltatás újraindítása",
+  "RESTART_LCD_DOC": "Megjelenítő szolgáltatás újraindítása a módosítások érvényesítéséhez",
+  "SAVE": "Mentés",
+  "SETTINGS_SAVED": "Beállítások sikeresen mentve",
+  "SETTINGS_SAVE_ERROR": "A beállítások mentése sikertelen",
+  "LCD_RESTARTED": "LCD szolgáltatás sikeresen újraindítva",
+  "LCD_RESTART_ERROR": "Az LCD szolgáltatás újraindítása sikertelen"
+}

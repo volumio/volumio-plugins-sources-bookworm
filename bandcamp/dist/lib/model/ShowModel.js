@@ -49,4 +49,3 @@ _ShowModel_instances = new WeakSet(), _ShowModel_getShowsFetchPromise = function
     return EntityConverter_1.default.convertShow(item);
 };
 exports.default = ShowModel;
-//# sourceMappingURL=ShowModel.js.map

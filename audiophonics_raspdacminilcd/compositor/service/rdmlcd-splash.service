@@ -1,0 +1,17 @@
+[Unit]
+Description=RaspDacMini LCD boot splash
+DefaultDependencies=no
+After=local-fs.target
+Before=multi-user.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+TimeoutStartSec=30
+ExecStartPre=/bin/sh -c 'until [ -e /dev/fb1 ]; do sleep 0.2; done'
+ExecStart=/usr/local/bin/rdmlcd-show-splash.sh boot
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

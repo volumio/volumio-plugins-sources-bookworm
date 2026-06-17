@@ -99,6 +99,9 @@ class NowPlayingContext {
                 result += ` ${error.stack}`;
             }
             else if (error.message) {
+                if (error.name) {
+                    result += ` ${error.name}:`;
+                }
                 result += ` ${error.message}`;
             }
         }
@@ -189,4 +192,3 @@ _NowPlayingContext_data = new WeakMap(), _NowPlayingContext_pluginContext = new 
     __classPrivateFieldGet(this, _NowPlayingContext_instances, "m", _NowPlayingContext_loadI18n).call(this);
 };
 exports.default = new NowPlayingContext();
-//# sourceMappingURL=NowPlayingContext.js.map

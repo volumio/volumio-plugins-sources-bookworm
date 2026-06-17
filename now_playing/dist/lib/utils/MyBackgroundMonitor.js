@@ -132,4 +132,3 @@ _MyBackgroundMonitor_images = new WeakMap(), _MyBackgroundMonitor_status = new W
 };
 const myBackgroundMonitor = new MyBackgroundMonitor();
 exports.default = myBackgroundMonitor;
-//# sourceMappingURL=MyBackgroundMonitor.js.map

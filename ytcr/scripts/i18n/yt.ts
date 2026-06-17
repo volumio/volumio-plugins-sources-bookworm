@@ -1,4 +1,4 @@
-import * as InnertubeLib from 'volumio-youtubei.js';
+import * as InnertubeLib from 'volumio-yt-support/dist/innertube';
 import { type I18nOptions, type I18nOptionValue, InnertubeInstance } from './common';
 
 type Predicate = (k: string, v: any) => boolean;

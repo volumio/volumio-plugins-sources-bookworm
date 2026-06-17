@@ -1,0 +1,15 @@
+{
+  "STREAM_WATCHDOG": {
+    "SETTINGS_LABEL": "Stream Watchdog Settings",
+    "SECTION_SETTINGS": "Settings",
+    "OFFLINE_PLAYLIST_NAME": "Offline Playlist Name",
+    "OFFLINE_PLAYLIST_NAME_DESC": "Name of the Volumio playlist to play when your stream fails. Create it in Browse → Playlists before any failure occurs.",
+    "STREAM_CHECK_INTERVAL": "Stream Check Interval (seconds)",
+    "STREAM_CHECK_INTERVAL_DESC": "How often to probe the stream URL while watching. Minimum: 15",
+    "RESTORE_CHECK_INTERVAL": "Restore Check Interval (seconds)",
+    "RESTORE_CHECK_INTERVAL_DESC": "How often to probe the stream URL while in fallback mode. Minimum: 30",
+    "AUTO_RESTORE": "Auto-Restore",
+    "AUTO_RESTORE_DESC": "Automatically resume the original stream when it comes back",
+    "SAVE": "Save Settings"
+  }
+}

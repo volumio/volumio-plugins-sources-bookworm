@@ -1,7 +1,10 @@
+import type I18nSchema from '../i18n/strings_en.json';
 import format from 'string-format';
 import fs from 'fs-extra';
 import { kewToJSPromise } from './Utils';
 import { PLUGIN_CONFIG_SCHEMA, type PluginConfigKey, type PluginConfigValue } from './PluginConfig';
+
+export type I18nKey = keyof typeof I18nSchema;
 
 interface DeviceInfo {
   name: string;
@@ -61,6 +64,12 @@ class YTCRContext {
 
   toast(type: string, message: string, title = 'YouTube Cast Receiver') {
     this.#pluginContext.coreCommand.pushToastMessage(type, title, message);
+  }
+
+  refreshUIConfig() {
+    this.#pluginContext.coreCommand.getUIConfigOnPlugin('music_service', 'ytcr', {}).then((config: any) => {
+      this.#pluginContext.coreCommand.broadcastMessage('pushUiConfig', config);
+    });
   }
 
   getDeviceInfo(): DeviceInfo {
@@ -133,7 +142,7 @@ class YTCRContext {
     return this.#singletons[key];
   }
 
-  getI18n(key: string, ...formatValues: any[]): string {
+  getI18n(key: I18nKey, ...formatValues: any[]): string {
     let str;
     if (key.indexOf('.') > 0) {
       const mainKey = key.split('.')[0];
@@ -176,6 +185,10 @@ class YTCRContext {
 
   #onSystemLanguageChanged() {
     this.#loadI18n();
+  }
+
+  get volumioCoreCommand(): any {
+    return this.#pluginContext?.coreCommand || null;
   }
 }
 

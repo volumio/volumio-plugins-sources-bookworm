@@ -66,4 +66,3 @@ class UnsplashAPI {
 }
 const unsplashAPI = new UnsplashAPI();
 exports.default = unsplashAPI;
-//# sourceMappingURL=UnsplashAPI.js.map

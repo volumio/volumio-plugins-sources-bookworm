@@ -37,4 +37,3 @@ class MusicFolderRenderer extends BaseRenderer_1.default {
     }
 }
 exports.default = MusicFolderRenderer;
-//# sourceMappingURL=MusicFolderRenderer.js.map

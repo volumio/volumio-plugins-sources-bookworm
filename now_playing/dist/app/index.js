@@ -52,4 +52,3 @@ function stop() {
         server = null;
     }
 }
-//# sourceMappingURL=index.js.map

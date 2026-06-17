@@ -26,9 +26,9 @@ for (size_t i = 0, j = 0; i < length; i += 4, j++) {
     uint8_t g = inputData[i + 1];
     uint8_t b = inputData[i + 2];
 
-    uint16_t bgr565 = (b >> 3) | ((g >> 2) << 5) | ((r >> 3) << 11);
+    uint16_t rgb565 = (r >> 3) | ((g >> 2) << 5) | ((b >> 3) << 11);
     if (j < outputLength / 2) {
-        outputData[j] = bgr565;
+        outputData[j] = rgb565;
     }
 }
     return output;

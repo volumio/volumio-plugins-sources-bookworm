@@ -87,4 +87,3 @@ _EndpointLinkRenderer_instances = new WeakSet(), _EndpointLinkRenderer_getIcon =
     return null;
 };
 exports.default = EndpointLinkRenderer;
-//# sourceMappingURL=EndpointLinkRenderer.js.map

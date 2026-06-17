@@ -47,6 +47,17 @@ if [ -f "$INSTALLING" ]; then
 fi
 touch "$INSTALLING"
 
+# Idempotent reinstall: stop plugin services and remove stale activation before rewriting units
+echo "Resetting previous plugin service state..."
+PLUGIN_SERVICES="rdmlcd.service rdmlcd-splash.service rdmlcd-shutdown.service rdm_remote.service rdm_irexec.service"
+for svc in $PLUGIN_SERVICES; do
+    systemctl stop "$svc" 2>/dev/null
+    systemctl disable "$svc" 2>/dev/null
+done
+rm -f /etc/systemd/system/multi-user.target.wants/rdmlcd-shutdown.service
+systemctl daemon-reload 2>/dev/null
+systemctl reset-failed rdmlcd.service rdmlcd-splash.service rdmlcd-shutdown.service 2>/dev/null
+
 # Function to cleanup on error
 cleanup_on_error() {
     echo "Installation failed. Cleaning up..."
@@ -100,16 +111,19 @@ echo "System dependencies installed successfully"
 # Install prebuilt or compile from source
 if [ "$HAVE_PREBUILT" = "1" ]; then
     echo "Using prebuilt version (fast installation, no compilation needed)..."
-    
-    # Extract prebuilt to compositor directory
-    cd "$COMPOSITOR_DIR"
-    tar -xzf "$PREBUILT_FILE"
-    if [ $? -eq 0 ]; then
+
+    # Extract into a clean temp dir first, then merge into the compositor dir.
+    # Extracting the prebuilt directly over the existing compositor tree triggers
+    # GNU tar "Directory renamed before its status could be extracted" on some
+    # targets (directory-over-directory). Staging in an empty dir avoids that.
+    PREBUILT_TMP=$(mktemp -d)
+    if tar --delay-directory-restore -xzf "$PREBUILT_FILE" -C "$PREBUILT_TMP" && cp -a "$PREBUILT_TMP"/. "$COMPOSITOR_DIR"/; then
         echo "Prebuilt compositor installed successfully"
         USING_PREBUILT=1
     else
         echo "Warning: Failed to extract prebuilt, will compile from source"
     fi
+    rm -rf "$PREBUILT_TMP"
 fi
 
 # If no prebuilt or extraction failed, compile from source
@@ -120,7 +134,22 @@ if [ -z "$USING_PREBUILT" ]; then
         echo "Error: Failed to change to compositor directory"
         cleanup_on_error
     fi
-    
+
+    # The prebuilt branch installs only runtime libraries. If we are compiling
+    # (no prebuilt present, or its extraction failed) the build toolchain and
+    # -dev libraries must be installed first, or node-gyp fails with "not found:
+    # make". apt-get is idempotent, so this is a no-op when already present.
+    echo "Ensuring build toolchain and dev libraries are installed..."
+    apt-get install -y --no-install-recommends build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev fbset jq
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install build dependencies"
+        cd "$PLUGIN_DIR"
+        cleanup_on_error
+    fi
+
+    # Clear any partial files left by a failed prebuilt extraction.
+    rm -rf "$COMPOSITOR_DIR/node_modules" "$NATIVE_DIR/build"
+
     # Install compositor dependencies (this will also compile native module via preinstall)
     npm install --omit=dev
     if [ $? -ne 0 ]; then
@@ -154,6 +183,27 @@ if [ -z "$USING_PREBUILT" ]; then
 fi
 
 cd "$PLUGIN_DIR"
+
+echo "Verifying splash frames..."
+
+MISSING_SPLASH=0
+for FRAME in boot starting shutdown reboot; do
+    if [ ! -f "$PLUGIN_DIR/assets/splash/${FRAME}.raw" ]; then
+        echo "Error: Missing required splash frame: assets/splash/${FRAME}.raw"
+        MISSING_SPLASH=1
+    fi
+done
+
+if [ "$MISSING_SPLASH" -ne 0 ]; then
+    echo "Splash frames must be shipped with the plugin (see scripts/build-splash-frames.py)."
+    cleanup_on_error
+fi
+
+if [ ! -f "$PLUGIN_DIR/assets/splash/volumio-logo.png" ]; then
+    echo "Warning: assets/splash/volumio-logo.png not found (splash .raw files are still used)"
+fi
+
+echo "Splash frames verified"
 
 echo "Installing device tree overlay..."
 
@@ -268,27 +318,29 @@ Restart=on-failure
 WantedBy=multi-user.target
 EOF
 
-    # Enable custom LIRC services
+    # LIRC services are enabled when the plugin starts (rdmlcd-plugin-services.sh)
     systemctl daemon-reload
-    systemctl enable rdm_remote.service rdm_irexec.service
     
     echo "LIRC configured with custom services"
 fi
 
-echo "Creating systemd service file..."
+echo "Creating systemd service files..."
 
-# Create service file
+# Main compositor service
 cat > /etc/systemd/system/rdmlcd.service << 'EOF'
 [Unit]
 Description=RaspDacMini LCD Display Service
 After=volumio.service
-Requires=volumio.service
+Wants=volumio.service
 
 [Service]
 Type=simple
 User=root
 WorkingDirectory=/data/plugins/system_hardware/raspdac_mini_lcd/compositor
 Environment="SLEEP_AFTER=900"
+ExecStartPre=/bin/sh -c 'until [ -e /dev/fb1 ]; do sleep 1; done'
+ExecStartPre=/bin/sh -c 'for i in $(seq 1 90); do curl -sf -o /dev/null --connect-timeout 1 http://127.0.0.1:3000/ && exit 0; sleep 1; done; echo "Volumio API not ready"; exit 1'
+TimeoutStartSec=0
 ExecStart=/usr/bin/node index.js volumio /dev/fb1
 StandardOutput=journal
 StandardError=journal
@@ -303,11 +355,40 @@ WantedBy=multi-user.target
 EOF
 
 if [ $? -ne 0 ]; then
-    echo "Error: Failed to create service file"
+    echo "Error: Failed to create compositor service file"
     cleanup_on_error
 fi
 
-echo "Service file created successfully"
+# Boot splash service (fb1 early)
+cp "$PLUGIN_DIR/compositor/service/rdmlcd-splash.service" /etc/systemd/system/rdmlcd-splash.service
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to install rdmlcd-splash.service"
+    cleanup_on_error
+fi
+
+# Shutdown / reboot splash service
+cp "$PLUGIN_DIR/compositor/service/rdmlcd-shutdown.service" /etc/systemd/system/rdmlcd-shutdown.service
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to install rdmlcd-shutdown.service"
+    cleanup_on_error
+fi
+
+# Reset shutdown splash activation (older versions incorrectly used multi-user.target)
+systemctl disable rdmlcd-shutdown.service 2>/dev/null
+
+# Volumio's plymouth draws the system splash on the SPI framebuffer (/dev/fb1) at
+# boot and during shutdown/reboot, overwriting our splash and leaving a backlit
+# blank. Mask only the plymouth units that PAINT a splash so the plugin is the
+# sole owner of the LCD across all phases. Infrastructure units (quit, quit-wait,
+# read-write, rotation, switch-root, ask-password) are left intact. Restored on
+# uninstall.
+PLYMOUTH_SPLASH_UNITS="plymouth-start.service plymouth-kexec.service plymouth-poweroff.service plymouth-reboot.service plymouth-halt.service"
+echo "Masking plymouth splash services so the plugin owns the LCD..."
+for unit in $PLYMOUTH_SPLASH_UNITS; do
+    systemctl mask "$unit" 2>/dev/null
+done
+
+echo "Service files created successfully"
 
 echo "Creating service environment override..."
 
@@ -366,12 +447,83 @@ HELPER
 
 chmod 755 /usr/local/bin/rdmlcd-update-env.sh
 
+echo "Installing splash and plugin service helpers..."
+
+cp "$PLUGIN_DIR/scripts/rdmlcd-show-splash.sh" /usr/local/bin/rdmlcd-show-splash.sh
+cp "$PLUGIN_DIR/scripts/rdmlcd-shutdown-splash.sh" /usr/local/bin/rdmlcd-shutdown-splash.sh
+cp "$PLUGIN_DIR/scripts/rdmlcd-plugin-services.sh" /usr/local/bin/rdmlcd-plugin-services.sh
+cp "$PLUGIN_DIR/scripts/rdmlcd-overlay.sh" /usr/local/bin/rdmlcd-overlay.sh
+chmod 755 /usr/local/bin/rdmlcd-show-splash.sh /usr/local/bin/rdmlcd-shutdown-splash.sh /usr/local/bin/rdmlcd-plugin-services.sh /usr/local/bin/rdmlcd-overlay.sh
+
+echo "Validating plugin before completing install..."
+
+if ! node --check "$PLUGIN_DIR/index.js"; then
+    echo "Error: Plugin index.js failed syntax check"
+    cleanup_on_error
+fi
+
+if ! node --check "$COMPOSITOR_DIR/index.js"; then
+    echo "Error: Compositor index.js failed syntax check"
+    cleanup_on_error
+fi
+
+if ! node --check "$COMPOSITOR_DIR/utils/volumiolistener.js"; then
+    echo "Error: Compositor volumiolistener.js failed syntax check"
+    cleanup_on_error
+fi
+
+if grep -q 'WantedBy=multi-user.target' /etc/systemd/system/rdmlcd-shutdown.service 2>/dev/null; then
+    echo "Error: rdmlcd-shutdown.service has invalid WantedBy=multi-user.target"
+    cleanup_on_error
+fi
+
+for FRAME in boot starting shutdown reboot; do
+    RAW="$PLUGIN_DIR/assets/splash/${FRAME}.raw"
+    if [ ! -f "$RAW" ] || [ "$(wc -c < "$RAW" | tr -d ' ')" != "153600" ]; then
+        echo "Error: Invalid or missing splash frame: $RAW"
+        cleanup_on_error
+    fi
+done
+
+if ! grep -q 'rdmlcd-show-splash.sh boot' /etc/systemd/system/rdmlcd-splash.service 2>/dev/null; then
+    echo "Error: rdmlcd-splash.service must use boot splash frame"
+    cleanup_on_error
+fi
+
+if grep -q 'rdmlcd-show-splash.sh starting' /usr/local/bin/rdmlcd-plugin-services.sh 2>/dev/null; then
+    echo "Error: rdmlcd-plugin-services.sh must not write starting splash on sync"
+    cleanup_on_error
+fi
+
+if grep -q 'dev-fb1\.device' /etc/systemd/system/rdmlcd-splash.service 2>/dev/null; then
+    echo "Error: rdmlcd-splash.service must not depend on dev-fb1.device"
+    cleanup_on_error
+fi
+
+if [ ! -x /usr/local/bin/rdmlcd-shutdown-splash.sh ]; then
+    echo "Error: rdmlcd-shutdown-splash.sh missing or not executable"
+    cleanup_on_error
+fi
+
+if ! grep -q 'onVolumioShutdown' "$PLUGIN_DIR/index.js" 2>/dev/null || ! grep -q 'onVolumioReboot' "$PLUGIN_DIR/index.js" 2>/dev/null; then
+    echo "Error: plugin must implement onVolumioShutdown/onVolumioReboot hooks"
+    cleanup_on_error
+fi
+
+echo "Install validation passed"
+
 echo "Creating sudoers entry for runtime configuration..."
 
 # Create sudoers entry for volumio user to run helper script
 cat > /etc/sudoers.d/volumio-user-raspdac-mini-lcd << 'SUDOERS'
-# RaspDacMini LCD plugin - allow volumio user to update service environment
+# RaspDacMini LCD plugin - allow volumio user to manage display services
 volumio ALL=(ALL) NOPASSWD: /usr/local/bin/rdmlcd-update-env.sh
+volumio ALL=(ALL) NOPASSWD: /usr/local/bin/rdmlcd-plugin-services.sh
+volumio ALL=(ALL) NOPASSWD: /usr/local/bin/rdmlcd-overlay.sh
+volumio ALL=(ALL) NOPASSWD: /usr/local/bin/rdmlcd-shutdown-splash.sh
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl start rdmlcd.service
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl stop rdmlcd.service
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl restart rdmlcd.service
 SUDOERS
 
 chmod 0440 /etc/sudoers.d/volumio-user-raspdac-mini-lcd
@@ -392,28 +544,22 @@ if [ $? -ne 0 ]; then
     cleanup_on_error
 fi
 
-# Note: Service is NOT enabled at boot level
-# Plugin onStart/onStop methods control service lifecycle
-# This ensures service only runs when plugin is enabled in Volumio UI
-
-# Check if LCD is enabled in config
-LCD_ACTIVE=$(jq -r '.lcd_active.value' "$PLUGIN_DIR/config.json" 2>/dev/null)
-if [ -z "$LCD_ACTIVE" ] || [ "$LCD_ACTIVE" = "null" ]; then
-    LCD_ACTIVE="true"
-fi
-
-if [ "$LCD_ACTIVE" = "true" ]; then
-    echo "Starting LCD service..."
-    systemctl start rdmlcd.service
-    
-    if [ $? -ne 0 ]; then
-        echo "Warning: Failed to start service (may require reboot for dtoverlay)"
-    else
-        echo "Service started successfully"
-    fi
+# Services are enabled/started by the plugin onStart when the plugin is enabled in Volumio.
+# Optional: sync once after install if the plugin will be enabled immediately.
+BOOT_SPLASH=$(jq -r '.boot_splash.value // true' "$PLUGIN_DIR/config.json" 2>/dev/null)
+LCD_ACTIVE=$(jq -r '.lcd_active.value // true' "$PLUGIN_DIR/config.json" 2>/dev/null)
+if [ "$BOOT_SPLASH" = "true" ] || [ "$BOOT_SPLASH" = "1" ]; then
+    BOOT_SPLASH_FLAG=1
 else
-    echo "LCD is disabled in configuration, service not started"
+    BOOT_SPLASH_FLAG=0
 fi
+if [ "$LCD_ACTIVE" = "true" ] || [ "$LCD_ACTIVE" = "1" ]; then
+    LCD_ACTIVE_FLAG=1
+else
+    LCD_ACTIVE_FLAG=0
+fi
+
+echo "Plugin services will sync on enable (boot_splash=$BOOT_SPLASH_FLAG, lcd_active=$LCD_ACTIVE_FLAG)"
 
 # Remove lock file
 rm -f "$INSTALLING"
@@ -430,13 +576,8 @@ echo "=========================================="
 echo "RaspDacMini LCD Plugin Installation Complete"
 echo "=========================================="
 echo ""
-echo "IMPORTANT: A reboot is required for the device tree overlay to load."
-echo "After reboot, the LCD display should be active at /dev/fb1"
-echo ""
-echo "To verify after reboot:"
-echo "  - Check framebuffer: ls -la /dev/fb1"
-echo "  - Check service: systemctl status rdmlcd.service"
-echo "  - View logs: journalctl -u rdmlcd.service -f"
+echo "Enable the plugin in Volumio: Plugins -> RaspDacMini LCD"
+echo "A reboot is recommended for earliest boot splash; enable works without reboot."
 echo ""
 
 echo "plugininstallend"

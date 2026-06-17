@@ -1,0 +1,54 @@
+{
+  "PLUGIN_CONFIGURATION": "Recently Added Settings",
+  "DISPLAY": {
+    "TITLE": "Display",
+    "SAVE": "Save",
+    "VIEW_MODE": "View Mode",
+    "VIEW_MODE_DOC": "Choose what's shown when you tap a time window. 'Both' is convenient when little new music has been added; switch to 'Albums only' or 'Artists only' if you've added a lot at once and want a single, focused list.",
+    "VIEW_ALBUMS": "Albums only",
+    "VIEW_ARTISTS": "Artists only",
+    "VIEW_BOTH": "Albums and Artists",
+    "ALBUMS_SORT": "Albums sort",
+    "ALBUMS_SORT_DOC": "How to order albums within each section. Applies to the Albums section in window views and to the album list inside artist drill-down views.",
+    "ARTISTS_SORT": "Artists sort",
+    "ARTISTS_SORT_DOC": "How to order artists within the Artists section.",
+    "SORT_RECENCY": "Newest first",
+    "SORT_ALPHABETICAL": "Alphabetical"
+  },
+  "CONNECTION": {
+    "TITLE": "MPD Connection",
+    "SAVE": "Save",
+    "MPD_HOST": "MPD Host",
+    "MPD_HOST_DOC": "Hostname or IP of the MPD server. Use 'localhost' for the local Volumio MPD (default).",
+    "MPD_PORT": "MPD Port",
+    "MPD_PORT_DOC": "TCP port of the MPD server. Volumio's default is 6600.",
+    "QUERY_TIMEOUT": "Query Timeout (ms)",
+    "QUERY_TIMEOUT_DOC": "Maximum time to wait for MPD to answer a 'find' query before giving up. 10000 ms is a safe default for libraries up to several thousand files."
+  },
+  "BROWSE": {
+    "ROOT_TITLE": "Recently Added",
+    "WINDOW_7D": "Last 7 days",
+    "WINDOW_14D": "Last 14 days",
+    "WINDOW_30D": "Last 30 days",
+    "WINDOW_90D": "Last 90 days",
+    "ALBUMS_SECTION": "Albums",
+    "ARTISTS_SECTION": "Artists",
+    "ALBUMS_HEADER": "Albums — {window} ({count})",
+    "ARTISTS_HEADER": "Artists — {window} ({count})",
+    "ARTIST_HEADER": "{artist} — {window} ({count})",
+    "ALBUM_COUNT_ONE": "1 album",
+    "ALBUM_COUNT_MANY": "{n} albums",
+    "ARTIST_COUNT_ONE": "1 artist",
+    "ARTIST_COUNT_MANY": "{n} artists",
+    "UNKNOWN_ARTIST": "Unknown Artist",
+    "UNKNOWN_ALBUM": "Unknown Album",
+    "ERROR_TITLE": "{window} — error",
+    "MPD_UNREACHABLE": "MPD not reachable — check the plugin settings."
+  },
+  "TOAST": {
+    "START_FAILED": "Start failed: {message}",
+    "RECONNECTING": "Settings saved. Reconnecting to MPD...",
+    "RECONNECT_FAILED": "Reconnect failed: {message}",
+    "SAVE_FAILED": "Settings save failed: {message}"
+  }
+}

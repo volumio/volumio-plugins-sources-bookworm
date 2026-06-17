@@ -61,11 +61,11 @@ function systemctl(cmd: string, service: string): Promise<string> {
     np.getLogger().info(`[now-playing] Executing ${fullCmd}`);
     exec(fullCmd, { uid: 1000, gid: 1000 }, function (error, stdout, stderr) {
       if (error) {
-        np.getLogger().error(np.getErrorMessage(`[now-playing] Failed to execute systemctl command ${cmd} on ${service}: ${stderr.toString()}`, error));
+        np.getLogger().error(np.getErrorMessage(`[now-playing] Failed to execute systemctl command ${cmd} on ${service}: ${stderr}`, error));
         reject(error);
       }
       else {
-        resolve(stdout.toString());
+        resolve(stdout);
       }
     });
   });

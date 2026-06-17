@@ -78,7 +78,7 @@ _SearchViewHandler_instances = new WeakSet(), _SearchViewHandler_spliceShowingRe
         if (item.type === 'section') {
             spliced = __classPrivateFieldGet(this, _SearchViewHandler_instances, "m", _SearchViewHandler_spliceShowingResultsFor).call(this, item);
         }
-        else if (item.type === 'endpointLink' && item.icon === 'YT2_SHOWING_RESULTS_FOR') {
+        else if (item.type === 'endpointLink' && item.icon === 'YTMUSIC_SHOWING_RESULTS_FOR') {
             spliced = section.items.splice(itemIndex, 1);
         }
         return !!spliced;
@@ -86,4 +86,3 @@ _SearchViewHandler_instances = new WeakSet(), _SearchViewHandler_spliceShowingRe
     return spliced;
 };
 exports.default = SearchViewHandler;
-//# sourceMappingURL=SearchViewHandler.js.map

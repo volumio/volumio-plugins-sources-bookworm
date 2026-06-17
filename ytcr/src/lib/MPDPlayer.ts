@@ -75,21 +75,21 @@ export interface VolumioState {
 export default class MPDPlayer extends Player {
 
   #config: MPDPlayerConfig;
-  #currentVideoInfo: MPDPlayerVideoInfo | null;
-  #prefetchedAndQueuedVideoInfo: MPDPlayerVideoInfo | null;
-  #prefetchedVideoExpiryTimer: NodeJS.Timeout | null;
-  #mpdClient: MPDApi.ClientAPI | null;
+  #currentVideoInfo: MPDPlayerVideoInfo | null = null;
+  #prefetchedAndQueuedVideoInfo: MPDPlayerVideoInfo | null = null;
+  #prefetchedVideoExpiryTimer: NodeJS.Timeout | null = null;
+  #mpdClient: MPDApi.ClientAPI | null = null;
   #mpdClientInitTimer: NodeJS.Timeout | null;
-  #volumeControl: VolumeControl;
-  #videoLoader: VideoLoader;
-  #loadVideoAbortController: AbortController | null;
-  #videoPrefetcher: VideoPrefetcher | null;
-  #playlistEventListener: () => void;
-  #autoplayModeChangeListener: () => void;
+  #volumeControl: VolumeControl | null = null;
+  #videoLoader: VideoLoader | null = null;
+  #loadVideoAbortController: AbortController | null = null;
+  #videoPrefetcher: VideoPrefetcher | null = null;
+  #playlistEventListener: (() => void) | null = null;
+  #autoplayModeChangeListener: (() => void) | null = null;
 
-  #subsystemEventEmitter: MPDSubsystemEventEmitter | null;
-  #destroyed: boolean;
-  #asleep: boolean;
+  #subsystemEventEmitter: MPDSubsystemEventEmitter | null = null;
+  #destroyed: boolean = false;
+  #asleep: boolean = false;
 
   constructor(config: MPDPlayerConfig) {
     super();
@@ -109,7 +109,7 @@ export default class MPDPlayer extends Player {
 
     this.#playlistEventListener = this.#handlePlaylistEvent.bind(this);
     Object.values(PLAYLIST_EVENT_TYPES).forEach((event: any) => {
-      this.queue.on(event, this.#playlistEventListener);
+      this.queue.on(event, this.#playlistEventListener!);
     });
 
     this.#autoplayModeChangeListener = this.#handleAutoplayModeChange.bind(this);
@@ -174,7 +174,7 @@ export default class MPDPlayer extends Player {
   }
 
   protected async doPlay(video: Video, position: number): Promise<boolean> {
-    if (this.#destroyed || !this.#mpdClient) {
+    if (this.#destroyed || !this.#mpdClient || !this.#videoLoader) {
       return false;
     }
 
@@ -377,7 +377,7 @@ export default class MPDPlayer extends Player {
   }
 
   protected doSetVolume(volume: Volume): Promise<boolean> {
-    if (this.#asleep || this.#destroyed) {
+    if (this.#asleep || this.#destroyed || !this.#volumeControl) {
       return Promise.resolve(false);
     }
 
@@ -430,7 +430,7 @@ export default class MPDPlayer extends Player {
   }
 
   async enablePrefetch(value: boolean) {
-    if (value === this.#config.prefetch) {
+    if (value === this.#config.prefetch || !this.#videoLoader) {
       return;
     }
 
@@ -605,11 +605,17 @@ export default class MPDPlayer extends Player {
     await this.#mpdClient?.disconnect();
     this.removeAllListeners();
 
-    Object.values(PLAYLIST_EVENT_TYPES).forEach((event: any) => {
-      this.queue.off(event, this.#playlistEventListener);
-    });
+    if (this.#playlistEventListener) {
+      Object.values(PLAYLIST_EVENT_TYPES).forEach((event: any) => {
+        this.queue.off(event, this.#playlistEventListener!);
+      });
+      this.#playlistEventListener = null;
+    }
 
-    this.queue.off('autoplayModeChange', this.#autoplayModeChangeListener);
+    if (this.#autoplayModeChangeListener) {
+      this.queue.off('autoplayModeChange', this.#autoplayModeChangeListener);
+      this.#autoplayModeChangeListener = null;
+    }
 
     this.#subsystemEventEmitter = null;
     this.#mpdClient = null;
@@ -720,7 +726,7 @@ export default class MPDPlayer extends Player {
           const mpdStatus: any = await this.#mpdClient?.api.status.get();
           let shouldResolve = true;
           for (const [ key, value ] of Object.entries(resolveOn)) {
-            if (mpdStatus[key] === undefined || mpdStatus[key].toString() !== value.toString()) {
+            if (mpdStatus[key] === undefined || mpdStatus[key].toString() !== value) {
               shouldResolve = false;
               break;
             }
@@ -743,7 +749,7 @@ export default class MPDPlayer extends Player {
   }
 
   async getVolumioState(): Promise<VolumioState | null> {
-    if (this.#asleep || this.#destroyed || !this.#mpdClient) {
+    if (this.#asleep || this.#destroyed || !this.#mpdClient || !this.#volumeControl) {
       return null;
     }
 
@@ -813,7 +819,7 @@ export default class MPDPlayer extends Player {
     return state;
   }
 
-  get videoLoader(): VideoLoader {
+  get videoLoader(): VideoLoader | null {
     return this.#videoLoader;
   }
 

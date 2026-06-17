@@ -15,7 +15,21 @@ if(!distro || !supported_distributions.includes(distro) ){
 }
 
 // Framebuffer device to receive the rendered screen image
+const fs = require("fs");
+const path = require("path");
 const targetBuffer = process.argv[3] || "/dev/fb1";
+const SPLASH_DIR = path.join(__dirname, "..", "assets", "splash");
+
+(function paintEarlyStartupSplash(){
+	const startingRaw = path.join(SPLASH_DIR, "starting.raw");
+	if(!fs.existsSync(startingRaw) || !fs.existsSync(targetBuffer)) return;
+	try {
+		fs.writeFileSync(targetBuffer, fs.readFileSync(startingRaw));
+		console.log("[Startup] Early splash: starting (phase=starting)");
+	} catch(e) {
+		console.warn("[Startup] Early splash failed:", e);
+	}
+})();
 
 
 // Listen for playback data from the current distribution
@@ -31,7 +45,6 @@ switch(distro){
 	break;
 }
 
-const fs = require("fs"); 
 const cp = require("child_process");
 const os = require("os");
 const http = require("http");
@@ -97,6 +110,10 @@ var scene = {
 var display = {
   redrawzones : []
 }
+var forceFullFrame = true;
+var firstFrameWritten = false;
+var pendingFullRedraw = false;
+var uiReady = false;							// Gate: hold "Starting..." splash until backend reports ready
 var mainMatrix =  new DOMMatrix([1,0,0,1,0,0]);	// Global matrix of main canvas (used for vertical scrolling)
 var busy = false;								// Indicates if stream is free to write data
 var last_ip = "";								// Last known IP address
@@ -118,6 +135,52 @@ var DEBOUNCE_MS = 1500;
 
 // Default values that can be overridden by placing a config file in the same folder
 var TIME_BEFORE_DEEPSLEEP = 900000; // in ms
+
+if(process.env.SLEEP_AFTER){
+	try {
+		var sleep_seconds = parseInt(process.env.SLEEP_AFTER);
+		if(!isNaN(sleep_seconds) && sleep_seconds >= 0){
+			TIME_BEFORE_DEEPSLEEP = sleep_seconds * 1000;
+			console.log("[Config] Using SLEEP_AFTER from environment:", sleep_seconds, "seconds");
+		}
+	} catch(e) {
+		console.log("[Config] Invalid SLEEP_AFTER environment variable, using default");
+	}
+}
+
+const streamFile = fs.createWriteStream(targetBuffer);
+streamFile.on("error", (e) => {
+	console.warn(e);
+	process.exit();
+});
+
+stopBootSplashService();
+
+/*
+ * Clean exit on systemd stop. The shutdown/reboot splash is owned by the plugin
+ * hooks (onVolumioShutdown/onVolumioReboot) which stop this service and then
+ * paint the frame. Painting here on SIGINT produced a brief/torn frame (async
+ * stream write immediately followed by destroy+exit) and a second, competing
+ * painter — so the compositor now just stops drawing and exits.
+ */
+function handleStopSignal(){
+	[
+		bufwrite_interval,
+		getfilter_interval,
+		getinput_interval,
+		getip_interval,
+		getclock_interval
+	].forEach(function(interval){ if(interval) clearInterval(interval); });
+	try {
+		fs.appendFileSync("/data/.rdmlcd-shutdown.log",
+			new Date().toISOString() + " compositor: stop signal, clean exit\n");
+	} catch(e) {}
+	try { streamFile.destroy(); } catch(e) {}
+	process.exit(0);
+}
+
+process.on("SIGINT", handleStopSignal);
+process.on("SIGTERM", handleStopSignal);
 
 
 // Utility to add leading zeros to a string
@@ -467,6 +530,16 @@ streamer.on("seekChange", (data)=>{
   safeAddZone2Redraw( zone, scene.redrawzones );
 });
 
+streamer.on("connect", function(){
+	console.log("[Display] volumio-socket-connect");
+	requestFullRedraw();
+});
+
+streamer.on("ready", function(){
+	console.log("[Display] backend-first-state");
+	requestFullRedraw();
+});
+
 function get_filter(){
     daccontrol.getFilter().then(function(data){
         if(!data) return;
@@ -529,11 +602,10 @@ function monitor_ip(){
 	clear_ip();
 	scene_ctx.fillText( current_ipv4, x, y );
 	width = scene_ctx.measureText( current_ipv4 ).width;
-  
+	const zone = [x, y-fontsize, width, fontsize];
+	safeAddZone2Redraw(zone, scene.redrawzones);
 
-  
 	clear_ip=()=>{ 	
-    const zone =[x,y-fontsize,width,fontsize];
     scene_ctx.clearRect(...zone);   
     safeAddZone2Redraw(zone, scene.redrawzones);
   }
@@ -568,6 +640,31 @@ getclock_interval = setInterval(monitor_clock, 1000*30);
 updateRepeatIcon(scene_ctx, 226, 3, 12, 12, false);
 updateShuffleIcon(scene_ctx, 242, 3, 12, 12, false);
 
+paintDefaultBackground();
+
+function paintDefaultBackground(){
+	const logoPath = path.join(SPLASH_DIR, "volumio-logo.png");
+	coverctx.fillStyle = "black";
+	coverctx.fillRect(0, 0, 320, 240);
+	if(!fs.existsSync(logoPath)){
+		cover.need_redraw = true;
+		return;
+	}
+	loadImage(logoPath).then(function(img){
+		updateCover(img, logoPath);
+		requestFullRedraw();
+	}).catch(function(err){
+		console.warn("[Display] Default background failed:", err);
+		cover.need_redraw = true;
+	});
+}
+
+function requestFullRedraw(){
+	scene.need_redraw = true;
+	forceFullFrame = true;
+	if(!busy) updateFB();
+	else pendingFullRedraw = true;
+}
 
 function soft_exit_sleep(){
 	try{streamer.resetIdleTimeout()}
@@ -582,6 +679,10 @@ function server( req,res ){
 		param = _url[1] || "?";
 		param = decodeURIComponent(param);
 	switch(cmd){
+
+		case("display-ready"):
+			res.end(firstFrameWritten ? "1" : "0");
+		break;
 		
 		case("switch_view"): 
 			soft_exit_sleep();
@@ -800,32 +901,43 @@ function safeAddZone2Redraw(zone, list){
 
 function updateFB(){
 
-	if(busy) return panicmeter.registerError();
+	if(!uiReady) return;	// Keep the Starting splash on screen until backend is ready
+	if(busy){
+		pendingFullRedraw = true;
+		return panicmeter.registerError();
+	}
 	busy = true;
 
 	Vdraw();
-  
-  if(! display.redrawzones.length) return fbcb();
-  display.redrawzones = [];
-  
-  // console.log("draw")
-  
- 
-	const buff = canvas.toBuffer("raw");
 
-  const converted = colorConvert.rgb888ToRgb565(buff);
-  
-    streamFile.cork()
-    write(converted);
-    process.nextTick(() =>{
-    streamFile.uncork();
-     process.nextTick(()=>{
-       fbcb()
-     })
-    
-  });
-  
-  
+	if(forceFullFrame){
+		display.redrawzones.push([0, 0, 320, 240]);
+		forceFullFrame = false;
+	}
+
+	if(!display.redrawzones.length) return fbcb();
+	display.redrawzones = [];
+
+	const buff = canvas.toBuffer("raw");
+	const converted = colorConvert.rgb888ToRgb565(buff);
+
+	if(!firstFrameWritten){
+		try {
+			fs.writeFileSync(targetBuffer, converted);
+			firstFrameWritten = true;
+			console.log("[Display] first-frame-written");
+			return fbcb();
+		} catch(e) {
+			console.warn("[Display] Sync first frame failed, using stream:", e);
+		}
+	}
+
+	streamFile.cork();
+	write(converted);
+	process.nextTick(() => {
+		streamFile.uncork();
+		process.nextTick(() => fbcb());
+	});
 }
 
 function write(buff){
@@ -834,13 +946,56 @@ function write(buff){
 }
 
 function fbcb(err,data){
-  // console.timeEnd("display")
 	busy = false;
-	if ( err ) console.warn( err, data );
+	if(err) console.warn(err, data);
+	if(pendingFullRedraw){
+		pendingFullRedraw = false;
+		forceFullFrame = true;
+		scene.need_redraw = true;
+		process.nextTick(updateFB);
+	}
 }
 
 
-function printShutDownAndDie(){
+function writeSplashFrame(frame){
+	const rawPath = path.join(SPLASH_DIR, frame + ".raw");
+	if(!fs.existsSync(rawPath)) return false;
+	try {
+		write(fs.readFileSync(rawPath));
+		return true;
+	} catch(e) {
+		console.warn("[Splash] Failed to write frame:", frame, e);
+		return false;
+	}
+}
+
+function stopBootSplashService(){
+	cp.exec("/bin/systemctl stop rdmlcd-splash.service", function(){});
+}
+
+function showLifecycleSplash(frame){
+	if(writeSplashFrame(frame)) {
+		console.log("[Splash] Displayed frame:", frame);
+		return;
+	}
+	const fontsize = 40;
+	ctx.clearRect(0, 0, 320, 240);
+	ctx.fillStyle = "white";
+	ctx.font = `${fontsize}px arial`;
+	ctx.textAlign = "center";
+	const label = frame === "reboot" ? "REBOOT" : "SHUTTING DOWN";
+	const lines = label.split(" ");
+	if(lines.length > 1){
+		ctx.fillText(lines[0], 320 / 2, 79);
+		ctx.fillText(lines.slice(1).join(" "), 320 / 2, 131);
+	} else {
+		ctx.fillText(label, 320 / 2, (fontsize + 240) / 2);
+	}
+	const buff = canvas.toBuffer("raw");
+	write(colorConvert.rgb888ToRgb565(buff));
+}
+
+function printShutDownAndDie(reboot){
 	[
 		bufwrite_interval,
 		getfilter_interval,
@@ -849,102 +1004,108 @@ function printShutDownAndDie(){
 		getclock_interval
 	].forEach(clearInterval);
 	busy = true;
-	const fontsize = 40;
-	ctx.clearRect(0,0,320,240);
-	ctx.fillStyle = "white";
-	ctx.font = `${fontsize}px arial`;
-	ctx.textAlign = 'center';
-	ctx.fillText( "SHUTTING", 320/2, 79  );
-	ctx.fillText( "DOWN", 320/2, 131  );
-	const buff = canvas.toBuffer("raw");
-	const converted = colorConvert.rgb888ToRgb565(buff);
-  streamFile.uncork();
-	write(converted );
-  streamFile.destroy();
-  process.exit(0);
+	showLifecycleSplash(reboot ? "reboot" : "shutdown");
+	streamFile.uncork();
+	streamFile.destroy();
+	process.exit(0);
 }
 
+function startDisplayLoop(){
+	if(bufwrite_interval) return;
+	console.log("[Display] loop-start");
+	streamer.watchIdleState(TIME_BEFORE_DEEPSLEEP);
+	bufwrite_interval = setInterval(updateFB, UPDATE_INTERVAL);
+	requestFullRedraw();
+}
 
-const streamFile = fs.createWriteStream(targetBuffer);
-  streamFile.on('error', (e)=>{console.warn(e);
-  process.exit()
-})
+streamer.on("iddleStart", function(){
+	clearInterval(bufwrite_interval);
+	bufwrite_interval = null;
+	const blank = Buffer.alloc(320 * 240 * 2);
+	blank.fill(0x00);
+	busy = true;
+	streamFile.cork();
+	write(blank);
+	streamFile.uncork();
+	busy = false;
+});
 
-// Show startup message
-ctx.fillStyle = "black";
-ctx.fillRect(0, 0, 320, 240);
-ctx.fillStyle = "white";
-ctx.font = "24px sans-serif";
-ctx.textAlign = "center";
-ctx.fillText("Starting...", 160, 120);
-const buff = canvas.toBuffer("raw");
-const converted = colorConvert.rgb888ToRgb565(buff);
-streamFile.write(converted);
-console.log("[Startup] Displayed startup message");
+streamer.on("iddleStop", function(){
+	if(bufwrite_interval) clearInterval(bufwrite_interval);
+	bufwrite_interval = setInterval(updateFB, UPDATE_INTERVAL);
+	requestFullRedraw();
+});
 
+startDisplayLoop();
 
-// Read sleep timeout configuration
-// Priority: 1) Environment variable (from systemd service)
-//           2) Config file (for standalone testing)
-//           3) Default value (900 seconds)
-var TIME_BEFORE_DEEPSLEEP = 900000; // default in ms
+/*
+ * Hold the "Starting..." splash until the backend is actually ready.
+ * The compositor connects and receives a first pushState well before Volumio
+ * has finished loading/starting all plugins, which made the UI appear ~30s
+ * early. Volumio exposes readiness at GET /status ("starting" -> "ready", set
+ * ~7s after all plugins start). Poll it and only open the UI gate when ready,
+ * with a hard cap so the screen can never get stuck on "Starting...".
+ */
+function openUiWhenBackendReady(){
+	const STATUS_URL = "http://127.0.0.1:3000/status";
+	const POLL_INTERVAL = 1000;	// ms between polls
+	const MAX_WAIT = 90000;		// ms hard cap (fallback so UI always appears)
+	let waited = 0;
 
-// Check environment variable first (Volumio plugin integration)
-if (process.env.SLEEP_AFTER) {
-	try {
-		var sleep_seconds = parseInt(process.env.SLEEP_AFTER);
-		if (!isNaN(sleep_seconds) && sleep_seconds >= 0) {
-			TIME_BEFORE_DEEPSLEEP = sleep_seconds * 1000;
-			console.log("[Config] Using SLEEP_AFTER from environment:", sleep_seconds, "seconds");
-		}
-	} catch(e) {
-		console.log("[Config] Invalid SLEEP_AFTER environment variable, using default");
+	function openUi(reason){
+		if(uiReady) return;
+		uiReady = true;
+		console.log("[Display] phase=ui-ready (" + reason + ")");
+		requestFullRedraw();
 	}
+
+	function schedule(){
+		if(uiReady) return;
+		waited += POLL_INTERVAL;
+		if(waited >= MAX_WAIT) return openUi("timeout");
+		setTimeout(poll, POLL_INTERVAL);
+	}
+
+	function poll(){
+		if(uiReady) return;
+		const req = http.get(STATUS_URL, function(res){
+			let body = "";
+			res.on("data", function(chunk){ body += chunk; });
+			res.on("end", function(){
+				if(body.trim() === "ready") openUi("status=ready");
+				else schedule();
+			});
+		});
+		req.on("error", function(){ schedule(); });
+		req.setTimeout(2000, function(){ req.destroy(); });
+	}
+
+	poll();
 }
 
-// Try to read config file (for standalone testing or moOde compatibility)
-fs.readFile("config.json",(err,data)=>{
+openUiWhenBackendReady();
+
+// Optional config file (moOde / standalone); sleep timeout comes from systemd env on Volumio
+fs.readFile("config.json", (err, data) => {
 	if(err) {
-		if (!process.env.SLEEP_AFTER) {
+		if(!process.env.SLEEP_AFTER) {
 			console.log("[Config] Cannot read config file. Using default settings.");
 		}
-	}
-	else{
-		try { 
-			data = JSON.parse( data.toString() );
-			// Only use config file if environment variable not set
-			if (!process.env.SLEEP_AFTER && data.sleep_after && data.sleep_after.value) {
+	} else {
+		try {
+			data = JSON.parse(data.toString());
+			if(!process.env.SLEEP_AFTER && data.sleep_after && data.sleep_after.value) {
 				TIME_BEFORE_DEEPSLEEP = (data.sleep_after.value * 1000) || TIME_BEFORE_DEEPSLEEP;
 				console.log("[Config] Using sleep_after from config.json:", data.sleep_after.value, "seconds");
 			}
-		
-		} catch(e){
-			if (!process.env.SLEEP_AFTER) {
+		} catch(e) {
+			if(!process.env.SLEEP_AFTER) {
 				console.log("[Config] Cannot parse config file. Using default settings.");
 			}
 		}
 	}
-	
 	console.log("[Config] Final SLEEP_AFTER value:", TIME_BEFORE_DEEPSLEEP / 1000, "seconds");
-	streamer.watchIdleState(TIME_BEFORE_DEEPSLEEP);
-	bufwrite_interval = setInterval(updateFB, UPDATE_INTERVAL)
-
-	streamer.on("iddleStart", function(){
-		clearInterval(bufwrite_interval);
-		buff = Buffer.alloc(320*240*2);
-		buff.fill(0x00);
-    busy = true;
-    streamFile.cork();
-		write( buff );
-    streamFile.uncork();
-    busy = false;
-    
-	});
-	streamer.on("iddleStop", function(){
-		clearInterval(bufwrite_interval);
-		bufwrite_interval = setInterval(updateFB, UPDATE_INTERVAL)
-	});
-
+	if(bufwrite_interval) streamer.watchIdleState(TIME_BEFORE_DEEPSLEEP);
 });
 
 

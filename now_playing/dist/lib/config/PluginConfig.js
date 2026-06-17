@@ -9,7 +9,6 @@ const now_playing_common_1 = require("now-playing-common");
 const ContentRegionSettings_1 = require("now-playing-common/dist/config/ContentRegionSettings");
 const StartupOptions_1 = require("now-playing-common/dist/config/StartupOptions");
 exports.DefaultWeatherOptions = {
-    openWeatherMapApiKey: '',
     cacheMinutes: 10
 };
 exports.DefaultMetadataServiceOptions = {
@@ -35,4 +34,3 @@ exports.PLUGIN_CONFIG_SCHEMA = {
     kioskDisplay: { defaultValue: 'default', json: false },
     configVersion: { defaultValue: null, json: false }
 };
-//# sourceMappingURL=PluginConfig.js.map

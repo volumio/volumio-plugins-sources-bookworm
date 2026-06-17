@@ -65,4 +65,3 @@ router.get('/font/:file', (req, res) => {
     handler.font(file, res);
 });
 exports.default = router;
-//# sourceMappingURL=Router.js.map

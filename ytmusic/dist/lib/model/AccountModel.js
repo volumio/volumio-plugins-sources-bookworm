@@ -9,4 +9,3 @@ class AccountModel extends BaseModel_1.BaseModel {
     }
 }
 exports.default = AccountModel;
-//# sourceMappingURL=AccountModel.js.map

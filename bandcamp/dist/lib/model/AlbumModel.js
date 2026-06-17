@@ -44,4 +44,3 @@ _AlbumModel_instances = new WeakSet(), _AlbumModel_cacheTracks = function _Album
     return EntityConverter_1.default.convertAlbum(item);
 };
 exports.default = AlbumModel;
-//# sourceMappingURL=AlbumModel.js.map

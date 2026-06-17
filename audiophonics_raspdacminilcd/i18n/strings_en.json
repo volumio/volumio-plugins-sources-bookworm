@@ -3,6 +3,8 @@
   "LCD_DISPLAY": "LCD Display",
   "ENABLE_LCD": "Enable LCD Display",
   "ENABLE_LCD_DOC": "Enable or disable the LCD display output",
+  "BOOT_SPLASH": "Boot splash",
+  "BOOT_SPLASH_DOC": "Show Volumio logo on the LCD at boot (Booting…), when the display service starts (Starting…), and on shutdown or reboot",
   "SLEEP_AFTER": "Screen Timeout (seconds)",
   "SLEEP_AFTER_DOC": "Number of seconds before the screen goes to sleep when idle (0 = never sleep)",
   "LCD_ACTIONS": "LCD Actions",

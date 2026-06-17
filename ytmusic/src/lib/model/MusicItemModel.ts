@@ -1,7 +1,6 @@
 import ytmusic from '../YTMusicContext';
-import {type Types} from 'volumio-youtubei.js';
-import type Innertube from 'volumio-youtubei.js';
-import { YTNodes, Utils as YTUtils, YTMusic, Parser } from 'volumio-youtubei.js';
+import {Innertube, type Types} from 'volumio-yt-support/dist/innertube';
+import { YTNodes, Utils as YTUtils, YTMusic } from 'volumio-yt-support/dist/innertube';
 import { BaseModel } from './BaseModel';
 import InnertubeResultParser from './InnertubeResultParser';
 import type Endpoint from '../types/Endpoint';
@@ -9,6 +8,8 @@ import { EndpointType } from '../types/Endpoint';
 import type MusicItemPlaybackInfo from '../types/MusicItemPlaybackInfo';
 import { type ContentItem } from '../types';
 import EndpointHelper from '../util/EndpointHelper';
+import InnertubeLoader from './InnertubeLoader';
+import { YtDlpWrapper } from '../util/YtDlp';
 
 // https://gist.github.com/sidneys/7095afe4da4ae58694d128b1034e01e2
 // https://gist.github.com/MartinEesmaa/2f4b261cb90a47e9c41ba115a011a4aa
@@ -31,13 +32,70 @@ const BEST_AUDIO_FORMAT: Types.FormatOptions = {
 
 export default class MusicItemModel extends BaseModel {
 
-  async getPlaybackInfo(endpoint: Endpoint, signal?: AbortSignal): Promise<MusicItemPlaybackInfo | null> {
+  /**
+   * We use YTMUSIC_ANDROID client for retrieving lyrics because it
+   * provides synced versions where available. This client does
+   * not support account cookies and will return 400 ("invalid argument")
+   * error if we pass account cookies in requests. We can ensure this won't
+   * happen by using a separate Innertube instance.
+   */
+  #innertubeForLyrics: Innertube | null = null;
+
+  async getPlaybackInfo(
+    endpoint: Endpoint,
+    isPrefetch = false,
+    skipStream = false,
+    signal?: AbortSignal
+  ): Promise<MusicItemPlaybackInfo | null> {
     if (!EndpointHelper.isType(endpoint, EndpointType.Watch) || !endpoint.payload.videoId) {
       throw Error('Invalid endpoint');
     }
+    const useYtDlp = ytmusic.getConfigValue('useYtDlp');
+    if (useYtDlp && isPrefetch) {
+      throw Error(`Cannot prefetch with yt-dlp as time taken will exceed Volumio's limit`);
+    }
+    if (!skipStream && useYtDlp) {
+      const [info, url] = await Promise.all([
+        this.#doGetPlaybackInfo(endpoint, true, signal),
+        YtDlpWrapper.getInstance().getStreamingUrl(
+          `https://music.youtube.com/watch?v=${encodeURIComponent(endpoint.payload.videoId)}`,
+          ytmusic.getConfigValue('ytDlpVersion') ?? undefined
+        ).catch((error: unknown) => {
+          ytmusic.getLogger().error(ytmusic.getErrorMessage('Failed to get streaming URL with yt-dlp:', error, false));
+          return null;
+        })
+      ]);
+      if (info && url) {
+        const itag = new URL(url).searchParams.get('itag');
+        const bitrate = itag ? ITAG_TO_BITRATE[itag] : null;
+        info.stream = {
+          url,
+          bitrate: bitrate ? `${bitrate} kbps` : undefined
+        };
+      }
+      return info;
+    }
+    return this.#doGetPlaybackInfo(endpoint, skipStream, signal);
+  }
+
+  async #doGetPlaybackInfo(
+    endpoint: Endpoint,
+    skipStream = false,
+    signal?: AbortSignal
+  ): Promise<MusicItemPlaybackInfo | null> {
     const { innertube } = await this.getInnertube();
     const trackInfo = await this.#getTrackInfo(innertube, endpoint);
-    const streamData = this.#extractStreamData(innertube, trackInfo);
+
+    const videoId = endpoint.payload.videoId;
+    let contentPoToken: string | undefined = undefined;
+    try {
+      contentPoToken = (await InnertubeLoader.generatePoToken(videoId)).poToken;
+      ytmusic.getLogger().info(`[ytmusic] Obtained PO token for video #${videoId}: ${contentPoToken}`);
+    }
+    catch (error: unknown) {
+      ytmusic.getLogger().error(ytmusic.getErrorMessage(`[ytmusic] Error obtaining PO token for video #${videoId}:`,error, false));
+    }
+    const streamData = skipStream ? null : await this.#extractStreamData(innertube, trackInfo, contentPoToken );
 
     // `trackInfo` does not contain album info - need to obtain from item in Up Next tab.
     const infoFromUpNextTab = this.#getInfoFromUpNextTab(trackInfo, endpoint);
@@ -111,23 +169,38 @@ export default class MusicItemModel extends BaseModel {
 
   // Based on Innertube.Music.#fetchInfoFromEndpoint()
   async #getTrackInfo(innertube: Innertube, endpoint: Endpoint) {
+    const videoId = endpoint.payload.videoId;
     const watchEndpoint = new YTNodes.NavigationEndpoint({ watchEndpoint: {
-      videoId: endpoint.payload.videoId,
+      videoId,
       playlistId: endpoint.payload.playlistId,
       params: endpoint.payload.params,
-      sts: innertube.session.player?.sts
+      racyCheckOk: true,
+      contentCheckOk: true
     } });
 
     const nextEndpoint = new YTNodes.NavigationEndpoint({ watchNextEndpoint: { videoId: endpoint.payload.videoId }});
+
+    let sessionPoToken: string | undefined;
+    try {
+      sessionPoToken = (await (await InnertubeLoader.getInstance()).getSessionPoToken())?.poToken;
+    }
+    catch (error: unknown) {
+      ytmusic.getLogger().error(ytmusic.getErrorMessage(`[ytmusic] Error obtaining PO token for session:`,error, false));
+      sessionPoToken = undefined;
+    }
 
     const player_response = watchEndpoint.call(innertube.actions, {
       client: 'YTMUSIC',
       playbackContext: {
         contentPlaybackContext: {
-          ...{
-            signatureTimestamp: innertube.session.player?.sts
-          }
+          vis: 0,
+          splay: false,
+          lactMilliseconds: '-1',
+          signatureTimestamp: innertube.session.player?.signature_timestamp
         }
+      },
+      serviceIntegrityDimensions: {
+        poToken: sessionPoToken
       }
     });
 
@@ -140,10 +213,10 @@ export default class MusicItemModel extends BaseModel {
 
     const response = await Promise.all([ player_response, next_response ]);
 
-    return new YTMusic.TrackInfo(response, innertube.actions, cpn);
+    return new YTMusic.TrackInfo(response, innertube.actions, cpn)
   }
 
-  #extractStreamData(innertube: Innertube, info: YTMusic.TrackInfo): MusicItemPlaybackInfo['stream'] | null {
+  async #extractStreamData(innertube: Innertube, info: YTMusic.TrackInfo, contentPoToken?: string): Promise<MusicItemPlaybackInfo['stream'] | null> {
     const preferredFormat = {
       ...BEST_AUDIO_FORMAT
     };
@@ -174,9 +247,20 @@ export default class MusicItemModel extends BaseModel {
     }
 
     if (format) {
+      let decipheredURL = await format.decipher(innertube.session.player);
       const audioBitrate = ITAG_TO_BITRATE[format.itag];
+
+      // Innertube sets `pot` searchParam of URL to session-bound PO token.
+      // Seems YT now requires `pot` to be the *content-bound* token, otherwise we'll get 403.
+      // See: https://github.com/TeamNewPipe/NewPipeExtractor/issues/1392
+      const urlObj = new URL(decipheredURL);
+      if (contentPoToken) {
+        urlObj.searchParams.set('pot', contentPoToken);
+      }
+      decipheredURL = urlObj.toString();
+
       return {
-        url: format.decipher(innertube.session.player),
+        url: decipheredURL,
         mimeType: format.mime_type,
         bitrate: audioBitrate ? `${audioBitrate} kbps` : null,
         sampleRate: format.audio_sample_rate ? `${format.audio_sample_rate} kHz` : undefined,
@@ -207,35 +291,28 @@ export default class MusicItemModel extends BaseModel {
     return InnertubeResultParser.parseContentItem(match);
   }
 
-  async #getLyricsId(videoId: string) {
-    const { innertube } = await this.getInnertube();
-    const response = await innertube.actions.execute('/next', {
-      videoId,
-      client: 'YTMUSIC_ANDROID'
-    });
-    const parsed = Parser.parseResponse(response.data);
-    const tabs = parsed.contents_memo?.getType(YTNodes.Tab);
-    const tab = tabs?.matchCondition((tab) => tab.endpoint.payload.browseEndpointContextSupportedConfigs?.browseEndpointContextMusicConfig?.pageType === 'MUSIC_PAGE_TYPE_TRACK_LYRICS');
-    if (!tab) {
-      throw Error('Could not find lyrics tab.');
-    }
-    const lyricsId = tab.endpoint.payload.browseId;
-    if (!lyricsId) {
-      throw Error('No lyrics ID found in endpoint');
-    }
-    return lyricsId;
-  }
-
   async getLyrics(videoId: string) {
-    const { innertube } = await this.getInnertube();
-    const lyricsId = await this.#getLyricsId(videoId);
-    const payload = {
-      browseId: lyricsId,
-      client: 'YTMUSIC_ANDROID'
-    };
-    const response = await innertube.actions.execute('/browse', payload);
-    const parsed = Parser.parseResponse(response.data);
-    return InnertubeResultParser.parseLyrics(parsed);
+    if (!this.#innertubeForLyrics) {
+      this.#innertubeForLyrics = await Innertube.create();
+    }
+    const innertube = this.#innertubeForLyrics;
+    const watchNextEndpoint = new YTNodes.NavigationEndpoint({ watchNextEndpoint: { videoId } });
+    const watchNextResponse = await watchNextEndpoint.call(innertube.actions, { client: 'YTMUSIC_ANDROID', parse: true });
+    const tabs = watchNextResponse.contents_memo?.getType(YTNodes.Tab);
+    const tab = tabs?.find((tab) => tab.endpoint.payload.browseEndpointContextSupportedConfigs?.browseEndpointContextMusicConfig?.pageType === 'MUSIC_PAGE_TYPE_TRACK_LYRICS');
+    if (!tab) {
+        throw Error('Lyrics tab not found');
+    }
+    const page = await tab.endpoint.call(innertube.actions, { client: 'YTMUSIC_ANDROID', parse: true });
+
+    if (!page.contents)
+      throw new Error('Unexpected response from lyrics tab endpoint');
+
+    const lyrics = InnertubeResultParser.parseLyrics(page);
+    if (!lyrics) {
+      ytmusic.getLogger().verbose(`No lyrics found. Page content is: ${JSON.stringify(page.contents.item())}`);
+    }
+    return lyrics;
   }
 
   #sleep(ms: number) {

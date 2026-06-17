@@ -40,4 +40,3 @@ class SearchController {
     }
 }
 exports.default = SearchController;
-//# sourceMappingURL=SearchController.js.map

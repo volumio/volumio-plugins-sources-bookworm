@@ -271,3 +271,36 @@ Prebuilts need updating when:
 - Native module code changes
 
 After any code changes, recreate all prebuilts.
+
+## Splash Frames (Shipped in Plugin)
+
+Boot/shutdown splash frames are **not** generated on the device at install. They are
+prebuilt binary assets under `assets/splash/`, like the device tree overlay:
+
+| File | Purpose |
+|------|---------|
+| `volumio-logo.png` | Source logo ([volumio-graphic-resources](https://github.com/volumio/volumio-graphic-resources)) |
+| `boot.raw` | Early boot ("Booting...") |
+| `starting.raw` | Compositor startup ("Starting...") |
+| `shutdown.raw` | Power off |
+| `reboot.raw` | Reboot |
+
+Splash frames are **architecture-independent** (fixed 320×240 RGB565). One set
+works for armv7l and aarch64. They are **not** included in the compositor tarball.
+
+### Regenerating Splash Frames (Maintainers)
+
+When the logo or status text changes:
+
+```bash
+pip install Pillow
+python3 scripts/build-splash-frames.py
+npm test
+git add assets/splash/*.raw assets/splash/volumio-logo.png
+```
+
+`npm test` runs `scripts/validate-plugin.sh` on the **build host only** (not installed on device).
+
+The install script verifies all splash `.raw` files and **fails** if any are
+missing or invalid (same policy as required plugin assets). Reinstalling the
+plugin resets systemd state — no factory wipe or manual console steps required.

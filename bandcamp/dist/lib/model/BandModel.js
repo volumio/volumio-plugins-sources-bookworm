@@ -77,4 +77,3 @@ _BandModel_instances = new WeakSet(), _BandModel_getLabelArtistsFetchPromise = f
     return EntityConverter_1.default.convertTrack(item);
 };
 exports.default = BandModel;
-//# sourceMappingURL=BandModel.js.map

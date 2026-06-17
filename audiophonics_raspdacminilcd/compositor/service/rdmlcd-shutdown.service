@@ -1,0 +1,17 @@
+[Unit]
+Description=RaspDacMini LCD shutdown splash
+DefaultDependencies=no
+Before=shutdown.target reboot.target halt.target
+Conflicts=rescue.service rescue.target
+After=local-fs.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+TimeoutStartSec=5
+ExecStart=/bin/sh -c 'if [ -f /run/systemd/reboot ]; then /usr/local/bin/rdmlcd-show-splash.sh reboot; else /usr/local/bin/rdmlcd-show-splash.sh shutdown; fi'
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=shutdown.target reboot.target halt.target

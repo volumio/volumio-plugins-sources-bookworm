@@ -242,19 +242,10 @@
       "saveButton": {
         "label": "TRANSLATE.NOW_PLAYING_SAVE",
         "data": [
-          "openWeatherMapApiKey",
           "weatherCacheMinutes"
         ]
       },
       "content": [
-        {
-          "id": "openWeatherMapApiKey",
-          "type": "text",
-          "element": "input",
-          "label": "TRANSLATE.NOW_PLAYING_OPENWEATHERMAP_API_KEY",
-          "doc": "TRANSLATE.NOW_PLAYING_OPENWEATHERMAP_API_KEY_DESC",
-          "value": ""
-        },
         {
           "id": "weatherCacheMinutes",
           "element": "select",

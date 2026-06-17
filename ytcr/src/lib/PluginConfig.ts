@@ -11,6 +11,7 @@ export interface PluginConfigSchemaEntry<T, U = false> {
 }
 
 export interface PluginConfigSchema {
+  hasAcceptedDisclaimer: PluginConfigSchemaEntry<boolean>;
   port: PluginConfigSchemaEntry<number>;
   bindToIf: PluginConfigSchemaEntry<string>;
   region: PluginConfigSchemaEntry<string>;
@@ -26,6 +27,7 @@ export interface PluginConfigSchema {
 }
 
 export const PLUGIN_CONFIG_SCHEMA: PluginConfigSchema = {
+  hasAcceptedDisclaimer: { defaultValue: false, json: false },
   port: { defaultValue: 8098, json: false },
   bindToIf: { defaultValue: '', json: false },
   region: { defaultValue: 'US', json: false },

@@ -1,0 +1,18 @@
+{
+  "PLUGIN_CONFIGURATION": "RaspDacMini LCD -asetukset",
+  "LCD_DISPLAY": "LCD-näyttö",
+  "ENABLE_LCD": "Ota LCD-näyttö käyttöön",
+  "ENABLE_LCD_DOC": "Ota LCD-kuvanäyttö käyttöön tai pois käytöstä",
+  "BOOT_SPLASH": "Käynnistysnäyttö",
+  "BOOT_SPLASH_DOC": "Näytä Volumio-logo LCD-näytöllä käynnistyksessä (Booting…), näyttöpalvelun käynnistyessä (Starting…) sekä sammutuksessa tai uudelleenkäynnistyksessä",
+  "SLEEP_AFTER": "Näytön aikakatkaisu (sekuntia)",
+  "SLEEP_AFTER_DOC": "Kuinka monta sekuntia toimettomuutta ennen näytön sammumista (0 = ei koskaan)",
+  "LCD_ACTIONS": "LCD-toiminnot",
+  "RESTART_LCD": "Käynnistä LCD-palvelu uudelleen",
+  "RESTART_LCD_DOC": "Käynnistä näyttöpalvelu uudelleen muutosten käyttöönottoa varten",
+  "SAVE": "Tallenna",
+  "SETTINGS_SAVED": "Asetukset tallennettu",
+  "SETTINGS_SAVE_ERROR": "Asetusten tallennus epäonnistui",
+  "LCD_RESTARTED": "LCD-palvelu käynnistetty uudelleen",
+  "LCD_RESTART_ERROR": "LCD-palvelun uudelleenkäynnistys epäonnistui"
+}

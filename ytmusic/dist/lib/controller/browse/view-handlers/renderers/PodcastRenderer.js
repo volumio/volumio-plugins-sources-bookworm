@@ -36,4 +36,3 @@ class PodcastRenderer extends MusicFolderRenderer_1.default {
     }
 }
 exports.default = PodcastRenderer;
-//# sourceMappingURL=PodcastRenderer.js.map

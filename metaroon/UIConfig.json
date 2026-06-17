@@ -1,0 +1,78 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_CONFIGURATION"
+  },
+  "sections": [
+    {
+      "id": "section_roon_vitals",
+      "element": "section",
+      "label": "TRANSLATE.ROON_VITALS_SECTION",
+      "icon": "fa-server",
+      "content": [
+        {
+          "id": "core_name",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.CORE_NAME",
+          "value": "Not detected",
+          "readonly": true
+        },
+        {
+          "id": "core_host",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.CORE_HOST",
+          "value": "Not detected",
+          "readonly": true
+        },
+        {
+          "id": "current_zone",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.CURRENT_ZONE",
+          "value": "No zone selected",
+          "readonly": true
+        },
+        {
+          "id": "browse_status",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.BROWSE_STATUS",
+          "value": "Not available",
+          "readonly": true
+        }
+      ]
+    },
+    {
+      "id": "section_zone_selection",
+      "element": "section",
+      "label": "TRANSLATE.ZONE_SELECTION_SECTION",
+      "icon": "fa-list",
+      "description": "TRANSLATE.ZONE_SELECTION_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/metaroon",
+        "method": "saveZoneSelection"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SELECT_ZONE",
+        "data": [
+          "zone_select"
+        ]
+      },
+      "content": [
+        {
+          "id": "zone_select",
+          "element": "select",
+          "label": "TRANSLATE.SELECT_ZONE_LABEL",
+          "description": "TRANSLATE.SELECT_ZONE_DESC",
+          "value": {
+            "value": "",
+            "label": "No zones available"
+          },
+          "options": []
+        }
+      ]
+    }
+  ]
+}

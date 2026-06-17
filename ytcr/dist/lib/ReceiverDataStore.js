@@ -33,4 +33,3 @@ class ReceiverDataStore extends yt_cast_receiver_1.DataStore {
     }
 }
 exports.default = ReceiverDataStore;
-//# sourceMappingURL=ReceiverDataStore.js.map

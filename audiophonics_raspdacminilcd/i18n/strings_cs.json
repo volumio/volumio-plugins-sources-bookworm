@@ -1,0 +1,18 @@
+{
+  "PLUGIN_CONFIGURATION": "Konfigurace RaspDacMini LCD",
+  "LCD_DISPLAY": "LCD displej",
+  "ENABLE_LCD": "Povolit LCD displej",
+  "ENABLE_LCD_DOC": "Zapnout nebo vypnout výstup na LCD displej",
+  "BOOT_SPLASH": "Úvodní obrazovka",
+  "BOOT_SPLASH_DOC": "Zobrazit logo Volumio na LCD při startu systému (Booting…), při spuštění služby displeje (Starting…) a při vypnutí nebo restartu",
+  "SLEEP_AFTER": "Časový limit obrazovky (sekundy)",
+  "SLEEP_AFTER_DOC": "Počet sekund nečinnosti před vypnutím obrazovky (0 = nikdy)",
+  "LCD_ACTIONS": "Akce LCD",
+  "RESTART_LCD": "Restartovat službu LCD",
+  "RESTART_LCD_DOC": "Restartovat službu displeje pro uplatnění změn",
+  "SAVE": "Uložit",
+  "SETTINGS_SAVED": "Nastavení bylo úspěšně uloženo",
+  "SETTINGS_SAVE_ERROR": "Nepodařilo se uložit nastavení",
+  "LCD_RESTARTED": "Služba LCD byla úspěšně restartována",
+  "LCD_RESTART_ERROR": "Nepodařilo se restartovat službu LCD"
+}

@@ -1,0 +1,54 @@
+{
+  "PLUGIN_CONFIGURATION": "Ajustes de Recently Added",
+  "DISPLAY": {
+    "TITLE": "Visualización",
+    "SAVE": "Guardar",
+    "VIEW_MODE": "Modo de visualización",
+    "VIEW_MODE_DOC": "Elige qué se muestra al pulsar una ventana de tiempo. 'Ambos' es cómodo cuando se ha añadido poca música nueva; cambia a 'Solo álbumes' o 'Solo artistas' si has añadido muchos archivos a la vez y prefieres una lista más enfocada.",
+    "VIEW_ALBUMS": "Solo álbumes",
+    "VIEW_ARTISTS": "Solo artistas",
+    "VIEW_BOTH": "Álbumes y artistas",
+    "ALBUMS_SORT": "Ordenar álbumes",
+    "ALBUMS_SORT_DOC": "Orden de los álbumes en cada sección. Se aplica a la sección Álbumes en las ventanas temporales y a la lista de álbumes dentro de las vistas de detalle de artista.",
+    "ARTISTS_SORT": "Ordenar artistas",
+    "ARTISTS_SORT_DOC": "Orden de los artistas en la sección Artistas.",
+    "SORT_RECENCY": "Más recientes primero",
+    "SORT_ALPHABETICAL": "Alfabético"
+  },
+  "CONNECTION": {
+    "TITLE": "Conexión MPD",
+    "SAVE": "Guardar",
+    "MPD_HOST": "Host MPD",
+    "MPD_HOST_DOC": "Nombre de host o IP del servidor MPD. Usa 'localhost' para el MPD local de Volumio (predeterminado).",
+    "MPD_PORT": "Puerto MPD",
+    "MPD_PORT_DOC": "Puerto TCP del servidor MPD. El valor predeterminado de Volumio es 6600.",
+    "QUERY_TIMEOUT": "Tiempo de espera (ms)",
+    "QUERY_TIMEOUT_DOC": "Tiempo máximo de espera de respuesta a una consulta 'find' antes de abandonar. 10000 ms es un valor seguro para bibliotecas de hasta varios miles de archivos."
+  },
+  "BROWSE": {
+    "ROOT_TITLE": "Añadidos recientemente",
+    "WINDOW_7D": "Últimos 7 días",
+    "WINDOW_14D": "Últimos 14 días",
+    "WINDOW_30D": "Últimos 30 días",
+    "WINDOW_90D": "Últimos 90 días",
+    "ALBUMS_SECTION": "Álbumes",
+    "ARTISTS_SECTION": "Artistas",
+    "ALBUMS_HEADER": "Álbumes — {window} ({count})",
+    "ARTISTS_HEADER": "Artistas — {window} ({count})",
+    "ARTIST_HEADER": "{artist} — {window} ({count})",
+    "ALBUM_COUNT_ONE": "1 álbum",
+    "ALBUM_COUNT_MANY": "{n} álbumes",
+    "ARTIST_COUNT_ONE": "1 artista",
+    "ARTIST_COUNT_MANY": "{n} artistas",
+    "UNKNOWN_ARTIST": "Artista desconocido",
+    "UNKNOWN_ALBUM": "Álbum desconocido",
+    "ERROR_TITLE": "{window} — error",
+    "MPD_UNREACHABLE": "MPD no accesible — comprueba los ajustes del plugin."
+  },
+  "TOAST": {
+    "START_FAILED": "Error al iniciar: {message}",
+    "RECONNECTING": "Ajustes guardados. Reconectando con MPD...",
+    "RECONNECT_FAILED": "Error al reconectar: {message}",
+    "SAVE_FAILED": "Error al guardar los ajustes: {message}"
+  }
+}

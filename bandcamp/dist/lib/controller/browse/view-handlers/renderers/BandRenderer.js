@@ -54,4 +54,3 @@ class BandRenderer extends BaseRenderer_1.default {
     }
 }
 exports.default = BandRenderer;
-//# sourceMappingURL=BandRenderer.js.map

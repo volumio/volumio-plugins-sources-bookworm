@@ -51,4 +51,3 @@ _a = FontHelper, _FontHelper_getUIConfSelectDefaultEntry = function _FontHelper_
     return { value: '', label: NowPlayingContext_1.default.getI18n('NOW_PLAYING_DEFAULT') };
 };
 exports.default = FontHelper;
-//# sourceMappingURL=FontHelper.js.map

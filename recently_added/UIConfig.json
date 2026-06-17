@@ -1,0 +1,127 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_CONFIGURATION"
+  },
+  "sections": [
+    {
+      "id": "display",
+      "element": "section",
+      "label": "TRANSLATE.DISPLAY.TITLE",
+      "icon": "fa-list",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/recently_added",
+        "method": "saveConfig"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.DISPLAY.SAVE",
+        "data": [
+          "view_mode",
+          "albums_sort",
+          "artists_sort"
+        ]
+      },
+      "content": [
+        {
+          "id": "view_mode",
+          "type": "text",
+          "element": "select",
+          "doc": "TRANSLATE.DISPLAY.VIEW_MODE_DOC",
+          "label": "TRANSLATE.DISPLAY.VIEW_MODE",
+          "value": {
+            "value": "both",
+            "label": "TRANSLATE.DISPLAY.VIEW_BOTH"
+          },
+          "options": [
+            { "value": "albums",  "label": "TRANSLATE.DISPLAY.VIEW_ALBUMS" },
+            { "value": "artists", "label": "TRANSLATE.DISPLAY.VIEW_ARTISTS" },
+            { "value": "both",    "label": "TRANSLATE.DISPLAY.VIEW_BOTH" }
+          ]
+        },
+        {
+          "id": "albums_sort",
+          "type": "text",
+          "element": "select",
+          "doc": "TRANSLATE.DISPLAY.ALBUMS_SORT_DOC",
+          "label": "TRANSLATE.DISPLAY.ALBUMS_SORT",
+          "value": {
+            "value": "recency",
+            "label": "TRANSLATE.DISPLAY.SORT_RECENCY"
+          },
+          "options": [
+            { "value": "recency",      "label": "TRANSLATE.DISPLAY.SORT_RECENCY" },
+            { "value": "alphabetical", "label": "TRANSLATE.DISPLAY.SORT_ALPHABETICAL" }
+          ]
+        },
+        {
+          "id": "artists_sort",
+          "type": "text",
+          "element": "select",
+          "doc": "TRANSLATE.DISPLAY.ARTISTS_SORT_DOC",
+          "label": "TRANSLATE.DISPLAY.ARTISTS_SORT",
+          "value": {
+            "value": "recency",
+            "label": "TRANSLATE.DISPLAY.SORT_RECENCY"
+          },
+          "options": [
+            { "value": "recency",      "label": "TRANSLATE.DISPLAY.SORT_RECENCY" },
+            { "value": "alphabetical", "label": "TRANSLATE.DISPLAY.SORT_ALPHABETICAL" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "connection",
+      "element": "section",
+      "label": "TRANSLATE.CONNECTION.TITLE",
+      "icon": "fa-plug",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/recently_added",
+        "method": "saveConfig"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.CONNECTION.SAVE",
+        "data": [
+          "mpd_host",
+          "mpd_port",
+          "query_timeout_ms"
+        ]
+      },
+      "content": [
+        {
+          "id": "mpd_host",
+          "type": "text",
+          "element": "input",
+          "doc": "TRANSLATE.CONNECTION.MPD_HOST_DOC",
+          "label": "TRANSLATE.CONNECTION.MPD_HOST",
+          "value": "localhost"
+        },
+        {
+          "id": "mpd_port",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.CONNECTION.MPD_PORT_DOC",
+          "label": "TRANSLATE.CONNECTION.MPD_PORT",
+          "value": 6600,
+          "attributes": [
+            { "min": 1 },
+            { "max": 65535 }
+          ]
+        },
+        {
+          "id": "query_timeout_ms",
+          "type": "number",
+          "element": "input",
+          "doc": "TRANSLATE.CONNECTION.QUERY_TIMEOUT_DOC",
+          "label": "TRANSLATE.CONNECTION.QUERY_TIMEOUT",
+          "value": 10000,
+          "attributes": [
+            { "min": 1000 },
+            { "max": 60000 }
+          ]
+        }
+      ]
+    }
+  ]
+}

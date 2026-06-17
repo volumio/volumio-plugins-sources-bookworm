@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="408" height="216" viewBox="0 0 408 216">
+  <rect width="408" height="216" rx="8" fill="#111" stroke="#333" stroke-width="1"/>
+  <rect x="12" y="12" width="384" height="192" fill="#000"/>
+  <text x="12" y="24.75" font-family="Courier New,monospace" font-size="15" fill="#fff" text-anchor="start">14:35</text>
+  <text x="276" y="24.75" font-family="Courier New,monospace" font-size="15" fill="#fff" text-anchor="start">Vol:72%</text>
+  <polygon points="15,45 15,63 27.6,54.0" fill="#fff"/>
+  <text x="42" y="57.75" font-family="Courier New,monospace" font-size="15" fill="#fff" text-anchor="start">Bohemian Rhapsody</text>
+  <text x="12" y="87.75" font-family="Courier New,monospace" font-size="15" fill="#fff" text-anchor="start">Queen</text>
+  <line x1="12" y1="108" x2="396" y2="108" stroke="#fff" stroke-width="1.5"/>
+  <line x1="12" y1="117" x2="396" y2="117" stroke="#fff" stroke-width="1.5"/>
+  <rect x="12" y="111" width="3" height="6" fill="#fff"/>
+  <rect x="393" y="111" width="3" height="6" fill="#fff"/>
+  <rect x="18" y="111" width="174" height="6" fill="#fff"/>
+  <text x="204" y="153.75" font-family="Courier New,monospace" font-size="15" fill="#fff" text-anchor="middle">02:34 / 05:12</text>
+  <text x="204" y="186.75" font-family="Courier New,monospace" font-size="15" fill="#fff" text-anchor="middle">FLAC 24bit / 192kHz</text>
+</svg>

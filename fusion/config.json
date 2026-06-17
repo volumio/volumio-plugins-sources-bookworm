@@ -45,7 +45,7 @@
     },
     "savedmergedeq": {
         "type": "string",
-        "value": "Eq0|None|L+R|0,0,0"
+        "value": "Eq0|Peaking|L+R|100,0.1,10"
     },
     "savedmergedeqfir": {
         "type": "string",
@@ -155,7 +155,7 @@
     },
     "showeq": {
         "type": "boolean",
-        "value": true
+        "value": false
     },
     "monooutput": {
         "type": "boolean",

@@ -5,7 +5,7 @@ import libQ from 'kew';
 import ytmusic from '../../YTMusicContext';
 import Model, { ModelType } from '../../model';
 import { EndpointType } from '../../types/Endpoint';
-import { kewToJSPromise } from '../../util';
+import { jsPromiseToKew, kewToJSPromise } from '../../util';
 import { type QueueItem } from '../browse/view-handlers/ExplodableViewHandler';
 import ViewHelper from '../browse/view-handlers/ViewHelper';
 import ExplodeHelper from '../../util/ExplodeHelper';
@@ -16,59 +16,67 @@ import type AutoplayContext from '../../types/AutoplayContext';
 import { type AlbumView } from '../browse/view-handlers/AlbumViewHandler';
 import { type GenericView } from '../browse/view-handlers/GenericViewHandler';
 import EventEmitter from 'events';
-
-interface MpdState {
-  status: 'play' | 'stop' | 'pause';
-  seek: number;
-  uri: string;
-}
+import { AutoplayManager, ExternalPlayerManager, type LastPlaybackInfo } from 'volumio-yt-support';
 
 export default class PlayController {
 
   #mpdPlugin: any;
-  #autoplayListener: (() => void) | null;
-  #lastPlaybackInfo: {
-    track: QueueItem;
-    position: number;
-  };
   #prefetchPlaybackStateFixer: PrefetchPlaybackStateFixer | null;
   #prefetchAborter: AbortController | null;
+  #externalPlayerManager: ExternalPlayerManager<"YTMUSIC">;
+  #autoplayManager: AutoplayManager;
 
   constructor() {
     this.#mpdPlugin = ytmusic.getMpdPlugin();
-    this.#autoplayListener = null;
     this.#prefetchPlaybackStateFixer = new PrefetchPlaybackStateFixer();
-    this.#prefetchPlaybackStateFixer.on('playPrefetch', (info: { track: QueueItem; position: number; }) => {
-      this.#lastPlaybackInfo = info;
-    });
     this.#prefetchAborter = null;
+    this.#externalPlayerManager = new ExternalPlayerManager({
+      serviceName: 'ytmusic',
+      logger: {
+        info: (msg) => ytmusic.getLogger().info(`[ytmusic] ${msg}`),
+        warn: (msg) => ytmusic.getLogger().warn(`[ytmusic] ${msg}`),
+        error: (msg) => ytmusic.getLogger().error(`[ytmusic] ${msg}`),
+      },
+      volumioCoreCommand: ytmusic.volumioCoreCommand,
+      stateMachine: ytmusic.getStateMachine(),
+      mpdPlugin: ytmusic.getMpdPlugin(),
+      i18n: {
+        prefix: 'YTMUSIC',
+        get: (key, ...args) => ytmusic.getI18n(key, ...args)
+      },
+      toast: (type, message) => ytmusic.toast(type, message)
+    });
+    this.#autoplayManager = new AutoplayManager({
+      serviceName: 'ytmusic',
+      volumioCoreCommand: ytmusic.volumioCoreCommand,
+      stateMachine: ytmusic.getStateMachine(),
+      mpdPlugin: ytmusic.getMpdPlugin(),
+      getConfigValue: (key) => ytmusic.getConfigValue(key),
+      getAutoplayItems: this.#getAutoplayItems.bind(this),
+      externalPlayerManager: this.#externalPlayerManager,
+      logger: {
+        info: (msg) => ytmusic.getLogger().info(`[ytmusic] ${msg}`),
+        warn: (msg) => ytmusic.getLogger().warn(`[ytmusic] ${msg}`),
+        error: (msg) => ytmusic.getLogger().error(`[ytmusic] ${msg}`),
+      }
+    });
+    this.#autoplayManager.on('queued', ({items}) => {
+      if (items.length === 0) {
+        ytmusic.toast('info', ytmusic.getI18n('YTMUSIC_AUTOPLAY_NO_ITEMS'));
+      }
+      else if (items.length > 1) {
+        ytmusic.toast('success', ytmusic.getI18n('YTMUSIC_AUTOPLAY_ADDED', items.length));
+      }
+      else {
+        ytmusic.toast('success', ytmusic.getI18n('YTMUSIC_AUTOPLAY_ADDED_SINGLE', items[0].title));
+      }
+    });
   }
 
   reset() {
-    this.#removeAutoplayListener();
+    this.#autoplayManager.disable();
     this.#prefetchPlaybackStateFixer?.reset();
     this.#prefetchPlaybackStateFixer = null;
-  }
-
-  #addAutoplayListener() {
-    if (!this.#autoplayListener) {
-      this.#autoplayListener = () => {
-        this.#mpdPlugin.getState().then((state: MpdState) => {
-          if (state.status === 'stop') {
-            void this.#handleAutoplay();
-            this.#removeAutoplayListener();
-          }
-        });
-      };
-      this.#mpdPlugin.clientMpd.on('system-player', this.#autoplayListener);
-    }
-  }
-
-  #removeAutoplayListener() {
-    if (this.#autoplayListener) {
-      this.#mpdPlugin.clientMpd.removeListener('system-player', this.#autoplayListener);
-      this.#autoplayListener = null;
-    }
   }
 
   /**
@@ -81,6 +89,11 @@ export default class PlayController {
 
     this.#cancelPrefetch();
     this.#prefetchPlaybackStateFixer?.notifyPrefetchCleared();
+
+    if (!ytmusic.getConfigValue('hasAcceptedDisclaimer')) {
+      ytmusic.toast('error', ytmusic.getI18n('YTMUSIC_ERR_ACCEPT_DISCLAIMER_PLAY'));
+      return;
+    }
 
     const {videoId, info: playbackInfo} = await PlayController.getPlaybackInfoFromUri(track.uri);
 
@@ -107,25 +120,15 @@ export default class PlayController {
       sm.currentSongDuration = playbackInfo.duration * 1000;
     }
 
-    this.#lastPlaybackInfo = {
-      track,
-      position: sm.getState().position
-    };
+    this.#autoplayManager.enable();
 
     const safeStreamUrl = stream.url.replace(/"/g, '\\"');
     await this.#doPlay(safeStreamUrl, track);
 
-    if (ytmusic.getConfigValue('autoplay')) {
-      this.#addAutoplayListener();
-    }
-
     if (ytmusic.getConfigValue('addToHistory')) {
-      try {
-        void playbackInfo.addToHistory();
-      }
-      catch (error) {
-        ytmusic.getLogger().error(ytmusic.getErrorMessage(`[ytmusic-play] Error: could not add to history (${videoId}): `, error));
-      }
+      playbackInfo.addToHistory().catch((error: unknown) => {
+        ytmusic.getLogger().error(ytmusic.getErrorMessage(`[ytmusic] Error: could not add to history (videoId: ${videoId}): `, error));
+      });
     }
   }
 
@@ -144,42 +147,93 @@ export default class PlayController {
 
   // Returns kew promise!
   stop() {
-    this.#removeAutoplayListener();
+    this.#autoplayManager.disable();
+    const player = this.#externalPlayerManager.getActive();
+    if (player) {
+      return jsPromiseToKew(player.stop());
+    }
     ytmusic.getStateMachine().setConsumeUpdateService('mpd', true, false);
     return this.#mpdPlugin.stop();
   }
 
   // Returns kew promise!
   pause() {
+    const player = this.#externalPlayerManager.getActive();
+    if (player) {
+      return jsPromiseToKew(player.pause());
+    }
     ytmusic.getStateMachine().setConsumeUpdateService('mpd', true, false);
     return this.#mpdPlugin.pause();
   }
 
   // Returns kew promise!
   resume() {
+    const player = this.#externalPlayerManager.getActive();
+    if (player) {
+      return jsPromiseToKew(player.resume());
+    }
     ytmusic.getStateMachine().setConsumeUpdateService('mpd', true, false);
     return this.#mpdPlugin.resume();
   }
 
+  play() {
+    const player = this.#externalPlayerManager.getActive();
+    if (player) {
+      return jsPromiseToKew((async () => {
+        if (player.getStatus()?.state === 'paused') {
+          return player.resume();
+        }
+      })());
+    }
+    ytmusic.getStateMachine().setConsumeUpdateService('mpd', true, false);
+    return this.#mpdPlugin.play();
+  }
+
   // Returns kew promise!
   seek(position: number) {
+    const player = this.#externalPlayerManager.getActive();
+    if (player) {
+      return jsPromiseToKew(player.seek(position / 1000));
+    }
     ytmusic.getStateMachine().setConsumeUpdateService('mpd', true, false);
     return this.#mpdPlugin.seek(position);
   }
 
   // Returns kew promise!
   next() {
+    const player = this.#externalPlayerManager.getActive();
+    if (player) {
+      return jsPromiseToKew(player.next());
+    }
     ytmusic.getStateMachine().setConsumeUpdateService('mpd', true, false);
     return this.#mpdPlugin.next();
   }
 
   // Returns kew promise!
   previous() {
+    const player = this.#externalPlayerManager.getActive();
+    if (player) {
+      return jsPromiseToKew(player.previous());
+    }
     ytmusic.getStateMachine().setConsumeUpdateService(undefined);
     return ytmusic.getStateMachine().previous();
   }
 
-  static async getPlaybackInfoFromUri(uri: QueueItem['uri'], signal?: AbortSignal): Promise<{videoId: string; info: MusicItemPlaybackInfo | null}> {
+  setRandom(value: boolean) {
+    const player = this.#externalPlayerManager.getActive();
+    if (player) {
+      player.setRandom(value);
+    }
+  }
+
+  setRepeat(value: boolean, repeatSingle: boolean) {
+    const player = this.#externalPlayerManager.getActive();
+    if (player) {
+      return jsPromiseToKew(player.setRepeat(value, repeatSingle));
+    }
+  }
+
+  static async getPlaybackInfoFromUri(uri: QueueItem['uri'], isPrefetch = false, skipStream = false, signal?: AbortSignal): Promise<{videoId: string; info: MusicItemPlaybackInfo | null}> {
     const endpoint = ExplodeHelper.getExplodedTrackInfoFromUri(uri)?.endpoint;
     const videoId = endpoint?.payload?.videoId;
 
@@ -190,25 +244,45 @@ export default class PlayController {
     const model = Model.getInstance(ModelType.MusicItem);
     return {
       videoId,
-      info: await model.getPlaybackInfo(endpoint, signal)
+      info: await model.getPlaybackInfo(endpoint, isPrefetch, skipStream, signal)
     };
   }
 
-  #doPlay(streamUrl: string, track: QueueItem) {
-    const mpdPlugin = this.#mpdPlugin;
+  async #doPlay(streamUrl: string, track: QueueItem) {
+    // If the other player is active, stop it first to free up audio device.
+    const playerName = ytmusic.getConfigValue('player');
+    if (playerName === 'vlc') {
+      await this.#externalPlayerManager.stop('mpv');
+    }
+    else if (playerName === 'mpv') {
+      await this.#externalPlayerManager.stop('vlc');
+    }
 
-    return kewToJSPromise(mpdPlugin.sendMpdCommand('stop', [])
-      .then(() => {
-        return mpdPlugin.sendMpdCommand('clear', []);
-      })
-      .then(() => {
-        return mpdPlugin.sendMpdCommand(`addid "${this.#appendTrackTypeToStreamUrl(streamUrl)}"`, []);
-      })
-      .then((addIdResp: { Id: string }) => this.#mpdAddTags(addIdResp, track))
-      .then(() => {
-        ytmusic.getStateMachine().setConsumeUpdateService('mpd', true, false);
-        return mpdPlugin.sendMpdCommand('play', []);
-      }));
+    const player = playerName === 'vlc' || playerName === 'mpv' ? await this.#externalPlayerManager.get(playerName) : null;
+
+    if (player) {
+      return await player.play({
+        ...track,
+        streamUrl,
+        trackType: 'YouTube'
+      });
+    }
+    else {
+      const mpdPlugin = this.#mpdPlugin;
+
+      return await kewToJSPromise(mpdPlugin.sendMpdCommand('stop', [])
+        .then(() => {
+          return mpdPlugin.sendMpdCommand('clear', []);
+        })
+        .then(() => {
+          return mpdPlugin.sendMpdCommand(`addid "${this.#appendTrackTypeToStreamUrl(streamUrl)}"`, []);
+        })
+        .then((addIdResp: { Id: string }) => this.#mpdAddTags(addIdResp, track))
+        .then(() => {
+          ytmusic.getStateMachine().setConsumeUpdateService('mpd', true, false);
+          return mpdPlugin.sendMpdCommand('play', []);
+        }));
+    }
   }
 
   #appendTrackTypeToStreamUrl(url: string) {
@@ -244,66 +318,8 @@ export default class PlayController {
     return libQ.resolve();
   }
 
-  async #handleAutoplay() {
-    const lastPlayedQueueIndex = this.#findLastPlayedTrackQueueIndex();
-    if (lastPlayedQueueIndex < 0) {
-      return;
-    }
-
-    const stateMachine = ytmusic.getStateMachine(),
-      state = stateMachine.getState(),
-      isLastTrack = stateMachine.getQueue().length - 1 === lastPlayedQueueIndex,
-      currentPositionChanged = state.position !== lastPlayedQueueIndex; // True if client clicks on another item in the queue
-
-    const noAutoplayConditions = !ytmusic.getConfigValue('autoplay') || currentPositionChanged || !isLastTrack || state.random || state.repeat || state.repeatSingle;
-    const getAutoplayItemsPromise = noAutoplayConditions ? Promise.resolve(null) : this.#getAutoplayItems();
-
-    if (!noAutoplayConditions) {
-      ytmusic.toast('info', ytmusic.getI18n('YTMUSIC_AUTOPLAY_FETCH'));
-    }
-
-    const items = await getAutoplayItemsPromise;
-    if (items && items.length > 0) {
-      // Add items to queue and play
-      const clearQueue = ytmusic.getConfigValue('autoplayClearQueue');
-      if (clearQueue) {
-        stateMachine.clearQueue();
-      }
-      stateMachine.addQueueItems(items).then((result: { firstItemIndex: number }) => {
-        if (items.length > 1) {
-          ytmusic.toast('success', ytmusic.getI18n('YTMUSIC_AUTOPLAY_ADDED', items.length));
-        }
-        else {
-          ytmusic.toast('success', ytmusic.getI18n('YTMUSIC_AUTOPLAY_ADDED_SINGLE', items[0].title));
-        }
-        stateMachine.play(result.firstItemIndex);
-      });
-    }
-    else if (!noAutoplayConditions) {
-      ytmusic.toast('info', ytmusic.getI18n('YTMUSIC_AUTOPLAY_NO_ITEMS'));
-    }
-  }
-
-  #findLastPlayedTrackQueueIndex() {
-    if (!this.#lastPlaybackInfo) {
-      return -1;
-    }
-
-    const queue = ytmusic.getStateMachine().getQueue();
-    const trackUri = this.#lastPlaybackInfo.track.uri;
-    const endIndex = this.#lastPlaybackInfo.position;
-
-    for (let i = endIndex; i >= 0; i--) {
-      if (queue[i]?.uri === trackUri) {
-        return i;
-      }
-    }
-
-    return -1;
-  }
-
-  async #getAutoplayItems(): Promise<QueueItem[]> {
-    const explodedTrackInfo = ExplodeHelper.getExplodedTrackInfoFromUri(this.#lastPlaybackInfo?.track?.uri);
+  async #getAutoplayItems(lastPlaybackInfo: LastPlaybackInfo): Promise<QueueItem[]> {
+    const explodedTrackInfo = ExplodeHelper.getExplodedTrackInfoFromUri(lastPlaybackInfo.track.uri);
     const autoplayContext = explodedTrackInfo?.autoplayContext;
 
     if (autoplayContext) {
@@ -359,7 +375,7 @@ export default class PlayController {
 
     if (autoplayItems.length === 0) {
       // Fetch from radio endpoint as last resort.
-      const playbackInfo = await PlayController.getPlaybackInfoFromUri(this.#lastPlaybackInfo.track.uri);
+      const playbackInfo = await PlayController.getPlaybackInfoFromUri(lastPlaybackInfo.track.uri, false, true);
       const radioEndpoint = playbackInfo.info?.radioEndpoint;
       if (radioEndpoint && (!autoplayContext || radioEndpoint.payload.playlistId !== autoplayContext.fetchEndpoint.payload.playlistId)) {
         const radioContents = await endpointModel.getContents(radioEndpoint);
@@ -391,7 +407,9 @@ export default class PlayController {
     // Cancel any ongoing prefetch
     this.#cancelPrefetch();
     const prefetchEnabled = ytmusic.getConfigValue('prefetch');
-    if (!prefetchEnabled) {
+    const cfgPlayer = ytmusic.getConfigValue('player');
+    const isExternalPlayer = cfgPlayer === 'vlc' || cfgPlayer === 'mpv' || this.#externalPlayerManager.getActive() !== null;
+    if (!prefetchEnabled || isExternalPlayer) {
       /**
        * Volumio doesn't check whether `prefetch()` is actually performed or
        * successful (such as inspecting the result of the function call) -
@@ -401,7 +419,12 @@ export default class PlayController {
        * `prefetchDone` variable to `false` and only set it to `true` when
        * prefetch is successful.
        */
-      ytmusic.getLogger().info('[ytmusic-play] Prefetch disabled');
+      if (!prefetchEnabled) {
+        ytmusic.getLogger().info('[ytmusic-play] Prefetch disabled');
+      }
+      else {
+        ytmusic.getLogger().info('[ytmusic-play] Prefetch not supported by current player configuration');
+      }
       ytmusic.getStateMachine().prefetchDone = false;
       return;
     }
@@ -414,7 +437,7 @@ export default class PlayController {
     this.#prefetchAborter = new AbortController();
     const signal = this.#prefetchAborter.signal;
     try {
-      const { videoId, info: playbackInfo } = await PlayController.getPlaybackInfoFromUri(track.uri, signal);
+      const { videoId, info: playbackInfo } = await PlayController.getPlaybackInfoFromUri(track.uri, true, false, signal);
       streamUrl = playbackInfo?.stream?.url;
       if (!streamUrl || !playbackInfo) {
         throw Error(`Stream not found for: '${videoId}'`);
@@ -455,7 +478,7 @@ export default class PlayController {
   }
 
   async getGotoUri(type: 'album' | 'artist', uri: QueueItem['uri']): Promise<string | null> {
-    const playbackInfo = (await PlayController.getPlaybackInfoFromUri(uri))?.info;
+    const playbackInfo = (await PlayController.getPlaybackInfoFromUri(uri, false, true))?.info;
     if (!playbackInfo) {
       return null;
     }
@@ -522,6 +545,7 @@ class PrefetchPlaybackStateFixer extends EventEmitter {
     super();
     this.#positionAtPrefetch = -1;
     this.#prefetchedTrack = null;
+    this.#volumioPushStateListener = null;
   }
 
   reset() {

@@ -1,0 +1,54 @@
+{
+  "PLUGIN_CONFIGURATION": "Recently Added Einstellungen",
+  "DISPLAY": {
+    "TITLE": "Anzeige",
+    "SAVE": "Speichern",
+    "VIEW_MODE": "Ansichtsmodus",
+    "VIEW_MODE_DOC": "Legt fest, was beim Antippen eines Zeitfensters angezeigt wird. 'Beide' ist praktisch, wenn nur wenig neue Musik hinzugefügt wurde; wähle 'Nur Alben' oder 'Nur Interpreten', wenn viel auf einmal hinzugekommen ist und du eine fokussierte Liste möchtest.",
+    "VIEW_ALBUMS": "Nur Alben",
+    "VIEW_ARTISTS": "Nur Interpreten",
+    "VIEW_BOTH": "Alben und Interpreten",
+    "ALBUMS_SORT": "Alben sortieren",
+    "ALBUMS_SORT_DOC": "Wie Alben innerhalb der Abschnitte angeordnet werden. Gilt für den Alben-Abschnitt in Zeitfenster-Ansichten und für die Albumliste in Interpreten-Detailansichten.",
+    "ARTISTS_SORT": "Interpreten sortieren",
+    "ARTISTS_SORT_DOC": "Wie Interpreten innerhalb des Interpreten-Abschnitts angeordnet werden.",
+    "SORT_RECENCY": "Neueste zuerst",
+    "SORT_ALPHABETICAL": "Alphabetisch"
+  },
+  "CONNECTION": {
+    "TITLE": "MPD-Verbindung",
+    "SAVE": "Speichern",
+    "MPD_HOST": "MPD-Host",
+    "MPD_HOST_DOC": "Hostname oder IP des MPD-Servers. Für das lokale Volumio-MPD 'localhost' verwenden (Standard).",
+    "MPD_PORT": "MPD-Port",
+    "MPD_PORT_DOC": "TCP-Port des MPD-Servers. Volumio-Standard ist 6600.",
+    "QUERY_TIMEOUT": "Abfrage-Zeitlimit (ms)",
+    "QUERY_TIMEOUT_DOC": "Maximale Wartezeit auf eine 'find'-Antwort von MPD, bevor abgebrochen wird. 10000 ms ist ein sicherer Standardwert für Bibliotheken mit bis zu mehreren tausend Dateien."
+  },
+  "BROWSE": {
+    "ROOT_TITLE": "Kürzlich hinzugefügt",
+    "WINDOW_7D": "Letzte 7 Tage",
+    "WINDOW_14D": "Letzte 14 Tage",
+    "WINDOW_30D": "Letzte 30 Tage",
+    "WINDOW_90D": "Letzte 90 Tage",
+    "ALBUMS_SECTION": "Alben",
+    "ARTISTS_SECTION": "Interpreten",
+    "ALBUMS_HEADER": "Alben — {window} ({count})",
+    "ARTISTS_HEADER": "Interpreten — {window} ({count})",
+    "ARTIST_HEADER": "{artist} — {window} ({count})",
+    "ALBUM_COUNT_ONE": "1 Album",
+    "ALBUM_COUNT_MANY": "{n} Alben",
+    "ARTIST_COUNT_ONE": "1 Interpret",
+    "ARTIST_COUNT_MANY": "{n} Interpreten",
+    "UNKNOWN_ARTIST": "Unbekannter Interpret",
+    "UNKNOWN_ALBUM": "Unbekanntes Album",
+    "ERROR_TITLE": "{window} — Fehler",
+    "MPD_UNREACHABLE": "MPD nicht erreichbar — bitte die Plugin-Einstellungen prüfen."
+  },
+  "TOAST": {
+    "START_FAILED": "Start fehlgeschlagen: {message}",
+    "RECONNECTING": "Einstellungen gespeichert. Verbinde erneut mit MPD...",
+    "RECONNECT_FAILED": "Erneute Verbindung fehlgeschlagen: {message}",
+    "SAVE_FAILED": "Speichern der Einstellungen fehlgeschlagen: {message}"
+  }
+}

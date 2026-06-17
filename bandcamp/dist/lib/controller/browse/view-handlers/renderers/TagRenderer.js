@@ -44,4 +44,3 @@ class TagRenderer extends BaseRenderer_1.default {
     }
 }
 exports.default = TagRenderer;
-//# sourceMappingURL=TagRenderer.js.map

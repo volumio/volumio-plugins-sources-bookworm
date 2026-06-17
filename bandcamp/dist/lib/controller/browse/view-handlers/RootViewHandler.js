@@ -70,4 +70,3 @@ _RootViewHandler_instances = new WeakSet(), _RootViewHandler_getFanSummary = fun
     return page.navigation?.lists || [];
 };
 exports.default = RootViewHandler;
-//# sourceMappingURL=RootViewHandler.js.map

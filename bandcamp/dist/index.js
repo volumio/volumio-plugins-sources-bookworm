@@ -33,9 +33,9 @@ class ControllerBandcamp {
         _ControllerBandcamp_context.set(this, void 0);
         _ControllerBandcamp_config.set(this, void 0);
         _ControllerBandcamp_commandRouter.set(this, void 0);
-        _ControllerBandcamp_browseController.set(this, void 0);
-        _ControllerBandcamp_searchController.set(this, void 0);
-        _ControllerBandcamp_playController.set(this, void 0);
+        _ControllerBandcamp_browseController.set(this, null);
+        _ControllerBandcamp_searchController.set(this, null);
+        _ControllerBandcamp_playController.set(this, null);
         __classPrivateFieldSet(this, _ControllerBandcamp_context, context, "f");
         __classPrivateFieldSet(this, _ControllerBandcamp_commandRouter, context.coreCommand, "f");
     }
@@ -313,4 +313,3 @@ _ControllerBandcamp_context = new WeakMap(), _ControllerBandcamp_config = new We
     __classPrivateFieldGet(this, _ControllerBandcamp_commandRouter, "f").volumioAddToBrowseSources(data);
 };
 module.exports = ControllerBandcamp;
-//# sourceMappingURL=index.js.map

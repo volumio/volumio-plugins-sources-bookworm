@@ -223,7 +223,7 @@ raspdac_mini_lcd/
 │   ├── lircd.conf                    # LIRC remote control configuration
 │   ├── lircrc                        # Remote button to command mappings
 │   ├── lirc_options.conf             # LIRC daemon configuration
-│   ├── README.txt                    # Assets folder documentation
+│   ├── README.md                     # Assets folder documentation
 │   └── compositor-*.tar.gz           # Optional prebuilts (armv7l/aarch64)
 ├── lirc/                             # LIRC runtime (created during install)
 │   ├── lircd.conf                    # Remote button codes (from assets)

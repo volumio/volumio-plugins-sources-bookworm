@@ -53,4 +53,3 @@ class EndpointHelper {
     }
 }
 exports.default = EndpointHelper;
-//# sourceMappingURL=EndpointHelper.js.map

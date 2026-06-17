@@ -5,15 +5,15 @@
     "target": "es2020",
     "module": "commonjs",
     "outDir": "../dist/",
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
+    "declarationMap": false,
     "esModuleInterop": true,
     "moduleResolution": "node",
-    "sourceMap": true,
-    "inlineSources": true,
+    "sourceMap": false,
     "strict": true,
-    "strictPropertyInitialization": false,
-    "resolveJsonModule": true
+    "strictPropertyInitialization": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true
   },
   "references": [
     { "path": "../" }

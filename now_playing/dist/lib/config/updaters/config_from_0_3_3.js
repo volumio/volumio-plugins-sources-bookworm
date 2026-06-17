@@ -17,4 +17,3 @@ function update() {
     NowPlayingContext_1.default.setConfigValue('configVersion', TO_VERSION);
     NowPlayingContext_1.default.getLogger().info('[now-playing] Update complete');
 }
-//# sourceMappingURL=config_from_0_3_3.js.map

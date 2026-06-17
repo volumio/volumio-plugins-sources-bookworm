@@ -117,4 +117,3 @@ _BaseModel_instances = new WeakSet(), _BaseModel_doLoopFetch = async function _B
     return result;
 };
 exports.default = BaseModel;
-//# sourceMappingURL=BaseModel.js.map

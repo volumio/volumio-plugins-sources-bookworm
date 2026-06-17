@@ -56,4 +56,3 @@ class SearchResultRenderer extends BaseRenderer_1.default {
     }
 }
 exports.default = SearchResultRenderer;
-//# sourceMappingURL=SearchResultParser.js.map

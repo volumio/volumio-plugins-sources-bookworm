@@ -47,4 +47,3 @@ class ShowRenderer extends BaseRenderer_1.default {
     }
 }
 exports.default = ShowRenderer;
-//# sourceMappingURL=ShowRenderer.js.map

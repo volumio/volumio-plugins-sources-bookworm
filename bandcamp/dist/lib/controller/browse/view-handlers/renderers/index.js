@@ -39,4 +39,3 @@ class Renderer {
     }
 }
 exports.default = Renderer;
-//# sourceMappingURL=index.js.map

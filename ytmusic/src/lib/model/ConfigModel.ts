@@ -1,4 +1,4 @@
-import { Misc as YTMisc } from 'volumio-youtubei.js';
+import { Misc as YTMisc } from 'volumio-yt-support/dist/innertube';
 import ytmusic from '../YTMusicContext';
 import { type I18nOptionValue, type I18nOptions, type PluginConfigSchema } from '../types/PluginConfig';
 import { BaseModel } from './BaseModel';
@@ -13,6 +13,7 @@ const OPTION_IDS: Record<string, string> = {
 };
 
 export const PLUGIN_CONFIG_SCHEMA: PluginConfigSchema = {
+  hasAcceptedDisclaimer: { defaultValue: false, json: false },
   region: { defaultValue: 'US', json: false },
   language: { defaultValue: 'en', json: false },
   loadFullPlaylists: { defaultValue: false, json: false },
@@ -22,7 +23,10 @@ export const PLUGIN_CONFIG_SCHEMA: PluginConfigSchema = {
   prefetch: { defaultValue: true, json: false },
   preferOpus: { defaultValue: false, json: false },
   cookie: { defaultValue: '', json: false },
-  activeChannelHandle: { defaultValue: '', json: false }
+  activeChannelHandle: { defaultValue: '', json: false },
+  useYtDlp: { defaultValue: false, json: false },
+  ytDlpVersion: { defaultValue: null, json: false },
+  player: { defaultValue: 'mpd', json: false }
 };
 
 export default class ConfigModel extends BaseModel {

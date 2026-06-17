@@ -111,4 +111,3 @@ _FanModel_instances = new WeakSet(), _FanModel_getFanItems = function _FanModel_
     }
 };
 exports.default = FanModel;
-//# sourceMappingURL=FanModel.js.map

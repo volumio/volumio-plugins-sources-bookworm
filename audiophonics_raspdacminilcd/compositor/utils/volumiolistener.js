@@ -12,7 +12,6 @@ function volumio_listener(host,refreshrate_ms){
     this.formatedMainString = "";
     this.data = {};
 	this.watchingIdle = false;
-	this.firstRequestConsumed = false;
 	this.listen();
 	this.iddle = false;
 	this._iddleTimeout = null;
@@ -87,8 +86,13 @@ volumio_listener.prototype.processChanges = function(key,data){
 			It also appears during track change, which often causes
 			an unpleasant effect on the LCD where the image changes rapidly.
 			
-			This "if" block limits this phenomenon
+			At idle/stop or before first state, show it immediately so the
+			default background appears on cold boot without a manual restart.
 		*/
+			if(!this.ready || this.state === "stop" || this.state === "pause"){
+				this.emit("coverChange", this.host + data);
+				return;
+			}
 			let waitAndEmit, delayedEmit, cancelDelayedEmit;
 			
 			delayedEmit = ()=>{this.emit( "coverChange",this.host+data );}
@@ -139,6 +143,9 @@ volumio_listener.prototype.listen = function(){
 	
 	this._socket.on("connect", () => {
 		console.log("[volumiolistener] Connected to Volumio");
+		this._socket.emit("getState");
+		this._socket.emit("getQueue");
+		this.emit("connect");
 	});
 	
 	this._socket.on("error", (error) => {
@@ -155,13 +162,12 @@ volumio_listener.prototype.listen = function(){
 	this._socket.emit("getState");
 	
 	this._socket.on("pushState", (data)=>{ // Streamer state changes
-		if(!this.firstRequestConsumed){
-			this.firstRequestConsumed = true;
-			this._socket.emit("getState");
-			return;
-		}
 		this.compareData(data);
 		this.waiting = false;
+		if(!this.ready){
+			this.ready = true;
+			this.emit("ready", data);
+		}
 	})
 	this._socket.emit("getQueue");
 	this._socket.on("pushQueue", (resdata)=> {	// Playlist changes

@@ -17,6 +17,7 @@
         "label": "TRANSLATE.SAVE",
         "data": [
           "lcd_active",
+          "boot_splash",
           "sleep_after"
         ]
       },
@@ -26,6 +27,13 @@
           "element": "switch",
           "label": "TRANSLATE.ENABLE_LCD",
           "doc": "TRANSLATE.ENABLE_LCD_DOC",
+          "value": true
+        },
+        {
+          "id": "boot_splash",
+          "element": "switch",
+          "label": "TRANSLATE.BOOT_SPLASH",
+          "doc": "TRANSLATE.BOOT_SPLASH_DOC",
           "value": true
         },
         {

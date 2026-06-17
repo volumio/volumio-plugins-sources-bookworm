@@ -1,5 +1,4 @@
 # Dependencies
-node_modules/
 
 # Logs
 *.log
@@ -37,3 +36,6 @@ Desktop.ini
 # Coverage
 coverage/
 .nyc_output/
+/data/
+/home/
+/my_dmd2_music_working_not_latest/

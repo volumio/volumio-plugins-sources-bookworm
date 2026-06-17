@@ -56,10 +56,11 @@ class DefaultMetadataProvider {
         _DefaultMetadataProvider_instances.add(this);
         _DefaultMetadataProvider_genius.set(this, void 0);
         _DefaultMetadataProvider_accessToken.set(this, void 0);
+        this.version = '1.1.0';
         __classPrivateFieldSet(this, _DefaultMetadataProvider_genius, new genius_fetch_1.default(), "f");
+        __classPrivateFieldSet(this, _DefaultMetadataProvider_accessToken, null, "f");
     }
     config(params) {
-        this.version = '1.1.0';
         __classPrivateFieldSet(this, _DefaultMetadataProvider_accessToken, params.accessToken, "f");
         __classPrivateFieldGet(this, _DefaultMetadataProvider_genius, "f").config(params);
     }
@@ -197,4 +198,3 @@ _DefaultMetadataProvider_genius = new WeakMap(), _DefaultMetadataProvider_access
     return album.items[0] || null;
 };
 exports.default = DefaultMetadataProvider;
-//# sourceMappingURL=DefaultMetadataProvider.js.map

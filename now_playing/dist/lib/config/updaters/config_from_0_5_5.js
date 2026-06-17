@@ -39,4 +39,3 @@ function updateMetadataServiceOptions() {
     NowPlayingContext_1.default.deleteConfigValue('geniusAccessToken');
     NowPlayingContext_1.default.getLogger().info('[now-playing] Updated config value for \'metadataService\'');
 }
-//# sourceMappingURL=config_from_0_5_5.js.map

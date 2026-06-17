@@ -127,4 +127,3 @@ _a = UIHelper, _UIHelper_constructLinkItem = function _UIHelper_constructLinkIte
     return html;
 };
 exports.default = UIHelper;
-//# sourceMappingURL=UIHelper.js.map

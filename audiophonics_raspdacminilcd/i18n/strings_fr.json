@@ -1,0 +1,18 @@
+{
+  "PLUGIN_CONFIGURATION": "Configuration RaspDacMini LCD",
+  "LCD_DISPLAY": "Affichage LCD",
+  "ENABLE_LCD": "Activer l'affichage LCD",
+  "ENABLE_LCD_DOC": "Activer ou désactiver la sortie sur l'écran LCD",
+  "BOOT_SPLASH": "Écran de démarrage",
+  "BOOT_SPLASH_DOC": "Afficher le logo Volumio sur l'écran LCD au démarrage du système (Booting…), au lancement du service d'affichage (Starting…), ainsi qu'à l'arrêt ou au redémarrage",
+  "SLEEP_AFTER": "Extinction de l'écran (secondes)",
+  "SLEEP_AFTER_DOC": "Délai en secondes avant la mise en veille de l'écran en inactivité (0 = jamais)",
+  "LCD_ACTIONS": "Actions LCD",
+  "RESTART_LCD": "Redémarrer le service LCD",
+  "RESTART_LCD_DOC": "Redémarrer le service d'affichage pour appliquer les modifications",
+  "SAVE": "Enregistrer",
+  "SETTINGS_SAVED": "Paramètres enregistrés avec succès",
+  "SETTINGS_SAVE_ERROR": "Échec de l'enregistrement des paramètres",
+  "LCD_RESTARTED": "Service LCD redémarré avec succès",
+  "LCD_RESTART_ERROR": "Échec du redémarrage du service LCD"
+}

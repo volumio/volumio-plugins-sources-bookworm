@@ -27,4 +27,3 @@ class MusicItemRenderer extends BaseRenderer_1.default {
     }
 }
 exports.default = MusicItemRenderer;
-//# sourceMappingURL=MusicItemRenderer.js.map

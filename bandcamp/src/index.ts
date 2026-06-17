@@ -29,9 +29,9 @@ class ControllerBandcamp {
   #config: any;
   #commandRouter: any;
 
-  #browseController: BrowseController | null;
-  #searchController: SearchController | null;
-  #playController: PlayController | null;
+  #browseController: BrowseController | null = null;
+  #searchController: SearchController | null = null;
+  #playController: PlayController | null = null;
 
   constructor(context: any) {
     this.#context = context;

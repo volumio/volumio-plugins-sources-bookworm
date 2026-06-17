@@ -7,6 +7,7 @@ exports.jsPromiseToKew = jsPromiseToKew;
 exports.kewToJSPromise = kewToJSPromise;
 exports.getNetworkInterfaces = getNetworkInterfaces;
 exports.hasNetworkInterface = hasNetworkInterface;
+exports.getErrorMessage = getErrorMessage;
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 const kew_1 = __importDefault(require("kew"));
@@ -51,4 +52,24 @@ function getNetworkInterfaces() {
 function hasNetworkInterface(ifName) {
     return !!getNetworkInterfaces().find((info) => info.name === ifName);
 }
-//# sourceMappingURL=Utils.js.map
+function getErrorMessage(message, error, stack = true) {
+    let result = message;
+    if (typeof error == 'object') {
+        if (error.message) {
+            result += ` ${error.message}`;
+        }
+        if (error.info) { // InnertubeError has this
+            result += `: ${error.info}`;
+        }
+        if (error.cause) {
+            result += `: ${getErrorMessage('', error.cause, stack)}`;
+        }
+        if (stack && error.stack) {
+            result += ` ${error.stack}`;
+        }
+    }
+    else if (typeof error == 'string') {
+        result += ` ${error}`;
+    }
+    return result.trim();
+}

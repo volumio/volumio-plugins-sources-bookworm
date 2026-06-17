@@ -34,4 +34,3 @@ class AlbumRenderer extends MusicFolderRenderer_1.default {
     }
 }
 exports.default = AlbumRenderer;
-//# sourceMappingURL=AlbumRenderer.js.map

@@ -34,4 +34,3 @@ class PlaylistRenderer extends MusicFolderRenderer_1.default {
     }
 }
 exports.default = PlaylistRenderer;
-//# sourceMappingURL=PlaylistRenderer.js.map
