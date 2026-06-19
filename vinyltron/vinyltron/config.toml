@@ -1,0 +1,70 @@
+[volumio]
+host = "volumio.local"
+port = 3000
+artwork_enabled = true
+
+[display]
+brightness = 80
+gamma = 2.2
+slowdown_gpio = 2
+limit_refresh_rate_hz = 0 # 0 = uncapped; tune if a panel shows flicker or refresh hiccups
+startup_delay_seconds = 5 # extra grace period after Volumio /status returns ready before idle display starts
+rows = 64
+cols = 64
+rotation = 270
+display_on = true
+hardware_mapping = "adafruit-hat-pwm" # requires GPIO4->GPIO18 bonnet quality jumper; use "adafruit-hat" without it
+disable_hardware_pulsing = false   # true was required for direct GPIO; bonnet handles PWM
+panel_type = ""          # set to "FM6126A" if colors/timing are wrong
+
+[schedule]
+enabled = false
+on_time = "08:00"
+off_time = "23:00"
+
+[fallback]
+image = "assets/idle.png"
+image_folder = "/data/INTERNAL/Vinyltron/idle-images"
+mode = "single"          # single | selected | random_folder | screensaver | weather
+selected_image = ""      # basename inside image_folder
+rotate_seconds = 300     # random_folder only; 0 disables idle photo rotation
+
+[screensaver]
+engine = "brians_brain"  # brians_brain | langtons_ant | chaos_game | gray_scott
+palette = "cyan_amber"   # cyan_amber | green_magenta | blue_red | white_violet
+fps = 6                  # clamped to 2-24
+reset_seconds = 300      # 0 disables periodic random reset
+density = 0.22           # initial ready-cell density for Brian's Brain
+ant_count = 3            # Langton's Ant count
+steps_per_frame = 96     # Langton's Ant simulation steps per rendered frame
+points_per_frame = 320   # Chaos Game plotted points per rendered frame
+fade = 12                # Chaos Game per-frame fade; 0 disables fading
+rotation_speed = 2       # Chaos Game vertex rotation degrees per rendered frame
+feed = 0.055             # Gray-Scott reaction-diffusion feed rate
+kill = 0.062             # Gray-Scott reaction-diffusion kill rate
+grid_scale = 2           # Gray-Scott simulation downscale factor (2 = 32x32 grid upscaled to 64x64)
+seed = ""                # optional deterministic seed; blank = random each daemon start
+
+[weather]
+source = "mock"                  # mock | open_meteo
+latitude = 0.0                   # required for source = open_meteo
+longitude = 0.0                  # required for source = open_meteo
+location_label = ""              # optional display/log label for the configured location
+units = "imperial"               # imperial | metric
+refresh_minutes = 10             # live weather refresh cadence; clamped to 5-60
+night_icon = "moon"              # moon | weather
+secondary_metric = "humidity"    # humidity | aqi | wind
+fps = 1                          # weather animation rate; clamped to 1-10
+mock_condition = "partly_cloudy" # clear | partly_cloudy | cloudy | rain | storm | snow | fog
+mock_night = false               # true shows moon phase instead of the weather icon
+mock_moon_phase = 0.55           # 0.0 new, 0.5 full, 1.0 new
+
+[overlays]
+progress_bar = false       # legacy compatibility; progress_bar_height = 0 disables the bar
+progress_bar_height = 0
+progress_bar_foreground = [255, 255, 255]
+progress_bar_background = [] # empty = use album art as the track background
+format_badge = false       # compact format text overlay
+format_font = "tom_thumb"  # tom_thumb | tiny5 | spleen
+format_font_path = ""      # optional custom BDF path; built-in choices have default paths
+badge_duration = 10
