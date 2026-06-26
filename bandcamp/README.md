@@ -12,12 +12,8 @@ As the name implies, the purpose of this plugin is to allow you to discover musi
 
 ## Changelog
 
-2.3.0
-- Add playlist support.
-- Fix search returning empty results when no cookie is provided in settings.
-- Shows: resolve missing tracks and unplayable streams.
-- Add option to log debug messages.
-- Improve enqueuing efficiency.
+2.3.1
+- Resolve playlist errors due to Bandcamp changes.
 
 See the [full changelog](./CHANGELOG.md) for older versions.
 

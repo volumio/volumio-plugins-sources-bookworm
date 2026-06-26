@@ -1,5 +1,8 @@
 # Changelog
 
+2.3.1
+- Resolve playlist errors due to Bandcamp changes.
+
 2.3.0
 - Add playlist support.
 - Fix search returning empty results when no cookie is provided in settings.
