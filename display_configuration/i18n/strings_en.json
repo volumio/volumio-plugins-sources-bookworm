@@ -29,7 +29,8 @@
     "ROT_90CW": "90 CW",
     "ROT_180": "180",
     "ROT_90CCW": "90 CCW",
-
+    "OVERSCAN": "Display scaling (overscan)",
+    "OVERSCAN_DOC": "Adjust display scaling to fit the screen.",
     "SCREENSAVER_SECTION": "Screensaver",
     "MOUSE_C": "Hide Mouse Cursor",
     "MOUSE_C_DOC": "If enabled, the mouse cursor is hidden when not in use.",

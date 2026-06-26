@@ -29,7 +29,8 @@
     "ROT_90CW": "90 CW",
     "ROT_180": "180",
     "ROT_90CCW": "90 CCW",
-
+    "OVERSCAN": "Scalatura schermo (overscan)",
+    "OVERSCAN_DOC": "Regola la scalatura dello schermo per adattarla al display.",
     "SCREENSAVER_SECTION": "Salvaschermo",
     "MOUSE_C": "Nascondi cursore del mouse",
     "MOUSE_C_DOC": "Se abilitato, il cursore del mouse viene nascosto quando non in uso.",

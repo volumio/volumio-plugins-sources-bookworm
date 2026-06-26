@@ -29,7 +29,8 @@
     "ROT_90CW": "90 CW",
     "ROT_180": "180",
     "ROT_90CCW": "90 CCW",
-
+    "OVERSCAN": "Ajustement de l'ecran (overscan)",
+    "OVERSCAN_DOC": "Ajuster l'echelle de l'ecran pour qu'elle corresponde a l'ecran.",
     "SCREENSAVER_SECTION": "Economiseur d'ecran",
     "MOUSE_C": "Masquer le curseur de la souris",
     "MOUSE_C_DOC": "Si active, le curseur de la souris est masque lorsqu'il n'est pas utilise.",

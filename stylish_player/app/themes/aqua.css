@@ -5,7 +5,8 @@
      COLOR PALETTE - Aqua Theme (macOS Classic)
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Aqua Blue) ──────────────────────────────────────────── */
-  --color-primary: #147aff; /* Classic macOS Aqua blue */
+  --color-primary: #147aff;
+  /* Classic macOS Aqua blue */
   --color-primary-light: #6cabff;
   --color-primary-dark: #1060e8;
   --color-primary-deep: #0036ab;
@@ -25,7 +26,8 @@
   --color-gray-250: #d0d0d0;
   --color-gray-200: #d6d6d6;
   --color-gray-150: #e0e0e0;
-  --color-gray-100: #ebebeb; /* Classic macOS window background */
+  --color-gray-100: #ebebeb;
+  /* Classic macOS window background */
   --color-gray-075: #efefef;
   --color-gray-050: #f2f2f2;
   --color-gray-025: #f7f7f7;
@@ -60,7 +62,8 @@
      SEMANTIC COLOR USAGE
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Text Colors ──────────────────────────────────────────────────── */
-  --text-primary: #1d1d1f; /* Apple's near-black for text */
+  --text-primary: #1d1d1f;
+  /* Apple's near-black for text */
   --text-secondary: var(--color-gray-600);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success-dark);
@@ -68,9 +71,12 @@
   --text-danger: var(--color-danger);
   --text-info: var(--color-info-dark);
   /* ─── Background Colors ────────────────────────────────────────────── */
-  --bg-color: var(--color-gray-100); /* Classic macOS window gray */
+  --bg-color: var(--color-gray-100);
+  /* Classic macOS window gray */
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #1c1c1e;
-  --device-surface: #dcdcdc; /* Brushed aluminum panel */
+  --device-surface: #dcdcdc;
+  /* Brushed aluminum panel */
   /* ─── Button Colors ────────────────────────────────────────────────── */
   --btn-bg-dark: #3a3a3c;
   --btn-bg-light: var(--color-white);
@@ -110,17 +116,13 @@
   --indicator-info: var(--color-info);
   --indicator-error: var(--color-danger);
   /* ─── Gradients (Glossy Aqua Gel Effect) ──────────────────────────── */
-  --grad-primary: linear-gradient(
-      180deg,
-      var(--color-primary-light),
-      var(--color-primary-dark)
-  );
+  --grad-primary: linear-gradient(180deg,
+          var(--color-primary-light),
+          var(--color-primary-dark));
   --grad-metallic: linear-gradient(180deg, #f5f5f5, #d8d8d8);
-  --grad-warm: linear-gradient(
-      135deg,
-      var(--color-aluminum-light),
-      var(--color-aluminum-dark)
-  );
+  --grad-warm: linear-gradient(135deg,
+          var(--color-aluminum-light),
+          var(--color-aluminum-dark));
   /* ─── Button Gradients (Aqua Gel Style) ───────────────────────────── */
   --btn-black-top: var(--color-gray-700);
   --btn-black-btm: var(--color-gray-800);
@@ -186,22 +188,32 @@
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   /* ─── Line Heights ─────────────────────────────────────────────────── */
   --leading-tight: 1.2;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
   /* ─── Letter Spacing ───────────────────────────────────────────────── */
   --tracking-tight: -0.025em;
-  --tracking-normal: -0.01em; /* Apple uses tighter tracking */
+  --tracking-normal: -0.01em;
+  /* Apple uses tighter tracking */
   --tracking-wide: 0.01em;
   --tracking-wider: 0.03em;
   --tracking-widest: 0.06em;
@@ -275,7 +287,8 @@
      COLOR PALETTE - Aqua Theme (macOS Classic)
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Aqua Blue) ──────────────────────────────────────────── */
-  --color-primary: #147aff; /* Classic macOS Aqua blue */
+  --color-primary: #147aff;
+  /* Classic macOS Aqua blue */
   --color-primary-light: #6cabff;
   --color-primary-dark: #1060e8;
   --color-primary-deep: #0036ab;
@@ -295,7 +308,8 @@
   --color-gray-250: #d0d0d0;
   --color-gray-200: #d6d6d6;
   --color-gray-150: #e0e0e0;
-  --color-gray-100: #ebebeb; /* Classic macOS window background */
+  --color-gray-100: #ebebeb;
+  /* Classic macOS window background */
   --color-gray-075: #efefef;
   --color-gray-050: #f2f2f2;
   --color-gray-025: #f7f7f7;
@@ -330,7 +344,8 @@
      SEMANTIC COLOR USAGE
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Text Colors ──────────────────────────────────────────────────── */
-  --text-primary: #1d1d1f; /* Apple's near-black for text */
+  --text-primary: #1d1d1f;
+  /* Apple's near-black for text */
   --text-secondary: var(--color-gray-600);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success-dark);
@@ -338,9 +353,12 @@
   --text-danger: var(--color-danger);
   --text-info: var(--color-info-dark);
   /* ─── Background Colors ────────────────────────────────────────────── */
-  --bg-color: var(--color-gray-100); /* Classic macOS window gray */
+  --bg-color: var(--color-gray-100);
+  /* Classic macOS window gray */
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #1c1c1e;
-  --device-surface: #dcdcdc; /* Brushed aluminum panel */
+  --device-surface: #dcdcdc;
+  /* Brushed aluminum panel */
   /* ─── Button Colors ────────────────────────────────────────────────── */
   --btn-bg-dark: #3a3a3c;
   --btn-bg-light: var(--color-white);
@@ -380,17 +398,13 @@
   --indicator-info: var(--color-info);
   --indicator-error: var(--color-danger);
   /* ─── Gradients (Glossy Aqua Gel Effect) ──────────────────────────── */
-  --grad-primary: linear-gradient(
-      180deg,
-      var(--color-primary-light),
-      var(--color-primary-dark)
-  );
+  --grad-primary: linear-gradient(180deg,
+          var(--color-primary-light),
+          var(--color-primary-dark));
   --grad-metallic: linear-gradient(180deg, #f5f5f5, #d8d8d8);
-  --grad-warm: linear-gradient(
-      135deg,
-      var(--color-aluminum-light),
-      var(--color-aluminum-dark)
-  );
+  --grad-warm: linear-gradient(135deg,
+          var(--color-aluminum-light),
+          var(--color-aluminum-dark));
   /* ─── Button Gradients (Aqua Gel Style) ───────────────────────────── */
   --btn-black-top: var(--color-gray-700);
   --btn-black-btm: var(--color-gray-800);
@@ -456,22 +470,32 @@
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   /* ─── Line Heights ─────────────────────────────────────────────────── */
   --leading-tight: 1.2;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
   /* ─── Letter Spacing ───────────────────────────────────────────────── */
   --tracking-tight: -0.025em;
-  --tracking-normal: -0.01em; /* Apple uses tighter tracking */
+  --tracking-normal: -0.01em;
+  /* Apple uses tighter tracking */
   --tracking-wide: 0.01em;
   --tracking-wider: 0.03em;
   --tracking-widest: 0.06em;
@@ -646,7 +670,8 @@ pre {
      COLOR PALETTE - Aqua Theme (macOS Classic)
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Aqua Blue) ──────────────────────────────────────────── */
-  --color-primary: #147aff; /* Classic macOS Aqua blue */
+  --color-primary: #147aff;
+  /* Classic macOS Aqua blue */
   --color-primary-light: #6cabff;
   --color-primary-dark: #1060e8;
   --color-primary-deep: #0036ab;
@@ -666,7 +691,8 @@ pre {
   --color-gray-250: #d0d0d0;
   --color-gray-200: #d6d6d6;
   --color-gray-150: #e0e0e0;
-  --color-gray-100: #ebebeb; /* Classic macOS window background */
+  --color-gray-100: #ebebeb;
+  /* Classic macOS window background */
   --color-gray-075: #efefef;
   --color-gray-050: #f2f2f2;
   --color-gray-025: #f7f7f7;
@@ -701,7 +727,8 @@ pre {
      SEMANTIC COLOR USAGE
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Text Colors ──────────────────────────────────────────────────── */
-  --text-primary: #1d1d1f; /* Apple's near-black for text */
+  --text-primary: #1d1d1f;
+  /* Apple's near-black for text */
   --text-secondary: var(--color-gray-600);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success-dark);
@@ -709,9 +736,12 @@ pre {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info-dark);
   /* ─── Background Colors ────────────────────────────────────────────── */
-  --bg-color: var(--color-gray-100); /* Classic macOS window gray */
+  --bg-color: var(--color-gray-100);
+  /* Classic macOS window gray */
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #1c1c1e;
-  --device-surface: #dcdcdc; /* Brushed aluminum panel */
+  --device-surface: #dcdcdc;
+  /* Brushed aluminum panel */
   /* ─── Button Colors ────────────────────────────────────────────────── */
   --btn-bg-dark: #3a3a3c;
   --btn-bg-light: var(--color-white);
@@ -751,17 +781,13 @@ pre {
   --indicator-info: var(--color-info);
   --indicator-error: var(--color-danger);
   /* ─── Gradients (Glossy Aqua Gel Effect) ──────────────────────────── */
-  --grad-primary: linear-gradient(
-      180deg,
-      var(--color-primary-light),
-      var(--color-primary-dark)
-  );
+  --grad-primary: linear-gradient(180deg,
+          var(--color-primary-light),
+          var(--color-primary-dark));
   --grad-metallic: linear-gradient(180deg, #f5f5f5, #d8d8d8);
-  --grad-warm: linear-gradient(
-      135deg,
-      var(--color-aluminum-light),
-      var(--color-aluminum-dark)
-  );
+  --grad-warm: linear-gradient(135deg,
+          var(--color-aluminum-light),
+          var(--color-aluminum-dark));
   /* ─── Button Gradients (Aqua Gel Style) ───────────────────────────── */
   --btn-black-top: var(--color-gray-700);
   --btn-black-btm: var(--color-gray-800);
@@ -827,22 +853,32 @@ pre {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   /* ─── Line Heights ─────────────────────────────────────────────────── */
   --leading-tight: 1.2;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
   /* ─── Letter Spacing ───────────────────────────────────────────────── */
   --tracking-tight: -0.025em;
-  --tracking-normal: -0.01em; /* Apple uses tighter tracking */
+  --tracking-normal: -0.01em;
+  /* Apple uses tighter tracking */
   --tracking-wide: 0.01em;
   --tracking-wider: 0.03em;
   --tracking-widest: 0.06em;
@@ -1263,12 +1299,45 @@ pre {
   border-color: rgba(34, 197, 94, 0.3);
 }
 
+/* ── Mobile compact (≤ 768px) ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .dialog-container {
+    padding: 0;
+  }
+  .dialog {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    margin: 0;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .dialog-header {
+    padding: 0.875rem 1rem;
+    border-radius: 0;
+  }
+  .dialog-body {
+    padding: 1rem;
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+  .dialog-footer {
+    padding: 0.875rem 1rem;
+    border-radius: 0;
+  }
+  .dialog-title {
+    font-size: 1rem;
+  }
+}
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE - Aqua Theme (macOS Classic)
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Aqua Blue) ──────────────────────────────────────────── */
-  --color-primary: #147aff; /* Classic macOS Aqua blue */
+  --color-primary: #147aff;
+  /* Classic macOS Aqua blue */
   --color-primary-light: #6cabff;
   --color-primary-dark: #1060e8;
   --color-primary-deep: #0036ab;
@@ -1288,7 +1357,8 @@ pre {
   --color-gray-250: #d0d0d0;
   --color-gray-200: #d6d6d6;
   --color-gray-150: #e0e0e0;
-  --color-gray-100: #ebebeb; /* Classic macOS window background */
+  --color-gray-100: #ebebeb;
+  /* Classic macOS window background */
   --color-gray-075: #efefef;
   --color-gray-050: #f2f2f2;
   --color-gray-025: #f7f7f7;
@@ -1323,7 +1393,8 @@ pre {
      SEMANTIC COLOR USAGE
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Text Colors ──────────────────────────────────────────────────── */
-  --text-primary: #1d1d1f; /* Apple's near-black for text */
+  --text-primary: #1d1d1f;
+  /* Apple's near-black for text */
   --text-secondary: var(--color-gray-600);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success-dark);
@@ -1331,9 +1402,12 @@ pre {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info-dark);
   /* ─── Background Colors ────────────────────────────────────────────── */
-  --bg-color: var(--color-gray-100); /* Classic macOS window gray */
+  --bg-color: var(--color-gray-100);
+  /* Classic macOS window gray */
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #1c1c1e;
-  --device-surface: #dcdcdc; /* Brushed aluminum panel */
+  --device-surface: #dcdcdc;
+  /* Brushed aluminum panel */
   /* ─── Button Colors ────────────────────────────────────────────────── */
   --btn-bg-dark: #3a3a3c;
   --btn-bg-light: var(--color-white);
@@ -1373,17 +1447,13 @@ pre {
   --indicator-info: var(--color-info);
   --indicator-error: var(--color-danger);
   /* ─── Gradients (Glossy Aqua Gel Effect) ──────────────────────────── */
-  --grad-primary: linear-gradient(
-      180deg,
-      var(--color-primary-light),
-      var(--color-primary-dark)
-  );
+  --grad-primary: linear-gradient(180deg,
+          var(--color-primary-light),
+          var(--color-primary-dark));
   --grad-metallic: linear-gradient(180deg, #f5f5f5, #d8d8d8);
-  --grad-warm: linear-gradient(
-      135deg,
-      var(--color-aluminum-light),
-      var(--color-aluminum-dark)
-  );
+  --grad-warm: linear-gradient(135deg,
+          var(--color-aluminum-light),
+          var(--color-aluminum-dark));
   /* ─── Button Gradients (Aqua Gel Style) ───────────────────────────── */
   --btn-black-top: var(--color-gray-700);
   --btn-black-btm: var(--color-gray-800);
@@ -1449,22 +1519,32 @@ pre {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   /* ─── Line Heights ─────────────────────────────────────────────────── */
   --leading-tight: 1.2;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
   /* ─── Letter Spacing ───────────────────────────────────────────────── */
   --tracking-tight: -0.025em;
-  --tracking-normal: -0.01em; /* Apple uses tighter tracking */
+  --tracking-normal: -0.01em;
+  /* Apple uses tighter tracking */
   --tracking-wide: 0.01em;
   --tracking-wider: 0.03em;
   --tracking-widest: 0.06em;
@@ -1541,9 +1621,9 @@ pre {
   gap: 0.4rem;
   padding: 4px 20px;
   min-height: 22px;
-  background: linear-gradient(to bottom, #fcfcfc 0%, #e2e2e2 50%, #d4d4d4 51%, #f4f4f4 100%);
-  border: 1px solid #a0a0a0;
-  border-radius: 6px;
+  background: linear-gradient(to bottom, #fafafa 0%, #e8e8e8 45%, #dcdcdc 55%, #f0f0f0 100%);
+  border: 1px solid #b0b0b0;
+  border-radius: 999px;
   font-family: var(--font-label);
   font-size: var(--text-sm);
   font-weight: 400;
@@ -1552,20 +1632,20 @@ pre {
   cursor: pointer;
   user-select: none;
   transition: none;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 .btn:hover {
-  background: linear-gradient(to bottom, #ffffff 0%, #ebebeb 50%, #dddddd 51%, #f9f9f9 100%);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgb(255, 255, 255);
+  background: linear-gradient(to bottom, #ffffff 0%, #efefef 45%, #e5e5e5 55%, #f7f7f7 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 .btn:active, .btn.active {
-  background: linear-gradient(to bottom, #a0a0a0 0%, #b8b8b8 50%, #d0d0d0 51%, #e0e0e0 100%);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
-  border-color: #888888;
+  background: linear-gradient(to bottom, #c8c8c8 0%, #d4d4d4 45%, #dcdcdc 55%, #e4e4e4 100%);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
+  border-color: #999999;
 }
 .btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(59, 152, 255, 0.4);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(118, 178, 240, 0.6), 0 1px 2px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .btn {
@@ -1578,31 +1658,32 @@ pre {
   top: 1px;
   left: 2px;
   right: 2px;
-  height: 48%;
-  border-radius: 4px 4px 2px 2px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.12) 100%);
+  height: 46%;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.05) 100%);
   pointer-events: none;
 }
 
 .btn-primary, .btn-orange {
-  background: linear-gradient(to bottom, #74b0e6 0%, #1e69de 50%, #1254c0 51%, #539fe1 100%);
-  border: 1px solid #1050a0;
-  border-radius: 6px;
-  color: #ffffff;
-  text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.4);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: linear-gradient(to bottom, #7abaf5 0%, #4a9cf0 40%, #2e82e6 60%, #5ca8f0 100%);
+  border: 1px solid #4080d0;
+  border-radius: 999px;
+  color: #000000;
+  font-weight: 400;
+  text-shadow: none;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
 }
 .btn-primary::after, .btn-orange::after {
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.1) 100%);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.05) 100%);
 }
 .btn-primary:hover, .btn-orange:hover {
-  background: linear-gradient(to bottom, #8dc0ee 0%, #3278e6 50%, #1f64cc 51%, #64aee6 100%);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  background: linear-gradient(to bottom, #8ec6f7 0%, #5eaaf3 40%, #3e8eea 60%, #6eb4f3 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 .btn-primary:active, .btn-orange:active, .btn-primary.active, .active.btn-orange {
-  background: linear-gradient(to bottom, #10428d 0%, #195ac9 50%, #2972e6 51%, #5ba7ef 100%);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-  border-color: #0c3372;
+  background: linear-gradient(to bottom, #3670c0 0%, #2060b8 40%, #1854a8 60%, #4080cc 100%);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  border-color: #305898;
 }
 
 .btn-success {
@@ -1735,7 +1816,7 @@ pre {
 .btn-icon .material-icons {
   font-size: 16px !important;
 }
-.btn-icon:hover {
+.btn-icon:hover, .btn-icon:focus-visible {
   background: rgba(0, 0, 0, 0.06);
   box-shadow: none;
 }
@@ -1867,7 +1948,8 @@ pre {
      COLOR PALETTE - Aqua Theme (macOS Classic)
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Aqua Blue) ──────────────────────────────────────────── */
-  --color-primary: #147aff; /* Classic macOS Aqua blue */
+  --color-primary: #147aff;
+  /* Classic macOS Aqua blue */
   --color-primary-light: #6cabff;
   --color-primary-dark: #1060e8;
   --color-primary-deep: #0036ab;
@@ -1887,7 +1969,8 @@ pre {
   --color-gray-250: #d0d0d0;
   --color-gray-200: #d6d6d6;
   --color-gray-150: #e0e0e0;
-  --color-gray-100: #ebebeb; /* Classic macOS window background */
+  --color-gray-100: #ebebeb;
+  /* Classic macOS window background */
   --color-gray-075: #efefef;
   --color-gray-050: #f2f2f2;
   --color-gray-025: #f7f7f7;
@@ -1922,7 +2005,8 @@ pre {
      SEMANTIC COLOR USAGE
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Text Colors ──────────────────────────────────────────────────── */
-  --text-primary: #1d1d1f; /* Apple's near-black for text */
+  --text-primary: #1d1d1f;
+  /* Apple's near-black for text */
   --text-secondary: var(--color-gray-600);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success-dark);
@@ -1930,9 +2014,12 @@ pre {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info-dark);
   /* ─── Background Colors ────────────────────────────────────────────── */
-  --bg-color: var(--color-gray-100); /* Classic macOS window gray */
+  --bg-color: var(--color-gray-100);
+  /* Classic macOS window gray */
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #1c1c1e;
-  --device-surface: #dcdcdc; /* Brushed aluminum panel */
+  --device-surface: #dcdcdc;
+  /* Brushed aluminum panel */
   /* ─── Button Colors ────────────────────────────────────────────────── */
   --btn-bg-dark: #3a3a3c;
   --btn-bg-light: var(--color-white);
@@ -1972,17 +2059,13 @@ pre {
   --indicator-info: var(--color-info);
   --indicator-error: var(--color-danger);
   /* ─── Gradients (Glossy Aqua Gel Effect) ──────────────────────────── */
-  --grad-primary: linear-gradient(
-      180deg,
-      var(--color-primary-light),
-      var(--color-primary-dark)
-  );
+  --grad-primary: linear-gradient(180deg,
+          var(--color-primary-light),
+          var(--color-primary-dark));
   --grad-metallic: linear-gradient(180deg, #f5f5f5, #d8d8d8);
-  --grad-warm: linear-gradient(
-      135deg,
-      var(--color-aluminum-light),
-      var(--color-aluminum-dark)
-  );
+  --grad-warm: linear-gradient(135deg,
+          var(--color-aluminum-light),
+          var(--color-aluminum-dark));
   /* ─── Button Gradients (Aqua Gel Style) ───────────────────────────── */
   --btn-black-top: var(--color-gray-700);
   --btn-black-btm: var(--color-gray-800);
@@ -2048,22 +2131,32 @@ pre {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   /* ─── Line Heights ─────────────────────────────────────────────────── */
   --leading-tight: 1.2;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
   /* ─── Letter Spacing ───────────────────────────────────────────────── */
   --tracking-tight: -0.025em;
-  --tracking-normal: -0.01em; /* Apple uses tighter tracking */
+  --tracking-normal: -0.01em;
+  /* Apple uses tighter tracking */
   --tracking-wide: 0.01em;
   --tracking-wider: 0.03em;
   --tracking-widest: 0.06em;
@@ -2323,8 +2416,8 @@ input:checked + .slider:before {
 input[type=checkbox] {
   appearance: none;
   -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   border-radius: 3px;
   border: 1px solid #a0a0a0;
   background: linear-gradient(to bottom, #f0f0f0 0%, #ffffff 100%);
@@ -2347,8 +2440,8 @@ input[type=checkbox]:checked::after {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 4px;
-  height: 8px;
+  width: 5px;
+  height: 10px;
   border: solid #fff;
   border-width: 0 2px 2px 0;
   transform: translate(-50%, -60%) rotate(45deg);
@@ -2374,6 +2467,10 @@ input[type=radio] {
   display: inline-block;
   vertical-align: middle;
   flex-shrink: 0;
+}
+.aqua-radio.settings-radio__input,
+input[type=radio].settings-radio__input {
+  display: none;
 }
 .aqua-radio:checked,
 input[type=radio]:checked {
@@ -2531,12 +2628,104 @@ input[type=radio]:focus-visible {
   pointer-events: none;
 }
 
+/* ─── Settings Knob ──────────────────────────────────────────────────── */
+.settings-knob {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.1) 45%, transparent 50%), radial-gradient(circle at 35% 35%, var(--color-primary-light, #6cabff), var(--color-primary, #147aff) 60%, var(--color-primary-deep, #0036ab) 100%);
+  border: 1px solid var(--color-primary-dark, #1060e8);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+}
+.settings-knob:active {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), inset 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.settings-knob__indicator {
+  background: #fff;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.settings-knob-value {
+  color: var(--color-primary-dark, #1060e8);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.settings-knob-scale {
+  color: var(--color-primary, #147aff);
+}
+
+/* ─── Settings page tab overrides (Aqua / Lion) ───────────────────────── */
+.settings-tabs {
+  background: linear-gradient(to bottom, #f0f0f0, #e4e4e4);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.settings-tab {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0;
+  margin-left: -1px;
+  border: 1px solid #b0b0b0;
+  background: linear-gradient(to bottom, #fafafa 0%, #e8e8e8 45%, #dcdcdc 55%, #f0f0f0 100%);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
+  color: #333;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.settings-tab:first-child {
+  margin-left: 0;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+.settings-tab:last-child {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+.settings-tab {
+  /* Subtle shine — not heavy gel */
+}
+.settings-tab::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  right: 1px;
+  height: 46%;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.02) 100%);
+  pointer-events: none;
+}
+.settings-tab:hover:not(.settings-tab--active) {
+  background: linear-gradient(to bottom, #ffffff 0%, #efefef 45%, #e5e5e5 55%, #f7f7f7 100%);
+  color: var(--color-primary, #147aff);
+  transform: none;
+}
+
+.settings-tab--active {
+  background: linear-gradient(to bottom, #b8d4f0 0%, #8bbae8 45%, #6aa4e0 55%, #a0c8f0 100%);
+  border: 1px solid #6090c0;
+  color: #1a1a1a;
+  font-weight: 600;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.08);
+  transform: none;
+}
+.settings-tab--active::after {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+.settings-tab--active .settings-tab__icon {
+  text-shadow: none;
+}
+.settings-tab--active:hover {
+  background: linear-gradient(to bottom, #c4dcf4 0%, #98c4ec 45%, #78b0e4 55%, #acd0f4 100%);
+  transform: none;
+}
+
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE - Aqua Theme (macOS Classic)
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Aqua Blue) ──────────────────────────────────────────── */
-  --color-primary: #147aff; /* Classic macOS Aqua blue */
+  --color-primary: #147aff;
+  /* Classic macOS Aqua blue */
   --color-primary-light: #6cabff;
   --color-primary-dark: #1060e8;
   --color-primary-deep: #0036ab;
@@ -2556,7 +2745,8 @@ input[type=radio]:focus-visible {
   --color-gray-250: #d0d0d0;
   --color-gray-200: #d6d6d6;
   --color-gray-150: #e0e0e0;
-  --color-gray-100: #ebebeb; /* Classic macOS window background */
+  --color-gray-100: #ebebeb;
+  /* Classic macOS window background */
   --color-gray-075: #efefef;
   --color-gray-050: #f2f2f2;
   --color-gray-025: #f7f7f7;
@@ -2591,7 +2781,8 @@ input[type=radio]:focus-visible {
      SEMANTIC COLOR USAGE
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Text Colors ──────────────────────────────────────────────────── */
-  --text-primary: #1d1d1f; /* Apple's near-black for text */
+  --text-primary: #1d1d1f;
+  /* Apple's near-black for text */
   --text-secondary: var(--color-gray-600);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success-dark);
@@ -2599,9 +2790,12 @@ input[type=radio]:focus-visible {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info-dark);
   /* ─── Background Colors ────────────────────────────────────────────── */
-  --bg-color: var(--color-gray-100); /* Classic macOS window gray */
+  --bg-color: var(--color-gray-100);
+  /* Classic macOS window gray */
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #1c1c1e;
-  --device-surface: #dcdcdc; /* Brushed aluminum panel */
+  --device-surface: #dcdcdc;
+  /* Brushed aluminum panel */
   /* ─── Button Colors ────────────────────────────────────────────────── */
   --btn-bg-dark: #3a3a3c;
   --btn-bg-light: var(--color-white);
@@ -2641,17 +2835,13 @@ input[type=radio]:focus-visible {
   --indicator-info: var(--color-info);
   --indicator-error: var(--color-danger);
   /* ─── Gradients (Glossy Aqua Gel Effect) ──────────────────────────── */
-  --grad-primary: linear-gradient(
-      180deg,
-      var(--color-primary-light),
-      var(--color-primary-dark)
-  );
+  --grad-primary: linear-gradient(180deg,
+          var(--color-primary-light),
+          var(--color-primary-dark));
   --grad-metallic: linear-gradient(180deg, #f5f5f5, #d8d8d8);
-  --grad-warm: linear-gradient(
-      135deg,
-      var(--color-aluminum-light),
-      var(--color-aluminum-dark)
-  );
+  --grad-warm: linear-gradient(135deg,
+          var(--color-aluminum-light),
+          var(--color-aluminum-dark));
   /* ─── Button Gradients (Aqua Gel Style) ───────────────────────────── */
   --btn-black-top: var(--color-gray-700);
   --btn-black-btm: var(--color-gray-800);
@@ -2717,22 +2907,32 @@ input[type=radio]:focus-visible {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   /* ─── Line Heights ─────────────────────────────────────────────────── */
   --leading-tight: 1.2;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
   /* ─── Letter Spacing ───────────────────────────────────────────────── */
   --tracking-tight: -0.025em;
-  --tracking-normal: -0.01em; /* Apple uses tighter tracking */
+  --tracking-normal: -0.01em;
+  /* Apple uses tighter tracking */
   --tracking-wide: 0.01em;
   --tracking-wider: 0.03em;
   --tracking-widest: 0.06em;
@@ -2888,7 +3088,8 @@ input[type=radio]:focus-visible {
      COLOR PALETTE - Aqua Theme (macOS Classic)
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Aqua Blue) ──────────────────────────────────────────── */
-  --color-primary: #147aff; /* Classic macOS Aqua blue */
+  --color-primary: #147aff;
+  /* Classic macOS Aqua blue */
   --color-primary-light: #6cabff;
   --color-primary-dark: #1060e8;
   --color-primary-deep: #0036ab;
@@ -2908,7 +3109,8 @@ input[type=radio]:focus-visible {
   --color-gray-250: #d0d0d0;
   --color-gray-200: #d6d6d6;
   --color-gray-150: #e0e0e0;
-  --color-gray-100: #ebebeb; /* Classic macOS window background */
+  --color-gray-100: #ebebeb;
+  /* Classic macOS window background */
   --color-gray-075: #efefef;
   --color-gray-050: #f2f2f2;
   --color-gray-025: #f7f7f7;
@@ -2943,7 +3145,8 @@ input[type=radio]:focus-visible {
      SEMANTIC COLOR USAGE
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Text Colors ──────────────────────────────────────────────────── */
-  --text-primary: #1d1d1f; /* Apple's near-black for text */
+  --text-primary: #1d1d1f;
+  /* Apple's near-black for text */
   --text-secondary: var(--color-gray-600);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success-dark);
@@ -2951,9 +3154,12 @@ input[type=radio]:focus-visible {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info-dark);
   /* ─── Background Colors ────────────────────────────────────────────── */
-  --bg-color: var(--color-gray-100); /* Classic macOS window gray */
+  --bg-color: var(--color-gray-100);
+  /* Classic macOS window gray */
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #1c1c1e;
-  --device-surface: #dcdcdc; /* Brushed aluminum panel */
+  --device-surface: #dcdcdc;
+  /* Brushed aluminum panel */
   /* ─── Button Colors ────────────────────────────────────────────────── */
   --btn-bg-dark: #3a3a3c;
   --btn-bg-light: var(--color-white);
@@ -2993,17 +3199,13 @@ input[type=radio]:focus-visible {
   --indicator-info: var(--color-info);
   --indicator-error: var(--color-danger);
   /* ─── Gradients (Glossy Aqua Gel Effect) ──────────────────────────── */
-  --grad-primary: linear-gradient(
-      180deg,
-      var(--color-primary-light),
-      var(--color-primary-dark)
-  );
+  --grad-primary: linear-gradient(180deg,
+          var(--color-primary-light),
+          var(--color-primary-dark));
   --grad-metallic: linear-gradient(180deg, #f5f5f5, #d8d8d8);
-  --grad-warm: linear-gradient(
-      135deg,
-      var(--color-aluminum-light),
-      var(--color-aluminum-dark)
-  );
+  --grad-warm: linear-gradient(135deg,
+          var(--color-aluminum-light),
+          var(--color-aluminum-dark));
   /* ─── Button Gradients (Aqua Gel Style) ───────────────────────────── */
   --btn-black-top: var(--color-gray-700);
   --btn-black-btm: var(--color-gray-800);
@@ -3069,22 +3271,32 @@ input[type=radio]:focus-visible {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   /* ─── Line Heights ─────────────────────────────────────────────────── */
   --leading-tight: 1.2;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
   /* ─── Letter Spacing ───────────────────────────────────────────────── */
   --tracking-tight: -0.025em;
-  --tracking-normal: -0.01em; /* Apple uses tighter tracking */
+  --tracking-normal: -0.01em;
+  /* Apple uses tighter tracking */
   --tracking-wide: 0.01em;
   --tracking-wider: 0.03em;
   --tracking-widest: 0.06em;
@@ -3285,7 +3497,8 @@ input[type=range]::-moz-range-thumb:active {
      COLOR PALETTE - Aqua Theme (macOS Classic)
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Aqua Blue) ──────────────────────────────────────────── */
-  --color-primary: #147aff; /* Classic macOS Aqua blue */
+  --color-primary: #147aff;
+  /* Classic macOS Aqua blue */
   --color-primary-light: #6cabff;
   --color-primary-dark: #1060e8;
   --color-primary-deep: #0036ab;
@@ -3305,7 +3518,8 @@ input[type=range]::-moz-range-thumb:active {
   --color-gray-250: #d0d0d0;
   --color-gray-200: #d6d6d6;
   --color-gray-150: #e0e0e0;
-  --color-gray-100: #ebebeb; /* Classic macOS window background */
+  --color-gray-100: #ebebeb;
+  /* Classic macOS window background */
   --color-gray-075: #efefef;
   --color-gray-050: #f2f2f2;
   --color-gray-025: #f7f7f7;
@@ -3340,7 +3554,8 @@ input[type=range]::-moz-range-thumb:active {
      SEMANTIC COLOR USAGE
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Text Colors ──────────────────────────────────────────────────── */
-  --text-primary: #1d1d1f; /* Apple's near-black for text */
+  --text-primary: #1d1d1f;
+  /* Apple's near-black for text */
   --text-secondary: var(--color-gray-600);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success-dark);
@@ -3348,9 +3563,12 @@ input[type=range]::-moz-range-thumb:active {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info-dark);
   /* ─── Background Colors ────────────────────────────────────────────── */
-  --bg-color: var(--color-gray-100); /* Classic macOS window gray */
+  --bg-color: var(--color-gray-100);
+  /* Classic macOS window gray */
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #1c1c1e;
-  --device-surface: #dcdcdc; /* Brushed aluminum panel */
+  --device-surface: #dcdcdc;
+  /* Brushed aluminum panel */
   /* ─── Button Colors ────────────────────────────────────────────────── */
   --btn-bg-dark: #3a3a3c;
   --btn-bg-light: var(--color-white);
@@ -3390,17 +3608,13 @@ input[type=range]::-moz-range-thumb:active {
   --indicator-info: var(--color-info);
   --indicator-error: var(--color-danger);
   /* ─── Gradients (Glossy Aqua Gel Effect) ──────────────────────────── */
-  --grad-primary: linear-gradient(
-      180deg,
-      var(--color-primary-light),
-      var(--color-primary-dark)
-  );
+  --grad-primary: linear-gradient(180deg,
+          var(--color-primary-light),
+          var(--color-primary-dark));
   --grad-metallic: linear-gradient(180deg, #f5f5f5, #d8d8d8);
-  --grad-warm: linear-gradient(
-      135deg,
-      var(--color-aluminum-light),
-      var(--color-aluminum-dark)
-  );
+  --grad-warm: linear-gradient(135deg,
+          var(--color-aluminum-light),
+          var(--color-aluminum-dark));
   /* ─── Button Gradients (Aqua Gel Style) ───────────────────────────── */
   --btn-black-top: var(--color-gray-700);
   --btn-black-btm: var(--color-gray-800);
@@ -3466,22 +3680,32 @@ input[type=range]::-moz-range-thumb:active {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   /* ─── Line Heights ─────────────────────────────────────────────────── */
   --leading-tight: 1.2;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
   /* ─── Letter Spacing ───────────────────────────────────────────────── */
   --tracking-tight: -0.025em;
-  --tracking-normal: -0.01em; /* Apple uses tighter tracking */
+  --tracking-normal: -0.01em;
+  /* Apple uses tighter tracking */
   --tracking-wide: 0.01em;
   --tracking-wider: 0.03em;
   --tracking-widest: 0.06em;
@@ -3625,7 +3849,8 @@ input[type=range]::-moz-range-thumb:active {
      COLOR PALETTE - Aqua Theme (macOS Classic)
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Aqua Blue) ──────────────────────────────────────────── */
-  --color-primary: #147aff; /* Classic macOS Aqua blue */
+  --color-primary: #147aff;
+  /* Classic macOS Aqua blue */
   --color-primary-light: #6cabff;
   --color-primary-dark: #1060e8;
   --color-primary-deep: #0036ab;
@@ -3645,7 +3870,8 @@ input[type=range]::-moz-range-thumb:active {
   --color-gray-250: #d0d0d0;
   --color-gray-200: #d6d6d6;
   --color-gray-150: #e0e0e0;
-  --color-gray-100: #ebebeb; /* Classic macOS window background */
+  --color-gray-100: #ebebeb;
+  /* Classic macOS window background */
   --color-gray-075: #efefef;
   --color-gray-050: #f2f2f2;
   --color-gray-025: #f7f7f7;
@@ -3680,7 +3906,8 @@ input[type=range]::-moz-range-thumb:active {
      SEMANTIC COLOR USAGE
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Text Colors ──────────────────────────────────────────────────── */
-  --text-primary: #1d1d1f; /* Apple's near-black for text */
+  --text-primary: #1d1d1f;
+  /* Apple's near-black for text */
   --text-secondary: var(--color-gray-600);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success-dark);
@@ -3688,9 +3915,12 @@ input[type=range]::-moz-range-thumb:active {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info-dark);
   /* ─── Background Colors ────────────────────────────────────────────── */
-  --bg-color: var(--color-gray-100); /* Classic macOS window gray */
+  --bg-color: var(--color-gray-100);
+  /* Classic macOS window gray */
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #1c1c1e;
-  --device-surface: #dcdcdc; /* Brushed aluminum panel */
+  --device-surface: #dcdcdc;
+  /* Brushed aluminum panel */
   /* ─── Button Colors ────────────────────────────────────────────────── */
   --btn-bg-dark: #3a3a3c;
   --btn-bg-light: var(--color-white);
@@ -3730,17 +3960,13 @@ input[type=range]::-moz-range-thumb:active {
   --indicator-info: var(--color-info);
   --indicator-error: var(--color-danger);
   /* ─── Gradients (Glossy Aqua Gel Effect) ──────────────────────────── */
-  --grad-primary: linear-gradient(
-      180deg,
-      var(--color-primary-light),
-      var(--color-primary-dark)
-  );
+  --grad-primary: linear-gradient(180deg,
+          var(--color-primary-light),
+          var(--color-primary-dark));
   --grad-metallic: linear-gradient(180deg, #f5f5f5, #d8d8d8);
-  --grad-warm: linear-gradient(
-      135deg,
-      var(--color-aluminum-light),
-      var(--color-aluminum-dark)
-  );
+  --grad-warm: linear-gradient(135deg,
+          var(--color-aluminum-light),
+          var(--color-aluminum-dark));
   /* ─── Button Gradients (Aqua Gel Style) ───────────────────────────── */
   --btn-black-top: var(--color-gray-700);
   --btn-black-btm: var(--color-gray-800);
@@ -3806,22 +4032,32 @@ input[type=range]::-moz-range-thumb:active {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   /* ─── Line Heights ─────────────────────────────────────────────────── */
   --leading-tight: 1.2;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
   /* ─── Letter Spacing ───────────────────────────────────────────────── */
   --tracking-tight: -0.025em;
-  --tracking-normal: -0.01em; /* Apple uses tighter tracking */
+  --tracking-normal: -0.01em;
+  /* Apple uses tighter tracking */
   --tracking-wide: 0.01em;
   --tracking-wider: 0.03em;
   --tracking-widest: 0.06em;
@@ -3995,7 +4231,8 @@ input[type=range]::-moz-range-thumb:active {
      COLOR PALETTE - Aqua Theme (macOS Classic)
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Aqua Blue) ──────────────────────────────────────────── */
-  --color-primary: #147aff; /* Classic macOS Aqua blue */
+  --color-primary: #147aff;
+  /* Classic macOS Aqua blue */
   --color-primary-light: #6cabff;
   --color-primary-dark: #1060e8;
   --color-primary-deep: #0036ab;
@@ -4015,7 +4252,8 @@ input[type=range]::-moz-range-thumb:active {
   --color-gray-250: #d0d0d0;
   --color-gray-200: #d6d6d6;
   --color-gray-150: #e0e0e0;
-  --color-gray-100: #ebebeb; /* Classic macOS window background */
+  --color-gray-100: #ebebeb;
+  /* Classic macOS window background */
   --color-gray-075: #efefef;
   --color-gray-050: #f2f2f2;
   --color-gray-025: #f7f7f7;
@@ -4050,7 +4288,8 @@ input[type=range]::-moz-range-thumb:active {
      SEMANTIC COLOR USAGE
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Text Colors ──────────────────────────────────────────────────── */
-  --text-primary: #1d1d1f; /* Apple's near-black for text */
+  --text-primary: #1d1d1f;
+  /* Apple's near-black for text */
   --text-secondary: var(--color-gray-600);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success-dark);
@@ -4058,9 +4297,12 @@ input[type=range]::-moz-range-thumb:active {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info-dark);
   /* ─── Background Colors ────────────────────────────────────────────── */
-  --bg-color: var(--color-gray-100); /* Classic macOS window gray */
+  --bg-color: var(--color-gray-100);
+  /* Classic macOS window gray */
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #1c1c1e;
-  --device-surface: #dcdcdc; /* Brushed aluminum panel */
+  --device-surface: #dcdcdc;
+  /* Brushed aluminum panel */
   /* ─── Button Colors ────────────────────────────────────────────────── */
   --btn-bg-dark: #3a3a3c;
   --btn-bg-light: var(--color-white);
@@ -4100,17 +4342,13 @@ input[type=range]::-moz-range-thumb:active {
   --indicator-info: var(--color-info);
   --indicator-error: var(--color-danger);
   /* ─── Gradients (Glossy Aqua Gel Effect) ──────────────────────────── */
-  --grad-primary: linear-gradient(
-      180deg,
-      var(--color-primary-light),
-      var(--color-primary-dark)
-  );
+  --grad-primary: linear-gradient(180deg,
+          var(--color-primary-light),
+          var(--color-primary-dark));
   --grad-metallic: linear-gradient(180deg, #f5f5f5, #d8d8d8);
-  --grad-warm: linear-gradient(
-      135deg,
-      var(--color-aluminum-light),
-      var(--color-aluminum-dark)
-  );
+  --grad-warm: linear-gradient(135deg,
+          var(--color-aluminum-light),
+          var(--color-aluminum-dark));
   /* ─── Button Gradients (Aqua Gel Style) ───────────────────────────── */
   --btn-black-top: var(--color-gray-700);
   --btn-black-btm: var(--color-gray-800);
@@ -4176,22 +4414,32 @@ input[type=range]::-moz-range-thumb:active {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   /* ─── Line Heights ─────────────────────────────────────────────────── */
   --leading-tight: 1.2;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
   /* ─── Letter Spacing ───────────────────────────────────────────────── */
   --tracking-tight: -0.025em;
-  --tracking-normal: -0.01em; /* Apple uses tighter tracking */
+  --tracking-normal: -0.01em;
+  /* Apple uses tighter tracking */
   --tracking-wide: 0.01em;
   --tracking-wider: 0.03em;
   --tracking-widest: 0.06em;
@@ -4321,6 +4569,21 @@ input[type=range]::-moz-range-thumb:active {
   margin: 0 auto;
 }
 
+/* ── Track Panel — glossy Aqua inset display (enabled via setting) ─────── */
+.track-panel {
+  border-radius: 10px;
+}
+
+.track-panel .track-info {
+  background: linear-gradient(180deg, rgba(20, 122, 255, 0.12) 0%, rgba(10, 60, 140, 0.18) 100%);
+  border-radius: 10px;
+  padding: clamp(10px, 2cqh, 20px) clamp(12px, 1.5cqw, 24px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.15), inset 0 0 12px rgba(20, 122, 255, 0.08), 0 1px 3px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(20, 122, 255, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
 .track-info {
   font-family: var(--font-body);
   color: var(--color-gray-100);
@@ -4328,13 +4591,11 @@ input[type=range]::-moz-range-thumb:active {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  margin-bottom: 12px;
 }
 
 .track-title {
   font-size: clamp(1.1rem, 4vw, 2rem);
   font-weight: 600;
-  margin-bottom: 4px;
   letter-spacing: var(--tracking-tight);
   white-space: nowrap;
   overflow: hidden;
@@ -4359,11 +4620,39 @@ input[type=range]::-moz-range-thumb:active {
 }
 
 .responsive-album {
-  font-size: clamp(0.7rem, 1.8cqw, 0.95rem);
+  font-size: clamp(0.7rem, 2.1cqw, 1.96rem);
 }
 
 .responsive-stream-info {
   font-size: clamp(0.7rem, 2.1cqw, 1.96rem);
+}
+
+/* Explicit white text when track panel is disabled (avoids near-white text on light aqua background) */
+.track-info-group:not(.track-panel) .track-title {
+  color: rgba(255, 255, 255, 0.95);
+}
+.track-info-group:not(.track-panel) .artist-name,
+.track-info-group:not(.track-panel) .album-name {
+  color: rgba(255, 255, 255, 0.75);
+}
+.track-info-group:not(.track-panel) .responsive-stream-info {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Match regular layout's lighter text treatment in Custom Layout cells */
+.custom-layout-cell .track-title,
+.custom-layout-cell .responsive-title {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+.custom-layout-cell .artist-name,
+.custom-layout-cell .track-artist,
+.custom-layout-cell .album-name,
+.custom-layout-cell .responsive-artist,
+.custom-layout-cell .responsive-album {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+.custom-layout-cell .responsive-stream-info {
+  color: rgba(255, 255, 255, 0.7) !important;
 }
 
 .format-logo-responsive {
@@ -4475,7 +4764,7 @@ input[type=range]::-moz-range-thumb:active {
 .time-label {
   font-family: var(--font-mono);
   font-size: clamp(0.6rem, 1.1vw, 0.85rem);
-  color: var(--color-gray-500, #888);
+  color: var(--color-secondary);
   min-width: clamp(28px, 3.5vw, 44px);
 }
 
@@ -4624,7 +4913,8 @@ input[type=range]::-moz-range-thumb:active {
      COLOR PALETTE - Aqua Theme (macOS Classic)
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Aqua Blue) ──────────────────────────────────────────── */
-  --color-primary: #147aff; /* Classic macOS Aqua blue */
+  --color-primary: #147aff;
+  /* Classic macOS Aqua blue */
   --color-primary-light: #6cabff;
   --color-primary-dark: #1060e8;
   --color-primary-deep: #0036ab;
@@ -4644,7 +4934,8 @@ input[type=range]::-moz-range-thumb:active {
   --color-gray-250: #d0d0d0;
   --color-gray-200: #d6d6d6;
   --color-gray-150: #e0e0e0;
-  --color-gray-100: #ebebeb; /* Classic macOS window background */
+  --color-gray-100: #ebebeb;
+  /* Classic macOS window background */
   --color-gray-075: #efefef;
   --color-gray-050: #f2f2f2;
   --color-gray-025: #f7f7f7;
@@ -4679,7 +4970,8 @@ input[type=range]::-moz-range-thumb:active {
      SEMANTIC COLOR USAGE
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Text Colors ──────────────────────────────────────────────────── */
-  --text-primary: #1d1d1f; /* Apple's near-black for text */
+  --text-primary: #1d1d1f;
+  /* Apple's near-black for text */
   --text-secondary: var(--color-gray-600);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success-dark);
@@ -4687,9 +4979,12 @@ input[type=range]::-moz-range-thumb:active {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info-dark);
   /* ─── Background Colors ────────────────────────────────────────────── */
-  --bg-color: var(--color-gray-100); /* Classic macOS window gray */
+  --bg-color: var(--color-gray-100);
+  /* Classic macOS window gray */
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #1c1c1e;
-  --device-surface: #dcdcdc; /* Brushed aluminum panel */
+  --device-surface: #dcdcdc;
+  /* Brushed aluminum panel */
   /* ─── Button Colors ────────────────────────────────────────────────── */
   --btn-bg-dark: #3a3a3c;
   --btn-bg-light: var(--color-white);
@@ -4729,17 +5024,13 @@ input[type=range]::-moz-range-thumb:active {
   --indicator-info: var(--color-info);
   --indicator-error: var(--color-danger);
   /* ─── Gradients (Glossy Aqua Gel Effect) ──────────────────────────── */
-  --grad-primary: linear-gradient(
-      180deg,
-      var(--color-primary-light),
-      var(--color-primary-dark)
-  );
+  --grad-primary: linear-gradient(180deg,
+          var(--color-primary-light),
+          var(--color-primary-dark));
   --grad-metallic: linear-gradient(180deg, #f5f5f5, #d8d8d8);
-  --grad-warm: linear-gradient(
-      135deg,
-      var(--color-aluminum-light),
-      var(--color-aluminum-dark)
-  );
+  --grad-warm: linear-gradient(135deg,
+          var(--color-aluminum-light),
+          var(--color-aluminum-dark));
   /* ─── Button Gradients (Aqua Gel Style) ───────────────────────────── */
   --btn-black-top: var(--color-gray-700);
   --btn-black-btm: var(--color-gray-800);
@@ -4805,22 +5096,32 @@ input[type=range]::-moz-range-thumb:active {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   /* ─── Line Heights ─────────────────────────────────────────────────── */
   --leading-tight: 1.2;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
   /* ─── Letter Spacing ───────────────────────────────────────────────── */
   --tracking-tight: -0.025em;
-  --tracking-normal: -0.01em; /* Apple uses tighter tracking */
+  --tracking-normal: -0.01em;
+  /* Apple uses tighter tracking */
   --tracking-wide: 0.01em;
   --tracking-wider: 0.03em;
   --tracking-widest: 0.06em;
@@ -5089,7 +5390,8 @@ input[type=range]::-moz-range-thumb:active {
      COLOR PALETTE - Aqua Theme (macOS Classic)
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Aqua Blue) ──────────────────────────────────────────── */
-  --color-primary: #147aff; /* Classic macOS Aqua blue */
+  --color-primary: #147aff;
+  /* Classic macOS Aqua blue */
   --color-primary-light: #6cabff;
   --color-primary-dark: #1060e8;
   --color-primary-deep: #0036ab;
@@ -5109,7 +5411,8 @@ input[type=range]::-moz-range-thumb:active {
   --color-gray-250: #d0d0d0;
   --color-gray-200: #d6d6d6;
   --color-gray-150: #e0e0e0;
-  --color-gray-100: #ebebeb; /* Classic macOS window background */
+  --color-gray-100: #ebebeb;
+  /* Classic macOS window background */
   --color-gray-075: #efefef;
   --color-gray-050: #f2f2f2;
   --color-gray-025: #f7f7f7;
@@ -5144,7 +5447,8 @@ input[type=range]::-moz-range-thumb:active {
      SEMANTIC COLOR USAGE
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Text Colors ──────────────────────────────────────────────────── */
-  --text-primary: #1d1d1f; /* Apple's near-black for text */
+  --text-primary: #1d1d1f;
+  /* Apple's near-black for text */
   --text-secondary: var(--color-gray-600);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success-dark);
@@ -5152,9 +5456,12 @@ input[type=range]::-moz-range-thumb:active {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info-dark);
   /* ─── Background Colors ────────────────────────────────────────────── */
-  --bg-color: var(--color-gray-100); /* Classic macOS window gray */
+  --bg-color: var(--color-gray-100);
+  /* Classic macOS window gray */
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #1c1c1e;
-  --device-surface: #dcdcdc; /* Brushed aluminum panel */
+  --device-surface: #dcdcdc;
+  /* Brushed aluminum panel */
   /* ─── Button Colors ────────────────────────────────────────────────── */
   --btn-bg-dark: #3a3a3c;
   --btn-bg-light: var(--color-white);
@@ -5194,17 +5501,13 @@ input[type=range]::-moz-range-thumb:active {
   --indicator-info: var(--color-info);
   --indicator-error: var(--color-danger);
   /* ─── Gradients (Glossy Aqua Gel Effect) ──────────────────────────── */
-  --grad-primary: linear-gradient(
-      180deg,
-      var(--color-primary-light),
-      var(--color-primary-dark)
-  );
+  --grad-primary: linear-gradient(180deg,
+          var(--color-primary-light),
+          var(--color-primary-dark));
   --grad-metallic: linear-gradient(180deg, #f5f5f5, #d8d8d8);
-  --grad-warm: linear-gradient(
-      135deg,
-      var(--color-aluminum-light),
-      var(--color-aluminum-dark)
-  );
+  --grad-warm: linear-gradient(135deg,
+          var(--color-aluminum-light),
+          var(--color-aluminum-dark));
   /* ─── Button Gradients (Aqua Gel Style) ───────────────────────────── */
   --btn-black-top: var(--color-gray-700);
   --btn-black-btm: var(--color-gray-800);
@@ -5270,22 +5573,32 @@ input[type=range]::-moz-range-thumb:active {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   /* ─── Line Heights ─────────────────────────────────────────────────── */
   --leading-tight: 1.2;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
   /* ─── Letter Spacing ───────────────────────────────────────────────── */
   --tracking-tight: -0.025em;
-  --tracking-normal: -0.01em; /* Apple uses tighter tracking */
+  --tracking-normal: -0.01em;
+  /* Apple uses tighter tracking */
   --tracking-wide: 0.01em;
   --tracking-wider: 0.03em;
   --tracking-widest: 0.06em;
@@ -5462,7 +5775,8 @@ input[type=range]::-moz-range-thumb:active {
      COLOR PALETTE - Aqua Theme (macOS Classic)
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Aqua Blue) ──────────────────────────────────────────── */
-  --color-primary: #147aff; /* Classic macOS Aqua blue */
+  --color-primary: #147aff;
+  /* Classic macOS Aqua blue */
   --color-primary-light: #6cabff;
   --color-primary-dark: #1060e8;
   --color-primary-deep: #0036ab;
@@ -5482,7 +5796,8 @@ input[type=range]::-moz-range-thumb:active {
   --color-gray-250: #d0d0d0;
   --color-gray-200: #d6d6d6;
   --color-gray-150: #e0e0e0;
-  --color-gray-100: #ebebeb; /* Classic macOS window background */
+  --color-gray-100: #ebebeb;
+  /* Classic macOS window background */
   --color-gray-075: #efefef;
   --color-gray-050: #f2f2f2;
   --color-gray-025: #f7f7f7;
@@ -5517,7 +5832,8 @@ input[type=range]::-moz-range-thumb:active {
      SEMANTIC COLOR USAGE
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Text Colors ──────────────────────────────────────────────────── */
-  --text-primary: #1d1d1f; /* Apple's near-black for text */
+  --text-primary: #1d1d1f;
+  /* Apple's near-black for text */
   --text-secondary: var(--color-gray-600);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success-dark);
@@ -5525,9 +5841,12 @@ input[type=range]::-moz-range-thumb:active {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info-dark);
   /* ─── Background Colors ────────────────────────────────────────────── */
-  --bg-color: var(--color-gray-100); /* Classic macOS window gray */
+  --bg-color: var(--color-gray-100);
+  /* Classic macOS window gray */
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #1c1c1e;
-  --device-surface: #dcdcdc; /* Brushed aluminum panel */
+  --device-surface: #dcdcdc;
+  /* Brushed aluminum panel */
   /* ─── Button Colors ────────────────────────────────────────────────── */
   --btn-bg-dark: #3a3a3c;
   --btn-bg-light: var(--color-white);
@@ -5567,17 +5886,13 @@ input[type=range]::-moz-range-thumb:active {
   --indicator-info: var(--color-info);
   --indicator-error: var(--color-danger);
   /* ─── Gradients (Glossy Aqua Gel Effect) ──────────────────────────── */
-  --grad-primary: linear-gradient(
-      180deg,
-      var(--color-primary-light),
-      var(--color-primary-dark)
-  );
+  --grad-primary: linear-gradient(180deg,
+          var(--color-primary-light),
+          var(--color-primary-dark));
   --grad-metallic: linear-gradient(180deg, #f5f5f5, #d8d8d8);
-  --grad-warm: linear-gradient(
-      135deg,
-      var(--color-aluminum-light),
-      var(--color-aluminum-dark)
-  );
+  --grad-warm: linear-gradient(135deg,
+          var(--color-aluminum-light),
+          var(--color-aluminum-dark));
   /* ─── Button Gradients (Aqua Gel Style) ───────────────────────────── */
   --btn-black-top: var(--color-gray-700);
   --btn-black-btm: var(--color-gray-800);
@@ -5643,22 +5958,32 @@ input[type=range]::-moz-range-thumb:active {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   /* ─── Line Heights ─────────────────────────────────────────────────── */
   --leading-tight: 1.2;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
   /* ─── Letter Spacing ───────────────────────────────────────────────── */
   --tracking-tight: -0.025em;
-  --tracking-normal: -0.01em; /* Apple uses tighter tracking */
+  --tracking-normal: -0.01em;
+  /* Apple uses tighter tracking */
   --tracking-wide: 0.01em;
   --tracking-wider: 0.03em;
   --tracking-widest: 0.06em;
@@ -5827,7 +6152,8 @@ input[type=range]::-moz-range-thumb:active {
      COLOR PALETTE - Aqua Theme (macOS Classic)
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Aqua Blue) ──────────────────────────────────────────── */
-  --color-primary: #147aff; /* Classic macOS Aqua blue */
+  --color-primary: #147aff;
+  /* Classic macOS Aqua blue */
   --color-primary-light: #6cabff;
   --color-primary-dark: #1060e8;
   --color-primary-deep: #0036ab;
@@ -5847,7 +6173,8 @@ input[type=range]::-moz-range-thumb:active {
   --color-gray-250: #d0d0d0;
   --color-gray-200: #d6d6d6;
   --color-gray-150: #e0e0e0;
-  --color-gray-100: #ebebeb; /* Classic macOS window background */
+  --color-gray-100: #ebebeb;
+  /* Classic macOS window background */
   --color-gray-075: #efefef;
   --color-gray-050: #f2f2f2;
   --color-gray-025: #f7f7f7;
@@ -5882,7 +6209,8 @@ input[type=range]::-moz-range-thumb:active {
      SEMANTIC COLOR USAGE
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Text Colors ──────────────────────────────────────────────────── */
-  --text-primary: #1d1d1f; /* Apple's near-black for text */
+  --text-primary: #1d1d1f;
+  /* Apple's near-black for text */
   --text-secondary: var(--color-gray-600);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success-dark);
@@ -5890,9 +6218,12 @@ input[type=range]::-moz-range-thumb:active {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info-dark);
   /* ─── Background Colors ────────────────────────────────────────────── */
-  --bg-color: var(--color-gray-100); /* Classic macOS window gray */
+  --bg-color: var(--color-gray-100);
+  /* Classic macOS window gray */
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #1c1c1e;
-  --device-surface: #dcdcdc; /* Brushed aluminum panel */
+  --device-surface: #dcdcdc;
+  /* Brushed aluminum panel */
   /* ─── Button Colors ────────────────────────────────────────────────── */
   --btn-bg-dark: #3a3a3c;
   --btn-bg-light: var(--color-white);
@@ -5932,17 +6263,13 @@ input[type=range]::-moz-range-thumb:active {
   --indicator-info: var(--color-info);
   --indicator-error: var(--color-danger);
   /* ─── Gradients (Glossy Aqua Gel Effect) ──────────────────────────── */
-  --grad-primary: linear-gradient(
-      180deg,
-      var(--color-primary-light),
-      var(--color-primary-dark)
-  );
+  --grad-primary: linear-gradient(180deg,
+          var(--color-primary-light),
+          var(--color-primary-dark));
   --grad-metallic: linear-gradient(180deg, #f5f5f5, #d8d8d8);
-  --grad-warm: linear-gradient(
-      135deg,
-      var(--color-aluminum-light),
-      var(--color-aluminum-dark)
-  );
+  --grad-warm: linear-gradient(135deg,
+          var(--color-aluminum-light),
+          var(--color-aluminum-dark));
   /* ─── Button Gradients (Aqua Gel Style) ───────────────────────────── */
   --btn-black-top: var(--color-gray-700);
   --btn-black-btm: var(--color-gray-800);
@@ -6008,22 +6335,32 @@ input[type=range]::-moz-range-thumb:active {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   /* ─── Line Heights ─────────────────────────────────────────────────── */
   --leading-tight: 1.2;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
   /* ─── Letter Spacing ───────────────────────────────────────────────── */
   --tracking-tight: -0.025em;
-  --tracking-normal: -0.01em; /* Apple uses tighter tracking */
+  --tracking-normal: -0.01em;
+  /* Apple uses tighter tracking */
   --tracking-wide: 0.01em;
   --tracking-wider: 0.03em;
   --tracking-widest: 0.06em;
@@ -6182,7 +6519,7 @@ input[type=range]::-moz-range-thumb:active {
   opacity: 0;
   transform: translateY(-8px) scale(0.95);
   pointer-events: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .context-menu.open {
   opacity: 1;
@@ -6301,12 +6638,50 @@ input[type=range]::-moz-range-thumb:active {
     font-size: clamp(18px, 1.5vw, 2.2rem);
   }
 }
+/* ─── Section Header ─────────────────────────────────────────────────────── */
+.context-menu-section {
+  padding: 0.4rem 1rem 0.65rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-top: 1px solid var(--border-dark);
+  margin-top: 0.25rem;
+}
+
+/* ─── Empty State ────────────────────────────────────────────────────────── */
+.context-menu-empty {
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* ─── Submenu Trigger ───────────────────────────────────────────────────── */
+.context-menu-item--has-submenu {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.context-menu-item--has-submenu .context-menu-item__label {
+  flex: 1;
+}
+.context-menu-item--has-submenu .context-menu-item__chevron {
+  font-size: 18px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.context-menu-item--has-submenu:hover .context-menu-item__chevron {
+  color: var(--color-primary-light);
+}
+
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE - Aqua Theme (macOS Classic)
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Aqua Blue) ──────────────────────────────────────────── */
-  --color-primary: #147aff; /* Classic macOS Aqua blue */
+  --color-primary: #147aff;
+  /* Classic macOS Aqua blue */
   --color-primary-light: #6cabff;
   --color-primary-dark: #1060e8;
   --color-primary-deep: #0036ab;
@@ -6326,7 +6701,8 @@ input[type=range]::-moz-range-thumb:active {
   --color-gray-250: #d0d0d0;
   --color-gray-200: #d6d6d6;
   --color-gray-150: #e0e0e0;
-  --color-gray-100: #ebebeb; /* Classic macOS window background */
+  --color-gray-100: #ebebeb;
+  /* Classic macOS window background */
   --color-gray-075: #efefef;
   --color-gray-050: #f2f2f2;
   --color-gray-025: #f7f7f7;
@@ -6361,7 +6737,8 @@ input[type=range]::-moz-range-thumb:active {
      SEMANTIC COLOR USAGE
      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Text Colors ──────────────────────────────────────────────────── */
-  --text-primary: #1d1d1f; /* Apple's near-black for text */
+  --text-primary: #1d1d1f;
+  /* Apple's near-black for text */
   --text-secondary: var(--color-gray-600);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success-dark);
@@ -6369,9 +6746,12 @@ input[type=range]::-moz-range-thumb:active {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info-dark);
   /* ─── Background Colors ────────────────────────────────────────────── */
-  --bg-color: var(--color-gray-100); /* Classic macOS window gray */
+  --bg-color: var(--color-gray-100);
+  /* Classic macOS window gray */
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #1c1c1e;
-  --device-surface: #dcdcdc; /* Brushed aluminum panel */
+  --device-surface: #dcdcdc;
+  /* Brushed aluminum panel */
   /* ─── Button Colors ────────────────────────────────────────────────── */
   --btn-bg-dark: #3a3a3c;
   --btn-bg-light: var(--color-white);
@@ -6411,17 +6791,13 @@ input[type=range]::-moz-range-thumb:active {
   --indicator-info: var(--color-info);
   --indicator-error: var(--color-danger);
   /* ─── Gradients (Glossy Aqua Gel Effect) ──────────────────────────── */
-  --grad-primary: linear-gradient(
-      180deg,
-      var(--color-primary-light),
-      var(--color-primary-dark)
-  );
+  --grad-primary: linear-gradient(180deg,
+          var(--color-primary-light),
+          var(--color-primary-dark));
   --grad-metallic: linear-gradient(180deg, #f5f5f5, #d8d8d8);
-  --grad-warm: linear-gradient(
-      135deg,
-      var(--color-aluminum-light),
-      var(--color-aluminum-dark)
-  );
+  --grad-warm: linear-gradient(135deg,
+          var(--color-aluminum-light),
+          var(--color-aluminum-dark));
   /* ─── Button Gradients (Aqua Gel Style) ───────────────────────────── */
   --btn-black-top: var(--color-gray-700);
   --btn-black-btm: var(--color-gray-800);
@@ -6487,22 +6863,32 @@ input[type=range]::-moz-range-thumb:active {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   /* ─── Line Heights ─────────────────────────────────────────────────── */
   --leading-tight: 1.2;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
   /* ─── Letter Spacing ───────────────────────────────────────────────── */
   --tracking-tight: -0.025em;
-  --tracking-normal: -0.01em; /* Apple uses tighter tracking */
+  --tracking-normal: -0.01em;
+  /* Apple uses tighter tracking */
   --tracking-wide: 0.01em;
   --tracking-wider: 0.03em;
   --tracking-widest: 0.06em;
@@ -6928,37 +7314,25 @@ input[type=range]::-moz-range-thumb:active {
   line-height: 1.4;
 }
 
-/* ── Responsive ── */
-@media (max-width: 768px) {
-  .dialog {
-    max-width: calc(100vw - 1rem);
-    margin: 0.5rem;
-    border-radius: 10px;
-  }
-  .dialog-header {
-    padding: 0.875rem 1rem;
-    border-radius: 10px 10px 0 0;
-  }
-  .dialog-body {
-    padding: 1rem;
-  }
-  .dialog-footer {
-    padding: 0.875rem 1rem;
-    border-radius: 0 0 10px 10px;
-  }
-  .dialog-title {
-    font-size: 1rem;
-  }
-}
 /* ── Browse Tiles ── */
 .browse-tile .browse-tile__icon {
-  font-size: clamp(18px, 3cqi, 30px) !important;
   display: block;
   margin-bottom: 4px;
 }
 .browse-tile .browse-tile__label {
   font-size: clamp(0.75rem, 1.5cqi, 1.1rem) !important;
   font-weight: 600;
+}
+
+/* ── Focus ring — dark on light frosted-glass background ── */
+.dialog :focus-visible,
+.slide-panel :focus-visible {
+  outline: 5px solid #0a5dc2;
+  outline-offset: 2px;
+}
+.dialog [tabindex="-1"]:focus-visible,
+.slide-panel [tabindex="-1"]:focus-visible {
+  outline: none;
 }
 
 /* ── Digital LCD Clock — Aqua / Brushed Aluminum Variant ───────────────────

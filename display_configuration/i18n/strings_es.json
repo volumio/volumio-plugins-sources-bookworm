@@ -1,7 +1,6 @@
 {
     "PLUGIN_TITLE": "Configuracion de pantalla",
     "APPLY": "Aplicar",
-
     "DISPLAY_SETTINGS_SECTION": "Configuracion de pantalla",
     "SCREEN_ROT": "Rotacion de pantalla",
     "SCREEN_ROT_DOC": "Establece la orientacion para la pantalla y todas las capas de entrada/salida.",
@@ -9,10 +8,8 @@
     "LEFT": "Izquierda (90 CCW)",
     "RIGHT": "Derecha (90 CW)",
     "INVERTED": "Invertido (180)",
-
     "BRIGHTNESS": "Brillo",
     "BRIGHTNESS_DOC": "Ajustar el nivel de brillo de la pantalla.",
-
     "ADVANCED_SETTINGS_SECTION": "Configuracion avanzada",
     "SHOW_ADVANCED": "Mostrar configuracion avanzada",
     "SHOW_ADVANCED_DOC": "Ajuste fino de rotacion para tactil, raton, consola y pantallas de arranque.",
@@ -29,7 +26,8 @@
     "ROT_90CW": "90 CW",
     "ROT_180": "180",
     "ROT_90CCW": "90 CCW",
-
+    "OVERSCAN": "Escalado de pantalla (overscan)",
+    "OVERSCAN_DOC": "Ajustar el escalado de pantalla para que se ajuste a la pantalla.",
     "SCREENSAVER_SECTION": "Protector de pantalla",
     "MOUSE_C": "Ocultar cursor del raton",
     "MOUSE_C_DOC": "Si esta habilitado, el cursor del raton se oculta cuando no esta en uso.",
@@ -42,7 +40,6 @@
     "NO_SS_IF_PLAY": "Desactivar durante reproduccion",
     "NO_SS_IF_PLAY_DOC": "Desactivar protector durante la reproduccion.",
     "XSCREEN_SAVER_SETTING": "Configuracion de Xscreensaver",
-
     "DEBUG_SECTION": "Diagnosticos",
     "DEBUG_LOGGING": "Registro de depuracion",
     "DEBUG_LOGGING_DOC": "Habilita el registro detallado para solucion de problemas. Deshabilitar para uso en produccion.",

@@ -1,7 +1,6 @@
 {
     "PLUGIN_TITLE": "Scherminstellingen",
     "APPLY": "Toepassen",
-
     "DISPLAY_SETTINGS_SECTION": "Scherminstellingen",
     "SCREEN_ROT": "Schermrotatie",
     "SCREEN_ROT_DOC": "Stelt de orientatie in voor scherm en alle invoer/uitvoerlagen.",
@@ -9,10 +8,8 @@
     "LEFT": "Links (90 CCW)",
     "RIGHT": "Rechts (90 CW)",
     "INVERTED": "Omgekeerd (180)",
-
     "BRIGHTNESS": "Helderheid",
     "BRIGHTNESS_DOC": "Pas het helderheidsniveau van het scherm aan.",
-
     "ADVANCED_SETTINGS_SECTION": "Geavanceerde instellingen",
     "SHOW_ADVANCED": "Toon geavanceerde instellingen",
     "SHOW_ADVANCED_DOC": "Fijnafstemming van rotatie voor touch, muis, console en opstartschermen.",
@@ -29,7 +26,8 @@
     "ROT_90CW": "90 CW",
     "ROT_180": "180",
     "ROT_90CCW": "90 CCW",
-
+    "OVERSCAN": "Schermschaal (overscan)",
+    "OVERSCAN_DOC": "Pas de schermschaal aan om op het scherm te passen.",
     "SCREENSAVER_SECTION": "Schermbeveiliging",
     "MOUSE_C": "Muiscursor verbergen",
     "MOUSE_C_DOC": "Indien ingeschakeld, wordt de muiscursor verborgen wanneer niet in gebruik.",
@@ -42,7 +40,6 @@
     "NO_SS_IF_PLAY": "Uitschakelen tijdens afspelen",
     "NO_SS_IF_PLAY_DOC": "Schermbeveiliging uitschakelen tijdens afspelen.",
     "XSCREEN_SAVER_SETTING": "Xscreensaver-instellingen",
-
     "DEBUG_SECTION": "Diagnostiek",
     "DEBUG_LOGGING": "Debug-logboek",
     "DEBUG_LOGGING_DOC": "Schakelt gedetailleerde logging in voor probleemoplossing. Uitschakelen voor productiegebruik.",

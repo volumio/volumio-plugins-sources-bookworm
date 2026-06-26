@@ -39,7 +39,7 @@
   --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
   --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
   --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
-  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.2) 100%);
   /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
   --color-secondary: #555555;
   --color-secondary-light: #777777;
@@ -67,6 +67,7 @@
   /* ─── Text Colors ──────────────────────────────────────────────────── */
   --text-primary: var(--color-gray-100);
   --text-secondary: var(--color-gray-400);
+  --text-dark: var(--text-primary);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success);
   --text-warning: var(--color-warning);
@@ -76,6 +77,7 @@
   --text-muted: var(--color-gray-500);
   /* ─── Background Colors ────────────────────────────────────────────── */
   --bg-color: #050505;
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #0a0a0a;
   --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
   /* ─── Button Colors ────────────────────────────────────────────────── */
@@ -93,21 +95,21 @@
   --alert-bg-danger: rgba(255, 51, 51, 0.15);
   --alert-bg-info: rgba(0, 204, 255, 0.15);
   /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
-  --shadow-10: rgba(0,0,0,0.5);
-  --shadow-15: rgba(0,0,0,0.6);
-  --shadow-20: rgba(0,0,0,0.7);
-  --shadow-25: rgba(0,0,0,0.8);
-  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-10: rgba(0, 0, 0, 0.5);
+  --shadow-15: rgba(0, 0, 0, 0.6);
+  --shadow-20: rgba(0, 0, 0, 0.7);
+  --shadow-25: rgba(0, 0, 0, 0.8);
+  --shadow-30: rgba(0, 0, 0, 0.9);
   --shadow-40: #000;
   --shadow-50: #000;
   --shadow-60: #000;
-  --highlight-05: rgba(255,255,255,0.05);
-  --highlight-10: rgba(255,255,255,0.1);
-  --highlight-15: rgba(255,255,255,0.15);
-  --highlight-20: rgba(255,255,255,0.2);
-  --highlight-30: rgba(255,255,255,0.3);
-  --highlight-40: rgba(255,255,255,0.4);
-  --highlight-50: rgba(255,255,255,0.5);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
   /* ─── Typography ─────────────────────────────────────────────────── */
   --font-display: 'Rajdhani', sans-serif;
   --font-body: 'Titillium Web', sans-serif;
@@ -119,15 +121,24 @@
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-none: 1;
   --leading-tight: 1.1;
   --leading-normal: 1.4;
@@ -176,7 +187,7 @@
   --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
   --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
   --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
-  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.2) 100%);
   /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
   --color-secondary: #555555;
   --color-secondary-light: #777777;
@@ -204,6 +215,7 @@
   /* ─── Text Colors ──────────────────────────────────────────────────── */
   --text-primary: var(--color-gray-100);
   --text-secondary: var(--color-gray-400);
+  --text-dark: var(--text-primary);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success);
   --text-warning: var(--color-warning);
@@ -213,6 +225,7 @@
   --text-muted: var(--color-gray-500);
   /* ─── Background Colors ────────────────────────────────────────────── */
   --bg-color: #050505;
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #0a0a0a;
   --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
   /* ─── Button Colors ────────────────────────────────────────────────── */
@@ -230,21 +243,21 @@
   --alert-bg-danger: rgba(255, 51, 51, 0.15);
   --alert-bg-info: rgba(0, 204, 255, 0.15);
   /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
-  --shadow-10: rgba(0,0,0,0.5);
-  --shadow-15: rgba(0,0,0,0.6);
-  --shadow-20: rgba(0,0,0,0.7);
-  --shadow-25: rgba(0,0,0,0.8);
-  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-10: rgba(0, 0, 0, 0.5);
+  --shadow-15: rgba(0, 0, 0, 0.6);
+  --shadow-20: rgba(0, 0, 0, 0.7);
+  --shadow-25: rgba(0, 0, 0, 0.8);
+  --shadow-30: rgba(0, 0, 0, 0.9);
   --shadow-40: #000;
   --shadow-50: #000;
   --shadow-60: #000;
-  --highlight-05: rgba(255,255,255,0.05);
-  --highlight-10: rgba(255,255,255,0.1);
-  --highlight-15: rgba(255,255,255,0.15);
-  --highlight-20: rgba(255,255,255,0.2);
-  --highlight-30: rgba(255,255,255,0.3);
-  --highlight-40: rgba(255,255,255,0.4);
-  --highlight-50: rgba(255,255,255,0.5);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
   /* ─── Typography ─────────────────────────────────────────────────── */
   --font-display: 'Rajdhani', sans-serif;
   --font-body: 'Titillium Web', sans-serif;
@@ -256,15 +269,24 @@
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-none: 1;
   --leading-tight: 1.1;
   --leading-normal: 1.4;
@@ -468,7 +490,7 @@ pre {
   --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
   --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
   --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
-  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.2) 100%);
   /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
   --color-secondary: #555555;
   --color-secondary-light: #777777;
@@ -496,6 +518,7 @@ pre {
   /* ─── Text Colors ──────────────────────────────────────────────────── */
   --text-primary: var(--color-gray-100);
   --text-secondary: var(--color-gray-400);
+  --text-dark: var(--text-primary);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success);
   --text-warning: var(--color-warning);
@@ -505,6 +528,7 @@ pre {
   --text-muted: var(--color-gray-500);
   /* ─── Background Colors ────────────────────────────────────────────── */
   --bg-color: #050505;
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #0a0a0a;
   --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
   /* ─── Button Colors ────────────────────────────────────────────────── */
@@ -522,21 +546,21 @@ pre {
   --alert-bg-danger: rgba(255, 51, 51, 0.15);
   --alert-bg-info: rgba(0, 204, 255, 0.15);
   /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
-  --shadow-10: rgba(0,0,0,0.5);
-  --shadow-15: rgba(0,0,0,0.6);
-  --shadow-20: rgba(0,0,0,0.7);
-  --shadow-25: rgba(0,0,0,0.8);
-  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-10: rgba(0, 0, 0, 0.5);
+  --shadow-15: rgba(0, 0, 0, 0.6);
+  --shadow-20: rgba(0, 0, 0, 0.7);
+  --shadow-25: rgba(0, 0, 0, 0.8);
+  --shadow-30: rgba(0, 0, 0, 0.9);
   --shadow-40: #000;
   --shadow-50: #000;
   --shadow-60: #000;
-  --highlight-05: rgba(255,255,255,0.05);
-  --highlight-10: rgba(255,255,255,0.1);
-  --highlight-15: rgba(255,255,255,0.15);
-  --highlight-20: rgba(255,255,255,0.2);
-  --highlight-30: rgba(255,255,255,0.3);
-  --highlight-40: rgba(255,255,255,0.4);
-  --highlight-50: rgba(255,255,255,0.5);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
   /* ─── Typography ─────────────────────────────────────────────────── */
   --font-display: 'Rajdhani', sans-serif;
   --font-body: 'Titillium Web', sans-serif;
@@ -548,15 +572,24 @@ pre {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-none: 1;
   --leading-tight: 1.1;
   --leading-normal: 1.4;
@@ -904,6 +937,38 @@ pre {
   border-color: rgba(34, 197, 94, 0.3);
 }
 
+/* ── Mobile compact (≤ 768px) ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .dialog-container {
+    padding: 0;
+  }
+  .dialog {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    margin: 0;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .dialog-header {
+    padding: 0.875rem 1rem;
+    border-radius: 0;
+  }
+  .dialog-body {
+    padding: 1rem;
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+  .dialog-footer {
+    padding: 0.875rem 1rem;
+    border-radius: 0;
+  }
+  .dialog-title {
+    font-size: 1rem;
+  }
+}
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE - Dark Metallic / Black Chrome Theme
@@ -940,7 +1005,7 @@ pre {
   --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
   --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
   --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
-  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.2) 100%);
   /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
   --color-secondary: #555555;
   --color-secondary-light: #777777;
@@ -968,6 +1033,7 @@ pre {
   /* ─── Text Colors ──────────────────────────────────────────────────── */
   --text-primary: var(--color-gray-100);
   --text-secondary: var(--color-gray-400);
+  --text-dark: var(--text-primary);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success);
   --text-warning: var(--color-warning);
@@ -977,6 +1043,7 @@ pre {
   --text-muted: var(--color-gray-500);
   /* ─── Background Colors ────────────────────────────────────────────── */
   --bg-color: #050505;
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #0a0a0a;
   --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
   /* ─── Button Colors ────────────────────────────────────────────────── */
@@ -994,21 +1061,21 @@ pre {
   --alert-bg-danger: rgba(255, 51, 51, 0.15);
   --alert-bg-info: rgba(0, 204, 255, 0.15);
   /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
-  --shadow-10: rgba(0,0,0,0.5);
-  --shadow-15: rgba(0,0,0,0.6);
-  --shadow-20: rgba(0,0,0,0.7);
-  --shadow-25: rgba(0,0,0,0.8);
-  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-10: rgba(0, 0, 0, 0.5);
+  --shadow-15: rgba(0, 0, 0, 0.6);
+  --shadow-20: rgba(0, 0, 0, 0.7);
+  --shadow-25: rgba(0, 0, 0, 0.8);
+  --shadow-30: rgba(0, 0, 0, 0.9);
   --shadow-40: #000;
   --shadow-50: #000;
   --shadow-60: #000;
-  --highlight-05: rgba(255,255,255,0.05);
-  --highlight-10: rgba(255,255,255,0.1);
-  --highlight-15: rgba(255,255,255,0.15);
-  --highlight-20: rgba(255,255,255,0.2);
-  --highlight-30: rgba(255,255,255,0.3);
-  --highlight-40: rgba(255,255,255,0.4);
-  --highlight-50: rgba(255,255,255,0.5);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
   /* ─── Typography ─────────────────────────────────────────────────── */
   --font-display: 'Rajdhani', sans-serif;
   --font-body: 'Titillium Web', sans-serif;
@@ -1020,15 +1087,24 @@ pre {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-none: 1;
   --leading-tight: 1.1;
   --leading-normal: 1.4;
@@ -1083,6 +1159,14 @@ pre {
   background: linear-gradient(180deg, #151515 0%, #222222 100%);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), inset 0 2px 5px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(0, 0, 0, 0.5);
   border-color: rgba(0, 0, 0, 0.8);
+}
+
+.btn:focus-visible, .form-select:focus-visible {
+  color: var(--color-white);
+  background: linear-gradient(180deg, #444444 0%, #2a2a2a 50%, #222222 51%, #2a2a2a 100%);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 5px rgba(255, 255, 255, 0.05);
+  outline: 2px solid var(--color-primary, #00e1ff);
+  outline-offset: 2px;
 }
 
 /* ─── Button Color Variants ───────────────────────────────────────────── */
@@ -1185,8 +1269,8 @@ pre {
 .btn-circle,
 .btn-round {
   border-radius: 50%;
-  width: 56px;
-  height: 56px;
+  width: 72px;
+  height: 72px;
   padding: 0;
   display: flex;
   justify-content: center;
@@ -1234,8 +1318,8 @@ pre {
 /* ─── Icon Button ─────────────────────────────────────────────────────── */
 /* Flat, transparent button for toolbar icon actions — no metallic chrome */
 .btn-icon {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   min-height: unset;
   border-radius: 6px;
   padding: 0;
@@ -1256,7 +1340,7 @@ pre {
 .btn-icon .material-icons {
   font-size: 20px;
 }
-.btn-icon:hover {
+.btn-icon:hover, .btn-icon:focus-visible {
   background: rgba(255, 255, 255, 0.08);
   color: var(--text-light);
   box-shadow: none;
@@ -1292,8 +1376,8 @@ pre {
 }
 
 .btn-round.btn-sm {
-  width: 40px;
-  height: 40px;
+  width: 56px;
+  height: 56px;
 }
 
 :root {
@@ -1332,7 +1416,7 @@ pre {
   --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
   --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
   --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
-  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.2) 100%);
   /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
   --color-secondary: #555555;
   --color-secondary-light: #777777;
@@ -1360,6 +1444,7 @@ pre {
   /* ─── Text Colors ──────────────────────────────────────────────────── */
   --text-primary: var(--color-gray-100);
   --text-secondary: var(--color-gray-400);
+  --text-dark: var(--text-primary);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success);
   --text-warning: var(--color-warning);
@@ -1369,6 +1454,7 @@ pre {
   --text-muted: var(--color-gray-500);
   /* ─── Background Colors ────────────────────────────────────────────── */
   --bg-color: #050505;
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #0a0a0a;
   --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
   /* ─── Button Colors ────────────────────────────────────────────────── */
@@ -1386,21 +1472,21 @@ pre {
   --alert-bg-danger: rgba(255, 51, 51, 0.15);
   --alert-bg-info: rgba(0, 204, 255, 0.15);
   /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
-  --shadow-10: rgba(0,0,0,0.5);
-  --shadow-15: rgba(0,0,0,0.6);
-  --shadow-20: rgba(0,0,0,0.7);
-  --shadow-25: rgba(0,0,0,0.8);
-  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-10: rgba(0, 0, 0, 0.5);
+  --shadow-15: rgba(0, 0, 0, 0.6);
+  --shadow-20: rgba(0, 0, 0, 0.7);
+  --shadow-25: rgba(0, 0, 0, 0.8);
+  --shadow-30: rgba(0, 0, 0, 0.9);
   --shadow-40: #000;
   --shadow-50: #000;
   --shadow-60: #000;
-  --highlight-05: rgba(255,255,255,0.05);
-  --highlight-10: rgba(255,255,255,0.1);
-  --highlight-15: rgba(255,255,255,0.15);
-  --highlight-20: rgba(255,255,255,0.2);
-  --highlight-30: rgba(255,255,255,0.3);
-  --highlight-40: rgba(255,255,255,0.4);
-  --highlight-50: rgba(255,255,255,0.5);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
   /* ─── Typography ─────────────────────────────────────────────────── */
   --font-display: 'Rajdhani', sans-serif;
   --font-body: 'Titillium Web', sans-serif;
@@ -1412,15 +1498,24 @@ pre {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-none: 1;
   --leading-tight: 1.1;
   --leading-normal: 1.4;
@@ -1526,7 +1621,7 @@ pre {
   width: 48px;
   height: 24px;
   background: #000;
-  border-radius: 12px;
+  border-radius: 2px;
   position: relative;
   cursor: pointer;
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -1541,7 +1636,7 @@ pre {
   width: 18px;
   height: 18px;
   background: linear-gradient(180deg, #555 0%, #222 100%);
-  border-radius: 50%;
+  border-radius: 2px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
@@ -1557,12 +1652,67 @@ pre {
   box-shadow: 0 0 10px var(--color-primary);
 }
 
+/* ─── Bootstrap form-check switch override ───────────────────────────────── */
+.form-check.form-switch {
+  padding-left: 0;
+  width: auto;
+  height: auto;
+  background: none;
+  border: none;
+  box-shadow: none;
+  position: static;
+}
+.form-check.form-switch::after {
+  display: none;
+}
+.form-check.form-switch .form-check-input {
+  appearance: none;
+  width: 48px;
+  height: 24px;
+  margin: 0;
+  background-color: #000;
+  background-image: none;
+  border-radius: 2px;
+  border: 1px solid #111;
+  cursor: pointer;
+  position: relative;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+.form-check.form-switch .form-check-input::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 16px;
+  background: linear-gradient(180deg, #555 0%, #222 100%);
+  border-radius: 2px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+.form-check.form-switch .form-check-input:checked {
+  background-color: rgba(0, 225, 255, 0.1);
+  background-image: none;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(0, 225, 255, 0.1);
+}
+.form-check.form-switch .form-check-input:checked::before {
+  left: 24px;
+  background: var(--color-primary);
+  box-shadow: 0 0 10px var(--color-primary);
+}
+.form-check.form-switch .form-check-input:focus {
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8), 0 0 0 3px rgba(0, 225, 255, 0.2);
+}
+
 /* ─── Select / Dropdown ─────────────────────────────────────────────────────── */
 .form-select {
   appearance: none;
   display: block;
   text-align: left;
   padding: 8px 30px 8px 12px;
+  transition: box-shadow 0.15s ease-out, border-color 0.15s ease-out;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23aaaaaa'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
@@ -1690,7 +1840,7 @@ pre {
   --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
   --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
   --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
-  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.2) 100%);
   /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
   --color-secondary: #555555;
   --color-secondary-light: #777777;
@@ -1718,6 +1868,7 @@ pre {
   /* ─── Text Colors ──────────────────────────────────────────────────── */
   --text-primary: var(--color-gray-100);
   --text-secondary: var(--color-gray-400);
+  --text-dark: var(--text-primary);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success);
   --text-warning: var(--color-warning);
@@ -1727,6 +1878,7 @@ pre {
   --text-muted: var(--color-gray-500);
   /* ─── Background Colors ────────────────────────────────────────────── */
   --bg-color: #050505;
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #0a0a0a;
   --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
   /* ─── Button Colors ────────────────────────────────────────────────── */
@@ -1744,21 +1896,21 @@ pre {
   --alert-bg-danger: rgba(255, 51, 51, 0.15);
   --alert-bg-info: rgba(0, 204, 255, 0.15);
   /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
-  --shadow-10: rgba(0,0,0,0.5);
-  --shadow-15: rgba(0,0,0,0.6);
-  --shadow-20: rgba(0,0,0,0.7);
-  --shadow-25: rgba(0,0,0,0.8);
-  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-10: rgba(0, 0, 0, 0.5);
+  --shadow-15: rgba(0, 0, 0, 0.6);
+  --shadow-20: rgba(0, 0, 0, 0.7);
+  --shadow-25: rgba(0, 0, 0, 0.8);
+  --shadow-30: rgba(0, 0, 0, 0.9);
   --shadow-40: #000;
   --shadow-50: #000;
   --shadow-60: #000;
-  --highlight-05: rgba(255,255,255,0.05);
-  --highlight-10: rgba(255,255,255,0.1);
-  --highlight-15: rgba(255,255,255,0.15);
-  --highlight-20: rgba(255,255,255,0.2);
-  --highlight-30: rgba(255,255,255,0.3);
-  --highlight-40: rgba(255,255,255,0.4);
-  --highlight-50: rgba(255,255,255,0.5);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
   /* ─── Typography ─────────────────────────────────────────────────── */
   --font-display: 'Rajdhani', sans-serif;
   --font-body: 'Titillium Web', sans-serif;
@@ -1770,15 +1922,24 @@ pre {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-none: 1;
   --leading-tight: 1.1;
   --leading-normal: 1.4;
@@ -1893,7 +2054,7 @@ pre {
   --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
   --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
   --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
-  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.2) 100%);
   /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
   --color-secondary: #555555;
   --color-secondary-light: #777777;
@@ -1921,6 +2082,7 @@ pre {
   /* ─── Text Colors ──────────────────────────────────────────────────── */
   --text-primary: var(--color-gray-100);
   --text-secondary: var(--color-gray-400);
+  --text-dark: var(--text-primary);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success);
   --text-warning: var(--color-warning);
@@ -1930,6 +2092,7 @@ pre {
   --text-muted: var(--color-gray-500);
   /* ─── Background Colors ────────────────────────────────────────────── */
   --bg-color: #050505;
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #0a0a0a;
   --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
   /* ─── Button Colors ────────────────────────────────────────────────── */
@@ -1947,21 +2110,21 @@ pre {
   --alert-bg-danger: rgba(255, 51, 51, 0.15);
   --alert-bg-info: rgba(0, 204, 255, 0.15);
   /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
-  --shadow-10: rgba(0,0,0,0.5);
-  --shadow-15: rgba(0,0,0,0.6);
-  --shadow-20: rgba(0,0,0,0.7);
-  --shadow-25: rgba(0,0,0,0.8);
-  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-10: rgba(0, 0, 0, 0.5);
+  --shadow-15: rgba(0, 0, 0, 0.6);
+  --shadow-20: rgba(0, 0, 0, 0.7);
+  --shadow-25: rgba(0, 0, 0, 0.8);
+  --shadow-30: rgba(0, 0, 0, 0.9);
   --shadow-40: #000;
   --shadow-50: #000;
   --shadow-60: #000;
-  --highlight-05: rgba(255,255,255,0.05);
-  --highlight-10: rgba(255,255,255,0.1);
-  --highlight-15: rgba(255,255,255,0.15);
-  --highlight-20: rgba(255,255,255,0.2);
-  --highlight-30: rgba(255,255,255,0.3);
-  --highlight-40: rgba(255,255,255,0.4);
-  --highlight-50: rgba(255,255,255,0.5);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
   /* ─── Typography ─────────────────────────────────────────────────── */
   --font-display: 'Rajdhani', sans-serif;
   --font-body: 'Titillium Web', sans-serif;
@@ -1973,15 +2136,24 @@ pre {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-none: 1;
   --leading-tight: 1.1;
   --leading-normal: 1.4;
@@ -2113,7 +2285,7 @@ pre {
   --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
   --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
   --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
-  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.2) 100%);
   /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
   --color-secondary: #555555;
   --color-secondary-light: #777777;
@@ -2141,6 +2313,7 @@ pre {
   /* ─── Text Colors ──────────────────────────────────────────────────── */
   --text-primary: var(--color-gray-100);
   --text-secondary: var(--color-gray-400);
+  --text-dark: var(--text-primary);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success);
   --text-warning: var(--color-warning);
@@ -2150,6 +2323,7 @@ pre {
   --text-muted: var(--color-gray-500);
   /* ─── Background Colors ────────────────────────────────────────────── */
   --bg-color: #050505;
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #0a0a0a;
   --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
   /* ─── Button Colors ────────────────────────────────────────────────── */
@@ -2167,21 +2341,21 @@ pre {
   --alert-bg-danger: rgba(255, 51, 51, 0.15);
   --alert-bg-info: rgba(0, 204, 255, 0.15);
   /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
-  --shadow-10: rgba(0,0,0,0.5);
-  --shadow-15: rgba(0,0,0,0.6);
-  --shadow-20: rgba(0,0,0,0.7);
-  --shadow-25: rgba(0,0,0,0.8);
-  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-10: rgba(0, 0, 0, 0.5);
+  --shadow-15: rgba(0, 0, 0, 0.6);
+  --shadow-20: rgba(0, 0, 0, 0.7);
+  --shadow-25: rgba(0, 0, 0, 0.8);
+  --shadow-30: rgba(0, 0, 0, 0.9);
   --shadow-40: #000;
   --shadow-50: #000;
   --shadow-60: #000;
-  --highlight-05: rgba(255,255,255,0.05);
-  --highlight-10: rgba(255,255,255,0.1);
-  --highlight-15: rgba(255,255,255,0.15);
-  --highlight-20: rgba(255,255,255,0.2);
-  --highlight-30: rgba(255,255,255,0.3);
-  --highlight-40: rgba(255,255,255,0.4);
-  --highlight-50: rgba(255,255,255,0.5);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
   /* ─── Typography ─────────────────────────────────────────────────── */
   --font-display: 'Rajdhani', sans-serif;
   --font-body: 'Titillium Web', sans-serif;
@@ -2193,15 +2367,24 @@ pre {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-none: 1;
   --leading-tight: 1.1;
   --leading-normal: 1.4;
@@ -2329,7 +2512,7 @@ pre {
   --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
   --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
   --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
-  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.2) 100%);
   /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
   --color-secondary: #555555;
   --color-secondary-light: #777777;
@@ -2357,6 +2540,7 @@ pre {
   /* ─── Text Colors ──────────────────────────────────────────────────── */
   --text-primary: var(--color-gray-100);
   --text-secondary: var(--color-gray-400);
+  --text-dark: var(--text-primary);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success);
   --text-warning: var(--color-warning);
@@ -2366,6 +2550,7 @@ pre {
   --text-muted: var(--color-gray-500);
   /* ─── Background Colors ────────────────────────────────────────────── */
   --bg-color: #050505;
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #0a0a0a;
   --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
   /* ─── Button Colors ────────────────────────────────────────────────── */
@@ -2383,21 +2568,21 @@ pre {
   --alert-bg-danger: rgba(255, 51, 51, 0.15);
   --alert-bg-info: rgba(0, 204, 255, 0.15);
   /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
-  --shadow-10: rgba(0,0,0,0.5);
-  --shadow-15: rgba(0,0,0,0.6);
-  --shadow-20: rgba(0,0,0,0.7);
-  --shadow-25: rgba(0,0,0,0.8);
-  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-10: rgba(0, 0, 0, 0.5);
+  --shadow-15: rgba(0, 0, 0, 0.6);
+  --shadow-20: rgba(0, 0, 0, 0.7);
+  --shadow-25: rgba(0, 0, 0, 0.8);
+  --shadow-30: rgba(0, 0, 0, 0.9);
   --shadow-40: #000;
   --shadow-50: #000;
   --shadow-60: #000;
-  --highlight-05: rgba(255,255,255,0.05);
-  --highlight-10: rgba(255,255,255,0.1);
-  --highlight-15: rgba(255,255,255,0.15);
-  --highlight-20: rgba(255,255,255,0.2);
-  --highlight-30: rgba(255,255,255,0.3);
-  --highlight-40: rgba(255,255,255,0.4);
-  --highlight-50: rgba(255,255,255,0.5);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
   /* ─── Typography ─────────────────────────────────────────────────── */
   --font-display: 'Rajdhani', sans-serif;
   --font-body: 'Titillium Web', sans-serif;
@@ -2409,15 +2594,24 @@ pre {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-none: 1;
   --leading-tight: 1.1;
   --leading-normal: 1.4;
@@ -2566,7 +2760,7 @@ h2 {
   --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
   --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
   --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
-  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.2) 100%);
   /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
   --color-secondary: #555555;
   --color-secondary-light: #777777;
@@ -2594,6 +2788,7 @@ h2 {
   /* ─── Text Colors ──────────────────────────────────────────────────── */
   --text-primary: var(--color-gray-100);
   --text-secondary: var(--color-gray-400);
+  --text-dark: var(--text-primary);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success);
   --text-warning: var(--color-warning);
@@ -2603,6 +2798,7 @@ h2 {
   --text-muted: var(--color-gray-500);
   /* ─── Background Colors ────────────────────────────────────────────── */
   --bg-color: #050505;
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #0a0a0a;
   --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
   /* ─── Button Colors ────────────────────────────────────────────────── */
@@ -2620,21 +2816,21 @@ h2 {
   --alert-bg-danger: rgba(255, 51, 51, 0.15);
   --alert-bg-info: rgba(0, 204, 255, 0.15);
   /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
-  --shadow-10: rgba(0,0,0,0.5);
-  --shadow-15: rgba(0,0,0,0.6);
-  --shadow-20: rgba(0,0,0,0.7);
-  --shadow-25: rgba(0,0,0,0.8);
-  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-10: rgba(0, 0, 0, 0.5);
+  --shadow-15: rgba(0, 0, 0, 0.6);
+  --shadow-20: rgba(0, 0, 0, 0.7);
+  --shadow-25: rgba(0, 0, 0, 0.8);
+  --shadow-30: rgba(0, 0, 0, 0.9);
   --shadow-40: #000;
   --shadow-50: #000;
   --shadow-60: #000;
-  --highlight-05: rgba(255,255,255,0.05);
-  --highlight-10: rgba(255,255,255,0.1);
-  --highlight-15: rgba(255,255,255,0.15);
-  --highlight-20: rgba(255,255,255,0.2);
-  --highlight-30: rgba(255,255,255,0.3);
-  --highlight-40: rgba(255,255,255,0.4);
-  --highlight-50: rgba(255,255,255,0.5);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
   /* ─── Typography ─────────────────────────────────────────────────── */
   --font-display: 'Rajdhani', sans-serif;
   --font-body: 'Titillium Web', sans-serif;
@@ -2646,15 +2842,24 @@ h2 {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-none: 1;
   --leading-tight: 1.1;
   --leading-normal: 1.4;
@@ -2727,12 +2932,100 @@ h2 {
 
 .track-info {
   text-align: center;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
   width: 95%;
-  border: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+/* Track panel: recessed metallic panel behind track info */
+.track-panel {
+  border-radius: 12px;
+}
+
+.track-panel .track-info {
+  padding: clamp(16px, 2.5cqh, 28px) 20px;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+/* More padding & row spacing on tablet/desktop */
+@media (min-width: 768px) {
+  .track-panel .track-info {
+    padding: clamp(18px, 3cqh, 36px) clamp(12px, 1.2cqw, 24px);
+  }
+  .track-info-group {
+    margin-bottom: clamp(4px, 1cqh, 12px) !important;
+  }
+  .controls-spacer {
+    min-height: clamp(4px, 1cqh, 16px) !important;
+    max-height: clamp(8px, 2cqh, 28px) !important;
+  }
+  .cq-track-info {
+    gap: clamp(4px, 1.2cqh, 12px) !important;
+  }
+}
+/* Non-max-space: tighter track info gap on mid-height screens (e.g. 1728×874) */
+@media (min-width: 768px) and (max-height: 900px) {
+  .tp-grid:not(.tp-max-space) .tp-right .cq-track-info {
+    gap: clamp(0px, 0cqh, 16px) !important;
+  }
+}
+@media (min-height: 601px) and (max-height: 900px) {
+  .tp-controls {
+    padding-top: 30px !important;
+  }
+}
+/* Tighter track info spacing in max-space mode */
+.tp-max-space .track-info-group {
+  margin-bottom: 0 !important;
+}
+
+.tp-max-space .cq-track-info {
+  gap: clamp(1px, 0.3cqh, 5px) !important;
+}
+
+@media (min-width: 1200px) {
+  .tp-max-space .tp-right .responsive-artist {
+    font-size: clamp(1.4rem, min(10cqw, 8cqh), 6rem) !important;
+    line-height: 1.15 !important;
+  }
+}
+@media (max-height: 600px) {
+  .track-info {
+    padding: 10px 0px !important;
+  }
+  .tp-max-space .tp-right .responsive-title {
+    font-size: clamp(1.2rem, min(8.25cqw, 10.5cqh), 6rem) !important;
+  }
+  .tp-max-space .tp-right .responsive-artist {
+    font-size: clamp(1rem, min(6cqw, 7cqh), 3rem) !important;
+  }
+  .tp-max-space .tp-controls .time-label {
+    font-size: clamp(0.8rem, min(3cqw, 3cqh), 1.1rem) !important;
+  }
+}
+@media (max-height: 480px) {
+  .tp-max-space .tp-track-info {
+    flex: 0 0 55% !important;
+  }
+  .tp-max-space .tp-right .responsive-album {
+    font-size: clamp(1rem, min(7cqw, 6.5cqh), 3rem) !important;
+  }
+  .tp-max-space .tp-right .responsive-stream-info {
+    font-size: clamp(0.9rem, min(5.85cqw, 5.2cqh), 2.5rem) !important;
+  }
+  .tp-max-space .tp-right .format-logo-responsive {
+    height: clamp(0.9rem, min(5.85cqw, 5.2cqh), 2.5rem) !important;
+  }
+  .tp-max-space .tp-controls .player-controls-container {
+    padding-top: clamp(8px, 3.5cqh, 20px) !important;
+  }
+  .tp-max-space .tp-controls .time-label {
+    font-size: clamp(0.75rem, min(2.8cqw, 3cqh), 1rem) !important;
+  }
+}
+.tp-max-space .responsive-album {
+  line-height: 1.15 !important;
 }
 
 .track-title {
@@ -2740,7 +3033,6 @@ h2 {
   font-size: clamp(1.1rem, 4vw, 2rem);
   font-weight: 700;
   color: var(--color-white);
-  margin: 0 0 8px 0;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 0 2px 0 #000;
   letter-spacing: 0.5px;
   white-space: nowrap;
@@ -2789,8 +3081,32 @@ h2 {
   font-size: clamp(0.75rem, 3.5cqw, 2.5rem);
 }
 
+/* 25% bigger track-info fonts on metallic mobile */
+@media (max-width: 768px) {
+  .responsive-title {
+    font-size: clamp(2rem, 10vw, 3.75rem) !important;
+  }
+  .responsive-artist {
+    font-size: clamp(1.375rem, 6.875vw, 2.5rem) !important;
+  }
+  .responsive-album {
+    font-size: clamp(1.25rem, 5vw, 2rem) !important;
+  }
+  .responsive-stream-info {
+    font-size: clamp(1.25rem, 5vw, 2rem) !important;
+  }
+}
+/* Very narrow mobile (≤375px, e.g. 361×654): push controls down */
+@media (max-width: 375px) {
+  .seekbar-container-wrap {
+    margin-top: clamp(14px, 3.5vh, 30px) !important;
+  }
+  .player-controls-container {
+    padding-top: clamp(8px, 2vh, 16px) !important;
+  }
+}
 .responsive-album {
-  font-size: clamp(0.7rem, 1.8cqw, 0.95rem);
+  font-size: clamp(0.7rem, 2.1cqw, 1.96rem);
 }
 
 .responsive-stream-info {
@@ -2814,8 +3130,8 @@ h2 {
 
 /* ─── Track info group: use full panel width ───────────────────────────── */
 .track-info-group {
-  width: calc(100% - 2rem) !important;
-  margin-inline: 1rem;
+  width: 100% !important;
+  margin: clamp(0.25rem, 1.5cqh, 1rem) clamp(0.5rem, 2cqw, 2rem) 0;
 }
 
 /* ─── Progress Sliders ────────────────────────────────────────────────── */
@@ -2883,29 +3199,13 @@ h2 {
   cursor: default;
 }
 
-/* ─── Mobile compact (portrait ≤ 768px) ──────────────────────────────── */
-/* At 393×842 the controls panel is ~421px tall. The theme's generous padding
-   on .track-info (20px), .volume-control (16px top/bottom), and the
-   .player-controls (24px padding / 20px gap) push elements below the fold.
-   Scale everything down so nothing gets clipped. */
-@media (max-width: 768px) {
-  .track-info {
-    padding: 8px 12px 10px;
-    /* extra 2px bottom so album row isn't clipped */
-  }
-  .player-controls {
-    padding: 10px 16px;
-    gap: 10px;
-  }
-  .volume-control {
-    padding: 10px 14px;
-  }
-  .track-info-group {
-    width: calc(100% - 1rem) !important;
-    margin-inline: 0.5rem;
-    padding: 8px 10px;
-  }
+/* ─── Seekbar labels — ensure visibility on dark backgrounds ──────────── */
+.seekbar-labels,
+.time-label {
+  color: var(--text-primary) !important;
+  opacity: 1 !important;
 }
+
 /* ── Large-screen player: boost font sizes on short screens so Rajdhani
    (a condensed display font) reads at a similar optical size to Michroma.
    Requires min-width: 1024px so small screens (800×600) are excluded. ── */
@@ -2929,8 +3229,10 @@ h2 {
   .seekbar-labels,
   .time-label {
     font-size: 1rem !important;
+    color: var(--text-primary) !important;
+    opacity: 1 !important;
   }
-  .slider-track {
+  .lsp-root .slider-track {
     height: clamp(12px, 1.4vw, 18px) !important;
   }
   .lsp-btn.btn-icon, .lsp-btn.lsp-btn--sm.btn-icon, .lsp-btn.lsp-btn--md.btn-round {
@@ -2959,7 +3261,7 @@ h2 {
 @media (max-height: 650px) and (max-width: 1023px) {
   /* Tighten the track-info panel */
   .track-info {
-    padding: 8px 12px 10px;
+    padding: 8px 12px;
   }
   /* Reduce player-controls padding & gap so buttons fit */
   .player-controls {
@@ -2983,6 +3285,45 @@ h2 {
     right: -6px;
   }
 }
+/* ── Very short screens (800×480, 800×400 etc.): aggressively compact ──── */
+@media (max-height: 600px) {
+  .track-info-group {
+    width: calc(100% - 0.5rem) !important;
+    margin: 0 0.25rem;
+  }
+  .player-controls {
+    padding: 4px 8px;
+    gap: 4px;
+  }
+  .transport-controls {
+    gap: 6px;
+    margin-top: 2px;
+    padding: 4px;
+  }
+  .volume-control {
+    padding: 4px 8px;
+  }
+  .slider-cap {
+    width: 10px;
+    height: 14px;
+    right: -5px;
+  }
+  .responsive-title {
+    font-size: clamp(0.9rem, min(4.5cqw, 8cqh), 3rem) !important;
+  }
+  .responsive-artist {
+    font-size: clamp(0.7rem, min(3.5cqw, 6cqh), 2.5rem) !important;
+  }
+  .responsive-album {
+    font-size: clamp(0.65rem, min(2.1cqw, 3cqh), 1.96rem) !important;
+  }
+  .responsive-stream-info {
+    font-size: clamp(0.65rem, min(2.1cqw, 3cqh), 1.96rem) !important;
+  }
+  .format-logo-responsive {
+    height: clamp(1rem, min(3cqw, 3.5cqh), 4.2rem) !important;
+  }
+}
 /* ── UWLS (ultrawide + short): boost Rajdhani to match Michroma optical size ── */
 @media (max-height: 700px) and (min-width: 1440px) and (min-aspect-ratio: 2/1) {
   .lsp-top__title {
@@ -3004,6 +3345,8 @@ h2 {
   .seekbar-labels,
   .time-label {
     font-size: 1.2rem !important;
+    color: var(--text-primary) !important;
+    opacity: 1 !important;
   }
   .lsp-btn.btn-icon, .lsp-btn.lsp-btn--sm.btn-icon, .lsp-btn.lsp-btn--md.btn-round {
     width: 72px !important;
@@ -3222,7 +3565,7 @@ h2 {
   --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
   --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
   --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
-  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.2) 100%);
   /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
   --color-secondary: #555555;
   --color-secondary-light: #777777;
@@ -3250,6 +3593,7 @@ h2 {
   /* ─── Text Colors ──────────────────────────────────────────────────── */
   --text-primary: var(--color-gray-100);
   --text-secondary: var(--color-gray-400);
+  --text-dark: var(--text-primary);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success);
   --text-warning: var(--color-warning);
@@ -3259,6 +3603,7 @@ h2 {
   --text-muted: var(--color-gray-500);
   /* ─── Background Colors ────────────────────────────────────────────── */
   --bg-color: #050505;
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #0a0a0a;
   --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
   /* ─── Button Colors ────────────────────────────────────────────────── */
@@ -3276,21 +3621,21 @@ h2 {
   --alert-bg-danger: rgba(255, 51, 51, 0.15);
   --alert-bg-info: rgba(0, 204, 255, 0.15);
   /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
-  --shadow-10: rgba(0,0,0,0.5);
-  --shadow-15: rgba(0,0,0,0.6);
-  --shadow-20: rgba(0,0,0,0.7);
-  --shadow-25: rgba(0,0,0,0.8);
-  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-10: rgba(0, 0, 0, 0.5);
+  --shadow-15: rgba(0, 0, 0, 0.6);
+  --shadow-20: rgba(0, 0, 0, 0.7);
+  --shadow-25: rgba(0, 0, 0, 0.8);
+  --shadow-30: rgba(0, 0, 0, 0.9);
   --shadow-40: #000;
   --shadow-50: #000;
   --shadow-60: #000;
-  --highlight-05: rgba(255,255,255,0.05);
-  --highlight-10: rgba(255,255,255,0.1);
-  --highlight-15: rgba(255,255,255,0.15);
-  --highlight-20: rgba(255,255,255,0.2);
-  --highlight-30: rgba(255,255,255,0.3);
-  --highlight-40: rgba(255,255,255,0.4);
-  --highlight-50: rgba(255,255,255,0.5);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
   /* ─── Typography ─────────────────────────────────────────────────── */
   --font-display: 'Rajdhani', sans-serif;
   --font-body: 'Titillium Web', sans-serif;
@@ -3302,15 +3647,24 @@ h2 {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-none: 1;
   --leading-tight: 1.1;
   --leading-normal: 1.4;
@@ -3437,7 +3791,7 @@ h2 {
   --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
   --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
   --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
-  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.2) 100%);
   /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
   --color-secondary: #555555;
   --color-secondary-light: #777777;
@@ -3465,6 +3819,7 @@ h2 {
   /* ─── Text Colors ──────────────────────────────────────────────────── */
   --text-primary: var(--color-gray-100);
   --text-secondary: var(--color-gray-400);
+  --text-dark: var(--text-primary);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success);
   --text-warning: var(--color-warning);
@@ -3474,6 +3829,7 @@ h2 {
   --text-muted: var(--color-gray-500);
   /* ─── Background Colors ────────────────────────────────────────────── */
   --bg-color: #050505;
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #0a0a0a;
   --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
   /* ─── Button Colors ────────────────────────────────────────────────── */
@@ -3491,21 +3847,21 @@ h2 {
   --alert-bg-danger: rgba(255, 51, 51, 0.15);
   --alert-bg-info: rgba(0, 204, 255, 0.15);
   /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
-  --shadow-10: rgba(0,0,0,0.5);
-  --shadow-15: rgba(0,0,0,0.6);
-  --shadow-20: rgba(0,0,0,0.7);
-  --shadow-25: rgba(0,0,0,0.8);
-  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-10: rgba(0, 0, 0, 0.5);
+  --shadow-15: rgba(0, 0, 0, 0.6);
+  --shadow-20: rgba(0, 0, 0, 0.7);
+  --shadow-25: rgba(0, 0, 0, 0.8);
+  --shadow-30: rgba(0, 0, 0, 0.9);
   --shadow-40: #000;
   --shadow-50: #000;
   --shadow-60: #000;
-  --highlight-05: rgba(255,255,255,0.05);
-  --highlight-10: rgba(255,255,255,0.1);
-  --highlight-15: rgba(255,255,255,0.15);
-  --highlight-20: rgba(255,255,255,0.2);
-  --highlight-30: rgba(255,255,255,0.3);
-  --highlight-40: rgba(255,255,255,0.4);
-  --highlight-50: rgba(255,255,255,0.5);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
   /* ─── Typography ─────────────────────────────────────────────────── */
   --font-display: 'Rajdhani', sans-serif;
   --font-body: 'Titillium Web', sans-serif;
@@ -3517,15 +3873,24 @@ h2 {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-none: 1;
   --leading-tight: 1.1;
   --leading-normal: 1.4;
@@ -3761,7 +4126,7 @@ h2 {
   --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
   --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
   --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
-  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.2) 100%);
   /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
   --color-secondary: #555555;
   --color-secondary-light: #777777;
@@ -3789,6 +4154,7 @@ h2 {
   /* ─── Text Colors ──────────────────────────────────────────────────── */
   --text-primary: var(--color-gray-100);
   --text-secondary: var(--color-gray-400);
+  --text-dark: var(--text-primary);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success);
   --text-warning: var(--color-warning);
@@ -3798,6 +4164,7 @@ h2 {
   --text-muted: var(--color-gray-500);
   /* ─── Background Colors ────────────────────────────────────────────── */
   --bg-color: #050505;
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #0a0a0a;
   --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
   /* ─── Button Colors ────────────────────────────────────────────────── */
@@ -3815,21 +4182,21 @@ h2 {
   --alert-bg-danger: rgba(255, 51, 51, 0.15);
   --alert-bg-info: rgba(0, 204, 255, 0.15);
   /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
-  --shadow-10: rgba(0,0,0,0.5);
-  --shadow-15: rgba(0,0,0,0.6);
-  --shadow-20: rgba(0,0,0,0.7);
-  --shadow-25: rgba(0,0,0,0.8);
-  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-10: rgba(0, 0, 0, 0.5);
+  --shadow-15: rgba(0, 0, 0, 0.6);
+  --shadow-20: rgba(0, 0, 0, 0.7);
+  --shadow-25: rgba(0, 0, 0, 0.8);
+  --shadow-30: rgba(0, 0, 0, 0.9);
   --shadow-40: #000;
   --shadow-50: #000;
   --shadow-60: #000;
-  --highlight-05: rgba(255,255,255,0.05);
-  --highlight-10: rgba(255,255,255,0.1);
-  --highlight-15: rgba(255,255,255,0.15);
-  --highlight-20: rgba(255,255,255,0.2);
-  --highlight-30: rgba(255,255,255,0.3);
-  --highlight-40: rgba(255,255,255,0.4);
-  --highlight-50: rgba(255,255,255,0.5);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
   /* ─── Typography ─────────────────────────────────────────────────── */
   --font-display: 'Rajdhani', sans-serif;
   --font-body: 'Titillium Web', sans-serif;
@@ -3841,15 +4208,24 @@ h2 {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-none: 1;
   --leading-tight: 1.1;
   --leading-normal: 1.4;
@@ -3982,7 +4358,7 @@ h2 {
   --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
   --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
   --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
-  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.2) 100%);
   /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
   --color-secondary: #555555;
   --color-secondary-light: #777777;
@@ -4010,6 +4386,7 @@ h2 {
   /* ─── Text Colors ──────────────────────────────────────────────────── */
   --text-primary: var(--color-gray-100);
   --text-secondary: var(--color-gray-400);
+  --text-dark: var(--text-primary);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success);
   --text-warning: var(--color-warning);
@@ -4019,6 +4396,7 @@ h2 {
   --text-muted: var(--color-gray-500);
   /* ─── Background Colors ────────────────────────────────────────────── */
   --bg-color: #050505;
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #0a0a0a;
   --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
   /* ─── Button Colors ────────────────────────────────────────────────── */
@@ -4036,21 +4414,21 @@ h2 {
   --alert-bg-danger: rgba(255, 51, 51, 0.15);
   --alert-bg-info: rgba(0, 204, 255, 0.15);
   /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
-  --shadow-10: rgba(0,0,0,0.5);
-  --shadow-15: rgba(0,0,0,0.6);
-  --shadow-20: rgba(0,0,0,0.7);
-  --shadow-25: rgba(0,0,0,0.8);
-  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-10: rgba(0, 0, 0, 0.5);
+  --shadow-15: rgba(0, 0, 0, 0.6);
+  --shadow-20: rgba(0, 0, 0, 0.7);
+  --shadow-25: rgba(0, 0, 0, 0.8);
+  --shadow-30: rgba(0, 0, 0, 0.9);
   --shadow-40: #000;
   --shadow-50: #000;
   --shadow-60: #000;
-  --highlight-05: rgba(255,255,255,0.05);
-  --highlight-10: rgba(255,255,255,0.1);
-  --highlight-15: rgba(255,255,255,0.15);
-  --highlight-20: rgba(255,255,255,0.2);
-  --highlight-30: rgba(255,255,255,0.3);
-  --highlight-40: rgba(255,255,255,0.4);
-  --highlight-50: rgba(255,255,255,0.5);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
   /* ─── Typography ─────────────────────────────────────────────────── */
   --font-display: 'Rajdhani', sans-serif;
   --font-body: 'Titillium Web', sans-serif;
@@ -4062,15 +4440,24 @@ h2 {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-none: 1;
   --leading-tight: 1.1;
   --leading-normal: 1.4;
@@ -4238,6 +4625,43 @@ h2 {
     font-size: clamp(18px, 1.5vw, 2.2rem);
   }
 }
+/* ─── Section Header ───────────────────────────────────────────────────── */
+.context-menu-section {
+  padding: 0.4rem 1rem 0.65rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-top: 1px solid var(--border-dark);
+  margin-top: 0.25rem;
+}
+
+/* ─── Empty State ──────────────────────────────────────────────────────── */
+.context-menu-empty {
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* ─── Submenu Trigger ───────────────────────────────────────────────────── */
+.context-menu-item--has-submenu {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.context-menu-item--has-submenu .context-menu-item__label {
+  flex: 1;
+}
+.context-menu-item--has-submenu .context-menu-item__chevron {
+  font-size: 18px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.context-menu-item--has-submenu:hover .context-menu-item__chevron {
+  color: var(--color-primary-light);
+}
+
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR PALETTE - Dark Metallic / Black Chrome Theme
@@ -4274,7 +4698,7 @@ h2 {
   --gradient-chrome-dark: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 50%, #0a0a0a 51%, #1a1a1a 100%);
   --gradient-chrome-light: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 51%, #d0d0d0 100%);
   --gradient-black-metal: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
-  --gradient-btn-gloss: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 49%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.2) 100%);
+  --gradient-btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.2) 100%);
   /* ─── Secondary (Steel Grey) ──────────────────────────────────────── */
   --color-secondary: #555555;
   --color-secondary-light: #777777;
@@ -4302,6 +4726,7 @@ h2 {
   /* ─── Text Colors ──────────────────────────────────────────────────── */
   --text-primary: var(--color-gray-100);
   --text-secondary: var(--color-gray-400);
+  --text-dark: var(--text-primary);
   --text-accent: var(--color-primary);
   --text-success: var(--color-success);
   --text-warning: var(--color-warning);
@@ -4311,6 +4736,7 @@ h2 {
   --text-muted: var(--color-gray-500);
   /* ─── Background Colors ────────────────────────────────────────────── */
   --bg-color: #050505;
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: #0a0a0a;
   --device-surface: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
   /* ─── Button Colors ────────────────────────────────────────────────── */
@@ -4328,21 +4754,21 @@ h2 {
   --alert-bg-danger: rgba(255, 51, 51, 0.15);
   --alert-bg-info: rgba(0, 204, 255, 0.15);
   /* ─── Legacy Support / Fallbacks ──────────────────────────────────── */
-  --shadow-10: rgba(0,0,0,0.5);
-  --shadow-15: rgba(0,0,0,0.6);
-  --shadow-20: rgba(0,0,0,0.7);
-  --shadow-25: rgba(0,0,0,0.8);
-  --shadow-30: rgba(0,0,0,0.9);
+  --shadow-10: rgba(0, 0, 0, 0.5);
+  --shadow-15: rgba(0, 0, 0, 0.6);
+  --shadow-20: rgba(0, 0, 0, 0.7);
+  --shadow-25: rgba(0, 0, 0, 0.8);
+  --shadow-30: rgba(0, 0, 0, 0.9);
   --shadow-40: #000;
   --shadow-50: #000;
   --shadow-60: #000;
-  --highlight-05: rgba(255,255,255,0.05);
-  --highlight-10: rgba(255,255,255,0.1);
-  --highlight-15: rgba(255,255,255,0.15);
-  --highlight-20: rgba(255,255,255,0.2);
-  --highlight-30: rgba(255,255,255,0.3);
-  --highlight-40: rgba(255,255,255,0.4);
-  --highlight-50: rgba(255,255,255,0.5);
+  --highlight-05: rgba(255, 255, 255, 0.05);
+  --highlight-10: rgba(255, 255, 255, 0.1);
+  --highlight-15: rgba(255, 255, 255, 0.15);
+  --highlight-20: rgba(255, 255, 255, 0.2);
+  --highlight-30: rgba(255, 255, 255, 0.3);
+  --highlight-40: rgba(255, 255, 255, 0.4);
+  --highlight-50: rgba(255, 255, 255, 0.5);
   /* ─── Typography ─────────────────────────────────────────────────── */
   --font-display: 'Rajdhani', sans-serif;
   --font-body: 'Titillium Web', sans-serif;
@@ -4354,15 +4780,24 @@ h2 {
      Formula: clamp(min, intercept + slope * 100vw, max)
      Generated via Utopia method: slope = (max−min)/(1440−320)
      ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-none: 1;
   --leading-tight: 1.1;
   --leading-normal: 1.4;
@@ -4479,6 +4914,9 @@ h2 {
   border-color: var(--color-primary);
 }
 .dialog-toolbar .browse-search__icon {
+  color: var(--text-light);
+}
+.dialog-toolbar .browse-search__clear {
   color: var(--text-light);
 }
 
@@ -4669,33 +5107,25 @@ h2 {
   line-height: 1.4;
 }
 
-/* ── Responsive ───────────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .dialog {
-    max-width: calc(100vw - 1rem);
-    max-height: calc(100vh - 1rem);
-    margin: 0.5rem;
-  }
-  .dialog-header,
-  .dialog-footer {
-    padding: 0.875rem 1rem;
-  }
-  .dialog-body {
-    padding: 1rem;
-  }
-  .dialog-title {
-    font-size: 1rem;
-  }
-}
 /* ── Browse Tiles ── */
 .browse-tile .browse-tile__icon {
-  font-size: clamp(18px, 3cqi, 30px) !important;
   display: block;
   margin-bottom: 4px;
 }
 .browse-tile .browse-tile__label {
   font-size: clamp(0.75rem, 1.5cqi, 1.1rem) !important;
   font-weight: 600;
+}
+
+/* ── Focus ring — bright cyan on dark brushed-metal background ── */
+.dialog :focus-visible,
+.slide-panel :focus-visible {
+  outline: 5px solid #00e1ff;
+  outline-offset: 2px;
+}
+.dialog [tabindex="-1"]:focus-visible,
+.slide-panel [tabindex="-1"]:focus-visible {
+  outline: none;
 }
 
 /* ── Digital LCD Clock — Metallic Chrome Variant ───────────────────────────

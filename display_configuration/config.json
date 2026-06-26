@@ -23,6 +23,10 @@
         "value": "same",
         "label": "Same as Screen"
     },
+    "overscan": {
+        "value": "0",
+        "label": "0%"
+    },
     "hidecursor": {
         "type": "boolean",
         "value": false

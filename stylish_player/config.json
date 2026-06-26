@@ -19,9 +19,21 @@
     "type": "string",
     "value": ""
   },
+  "weatherBackgroundColor": {
+    "type": "string",
+    "value": ""
+  },
   "showPlayerControls": {
     "type": "boolean",
     "value": true
+  },
+  "hideSeekHandle": {
+    "type": "boolean",
+    "value": false
+  },
+  "showRemainingTime": {
+    "type": "boolean",
+    "value": false
   },
   "unitSystem": {
     "type": "string",
@@ -67,6 +79,14 @@
     "type": "boolean",
     "value": false
   },
+  "albumArtAnimated": {
+    "type": "boolean",
+    "value": true
+  },
+  "showTrackPanel": {
+    "type": "boolean",
+    "value": false
+  },
   "theme": {
     "type": "string",
     "value": "skeuomorphic"
@@ -79,7 +99,91 @@
     "type": "string",
     "value": ""
   },
+  "peppyMeterFolder": {
+    "type": "string",
+    "value": ""
+  },
+  "peppyMeterModel": {
+    "type": "string",
+    "value": "random"
+  },
+  "peppySpectrumFolder": {
+    "type": "string",
+    "value": ""
+  },
+  "peppySpectrumModel": {
+    "type": "string",
+    "value": "random"
+  },
   "backgroundColor": {
+    "type": "string",
+    "value": ""
+  },
+  "trackColor": {
+    "type": "string",
+    "value": ""
+  },
+  "artistColor": {
+    "type": "string",
+    "value": ""
+  },
+  "albumColor": {
+    "type": "string",
+    "value": ""
+  },
+  "streamInfoColor": {
+    "type": "string",
+    "value": ""
+  },
+  "buttonColor": {
+    "type": "string",
+    "value": ""
+  },
+  "buttonBgColor": {
+    "type": "string",
+    "value": ""
+  },
+  "barTrackColor": {
+    "type": "string",
+    "value": ""
+  },
+  "barTextColor": {
+    "type": "string",
+    "value": ""
+  },
+  "iconBtnColor": {
+    "type": "string",
+    "value": ""
+  },
+  "titleFontSize": {
+    "type": "string",
+    "value": ""
+  },
+  "albumFontSize": {
+    "type": "string",
+    "value": ""
+  },
+  "artistFontSize": {
+    "type": "string",
+    "value": ""
+  },
+  "bitrateFontSize": {
+    "type": "string",
+    "value": ""
+  },
+  "progressFontSize": {
+    "type": "string",
+    "value": ""
+  },
+  "volumeFontSize": {
+    "type": "string",
+    "value": ""
+  },
+  "playerButtonSize": {
+    "type": "string",
+    "value": ""
+  },
+  "secondaryRowFontSize": {
     "type": "string",
     "value": ""
   },
@@ -94,5 +198,13 @@
   "analogClockShowDate": {
     "type": "boolean",
     "value": true
+  },
+  "useCustomLayout": {
+    "type": "boolean",
+    "value": false
+  },
+  "layoutDesigner": {
+    "type": "string",
+    "value": ""
   }
 }

@@ -83,7 +83,8 @@
           "touch_offset",
           "pointer_offset",
           "fbcon_offset",
-          "plymouth_offset"
+          "plymouth_offset",
+          "overscan"
         ]
       },
       "content": [
@@ -223,6 +224,46 @@
             {
               "value": "270",
               "label": "TRANSLATE.ROT_90CCW"
+            }
+          ],
+          "visibleIf": {
+            "field": "show_advanced",
+            "value": true
+          }
+        },
+        {
+          "id": "overscan",
+          "element": "select",
+          "label": "TRANSLATE.OVERSCAN",
+          "doc": "TRANSLATE.OVERSCAN_DOC",
+          "value": {
+            "value": "1.00",
+            "label": "Native"
+          },
+          "options": [
+            {
+              "value": "0",
+              "label": "Off"
+            },
+            {
+              "value": "2",
+              "label": "2%"
+            },
+            {
+              "value": "4",
+              "label": "4%"
+            },
+            {
+              "value": "6",
+              "label": "6%"
+            },
+            {
+              "value": "8",
+              "label": "8%"
+            },
+            {
+              "value": "10",
+              "label": "10%"
             }
           ],
           "visibleIf": {

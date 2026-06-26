@@ -1,16 +1,16 @@
 ### Aqua Theme Screenshots
 
 Player
-![Player](./screenshots/flat/player.png)
+![Player](./screenshots/flat/player.jpg)
 
 Browser
-![Browser](./screenshots/flat/browser.png)
+![Browser](./screenshots/flat/browser.jpg)
 
 Analog Clock
-![Analog Clock](./screenshots/flat/analog-clock.png)
+![Analog Clock](./screenshots/flat/analog-clock.jpg)
 
 Digital Clock
-![Digital Clock](./screenshots/flat/digital-clock.png)
+![Digital Clock](./screenshots/flat/digital-clock.jpg)
 
 Flip Clock
-![Flip Clock](./screenshots/flat/flip-clock.png)
+![Flip Clock](./screenshots/flat/flip-clock.jpg)

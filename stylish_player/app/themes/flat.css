@@ -7,9 +7,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..700;1,14..32,300..700&family=JetBrains+Mono:wght@400;500&display=swap");
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR PALETTE - Flat Dark Theme
-     Modern, minimal dark UI with indigo accent
-     ═══════════════════════════════════════════════════════════════════════ */
+      COLOR PALETTE - Flat Dark Theme
+      Modern, minimal dark UI with indigo accent
+      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Indigo) ─────────────────────────────────────────────── */
   --color-primary: #457b9d;
   --color-primary-light: #6a9fbf;
@@ -59,8 +59,8 @@
   --color-info-dark: #0891b2;
   --color-info-light: #22d3ee;
   /* ═══════════════════════════════════════════════════════════════════════
-     SEMANTIC COLORS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SEMANTIC COLORS
+      ═══════════════════════════════════════════════════════════════════════ */
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-accent: var(--color-primary-light);
@@ -69,6 +69,7 @@
   --text-danger: var(--color-danger);
   --text-info: var(--color-info);
   --bg-color: var(--color-gray-950);
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: var(--color-gray-900);
   --device-surface: var(--color-gray-800);
   --btn-bg-dark: var(--color-gray-700);
@@ -130,8 +131,8 @@
   --btn-info-top: var(--color-info-light);
   --btn-info-btm: var(--color-info);
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOW & HIGHLIGHT OVERLAYS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SHADOW & HIGHLIGHT OVERLAYS
+      ═══════════════════════════════════════════════════════════════════════ */
   --shadow-02: rgba(0, 0, 0, 0.02);
   --shadow-03: rgba(0, 0, 0, 0.03);
   --shadow-05: rgba(0, 0, 0, 0.05);
@@ -162,26 +163,35 @@
   --glow-danger: rgba(239, 68, 68, 0.4);
   --glow-info: rgba(6, 182, 212, 0.4);
   /* ═══════════════════════════════════════════════════════════════════════
-     TYPOGRAPHY
-     ═══════════════════════════════════════════════════════════════════════ */
+      TYPOGRAPHY
+      ═══════════════════════════════════════════════════════════════════════ */
   --font-body: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-label: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-tech: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-display: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
-     Formula: clamp(min, intercept + slope * 100vw, max)
-     Generated via Utopia method: slope = (max−min)/(1440−320)
-     ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+      Formula: clamp(min, intercept + slope * 100vw, max)
+      Generated via Utopia method: slope = (max−min)/(1440−320)
+      ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-tight: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
@@ -191,8 +201,8 @@
   --tracking-wider: 0.04em;
   --tracking-widest: 0.08em;
   /* ═══════════════════════════════════════════════════════════════════════
-     BACKWARD COMPATIBILITY ALIASES
-     ═══════════════════════════════════════════════════════════════════════ */
+      BACKWARD COMPATIBILITY ALIASES
+      ═══════════════════════════════════════════════════════════════════════ */
   --color-aqua-vivid: var(--color-primary);
   --color-aqua-bright: var(--color-primary-light);
   --color-aqua-mid: var(--color-primary-dark);
@@ -250,9 +260,9 @@
 
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR PALETTE - Flat Dark Theme
-     Modern, minimal dark UI with indigo accent
-     ═══════════════════════════════════════════════════════════════════════ */
+      COLOR PALETTE - Flat Dark Theme
+      Modern, minimal dark UI with indigo accent
+      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Indigo) ─────────────────────────────────────────────── */
   --color-primary: #457b9d;
   --color-primary-light: #6a9fbf;
@@ -302,8 +312,8 @@
   --color-info-dark: #0891b2;
   --color-info-light: #22d3ee;
   /* ═══════════════════════════════════════════════════════════════════════
-     SEMANTIC COLORS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SEMANTIC COLORS
+      ═══════════════════════════════════════════════════════════════════════ */
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-accent: var(--color-primary-light);
@@ -312,6 +322,7 @@
   --text-danger: var(--color-danger);
   --text-info: var(--color-info);
   --bg-color: var(--color-gray-950);
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: var(--color-gray-900);
   --device-surface: var(--color-gray-800);
   --btn-bg-dark: var(--color-gray-700);
@@ -373,8 +384,8 @@
   --btn-info-top: var(--color-info-light);
   --btn-info-btm: var(--color-info);
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOW & HIGHLIGHT OVERLAYS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SHADOW & HIGHLIGHT OVERLAYS
+      ═══════════════════════════════════════════════════════════════════════ */
   --shadow-02: rgba(0, 0, 0, 0.02);
   --shadow-03: rgba(0, 0, 0, 0.03);
   --shadow-05: rgba(0, 0, 0, 0.05);
@@ -405,26 +416,35 @@
   --glow-danger: rgba(239, 68, 68, 0.4);
   --glow-info: rgba(6, 182, 212, 0.4);
   /* ═══════════════════════════════════════════════════════════════════════
-     TYPOGRAPHY
-     ═══════════════════════════════════════════════════════════════════════ */
+      TYPOGRAPHY
+      ═══════════════════════════════════════════════════════════════════════ */
   --font-body: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-label: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-tech: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-display: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
-     Formula: clamp(min, intercept + slope * 100vw, max)
-     Generated via Utopia method: slope = (max−min)/(1440−320)
-     ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+      Formula: clamp(min, intercept + slope * 100vw, max)
+      Generated via Utopia method: slope = (max−min)/(1440−320)
+      ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-tight: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
@@ -434,8 +454,8 @@
   --tracking-wider: 0.04em;
   --tracking-widest: 0.08em;
   /* ═══════════════════════════════════════════════════════════════════════
-     BACKWARD COMPATIBILITY ALIASES
-     ═══════════════════════════════════════════════════════════════════════ */
+      BACKWARD COMPATIBILITY ALIASES
+      ═══════════════════════════════════════════════════════════════════════ */
   --color-aqua-vivid: var(--color-primary);
   --color-aqua-bright: var(--color-primary-light);
   --color-aqua-mid: var(--color-primary-dark);
@@ -600,9 +620,9 @@ code, pre {
 
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR PALETTE - Flat Dark Theme
-     Modern, minimal dark UI with indigo accent
-     ═══════════════════════════════════════════════════════════════════════ */
+      COLOR PALETTE - Flat Dark Theme
+      Modern, minimal dark UI with indigo accent
+      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Indigo) ─────────────────────────────────────────────── */
   --color-primary: #457b9d;
   --color-primary-light: #6a9fbf;
@@ -652,8 +672,8 @@ code, pre {
   --color-info-dark: #0891b2;
   --color-info-light: #22d3ee;
   /* ═══════════════════════════════════════════════════════════════════════
-     SEMANTIC COLORS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SEMANTIC COLORS
+      ═══════════════════════════════════════════════════════════════════════ */
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-accent: var(--color-primary-light);
@@ -662,6 +682,7 @@ code, pre {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info);
   --bg-color: var(--color-gray-950);
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: var(--color-gray-900);
   --device-surface: var(--color-gray-800);
   --btn-bg-dark: var(--color-gray-700);
@@ -723,8 +744,8 @@ code, pre {
   --btn-info-top: var(--color-info-light);
   --btn-info-btm: var(--color-info);
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOW & HIGHLIGHT OVERLAYS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SHADOW & HIGHLIGHT OVERLAYS
+      ═══════════════════════════════════════════════════════════════════════ */
   --shadow-02: rgba(0, 0, 0, 0.02);
   --shadow-03: rgba(0, 0, 0, 0.03);
   --shadow-05: rgba(0, 0, 0, 0.05);
@@ -755,26 +776,35 @@ code, pre {
   --glow-danger: rgba(239, 68, 68, 0.4);
   --glow-info: rgba(6, 182, 212, 0.4);
   /* ═══════════════════════════════════════════════════════════════════════
-     TYPOGRAPHY
-     ═══════════════════════════════════════════════════════════════════════ */
+      TYPOGRAPHY
+      ═══════════════════════════════════════════════════════════════════════ */
   --font-body: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-label: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-tech: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-display: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
-     Formula: clamp(min, intercept + slope * 100vw, max)
-     Generated via Utopia method: slope = (max−min)/(1440−320)
-     ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+      Formula: clamp(min, intercept + slope * 100vw, max)
+      Generated via Utopia method: slope = (max−min)/(1440−320)
+      ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-tight: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
@@ -784,8 +814,8 @@ code, pre {
   --tracking-wider: 0.04em;
   --tracking-widest: 0.08em;
   /* ═══════════════════════════════════════════════════════════════════════
-     BACKWARD COMPATIBILITY ALIASES
-     ═══════════════════════════════════════════════════════════════════════ */
+      BACKWARD COMPATIBILITY ALIASES
+      ═══════════════════════════════════════════════════════════════════════ */
   --color-aqua-vivid: var(--color-primary);
   --color-aqua-bright: var(--color-primary-light);
   --color-aqua-mid: var(--color-primary-dark);
@@ -1161,11 +1191,43 @@ code, pre {
   border-color: rgba(34, 197, 94, 0.3);
 }
 
+/* ── Mobile compact (≤ 768px) ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .dialog-container {
+    padding: 0;
+  }
+  .dialog {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    margin: 0;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .dialog-header {
+    padding: 0.875rem 1rem;
+    border-radius: 0;
+  }
+  .dialog-body {
+    padding: 1rem;
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+  .dialog-footer {
+    padding: 0.875rem 1rem;
+    border-radius: 0;
+  }
+  .dialog-title {
+    font-size: 1rem;
+  }
+}
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR PALETTE - Flat Dark Theme
-     Modern, minimal dark UI with indigo accent
-     ═══════════════════════════════════════════════════════════════════════ */
+      COLOR PALETTE - Flat Dark Theme
+      Modern, minimal dark UI with indigo accent
+      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Indigo) ─────────────────────────────────────────────── */
   --color-primary: #457b9d;
   --color-primary-light: #6a9fbf;
@@ -1215,8 +1277,8 @@ code, pre {
   --color-info-dark: #0891b2;
   --color-info-light: #22d3ee;
   /* ═══════════════════════════════════════════════════════════════════════
-     SEMANTIC COLORS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SEMANTIC COLORS
+      ═══════════════════════════════════════════════════════════════════════ */
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-accent: var(--color-primary-light);
@@ -1225,6 +1287,7 @@ code, pre {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info);
   --bg-color: var(--color-gray-950);
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: var(--color-gray-900);
   --device-surface: var(--color-gray-800);
   --btn-bg-dark: var(--color-gray-700);
@@ -1286,8 +1349,8 @@ code, pre {
   --btn-info-top: var(--color-info-light);
   --btn-info-btm: var(--color-info);
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOW & HIGHLIGHT OVERLAYS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SHADOW & HIGHLIGHT OVERLAYS
+      ═══════════════════════════════════════════════════════════════════════ */
   --shadow-02: rgba(0, 0, 0, 0.02);
   --shadow-03: rgba(0, 0, 0, 0.03);
   --shadow-05: rgba(0, 0, 0, 0.05);
@@ -1318,26 +1381,35 @@ code, pre {
   --glow-danger: rgba(239, 68, 68, 0.4);
   --glow-info: rgba(6, 182, 212, 0.4);
   /* ═══════════════════════════════════════════════════════════════════════
-     TYPOGRAPHY
-     ═══════════════════════════════════════════════════════════════════════ */
+      TYPOGRAPHY
+      ═══════════════════════════════════════════════════════════════════════ */
   --font-body: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-label: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-tech: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-display: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
-     Formula: clamp(min, intercept + slope * 100vw, max)
-     Generated via Utopia method: slope = (max−min)/(1440−320)
-     ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+      Formula: clamp(min, intercept + slope * 100vw, max)
+      Generated via Utopia method: slope = (max−min)/(1440−320)
+      ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-tight: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
@@ -1347,8 +1419,8 @@ code, pre {
   --tracking-wider: 0.04em;
   --tracking-widest: 0.08em;
   /* ═══════════════════════════════════════════════════════════════════════
-     BACKWARD COMPATIBILITY ALIASES
-     ═══════════════════════════════════════════════════════════════════════ */
+      BACKWARD COMPATIBILITY ALIASES
+      ═══════════════════════════════════════════════════════════════════════ */
   --color-aqua-vivid: var(--color-primary);
   --color-aqua-bright: var(--color-primary-light);
   --color-aqua-mid: var(--color-primary-dark);
@@ -1416,7 +1488,7 @@ code, pre {
   gap: 0.4rem;
   padding: 6px 20px;
   min-height: 32px;
-  background: var(--color-primary);
+  background-color: var(--color-primary);
   border: none;
   border-radius: var(--radius-md);
   font-family: var(--font-label);
@@ -1426,16 +1498,17 @@ code, pre {
   letter-spacing: var(--tracking-wide);
   cursor: pointer;
   user-select: none;
-  transition: background 0.15s ease, opacity 0.15s ease;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
 }
 .btn:hover, .form-select:hover {
-  background: var(--color-primary-light);
+  background-color: var(--color-primary-light);
 }
 .btn:active, .form-select:active, .btn.active, .active.form-select {
-  background: var(--color-primary-dark);
+  background-color: var(--color-primary-dark);
   opacity: 0.9;
 }
 .btn:focus-visible, .form-select:focus-visible {
+  background-color: var(--color-primary-light);
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
@@ -1464,28 +1537,28 @@ code, pre {
 /* ─── Secondary / White button ─────────────────────────────────────────── */
 .btn-secondary, .form-select,
 .btn-white {
-  background: var(--color-gray-700);
+  background-color: var(--color-gray-700);
   color: var(--text-primary);
 }
 .btn-secondary:hover, .form-select:hover,
 .btn-white:hover {
-  background: var(--color-gray-600);
+  background-color: var(--color-gray-600);
 }
 .btn-secondary:active, .form-select:active,
 .btn-white:active {
-  background: var(--color-gray-750);
+  background-color: var(--color-gray-750);
 }
 
 /* ─── Primary ──────────────────────────────────────────────────────────── */
 .btn-primary, .btn-orange {
-  background: var(--color-primary);
+  background-color: var(--color-primary);
   color: #ffffff;
 }
 .btn-primary:hover, .btn-orange:hover {
-  background: var(--color-primary-light);
+  background-color: var(--color-primary-light);
 }
 .btn-primary:active, .btn-orange:active {
-  background: var(--color-primary-dark);
+  background-color: var(--color-primary-dark);
 }
 
 /* ─── Success ──────────────────────────────────────────────────────────── */
@@ -1602,7 +1675,7 @@ code, pre {
   transition: background 0.15s, color 0.15s;
   box-shadow: none;
 }
-.btn-icon:hover {
+.btn-icon:hover, .btn-icon:focus-visible {
   background: rgba(255, 255, 255, 0.07);
   color: var(--text-primary);
 }
@@ -1683,9 +1756,9 @@ code, pre {
 
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR PALETTE - Flat Dark Theme
-     Modern, minimal dark UI with indigo accent
-     ═══════════════════════════════════════════════════════════════════════ */
+      COLOR PALETTE - Flat Dark Theme
+      Modern, minimal dark UI with indigo accent
+      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Indigo) ─────────────────────────────────────────────── */
   --color-primary: #457b9d;
   --color-primary-light: #6a9fbf;
@@ -1735,8 +1808,8 @@ code, pre {
   --color-info-dark: #0891b2;
   --color-info-light: #22d3ee;
   /* ═══════════════════════════════════════════════════════════════════════
-     SEMANTIC COLORS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SEMANTIC COLORS
+      ═══════════════════════════════════════════════════════════════════════ */
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-accent: var(--color-primary-light);
@@ -1745,6 +1818,7 @@ code, pre {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info);
   --bg-color: var(--color-gray-950);
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: var(--color-gray-900);
   --device-surface: var(--color-gray-800);
   --btn-bg-dark: var(--color-gray-700);
@@ -1806,8 +1880,8 @@ code, pre {
   --btn-info-top: var(--color-info-light);
   --btn-info-btm: var(--color-info);
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOW & HIGHLIGHT OVERLAYS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SHADOW & HIGHLIGHT OVERLAYS
+      ═══════════════════════════════════════════════════════════════════════ */
   --shadow-02: rgba(0, 0, 0, 0.02);
   --shadow-03: rgba(0, 0, 0, 0.03);
   --shadow-05: rgba(0, 0, 0, 0.05);
@@ -1838,26 +1912,35 @@ code, pre {
   --glow-danger: rgba(239, 68, 68, 0.4);
   --glow-info: rgba(6, 182, 212, 0.4);
   /* ═══════════════════════════════════════════════════════════════════════
-     TYPOGRAPHY
-     ═══════════════════════════════════════════════════════════════════════ */
+      TYPOGRAPHY
+      ═══════════════════════════════════════════════════════════════════════ */
   --font-body: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-label: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-tech: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-display: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
-     Formula: clamp(min, intercept + slope * 100vw, max)
-     Generated via Utopia method: slope = (max−min)/(1440−320)
-     ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+      Formula: clamp(min, intercept + slope * 100vw, max)
+      Generated via Utopia method: slope = (max−min)/(1440−320)
+      ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-tight: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
@@ -1867,8 +1950,8 @@ code, pre {
   --tracking-wider: 0.04em;
   --tracking-widest: 0.08em;
   /* ═══════════════════════════════════════════════════════════════════════
-     BACKWARD COMPATIBILITY ALIASES
-     ═══════════════════════════════════════════════════════════════════════ */
+      BACKWARD COMPATIBILITY ALIASES
+      ═══════════════════════════════════════════════════════════════════════ */
   --color-aqua-vivid: var(--color-primary);
   --color-aqua-bright: var(--color-primary-light);
   --color-aqua-mid: var(--color-primary-dark);
@@ -2133,11 +2216,40 @@ label {
   margin-left: -1px;
 }
 
+/* ─── Settings Knob ──────────────────────────────────────────────────── */
+.settings-knob {
+  background: var(--color-primary, #457b9d);
+  border: none;
+  border-radius: 50%;
+  box-shadow: none;
+}
+.settings-knob:active {
+  background: var(--color-primary-dark, #2d627f);
+  box-shadow: none;
+}
+.settings-knob:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-primary-light, #6a9fbf);
+}
+
+.settings-knob__indicator {
+  background: #fff;
+  box-shadow: none;
+  border-radius: 2px;
+}
+
+.settings-knob-value {
+  color: var(--text-primary, #e0e0e0);
+}
+
+.settings-knob-scale {
+  color: var(--text-secondary, #999);
+}
+
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR PALETTE - Flat Dark Theme
-     Modern, minimal dark UI with indigo accent
-     ═══════════════════════════════════════════════════════════════════════ */
+      COLOR PALETTE - Flat Dark Theme
+      Modern, minimal dark UI with indigo accent
+      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Indigo) ─────────────────────────────────────────────── */
   --color-primary: #457b9d;
   --color-primary-light: #6a9fbf;
@@ -2187,8 +2299,8 @@ label {
   --color-info-dark: #0891b2;
   --color-info-light: #22d3ee;
   /* ═══════════════════════════════════════════════════════════════════════
-     SEMANTIC COLORS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SEMANTIC COLORS
+      ═══════════════════════════════════════════════════════════════════════ */
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-accent: var(--color-primary-light);
@@ -2197,6 +2309,7 @@ label {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info);
   --bg-color: var(--color-gray-950);
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: var(--color-gray-900);
   --device-surface: var(--color-gray-800);
   --btn-bg-dark: var(--color-gray-700);
@@ -2258,8 +2371,8 @@ label {
   --btn-info-top: var(--color-info-light);
   --btn-info-btm: var(--color-info);
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOW & HIGHLIGHT OVERLAYS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SHADOW & HIGHLIGHT OVERLAYS
+      ═══════════════════════════════════════════════════════════════════════ */
   --shadow-02: rgba(0, 0, 0, 0.02);
   --shadow-03: rgba(0, 0, 0, 0.03);
   --shadow-05: rgba(0, 0, 0, 0.05);
@@ -2290,26 +2403,35 @@ label {
   --glow-danger: rgba(239, 68, 68, 0.4);
   --glow-info: rgba(6, 182, 212, 0.4);
   /* ═══════════════════════════════════════════════════════════════════════
-     TYPOGRAPHY
-     ═══════════════════════════════════════════════════════════════════════ */
+      TYPOGRAPHY
+      ═══════════════════════════════════════════════════════════════════════ */
   --font-body: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-label: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-tech: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-display: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
-     Formula: clamp(min, intercept + slope * 100vw, max)
-     Generated via Utopia method: slope = (max−min)/(1440−320)
-     ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+      Formula: clamp(min, intercept + slope * 100vw, max)
+      Generated via Utopia method: slope = (max−min)/(1440−320)
+      ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-tight: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
@@ -2319,8 +2441,8 @@ label {
   --tracking-wider: 0.04em;
   --tracking-widest: 0.08em;
   /* ═══════════════════════════════════════════════════════════════════════
-     BACKWARD COMPATIBILITY ALIASES
-     ═══════════════════════════════════════════════════════════════════════ */
+      BACKWARD COMPATIBILITY ALIASES
+      ═══════════════════════════════════════════════════════════════════════ */
   --color-aqua-vivid: var(--color-primary);
   --color-aqua-bright: var(--color-primary-light);
   --color-aqua-mid: var(--color-primary-dark);
@@ -2435,9 +2557,9 @@ label {
 }
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR PALETTE - Flat Dark Theme
-     Modern, minimal dark UI with indigo accent
-     ═══════════════════════════════════════════════════════════════════════ */
+      COLOR PALETTE - Flat Dark Theme
+      Modern, minimal dark UI with indigo accent
+      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Indigo) ─────────────────────────────────────────────── */
   --color-primary: #457b9d;
   --color-primary-light: #6a9fbf;
@@ -2487,8 +2609,8 @@ label {
   --color-info-dark: #0891b2;
   --color-info-light: #22d3ee;
   /* ═══════════════════════════════════════════════════════════════════════
-     SEMANTIC COLORS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SEMANTIC COLORS
+      ═══════════════════════════════════════════════════════════════════════ */
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-accent: var(--color-primary-light);
@@ -2497,6 +2619,7 @@ label {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info);
   --bg-color: var(--color-gray-950);
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: var(--color-gray-900);
   --device-surface: var(--color-gray-800);
   --btn-bg-dark: var(--color-gray-700);
@@ -2558,8 +2681,8 @@ label {
   --btn-info-top: var(--color-info-light);
   --btn-info-btm: var(--color-info);
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOW & HIGHLIGHT OVERLAYS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SHADOW & HIGHLIGHT OVERLAYS
+      ═══════════════════════════════════════════════════════════════════════ */
   --shadow-02: rgba(0, 0, 0, 0.02);
   --shadow-03: rgba(0, 0, 0, 0.03);
   --shadow-05: rgba(0, 0, 0, 0.05);
@@ -2590,26 +2713,35 @@ label {
   --glow-danger: rgba(239, 68, 68, 0.4);
   --glow-info: rgba(6, 182, 212, 0.4);
   /* ═══════════════════════════════════════════════════════════════════════
-     TYPOGRAPHY
-     ═══════════════════════════════════════════════════════════════════════ */
+      TYPOGRAPHY
+      ═══════════════════════════════════════════════════════════════════════ */
   --font-body: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-label: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-tech: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-display: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
-     Formula: clamp(min, intercept + slope * 100vw, max)
-     Generated via Utopia method: slope = (max−min)/(1440−320)
-     ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+      Formula: clamp(min, intercept + slope * 100vw, max)
+      Generated via Utopia method: slope = (max−min)/(1440−320)
+      ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-tight: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
@@ -2619,8 +2751,8 @@ label {
   --tracking-wider: 0.04em;
   --tracking-widest: 0.08em;
   /* ═══════════════════════════════════════════════════════════════════════
-     BACKWARD COMPATIBILITY ALIASES
-     ═══════════════════════════════════════════════════════════════════════ */
+      BACKWARD COMPATIBILITY ALIASES
+      ═══════════════════════════════════════════════════════════════════════ */
   --color-aqua-vivid: var(--color-primary);
   --color-aqua-bright: var(--color-primary-light);
   --color-aqua-mid: var(--color-primary-dark);
@@ -2848,9 +2980,9 @@ input[type=range]::-moz-range-thumb:active {
 
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR PALETTE - Flat Dark Theme
-     Modern, minimal dark UI with indigo accent
-     ═══════════════════════════════════════════════════════════════════════ */
+      COLOR PALETTE - Flat Dark Theme
+      Modern, minimal dark UI with indigo accent
+      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Indigo) ─────────────────────────────────────────────── */
   --color-primary: #457b9d;
   --color-primary-light: #6a9fbf;
@@ -2900,8 +3032,8 @@ input[type=range]::-moz-range-thumb:active {
   --color-info-dark: #0891b2;
   --color-info-light: #22d3ee;
   /* ═══════════════════════════════════════════════════════════════════════
-     SEMANTIC COLORS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SEMANTIC COLORS
+      ═══════════════════════════════════════════════════════════════════════ */
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-accent: var(--color-primary-light);
@@ -2910,6 +3042,7 @@ input[type=range]::-moz-range-thumb:active {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info);
   --bg-color: var(--color-gray-950);
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: var(--color-gray-900);
   --device-surface: var(--color-gray-800);
   --btn-bg-dark: var(--color-gray-700);
@@ -2971,8 +3104,8 @@ input[type=range]::-moz-range-thumb:active {
   --btn-info-top: var(--color-info-light);
   --btn-info-btm: var(--color-info);
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOW & HIGHLIGHT OVERLAYS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SHADOW & HIGHLIGHT OVERLAYS
+      ═══════════════════════════════════════════════════════════════════════ */
   --shadow-02: rgba(0, 0, 0, 0.02);
   --shadow-03: rgba(0, 0, 0, 0.03);
   --shadow-05: rgba(0, 0, 0, 0.05);
@@ -3003,26 +3136,35 @@ input[type=range]::-moz-range-thumb:active {
   --glow-danger: rgba(239, 68, 68, 0.4);
   --glow-info: rgba(6, 182, 212, 0.4);
   /* ═══════════════════════════════════════════════════════════════════════
-     TYPOGRAPHY
-     ═══════════════════════════════════════════════════════════════════════ */
+      TYPOGRAPHY
+      ═══════════════════════════════════════════════════════════════════════ */
   --font-body: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-label: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-tech: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-display: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
-     Formula: clamp(min, intercept + slope * 100vw, max)
-     Generated via Utopia method: slope = (max−min)/(1440−320)
-     ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+      Formula: clamp(min, intercept + slope * 100vw, max)
+      Generated via Utopia method: slope = (max−min)/(1440−320)
+      ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-tight: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
@@ -3032,8 +3174,8 @@ input[type=range]::-moz-range-thumb:active {
   --tracking-wider: 0.04em;
   --tracking-widest: 0.08em;
   /* ═══════════════════════════════════════════════════════════════════════
-     BACKWARD COMPATIBILITY ALIASES
-     ═══════════════════════════════════════════════════════════════════════ */
+      BACKWARD COMPATIBILITY ALIASES
+      ═══════════════════════════════════════════════════════════════════════ */
   --color-aqua-vivid: var(--color-primary);
   --color-aqua-bright: var(--color-primary-light);
   --color-aqua-mid: var(--color-primary-dark);
@@ -3153,9 +3295,9 @@ input[type=range]::-moz-range-thumb:active {
 
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR PALETTE - Flat Dark Theme
-     Modern, minimal dark UI with indigo accent
-     ═══════════════════════════════════════════════════════════════════════ */
+      COLOR PALETTE - Flat Dark Theme
+      Modern, minimal dark UI with indigo accent
+      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Indigo) ─────────────────────────────────────────────── */
   --color-primary: #457b9d;
   --color-primary-light: #6a9fbf;
@@ -3205,8 +3347,8 @@ input[type=range]::-moz-range-thumb:active {
   --color-info-dark: #0891b2;
   --color-info-light: #22d3ee;
   /* ═══════════════════════════════════════════════════════════════════════
-     SEMANTIC COLORS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SEMANTIC COLORS
+      ═══════════════════════════════════════════════════════════════════════ */
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-accent: var(--color-primary-light);
@@ -3215,6 +3357,7 @@ input[type=range]::-moz-range-thumb:active {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info);
   --bg-color: var(--color-gray-950);
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: var(--color-gray-900);
   --device-surface: var(--color-gray-800);
   --btn-bg-dark: var(--color-gray-700);
@@ -3276,8 +3419,8 @@ input[type=range]::-moz-range-thumb:active {
   --btn-info-top: var(--color-info-light);
   --btn-info-btm: var(--color-info);
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOW & HIGHLIGHT OVERLAYS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SHADOW & HIGHLIGHT OVERLAYS
+      ═══════════════════════════════════════════════════════════════════════ */
   --shadow-02: rgba(0, 0, 0, 0.02);
   --shadow-03: rgba(0, 0, 0, 0.03);
   --shadow-05: rgba(0, 0, 0, 0.05);
@@ -3308,26 +3451,35 @@ input[type=range]::-moz-range-thumb:active {
   --glow-danger: rgba(239, 68, 68, 0.4);
   --glow-info: rgba(6, 182, 212, 0.4);
   /* ═══════════════════════════════════════════════════════════════════════
-     TYPOGRAPHY
-     ═══════════════════════════════════════════════════════════════════════ */
+      TYPOGRAPHY
+      ═══════════════════════════════════════════════════════════════════════ */
   --font-body: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-label: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-tech: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-display: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
-     Formula: clamp(min, intercept + slope * 100vw, max)
-     Generated via Utopia method: slope = (max−min)/(1440−320)
-     ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+      Formula: clamp(min, intercept + slope * 100vw, max)
+      Generated via Utopia method: slope = (max−min)/(1440−320)
+      ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-tight: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
@@ -3337,8 +3489,8 @@ input[type=range]::-moz-range-thumb:active {
   --tracking-wider: 0.04em;
   --tracking-widest: 0.08em;
   /* ═══════════════════════════════════════════════════════════════════════
-     BACKWARD COMPATIBILITY ALIASES
-     ═══════════════════════════════════════════════════════════════════════ */
+      BACKWARD COMPATIBILITY ALIASES
+      ═══════════════════════════════════════════════════════════════════════ */
   --color-aqua-vivid: var(--color-primary);
   --color-aqua-bright: var(--color-primary-light);
   --color-aqua-mid: var(--color-primary-dark);
@@ -3465,9 +3617,9 @@ input[type=range]::-moz-range-thumb:active {
 
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR PALETTE - Flat Dark Theme
-     Modern, minimal dark UI with indigo accent
-     ═══════════════════════════════════════════════════════════════════════ */
+      COLOR PALETTE - Flat Dark Theme
+      Modern, minimal dark UI with indigo accent
+      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Indigo) ─────────────────────────────────────────────── */
   --color-primary: #457b9d;
   --color-primary-light: #6a9fbf;
@@ -3517,8 +3669,8 @@ input[type=range]::-moz-range-thumb:active {
   --color-info-dark: #0891b2;
   --color-info-light: #22d3ee;
   /* ═══════════════════════════════════════════════════════════════════════
-     SEMANTIC COLORS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SEMANTIC COLORS
+      ═══════════════════════════════════════════════════════════════════════ */
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-accent: var(--color-primary-light);
@@ -3527,6 +3679,7 @@ input[type=range]::-moz-range-thumb:active {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info);
   --bg-color: var(--color-gray-950);
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: var(--color-gray-900);
   --device-surface: var(--color-gray-800);
   --btn-bg-dark: var(--color-gray-700);
@@ -3588,8 +3741,8 @@ input[type=range]::-moz-range-thumb:active {
   --btn-info-top: var(--color-info-light);
   --btn-info-btm: var(--color-info);
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOW & HIGHLIGHT OVERLAYS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SHADOW & HIGHLIGHT OVERLAYS
+      ═══════════════════════════════════════════════════════════════════════ */
   --shadow-02: rgba(0, 0, 0, 0.02);
   --shadow-03: rgba(0, 0, 0, 0.03);
   --shadow-05: rgba(0, 0, 0, 0.05);
@@ -3620,26 +3773,35 @@ input[type=range]::-moz-range-thumb:active {
   --glow-danger: rgba(239, 68, 68, 0.4);
   --glow-info: rgba(6, 182, 212, 0.4);
   /* ═══════════════════════════════════════════════════════════════════════
-     TYPOGRAPHY
-     ═══════════════════════════════════════════════════════════════════════ */
+      TYPOGRAPHY
+      ═══════════════════════════════════════════════════════════════════════ */
   --font-body: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-label: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-tech: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-display: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
-     Formula: clamp(min, intercept + slope * 100vw, max)
-     Generated via Utopia method: slope = (max−min)/(1440−320)
-     ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+      Formula: clamp(min, intercept + slope * 100vw, max)
+      Generated via Utopia method: slope = (max−min)/(1440−320)
+      ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-tight: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
@@ -3649,8 +3811,8 @@ input[type=range]::-moz-range-thumb:active {
   --tracking-wider: 0.04em;
   --tracking-widest: 0.08em;
   /* ═══════════════════════════════════════════════════════════════════════
-     BACKWARD COMPATIBILITY ALIASES
-     ═══════════════════════════════════════════════════════════════════════ */
+      BACKWARD COMPATIBILITY ALIASES
+      ═══════════════════════════════════════════════════════════════════════ */
   --color-aqua-vivid: var(--color-primary);
   --color-aqua-bright: var(--color-primary-light);
   --color-aqua-mid: var(--color-primary-dark);
@@ -3771,6 +3933,19 @@ input[type=range]::-moz-range-thumb:active {
 }
 
 /* ─── Track Info ───────────────────────────────────────────────────────── */
+/* ── Track Panel — flat inset display (enabled via setting) ─────────── */
+.track-panel {
+  border-radius: 8px;
+}
+
+.track-panel .track-info {
+  background-color: rgba(20, 20, 30, 0.85);
+  border-radius: 8px;
+  padding: clamp(10px, 2cqh, 20px) clamp(12px, 1.5cqw, 24px);
+  border: 1px solid rgba(69, 123, 157, 0.3);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
 .track-info {
   font-family: var(--font-body);
   color: var(--text-primary);
@@ -3778,13 +3953,11 @@ input[type=range]::-moz-range-thumb:active {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  margin-bottom: 10px;
 }
 
 .track-title {
   font-size: clamp(1.1rem, 4vw, 2rem);
   font-weight: 700;
-  margin-bottom: 4px;
   letter-spacing: var(--tracking-tight);
   white-space: nowrap;
   color: var(--text-primary);
@@ -3807,7 +3980,7 @@ input[type=range]::-moz-range-thumb:active {
 }
 
 .responsive-album {
-  font-size: clamp(0.7rem, 1.8cqw, 0.95rem);
+  font-size: clamp(0.7rem, 2.1cqw, 1.96rem);
 }
 
 .responsive-stream-info {
@@ -3927,9 +4100,9 @@ input[type=range]::-moz-range-thumb:active {
 
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR PALETTE - Flat Dark Theme
-     Modern, minimal dark UI with indigo accent
-     ═══════════════════════════════════════════════════════════════════════ */
+      COLOR PALETTE - Flat Dark Theme
+      Modern, minimal dark UI with indigo accent
+      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Indigo) ─────────────────────────────────────────────── */
   --color-primary: #457b9d;
   --color-primary-light: #6a9fbf;
@@ -3979,8 +4152,8 @@ input[type=range]::-moz-range-thumb:active {
   --color-info-dark: #0891b2;
   --color-info-light: #22d3ee;
   /* ═══════════════════════════════════════════════════════════════════════
-     SEMANTIC COLORS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SEMANTIC COLORS
+      ═══════════════════════════════════════════════════════════════════════ */
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-accent: var(--color-primary-light);
@@ -3989,6 +4162,7 @@ input[type=range]::-moz-range-thumb:active {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info);
   --bg-color: var(--color-gray-950);
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: var(--color-gray-900);
   --device-surface: var(--color-gray-800);
   --btn-bg-dark: var(--color-gray-700);
@@ -4050,8 +4224,8 @@ input[type=range]::-moz-range-thumb:active {
   --btn-info-top: var(--color-info-light);
   --btn-info-btm: var(--color-info);
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOW & HIGHLIGHT OVERLAYS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SHADOW & HIGHLIGHT OVERLAYS
+      ═══════════════════════════════════════════════════════════════════════ */
   --shadow-02: rgba(0, 0, 0, 0.02);
   --shadow-03: rgba(0, 0, 0, 0.03);
   --shadow-05: rgba(0, 0, 0, 0.05);
@@ -4082,26 +4256,35 @@ input[type=range]::-moz-range-thumb:active {
   --glow-danger: rgba(239, 68, 68, 0.4);
   --glow-info: rgba(6, 182, 212, 0.4);
   /* ═══════════════════════════════════════════════════════════════════════
-     TYPOGRAPHY
-     ═══════════════════════════════════════════════════════════════════════ */
+      TYPOGRAPHY
+      ═══════════════════════════════════════════════════════════════════════ */
   --font-body: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-label: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-tech: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-display: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
-     Formula: clamp(min, intercept + slope * 100vw, max)
-     Generated via Utopia method: slope = (max−min)/(1440−320)
-     ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+      Formula: clamp(min, intercept + slope * 100vw, max)
+      Generated via Utopia method: slope = (max−min)/(1440−320)
+      ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-tight: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
@@ -4111,8 +4294,8 @@ input[type=range]::-moz-range-thumb:active {
   --tracking-wider: 0.04em;
   --tracking-widest: 0.08em;
   /* ═══════════════════════════════════════════════════════════════════════
-     BACKWARD COMPATIBILITY ALIASES
-     ═══════════════════════════════════════════════════════════════════════ */
+      BACKWARD COMPATIBILITY ALIASES
+      ═══════════════════════════════════════════════════════════════════════ */
   --color-aqua-vivid: var(--color-primary);
   --color-aqua-bright: var(--color-primary-light);
   --color-aqua-mid: var(--color-primary-dark);
@@ -4288,9 +4471,9 @@ input[type=range]::-moz-range-thumb:active {
 
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR PALETTE - Flat Dark Theme
-     Modern, minimal dark UI with indigo accent
-     ═══════════════════════════════════════════════════════════════════════ */
+      COLOR PALETTE - Flat Dark Theme
+      Modern, minimal dark UI with indigo accent
+      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Indigo) ─────────────────────────────────────────────── */
   --color-primary: #457b9d;
   --color-primary-light: #6a9fbf;
@@ -4340,8 +4523,8 @@ input[type=range]::-moz-range-thumb:active {
   --color-info-dark: #0891b2;
   --color-info-light: #22d3ee;
   /* ═══════════════════════════════════════════════════════════════════════
-     SEMANTIC COLORS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SEMANTIC COLORS
+      ═══════════════════════════════════════════════════════════════════════ */
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-accent: var(--color-primary-light);
@@ -4350,6 +4533,7 @@ input[type=range]::-moz-range-thumb:active {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info);
   --bg-color: var(--color-gray-950);
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: var(--color-gray-900);
   --device-surface: var(--color-gray-800);
   --btn-bg-dark: var(--color-gray-700);
@@ -4411,8 +4595,8 @@ input[type=range]::-moz-range-thumb:active {
   --btn-info-top: var(--color-info-light);
   --btn-info-btm: var(--color-info);
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOW & HIGHLIGHT OVERLAYS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SHADOW & HIGHLIGHT OVERLAYS
+      ═══════════════════════════════════════════════════════════════════════ */
   --shadow-02: rgba(0, 0, 0, 0.02);
   --shadow-03: rgba(0, 0, 0, 0.03);
   --shadow-05: rgba(0, 0, 0, 0.05);
@@ -4443,26 +4627,35 @@ input[type=range]::-moz-range-thumb:active {
   --glow-danger: rgba(239, 68, 68, 0.4);
   --glow-info: rgba(6, 182, 212, 0.4);
   /* ═══════════════════════════════════════════════════════════════════════
-     TYPOGRAPHY
-     ═══════════════════════════════════════════════════════════════════════ */
+      TYPOGRAPHY
+      ═══════════════════════════════════════════════════════════════════════ */
   --font-body: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-label: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-tech: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-display: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
-     Formula: clamp(min, intercept + slope * 100vw, max)
-     Generated via Utopia method: slope = (max−min)/(1440−320)
-     ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+      Formula: clamp(min, intercept + slope * 100vw, max)
+      Generated via Utopia method: slope = (max−min)/(1440−320)
+      ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-tight: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
@@ -4472,8 +4665,8 @@ input[type=range]::-moz-range-thumb:active {
   --tracking-wider: 0.04em;
   --tracking-widest: 0.08em;
   /* ═══════════════════════════════════════════════════════════════════════
-     BACKWARD COMPATIBILITY ALIASES
-     ═══════════════════════════════════════════════════════════════════════ */
+      BACKWARD COMPATIBILITY ALIASES
+      ═══════════════════════════════════════════════════════════════════════ */
   --color-aqua-vivid: var(--color-primary);
   --color-aqua-bright: var(--color-primary-light);
   --color-aqua-mid: var(--color-primary-dark);
@@ -4754,9 +4947,9 @@ input[type=range]::-moz-range-thumb:active {
 
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR PALETTE - Flat Dark Theme
-     Modern, minimal dark UI with indigo accent
-     ═══════════════════════════════════════════════════════════════════════ */
+      COLOR PALETTE - Flat Dark Theme
+      Modern, minimal dark UI with indigo accent
+      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Indigo) ─────────────────────────────────────────────── */
   --color-primary: #457b9d;
   --color-primary-light: #6a9fbf;
@@ -4806,8 +4999,8 @@ input[type=range]::-moz-range-thumb:active {
   --color-info-dark: #0891b2;
   --color-info-light: #22d3ee;
   /* ═══════════════════════════════════════════════════════════════════════
-     SEMANTIC COLORS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SEMANTIC COLORS
+      ═══════════════════════════════════════════════════════════════════════ */
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-accent: var(--color-primary-light);
@@ -4816,6 +5009,7 @@ input[type=range]::-moz-range-thumb:active {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info);
   --bg-color: var(--color-gray-950);
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: var(--color-gray-900);
   --device-surface: var(--color-gray-800);
   --btn-bg-dark: var(--color-gray-700);
@@ -4877,8 +5071,8 @@ input[type=range]::-moz-range-thumb:active {
   --btn-info-top: var(--color-info-light);
   --btn-info-btm: var(--color-info);
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOW & HIGHLIGHT OVERLAYS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SHADOW & HIGHLIGHT OVERLAYS
+      ═══════════════════════════════════════════════════════════════════════ */
   --shadow-02: rgba(0, 0, 0, 0.02);
   --shadow-03: rgba(0, 0, 0, 0.03);
   --shadow-05: rgba(0, 0, 0, 0.05);
@@ -4909,26 +5103,35 @@ input[type=range]::-moz-range-thumb:active {
   --glow-danger: rgba(239, 68, 68, 0.4);
   --glow-info: rgba(6, 182, 212, 0.4);
   /* ═══════════════════════════════════════════════════════════════════════
-     TYPOGRAPHY
-     ═══════════════════════════════════════════════════════════════════════ */
+      TYPOGRAPHY
+      ═══════════════════════════════════════════════════════════════════════ */
   --font-body: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-label: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-tech: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-display: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
-     Formula: clamp(min, intercept + slope * 100vw, max)
-     Generated via Utopia method: slope = (max−min)/(1440−320)
-     ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+      Formula: clamp(min, intercept + slope * 100vw, max)
+      Generated via Utopia method: slope = (max−min)/(1440−320)
+      ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-tight: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
@@ -4938,8 +5141,8 @@ input[type=range]::-moz-range-thumb:active {
   --tracking-wider: 0.04em;
   --tracking-widest: 0.08em;
   /* ═══════════════════════════════════════════════════════════════════════
-     BACKWARD COMPATIBILITY ALIASES
-     ═══════════════════════════════════════════════════════════════════════ */
+      BACKWARD COMPATIBILITY ALIASES
+      ═══════════════════════════════════════════════════════════════════════ */
   --color-aqua-vivid: var(--color-primary);
   --color-aqua-bright: var(--color-primary-light);
   --color-aqua-mid: var(--color-primary-dark);
@@ -5078,9 +5281,9 @@ input[type=range]::-moz-range-thumb:active {
 
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR PALETTE - Flat Dark Theme
-     Modern, minimal dark UI with indigo accent
-     ═══════════════════════════════════════════════════════════════════════ */
+      COLOR PALETTE - Flat Dark Theme
+      Modern, minimal dark UI with indigo accent
+      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Indigo) ─────────────────────────────────────────────── */
   --color-primary: #457b9d;
   --color-primary-light: #6a9fbf;
@@ -5130,8 +5333,8 @@ input[type=range]::-moz-range-thumb:active {
   --color-info-dark: #0891b2;
   --color-info-light: #22d3ee;
   /* ═══════════════════════════════════════════════════════════════════════
-     SEMANTIC COLORS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SEMANTIC COLORS
+      ═══════════════════════════════════════════════════════════════════════ */
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-accent: var(--color-primary-light);
@@ -5140,6 +5343,7 @@ input[type=range]::-moz-range-thumb:active {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info);
   --bg-color: var(--color-gray-950);
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: var(--color-gray-900);
   --device-surface: var(--color-gray-800);
   --btn-bg-dark: var(--color-gray-700);
@@ -5201,8 +5405,8 @@ input[type=range]::-moz-range-thumb:active {
   --btn-info-top: var(--color-info-light);
   --btn-info-btm: var(--color-info);
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOW & HIGHLIGHT OVERLAYS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SHADOW & HIGHLIGHT OVERLAYS
+      ═══════════════════════════════════════════════════════════════════════ */
   --shadow-02: rgba(0, 0, 0, 0.02);
   --shadow-03: rgba(0, 0, 0, 0.03);
   --shadow-05: rgba(0, 0, 0, 0.05);
@@ -5233,26 +5437,35 @@ input[type=range]::-moz-range-thumb:active {
   --glow-danger: rgba(239, 68, 68, 0.4);
   --glow-info: rgba(6, 182, 212, 0.4);
   /* ═══════════════════════════════════════════════════════════════════════
-     TYPOGRAPHY
-     ═══════════════════════════════════════════════════════════════════════ */
+      TYPOGRAPHY
+      ═══════════════════════════════════════════════════════════════════════ */
   --font-body: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-label: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-tech: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-display: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
-     Formula: clamp(min, intercept + slope * 100vw, max)
-     Generated via Utopia method: slope = (max−min)/(1440−320)
-     ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+      Formula: clamp(min, intercept + slope * 100vw, max)
+      Generated via Utopia method: slope = (max−min)/(1440−320)
+      ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-tight: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
@@ -5262,8 +5475,8 @@ input[type=range]::-moz-range-thumb:active {
   --tracking-wider: 0.04em;
   --tracking-widest: 0.08em;
   /* ═══════════════════════════════════════════════════════════════════════
-     BACKWARD COMPATIBILITY ALIASES
-     ═══════════════════════════════════════════════════════════════════════ */
+      BACKWARD COMPATIBILITY ALIASES
+      ═══════════════════════════════════════════════════════════════════════ */
   --color-aqua-vivid: var(--color-primary);
   --color-aqua-bright: var(--color-primary-light);
   --color-aqua-mid: var(--color-primary-dark);
@@ -5389,7 +5602,7 @@ input[type=range]::-moz-range-thumb:active {
   opacity: 0;
   transform: translateY(-8px) scale(0.96);
   pointer-events: none;
-  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.18s cubic-bezier(0.4, 0, 0.2, 1), transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .context-menu.open {
   opacity: 1;
@@ -5493,11 +5706,48 @@ input[type=range]::-moz-range-thumb:active {
     font-size: clamp(18px, 1.5vw, 2.2rem);
   }
 }
+/* ─── Section Header ───────────────────────────────────────────────────── */
+.context-menu-section {
+  padding: 0.4rem 1rem 0.65rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-top: 1px solid var(--border-dark);
+  margin-top: 0.25rem;
+}
+
+/* ─── Empty State ──────────────────────────────────────────────────────── */
+.context-menu-empty {
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* ─── Submenu Trigger ───────────────────────────────────────────────────── */
+.context-menu-item--has-submenu {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.context-menu-item--has-submenu .context-menu-item__label {
+  flex: 1;
+}
+.context-menu-item--has-submenu .context-menu-item__chevron {
+  font-size: 18px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.context-menu-item--has-submenu:hover .context-menu-item__chevron {
+  color: var(--color-primary-light);
+}
+
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR PALETTE - Flat Dark Theme
-     Modern, minimal dark UI with indigo accent
-     ═══════════════════════════════════════════════════════════════════════ */
+      COLOR PALETTE - Flat Dark Theme
+      Modern, minimal dark UI with indigo accent
+      ═══════════════════════════════════════════════════════════════════════ */
   /* ─── Primary (Indigo) ─────────────────────────────────────────────── */
   --color-primary: #457b9d;
   --color-primary-light: #6a9fbf;
@@ -5547,8 +5797,8 @@ input[type=range]::-moz-range-thumb:active {
   --color-info-dark: #0891b2;
   --color-info-light: #22d3ee;
   /* ═══════════════════════════════════════════════════════════════════════
-     SEMANTIC COLORS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SEMANTIC COLORS
+      ═══════════════════════════════════════════════════════════════════════ */
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-accent: var(--color-primary-light);
@@ -5557,6 +5807,7 @@ input[type=range]::-moz-range-thumb:active {
   --text-danger: var(--color-danger);
   --text-info: var(--color-info);
   --bg-color: var(--color-gray-950);
+  --album-art-shadow: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   --panel-bg-dark: var(--color-gray-900);
   --device-surface: var(--color-gray-800);
   --btn-bg-dark: var(--color-gray-700);
@@ -5618,8 +5869,8 @@ input[type=range]::-moz-range-thumb:active {
   --btn-info-top: var(--color-info-light);
   --btn-info-btm: var(--color-info);
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOW & HIGHLIGHT OVERLAYS
-     ═══════════════════════════════════════════════════════════════════════ */
+      SHADOW & HIGHLIGHT OVERLAYS
+      ═══════════════════════════════════════════════════════════════════════ */
   --shadow-02: rgba(0, 0, 0, 0.02);
   --shadow-03: rgba(0, 0, 0, 0.03);
   --shadow-05: rgba(0, 0, 0, 0.05);
@@ -5650,26 +5901,35 @@ input[type=range]::-moz-range-thumb:active {
   --glow-danger: rgba(239, 68, 68, 0.4);
   --glow-info: rgba(6, 182, 212, 0.4);
   /* ═══════════════════════════════════════════════════════════════════════
-     TYPOGRAPHY
-     ═══════════════════════════════════════════════════════════════════════ */
+      TYPOGRAPHY
+      ═══════════════════════════════════════════════════════════════════════ */
   --font-body: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-label: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-tech: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-display: 'Inter', 'system-ui', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   /* ── Fluid Type Scale (min: 320px viewport → max: 1440px viewport) ──────
-     Formula: clamp(min, intercept + slope * 100vw, max)
-     Generated via Utopia method: slope = (max−min)/(1440−320)
-     ─────────────────────────────────────────────────────────────────── */
-  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem); /* 10→12px */
-  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem); /* 12→14px */
-  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem); /* 13→16px */
-  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem); /* 14→18px */
-  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem); /* 16→20px */
-  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem); /* 18→24px */
-  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem); /* 20→30px */
-  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem); /* 24→40px */
-  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem); /* 30→52px */
+      Formula: clamp(min, intercept + slope * 100vw, max)
+      Generated via Utopia method: slope = (max−min)/(1440−320)
+      ─────────────────────────────────────────────────────────────────── */
+  --text-xs: clamp(0.625rem, 0.589rem + 0.179vw, 0.75rem);
+  /* 10→12px */
+  --text-sm: clamp(0.75rem, 0.714rem + 0.179vw, 0.875rem);
+  /* 12→14px */
+  --text-base: clamp(0.8125rem, 0.759rem + 0.268vw, 1rem);
+  /* 13→16px */
+  --text-md: clamp(0.875rem, 0.804rem + 0.357vw, 1.125rem);
+  /* 14→18px */
+  --text-lg: clamp(1rem, 0.929rem + 0.357vw, 1.25rem);
+  /* 16→20px */
+  --text-xl: clamp(1.125rem, 1.018rem + 0.536vw, 1.5rem);
+  /* 18→24px */
+  --text-2xl: clamp(1.25rem, 1.071rem + 0.893vw, 1.875rem);
+  /* 20→30px */
+  --text-3xl: clamp(1.5rem, 1.214rem + 1.429vw, 2.5rem);
+  /* 24→40px */
+  --text-4xl: clamp(1.875rem, 1.482rem + 1.964vw, 3.25rem);
+  /* 30→52px */
   --leading-tight: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
@@ -5679,8 +5939,8 @@ input[type=range]::-moz-range-thumb:active {
   --tracking-wider: 0.04em;
   --tracking-widest: 0.08em;
   /* ═══════════════════════════════════════════════════════════════════════
-     BACKWARD COMPATIBILITY ALIASES
-     ═══════════════════════════════════════════════════════════════════════ */
+      BACKWARD COMPATIBILITY ALIASES
+      ═══════════════════════════════════════════════════════════════════════ */
   --color-aqua-vivid: var(--color-primary);
   --color-aqua-bright: var(--color-primary-light);
   --color-aqua-mid: var(--color-primary-dark);
@@ -5800,6 +6060,9 @@ input[type=range]::-moz-range-thumb:active {
   border-color: var(--color-primary);
 }
 .dialog-toolbar .browse-search__icon {
+  color: var(--text-secondary);
+}
+.dialog-toolbar .browse-search__clear {
   color: var(--text-secondary);
 }
 
@@ -6022,13 +6285,23 @@ input[type=range]::-moz-range-thumb:active {
 
 /* ── Browse Tiles ── */
 .browse-tile .browse-tile__icon {
-  font-size: clamp(18px, 3cqi, 30px) !important;
   display: block;
   margin-bottom: 4px;
 }
 .browse-tile .browse-tile__label {
   font-size: clamp(0.75rem, 1.5cqi, 1.1rem) !important;
   font-weight: 600;
+}
+
+/* ── Focus ring — vivid indigo on dark background ── */
+.dialog :focus-visible,
+.slide-panel :focus-visible {
+  outline: 5px solid #818cf8;
+  outline-offset: 2px;
+}
+.dialog [tabindex="-1"]:focus-visible,
+.slide-panel [tabindex="-1"]:focus-visible {
+  outline: none;
 }
 
 /* ── Digital LCD Clock — Flat Dark Theme ───────────────────────────────────

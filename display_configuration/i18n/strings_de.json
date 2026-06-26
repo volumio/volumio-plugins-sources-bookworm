@@ -1,7 +1,6 @@
 {
     "PLUGIN_TITLE": "Anzeigeeinstellungen",
     "APPLY": "Anwenden",
-
     "DISPLAY_SETTINGS_SECTION": "Anzeigeeinstellungen",
     "SCREEN_ROT": "Bildschirmdrehung",
     "SCREEN_ROT_DOC": "Legt die Ausrichtung fuer Display und alle Ein-/Ausgabeschichten fest.",
@@ -9,10 +8,8 @@
     "LEFT": "Links (90 CCW)",
     "RIGHT": "Rechts (90 CW)",
     "INVERTED": "Invertiert (180)",
-
     "BRIGHTNESS": "Helligkeit",
     "BRIGHTNESS_DOC": "Bildschirmhelligkeit anpassen.",
-
     "ADVANCED_SETTINGS_SECTION": "Erweiterte Einstellungen",
     "SHOW_ADVANCED": "Erweiterte Einstellungen anzeigen",
     "SHOW_ADVANCED_DOC": "Feinabstimmung der Drehung fuer Touch, Maus, Konsole und Bootbildschirm.",
@@ -29,7 +26,8 @@
     "ROT_90CW": "90 CW",
     "ROT_180": "180",
     "ROT_90CCW": "90 CCW",
-
+    "OVERSCAN": "Anzeige-Skalierung (Overscan)",
+    "OVERSCAN_DOC": "Anzeige-Skalierung anpassen, um den Bildschirm auszufuellen.",
     "SCREENSAVER_SECTION": "Bildschirmschoner",
     "MOUSE_C": "Mauszeiger ausblenden",
     "MOUSE_C_DOC": "Wenn aktiviert, wird der Mauszeiger bei Nichtgebrauch ausgeblendet.",
@@ -42,7 +40,6 @@
     "NO_SS_IF_PLAY": "Bei Wiedergabe deaktivieren",
     "NO_SS_IF_PLAY_DOC": "Bildschirmschoner waehrend der Wiedergabe deaktivieren.",
     "XSCREEN_SAVER_SETTING": "Xscreensaver-Einstellungen",
-
     "DEBUG_SECTION": "Diagnose",
     "DEBUG_LOGGING": "Debug-Protokollierung",
     "DEBUG_LOGGING_DOC": "Aktiviert detaillierte Protokollierung zur Fehlerbehebung. Fuer Produktionsumgebung deaktivieren.",
