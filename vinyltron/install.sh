@@ -10,9 +10,6 @@ SERVICE=vinyltron
 IDLE_IMAGE_DIR=/data/INTERNAL/Vinyltron/idle-images
 MATRIX_DIR=/home/volumio/rpi-rgb-led-matrix
 MATRIX_LIB="$MATRIX_DIR/bindings/python"
-# Pin to the last commit before Pi 5 RP1 support was added — see
-# docs/engineering-spec.md#rpi-rgb-led-matrix-build
-MATRIX_COMMIT=e947417fff9042b3ea173542be09490acab069f7
 # Bookworm ships libheif 1.15.1, which rejects HEIC photos from iPhone 15 Pro+ /
 # iOS 18 ("Too many auxiliary image references" — HDR gain maps shared between
 # images in an 'altr' group). Fixed upstream in 1.18.0; bookworm-backports ships
@@ -41,32 +38,20 @@ if [ ! -f "$VINYLTRON_DIR/vinyltron.py" ]; then
     exit 1
 fi
 
-echo "Installing build dependencies..."
+echo "Installing dependencies..."
 apt-get update
-if ! apt-get install -y build-essential python3-dev python3-pip cython3 wget libjpeg-dev zlib1g-dev; then
+# python3-pil installs Pillow from the Bookworm package (prebuilt, no compilation).
+if ! apt-get install -y python3-pip python3-pil; then
     echo "Retrying with --force-overwrite (known libpython3-stdlib conflict on fresh Bookworm images)..."
     apt-get install -y -f -o Dpkg::Options::='--force-overwrite'
-    apt-get install -y build-essential python3-dev python3-pip cython3 wget libjpeg-dev zlib1g-dev
+    apt-get install -y python3-pip python3-pil
 fi
 
-if ! python3 -c "import sys; sys.path.insert(0, '$MATRIX_LIB'); import rgbmatrix" 2>/dev/null; then
-    echo "Building rpi-rgb-led-matrix (this can take several minutes)..."
-    rm -rf "$MATRIX_DIR"
-    mkdir -p "$MATRIX_DIR"
-    MATRIX_TARBALL="/tmp/rpi-rgb-led-matrix-$MATRIX_COMMIT.tar.gz"
-    wget -qO "$MATRIX_TARBALL" "https://github.com/hzeller/rpi-rgb-led-matrix/archive/$MATRIX_COMMIT.tar.gz"
-    tar xz -C "$MATRIX_DIR" --strip-components=1 -f "$MATRIX_TARBALL"
-    rm -f "$MATRIX_TARBALL"
-
-    make -C "$MATRIX_DIR/examples-api-use"
-
-    cp "$VINYLTRON_DIR/matrix-build/setup.py" "$MATRIX_LIB/setup.py"
-    mkdir -p "$MATRIX_LIB/rgbmatrix/shims"
-    cp "$VINYLTRON_DIR/matrix-build/rgbmatrix/shims/Imaging.h" "$MATRIX_LIB/rgbmatrix/shims/Imaging.h"
-    (cd "$MATRIX_LIB" && python3 setup.py build_ext --inplace)
-
-    chown -R volumio:volumio "$MATRIX_DIR"
-fi
+echo "Installing rgbmatrix Python bindings..."
+mkdir -p "$MATRIX_LIB/rgbmatrix"
+cp "$VINYLTRON_DIR/matrix-build/prebuilt/rgbmatrix/__init__.py" "$MATRIX_LIB/rgbmatrix/"
+cp "$VINYLTRON_DIR/matrix-build/prebuilt/rgbmatrix/"*.so "$MATRIX_LIB/rgbmatrix/"
+chown -R volumio:volumio "$MATRIX_DIR"
 
 echo "Installing libheif from bookworm-backports (for HEIC/HEIF photo uploads)..."
 # The Debian 12 (bookworm) archive signing key is already trusted on Raspbian Bookworm
@@ -104,10 +89,12 @@ fi
 chown -R volumio:volumio "$CONFIG_DIR"
 
 echo "Installing Python dependencies..."
-# --break-system-packages required on Python 3.11+ (PEP 668 / Bookworm)
+# Pillow is installed via python3-pil above (prebuilt, no compilation).
+# Remaining packages are pure Python; pip install won't trigger a build.
+# --break-system-packages required on Python 3.11+ (PEP 668 / Bookworm).
 PIP_FLAGS=""
 python3 -c "import sys; exit(0 if sys.version_info >= (3, 11) else 1)" 2>/dev/null && PIP_FLAGS="--break-system-packages"
-pip3 install $PIP_FLAGS -r "$VINYLTRON_DIR/requirements.txt"
+pip3 install $PIP_FLAGS "requests>=2.21,<3" "toml>=0.10,<1" "python-socketio[client]==4.6.1"
 
 # Install and enable systemd service
 echo "Installing systemd service..."
