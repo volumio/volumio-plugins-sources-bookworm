@@ -8,8 +8,6 @@ CONFIG_DIR=/data/configuration/user_interface/vinyltron
 CONFIG_TOML="$CONFIG_DIR/config.toml"
 SERVICE=vinyltron
 IDLE_IMAGE_DIR=/data/INTERNAL/Vinyltron/idle-images
-MATRIX_DIR=/home/volumio/rpi-rgb-led-matrix
-MATRIX_LIB="$MATRIX_DIR/bindings/python"
 # Bookworm ships libheif 1.15.1, which rejects HEIC photos from iPhone 15 Pro+ /
 # iOS 18 ("Too many auxiliary image references" — HDR gain maps shared between
 # images in an 'altr' group). Fixed upstream in 1.18.0; bookworm-backports ships
@@ -47,11 +45,6 @@ if ! apt-get install -y python3-pip python3-pil; then
     apt-get install -y python3-pip python3-pil
 fi
 
-echo "Installing rgbmatrix Python bindings..."
-mkdir -p "$MATRIX_LIB/rgbmatrix"
-cp "$VINYLTRON_DIR/matrix-build/prebuilt/rgbmatrix/__init__.py" "$MATRIX_LIB/rgbmatrix/"
-cp "$VINYLTRON_DIR/matrix-build/prebuilt/rgbmatrix/"*.so "$MATRIX_LIB/rgbmatrix/"
-chown -R volumio:volumio "$MATRIX_DIR"
 
 echo "Installing libheif from bookworm-backports (for HEIC/HEIF photo uploads)..."
 # The Debian 12 (bookworm) archive signing key is already trusted on Raspbian Bookworm

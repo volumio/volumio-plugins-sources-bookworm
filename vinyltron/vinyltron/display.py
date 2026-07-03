@@ -6,7 +6,7 @@ from typing import Dict, List, NamedTuple, Optional, Tuple
 
 from PIL import Image, ImageOps
 
-sys.path.insert(0, '/home/volumio/rpi-rgb-led-matrix/bindings/python')
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'matrix-build', 'prebuilt'))
 from rgbmatrix import RGBMatrix, RGBMatrixOptions
 
 log = logging.getLogger(__name__)
