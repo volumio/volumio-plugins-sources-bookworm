@@ -226,7 +226,8 @@
                         {"value": "brians_brain", "label": "Brian's Brain"},
                         {"value": "langtons_ant", "label": "Langton's Ant"},
                         {"value": "chaos_game", "label": "Chaos Game"},
-                        {"value": "gray_scott", "label": "Reaction-Diffusion"}
+                        {"value": "gray_scott", "label": "Reaction-Diffusion"},
+                        {"value": "lissajous", "label": "Lissajous"}
                     ],
                     "doc": "Generated display used when Idle Mode is Screensaver."
                 },

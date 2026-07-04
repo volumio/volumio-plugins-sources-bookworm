@@ -43,6 +43,9 @@ rotation_speed = 2       # Chaos Game vertex rotation degrees per rendered frame
 feed = 0.055             # Gray-Scott reaction-diffusion feed rate
 kill = 0.062             # Gray-Scott reaction-diffusion kill rate
 grid_scale = 2           # Gray-Scott simulation downscale factor (2 = 32x32 grid upscaled to 64x64)
+freq_a = 3               # Lissajous X frequency
+freq_b = 2               # Lissajous Y frequency
+drift_speed = 2          # Lissajous phase drift speed (0 = static, 10 = fast)
 seed = ""                # optional deterministic seed; blank = random each daemon start
 
 [weather]

@@ -454,3 +454,75 @@ class GrayScott:
             rgb[j + 2] = color[2]
             j += 3
         return Image.frombytes('RGB', (self.gw, self.gh), bytes(rgb))
+
+
+LISSAJOUS_PALETTES: Dict[str, Tuple[RGB, RGB]] = {
+    'cyan_amber':    ((0, 220, 255), (255, 160, 0)),
+    'green_magenta': ((40, 255, 100), (220, 0, 200)),
+    'blue_red':      ((60, 130, 255), (255, 50, 40)),
+    'white_violet':  ((200, 180, 255), (130, 0, 220)),
+}
+
+
+class Lissajous:
+    """Lissajous figure with a fading pixel trail and slow phase drift."""
+
+    # Steps per frame: enough to retrace the full figure each frame (2π / dt).
+    _STEPS = 160
+    _DT = 2 * math.pi / _STEPS
+
+    def __init__(self, width: int, height: int, palette: str = 'cyan_amber',
+                 freq_a: int = 3, freq_b: int = 2,
+                 fade: int = 8, drift_speed: int = 2, seed: str = ''):
+        self._w = width
+        self._h = height
+        self._fade = max(1, fade)
+        # drift_speed controls how many milliradians the phase advances per frame
+        self._drift_rate = drift_speed * 0.003
+        colors = LISSAJOUS_PALETTES.get(palette, next(iter(LISSAJOUS_PALETTES.values())))
+        r, g, b = colors[0]
+        self._cr, self._cg, self._cb = r, g, b
+        self._buf = bytearray(width * height * 3)
+        rng = random.Random(seed if seed else None)
+        self._t = rng.uniform(0, 2 * math.pi)
+        self._drift = rng.uniform(0, 2 * math.pi)
+        self._freq_a = freq_a
+        self._freq_b = freq_b
+
+    def frame(self) -> Image.Image:
+        w, h = self._w, self._h
+        buf = self._buf
+        fade = self._fade
+
+        # Fade all pixels toward black
+        for i in range(len(buf)):
+            v = buf[i] - fade
+            buf[i] = v if v > 0 else 0
+
+        # Advance the slow phase drift (oscillates, so the figure morphs and returns)
+        self._drift += self._drift_rate
+        phase = math.sin(self._drift) * math.pi
+
+        cx = (w - 1) * 0.5
+        cy = (h - 1) * 0.5
+        rx = cx - 1.0
+        ry = cy - 1.0
+        fa, fb = self._freq_a, self._freq_b
+        cr, cg, cb = self._cr, self._cg, self._cb
+        t = self._t
+        dt = self._DT
+
+        for _ in range(self._STEPS):
+            x = cx + rx * math.sin(fa * t + phase)
+            y = cy + ry * math.sin(fb * t)
+            xi = int(x + 0.5)
+            yi = int(y + 0.5)
+            if 0 <= xi < w and 0 <= yi < h:
+                idx = (yi * w + xi) * 3
+                buf[idx]     = cr if buf[idx]     < cr else buf[idx]
+                buf[idx + 1] = cg if buf[idx + 1] < cg else buf[idx + 1]
+                buf[idx + 2] = cb if buf[idx + 2] < cb else buf[idx + 2]
+            t += dt
+
+        self._t = t
+        return Image.frombytes('RGB', (w, h), bytes(buf))

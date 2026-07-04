@@ -13,7 +13,7 @@ import toml
 from PIL import Image
 
 from display import Display
-from screensavers import BriansBrain, ChaosGame, GrayScott, LangtonsAnt
+from screensavers import BriansBrain, ChaosGame, GrayScott, LangtonsAnt, Lissajous
 from volumio_client import VolumioClient
 from weather import MockWeatherRenderer
 
@@ -584,7 +584,7 @@ class Vinyltron:
     def _screensaver_engine(self) -> str:
         cfg = self._cfg.get('screensaver', {})
         engine = str(cfg.get('engine', 'brians_brain')).strip().lower()
-        if engine in ('brians_brain', 'langtons_ant', 'chaos_game', 'gray_scott'):
+        if engine in ('brians_brain', 'langtons_ant', 'chaos_game', 'gray_scott', 'lissajous'):
             return engine
         log.warning("Unknown screensaver engine %r; using brians_brain", engine)
         return 'brians_brain'
@@ -718,6 +718,17 @@ class Vinyltron:
                 feed=cfg.get('feed', 0.055),
                 kill=cfg.get('kill', 0.062),
                 grid_scale=cfg.get('grid_scale', 2),
+                seed=seed,
+            )
+        if engine == 'lissajous':
+            return Lissajous(
+                width=width,
+                height=height,
+                palette=palette,
+                freq_a=cfg.get('freq_a', 3),
+                freq_b=cfg.get('freq_b', 2),
+                fade=cfg.get('fade', 8),
+                drift_speed=cfg.get('drift_speed', 2),
                 seed=seed,
             )
 
