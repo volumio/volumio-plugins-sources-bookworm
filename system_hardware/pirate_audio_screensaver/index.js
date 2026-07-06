@@ -180,7 +180,7 @@ PirateAudioScreensaver.prototype.writeEnvironmentFile = function () {
     ''
   ].join('\n');
 
-  return this.writeRootFile('/etc/volumio-screensaver.env', content);
+  return this.writeRootFile(__dirname + '/volumio-screensaver.env', content);
 };
 
 PirateAudioScreensaver.prototype.writeRootFile = function (path, content) {

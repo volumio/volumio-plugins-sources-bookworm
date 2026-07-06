@@ -2,30 +2,14 @@
 set -eu
 
 APP_NAME="volumio-screensaver"
-APP_DIR="/opt/${APP_NAME}"
+PLUGIN_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+VENV_DIR="${PLUGIN_DIR}/venv"
+PYTHON_DIR="${PLUGIN_DIR}/python"
 SERVICE_FILE="/etc/systemd/system/${APP_NAME}.service"
-ENV_FILE="/etc/${APP_NAME}.env"
-REPO_URL="${REPO_URL:-https://github.com/arut16/Ecran-Veille-Volumio.git}"
+ENV_FILE="${PLUGIN_DIR}/${APP_NAME}.env"
 FAST_INSTALL="${FAST_INSTALL:-1}"
 
-runtime_already_installed() {
-  [ -x "${APP_DIR}/venv/bin/volumio-screensaver" ] && [ -f "${SERVICE_FILE}" ]
-}
-
-cleanup() {
-  if [ -n "${TMP_DIR:-}" ] && [ -d "${TMP_DIR}" ]; then
-    rm -rf "${TMP_DIR}"
-  fi
-}
-trap cleanup EXIT INT TERM
-
 if [ "$(id -u)" -ne 0 ]; then
-  if runtime_already_installed; then
-    echo "Runtime already installed. Skipping privileged setup for local Volumio plugin registration."
-    echo "plugininstallend"
-    exit 0
-  fi
-
   if sudo -n true 2>/dev/null; then
     exec sudo -E sh "$0" "$@"
   fi
@@ -36,40 +20,14 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-apt_packages="git python3 python3-dev python3-pip python3-venv python3-pil python3-numpy python3-spidev libgpiod2 fonts-dejavu-core build-essential python3-rpi.gpio"
-missing_packages=""
-for package in ${apt_packages}; do
-  if ! dpkg-query -W -f='${Status}' "${package}" 2>/dev/null | grep -q "install ok installed"; then
-    missing_packages="${missing_packages} ${package}"
-  fi
-done
-
-RPI_GPIO_FROM_PIP=0
-if [ -n "${missing_packages}" ]; then
-  apt-get update
-  if ! apt-get install -y ${missing_packages}; then
-    missing_without_gpio=""
-    for package in ${missing_packages}; do
-      if [ "${package}" != "python3-rpi.gpio" ]; then
-        missing_without_gpio="${missing_without_gpio} ${package}"
-      fi
-    done
-    if [ -n "${missing_without_gpio}" ]; then
-      apt-get install -y ${missing_without_gpio}
-    fi
-    RPI_GPIO_FROM_PIP=1
-  fi
-else
-  echo "System dependencies already installed, apt skipped."
+if [ ! -d "${PYTHON_DIR}/volumio_screensaver" ]; then
+  echo "Missing embedded Python source: ${PYTHON_DIR}/volumio_screensaver"
+  exit 1
 fi
 
-TMP_DIR="$(mktemp -d)"
-git clone --depth=1 "${REPO_URL}" "${TMP_DIR}"
+python3 -m venv --system-site-packages "${VENV_DIR}"
 
-mkdir -p "${APP_DIR}"
-python3 -m venv --system-site-packages "${APP_DIR}/venv"
-
-if [ "${FAST_INSTALL}" != "1" ] || ! "${APP_DIR}/venv/bin/python" - <<'PY'
+if [ "${FAST_INSTALL}" != "1" ] || ! "${VENV_DIR}/bin/python" - <<'PY'
 import importlib.util
 import sys
 required = ["st7789", "gpiodevice", "numpy", "spidev", "gpiod"]
@@ -77,21 +35,59 @@ missing = [name for name in required if importlib.util.find_spec(name) is None]
 sys.exit(1 if missing else 0)
 PY
 then
-  "${APP_DIR}/venv/bin/python" -m pip install --upgrade pip setuptools wheel
-  "${APP_DIR}/venv/bin/python" -m pip install --no-cache-dir --force-reinstall "${TMP_DIR}"
+  "${VENV_DIR}/bin/python" -m pip install --upgrade pip setuptools wheel
+  "${VENV_DIR}/bin/python" -m pip install --no-cache-dir --force-reinstall "${PYTHON_DIR}"
 else
-  echo "Python dependencies already installed, reinstalling package only."
-  "${APP_DIR}/venv/bin/python" -m pip install --no-cache-dir --force-reinstall --no-build-isolation --no-deps "${TMP_DIR}"
+  echo "Python dependencies already installed, reinstalling embedded package only."
+  "${VENV_DIR}/bin/python" -m pip install --no-cache-dir --force-reinstall --no-build-isolation --no-deps "${PYTHON_DIR}"
 fi
 
-if [ "${RPI_GPIO_FROM_PIP}" -eq 1 ]; then
-  "${APP_DIR}/venv/bin/python" -m pip install RPi.GPIO
-fi
+cat > "${SERVICE_FILE}" <<SERVICE
+[Unit]
+Description=Volumio Pirate Audio screen saver
+After=network-online.target volumio.service
+Wants=network-online.target
 
-install -m 0644 "${TMP_DIR}/systemd/${APP_NAME}.service" "${SERVICE_FILE}"
+[Service]
+Type=simple
+User=root
+EnvironmentFile=-${ENV_FILE}
+ExecStart=${VENV_DIR}/bin/volumio-screensaver
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+SERVICE
 
 if [ ! -f "${ENV_FILE}" ]; then
-  install -m 0644 "${TMP_DIR}/config/${APP_NAME}.env.example" "${ENV_FILE}"
+  cat > "${ENV_FILE}" <<ENV
+VOLUMIO_URL=http://127.0.0.1:3000
+POLL_SECONDS=2.0
+HTTP_TIMEOUT_SECONDS=1.5
+IDLE_DELAY_SECONDS=300
+
+BUTTONS_ENABLED=false
+BUTTON_PINS=5,6,16,24
+BUTTON_BOUNCE_MS=100
+
+DISPLAY_WIDTH=240
+DISPLAY_HEIGHT=240
+DISPLAY_ROTATION=90
+DISPLAY_PORT=0
+DISPLAY_CS=1
+DISPLAY_DC=9
+DISPLAY_BACKLIGHT=13
+DISPLAY_SPI_SPEED=80000000
+DISPLAY_OFFSET_LEFT=0
+DISPLAY_OFFSET_TOP=0
+
+FONT_SIZE=58
+FONT_PATH=/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf
+SCREEN_PADDING=8
+BLANK_TURNS_BACKLIGHT_OFF=true
+LOG_LEVEL=INFO
+ENV
 fi
 
 systemctl daemon-reload
