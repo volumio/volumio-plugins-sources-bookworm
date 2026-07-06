@@ -7,7 +7,6 @@ VENV_DIR="${PLUGIN_DIR}/venv"
 PYTHON_DIR="${PLUGIN_DIR}/python"
 SERVICE_FILE="/etc/systemd/system/${APP_NAME}.service"
 ENV_FILE="${PLUGIN_DIR}/${APP_NAME}.env"
-FAST_INSTALL="${FAST_INSTALL:-1}"
 
 if [ "$(id -u)" -ne 0 ]; then
   if sudo -n true 2>/dev/null; then
@@ -27,20 +26,8 @@ fi
 
 python3 -m venv --system-site-packages "${VENV_DIR}"
 
-if [ "${FAST_INSTALL}" != "1" ] || ! "${VENV_DIR}/bin/python" - <<'PY'
-import importlib.util
-import sys
-required = ["st7789", "gpiodevice", "numpy", "spidev", "gpiod"]
-missing = [name for name in required if importlib.util.find_spec(name) is None]
-sys.exit(1 if missing else 0)
-PY
-then
-  "${VENV_DIR}/bin/python" -m pip install --upgrade pip setuptools wheel
-  "${VENV_DIR}/bin/python" -m pip install --no-cache-dir --force-reinstall "${PYTHON_DIR}"
-else
-  echo "Python dependencies already installed, reinstalling embedded package only."
-  "${VENV_DIR}/bin/python" -m pip install --no-cache-dir --force-reinstall --no-build-isolation --no-deps "${PYTHON_DIR}"
-fi
+"${VENV_DIR}/bin/python" -m pip install --no-cache-dir --no-deps gpiodevice==0.0.5 st7789==1.0.1 gpiod==2.5.0
+"${VENV_DIR}/bin/python" -m pip install --no-cache-dir --force-reinstall --no-build-isolation --no-deps "${PYTHON_DIR}"
 
 cat > "${SERVICE_FILE}" <<SERVICE
 [Unit]
