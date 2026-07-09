@@ -2,7 +2,7 @@
 
 Volumio plugin for displaying an idle clock screensaver on Pimoroni Pirate Audio ST7789 displays.
 
-The Python screensaver engine lives in this repository. This directory contains the Volumio plugin wrapper intended to be published under the `system_hardware` plugin category.
+The Python screensaver engine lives in this repository. This directory contains the Volumio plugin wrapper intended to be published under the `user_interface` plugin category.
 
 ## Features
 
