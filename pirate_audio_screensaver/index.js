@@ -14,7 +14,7 @@ function PirateAudioScreensaver(context) {
   this.logger = context.logger;
   this.configManager = context.configManager;
   this.config = new vConf();
-  this.persistDir = '/data/configuration/system_hardware/pirate_audio_screensaver';
+  this.persistDir = '/data/configuration/user_interface/pirate_audio_screensaver';
   this.persistFile = path.join(this.persistDir, 'settings.json');
   this.defaults = {
     idle_delay_seconds: 300,

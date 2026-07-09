@@ -24,5 +24,14 @@ systemctl daemon-reload
 rm -rf "${VENV_DIR}"
 rm -f "${ENV_FILE}"
 
+# Remove possible build artifacts created during pip installation.
+rm -rf "${PLUGIN_DIR}/python/build"
+rm -rf "${PLUGIN_DIR}/python"/*.egg-info
+
+# Make sure Volumio can remove the remaining plugin folder.
+if id volumio >/dev/null 2>&1; then
+  chown -R volumio:volumio "${PLUGIN_DIR}" || true
+fi
+
 echo "Uninstallation completed."
 echo "pluginuninstallend"

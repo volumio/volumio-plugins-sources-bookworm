@@ -79,5 +79,15 @@ fi
 
 systemctl daemon-reload
 
+# Remove build artifacts created by pip/setuptools during local installation.
+# These can be owned by root and prevent Volumio from uninstalling the plugin cleanly.
+rm -rf "${PYTHON_DIR}/build"
+rm -rf "${PYTHON_DIR}"/*.egg-info
+
+# Keep the plugin folder removable by Volumio after install.
+if id volumio >/dev/null 2>&1; then
+  chown -R volumio:volumio "${PLUGIN_DIR}" || true
+fi
+
 echo "Installation completed. The service will be started when the plugin is enabled."
 echo "plugininstallend"

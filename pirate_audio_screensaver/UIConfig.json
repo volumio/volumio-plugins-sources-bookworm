@@ -10,7 +10,7 @@
       "icon": "fa-clock-o",
       "onSave": {
         "type": "plugin",
-        "endpoint": "system_hardware/pirate_audio_screensaver",
+        "endpoint": "user_interface/pirate_audio_screensaver",
         "method": "saveSettings"
       },
       "saveButton": {

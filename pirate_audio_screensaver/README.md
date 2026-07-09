@@ -31,7 +31,7 @@ Other runtime parameters are kept internal and written to `/etc/volumio-screensa
 Persistent UI settings are stored in:
 
 ```text
-/data/configuration/system_hardware/pirate_audio_screensaver/settings.json
+/data/configuration/user_interface/pirate_audio_screensaver/settings.json
 ```
 
 Runtime environment is written to:
@@ -64,7 +64,7 @@ Useful checks:
 
 ```bash
 cat /etc/volumio-screensaver.env
-cat /data/configuration/system_hardware/pirate_audio_screensaver/settings.json
+cat /data/configuration/user_interface/pirate_audio_screensaver/settings.json
 sudo systemctl status volumio-screensaver
 sudo journalctl -u volumio-screensaver -n 100 --no-pager
 ```
@@ -74,7 +74,7 @@ sudo journalctl -u volumio-screensaver -n 100 --no-pager
 For official publication, copy this folder into a fork of `volumio/volumio-plugins-sources` at:
 
 ```text
-system_hardware/pirate_audio_screensaver
+user_interface/pirate_audio_screensaver
 ```
 
 Commit and push the fork, then run from the plugin directory on a Volumio device:

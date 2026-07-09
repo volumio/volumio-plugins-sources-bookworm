@@ -100,7 +100,7 @@ curl -fsSL https://raw.githubusercontent.com/arut16/Ecran-Veille-Volumio/main/in
 Pour voir les polices installees sur le Raspberry Pi :
 
 ```bash
-find /data/plugins/system_hardware/pirate_audio_screensaver/venv/lib/python3.11/site-packages/volumio_screensaver/fonts -iname "*.ttf" -o -iname "*.otf"
+find /data/plugins/user_interface/pirate_audio_screensaver/venv/lib/python3.11/site-packages/volumio_screensaver/fonts -iname "*.ttf" -o -iname "*.otf"
 ```
 
 ## Commandes de service
