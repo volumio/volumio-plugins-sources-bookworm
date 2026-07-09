@@ -1,3 +1,4 @@
-node_modules/
+.gitignore
+node_modules
+*.zip
 package-lock.json
-npm-debug.log

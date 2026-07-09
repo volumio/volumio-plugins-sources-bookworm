@@ -1,6 +1,6 @@
 {
   "name": "pirate_audio_screensaver",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Idle clock screensaver for Pimoroni Pirate Audio ST7789 displays on Volumio",
   "main": "index.js",
   "scripts": {
@@ -20,7 +20,7 @@
       "bookworm"
     ],
     "details": "Displays a clock screensaver on Pimoroni Pirate Audio ST7789 displays when Volumio is idle, with configurable idle delay and display rotation.",
-    "changelog": "Move plugin to repository root as user_interface and fix uninstall permissions."
+    "changelog": "Resubmit plugin in user_interface category to match the PR structure."
   },
   "engines": {
     "node": ">=20",
