@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Renderer for the 128x64 OLED display (v1.7.28).
+ * Renderer for the 128x64 OLED display (v1.7.29).
  *
  * Three playback layouts (Classic, Minimal, Clock Focus), idle screen
  * with large clock digits, volume overlay, screensavers with randomised
@@ -793,6 +793,20 @@ Renderer.prototype._formatClock = function () {
 };
 
 Renderer.prototype._formatAudioInfo = function (bitdepth, samplerate, bitrate, trackType) {
+  // Some streaming services (Spotify/spop, and others) put a bitrate string
+  // like "320 kbps" into the samplerate field instead of an actual sample
+  // rate. Detect that case and treat it as a bitrate: show just the bitrate
+  // (bit depth is meaningless for lossy codecs, so we drop it).
+  var srRaw = samplerate ? String(samplerate).replace(/\s+/g, '').toLowerCase() : '';
+  var srIsBitrate = /(kbps|bps)$/.test(srRaw);
+
+  if (srIsBitrate) {
+    // Normalize "320kbps" → "320 Kbps" for display
+    var m = srRaw.match(/^(\d+)/);
+    var kbpsStr = m ? (m[1] + ' Kbps') : String(samplerate).trim();
+    return this._applyCodecPrefix(kbpsStr, trackType);
+  }
+
   var parts = [];
   if (bitdepth) {
     var bd = String(bitdepth).replace(/\s+/g, '').toLowerCase();
@@ -800,7 +814,7 @@ Renderer.prototype._formatAudioInfo = function (bitdepth, samplerate, bitrate, t
     parts.push(bd);
   }
   if (samplerate) {
-    var sr = String(samplerate).replace(/\s+/g, '').toLowerCase();
+    var sr = srRaw;  // already cleaned + lowercased above
     if (/^\d+$/.test(sr)) {
       var num = parseInt(sr, 10);
       if (num >= 1000) {
@@ -809,8 +823,15 @@ Renderer.prototype._formatAudioInfo = function (bitdepth, samplerate, bitrate, t
       } else {
         sr += 'kHz';
       }
-    } else if (sr.indexOf('hz') === -1) {
-      sr += 'kHz';
+    } else if (sr.indexOf('hz') !== -1) {
+      // Already carries a Hz/kHz unit — normalize casing to "kHz"
+      sr = sr.replace(/khz$/i, 'kHz').replace(/hz$/i, function (mm) {
+        return mm.toLowerCase() === 'hz' ? 'Hz' : mm;
+      });
+    } else {
+      // Unknown non-numeric, non-Hz value. Don't blindly append kHz
+      // (that's what produced "320kbpskHz"). Show it as-is.
+      sr = String(samplerate).trim();
     }
     parts.push(sr);
   }
@@ -831,14 +852,27 @@ Renderer.prototype._formatAudioInfo = function (bitdepth, samplerate, bitrate, t
   // "FLAC PCM" during that transient window. Leave audioStr empty here and
   // handle the codec-without-params case explicitly below.
 
-  // Prefix with codec name if trackType is a real codec (not in skip list)
+  return this._applyCodecPrefix(audioStr, trackType);
+};
+
+/**
+ * Apply the codec-name prefix (e.g. "FLAC 24bit / 96kHz") when trackType is
+ * a real codec, respecting the display width limit. Shared by the normal
+ * and bitrate-carrying-samplerate paths of _formatAudioInfo.
+ *
+ * - codec + audioStr that fits  → "FLAC 24bit / 96kHz"
+ * - codec + audioStr too long   → audioStr alone
+ * - codec but no audioStr yet   → codec alone (brief transient on track change)
+ * - no codec, has audioStr      → audioStr
+ * - nothing                     → "PCM" last-resort placeholder
+ */
+Renderer.prototype._applyCodecPrefix = function (audioStr, trackType) {
   if (trackType) {
     var tt = String(trackType).trim().toLowerCase();
     if (tt && !SKIP_TRACK_TYPES[tt]) {
       var codec = tt.toUpperCase();
       if (audioStr) {
         var combined = codec + ' ' + audioStr;
-        // Only combine if it fits on the display; otherwise show audio info alone
         if (combined.length <= MAX_DISPLAY_CHARS) {
           return combined;
         }
@@ -849,7 +883,6 @@ Renderer.prototype._formatAudioInfo = function (bitdepth, samplerate, bitrate, t
       return codec;
     }
   }
-
   // Truly nothing known about the stream — last-resort placeholder.
   return audioStr || 'PCM';
 };
@@ -862,7 +895,15 @@ Renderer.prototype._formatAudioInfo = function (bitdepth, samplerate, bitrate, t
 Renderer.prototype._formatAudioInfoCompact = function (bitdepth, samplerate, bitrate, trackType) {
   var audioStr = '';
 
-  if (bitdepth && samplerate) {
+  // Same Spotify/spop quirk as _formatAudioInfo: samplerate may actually
+  // carry a bitrate like "320 kbps". Detect and treat as bitrate.
+  var srRaw = samplerate ? String(samplerate).replace(/\s+/g, '').toLowerCase() : '';
+  var srIsBitrate = /(kbps|bps)$/.test(srRaw);
+
+  if (srIsBitrate) {
+    var m = srRaw.match(/^(\d+)/);
+    audioStr = m ? (m[1] + 'Kbps') : String(samplerate).trim();
+  } else if (bitdepth && samplerate) {
     // Compact: "24/192k" or "16/44.1k"
     var bd = String(bitdepth).replace(/\s+/g, '').replace(/bit$/i, '');
     var sr = String(samplerate).replace(/\s+/g, '');
