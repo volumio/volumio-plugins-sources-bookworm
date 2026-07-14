@@ -1,4 +1,4 @@
-# OLED SSD1309 Display Plugin for Volumio – v1.7.29
+# OLED SSD1309 Display Plugin for Volumio – v1.7.30
 
 > **⚠️ Disclaimer**
 >
@@ -42,6 +42,12 @@ Displays playback information on a 128×64 SSD1309 I2C OLED connected to a Raspb
 ---
 
 ## Changelog
+
+### v1.7.30
+
+**Bug fix (Cyrillic):**
+
+1. **Corrected the glyphs for Й and й.** Two fixes based on user feedback: uppercase Й (0x0419) had a transcription error in the original contributed data and is now `[0x7F, 0x10, 0x09, 0x04, 0x7F]` (И with a breve). Lowercase й (0x0439) was incorrectly overridden in v1.7.29 to render as plain и without its breve — this is now restored to `[0x7C, 0x21, 0x11, 0x09, 0x7C]`, which carries the breve on the top pixel row above the x-height body. The v1.7.29 assumption that the breve wouldn't fit at 5×7 was wrong; it fits fine on the top row that the x-height glyph leaves free.
 
 ### v1.7.29
 
@@ -373,14 +379,14 @@ Initial attempt at the reboot/shutdown power-off fix. Used the wrong method name
 
 ```bash
 # 1. Transfer the tarball to Volumio (run on your PC, not the Pi)
-scp oled_display_ssd1309-v1.7.29.tar volumio@volumio.local:~/
+scp oled_display_ssd1309-v1.7.30.tar volumio@volumio.local:~/
 
 # 2. SSH into Volumio
 ssh volumio@volumio.local
 # password: volumio
 
 # 3. Extract the source folder (anywhere works — home directory is fine)
-tar xf oled_display_ssd1309-v1.7.29.tar
+tar xf oled_display_ssd1309-v1.7.30.tar
 cd oled_display_ssd1309
 
 # 4. Install via Volumio's plugin manager
@@ -412,11 +418,11 @@ ssh volumio@volumio.local
 mkdir -p /data/plugins/user_interface/oled_display_ssd1309
 
 # 3. Transfer the tarball (run on your PC, not the Pi)
-scp oled_display_ssd1309-v1.7.29.tar volumio@volumio.local:/tmp/
+scp oled_display_ssd1309-v1.7.30.tar volumio@volumio.local:/tmp/
 
 # 4. Extract directly into the plugins directory
 cd /data/plugins/user_interface
-tar xf /tmp/oled_display_ssd1309-v1.7.29.tar
+tar xf /tmp/oled_display_ssd1309-v1.7.30.tar
 
 # 5. Run the installer manually
 cd /data/plugins/user_interface/oled_display_ssd1309

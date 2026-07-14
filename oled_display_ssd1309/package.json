@@ -1,6 +1,6 @@
 {
   "name": "oled_display_ssd1309",
-  "version": "1.7.29",
+  "version": "1.7.30",
   "description": "OLED SSD1309 display plugin for Volumio – shows playback info, clock, progress, audio format, and volume on a 128x64 I2C OLED",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
       "bookworm"
     ],
     "details": "Drives a 128x64 SSD1309 I2C OLED display showing playback info, clock, progress bar, audio format, volume overlay, and screensaver. Designed for Raspberry Pi with zero MPD interference.",
-    "changelog": "v1.7.29: Added Russian Cyrillic alphabet support (А–Я, а–я, Ё/ё). Fixed malformed audio info for Spotify/lossy streaming services where a bitrate in the samplerate field produced strings like '320kbpskHz' — now shows '320 Kbps'. v1.7.28: Plugin store reviewer feedback applied — slimmer install.sh, runtime I2C module load + display detection, standard v-conf config API."
+    "changelog": "v1.7.30: Corrected Cyrillic Й and й glyphs per user feedback — Й had a transcription error, й incorrectly dropped its breve in v1.7.29 (now restored). v1.7.29: Added Russian Cyrillic alphabet support and fixed malformed Spotify audio info (320kbpskHz → 320 Kbps)."
   },
   "engines": {
     "node": ">=20",
