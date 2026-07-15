@@ -1,0 +1,39 @@
+{
+  "page": {
+    "label": "Maloja Configuration"
+  },
+  "sections": [
+   {
+      "id": "section_account",
+      "element": "section",
+      "label": "Maloja account",
+      "icon": "fa-bookmark",
+      "onSave": {"type":"controller", "endpoint":"music_service/maloja", "method":"saveConfig"},
+      "saveButton": {
+        "label": "Save",
+        "data": [
+          "url",
+          "api_key"
+        ]
+      },
+      "content": [
+        {
+          "id": "url",
+          "type":"text",
+          "element": "input",
+          "doc": "This is the URL to your Maloja server, eg http://maloja.local:8080",
+          "label": "Maloja Base URL",
+          "value": "https://"
+        },
+        {
+          "id": "api_key",
+          "type":"password",
+          "element": "input",
+          "doc": "This is the API key for your Maloja server",
+          "label": "API Key",
+          "value": ""
+        }
+      ]
+    }
+  ]
+}
