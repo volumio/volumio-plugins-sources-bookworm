@@ -1,6 +1,6 @@
 Description
 
-The SleepWake Plugin for Volumio is designed to automate scheduled sleep and wake-up routines for the system. It allows users to set specific times for the system to go into a "sleep" state (fade out the volume and stop playback) and a "wake" state (gradually increase the volume and start a playlist). The schedule can be customized for weekdays, Saturdays, and Sundays. The plugin also lets users adjust settings like volume fade speed, ramp-up duration, and initial volume levels.
+The SleepWake Plugin for Volumio is designed to automate scheduled sleep and wake-up routines for the system. It allows users to set specific times for the system to go into a "sleep" state (gradually lower the volume, then stop playback) and a "wake" state (gradually increase the volume and start a playlist). The schedule can be customized for weekdays, Saturdays, and Sundays. The plugin also lets users adjust settings like volume fade amount, ramp-up duration, and initial volume levels.
 _____________________________________________________________________________________  
 ```
 +-----------------------------------------------------------+
@@ -39,7 +39,7 @@ ________________________________________________________________________________
 Key Features:
 
 Sleep Scheduling:
-Gradually fades out the system volume over a user-defined duration until it reaches zero, then stops playback.
+Gradually lowers the system volume over a user-defined duration (by the configured number of steps), then stops playback. The fade does not force the volume all the way to zero before stopping.
 Users can configure different sleep times for weekdays, Saturdays, and Sundays.
 
 Wake Scheduling:
@@ -50,16 +50,16 @@ User Settings:
 Settings include sleep/wake times, volume adjustments, fade duration, playlist selection, and more.
 Configurations are saved to a JSON file and can be updated through the Volumio user interface.
 Interaction Between Sleep and Wake Processes
-1. Sleep Process (fadeOutVolume)
+1. Sleep Process (fadeOut)
 When the sleep process is initiated, the system starts decreasing the volume in small steps based on the volumeDecrease and minutesFade settings.
-The volume is reduced gradually until it reaches zero, after which playback is stopped.
+The volume is reduced gradually for the configured number of steps, after which playback is stopped.
 Interruption Handling: If the wake process is triggered while the system is still fading out to sleep, the sleep process is interrupted. This ensures that waking up takes priority, allowing music to start playing immediately with a volume ramp-up.
-2. Wake Process (startPlaylist)
+2. Wake Process (rampUp)
 The wake process starts by setting the volume to a specified initial level (startVolume) and then playing a selected playlist.
 It then gradually increases the volume to the desired level using the volumeIncrease and minutesRamp settings.
 Interruption Handling: If the sleep process is triggered while the system is waking up (i.e., while the volume is still increasing), the wake process is interrupted. This prevents the system from trying to fade out the volume while it is simultaneously increasing it.
 Detailed Logic for Sleep and Wake Interactions
-The fadeOutVolume() function checks if the system is currently in the waking state before starting the sleep process. If the system is waking up, the sleep process is not allowed to proceed.
+The fadeOut() function checks if the system is currently in the waking state before starting the sleep process. If the system is waking up, the sleep process is not allowed to proceed.
 
 javascript code:
 
@@ -68,7 +68,7 @@ if (self.isWaking) {
   self.writeLog('Cannot start sleep during wake-up process.');
   return;
 }
-Similarly, in the startPlaylist() function, if the system is currently in the sleeping state, it stops the sleep process, clears any active sleep timers, and then proceeds with waking up.
+Similarly, in the rampUp() function, if the system is currently in the sleeping state, it stops the sleep process, clears any active sleep timers, and then proceeds with waking up. If a wake-up is already in progress, a second trigger is ignored so the volume can never be ramped up by two overlapping processes at once.
 
 javascript code:
 
