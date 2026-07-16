@@ -12,8 +12,8 @@
     "v-conf": "^1.4.0"
   },
   "engines": {
-    "node": ">=14.15.4 <15.0.0",
-    "volumio": ">=3.0.0 <4.0.0"
+    "node": ">=14.15.4",
+    "volumio": ">=0"
   },
   "volumio_info": {
     "prettyName": "Sleep Wake Schedule Plugin",
@@ -25,9 +25,9 @@
       "armhf"
     ],
     "os": [
-      "buster"
+      "bookworm"
     ],
     "details": "Plugin for sleep and wake with volume fade out / ramp up. Scheduling by workdays and weekend.",
-    "changelog": "1.0.2: Fixed scheduling across month/year boundaries that could cause repeated, overlapping wake ramps driving the volume up indefinitely. Guarded against overlapping fade/ramp processes, made logging and REST calls non-blocking, and general cleanup."
+    "changelog": "2.0.2: Fixed scheduling across month/year boundaries that could cause repeated, overlapping wake ramps driving the volume up indefinitely. Guarded against overlapping fade/ramp processes, made logging and REST calls non-blocking, and general cleanup."
   }
 }
