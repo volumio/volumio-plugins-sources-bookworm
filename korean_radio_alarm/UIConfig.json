@@ -1,0 +1,33 @@
+{
+  "page": {
+    "label": "TRANSLATE.PAGE.LABEL"
+  },
+  "onSave": {
+    "type": "controller",
+    "endpoint": "music_service/korean_radio_alarm",
+    "method": "saveAlarm"
+  },
+  "sections": [
+    {
+      "id": "alarm_actions",
+      "element": "section",
+      "label": "TRANSLATE.SECTION.ALARM",
+      "content": [
+        {
+          "element": "button",
+          "id": "alarm_actions_add",
+          "label": "TRANSLATE.BUTTON.ADD_ALARM",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/korean_radio_alarm",
+              "method": "addAlarm",
+              "data": {}
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
