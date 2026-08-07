@@ -4,19 +4,44 @@ INSTALLING=1
 
 [ -z "${BASE_DIR}" ] && . common.sh
 
+check_url() {
+  if curl --head --silent --fail --max-time 5 "$1" > /dev/null; then
+    echo_dt "Check URL: \"$1\" OK"
+    return 0 # Reachable
+  else
+    echo_dt "Check URL: \"$1\" FAILED"
+    return 1 # Unreachable
+  fi
+}
+
 install_pkg() {
+    if [ "${ARCH}" == "armhf" ]; then
+        TARGET_VERSION=$TARGET_VERSION_ARMHF
+    elif [ "${ARCH}" == "amd64" ]; then
+        TARGET_VERSION=$TARGET_VERSION_AMD64
+    else
+        echo_dt "Installation cannot proceed: Unsupported architecture \"${ARCH}\""
+        (exit 1)
+    fi
+
+    BIN_DIR="${BASE_DIR}/jellyfin_${TARGET_VERSION}"
+
     if [ -d "${BIN_DIR}" ]; then
         echo_dt "${BIN_DIR} already exists. Skipping package download and installation."
         return 0
     fi
 
-    if [ "${ARCH}" == "amd64" ] || [ "${ARCH}" == "armhf" ]; then
-        PKG_NAME="jellyfin_${TARGET_VERSION}-${ARCH}.tar.gz"
-        PKG_URL="https://repo.jellyfin.org/files/server/linux/stable/v${TARGET_VERSION}/${ARCH}/${PKG_NAME}"
-    fi
+    echo_dt "Preparing to install Jellyfin Server v${TARGET_VERSION} for ${ARCH}..."
 
-    if [ -z "${PKG_URL}" ]; then
-        echo_dt "Installation cannot proceed: Invalid architecture \"${ARCH}\""
+    PKG_NAME="jellyfin_${TARGET_VERSION}-${ARCH}.tar.gz"
+    PKG_URL_1="https://repo.jellyfin.org/files/server/linux/stable/v${TARGET_VERSION}/${ARCH}/${PKG_NAME}"
+    PKG_URL_2="https://repo.jellyfin.org/archive/server/linux/stable/v${TARGET_VERSION}/${ARCH}/${PKG_NAME}"
+    if check_url "$PKG_URL_1"; then
+        PKG_URL=$PKG_URL_1
+    elif check_url "$PKG_URL_2"; then
+        PKG_URL=$PKG_URL_2
+    else
+        echo_dt "Installation cannot proceed: No downloadable URL found for package \"${PKG_NAME}\""
         (exit 1)
     fi
 
@@ -68,7 +93,7 @@ install_ffmpeg() {
         echo_dt "Downloading jellyfin-ffmpeg package from ${FFMPEG_PKG_URL}; saving to ${PKG_TMP}..."
         wget -O "${PKG_TMP}" "${FFMPEG_PKG_URL}"
         echo_dt "Installing jellyfin-ffmpeg dependencies..."
-        apt-get update && apt-get install -y ocl-icd-libopencl1 libllvm13 libxcb-randr0
+        apt-get update && apt-get install -y ocl-icd-libopencl1 libllvm13 libllvm16 libxcb-randr0
         echo_dt "Installing jellyfin-ffmpeg..."
         dpkg -i "${PKG_TMP}"
     fi    
