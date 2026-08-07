@@ -18,19 +18,23 @@ class ControllerLyrion {
   }
 
   getUIConfig() {
-    return jsPromiseToKew(this.#doGetUIConfig())
-      .fail((error: any) => {
-        js.getLogger().error(`[lyrion] getUIConfig(): Cannot populate configuration - ${error}`);
-        throw error;
-      });
+    return jsPromiseToKew(this.#doGetUIConfig()).fail((error: any) => {
+      js.getLogger().error(
+        `[lyrion] getUIConfig(): Cannot populate configuration - ${error}`
+      );
+      throw error;
+    });
   }
 
   async #doGetUIConfig() {
     const langCode = this.#commandRouter.sharedVars.get('language_code');
-    const uiconf = await kewToJSPromise(this.#commandRouter.i18nJson(
-      `${__dirname}/i18n/strings_${langCode}.json`,
-      `${__dirname}/i18n/strings_en.json`,
-      `${__dirname}/UIConfig.json`));
+    const uiconf = await kewToJSPromise(
+      this.#commandRouter.i18nJson(
+        `${__dirname}/i18n/strings_${langCode}.json`,
+        `${__dirname}/i18n/strings_en.json`,
+        `${__dirname}/UIConfig.json`
+      )
+    );
     const status = await System.getServiceStatus();
 
     const infoSectionConf = uiconf.sections[0];
@@ -49,9 +53,8 @@ class ControllerLyrion {
 
     if (status !== 'active') {
       const viewReadme = infoSectionConf.content[2];
-      infoSectionConf.content = [ viewReadme ];
-    }
-    else {
+      infoSectionConf.content = [viewReadme];
+    } else {
       const thisDevice = js.getDeviceInfo();
       const host = thisDevice.host;
       const port = System.getServerPort();
@@ -80,7 +83,10 @@ class ControllerLyrion {
         defer.resolve();
       })
       .catch((e: unknown) => {
-        js.toast('error', js.getI18n('LYRION_ERR_START', js.getErrorMessage('', e, false)));
+        js.toast(
+          'error',
+          js.getI18n('LYRION_ERR_START', js.getErrorMessage('', e, false))
+        );
         defer.reject(e);
       });
 
@@ -102,7 +108,10 @@ class ControllerLyrion {
         defer.resolve();
       })
       .catch((e: unknown) => {
-        js.toast('error', js.getI18n('LYRION_ERR_STOP', js.getErrorMessage('', e, false)));
+        js.toast(
+          'error',
+          js.getI18n('LYRION_ERR_STOP', js.getErrorMessage('', e, false))
+        );
         // Do not reject, in case user is uninstalling a possibly broken installation - rejecting will abort the process.
         defer.resolve();
       });
