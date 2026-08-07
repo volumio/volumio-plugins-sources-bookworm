@@ -1,0 +1,21 @@
+{
+  "PLUGIN_NAME": "LCD Backlight Control",
+  "GENERAL_SETTINGS": "General Settings",
+  "MEASUREMENT_INTERVAL": "Measurement Interval (seconds)",
+  "MEASUREMENT_INTERVAL_DOC": "Time between light sensor readings. Lower values provide more responsive brightness changes but may increase CPU usage.",
+  "MIN_BACKLIGHT": "Minimum Brightness",
+  "MIN_BACKLIGHT_DOC": "The lowest brightness level the display will reach (0-255). Prevents the screen from becoming too dark.",
+  "MAX_BACKLIGHT": "Maximum Brightness",
+  "MAX_BACKLIGHT_DOC": "The highest brightness level the display will reach (0-255). Can be reduced to save power.",
+  "LUX_MULTIPLIER": "Lux Multiplier",
+  "LUX_MULTIPLIER_DOC": "Calibration multiplier for the VEML7700 sensor. Increase for brighter response, decrease for darker response.",
+  "SMOOTHING_FACTOR": "Smoothing Factor",
+  "SMOOTHING_FACTOR_DOC": "Controls how quickly brightness transitions occur (0.0-1.0). Lower values create slower, smoother transitions.",
+  "PLAYBACK_BOOST": "Playback Brightness Boost",
+  "PLAYBACK_BOOST_DOC": "Additional brightness added during music playback (0-255). Set to 0 to disable this feature.",
+  "PLAYBACK_BOOST_DURATION": "Boost Duration After Playback (seconds)",
+  "PLAYBACK_BOOST_DURATION_DOC": "How long to maintain the brightness boost after playback stops (0-300 seconds). Recommended: 30 seconds.",
+  "SAVE": "Save Settings",
+  "SAVE_SUCCESS": "Configuration saved successfully",
+  "SAVE_ERROR": "Error saving configuration"
+}

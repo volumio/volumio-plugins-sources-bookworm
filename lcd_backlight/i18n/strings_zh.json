@@ -1,0 +1,21 @@
+{
+  "PLUGIN_NAME": "LCD背光控制",
+  "GENERAL_SETTINGS": "常规设置",
+  "MEASUREMENT_INTERVAL": "测量间隔（秒）",
+  "MEASUREMENT_INTERVAL_DOC": "光传感器读数之间的时间。较低的值可提供更快的亮度变化响应，但可能会增加CPU使用率。",
+  "MIN_BACKLIGHT": "最小亮度",
+  "MIN_BACKLIGHT_DOC": "显示器将达到的最低亮度级别（0-255）。防止屏幕变得太暗。",
+  "MAX_BACKLIGHT": "最大亮度",
+  "MAX_BACKLIGHT_DOC": "显示器将达到的最高亮度级别（0-255）。可以降低以节省电量。",
+  "LUX_MULTIPLIER": "勒克斯倍数",
+  "LUX_MULTIPLIER_DOC": "VEML7700传感器的校准倍数。增加以获得更亮的响应，减少以获得更暗的响应。",
+  "SMOOTHING_FACTOR": "平滑因子",
+  "SMOOTHING_FACTOR_DOC": "控制亮度过渡的速度（0.0-1.0）。较低的值会产生更慢、更平滑的过渡。",
+  "PLAYBACK_BOOST": "播放亮度提升",
+  "PLAYBACK_BOOST_DOC": "音乐播放期间增加的额外亮度（0-255）。设置为0以禁用此功能。",
+  "PLAYBACK_BOOST_DURATION": "播放后提升持续时间（秒）",
+  "PLAYBACK_BOOST_DURATION_DOC": "播放停止后保持亮度提升的时长（0-300秒）。推荐：30秒。",
+  "SAVE": "保存设置",
+  "SAVE_SUCCESS": "配置保存成功",
+  "SAVE_ERROR": "保存配置时出错"
+}
