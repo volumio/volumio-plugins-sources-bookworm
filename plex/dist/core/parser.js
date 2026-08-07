@@ -97,7 +97,7 @@ function parseTracks(raw) {
         return {
             id: item.ratingKey,
             title: item.title,
-            artist: item.grandparentTitle, // Plex: track's grandparent = artist
+            artist: item.originalTitle ?? item.grandparentTitle, // Plex: per-track artist in originalTitle, album artist in grandparentTitle
             album: item.parentTitle, // Plex: track's parent = album
             duration: item.duration,
             artworkUrl: item.thumb ?? null,

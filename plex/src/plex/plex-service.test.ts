@@ -205,6 +205,26 @@ describe("PlexService", () => {
     });
   });
 
+  // ── getAlbumsPaginated ────────────────────────────────────────────
+
+  describe("getAlbumsPaginated", () => {
+    it("passes sort param to the API client", async () => {
+      vi.mocked(client.getAlbums).mockResolvedValue(albumsFixture);
+
+      await service.getAlbumsPaginated("1", 0, 50, "title:asc");
+
+      expect(client.getAlbums).toHaveBeenCalledWith("1", { offset: 0, limit: 50 }, "title:asc");
+    });
+
+    it("omits sort param when not provided", async () => {
+      vi.mocked(client.getAlbums).mockResolvedValue(albumsFixture);
+
+      await service.getAlbumsPaginated("1", 0, 50);
+
+      expect(client.getAlbums).toHaveBeenCalledWith("1", { offset: 0, limit: 50 }, undefined);
+    });
+  });
+
   // ── getAlbumTracks ────────────────────────────────────────────────
 
   describe("getAlbumTracks", () => {

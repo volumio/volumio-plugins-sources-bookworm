@@ -131,6 +131,30 @@ describe("URL construction", () => {
     );
   });
 
+  it("builds correct path for getAlbums with sort param", async () => {
+    mockHttpGet({ MediaContainer: { size: 0, Metadata: [] } });
+    const client = new PlexApiClient(CONFIG);
+
+    await client.getAlbums("1", undefined, "title:asc");
+
+    const opts = httpGetSpy.mock.calls[0]![0] as http.RequestOptions;
+    expect(opts.path).toBe(
+      "/library/sections/1/all?type=9&sort=title%3Aasc&X-Plex-Token=test-token-abc",
+    );
+  });
+
+  it("builds correct path for getAlbums with pagination and sort", async () => {
+    mockHttpGet({ MediaContainer: { size: 0, Metadata: [] } });
+    const client = new PlexApiClient(CONFIG);
+
+    await client.getAlbums("1", { offset: 100, limit: 50 }, "originallyAvailableAt:desc");
+
+    const opts = httpGetSpy.mock.calls[0]![0] as http.RequestOptions;
+    expect(opts.path).toBe(
+      "/library/sections/1/all?type=9&X-Plex-Container-Start=100&X-Plex-Container-Size=50&sort=originallyAvailableAt%3Adesc&X-Plex-Token=test-token-abc",
+    );
+  });
+
   it("builds correct path for getTracks with full album key", async () => {
     mockHttpGet({ MediaContainer: { size: 0, Metadata: [] } });
     const client = new PlexApiClient(CONFIG);

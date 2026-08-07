@@ -29,20 +29,30 @@ export function shuffleArray<T>(array: T[]): void {
 export interface PaginationState {
   libraryKey: string | null;
   offset: number;
+  sort: string | null;
 }
 
 export function parsePaginationUri(uri: string): PaginationState {
+  const tildeIndex = uri.indexOf("~");
   const atIndex = uri.indexOf("@");
+
+  let sort: string | null = null;
+  if (tildeIndex !== -1) {
+    const sortEnd = atIndex !== -1 ? atIndex : uri.length;
+    sort = uri.slice(tildeIndex + 1, sortEnd) || null;
+  }
+
   if (atIndex === -1) {
-    return { libraryKey: null, offset: 0 };
+    return { libraryKey: null, offset: 0, sort };
   }
   const paginationPart = uri.slice(atIndex + 1);
   const colonIndex = paginationPart.indexOf(":");
   if (colonIndex === -1) {
-    return { libraryKey: paginationPart, offset: 0 };
+    return { libraryKey: paginationPart, offset: 0, sort };
   }
   return {
     libraryKey: paginationPart.slice(0, colonIndex),
     offset: parseInt(paginationPart.slice(colonIndex + 1), 10) || 0,
+    sort,
   };
 }
