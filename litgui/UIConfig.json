@@ -1,0 +1,14 @@
+{
+  "page": {
+    "label": "LitGUI"
+  },
+  "sections": [
+    {
+      "id": "section_open",
+      "element": "section",
+      "label": "TRANSLATE.OPEN_SECTION_LABEL",
+      "description": "TRANSLATE.OPEN_SECTION_DESC",
+      "content": []
+    }
+  ]
+}
