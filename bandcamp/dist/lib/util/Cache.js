@@ -77,7 +77,7 @@ class Cache {
         if (cachedValue !== undefined) {
             return cachedValue;
         }
-        const value = await promiseCallback();
+        const value = promiseCallback();
         this.put(key, value);
         return value;
     }

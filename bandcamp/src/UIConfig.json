@@ -19,7 +19,8 @@
           "itemsPerPage",
           "combinedSearchResults",
           "searchByItemType",
-          "prefetch"
+          "prefetch",
+          "logDebugMessages"
         ]
       },
       "content": [
@@ -48,6 +49,12 @@
           "element": "switch",
           "label": "TRANSLATE.BANDCAMP_PREFETCH_NEXT_TRACK",
           "value": true
+        },
+        {
+          "id": "logDebugMessages",
+          "element": "switch",
+          "label": "TRANSLATE.BANDCAMP_LOG_DEBUG_MESSAGES",
+          "value": false
         }
       ]
     },

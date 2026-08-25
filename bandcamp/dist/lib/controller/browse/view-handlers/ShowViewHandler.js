@@ -56,9 +56,27 @@ class ShowViewHandler extends ExplodableViewHandler_1.default {
      * bandcamp/show@showUrl={showUrl}
      */
     getTrackUri(track) {
+        const common = {
+            showUrl: track.showUrl
+        };
         const showView = {
             name: 'show',
-            showUrl: track.showUrl
+            ...common,
+            explode: {
+                title: track.name,
+                artist: track.artist?.name,
+                album: track.album?.name,
+                albumart: track.thumbnail,
+                uri: ViewHelper_1.default.constructUriFromViews([
+                    {
+                        name: 'root'
+                    },
+                    {
+                        name: 'show',
+                        ...common
+                    }
+                ])
+            }
         };
         return `bandcamp/${ViewHelper_1.default.constructUriSegmentFromView(showView)}`;
     }
@@ -162,7 +180,10 @@ _ShowViewHandler_instances = new WeakSet(), _ShowViewHandler_browseAllShows = as
                 return true;
             }
             if (item.type === 'track') {
-                const rendered = trackRenderer.renderToListItem(item, true, true);
+                const rendered = trackRenderer.renderToListItem(item, {
+                    addType: true,
+                    fakeAlbum: true
+                });
                 if (rendered) {
                     featuredAlbumsList.items.push(rendered);
                 }

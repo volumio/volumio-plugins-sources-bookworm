@@ -10,7 +10,6 @@ export interface ShowModelGetShowsParams {
 }
 
 export default class ShowModel extends BaseModel {
-
   getShows(params: ShowModelGetShowsParams) {
     return this.loopFetch({
       callbackParams: { ...params },
@@ -27,9 +26,11 @@ export default class ShowModel extends BaseModel {
     const queryParams = {
       imageFormat: this.getAlbumImageFormat()
     };
-    return bandcamp.getCache().getOrSet(
-      this.getCacheKeyForFetch('shows', queryParams),
-      () => bcfetch.limiter.show.list(queryParams));
+    return bandcamp
+      .getCache()
+      .getOrSet(this.getCacheKeyForFetch('shows', queryParams), () =>
+        bcfetch.limiter.show.list(queryParams)
+      );
   }
 
   #getShowsFromFetchResult(result: Show[]) {
@@ -42,9 +43,11 @@ export default class ShowModel extends BaseModel {
       imageFormat: this.getAlbumImageFormat()
     };
 
-    const show = await bandcamp.getCache().getOrSet(
-      this.getCacheKeyForFetch('show', queryParams),
-      () => bcfetch.limiter.show.getShow(queryParams));
+    const show = await bandcamp
+      .getCache()
+      .getOrSet(this.getCacheKeyForFetch('show', queryParams), () =>
+        bcfetch.limiter.show.getShow(queryParams)
+      );
 
     return this.#convertFetchedShowToEntity(show);
   }

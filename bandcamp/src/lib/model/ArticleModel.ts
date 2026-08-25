@@ -1,4 +1,9 @@
-import bcfetch, { type Article, type ArticleAPIListParams, type ArticleList, type ArticleListItem } from 'bandcamp-fetch';
+import bcfetch, {
+  type Article,
+  type ArticleAPIListParams,
+  type ArticleList,
+  type ArticleListItem
+} from 'bandcamp-fetch';
 import bandcamp from '../BandcampContext';
 import BaseModel, { type LoopFetchCallbackParams } from './BaseModel';
 import type ArticleEntity from '../entities/ArticleEntity';
@@ -16,13 +21,13 @@ interface GetArticlesLoopFetchCallbackParams extends LoopFetchCallbackParams {
 }
 
 export default class ArticleModel extends BaseModel {
-
   getArticles(params: ArticleModelGetArticlesParams) {
     return this.loopFetch({
       callbackParams: { ...params },
       getFetchPromise: this.#getArticlesFetchPromise.bind(this),
       getItemsFromFetchResult: this.#getArticlesFromFetchResult.bind(this),
-      getNextPageTokenFromFetchResult: this.#getNextPageTokenFromArticlesFetchResult.bind(this),
+      getNextPageTokenFromFetchResult:
+        this.#getNextPageTokenFromArticlesFetchResult.bind(this),
       convertToEntity: this.#convertFetchedArticleListItemToEntity.bind(this),
       pageOffset: params.pageOffset,
       pageToken: params.pageToken,
@@ -45,23 +50,32 @@ export default class ArticleModel extends BaseModel {
       queryParams.categoryUrl = params.categoryUrl;
     }
 
-    return bandcamp.getCache().getOrSet(
-      this.getCacheKeyForFetch('articles', queryParams),
-      () => bcfetch.limiter.article.list(queryParams));
+    return bandcamp
+      .getCache()
+      .getOrSet(this.getCacheKeyForFetch('articles', queryParams), () =>
+        bcfetch.limiter.article.list(queryParams)
+      );
   }
 
   #getArticlesFromFetchResult(result: ArticleList) {
     return result.articles.slice(0);
   }
 
-  #getNextPageTokenFromArticlesFetchResult(result: ArticleList, params: GetArticlesLoopFetchCallbackParams) {
-    let page = 1, indexRef = 0;
+  #getNextPageTokenFromArticlesFetchResult(
+    result: ArticleList,
+    params: GetArticlesLoopFetchCallbackParams
+  ) {
+    let page = 1,
+      indexRef = 0;
     if (params.pageToken) {
       const parsedPageToken = JSON.parse(params.pageToken);
       page = parsedPageToken?.page || 1;
       indexRef = parsedPageToken?.indexRef || 0;
     }
-    if (result.articles.length > 0 && result.total > indexRef + result.articles.length) {
+    if (
+      result.articles.length > 0 &&
+      result.total > indexRef + result.articles.length
+    ) {
       const nextPageToken = {
         page: page + 1,
         indexRef: indexRef + result.articles.length
@@ -70,7 +84,6 @@ export default class ArticleModel extends BaseModel {
     }
 
     return null;
-
   }
 
   #convertFetchedArticleListItemToEntity(item: ArticleListItem): ArticleEntity {
@@ -83,17 +96,21 @@ export default class ArticleModel extends BaseModel {
       albumImageFormat: this.getAlbumImageFormat(),
       artistImageFormat: this.getArtistImageFormat()
     };
-    const article = await bandcamp.getCache().getOrSet(
-      this.getCacheKeyForFetch('article', queryParams),
-      () => bcfetch.limiter.article.getArticle(queryParams));
+    const article = await bandcamp
+      .getCache()
+      .getOrSet(this.getCacheKeyForFetch('article', queryParams), () =>
+        bcfetch.limiter.article.getArticle(queryParams)
+      );
 
     return this.#convertFetchedArticleToEntity(article);
   }
 
   getArticleCategories() {
-    return bandcamp.getCache().getOrSet(
-      this.getCacheKeyForFetch('articleCategories'),
-      () => bcfetch.limiter.article.getCategories());
+    return bandcamp
+      .getCache()
+      .getOrSet(this.getCacheKeyForFetch('articleCategories'), () =>
+        bcfetch.limiter.article.getCategories()
+      );
   }
 
   #convertFetchedArticleToEntity(item: Article): ArticleEntity {
