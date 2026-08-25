@@ -93,6 +93,10 @@ Starting from v0.7.0, the Now Playing plugin can query the relevant music servic
 
 ## Changelog
 
+1.1.1
+- Resolve situation where app URL stays at 'http://127.0.0.1' if plugin starts before IP address is obtained.
+- Update web client v0.7.7 (fixes horizontal alignment not applied to format text in basic view).
+
 1.1.0
 - Replace OpenWeatherMap with Open-Meteo + OpenStreetMap as data provider for weather service.
 - Update web client v0.7.6.
