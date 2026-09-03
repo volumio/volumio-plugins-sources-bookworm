@@ -999,6 +999,7 @@ ControllerSpotify.prototype.spotifyClientCredentialsGrant = function () {
 
 ControllerSpotify.prototype.oauthLogin = function (data) {
     var self=this;
+    var defer = libQ.defer();
 
     self.logger.info('Executing Spotify Oauth Login');
 
@@ -1015,13 +1016,20 @@ ControllerSpotify.prototype.oauthLogin = function (data) {
                 self.commandRouter.broadcastMessage('pushUiConfig', conf);
                 self.commandRouter.broadcastMessage('closeAllModals', '');
                 defer.resolve(conf)
+            }).fail(function (e) {
+                self.logger.error('Failed to build Spotify UI config after OAUTH Login: ' + e);
+                defer.reject(e);
             });
         }).fail(function (e) {
             self.logger.error('Failed to perform Spotify API connection after OAUTH Login: ' + e);
+            defer.reject(e);
         });
     } else {
         self.logger.error('Could not receive oauth data');
+        defer.reject(new Error('Could not receive oauth data'));
     }
+
+    return defer.promise;
 };
 
 ControllerSpotify.prototype.externalOauthLogin = function (data) {
@@ -1031,10 +1039,18 @@ ControllerSpotify.prototype.externalOauthLogin = function (data) {
     if (data && data.refresh_token) {
         self.logger.info('Saving Spotify Refresh Token');
         self.config.set('refresh_token', data.refresh_token);
-        self.spopDaemonConnect();
-        setTimeout(()=>{
+        // Same work as oauthLogin minus the UI broadcasts: streaming-services pushes those
+        // itself. Resolves even on failure because that caller attaches no .fail and would
+        // otherwise leave its modal hanging.
+        self.spotifyApiConnect().then(function () {
+            self.config.set('credentials_type', 'spotify_token');
+            self.initializeLibrespotDaemon();
+            self.initializeSpotifyBrowsingFacility();
             defer.resolve('');
-        },150);
+        }).fail(function (e) {
+            self.logger.error('Failed to perform Spotify API connection after external OAUTH Login: ' + e);
+            defer.resolve('');
+        });
     } else {
         self.logger.error('Could not receive oauth data');
         defer.resolve('');
@@ -1697,7 +1713,6 @@ ControllerSpotify.prototype.getMyArtists = function () {
             }
         ).catch((err) => {
             this.logger.error('An error occurred while listing Spotify my artists ' + err);
-            this.handleBrowsingError(err);
             defer.reject('');
         });
     });
