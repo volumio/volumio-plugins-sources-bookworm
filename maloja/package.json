@@ -1,0 +1,34 @@
+{
+	"name": "maloja",
+	"version": "2.0.0",
+	"description": "Connector for Maloja, the self-hosted audio scrobbler",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Paul Matthews",
+	"license": "ISC",
+	"repository": "https://github.com/paulusm/maloja-scrobbler-volumio",
+	"volumio_info": {
+		"prettyName": "Maloja Scrobbler for Volumio",
+		"icon": "fa-bookmark",
+		"plugin_type": "music_service",
+		"architectures": [
+			"amd64",
+			"armhf"
+		],
+		"os": [
+			"bookworm"
+		],
+		"details": "Lorem ipsum",
+		"changelog": "Lorem ipsum"
+	},
+	"engines": {
+		"node": ">=20.5.1 <21.0.0",
+		"volumio": ">=4.119.0 <5.0.0"
+	},
+	"dependencies": {
+		"kew": "^0.7.0",
+		"v-conf": "^0.10.0"
+	}
+}
