@@ -27,6 +27,9 @@ var loggedInUserId;
 var userCountry;
 var seekTimer;
 var restartTimeout;
+var playbackStartWatchdog;
+var playbackStartTimeout = 10000;
+var playbackStartConfirmed = false;
 var wsConnectionStatus = 'started';
 
 // State management
@@ -254,6 +257,7 @@ ControllerSpotify.prototype.parseEventState = function (event) {
     // and updates the state accordingly
     switch (event.type) {
         case 'metadata':
+            playbackStartConfirmed = true;
             self.state.title = event.data.name;
             self.state.duration = self.parseDuration(event.data.duration);
             self.state.uri = event.data.uri;
@@ -264,10 +268,12 @@ ControllerSpotify.prototype.parseEventState = function (event) {
             pushStateforEvent = false;
             break;
         case 'will_play':
+            playbackStartConfirmed = true;
             //impro: use this event to free up audio device when starting volatile?
             pushStateforEvent = false;
             break;
         case 'playing':
+            playbackStartConfirmed = true;
             self.state.status = 'play';
             self.identifyPlaybackMode(event.data);
             setTimeout(()=>{
@@ -623,9 +629,102 @@ ControllerSpotify.prototype.clearAddPlayTrack = function (track) {
     self.commandRouter.pushConsoleMessage('[' + Date.now() + '] ' + 'ControllerSpotify::clearAddPlayTrack');
     self.resetSpotifyState();
 
-    return self.sendSpotifyLocalApiCommandWithPayload('/player/play', { uri: track.uri });
+    return self.hasActiveDaemonSession().then((hasSession) => {
+        if (!hasSession) {
+            // go-librespot answers /player/play with 200 even with no session and then never
+            // plays, leaving Volumio to run its queue and progress bar against silence.
+            // Refuse the play instead of faking it, and say why.
+            self.commandRouter.pushToastMessage('error', self.getI18n('SPOTIFY'), self.getI18n('NO_ACTIVE_SESSION'));
+            self.abortPlayback('go-librespot has no active session');
+            return;
+        }
+
+        // go-librespot takes seconds to resolve and buffer the track: publish what we already
+        // know now, or the UI sits on a blank stopped player until the 'playing' event lands.
+        // Pushed via servicePushState rather than pushState() to avoid starting our own seek
+        // timer on top of the one the state machine already runs for a playing service.
+        self.state.status = 'play';
+        self.state.title = track.name || track.title || '';
+        self.state.artist = track.artist || '';
+        self.state.album = track.album || '';
+        self.state.albumart = track.albumart || '/albumart';
+        self.state.uri = track.uri;
+        self.state.duration = track.duration || 0;
+        self.commandRouter.servicePushState(self.state, 'spop');
+        self.armPlaybackStartWatchdog();
+
+        self.logger.info('Sending Spotify command with payload to local API: /player/play');
+        return superagent.post(spotifyLocalApiEndpointBase + '/player/play')
+            .accept('application/json')
+            .send({ uri: track.uri })
+            .then((results) => {})
+            .catch((error) => {
+                // the optimistic 'play' above must not stick if the daemon never starts playing
+                self.logger.error('Failed to send command to Spotify local API: /player/play: ' + error);
+                self.state.status = 'stop';
+                self.commandRouter.servicePushState(self.state, 'spop');
+            });
+    });
 };
 
+// /status answers 204 "No active session" when go-librespot has nobody logged in and no
+// Connect client attached. Commands are accepted and silently dropped in that state, so
+// playback has to be gated on it rather than discovered 10 seconds later.
+ControllerSpotify.prototype.hasActiveDaemonSession = function () {
+    var self = this;
+
+    return superagent.get(spotifyLocalApiEndpointBase + '/status')
+        .accept('application/json')
+        .timeout({ response: 1500, deadline: 2500 })
+        .then((results) => results && results.status === 200)
+        .catch((error) => {
+            self.logger.error('Failed to read Spotify local API status: ' + error);
+            return false;
+        });
+};
+
+
+// go-librespot answers /player/play with 200 even when it has no active session and
+// never starts playing. Nothing reports that back — no event, no rejected promise — so
+// the optimistic 'play' state has to be bounded or it sticks forever with a progress bar
+// running against silence. Any playback event from the daemon clears the watchdog.
+ControllerSpotify.prototype.armPlaybackStartWatchdog = function () {
+    var self = this;
+
+    playbackStartConfirmed = false;
+    clearTimeout(playbackStartWatchdog);
+    playbackStartWatchdog = setTimeout(() => {
+        playbackStartWatchdog = undefined;
+        if (self.state.status !== 'play' || playbackStartConfirmed) {
+            return;
+        }
+        self.abortPlayback('playback did not start within ' + playbackStartTimeout + 'ms');
+    }, playbackStartTimeout);
+};
+
+// Giving up on a track cannot be signalled by pushing a 'stop' state: syncState reads a
+// service stop while the machine is playing as "track finished" and advances the queue
+// (statemachine.js), which walks the whole playlist a track at a time. volumioStop() is no
+// help either — it only stops the timer when currentStatus is already 'play', and it isn't
+// yet while clearAddPlayTrack runs. So stop the machine's clock directly, the way this
+// plugin already drives setVolatile/setConsumeUpdateService.
+ControllerSpotify.prototype.abortPlayback = function (reason) {
+    var self = this;
+
+    self.logger.error('Aborting Spotify playback: ' + reason);
+    clearTimeout(playbackStartWatchdog);
+    playbackStartWatchdog = undefined;
+
+    var stateMachine = self.commandRouter.stateMachine;
+    if (stateMachine) {
+        stateMachine.stopPlaybackTimer();
+        stateMachine.currentSeek = 0;
+    }
+
+    self.state.status = 'stop';
+    self.state.seek = 0;
+    self.commandRouter.servicePushState(self.state, 'spop');
+};
 
 ControllerSpotify.prototype.startSocketStateListener = function () {
     var self = this;

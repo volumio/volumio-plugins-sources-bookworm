@@ -66,5 +66,6 @@
   "LOGGED_IN_AS": "Logged-in as",
   "CONFIGURATION_SUCCESSFULLY_UPDATED": "Configuration has been successfully updated",
   "CONNECT_DEVICE_ICON_DOC": "Choose which icon will show the device on your Spotify app in Connect Mode",
-  "CONNECT_DEVICE_ICON":"Device Icon"
+  "CONNECT_DEVICE_ICON":"Device Icon",
+  "NO_ACTIVE_SESSION": "No active Spotify session: connect this device from the Spotify app, or log in from the plugin settings"
 }

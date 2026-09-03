@@ -62,5 +62,6 @@
   "LOGIN_TO_ENABLE_BROWSING": "Per accedere alle tue tracce e sfogliare la tua libreria, effettua l'accesso a Spotify",
   "SPOTIFY_BROWSING": "Sfoglia Spotify",
   "LOGGED_IN_AS": "Accesso effettuato come",
-  "CONFIGURATION_SUCCESSFULLY_UPDATED": "La configurazione è stata aggiornata"
+  "CONFIGURATION_SUCCESSFULLY_UPDATED": "La configurazione è stata aggiornata",
+  "NO_ACTIVE_SESSION": "Nessuna sessione Spotify attiva: connetti questo dispositivo dall’app Spotify, oppure accedi dalle impostazioni del plugin"
 }
