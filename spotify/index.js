@@ -860,26 +860,19 @@ ControllerSpotify.prototype.createConfigFile = function () {
         .replace('${audio_buffer_time}', audioBufferTime)
         .replace('${audio_period_count}', audioPeriodCount);
 
-    var credentials_type = self.config.get('credentials_type', 'zeroconf');
-    var logged_user_id = self.config.get('logged_user_id', '');
-    var access_token = self.config.get('access_token', '');
-
-    if (credentials_type === 'spotify_token' && logged_user_id !== '' && access_token !== '') {
-        conf += 'credentials: ' + os.EOL;
-        conf += '  type: spotify_token' + os.EOL;
-        conf += '  spotify_token:' + os.EOL;
-        conf += '    username: "' + logged_user_id + '"' + os.EOL;
-        conf += '    access_token: "' + access_token + '"';
-    } else {
-        // Persisting the blob from a Connect handshake gives the daemon a session that
-        // survives restarts with no client attached, which is what /player/play needs.
-        // It is also the only session Spotify still accepts: login5 rejects credentials
-        // derived from an access token minted under a non-desktop client id.
-        conf += 'credentials: ' + os.EOL;
-        conf += '  type: zeroconf' + os.EOL;
-        conf += '  zeroconf:' + os.EOL;
-        conf += '    persist_credentials: true' + os.EOL;
-    }
+    // Never hand the daemon our OAuth access token: Spotify's login5 rejects credentials
+    // derived from a token minted under a non-desktop client id, so `type: spotify_token`
+    // now fails authentication and the daemon exits on a loop
+    // (github.com/devgianlu/go-librespot issues/364). The account login is still what
+    // browsing runs on, it just no longer feeds the playback session.
+    //
+    // Zeroconf is the one flow Spotify still accepts. Persisting the blob from the first
+    // Connect handshake keeps the session across restarts with no client attached, which
+    // is what /player/play needs for playback started from the Volumio UI.
+    conf += 'credentials: ' + os.EOL;
+    conf += '  type: zeroconf' + os.EOL;
+    conf += '  zeroconf:' + os.EOL;
+    conf += '    persist_credentials: true' + os.EOL;
 
 
 
