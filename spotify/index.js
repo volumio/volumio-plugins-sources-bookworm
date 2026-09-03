@@ -871,8 +871,14 @@ ControllerSpotify.prototype.createConfigFile = function () {
         conf += '    username: "' + logged_user_id + '"' + os.EOL;
         conf += '    access_token: "' + access_token + '"';
     } else {
+        // Persisting the blob from a Connect handshake gives the daemon a session that
+        // survives restarts with no client attached, which is what /player/play needs.
+        // It is also the only session Spotify still accepts: login5 rejects credentials
+        // derived from an access token minted under a non-desktop client id.
         conf += 'credentials: ' + os.EOL;
         conf += '  type: zeroconf' + os.EOL;
+        conf += '  zeroconf:' + os.EOL;
+        conf += '    persist_credentials: true' + os.EOL;
     }
 
 
