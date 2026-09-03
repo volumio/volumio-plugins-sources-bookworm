@@ -2915,6 +2915,9 @@ ControllerSpotify.prototype.getSpotifyVolume = function () {
                 currentSpotifyVolume = results.body.value;
             }
         })
+        .catch((error) => {
+            self.logger.error('Failed to get Spotify volume from local API: ' + error);
+        });
 };
 
 ControllerSpotify.prototype.prefetch = function (track) {
