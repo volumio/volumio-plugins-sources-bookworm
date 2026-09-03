@@ -63,5 +63,5 @@
   "SPOTIFY_BROWSING": "Sfoglia Spotify",
   "LOGGED_IN_AS": "Accesso effettuato come",
   "CONFIGURATION_SUCCESSFULLY_UPDATED": "La configurazione è stata aggiornata",
-  "NO_ACTIVE_SESSION": "Nessuna sessione Spotify attiva: connetti questo dispositivo dall’app Spotify, oppure accedi dalle impostazioni del plugin"
+  "NO_ACTIVE_SESSION": "Nessuna sessione Spotify attiva: seleziona questo dispositivo nell’app Spotify per avviare la riproduzione"
 }
