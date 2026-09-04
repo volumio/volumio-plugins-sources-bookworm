@@ -1,0 +1,17 @@
+{
+  "PLUGIN_CONFIGURATION": "Configuration de FIP Radio",
+  "NO_CONFIGURATION_AVAILABLE": "Aucune configuration disponible.",
+  "PLUGIN_NAME": "FIP Radio",
+
+  "WAIT_FOR_RADIO_CHANNEL": "Veuillez patienter pendant le chargement de la station de radio....",
+  "STOP_RADIO_CHANNEL": "FIP Radio arrêtée",
+
+  "ERROR_STREAM_SERVER": "Un problème est survenu avec le serveur de diffusion radio {0}.",
+  "INCORRECT_RESPONSE": "La réponse du serveur de diffusion radio {0} est incorrecte.",
+
+  "SAVE": "Enregistrer",
+  "SAVE_CONFIG_MESSAGE": "Configuration enregistrée avec succès.",
+
+  "API_DELAY": "Intervalle de rafraîchissement des métadonnées",
+  "API_DELAY_DESCRIPTION": "Délai entre les mises à jour des métadonnées Radio France en secondes."
+}

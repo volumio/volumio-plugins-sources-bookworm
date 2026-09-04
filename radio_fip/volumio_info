@@ -1,0 +1,14 @@
+"volumio_info": {
+  "prettyName": "FIP Radio",
+  "icon": "fa-headphones",
+  "plugin_type": "music_service",
+  "os": [
+    "buster",
+    "bookworm"
+  ],
+  "architectures": [
+    "armhf",
+    "amd64",
+    "i386"
+  ]
+}
