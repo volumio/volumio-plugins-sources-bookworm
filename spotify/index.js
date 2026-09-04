@@ -667,6 +667,65 @@ ControllerSpotify.prototype.clearAddPlayTrack = function (track) {
     });
 };
 
+// The device flow only ever writes its pairing prompt to the log — go-librespot exposes
+// no endpoint for it — so the journal is the one place to read it from. Newest line wins:
+// a re-pair after an expired code leaves the older prompt behind.
+ControllerSpotify.prototype.getDaemonPairingPrompt = function () {
+    var self = this;
+    var defer = libQ.defer();
+
+    exec('/bin/journalctl -u go-librespot-daemon --since "-10 min" --no-pager', { maxBuffer: 4 * 1024 * 1024 },
+        function (error, stdout) {
+            if (error) {
+                self.logger.error('Failed reading go-librespot journal: ' + error);
+                return defer.resolve(undefined);
+            }
+            defer.resolve(self.parsePairingPrompt(stdout));
+        });
+
+    return defer.promise;
+};
+
+// Journal lines wrap the daemon message in quotes, so the code has to stop at the closing
+// quote as well as at whitespace: a greedy \\S+ swallows it and hands the user "ABC123"".
+ControllerSpotify.prototype.parsePairingPrompt = function (text) {
+    var found;
+
+    (text || '').split(/\r?\n/).forEach(function (line) {
+        var m = line.match(/to complete authentication visit ([^\s"]+) and, if prompted, enter code ([^\s"]+)/);
+        if (m) {
+            found = { url: m[1], code: m[2] };
+        }
+    });
+
+    return found;
+};
+
+// Pairing blocks inside the daemon until the user approves or the code expires, and the
+// only observable completion is /status flipping off 204. The API server is already
+// listening while it blocks, so polling it is safe.
+ControllerSpotify.prototype.waitForDaemonSession = function (timeoutMs) {
+    var self = this;
+    var defer = libQ.defer();
+    var deadline = Date.now() + (timeoutMs || 300000);
+
+    var poll = function () {
+        self.hasActiveDaemonSession().then(function (hasSession) {
+            if (hasSession) {
+                return defer.resolve(true);
+            }
+            if (Date.now() >= deadline) {
+                self.logger.error('Spotify pairing was not completed before the code expired');
+                return defer.resolve(false);
+            }
+            setTimeout(poll, 3000);
+        });
+    };
+    poll();
+
+    return defer.promise;
+};
+
 // /status answers 204 "No active session" when go-librespot has nobody logged in and no
 // Connect client attached. Commands are accepted and silently dropped in that state, so
 // playback has to be gated on it rather than discovered 10 seconds later.
@@ -866,13 +925,23 @@ ControllerSpotify.prototype.createConfigFile = function () {
     // (github.com/devgianlu/go-librespot issues/364). The account login is still what
     // browsing runs on, it just no longer feeds the playback session.
     //
-    // Zeroconf is the one flow Spotify still accepts. Persisting the blob from the first
-    // Connect handshake keeps the session across restarts with no client attached, which
-    // is what /player/play needs for playback started from the Volumio UI.
-    conf += 'credentials: ' + os.EOL;
-    conf += '  type: zeroconf' + os.EOL;
-    conf += '  zeroconf:' + os.EOL;
-    conf += '    persist_credentials: true' + os.EOL;
+    // device_auth is the replacement: the daemon runs the OAuth device flow under the
+    // desktop client id, which login5 does accept, and the user pairs with a short code
+    // instead of having to reach for the Spotify app. It needs a daemon that supports it,
+    // so it stays opt-in until the plugin ships a build that does.
+    //
+    // Otherwise zeroconf, persisting the blob from the first Connect handshake so the
+    // session survives restarts with no client attached, which is what /player/play needs
+    // for playback started from the Volumio UI.
+    if (self.config.get('credentials_type', 'zeroconf') === 'device_auth') {
+        conf += 'credentials: ' + os.EOL;
+        conf += '  type: device_auth' + os.EOL;
+    } else {
+        conf += 'credentials: ' + os.EOL;
+        conf += '  type: zeroconf' + os.EOL;
+        conf += '  zeroconf:' + os.EOL;
+        conf += '    persist_credentials: true' + os.EOL;
+    }
 
 
 
