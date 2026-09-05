@@ -1,0 +1,144 @@
+{
+  "page": {
+    "label": "TRANSLATE.PAGE_TITLE"
+  },
+  "sections": [
+    {
+      "id": "replaygain_settings",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_TITLE",
+      "icon": "fa-sliders",
+      "description": "TRANSLATE.SECTION_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "audio_interface/replaygain",
+        "method": "saveSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "mode",
+          "preamp"
+        ]
+      },
+      "content": [
+        {
+          "id": "mode",
+          "element": "select",
+          "label": "TRANSLATE.MODE",
+          "doc": "TRANSLATE.MODE_DESC",
+          "value": {
+            "value": "album",
+            "label": "TRANSLATE.MODE_ALBUM"
+          },
+          "options": [
+            {
+              "value": "off",
+              "label": "TRANSLATE.MODE_OFF"
+            },
+            {
+              "value": "album",
+              "label": "TRANSLATE.MODE_ALBUM"
+            },
+            {
+              "value": "track",
+              "label": "TRANSLATE.MODE_TRACK"
+            },
+            {
+              "value": "auto",
+              "label": "TRANSLATE.MODE_AUTO"
+            }
+          ]
+        },
+        {
+          "id": "preamp",
+          "element": "select",
+          "label": "TRANSLATE.PREAMP",
+          "doc": "TRANSLATE.PREAMP_DESC",
+          "value": {
+            "value": 0,
+            "label": "0 dB"
+          },
+          "options": [
+            {
+              "value": -6,
+              "label": "-6 dB"
+            },
+            {
+              "value": -5,
+              "label": "-5 dB"
+            },
+            {
+              "value": -4,
+              "label": "-4 dB"
+            },
+            {
+              "value": -3,
+              "label": "-3 dB"
+            },
+            {
+              "value": -2,
+              "label": "-2 dB"
+            },
+            {
+              "value": -1,
+              "label": "-1 dB"
+            },
+            {
+              "value": 0,
+              "label": "0 dB"
+            },
+            {
+              "value": 1,
+              "label": "+1 dB"
+            },
+            {
+              "value": 2,
+              "label": "+2 dB"
+            },
+            {
+              "value": 3,
+              "label": "+3 dB"
+            },
+            {
+              "value": 4,
+              "label": "+4 dB"
+            },
+            {
+              "value": 5,
+              "label": "+5 dB"
+            },
+            {
+              "value": 6,
+              "label": "+6 dB"
+            },
+            {
+              "value": 7,
+              "label": "+7 dB"
+            },
+            {
+              "value": 8,
+              "label": "+8 dB"
+            },
+            {
+              "value": 9,
+              "label": "+9 dB"
+            },
+            {
+              "value": 10,
+              "label": "+10 dB"
+            },
+            {
+              "value": 11,
+              "label": "+11 dB"
+            },
+            {
+              "value": 12,
+              "label": "+12 dB"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
