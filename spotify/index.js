@@ -837,9 +837,10 @@ ControllerSpotify.prototype.startAuthorization = function () {
 
     self.authorizePlayback()
         .then(function (authorized) {
-            return self.refreshUiConfig().then(function () {
-                release(authorized ? self.getI18n('PAIRING_SUCCESSFUL') : self.getI18n('PAIRING_FAILED'));
-            });
+            // release() before the refresh, not after: refreshUiConfig goes through
+            // getUIConfig, which re-opens the modal of a flow still marked as running.
+            release(authorized ? self.getI18n('PAIRING_SUCCESSFUL') : self.getI18n('PAIRING_FAILED'));
+            return self.refreshUiConfig();
         })
         .fail(function (e) {
             self.logger.error('Failed authorizing Spotify: ' + e);
@@ -1261,10 +1262,8 @@ ControllerSpotify.prototype.revokeAuthorization = function () {
 
     self.initializeLibrespotDaemon()
         .then(function () {
-            return self.refreshUiConfig();
-        })
-        .then(function () {
             release(self.getI18n('PLAYBACK_REVOKED'));
+            return self.refreshUiConfig();
         })
         .fail(function (e) {
             self.logger.error('Failed revoking Spotify authorization: ' + e);
