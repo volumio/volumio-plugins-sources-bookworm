@@ -866,9 +866,37 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
         return libQ.resolve(false);
     }
 
-    self.pushAuthModal('modalProgress', self.buildAuthMessage(performerUrl, undefined), 25);
+    return self.shortenUrl(performerUrl).then(function (url) {
+        self.pushAuthModal('modalProgress', self.buildAuthMessage(url, undefined), 25);
+        return self.waitForBrowsingLogin(300000);
+    });
+};
 
-    return self.waitForBrowsingLogin(300000);
+// The performer url carries a redirect_uri and thirteen scopes — several hundred
+// characters nobody can read off a screen, let alone retype on a phone. The UI shortens it
+// through the same service for its kiosk QR code (plugin.component.js
+// shortenUrlAndGetQrCode); if that service is unreachable the long url still works, so a
+// failure only costs legibility.
+ControllerSpotify.prototype.shortenUrl = function (url) {
+    var self = this;
+
+    var defer = libQ.defer();
+
+    superagent.post('https://volm.io/shorten')
+        .send({ url: url })
+        .accept('application/json')
+        .timeout({ response: 5000, deadline: 8000 })
+        .then(function (results) {
+            defer.resolve(results && results.body && results.body.shortenedURL ? results.body.shortenedURL : url);
+        })
+        .catch(function (error) {
+            // startAuthorization ends on .fail(), so this has to stay a libQ promise:
+            // handing back superagent's native one would break that chain.
+            self.logger.error('Failed to shorten the Spotify login url: ' + error);
+            defer.resolve(url);
+        });
+
+    return defer.promise;
 };
 
 // Step two, the daemon's own session. Restarting the daemon is what mints a pairing code,
@@ -980,12 +1008,10 @@ ControllerSpotify.prototype.buildAuthMessage = function (performerUrl, prompt) {
     var lines = [];
 
     if (performerUrl) {
-        lines.push(self.getI18n('STEP_ONE_TODO'), '', performerUrl);
-    } else {
-        lines.push(self.getI18n('STEP_ONE_DONE') + ' ' + self.config.get('logged_user_id', ''));
+        return [self.getI18n('STEP_ONE_TODO'), '', performerUrl].join('\n');
     }
 
-    lines.push('');
+    lines.push(self.getI18n('STEP_ONE_DONE') + ' ' + self.config.get('logged_user_id', ''), '');
 
     if (!prompt) {
         // No code to show yet: either the daemon already has a session, or we are still
