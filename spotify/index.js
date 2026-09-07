@@ -808,24 +808,19 @@ ControllerSpotify.prototype.startDeviceAuth = function () {
     var self = this;
     var defer = libQ.defer();
 
-    // A reloaded browser loses the modal but not the flow behind it, and the button comes
-    // back clickable: show the prompt again rather than start a second authorization.
     if (deviceAuthInProgress) {
-        self.logger.info('Spotify device authorization already running, re-opening the prompt');
-        if (deviceAuthModal) {
-            self.commandRouter.broadcastMessage('openModal', deviceAuthModal);
-            self.commandRouter.broadcastMessage('modalProgress', deviceAuthModal);
-        }
+        self.logger.info('Spotify authorization change already running, re-opening its modal');
+        self.reopenAuthModal();
         defer.resolve('');
         return defer.promise;
     }
 
     deviceAuthInProgress = true;
-    self.pushPairingModal('openModal', self.getI18n('PAIRING_CONTACTING'), 25);
+    self.pushAuthModal('openModal', self.getI18n('PAIRING_TITLE'), self.getI18n('PAIRING_CONTACTING'), 25);
 
     var release = function (message) {
         deviceAuthInProgress = false;
-        self.pushPairingModal('modalDone', message, 100);
+        self.pushAuthModal('modalDone', self.getI18n('PAIRING_TITLE'), message, 100);
         defer.resolve('');
     };
 
@@ -865,7 +860,7 @@ ControllerSpotify.prototype.startDeviceAuth = function () {
             }
 
             self.logger.info('Spotify pairing code issued, awaiting approval');
-            self.pushPairingModal('modalProgress', self.buildPairingMessage(prompt), 75);
+            self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildPairingMessage(prompt), 75);
 
             return self.waitForPairingOutcome(300000).then(function (authorized) {
                 if (!authorized) {
@@ -890,17 +885,19 @@ ControllerSpotify.prototype.startDeviceAuth = function () {
 // round trip can change it — so the busy state is the modal itself: a progress modal
 // cannot be dismissed in either UI while it runs (concept-ui's modal-progress.html grows
 // a footer only on modalDone, Nova's BackendModal refuses dismissal while progress is set
-// and done is not), which is what keeps the button underneath out of reach until the flow
-// ends. Same record shape as the install-to-disk modal in system_controller/system, and
-// like that one it carries the whole record on every emit: concept-ui renders the body
-// from the modalProgress payload, not from the openModal one.
-ControllerSpotify.prototype.pushPairingModal = function (emit, message, progressNumber) {
+// and done is not), which is what keeps the button underneath out of reach until the work
+// ends. Both authorizing and revoking go through here, so neither button can be clicked
+// while the other one's daemon restart is in flight. Same record shape as the
+// install-to-disk modal in system_controller/system, and like that one it carries the
+// whole record on every emit: concept-ui renders the body from the modalProgress payload,
+// not from the openModal one.
+ControllerSpotify.prototype.pushAuthModal = function (emit, title, message, progressNumber) {
     var self = this;
 
     deviceAuthModal = {
         progress: true,
         progressNumber: progressNumber,
-        title: self.getI18n('PAIRING_TITLE'),
+        title: title,
         message: message,
         size: 'lg',
         buttons: [{ name: self.getI18n('CLOSE'), class: 'btn btn-info', emit: '', payload: '' }]
@@ -917,6 +914,19 @@ ControllerSpotify.prototype.pushPairingModal = function (emit, message, progress
     if (emit === 'modalDone') {
         deviceAuthModal = undefined;
     }
+};
+
+// A reloaded browser loses the modal but not the work behind it, and the button comes
+// back clickable: show what is already running rather than start a second one.
+ControllerSpotify.prototype.reopenAuthModal = function () {
+    var self = this;
+
+    if (!deviceAuthModal) {
+        return;
+    }
+
+    self.commandRouter.broadcastMessage('openModal', deviceAuthModal);
+    self.commandRouter.broadcastMessage('modalProgress', deviceAuthModal);
 };
 
 // Nova renders the message as plain text with whitespace-pre-line, so newlines are the
@@ -1202,20 +1212,43 @@ ControllerSpotify.prototype.getPlaybackAuthorization = function () {
 // immediately mints a pairing code nobody asked for.
 ControllerSpotify.prototype.revokePlaybackAuthorization = function () {
     var self = this;
+    var defer = libQ.defer();
 
+    if (deviceAuthInProgress) {
+        self.logger.info('Spotify authorization change already running, re-opening its modal');
+        self.reopenAuthModal();
+        defer.resolve('');
+        return defer.promise;
+    }
+
+    // The daemon restart below takes seconds, so this gets the same busy modal as
+    // authorizing: the button is unreachable until the new state is on screen.
+    deviceAuthInProgress = true;
     self.logger.info('Revoking Spotify playback authorization');
+    self.pushAuthModal('openModal', self.getI18n('REMOVE_AUTHORIZATION'), self.getI18n('PLAYBACK_REVOKING'), 25);
+
+    var release = function (message) {
+        deviceAuthInProgress = false;
+        self.pushAuthModal('modalDone', self.getI18n('REMOVE_AUTHORIZATION'), message, 100);
+        defer.resolve('');
+    };
+
     self.config.set('credentials_type', 'zeroconf');
     self.deleteCredentialsFile();
 
-    return self.initializeLibrespotDaemon()
+    self.initializeLibrespotDaemon()
         .then(function () {
-            self.commandRouter.pushToastMessage('success', self.getI18n('SPOTIFY'), self.getI18n('PLAYBACK_REVOKED'));
             return self.refreshUiConfig();
+        })
+        .then(function () {
+            release(self.getI18n('PLAYBACK_REVOKED'));
         })
         .fail(function (e) {
             self.logger.error('Failed revoking Spotify playback authorization: ' + e);
-            self.commandRouter.pushToastMessage('error', self.getI18n('SPOTIFY'), self.getI18n('PLAYBACK_REVOKE_FAILED'));
+            release(self.getI18n('PLAYBACK_REVOKE_FAILED'));
         });
+
+    return defer.promise;
 };
 
 ControllerSpotify.prototype.saveGoLibrespotSettings = function (data, avoidBroadcastUiConfig) {

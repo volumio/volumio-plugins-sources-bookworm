@@ -72,6 +72,7 @@
   "PAIRING_EXPIRES": "Expires at",
   "PAIRING_ALREADY_DONE": "Playback is already authorized",
   "PLAYBACK_REVOKED": "Playback authorization removed",
+  "PLAYBACK_REVOKING": "Removing authorization…",
   "PLAYBACK_REVOKE_FAILED": "Could not remove the authorization",
   "PAIRING_CONTACTING": "Contacting Spotify…",
   "SIGN_IN": "Sign in",

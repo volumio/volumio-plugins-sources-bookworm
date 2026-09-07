@@ -68,6 +68,7 @@
   "PAIRING_EXPIRES": "Scade alle",
   "PAIRING_ALREADY_DONE": "La riproduzione è già autorizzata",
   "PLAYBACK_REVOKED": "Autorizzazione alla riproduzione rimossa",
+  "PLAYBACK_REVOKING": "Rimozione autorizzazione…",
   "PLAYBACK_REVOKE_FAILED": "Impossibile rimuovere l'autorizzazione",
   "PAIRING_CONTACTING": "Connessione a Spotify…",
   "SIGN_IN": "Accedi",
