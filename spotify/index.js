@@ -887,7 +887,17 @@ ControllerSpotify.prototype.authorizePlayback = function () {
             }
 
             self.logger.info('Spotify pairing code issued, awaiting approval');
-            self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(prompt), 75);
+            self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(prompt), 75, prompt.url);
+
+            // Step one navigates itself, through the core `oauth` action; step two has no
+            // such action because the device flow has no redirect leg — the daemon polls,
+            // the browser is not the channel — and the code does not exist until seconds
+            // after the click, far too late for a popup to be allowed. So the backend asks
+            // for the navigation instead. Nova answers this and goes; a kiosk is excluded
+            // there on purpose (spotify.com does not redirect home and a panel has no way
+            // back), which is what the modal's own button is for. concept-ui has no
+            // handler, so it keeps the link the message carries.
+            self.commandRouter.broadcastMessage('openUrl', prompt.url);
 
             return self.waitForPairingOutcome(300000);
         });
@@ -943,8 +953,17 @@ ControllerSpotify.prototype.buildAuthMessage = function (prompt) {
 // record shape as the install-to-disk modal in system_controller/system, and like that one
 // it carries the whole record on every emit: concept-ui renders the body from the
 // modalProgress payload, not from the openModal one.
-ControllerSpotify.prototype.pushAuthModal = function (emit, title, message, progressNumber) {
+ControllerSpotify.prototype.pushAuthModal = function (emit, title, message, progressNumber, url) {
     var self = this;
+    var buttons = [];
+
+    // A url button is the one control a running progress modal offers, and only Nova
+    // renders it — it is what a kiosk gets in place of the navigation it is denied, and
+    // what anyone gets who came back to the page after the flow had already navigated.
+    if (url) {
+        buttons.push({ name: self.getI18n('OPEN_SPOTIFY'), class: 'btn btn-warning', url: url });
+    }
+    buttons.push({ name: self.getI18n('CLOSE'), class: 'btn btn-info', emit: '', payload: '' });
 
     deviceAuthModal = {
         progress: true,
@@ -952,7 +971,7 @@ ControllerSpotify.prototype.pushAuthModal = function (emit, title, message, prog
         title: title,
         message: message,
         size: 'lg',
-        buttons: [{ name: self.getI18n('CLOSE'), class: 'btn btn-info', emit: '', payload: '' }]
+        buttons: buttons
     };
 
     self.commandRouter.broadcastMessage(emit, deviceAuthModal);

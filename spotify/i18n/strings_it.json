@@ -79,5 +79,6 @@
   "PAIRING_SUCCESSFUL": "Spotify autorizzato",
   "PAIRING_FAILED": "Autorizzazione non completata. Riprova.",
   "CLOSE": "Chiudi",
+  "OPEN_SPOTIFY": "Apri Spotify",
   "NO_ACTIVE_SESSION": "Spotify non è connesso: usa Autorizza nelle impostazioni del plugin, oppure seleziona questo dispositivo nell'app Spotify"
 }
