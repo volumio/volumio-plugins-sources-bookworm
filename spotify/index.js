@@ -823,11 +823,11 @@ ControllerSpotify.prototype.startAuthorization = function (data) {
     }
 
     deviceAuthInProgress = true;
-    self.pushAuthModal('openModal', self.getI18n('PAIRING_CONTACTING'), 10);
+    self.pushAuthModal('openModal', self.getI18n('PAIRING_TITLE'), self.getI18n('PAIRING_CONTACTING'), 10);
 
     var release = function (message) {
         deviceAuthInProgress = false;
-        self.pushAuthModal('modalDone', message, 100);
+        self.pushAuthModal('modalDone', self.getI18n('PAIRING_TITLE'), message, 100);
         defer.resolve('');
     };
 
@@ -867,7 +867,7 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
     }
 
     return self.shortenUrl(performerUrl).then(function (url) {
-        self.pushAuthModal('modalProgress', self.buildAuthMessage(url, undefined), 25);
+        self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(url, undefined), 25);
         return self.waitForBrowsingLogin(300000);
     });
 };
@@ -905,7 +905,7 @@ ControllerSpotify.prototype.shortenUrl = function (url) {
 ControllerSpotify.prototype.authorizePlayback = function () {
     var self = this;
 
-    self.pushAuthModal('modalProgress', self.buildAuthMessage(undefined, undefined), 50);
+    self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(undefined, undefined), 50);
 
     return self.getDaemonPairingPrompt()
         .then(function (pending) {
@@ -938,7 +938,7 @@ ControllerSpotify.prototype.authorizePlayback = function () {
             }
 
             self.logger.info('Spotify pairing code issued, awaiting approval');
-            self.pushAuthModal('modalProgress', self.buildAuthMessage(undefined, prompt), 75);
+            self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(undefined, prompt), 75);
 
             return self.waitForPairingOutcome(300000);
         });
@@ -1045,13 +1045,13 @@ ControllerSpotify.prototype.buildAuthMessage = function (performerUrl, prompt) {
 // record shape as the install-to-disk modal in system_controller/system, and like that one
 // it carries the whole record on every emit: concept-ui renders the body from the
 // modalProgress payload, not from the openModal one.
-ControllerSpotify.prototype.pushAuthModal = function (emit, message, progressNumber) {
+ControllerSpotify.prototype.pushAuthModal = function (emit, title, message, progressNumber) {
     var self = this;
 
     deviceAuthModal = {
         progress: true,
         progressNumber: progressNumber,
-        title: self.getI18n('PAIRING_TITLE'),
+        title: title,
         message: message,
         size: 'lg',
         buttons: [{ name: self.getI18n('CLOSE'), class: 'btn btn-info', emit: '', payload: '' }]
@@ -1345,11 +1345,11 @@ ControllerSpotify.prototype.revokeAuthorization = function () {
 
     deviceAuthInProgress = true;
     self.logger.info('Revoking Spotify authorization');
-    self.pushAuthModal('openModal', self.getI18n('PLAYBACK_REVOKING'), 25);
+    self.pushAuthModal('openModal', self.getI18n('REMOVE_AUTHORIZATION'), self.getI18n('PLAYBACK_REVOKING'), 25);
 
     var release = function (message) {
         deviceAuthInProgress = false;
-        self.pushAuthModal('modalDone', message, 100);
+        self.pushAuthModal('modalDone', self.getI18n('REMOVE_AUTHORIZATION'), message, 100);
         defer.resolve('');
     };
 
