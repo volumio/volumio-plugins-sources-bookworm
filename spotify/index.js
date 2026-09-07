@@ -688,18 +688,22 @@ ControllerSpotify.prototype.getDaemonPairingPrompt = function () {
         });
 };
 
-// Pairing blocks inside the daemon until the user approves or the code expires, and the
-// only observable completion is /status flipping off 204. The API server is already
-// listening while it blocks, so polling it is safe.
-ControllerSpotify.prototype.waitForDaemonSession = function (timeoutMs) {
+// Waiting on /status here would hang: device_auth blocks inside withAppPlayer until the
+// user answers, so no session is installed yet and the API forwarder has nothing to hand
+// requests to (daemon/app.go). /auth/code keeps answering throughout, so the flow ending
+// is what we watch for — it drops to 204 on approval and on expiry alike, and only then
+// can /status tell the two apart.
+ControllerSpotify.prototype.waitForPairingOutcome = function (timeoutMs) {
     var self = this;
     var defer = libQ.defer();
     var deadline = Date.now() + (timeoutMs || 300000);
 
     var poll = function () {
-        self.hasActiveDaemonSession().then(function (hasSession) {
-            if (hasSession) {
-                return defer.resolve(true);
+        self.getDaemonPairingPrompt().then(function (prompt) {
+            if (!prompt) {
+                return self.hasActiveDaemonSession().then(function (hasSession) {
+                    defer.resolve(hasSession);
+                });
             }
             if (Date.now() >= deadline) {
                 self.logger.error('Spotify pairing was not completed before the code expired');
@@ -826,7 +830,7 @@ ControllerSpotify.prototype.startDeviceAuth = function () {
                 buttons: [{ name: self.getI18n('CLOSE'), class: 'btn btn-info' }]
             });
 
-            return self.waitForDaemonSession(300000).then(function (authorized) {
+            return self.waitForPairingOutcome(300000).then(function (authorized) {
                 if (!authorized) {
                     self.commandRouter.pushToastMessage('error', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_FAILED'));
                     return defer.resolve('');
