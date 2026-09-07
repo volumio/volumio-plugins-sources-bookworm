@@ -667,38 +667,25 @@ ControllerSpotify.prototype.clearAddPlayTrack = function (track) {
     });
 };
 
-// The device flow only ever writes its pairing prompt to the log — go-librespot exposes
-// no endpoint for it — so the journal is the one place to read it from. Newest line wins:
-// a re-pair after an expired code leaves the older prompt behind.
+// go-librespot 0.9.1 publishes the in-flight device flow on /auth/code, answering 204
+// once the user approves or the code expires. Before that endpoint existed the prompt had
+// to be scraped out of the daemon's log.
 ControllerSpotify.prototype.getDaemonPairingPrompt = function () {
     var self = this;
-    var defer = libQ.defer();
 
-    exec('/bin/journalctl -u go-librespot-daemon --since "-10 min" --no-pager', { maxBuffer: 4 * 1024 * 1024 },
-        function (error, stdout) {
-            if (error) {
-                self.logger.error('Failed reading go-librespot journal: ' + error);
-                return defer.resolve(undefined);
+    return superagent.get(spotifyLocalApiEndpointBase + '/auth/code')
+        .accept('application/json')
+        .timeout({ response: 2000, deadline: 3000 })
+        .then((results) => {
+            if (!results || results.status !== 200 || !results.body || !results.body.url) {
+                return undefined;
             }
-            defer.resolve(self.parsePairingPrompt(stdout));
+            return { url: results.body.url, code: results.body.code, expiresAt: results.body.expires_at };
+        })
+        .catch((error) => {
+            self.logger.error('Failed to read Spotify device auth code: ' + error);
+            return undefined;
         });
-
-    return defer.promise;
-};
-
-// Journal lines wrap the daemon message in quotes, so the code has to stop at the closing
-// quote as well as at whitespace: a greedy \\S+ swallows it and hands the user "ABC123"".
-ControllerSpotify.prototype.parsePairingPrompt = function (text) {
-    var found;
-
-    (text || '').split(/\r?\n/).forEach(function (line) {
-        var m = line.match(/to complete authentication visit ([^\s"]+) and, if prompted, enter code ([^\s"]+)/);
-        if (m) {
-            found = { url: m[1], code: m[2] };
-        }
-    });
-
-    return found;
 };
 
 // Pairing blocks inside the daemon until the user approves or the code expires, and the
@@ -783,6 +770,80 @@ ControllerSpotify.prototype.abortPlayback = function (reason) {
     self.state.status = 'stop';
     self.state.seek = 0;
     self.commandRouter.servicePushState(self.state, 'spop');
+};
+
+// The prompt only appears once the daemon has restarted into device_auth mode and reached
+// Spotify, so poll for it rather than guess a delay.
+ControllerSpotify.prototype.awaitPairingPrompt = function (timeoutMs) {
+    var self = this;
+    var defer = libQ.defer();
+    var deadline = Date.now() + (timeoutMs || 60000);
+
+    var poll = function () {
+        self.getDaemonPairingPrompt().then(function (prompt) {
+            if (prompt) {
+                return defer.resolve(prompt);
+            }
+            if (Date.now() >= deadline) {
+                self.logger.error('go-librespot did not emit a pairing prompt');
+                return defer.resolve(undefined);
+            }
+            setTimeout(poll, 2000);
+        });
+    };
+    poll();
+
+    return defer.promise;
+};
+
+// Authorize playback without needing the Spotify app: the daemon runs the OAuth device
+// flow under the desktop client id (the only one login5 still accepts) and we surface its
+// short code. Any stored session is cleared first, otherwise the daemon reuses it and
+// never starts the flow.
+ControllerSpotify.prototype.startDeviceAuth = function () {
+    var self = this;
+    var defer = libQ.defer();
+
+    self.config.set('credentials_type', 'device_auth');
+    self.deleteCredentialsFile();
+
+    self.initializeLibrespotDaemon()
+        .then(function () {
+            return self.awaitPairingPrompt(60000);
+        })
+        .then(function (prompt) {
+            if (!prompt) {
+                self.commandRouter.pushToastMessage('error', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_FAILED'));
+                return defer.resolve('');
+            }
+
+            self.logger.info('Spotify pairing code issued, awaiting approval');
+            self.commandRouter.broadcastMessage('openModal', {
+                title: self.getI18n('PAIRING_TITLE'),
+                message: self.getI18n('PAIRING_INSTRUCTIONS') + '<br><br><a href="' + prompt.url +
+                    '" target="_blank" rel="noopener">' + prompt.url + '</a><br><br><h2>' + prompt.code + '</h2>',
+                size: 'lg',
+                buttons: [{ name: self.getI18n('CLOSE'), class: 'btn btn-info' }]
+            });
+
+            return self.waitForDaemonSession(300000).then(function (authorized) {
+                if (!authorized) {
+                    self.commandRouter.pushToastMessage('error', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_FAILED'));
+                    return defer.resolve('');
+                }
+                self.logger.info('Spotify playback authorized via device flow');
+                self.commandRouter.broadcastMessage('closeAllModals', '');
+                self.commandRouter.pushToastMessage('success', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_SUCCESSFUL'));
+                defer.resolve('');
+            });
+        })
+        .fail(function (e) {
+            self.logger.error('Failed starting Spotify device authorization: ' + e);
+            self.commandRouter.pushToastMessage('error', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_FAILED'));
+            defer.resolve('');
+        });
+
+    return defer.promise;
 };
 
 ControllerSpotify.prototype.startSocketStateListener = function () {

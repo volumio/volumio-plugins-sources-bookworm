@@ -67,5 +67,12 @@
   "CONFIGURATION_SUCCESSFULLY_UPDATED": "Configuration has been successfully updated",
   "CONNECT_DEVICE_ICON_DOC": "Choose which icon will show the device on your Spotify app in Connect Mode",
   "CONNECT_DEVICE_ICON":"Device Icon",
+  "AUTHORIZE_PLAYBACK": "Authorize playback",
+  "AUTHORIZE_PLAYBACK_INSTRUCTIONS": "Allow this device to play Spotify without opening the Spotify app",
+  "PAIRING_TITLE": "Authorize Spotify playback",
+  "PAIRING_INSTRUCTIONS": "Open the link below on any device, sign in to Spotify and enter this code:",
+  "PAIRING_SUCCESSFUL": "Spotify playback authorized",
+  "PAIRING_FAILED": "Spotify authorization did not complete. Please try again.",
+  "CLOSE": "Close",
   "NO_ACTIVE_SESSION": "No active Spotify session: select this device in the Spotify app to start playback"
 }

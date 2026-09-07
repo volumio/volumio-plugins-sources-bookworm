@@ -52,6 +52,21 @@
           }
         },
         {
+          "id": "device_auth",
+          "element": "button",
+          "label": "TRANSLATE.AUTHORIZE_PLAYBACK",
+          "description": "TRANSLATE.AUTHORIZE_PLAYBACK_INSTRUCTIONS",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/spop",
+              "method": "startDeviceAuth",
+              "data": ""
+            }
+          }
+        },
+        {
           "id": "logout",
           "element": "button",
           "label": "TRANSLATE.LOGOUT",
