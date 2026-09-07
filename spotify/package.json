@@ -1,6 +1,6 @@
 {
 	"name": "spop",
-	"version": "4.4.1",
+	"version": "4.5.0",
 	"description": "Spotify plugin for Volumio4",
 	"main": "index.js",
 	"scripts": {
@@ -17,7 +17,7 @@
 			"bookworm"
 		],
 		"details": "Spotify plugin for Volumio4",
-		"changelog": "go-librespot 0.5.3",
+		"changelog": "go-librespot 0.9.1",
 		"architectures": [
 			"amd64",
 			"armhf"
