@@ -76,6 +76,7 @@
   "AUTHORIZE_DONE": "Authorized as",
   "PAIRING_CONTACTING": "Contacting Spotify…",
   "REMOVE_AUTHORIZATION": "Remove authorization",
+  "STEP_ONE_TODO": "Step 1 of 2 · Open this link and sign in to Spotify:",
   "STEP_ONE_DONE": "Step 1 of 2 · Signed in as",
   "STEP_TWO_TODO": "Step 2 of 2 · Open this link and approve this device:",
   "STEP_TWO_DONE": "Step 2 of 2 · Playback authorized",
