@@ -31,6 +31,7 @@ var playbackStartWatchdog;
 var playbackStartTimeout = 10000;
 var playbackStartConfirmed = false;
 var deviceAuthInProgress = false;
+var deviceAuthModal;
 var wsConnectionStatus = 'started';
 
 // State management
@@ -807,20 +808,25 @@ ControllerSpotify.prototype.startDeviceAuth = function () {
     var self = this;
     var defer = libQ.defer();
 
-    // Reaching Spotify takes a few seconds and the settings button stays clickable
-    // throughout, so say something at once and ignore the impatient re-clicks.
+    // A reloaded browser loses the modal but not the flow behind it, and the button comes
+    // back clickable: show the prompt again rather than start a second authorization.
     if (deviceAuthInProgress) {
-        self.logger.info('Spotify device authorization already running, ignoring the request');
-        self.commandRouter.pushToastMessage('info', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_IN_PROGRESS'));
+        self.logger.info('Spotify device authorization already running, re-opening the prompt');
+        if (deviceAuthModal) {
+            self.commandRouter.broadcastMessage('openModal', deviceAuthModal);
+            self.commandRouter.broadcastMessage('modalProgress', deviceAuthModal);
+        }
         defer.resolve('');
         return defer.promise;
     }
-    deviceAuthInProgress = true;
-    self.commandRouter.pushToastMessage('info', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_CONTACTING'));
 
-    var release = function (value) {
+    deviceAuthInProgress = true;
+    self.pushPairingModal('openModal', self.getI18n('PAIRING_CONTACTING'), 25);
+
+    var release = function (message) {
         deviceAuthInProgress = false;
-        defer.resolve(value);
+        self.pushPairingModal('modalDone', message, 100);
+        defer.resolve('');
     };
 
     // Restarting the daemon is what mints a pairing code, so doing it unconditionally
@@ -836,8 +842,7 @@ ControllerSpotify.prototype.startDeviceAuth = function () {
             return self.hasActiveDaemonSession().then(function (hasSession) {
                 if (hasSession) {
                     self.logger.info('Spotify playback is already authorized');
-                    self.commandRouter.pushToastMessage('success', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_ALREADY_DONE'));
-                    return undefined;
+                    return { alreadyAuthorized: true };
                 }
 
                 self.config.set('credentials_type', 'device_auth');
@@ -849,38 +854,76 @@ ControllerSpotify.prototype.startDeviceAuth = function () {
             });
         })
         .then(function (prompt) {
+            if (prompt && prompt.alreadyAuthorized) {
+                return self.refreshUiConfig().then(function () {
+                    release(self.getI18n('PAIRING_ALREADY_DONE'));
+                });
+            }
+
             if (!prompt) {
-                return release('');
+                return release(self.getI18n('PAIRING_FAILED'));
             }
 
             self.logger.info('Spotify pairing code issued, awaiting approval');
-            return self.renderPairingModal(prompt).then(function () {
-                return self.waitForPairingOutcome(300000).then(function (authorized) {
-                    if (!authorized) {
-                        self.commandRouter.pushToastMessage('error', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_FAILED'));
-                        return release('');
-                    }
-                    self.logger.info('Spotify playback authorized via device flow');
-                    self.commandRouter.broadcastMessage('closeAllModals', '');
-                    self.commandRouter.pushToastMessage('success', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_SUCCESSFUL'));
-                    release('');
+            self.pushPairingModal('modalProgress', self.buildPairingMessage(prompt), 75);
+
+            return self.waitForPairingOutcome(300000).then(function (authorized) {
+                if (!authorized) {
+                    return release(self.getI18n('PAIRING_FAILED'));
+                }
+
+                self.logger.info('Spotify playback authorized via device flow');
+                return self.refreshUiConfig().then(function () {
+                    release(self.getI18n('PAIRING_SUCCESSFUL'));
                 });
             });
         })
         .fail(function (e) {
             self.logger.error('Failed starting Spotify device authorization: ' + e);
-            self.commandRouter.pushToastMessage('error', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_FAILED'));
-            release('');
+            release(self.getI18n('PAIRING_FAILED'));
         });
 
     return defer.promise;
 };
 
-// Nova renders this message as plain text with whitespace-pre-line, so newlines are the
+// A UIConfig button has no in-flight state — it renders once, and only a pushUiConfig
+// round trip can change it — so the busy state is the modal itself: a progress modal
+// cannot be dismissed in either UI while it runs (concept-ui's modal-progress.html grows
+// a footer only on modalDone, Nova's BackendModal refuses dismissal while progress is set
+// and done is not), which is what keeps the button underneath out of reach until the flow
+// ends. Same record shape as the install-to-disk modal in system_controller/system, and
+// like that one it carries the whole record on every emit: concept-ui renders the body
+// from the modalProgress payload, not from the openModal one.
+ControllerSpotify.prototype.pushPairingModal = function (emit, message, progressNumber) {
+    var self = this;
+
+    deviceAuthModal = {
+        progress: true,
+        progressNumber: progressNumber,
+        title: self.getI18n('PAIRING_TITLE'),
+        message: message,
+        size: 'lg',
+        buttons: [{ name: self.getI18n('CLOSE'), class: 'btn btn-info', emit: '', payload: '' }]
+    };
+
+    self.commandRouter.broadcastMessage(emit, deviceAuthModal);
+
+    if (emit === 'openModal') {
+        // concept-ui opens the progress modal empty and fills it from the first
+        // modalProgress that follows, so the opening record has to be sent twice.
+        self.commandRouter.broadcastMessage('modalProgress', deviceAuthModal);
+    }
+
+    if (emit === 'modalDone') {
+        deviceAuthModal = undefined;
+    }
+};
+
+// Nova renders the message as plain text with whitespace-pre-line, so newlines are the
 // only formatting available: its modal contract is {title, message, buttons, progress,
 // advancedLog} and markup is flattened. An embedded QR image cannot survive that, which is
 // why the link carries the code and the code is repeated only as a fallback.
-ControllerSpotify.prototype.renderPairingModal = function (prompt) {
+ControllerSpotify.prototype.buildPairingMessage = function (prompt) {
     var self = this;
     var lines = [
         self.getI18n('PAIRING_INSTRUCTIONS'),
@@ -889,19 +932,31 @@ ControllerSpotify.prototype.renderPairingModal = function (prompt) {
         '',
         self.getI18n('PAIRING_CODE_IF_ASKED') + ' ' + prompt.code
     ];
+    var expiry = new Date(prompt.expiresAt);
 
-    if (prompt.expiresAt) {
-        lines.push('', self.getI18n('PAIRING_EXPIRES') + ' ' + new Date(prompt.expiresAt).toLocaleTimeString());
+    // Only when it reads as a time still ahead of us: expires_at has been seen absent, and
+    // a seconds-epoch value would render as a 1970 clock time rather than fail visibly.
+    if (expiry.getTime() > Date.now()) {
+        lines.push(self.getI18n('PAIRING_EXPIRES') + ' ' +
+            ('0' + expiry.getHours()).slice(-2) + ':' + ('0' + expiry.getMinutes()).slice(-2));
     }
 
-    self.commandRouter.broadcastMessage('openModal', {
-        title: self.getI18n('PAIRING_TITLE'),
-        message: lines.join('\n'),
-        size: 'lg',
-        buttons: [{ name: self.getI18n('CLOSE'), class: 'btn btn-info' }]
-    });
+    return lines.join('\n');
+};
 
-    return libQ.resolve('');
+// The account section is rendered from getUIConfig, so a change the user did not navigate
+// to — playback just authorized, or just revoked — has to push a fresh one, or both
+// buttons keep offering the step that is already done.
+ControllerSpotify.prototype.refreshUiConfig = function () {
+    var self = this;
+
+    return self.getUIConfig()
+        .then(function (conf) {
+            self.commandRouter.broadcastMessage('pushUiConfig', conf);
+        })
+        .fail(function (e) {
+            self.logger.error('Failed to refresh the Spotify UI config: ' + e);
+        });
 };
 
 ControllerSpotify.prototype.startSocketStateListener = function () {
@@ -1155,10 +1210,7 @@ ControllerSpotify.prototype.revokePlaybackAuthorization = function () {
     return self.initializeLibrespotDaemon()
         .then(function () {
             self.commandRouter.pushToastMessage('success', self.getI18n('SPOTIFY'), self.getI18n('PLAYBACK_REVOKED'));
-            return self.getUIConfig();
-        })
-        .then(function (conf) {
-            self.commandRouter.broadcastMessage('pushUiConfig', conf);
+            return self.refreshUiConfig();
         })
         .fail(function (e) {
             self.logger.error('Failed revoking Spotify playback authorization: ' + e);
