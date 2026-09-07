@@ -115,10 +115,7 @@ ControllerSpotify.prototype.getUIConfig = function () {
         .then(function (uiconf) {
             // Keyed off the refresh token, not credentials_type: that key selects how the
             // daemon authenticates for playback and says nothing about the browsing login.
-            if (self.loggedInUserId !== undefined && self.config.get('refresh_token', '') !== '') {
-                uiconf.sections[1].content[0].hidden = true;
-                uiconf.sections[1].content[1].hidden = false;
-            }
+            self.applyAccountSectionState(uiconf);
             var bitrateNumber = self.config.get('bitrate_number', 320);
             uiconf.sections[2].content[0].value.value = bitrateNumber
             uiconf.sections[2].content[0].value.label = self.getLabelForSelect(uiconf.sections[2].content[0].options, bitrateNumber);
@@ -1081,20 +1078,88 @@ ControllerSpotify.prototype.createConfigFile = function () {
     return defer.promise;
 };
 
-ControllerSpotify.prototype.isOauthLoginAlreadyConfiguredOnDaemon = function () {
+// Browsing and playback are separate authorizations, so the account section shows the
+// state of each: log in / log out for the library, authorize / remove for playback.
+// Offering "Authorize playback" when it already is invites the user to try to fix
+// something that is not broken, so it is swapped for the way out instead.
+ControllerSpotify.prototype.applyAccountSectionState = function (uiconf) {
+    var self = this;
+
+    if (self.loggedInUserId !== undefined && self.config.get('refresh_token', '') !== '') {
+        self.findUiElement(uiconf, 1, 'oauth').hidden = true;
+        self.findUiElement(uiconf, 1, 'logout').hidden = false;
+    }
+
+    var playback = self.getPlaybackAuthorization();
+    var authorizeButton = self.findUiElement(uiconf, 1, 'device_auth');
+    var revokeButton = self.findUiElement(uiconf, 1, 'device_auth_revoke');
+
+    authorizeButton.hidden = playback.authorized;
+    revokeButton.hidden = !playback.authorized;
+    if (playback.authorized) {
+        revokeButton.description = self.getI18n('PLAYBACK_AUTHORIZED_AS') + ' ' + playback.username;
+    }
+
+    return uiconf;
+};
+
+// Looked up by id rather than by position: content indexes shift whenever a control is
+// added, and a wrong index quietly hides the wrong button.
+ControllerSpotify.prototype.findUiElement = function (uiconf, section, id) {
+    var content = uiconf.sections[section].content;
+
+    for (var i = 0; i < content.length; i++) {
+        if (content[i].id === id) {
+            return content[i];
+        }
+    }
+
+    this.logger.error('No UI element with id ' + id + ' in section ' + section);
+
+    return {};
+};
+
+// Playback authorization lives in the daemon's state file, which is the same thing the
+// daemon itself reads on startup, so it survives reboots and does not need the daemon to
+// be up to answer. Checking the file merely exists is not enough: go-librespot writes it
+// with an empty credentials block as soon as it runs once.
+ControllerSpotify.prototype.getPlaybackAuthorization = function () {
     var self = this;
 
     try {
-        var credentialsFile = fs.readFileSync(credentialsPath, {encoding: 'utf8'}).toString();
+        var state = JSON.parse(fs.readFileSync(credentialsPath, { encoding: 'utf8' }).toString());
+        var credentials = state && state.credentials;
+        if (credentials && credentials.username && credentials.data) {
+            return { authorized: true, username: credentials.username };
+        }
     } catch (e) {
-        self.logger.error('Failed to read credentials file: ' + e);
+        self.logger.info('No usable go-librespot credentials yet: ' + e);
     }
 
-    if (credentialsFile && credentialsFile.length > 0) {
-        return true;
-    } else {
-        return false;
-    }
+    return { authorized: false };
+};
+
+// Back to zeroconf rather than leaving device_auth armed: otherwise the restart below
+// immediately mints a pairing code nobody asked for.
+ControllerSpotify.prototype.revokePlaybackAuthorization = function () {
+    var self = this;
+
+    self.logger.info('Revoking Spotify playback authorization');
+    self.config.set('credentials_type', 'zeroconf');
+    self.deleteCredentialsFile();
+
+    return self.initializeLibrespotDaemon()
+        .then(function () {
+            self.commandRouter.pushToastMessage('success', self.getI18n('SPOTIFY'), self.getI18n('PLAYBACK_REVOKED'));
+            return self.getUIConfig();
+        })
+        .then(function (conf) {
+            self.commandRouter.broadcastMessage('pushUiConfig', conf);
+        })
+        .fail(function (e) {
+            self.logger.error('Failed revoking Spotify playback authorization: ' + e);
+            self.commandRouter.pushToastMessage('error', self.getI18n('SPOTIFY'), self.getI18n('PLAYBACK_REVOKE_FAILED'));
+        });
 };
 
 ControllerSpotify.prototype.saveGoLibrespotSettings = function (data, avoidBroadcastUiConfig) {

@@ -67,6 +67,22 @@
           }
         },
         {
+          "id": "device_auth_revoke",
+          "element": "button",
+          "label": "TRANSLATE.DEAUTHORIZE_PLAYBACK",
+          "description": "TRANSLATE.PLAYBACK_AUTHORIZED_AS",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/spop",
+              "method": "revokePlaybackAuthorization",
+              "data": ""
+            }
+          },
+          "hidden": true
+        },
+        {
           "id": "logout",
           "element": "button",
           "label": "TRANSLATE.LOGOUT",
