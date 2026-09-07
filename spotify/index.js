@@ -901,7 +901,15 @@ ControllerSpotify.prototype.authorizePlayback = function () {
 // in the pair the user is.
 ControllerSpotify.prototype.buildAuthMessage = function (prompt) {
     var self = this;
-    var lines = [self.getI18n('STEP_ONE_DONE') + ' ' + self.config.get('logged_user_id', ''), ''];
+    var lines = [];
+    var signedInAs = self.config.get('logged_user_id', '');
+
+    // Named or not at all: "Signed in as" with nothing after it claims a step that has not
+    // happened. The flow normally reaches here straight from oauthLogin, so the name is
+    // there; this is the path where step two runs on its own.
+    if (signedInAs !== '') {
+        lines.push(self.getI18n('STEP_ONE_DONE') + ' ' + signedInAs, '');
+    }
 
     if (!prompt) {
         // No code to show yet: either the daemon already has a session, or we are still
@@ -969,6 +977,11 @@ ControllerSpotify.prototype.reopenAuthModal = function () {
         return;
     }
 
+    // Every client hears a broadcast, including the ones already showing this modal, and
+    // concept-ui's openModal stacks rather than replaces (modal.service.js) — so closing
+    // first is what keeps a second browser opening the settings page from leaving a stale
+    // copy underneath the live one on the first.
+    self.commandRouter.broadcastMessage('closeAllModals', '');
     self.commandRouter.broadcastMessage('openModal', deviceAuthModal);
     self.commandRouter.broadcastMessage('modalProgress', deviceAuthModal);
 };
