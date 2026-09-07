@@ -1084,19 +1084,24 @@ ControllerSpotify.prototype.createConfigFile = function () {
 ControllerSpotify.prototype.applyAccountSectionState = function (uiconf) {
     var self = this;
 
-    if (self.loggedInUserId !== undefined && self.config.get('refresh_token', '') !== '') {
-        self.findUiElement(uiconf, 1, 'oauth').hidden = true;
-        self.findUiElement(uiconf, 1, 'logout').hidden = false;
+    // Step 1, the account: browsing the library.
+    var signedInAs = self.config.get('logged_user_id', '');
+    var signedIn = self.loggedInUserId !== undefined && self.config.get('refresh_token', '') !== '';
+    self.findUiElement(uiconf, 1, 'oauth').hidden = signedIn;
+    var signOutButton = self.findUiElement(uiconf, 1, 'logout');
+    signOutButton.hidden = !signedIn;
+    if (signedIn && signedInAs !== '') {
+        signOutButton.description = self.getI18n('STEP_ONE_DONE') + ' ' + signedInAs;
     }
 
+    // Step 2, the device: playing audio. A separate credential, so a separate step —
+    // signing in does not authorize playback and vice versa.
     var playback = self.getPlaybackAuthorization();
-    var authorizeButton = self.findUiElement(uiconf, 1, 'device_auth');
+    self.findUiElement(uiconf, 1, 'device_auth').hidden = playback.authorized;
     var revokeButton = self.findUiElement(uiconf, 1, 'device_auth_revoke');
-
-    authorizeButton.hidden = playback.authorized;
     revokeButton.hidden = !playback.authorized;
     if (playback.authorized) {
-        revokeButton.description = self.getI18n('PLAYBACK_AUTHORIZED_AS') + ' ' + playback.username;
+        revokeButton.description = self.getI18n('STEP_TWO_DONE') + ' ' + playback.username;
     }
 
     return uiconf;

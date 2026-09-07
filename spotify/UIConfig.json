@@ -22,14 +22,14 @@
     {
       "id": "section_account",
       "element": "section",
-      "label": "TRANSLATE.SPOTIFY_BROWSING",
+      "label": "TRANSLATE.SPOTIFY_ACCOUNT",
       "hidden": false,
       "content": [
         {
           "id": "oauth",
           "element": "button",
-          "label": "TRANSLATE.AUTHORIZE",
-          "description": "TRANSLATE.AUTHORIZE_PERSONAL_CONTENT",
+          "label": "TRANSLATE.SIGN_IN",
+          "description": "TRANSLATE.STEP_ONE_TODO",
           "onClick": {
             "type": "oauth",
             "performerUrl": "https://oauth-performer.prod.vlmapi.io/spotify",
@@ -52,10 +52,26 @@
           }
         },
         {
+          "id": "logout",
+          "element": "button",
+          "label": "TRANSLATE.SIGN_OUT",
+          "description": "TRANSLATE.STEP_ONE_DONE",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/spop",
+              "method": "logout",
+              "data": ""
+            }
+          },
+          "hidden": true
+        },
+        {
           "id": "device_auth",
           "element": "button",
           "label": "TRANSLATE.AUTHORIZE_PLAYBACK",
-          "description": "TRANSLATE.AUTHORIZE_PLAYBACK_INSTRUCTIONS",
+          "description": "TRANSLATE.STEP_TWO_TODO",
           "onClick": {
             "type": "emit",
             "message": "callMethod",
@@ -69,30 +85,14 @@
         {
           "id": "device_auth_revoke",
           "element": "button",
-          "label": "TRANSLATE.DEAUTHORIZE_PLAYBACK",
-          "description": "TRANSLATE.PLAYBACK_AUTHORIZED_AS",
+          "label": "TRANSLATE.REMOVE_AUTHORIZATION",
+          "description": "TRANSLATE.STEP_TWO_DONE",
           "onClick": {
             "type": "emit",
             "message": "callMethod",
             "data": {
               "endpoint": "music_service/spop",
               "method": "revokePlaybackAuthorization",
-              "data": ""
-            }
-          },
-          "hidden": true
-        },
-        {
-          "id": "logout",
-          "element": "button",
-          "label": "TRANSLATE.LOGOUT",
-          "description": "TRANSLATE.LOGOUT",
-          "onClick": {
-            "type": "emit",
-            "message": "callMethod",
-            "data": {
-              "endpoint": "music_service/spop",
-              "method": "logout",
               "data": ""
             }
           },
