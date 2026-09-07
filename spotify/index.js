@@ -113,8 +113,9 @@ ControllerSpotify.prototype.getUIConfig = function () {
         __dirname + '/i18n/strings_en.json',
         __dirname + '/UIConfig.json')
         .then(function (uiconf) {
-            var credentials_type = self.config.get('credentials_type', 'zeroconf');
-            if (self.loggedInUserId !== undefined && credentials_type === 'spotify_token') {
+            // Keyed off the refresh token, not credentials_type: that key selects how the
+            // daemon authenticates for playback and says nothing about the browsing login.
+            if (self.loggedInUserId !== undefined && self.config.get('refresh_token', '') !== '') {
                 uiconf.sections[1].content[0].hidden = true;
                 uiconf.sections[1].content[1].hidden = false;
             }
@@ -808,37 +809,48 @@ ControllerSpotify.prototype.startDeviceAuth = function () {
     var self = this;
     var defer = libQ.defer();
 
-    self.config.set('credentials_type', 'device_auth');
-    self.deleteCredentialsFile();
+    // Restarting the daemon is what mints a pairing code, so doing it unconditionally
+    // invalidates a code the user may already be approving — and wipes a working session
+    // if playback is authorized. Check both before touching anything.
+    self.getDaemonPairingPrompt()
+        .then(function (pending) {
+            if (pending) {
+                self.logger.info('Reusing the Spotify pairing code already awaiting approval');
+                return pending;
+            }
 
-    self.initializeLibrespotDaemon()
-        .then(function () {
-            return self.awaitPairingPrompt(60000);
+            return self.hasActiveDaemonSession().then(function (hasSession) {
+                if (hasSession) {
+                    self.logger.info('Spotify playback is already authorized');
+                    self.commandRouter.pushToastMessage('success', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_ALREADY_DONE'));
+                    return undefined;
+                }
+
+                self.config.set('credentials_type', 'device_auth');
+                self.deleteCredentialsFile();
+
+                return self.initializeLibrespotDaemon().then(function () {
+                    return self.awaitPairingPrompt(60000);
+                });
+            });
         })
         .then(function (prompt) {
             if (!prompt) {
-                self.commandRouter.pushToastMessage('error', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_FAILED'));
                 return defer.resolve('');
             }
 
             self.logger.info('Spotify pairing code issued, awaiting approval');
-            self.commandRouter.broadcastMessage('openModal', {
-                title: self.getI18n('PAIRING_TITLE'),
-                message: self.getI18n('PAIRING_INSTRUCTIONS') + '<br><br><a href="' + prompt.url +
-                    '" target="_blank" rel="noopener">' + prompt.url + '</a><br><br><h2>' + prompt.code + '</h2>',
-                size: 'lg',
-                buttons: [{ name: self.getI18n('CLOSE'), class: 'btn btn-info' }]
-            });
-
-            return self.waitForPairingOutcome(300000).then(function (authorized) {
-                if (!authorized) {
-                    self.commandRouter.pushToastMessage('error', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_FAILED'));
-                    return defer.resolve('');
-                }
-                self.logger.info('Spotify playback authorized via device flow');
-                self.commandRouter.broadcastMessage('closeAllModals', '');
-                self.commandRouter.pushToastMessage('success', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_SUCCESSFUL'));
-                defer.resolve('');
+            return self.renderPairingModal(prompt).then(function () {
+                return self.waitForPairingOutcome(300000).then(function (authorized) {
+                    if (!authorized) {
+                        self.commandRouter.pushToastMessage('error', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_FAILED'));
+                        return defer.resolve('');
+                    }
+                    self.logger.info('Spotify playback authorized via device flow');
+                    self.commandRouter.broadcastMessage('closeAllModals', '');
+                    self.commandRouter.pushToastMessage('success', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_SUCCESSFUL'));
+                    defer.resolve('');
+                });
             });
         })
         .fail(function (e) {
@@ -846,6 +858,52 @@ ControllerSpotify.prototype.startDeviceAuth = function () {
             self.commandRouter.pushToastMessage('error', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_FAILED'));
             defer.resolve('');
         });
+
+    return defer.promise;
+};
+
+// The pairing URL already carries the code, so opening the link is the whole job and the
+// code is only needed if Spotify asks for it — hence the link first and the code demoted.
+// The QR is what makes this bearable on a device that has a screen but no keyboard.
+// Rendered as a data: PNG because the modal goes through ng-bind-html, which strips inline
+// SVG but permits data:image/ in an img src.
+ControllerSpotify.prototype.renderPairingModal = function (prompt) {
+    var self = this;
+    var defer = libQ.defer();
+
+    var show = function (qrDataUri) {
+        var body = '<p>' + self.getI18n('PAIRING_INSTRUCTIONS') + '</p>';
+        if (qrDataUri) {
+            body += '<p><img src="' + qrDataUri + '" alt="" width="220" height="220"></p>';
+        }
+        body += '<p><a href="' + prompt.url + '" target="_blank" rel="noopener">' + prompt.url + '</a></p>';
+        body += '<p>' + self.getI18n('PAIRING_CODE_IF_ASKED') + ' <strong>' + prompt.code + '</strong></p>';
+        if (prompt.expiresAt) {
+            body += '<p><small>' + self.getI18n('PAIRING_EXPIRES') + ' ' +
+                new Date(prompt.expiresAt).toLocaleTimeString() + '</small></p>';
+        }
+
+        self.commandRouter.broadcastMessage('openModal', {
+            title: self.getI18n('PAIRING_TITLE'),
+            message: body,
+            size: 'lg',
+            buttons: [{ name: self.getI18n('CLOSE'), class: 'btn btn-info' }]
+        });
+        defer.resolve('');
+    };
+
+    // Optional: an install that predates the dependency still gets the link and the code.
+    try {
+        require('qrcode').toDataURL(prompt.url, { margin: 1, width: 220 }, function (error, url) {
+            if (error) {
+                self.logger.error('Failed rendering Spotify pairing QR code: ' + error);
+            }
+            show(error ? undefined : url);
+        });
+    } catch (e) {
+        self.logger.error('QR code library unavailable, showing the link only: ' + e);
+        show(undefined);
+    }
 
     return defer.promise;
 };
@@ -1140,9 +1198,11 @@ ControllerSpotify.prototype.oauthLogin = function (data) {
         self.logger.info('Saving Spotify Refresh Token');
         self.config.set('refresh_token', data.refresh_token);
 
+        // Browsing only needs the Web API client and the browse sources. It must not set
+        // credentials_type or restart the daemon: playback authorization is a separate
+        // credential (see createConfigFile), and bouncing the daemon here would drop a live
+        // session or invalidate a pairing code the user is in the middle of approving.
         self.spotifyApiConnect().then(function () {
-            self.config.set('credentials_type', 'spotify_token');
-            self.initializeLibrespotDaemon();
             self.initializeSpotifyBrowsingFacility();
             var config = self.getUIConfig();
             config.then(function(conf) {
@@ -1176,8 +1236,6 @@ ControllerSpotify.prototype.externalOauthLogin = function (data) {
         // itself. Resolves even on failure because that caller attaches no .fail and would
         // otherwise leave its modal hanging.
         self.spotifyApiConnect().then(function () {
-            self.config.set('credentials_type', 'spotify_token');
-            self.initializeLibrespotDaemon();
             self.initializeSpotifyBrowsingFacility();
             defer.resolve('');
         }).fail(function (e) {
@@ -1231,7 +1289,6 @@ ControllerSpotify.prototype.resetSpotifyCredentials = function () {
     self.config.set('logged_user_id', '');
     self.config.set('access_token', '');
     self.config.set('refresh_token', '');
-    self.config.set('credentials_type', 'zeroconf');
 
     if (self.spotifyApi) {
         self.spotifyApi.resetCredentials();
