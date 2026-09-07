@@ -31,31 +31,24 @@
           "label": "TRANSLATE.AUTHORIZE",
           "description": "TRANSLATE.AUTHORIZE_TODO",
           "onClick": {
-            "type": "emit",
-            "message": "callMethod",
-            "data": {
-              "endpoint": "music_service/spop",
-              "method": "startAuthorization",
-              "data": {
-                "performerUrl": "https://oauth-performer.prod.vlmapi.io/spotify",
-                "plugin": "music_service/spop",
-                "scopes": [
-                  "user-modify-playback-state",
-                  "user-read-playback-state",
-                  "user-read-currently-playing",
-                  "user-top-read",
-                  "user-read-recently-played",
-                  "user-read-private",
-                  "user-read-email",
-                  "user-library-read",
-                  "playlist-read-private",
-                  "playlist-read-collaborative",
-                  "app-remote-control",
-                  "streaming",
-                  "user-follow-read"
-                ]
-              }
-            }
+            "type": "oauth",
+            "performerUrl": "https://oauth-performer.prod.vlmapi.io/spotify",
+            "plugin": "music_service/spop",
+            "scopes": [
+              "user-modify-playback-state",
+              "user-read-playback-state",
+              "user-read-currently-playing",
+              "user-top-read",
+              "user-read-recently-played",
+              "user-read-private",
+              "user-read-email",
+              "user-library-read",
+              "playlist-read-private",
+              "playlist-read-collaborative",
+              "app-remote-control",
+              "streaming",
+              "user-follow-read"
+            ]
           }
         },
         {
