@@ -26,73 +26,49 @@
       "hidden": false,
       "content": [
         {
-          "id": "oauth",
+          "id": "authorize",
           "element": "button",
-          "label": "TRANSLATE.SIGN_IN",
-          "description": "TRANSLATE.STEP_ONE_TODO",
-          "onClick": {
-            "type": "oauth",
-            "performerUrl": "https://oauth-performer.prod.vlmapi.io/spotify",
-            "plugin": "music_service/spop",
-            "scopes": [
-              "user-modify-playback-state",
-              "user-read-playback-state",
-              "user-read-currently-playing",
-              "user-top-read",
-              "user-read-recently-played",
-              "user-read-private",
-              "user-read-email",
-              "user-library-read",
-              "playlist-read-private",
-              "playlist-read-collaborative",
-              "app-remote-control",
-              "streaming",
-              "user-follow-read"
-            ]
-          }
-        },
-        {
-          "id": "logout",
-          "element": "button",
-          "label": "TRANSLATE.SIGN_OUT",
-          "description": "TRANSLATE.STEP_ONE_DONE",
+          "label": "TRANSLATE.AUTHORIZE",
+          "description": "TRANSLATE.AUTHORIZE_TODO",
           "onClick": {
             "type": "emit",
             "message": "callMethod",
             "data": {
               "endpoint": "music_service/spop",
-              "method": "logout",
-              "data": ""
-            }
-          },
-          "hidden": true
-        },
-        {
-          "id": "device_auth",
-          "element": "button",
-          "label": "TRANSLATE.AUTHORIZE_PLAYBACK",
-          "description": "TRANSLATE.STEP_TWO_TODO",
-          "onClick": {
-            "type": "emit",
-            "message": "callMethod",
-            "data": {
-              "endpoint": "music_service/spop",
-              "method": "startDeviceAuth",
-              "data": ""
+              "method": "startAuthorization",
+              "data": {
+                "performerUrl": "https://oauth-performer.prod.vlmapi.io/spotify",
+                "plugin": "music_service/spop",
+                "scopes": [
+                  "user-modify-playback-state",
+                  "user-read-playback-state",
+                  "user-read-currently-playing",
+                  "user-top-read",
+                  "user-read-recently-played",
+                  "user-read-private",
+                  "user-read-email",
+                  "user-library-read",
+                  "playlist-read-private",
+                  "playlist-read-collaborative",
+                  "app-remote-control",
+                  "streaming",
+                  "user-follow-read"
+                ]
+              }
             }
           }
         },
         {
-          "id": "device_auth_revoke",
+          "id": "deauthorize",
           "element": "button",
           "label": "TRANSLATE.REMOVE_AUTHORIZATION",
-          "description": "TRANSLATE.STEP_TWO_DONE",
+          "description": "TRANSLATE.AUTHORIZE_DONE",
           "onClick": {
             "type": "emit",
             "message": "callMethod",
             "data": {
               "endpoint": "music_service/spop",
-              "method": "revokePlaybackAuthorization",
+              "method": "revokeAuthorization",
               "data": ""
             }
           },

@@ -800,34 +800,86 @@ ControllerSpotify.prototype.awaitPairingPrompt = function (timeoutMs) {
     return defer.promise;
 };
 
-// Authorize playback without needing the Spotify app: the daemon runs the OAuth device
-// flow under the desktop client id (the only one login5 still accepts) and we surface its
-// short code. Any stored session is cleared first, otherwise the daemon reuses it and
-// never starts the flow.
-ControllerSpotify.prototype.startDeviceAuth = function () {
+// One authorization, two credentials. Browsing runs on the Web API refresh token the
+// OAuth performer mints; playback runs on the session go-librespot gets from the device
+// flow. Neither implies the other, but the user asked for one thing, so both are walked
+// here in order behind a single button and a single modal.
+//
+// Step one is normally the core `oauth` UIConfig button, which navigates the whole page
+// to the performer and back (plugin.component.js redirectToOauth) — that would destroy
+// the modal. The performer's redirect_uri points at this device's /api/v1/oauth, which
+// stores the token and merely bounces whoever opened it (rest_api/system.js), so the
+// link works from any browser and the token still lands here. That is what lets step one
+// live in the modal as a link, next to step two's.
+ControllerSpotify.prototype.startAuthorization = function (data) {
     var self = this;
     var defer = libQ.defer();
 
     if (deviceAuthInProgress) {
-        self.logger.info('Spotify authorization change already running, re-opening its modal');
+        self.logger.info('Spotify authorization already running, re-opening its modal');
         self.reopenAuthModal();
         defer.resolve('');
         return defer.promise;
     }
 
     deviceAuthInProgress = true;
-    self.pushAuthModal('openModal', self.getI18n('PAIRING_TITLE'), self.getI18n('PAIRING_CONTACTING'), 25);
+    self.pushAuthModal('openModal', self.getI18n('PAIRING_CONTACTING'), 10);
 
     var release = function (message) {
         deviceAuthInProgress = false;
-        self.pushAuthModal('modalDone', self.getI18n('PAIRING_TITLE'), message, 100);
+        self.pushAuthModal('modalDone', message, 100);
         defer.resolve('');
     };
 
-    // Restarting the daemon is what mints a pairing code, so doing it unconditionally
-    // invalidates a code the user may already be approving — and wipes a working session
-    // if playback is authorized. Check both before touching anything.
-    self.getDaemonPairingPrompt()
+    self.authorizeBrowsing(data)
+        .then(function (signedIn) {
+            if (!signedIn) {
+                return release(self.getI18n('PAIRING_FAILED'));
+            }
+
+            return self.authorizePlayback().then(function (authorized) {
+                return self.refreshUiConfig().then(function () {
+                    release(authorized ? self.getI18n('PAIRING_SUCCESSFUL') : self.getI18n('PAIRING_FAILED'));
+                });
+            });
+        })
+        .fail(function (e) {
+            self.logger.error('Failed authorizing Spotify: ' + e);
+            release(self.getI18n('PAIRING_FAILED'));
+        });
+
+    return defer.promise;
+};
+
+// Step one. Already signed in is the common case on a re-run — say so and move on rather
+// than make the user log in again to reach step two.
+ControllerSpotify.prototype.authorizeBrowsing = function (data) {
+    var self = this;
+
+    if (self.config.get('refresh_token', '') !== '') {
+        self.logger.info('Spotify browsing login already done');
+        return libQ.resolve(true);
+    }
+
+    var performerUrl = self.buildPerformerUrl(data);
+    if (!performerUrl) {
+        return libQ.resolve(false);
+    }
+
+    self.pushAuthModal('modalProgress', self.buildAuthMessage(performerUrl, undefined), 25);
+
+    return self.waitForBrowsingLogin(300000);
+};
+
+// Step two, the daemon's own session. Restarting the daemon is what mints a pairing code,
+// so doing it unconditionally invalidates a code the user may already be approving — and
+// wipes a working session if playback is authorized. Check both before touching anything.
+ControllerSpotify.prototype.authorizePlayback = function () {
+    var self = this;
+
+    self.pushAuthModal('modalProgress', self.buildAuthMessage(undefined, undefined), 50);
+
+    return self.getDaemonPairingPrompt()
         .then(function (pending) {
             if (pending) {
                 self.logger.info('Reusing the Spotify pairing code already awaiting approval');
@@ -850,35 +902,112 @@ ControllerSpotify.prototype.startDeviceAuth = function () {
         })
         .then(function (prompt) {
             if (prompt && prompt.alreadyAuthorized) {
-                return self.refreshUiConfig().then(function () {
-                    release(self.getI18n('PAIRING_ALREADY_DONE'));
-                });
+                return true;
             }
 
             if (!prompt) {
-                return release(self.getI18n('PAIRING_FAILED'));
+                return false;
             }
 
             self.logger.info('Spotify pairing code issued, awaiting approval');
-            self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildPairingMessage(prompt), 75);
+            self.pushAuthModal('modalProgress', self.buildAuthMessage(undefined, prompt), 75);
 
-            return self.waitForPairingOutcome(300000).then(function (authorized) {
-                if (!authorized) {
-                    return release(self.getI18n('PAIRING_FAILED'));
-                }
-
-                self.logger.info('Spotify playback authorized via device flow');
-                return self.refreshUiConfig().then(function () {
-                    release(self.getI18n('PAIRING_SUCCESSFUL'));
-                });
-            });
-        })
-        .fail(function (e) {
-            self.logger.error('Failed starting Spotify device authorization: ' + e);
-            release(self.getI18n('PAIRING_FAILED'));
+            return self.waitForPairingOutcome(300000);
         });
+};
+
+// The performer needs a redirect_uri this device answers on, which is the same URL the UI
+// would have built client-side. plugin_url is only where the opening browser is sent
+// afterwards — the token reaches us either way — so it points at the device's own UI.
+ControllerSpotify.prototype.buildPerformerUrl = function (data) {
+    var self = this;
+
+    if (!data || !data.performerUrl || !data.plugin) {
+        self.logger.error('Cannot build the Spotify OAuth url: the button carries no performer data');
+        return undefined;
+    }
+
+    var device = self.commandRouter.executeOnPlugin('system_controller', 'volumiodiscovery', 'getThisDevice');
+    if (!device || !device.host) {
+        self.logger.error('Cannot build the Spotify OAuth url: this device has no reachable host');
+        return undefined;
+    }
+
+    var redirectUri = new URL(device.host + '/api/v1/oauth');
+    redirectUri.searchParams.set('plugin', data.plugin);
+    redirectUri.searchParams.set('plugin_url', device.host);
+
+    var performerUrl = new URL(data.performerUrl);
+    performerUrl.searchParams.set('redirect_uri', redirectUri.href);
+    (data.scopes || []).forEach(function (scope) {
+        performerUrl.searchParams.append('scope', scope);
+    });
+
+    return performerUrl.href;
+};
+
+// The performer's callback lands on /api/v1/oauth and ends up in oauthLogin, which writes
+// the refresh token. Nothing signals that back into this flow, so the token itself is the
+// signal.
+ControllerSpotify.prototype.waitForBrowsingLogin = function (timeoutMs) {
+    var self = this;
+    var defer = libQ.defer();
+    var deadline = Date.now() + (timeoutMs || 300000);
+
+    var poll = function () {
+        if (self.config.get('refresh_token', '') !== '') {
+            return defer.resolve(true);
+        }
+        if (Date.now() >= deadline) {
+            self.logger.error('Spotify browsing login was not completed in time');
+            return defer.resolve(false);
+        }
+        setTimeout(poll, 2000);
+    };
+    poll();
 
     return defer.promise;
+};
+
+// Nova renders the message as plain text with whitespace-pre-line, so newlines are the
+// only formatting available: its modal contract is {title, message, buttons, progress,
+// advancedLog} and markup is flattened. An embedded QR image cannot survive that, which is
+// why each step is a bare link and the pairing code is repeated only as a fallback.
+// Whichever step is not running shows its outcome instead, so the modal always says where
+// in the pair the user is.
+ControllerSpotify.prototype.buildAuthMessage = function (performerUrl, prompt) {
+    var self = this;
+    var lines = [];
+
+    if (performerUrl) {
+        lines.push(self.getI18n('STEP_ONE_TODO'), '', performerUrl);
+    } else {
+        lines.push(self.getI18n('STEP_ONE_DONE') + ' ' + self.config.get('logged_user_id', ''));
+    }
+
+    lines.push('');
+
+    if (!prompt) {
+        // No code to show yet: either the daemon already has a session, or we are still
+        // waiting on it. Naming step two without a link to act on would just read as a
+        // dead instruction, so it stays off the modal until there is one.
+        lines.push(self.getPlaybackAuthorization().authorized ?
+            self.getI18n('STEP_TWO_DONE') : self.getI18n('PAIRING_CONTACTING'));
+        return lines.join('\n');
+    }
+
+    lines.push(self.getI18n('STEP_TWO_TODO'), '', prompt.url, '',
+        self.getI18n('PAIRING_CODE_IF_ASKED') + ' ' + prompt.code);
+
+    // Only when it reads as a time still ahead of us: expires_at has been seen absent, and
+    // a seconds-epoch value would render as a 1970 clock time rather than fail visibly.
+    var expiry = new Date(prompt.expiresAt);
+    if (expiry.getTime() > Date.now()) {
+        lines.push(self.getI18n('PAIRING_EXPIRES') + ' ' +
+            ('0' + expiry.getHours()).slice(-2) + ':' + ('0' + expiry.getMinutes()).slice(-2));
+    }
+
+    return lines.join('\n');
 };
 
 // A UIConfig button has no in-flight state — it renders once, and only a pushUiConfig
@@ -886,18 +1015,17 @@ ControllerSpotify.prototype.startDeviceAuth = function () {
 // cannot be dismissed in either UI while it runs (concept-ui's modal-progress.html grows
 // a footer only on modalDone, Nova's BackendModal refuses dismissal while progress is set
 // and done is not), which is what keeps the button underneath out of reach until the work
-// ends. Both authorizing and revoking go through here, so neither button can be clicked
-// while the other one's daemon restart is in flight. Same record shape as the
-// install-to-disk modal in system_controller/system, and like that one it carries the
-// whole record on every emit: concept-ui renders the body from the modalProgress payload,
-// not from the openModal one.
-ControllerSpotify.prototype.pushAuthModal = function (emit, title, message, progressNumber) {
+// ends. Authorizing and revoking share it, so neither can be started over the other. Same
+// record shape as the install-to-disk modal in system_controller/system, and like that one
+// it carries the whole record on every emit: concept-ui renders the body from the
+// modalProgress payload, not from the openModal one.
+ControllerSpotify.prototype.pushAuthModal = function (emit, message, progressNumber) {
     var self = this;
 
     deviceAuthModal = {
         progress: true,
         progressNumber: progressNumber,
-        title: title,
+        title: self.getI18n('PAIRING_TITLE'),
         message: message,
         size: 'lg',
         buttons: [{ name: self.getI18n('CLOSE'), class: 'btn btn-info', emit: '', payload: '' }]
@@ -929,34 +1057,9 @@ ControllerSpotify.prototype.reopenAuthModal = function () {
     self.commandRouter.broadcastMessage('modalProgress', deviceAuthModal);
 };
 
-// Nova renders the message as plain text with whitespace-pre-line, so newlines are the
-// only formatting available: its modal contract is {title, message, buttons, progress,
-// advancedLog} and markup is flattened. An embedded QR image cannot survive that, which is
-// why the link carries the code and the code is repeated only as a fallback.
-ControllerSpotify.prototype.buildPairingMessage = function (prompt) {
-    var self = this;
-    var lines = [
-        self.getI18n('PAIRING_INSTRUCTIONS'),
-        '',
-        prompt.url,
-        '',
-        self.getI18n('PAIRING_CODE_IF_ASKED') + ' ' + prompt.code
-    ];
-    var expiry = new Date(prompt.expiresAt);
-
-    // Only when it reads as a time still ahead of us: expires_at has been seen absent, and
-    // a seconds-epoch value would render as a 1970 clock time rather than fail visibly.
-    if (expiry.getTime() > Date.now()) {
-        lines.push(self.getI18n('PAIRING_EXPIRES') + ' ' +
-            ('0' + expiry.getHours()).slice(-2) + ':' + ('0' + expiry.getMinutes()).slice(-2));
-    }
-
-    return lines.join('\n');
-};
-
 // The account section is rendered from getUIConfig, so a change the user did not navigate
-// to — playback just authorized, or just revoked — has to push a fresh one, or both
-// buttons keep offering the step that is already done.
+// to — just authorized, or just revoked — has to push a fresh one, or the button keeps
+// offering the step that is already done.
 ControllerSpotify.prototype.refreshUiConfig = function () {
     var self = this;
 
@@ -1142,31 +1245,21 @@ ControllerSpotify.prototype.createConfigFile = function () {
     return defer.promise;
 };
 
-// Browsing and playback are separate authorizations, so the account section shows the
-// state of each: log in / log out for the library, authorize / remove for playback.
-// Offering "Authorize playback" when it already is invites the user to try to fix
-// something that is not broken, so it is swapped for the way out instead.
+// Browsing and playback are two credentials but one decision, so the section carries one
+// button: Authorize until both are in place, Remove authorization after. A half-done state
+// still offers Authorize — startAuthorization skips whichever step is already done.
 ControllerSpotify.prototype.applyAccountSectionState = function (uiconf) {
     var self = this;
 
-    // Step 1, the account: browsing the library.
-    var signedInAs = self.config.get('logged_user_id', '');
     var signedIn = self.loggedInUserId !== undefined && self.config.get('refresh_token', '') !== '';
-    self.findUiElement(uiconf, 1, 'oauth').hidden = signedIn;
-    var signOutButton = self.findUiElement(uiconf, 1, 'logout');
-    signOutButton.hidden = !signedIn;
-    if (signedIn && signedInAs !== '') {
-        signOutButton.description = self.getI18n('STEP_ONE_DONE') + ' ' + signedInAs;
-    }
-
-    // Step 2, the device: playing audio. A separate credential, so a separate step —
-    // signing in does not authorize playback and vice versa.
     var playback = self.getPlaybackAuthorization();
-    self.findUiElement(uiconf, 1, 'device_auth').hidden = playback.authorized;
-    var revokeButton = self.findUiElement(uiconf, 1, 'device_auth_revoke');
-    revokeButton.hidden = !playback.authorized;
-    if (playback.authorized) {
-        revokeButton.description = self.getI18n('STEP_TWO_DONE') + ' ' + playback.username;
+    var authorized = signedIn && playback.authorized;
+
+    self.findUiElement(uiconf, 1, 'authorize').hidden = authorized;
+    var revokeButton = self.findUiElement(uiconf, 1, 'deauthorize');
+    revokeButton.hidden = !authorized;
+    if (authorized) {
+        revokeButton.description = self.getI18n('AUTHORIZE_DONE') + ' ' + playback.username;
     }
 
     return uiconf;
@@ -1208,9 +1301,12 @@ ControllerSpotify.prototype.getPlaybackAuthorization = function () {
     return { authorized: false };
 };
 
-// Back to zeroconf rather than leaving device_auth armed: otherwise the restart below
-// immediately mints a pairing code nobody asked for.
-ControllerSpotify.prototype.revokePlaybackAuthorization = function () {
+// The mirror of startAuthorization: one button undid one button, so both credentials go.
+// Back to zeroconf rather than leaving device_auth armed, otherwise the restart below
+// immediately mints a pairing code nobody asked for. The daemon restart takes seconds, so
+// this gets the same busy modal — the button is unreachable until the new state is on
+// screen.
+ControllerSpotify.prototype.revokeAuthorization = function () {
     var self = this;
     var defer = libQ.defer();
 
@@ -1221,18 +1317,18 @@ ControllerSpotify.prototype.revokePlaybackAuthorization = function () {
         return defer.promise;
     }
 
-    // The daemon restart below takes seconds, so this gets the same busy modal as
-    // authorizing: the button is unreachable until the new state is on screen.
     deviceAuthInProgress = true;
-    self.logger.info('Revoking Spotify playback authorization');
-    self.pushAuthModal('openModal', self.getI18n('REMOVE_AUTHORIZATION'), self.getI18n('PLAYBACK_REVOKING'), 25);
+    self.logger.info('Revoking Spotify authorization');
+    self.pushAuthModal('openModal', self.getI18n('PLAYBACK_REVOKING'), 25);
 
     var release = function (message) {
         deviceAuthInProgress = false;
-        self.pushAuthModal('modalDone', self.getI18n('REMOVE_AUTHORIZATION'), message, 100);
+        self.pushAuthModal('modalDone', message, 100);
         defer.resolve('');
     };
 
+    self.resetSpotifyCredentials();
+    self.removeToBrowseSources();
     self.config.set('credentials_type', 'zeroconf');
     self.deleteCredentialsFile();
 
@@ -1244,7 +1340,7 @@ ControllerSpotify.prototype.revokePlaybackAuthorization = function () {
             release(self.getI18n('PLAYBACK_REVOKED'));
         })
         .fail(function (e) {
-            self.logger.error('Failed revoking Spotify playback authorization: ' + e);
+            self.logger.error('Failed revoking Spotify authorization: ' + e);
             release(self.getI18n('PLAYBACK_REVOKE_FAILED'));
         });
 
@@ -1361,7 +1457,6 @@ ControllerSpotify.prototype.oauthLogin = function (data) {
             var config = self.getUIConfig();
             config.then(function(conf) {
                 self.commandRouter.broadcastMessage('pushUiConfig', conf);
-                self.commandRouter.broadcastMessage('closeAllModals', '');
                 defer.resolve(conf)
             }).fail(function (e) {
                 self.logger.error('Failed to build Spotify UI config after OAUTH Login: ' + e);
