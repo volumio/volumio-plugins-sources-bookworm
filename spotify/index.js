@@ -30,6 +30,7 @@ var restartTimeout;
 var playbackStartWatchdog;
 var playbackStartTimeout = 10000;
 var playbackStartConfirmed = false;
+var deviceAuthInProgress = false;
 var wsConnectionStatus = 'started';
 
 // State management
@@ -806,6 +807,22 @@ ControllerSpotify.prototype.startDeviceAuth = function () {
     var self = this;
     var defer = libQ.defer();
 
+    // Reaching Spotify takes a few seconds and the settings button stays clickable
+    // throughout, so say something at once and ignore the impatient re-clicks.
+    if (deviceAuthInProgress) {
+        self.logger.info('Spotify device authorization already running, ignoring the request');
+        self.commandRouter.pushToastMessage('info', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_IN_PROGRESS'));
+        defer.resolve('');
+        return defer.promise;
+    }
+    deviceAuthInProgress = true;
+    self.commandRouter.pushToastMessage('info', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_CONTACTING'));
+
+    var release = function (value) {
+        deviceAuthInProgress = false;
+        defer.resolve(value);
+    };
+
     // Restarting the daemon is what mints a pairing code, so doing it unconditionally
     // invalidates a code the user may already be approving — and wipes a working session
     // if playback is authorized. Check both before touching anything.
@@ -833,7 +850,7 @@ ControllerSpotify.prototype.startDeviceAuth = function () {
         })
         .then(function (prompt) {
             if (!prompt) {
-                return defer.resolve('');
+                return release('');
             }
 
             self.logger.info('Spotify pairing code issued, awaiting approval');
@@ -841,68 +858,50 @@ ControllerSpotify.prototype.startDeviceAuth = function () {
                 return self.waitForPairingOutcome(300000).then(function (authorized) {
                     if (!authorized) {
                         self.commandRouter.pushToastMessage('error', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_FAILED'));
-                        return defer.resolve('');
+                        return release('');
                     }
                     self.logger.info('Spotify playback authorized via device flow');
                     self.commandRouter.broadcastMessage('closeAllModals', '');
                     self.commandRouter.pushToastMessage('success', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_SUCCESSFUL'));
-                    defer.resolve('');
+                    release('');
                 });
             });
         })
         .fail(function (e) {
             self.logger.error('Failed starting Spotify device authorization: ' + e);
             self.commandRouter.pushToastMessage('error', self.getI18n('SPOTIFY'), self.getI18n('PAIRING_FAILED'));
-            defer.resolve('');
+            release('');
         });
 
     return defer.promise;
 };
 
-// The pairing URL already carries the code, so opening the link is the whole job and the
-// code is only needed if Spotify asks for it — hence the link first and the code demoted.
-// The QR is what makes this bearable on a device that has a screen but no keyboard.
-// Rendered as a data: PNG because the modal goes through ng-bind-html, which strips inline
-// SVG but permits data:image/ in an img src.
+// Nova renders this message as plain text with whitespace-pre-line, so newlines are the
+// only formatting available: its modal contract is {title, message, buttons, progress,
+// advancedLog} and markup is flattened. An embedded QR image cannot survive that, which is
+// why the link carries the code and the code is repeated only as a fallback.
 ControllerSpotify.prototype.renderPairingModal = function (prompt) {
     var self = this;
-    var defer = libQ.defer();
+    var lines = [
+        self.getI18n('PAIRING_INSTRUCTIONS'),
+        '',
+        prompt.url,
+        '',
+        self.getI18n('PAIRING_CODE_IF_ASKED') + ' ' + prompt.code
+    ];
 
-    var show = function (qrDataUri) {
-        var body = '<p>' + self.getI18n('PAIRING_INSTRUCTIONS') + '</p>';
-        if (qrDataUri) {
-            body += '<p><img src="' + qrDataUri + '" alt="" width="220" height="220"></p>';
-        }
-        body += '<p><a href="' + prompt.url + '" target="_blank" rel="noopener">' + prompt.url + '</a></p>';
-        body += '<p>' + self.getI18n('PAIRING_CODE_IF_ASKED') + ' <strong>' + prompt.code + '</strong></p>';
-        if (prompt.expiresAt) {
-            body += '<p><small>' + self.getI18n('PAIRING_EXPIRES') + ' ' +
-                new Date(prompt.expiresAt).toLocaleTimeString() + '</small></p>';
-        }
-
-        self.commandRouter.broadcastMessage('openModal', {
-            title: self.getI18n('PAIRING_TITLE'),
-            message: body,
-            size: 'lg',
-            buttons: [{ name: self.getI18n('CLOSE'), class: 'btn btn-info' }]
-        });
-        defer.resolve('');
-    };
-
-    // Optional: an install that predates the dependency still gets the link and the code.
-    try {
-        require('qrcode').toDataURL(prompt.url, { margin: 1, width: 220 }, function (error, url) {
-            if (error) {
-                self.logger.error('Failed rendering Spotify pairing QR code: ' + error);
-            }
-            show(error ? undefined : url);
-        });
-    } catch (e) {
-        self.logger.error('QR code library unavailable, showing the link only: ' + e);
-        show(undefined);
+    if (prompt.expiresAt) {
+        lines.push('', self.getI18n('PAIRING_EXPIRES') + ' ' + new Date(prompt.expiresAt).toLocaleTimeString());
     }
 
-    return defer.promise;
+    self.commandRouter.broadcastMessage('openModal', {
+        title: self.getI18n('PAIRING_TITLE'),
+        message: lines.join('\n'),
+        size: 'lg',
+        buttons: [{ name: self.getI18n('CLOSE'), class: 'btn btn-info' }]
+    });
+
+    return libQ.resolve('');
 };
 
 ControllerSpotify.prototype.startSocketStateListener = function () {
