@@ -1491,7 +1491,9 @@ ControllerSpotify.prototype.applyAccountSectionState = function (uiconf) {
     var playback = self.getPlaybackAuthorization();
     var authorized = signedIn && playback.authorized;
 
-    self.findUiElement(uiconf, 1, 'authorize').hidden = authorized;
+    var authorizeButton = self.findUiElement(uiconf, 1, 'authorize');
+    authorizeButton.hidden = authorized;
+    self.applyManifestOauthAction(authorizeButton);
 
     var revokeButton = self.findUiElement(uiconf, 1, 'deauthorize');
     revokeButton.hidden = !authorized;
@@ -1516,6 +1518,70 @@ ControllerSpotify.prototype.findUiElement = function (uiconf, section, id) {
     this.logger.error('No UI element with id ' + id + ' in section ' + section);
 
     return {};
+};
+
+// Step one, handed to the UI — on Manifest only.
+//
+// `onClick.type: 'oauth'` is a UI-native action, and the UI is the only party that knows
+// what kind of screen it is on. A browser or the app's WebView navigates the window to the
+// performer and comes back through its redirect; a touchscreen, which has no address bar to
+// come back from, instead asks the device for a LAN-reachable address (/api/host), shortens
+// it and draws a QR to scan with a phone. That choice cannot be made from here: one
+// broadcast reaches every reader at once, and getUiConfig hands a plugin `{}` with no
+// socket, no user agent and no UI name (volumio3-backend websocket/index.js:345), so this
+// side never learns who is asking.
+//
+// Scoped to the UI it was measured on. concept-ui carries the same handler and Nova its own,
+// but each of the three shows the flow differently, and the emit path in UIConfig.json is
+// what they were tested with.
+//
+// Step two is unaffected and still runs here: oauthLogin picks the flow up when the token
+// lands.
+ControllerSpotify.prototype.applyManifestOauthAction = function (authorizeButton) {
+    var self = this;
+
+    if (self.getActiveUiName() !== 'manifest' || !authorizeButton.onClick) {
+        return;
+    }
+
+    // Read off the emit payload rather than written out a second time: UIConfig.json stays
+    // the one place the performer, the plugin id and the scopes are declared.
+    var call = (authorizeButton.onClick.data || {}).data || {};
+
+    authorizeButton.onClick = {
+        type: 'oauth',
+        performerUrl: call.performerUrl,
+        plugin: call.plugin,
+        scopes: call.scopes
+    };
+};
+
+// Which UI this device serves, resolved from the two files the http server resolves it from
+// itself (volumio3-backend http/index.js:62-85): the picker's choice first, then the first
+// installed UI, then the same 'classic' fallback it falls back to. Read from disk rather
+// than taken from VOLUMIO_ACTIVE_UI_NAME, which is set in the http process and not in ours.
+ControllerSpotify.prototype.getActiveUiName = function () {
+    var self = this;
+
+    try {
+        var active = fs.readJsonSync('/data/active_volumio_ui');
+        if (active && active.uiName && active.uiPath && fs.existsSync(active.uiPath)) {
+            return active.uiName;
+        }
+    } catch (e) {}
+
+    try {
+        var installed = fs.readJsonSync('/volumio/volumioUisList.json');
+        for (var i = 0; i < installed.length; i++) {
+            if (fs.existsSync(installed[i].uiPath)) {
+                return installed[i].uiName;
+            }
+        }
+    } catch (e) {
+        self.logger.error('Cannot tell which Volumio UI is active: ' + e);
+    }
+
+    return 'classic';
 };
 
 // Playback authorization lives in the daemon's state file, which is the same thing the
@@ -1689,6 +1755,7 @@ ControllerSpotify.prototype.oauthLogin = function (data) {
         // session or invalidate a pairing code the user is in the middle of approving.
         self.spotifyApiConnect().then(function () {
             self.initializeSpotifyBrowsingFacility();
+            self.resumeAuthorizationAfterOauth();
             var config = self.getUIConfig();
             config.then(function(conf) {
                 self.commandRouter.broadcastMessage('pushUiConfig', conf);
@@ -1707,6 +1774,26 @@ ControllerSpotify.prototype.oauthLogin = function (data) {
     }
 
     return defer.promise;
+};
+
+// The UI-native sign-in ends at this callback rather than inside startAuthorization, so
+// nothing has been told to go on to step two. Start it here: the token was saved just above,
+// so authorizeBrowsing waves step one through and the daemon pairing opens a modal of its
+// own — which the settings page, landing back from the performer's redirect, reopens through
+// getUIConfig. A flow already running keeps its own; that is the emit path on the other UIs,
+// where startAuthorization is what called us in.
+//
+// Not chained into the caller's promise: the browser is sitting on the REST callback that
+// resolves with oauthLogin, and this flow takes as long as the user takes.
+ControllerSpotify.prototype.resumeAuthorizationAfterOauth = function () {
+    var self = this;
+
+    if (deviceAuthInProgress || self.getActiveUiName() !== 'manifest') {
+        return;
+    }
+
+    self.logger.info('Spotify browsing login came back from the UI oauth action, starting device authorization');
+    self.startAuthorization({});
 };
 
 ControllerSpotify.prototype.externalOauthLogin = function (data) {
