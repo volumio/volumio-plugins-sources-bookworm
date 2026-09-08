@@ -932,7 +932,7 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
             return;
         }
         self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildSignInMessage(short),
-            (short && short.url) || performerUrl, 25);
+            short || performerUrl, 25);
     });
 
     return self.waitForBrowsingLogin(300000).then(function (signedIn) {
@@ -945,15 +945,14 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
 // nobody transcribes that, and it buries the rest of the dialog. Without it the sentence
 // points at the tab that opened instead — and Nova puts the same address on a button, or
 // on a QR code when the screen is a touchscreen.
-ControllerSpotify.prototype.buildSignInMessage = function (short) {
+ControllerSpotify.prototype.buildSignInMessage = function (url) {
     var self = this;
 
-    if (!short) {
+    if (!url) {
         return self.getI18n('STEP_ONE_OPENING');
     }
 
-    return self.joinModalLines([self.getI18n('STEP_ONE_TODO'), '', self.modalLink(short.url)]) +
-        self.modalQr(short.qr);
+    return self.joinModalLines([self.getI18n('STEP_ONE_TODO'), '', self.modalLink(url)]);
 };
 
 // concept-ui and Manifest render the message with `ng-bind-html` through ngSanitize, so
@@ -972,15 +971,6 @@ ControllerSpotify.prototype.modalLink = function (url) {
     return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>';
 };
 
-// No inline style: ngSanitize strips the attribute. The shortener's codes come on white
-// already, so width and height are all that is needed.
-ControllerSpotify.prototype.modalQr = function (qr) {
-    if (!qr) {
-        return '';
-    }
-
-    return '<br><br><img src="' + qr + '" width="200" height="200" alt="QR">';
-};
 
 // The performer url carries a redirect_uri and thirteen scopes — several hundred
 // characters nobody can read off a screen, let alone retype on a phone. The UI shortens it
@@ -992,10 +982,10 @@ ControllerSpotify.prototype.shortenUrl = function (url) {
 
     var defer = libQ.defer();
 
-    // Resolves {url, qr}, or undefined when it cannot shorten: the caller shows no address
-    // at all in that case, and handing back the original would put the very thing this
-    // exists to avoid on screen. Retried once — off the critical path now, so a second
-    // attempt costs nothing but a second.
+    // Resolves the short url, or undefined when it cannot shorten: the caller shows no
+    // address at all in that case, and handing back the original would put the very thing
+    // this exists to avoid on screen. Retried once — off the critical path now, so a
+    // second attempt costs nothing but a second.
     var attempt = function (retriesLeft) {
         superagent.post('https://volm.io/shorten')
             .send({ url: url })
@@ -1004,9 +994,7 @@ ControllerSpotify.prototype.shortenUrl = function (url) {
             .then(function (results) {
                 var body = (results && results.body) || {};
                 if (body.shortenedURL) {
-                    // qrCodeURL rides along in the same answer, so the code costs nothing
-                    // beyond this round trip.
-                    return defer.resolve({ url: body.shortenedURL, qr: body.qrCodeURL });
+                    return defer.resolve(body.shortenedURL);
                 }
                 self.logger.error('The Spotify login url shortener answered without a url');
                 defer.resolve(undefined);
@@ -1070,15 +1058,6 @@ ControllerSpotify.prototype.authorizePlayback = function () {
             self.logger.info('Spotify pairing code issued, awaiting approval');
             self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(prompt), prompt.url, 75);
 
-            // The pairing address is short already; this is only for the code image the
-            // Angular UIs draw, so it lands late rather than holding the code back.
-            self.shortenUrl(prompt.url).then(function (short) {
-                if (!deviceAuthInProgress || deviceAuthCancelled || !short || !short.qr) {
-                    return;
-                }
-                var withQr = Object.assign({}, prompt, { qr: short.qr });
-                self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(withQr), prompt.url, 75);
-            });
 
             // Step one navigates itself, through the core `oauth` action; step two has no
             // such action because the device flow has no redirect leg — the daemon polls,
@@ -1199,7 +1178,7 @@ ControllerSpotify.prototype.buildAuthMessage = function (prompt) {
             ('0' + expiry.getHours()).slice(-2) + ':' + ('0' + expiry.getMinutes()).slice(-2));
     }
 
-    return self.joinModalLines(lines) + self.modalQr(prompt.qr);
+    return self.joinModalLines(lines);
 };
 
 // The dialog this flow lives in, replaced rather than updated.
