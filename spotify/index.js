@@ -840,7 +840,7 @@ ControllerSpotify.prototype.startAuthorization = function (data) {
 
     deviceAuthInProgress = true;
     deviceAuthCancelled = false;
-    self.pushAuthModal('openModal', self.getI18n('PAIRING_TITLE'), self.getI18n('PAIRING_CONTACTING'), 10);
+    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.getI18n('PAIRING_CONTACTING'));
 
     // cancelAuthorization has already closed the modal and said why, and the polls it
     // interrupted unwind through here a moment later — silently, or they would overwrite
@@ -848,7 +848,7 @@ ControllerSpotify.prototype.startAuthorization = function (data) {
     var release = function (message) {
         deviceAuthInProgress = false;
         if (!deviceAuthCancelled) {
-            self.pushAuthModal('modalDone', self.getI18n('PAIRING_TITLE'), message, 100);
+            self.pushAuthModal(self.getI18n('PAIRING_TITLE'), message, undefined, true);
         }
         defer.resolve('');
     };
@@ -896,7 +896,7 @@ ControllerSpotify.prototype.cancelAuthorization = function () {
     deviceAuthCancelled = true;
     deviceAuthInProgress = false;
     self.config.set('credentials_type', 'zeroconf');
-    self.pushAuthModal('modalDone', self.getI18n('PAIRING_TITLE'), self.getI18n('AUTHORIZE_CANCELLED'), 100);
+    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.getI18n('AUTHORIZE_CANCELLED'), undefined, true);
 
     return libQ.resolve('');
 };
@@ -916,7 +916,7 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
         return libQ.resolve({ signedIn: false, reason: 'PAIRING_FAILED' });
     }
 
-    self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildSignInMessage(undefined), 25);
+    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildSignInMessage(undefined));
 
     // Broadcast before shortening, not after. A popup blocker only yields to a gesture
     // that is still warm — a few seconds — and the shortener is a cloud round trip that
@@ -931,7 +931,7 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
         if (!deviceAuthInProgress || deviceAuthCancelled) {
             return;
         }
-        self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildSignInMessage(url), 25, url || performerUrl);
+        self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildSignInMessage(url), url || performerUrl);
     });
 
     return self.waitForBrowsingLogin(300000).then(function (signedIn) {
@@ -1003,7 +1003,7 @@ ControllerSpotify.prototype.authorizePlayback = function () {
     // The daemon restart and the code mint take the better part of ten seconds. Without
     // this the modal would sit on step one's link the whole time — done, but still asking
     // to be acted on — so it says where it actually is before the wait starts.
-    self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(undefined), 50);
+    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(undefined));
 
     return self.getDaemonPairingPrompt()
         .then(function (pending) {
@@ -1038,7 +1038,7 @@ ControllerSpotify.prototype.authorizePlayback = function () {
             }
 
             self.logger.info('Spotify pairing code issued, awaiting approval');
-            self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(prompt), 75, prompt.url);
+            self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(prompt), prompt.url);
 
             // Step one navigates itself, through the core `oauth` action; step two has no
             // such action because the device flow has no redirect leg — the daemon polls,
@@ -1155,30 +1155,35 @@ ControllerSpotify.prototype.buildAuthMessage = function (prompt) {
     return lines.join('\n');
 };
 
-// A UIConfig button has no in-flight state — it renders once, and only a pushUiConfig
-// round trip can change it — so the busy state is the modal itself: a progress modal
-// cannot be dismissed in either UI while it runs (concept-ui's modal-progress.html grows
-// a footer only on modalDone, Nova's BackendModal refuses dismissal while progress is set
-// and done is not), which is what keeps the button underneath out of reach until the work
-// ends. Authorizing and revoking share it, so neither can be started over the other. Same
-// record shape as the install-to-disk modal in system_controller/system, and like that one
-// it carries the whole record on every emit: concept-ui renders the body from the
-// modalProgress payload, not from the openModal one.
-ControllerSpotify.prototype.pushAuthModal = function (emit, title, message, progressNumber, url) {
+// The dialog this flow lives in, replaced rather than updated.
+//
+// It used to be a progress modal, the only kind the backend can update in place
+// (`modalProgress`/`modalDone`). That turned out to be the wrong trade: every UI hides a
+// progress dialog's buttons until it finishes — concept-ui's modal-progress.html and
+// Manifest's byte-identical copy of it both render the footer only on `modalDone` — so a
+// flow that waits minutes on a login performed elsewhere had no Cancel, no Close and no
+// way out at all on two of the three UIs. Nova could be taught otherwise; Manifest ships
+// as a built bundle with no source in the workspace, so it cannot.
+//
+// A plain modal is rendered by all three with its buttons showing and a way to dismiss it,
+// and the price is that it cannot be updated: each step closes the previous one and opens
+// its own. `closeAllModals` first is what keeps concept-ui and Manifest from stacking —
+// their modalService.openModal pushes a new instance every time rather than replacing.
+ControllerSpotify.prototype.pushAuthModal = function (title, message, url, done) {
     var self = this;
     var buttons = [];
 
-    // A url button is what a kiosk gets in place of the navigation it is denied, and what
-    // anyone gets whose popup blocker refused the tab.
+    // Nova opens this in a tab, or turns it into a QR on a touchscreen; concept-ui and
+    // Manifest open it in place. All three need to be given it.
     if (url) {
         buttons.push({ name: self.getI18n('OPEN_SPOTIFY'), class: 'btn btn-warning', url: url });
     }
 
     // Cancel while it runs, Close once it has stopped — never both, so there is exactly
-    // one way out of the modal at any moment. The flow can sit for minutes waiting on a
-    // login and then on an approval, both of which happen somewhere else, so abandoning it
-    // has to be possible at every step rather than only at the end.
-    if (emit === 'modalDone') {
+    // one way out at any moment. The flow can sit for minutes waiting on a login and then
+    // on an approval, both of which happen somewhere else, so abandoning it has to be
+    // possible at every step rather than only at the end.
+    if (done) {
         buttons.push({ name: self.getI18n('CLOSE'), class: 'btn btn-info', emit: '', payload: '' });
     } else {
         buttons.push({
@@ -1189,24 +1194,11 @@ ControllerSpotify.prototype.pushAuthModal = function (emit, title, message, prog
         });
     }
 
-    deviceAuthModal = {
-        progress: true,
-        progressNumber: progressNumber,
-        title: title,
-        message: message,
-        size: 'lg',
-        buttons: buttons
-    };
+    deviceAuthModal = { title: title, message: message, size: 'lg', buttons: buttons };
+    self.commandRouter.broadcastMessage('closeAllModals', '');
+    self.commandRouter.broadcastMessage('openModal', deviceAuthModal);
 
-    self.commandRouter.broadcastMessage(emit, deviceAuthModal);
-
-    if (emit === 'openModal') {
-        // concept-ui opens the progress modal empty and fills it from the first
-        // modalProgress that follows, so the opening record has to be sent twice.
-        self.commandRouter.broadcastMessage('modalProgress', deviceAuthModal);
-    }
-
-    if (emit === 'modalDone') {
+    if (done) {
         deviceAuthModal = undefined;
     }
 };
@@ -1220,10 +1212,6 @@ ControllerSpotify.prototype.reopenAuthModal = function () {
         return;
     }
 
-    // Every client hears a broadcast, including the ones already showing this modal, and
-    // concept-ui's openModal stacks rather than replaces (modal.service.js) — so closing
-    // first is what keeps a second browser opening the settings page from leaving a stale
-    // copy underneath the live one on the first.
     self.commandRouter.broadcastMessage('closeAllModals', '');
     self.commandRouter.broadcastMessage('openModal', deviceAuthModal);
     self.commandRouter.broadcastMessage('modalProgress', deviceAuthModal);
@@ -1492,11 +1480,11 @@ ControllerSpotify.prototype.revokeAuthorization = function () {
 
     deviceAuthInProgress = true;
     self.logger.info('Revoking Spotify authorization');
-    self.pushAuthModal('openModal', self.getI18n('REMOVE_AUTHORIZATION'), self.getI18n('PLAYBACK_REVOKING'), 25);
+    self.pushAuthModal(self.getI18n('REMOVE_AUTHORIZATION'), self.getI18n('PLAYBACK_REVOKING'));
 
     var release = function (message) {
         deviceAuthInProgress = false;
-        self.pushAuthModal('modalDone', self.getI18n('REMOVE_AUTHORIZATION'), message, 100);
+        self.pushAuthModal(self.getI18n('REMOVE_AUTHORIZATION'), message, undefined, true);
         defer.resolve('');
     };
 
