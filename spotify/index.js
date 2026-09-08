@@ -840,7 +840,7 @@ ControllerSpotify.prototype.startAuthorization = function (data) {
 
     deviceAuthInProgress = true;
     deviceAuthCancelled = false;
-    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.getI18n('PAIRING_CONTACTING'));
+    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.getI18n('PAIRING_CONTACTING'), undefined, 10);
 
     // cancelAuthorization has already closed the modal and said why, and the polls it
     // interrupted unwind through here a moment later — silently, or they would overwrite
@@ -848,7 +848,7 @@ ControllerSpotify.prototype.startAuthorization = function (data) {
     var release = function (message) {
         deviceAuthInProgress = false;
         if (!deviceAuthCancelled) {
-            self.pushAuthModal(self.getI18n('PAIRING_TITLE'), message, undefined, true);
+            self.pushAuthModal(self.getI18n('PAIRING_TITLE'), message, undefined, 100);
         }
         defer.resolve('');
     };
@@ -896,7 +896,7 @@ ControllerSpotify.prototype.cancelAuthorization = function () {
     deviceAuthCancelled = true;
     deviceAuthInProgress = false;
     self.config.set('credentials_type', 'zeroconf');
-    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.getI18n('AUTHORIZE_CANCELLED'), undefined, true);
+    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.getI18n('AUTHORIZE_CANCELLED'), undefined, 100);
 
     return libQ.resolve('');
 };
@@ -916,7 +916,7 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
         return libQ.resolve({ signedIn: false, reason: 'PAIRING_FAILED' });
     }
 
-    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildSignInMessage(undefined));
+    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildSignInMessage(undefined), undefined, 25);
 
     // Broadcast before shortening, not after. A popup blocker only yields to a gesture
     // that is still warm — a few seconds — and the shortener is a cloud round trip that
@@ -932,7 +932,7 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
             return;
         }
         self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildSignInMessage(short),
-            (short && short.url) || performerUrl);
+            (short && short.url) || performerUrl, 25);
     });
 
     return self.waitForBrowsingLogin(300000).then(function (signedIn) {
@@ -1033,7 +1033,7 @@ ControllerSpotify.prototype.authorizePlayback = function () {
     // The daemon restart and the code mint take the better part of ten seconds. Without
     // this the modal would sit on step one's link the whole time — done, but still asking
     // to be acted on — so it says where it actually is before the wait starts.
-    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(undefined));
+    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(undefined), undefined, 50);
 
     return self.getDaemonPairingPrompt()
         .then(function (pending) {
@@ -1068,7 +1068,7 @@ ControllerSpotify.prototype.authorizePlayback = function () {
             }
 
             self.logger.info('Spotify pairing code issued, awaiting approval');
-            self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(prompt), prompt.url);
+            self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(prompt), prompt.url, 75);
 
             // The pairing address is short already; this is only for the code image the
             // Angular UIs draw, so it lands late rather than holding the code back.
@@ -1077,7 +1077,7 @@ ControllerSpotify.prototype.authorizePlayback = function () {
                     return;
                 }
                 var withQr = Object.assign({}, prompt, { qr: short.qr });
-                self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(withQr), prompt.url);
+                self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(withQr), prompt.url, 75);
             });
 
             // Step one navigates itself, through the core `oauth` action; step two has no
@@ -1115,7 +1115,14 @@ ControllerSpotify.prototype.buildPerformerUrl = function (data) {
 
     var redirectUri = new URL(device.host + '/api/v1/oauth');
     redirectUri.searchParams.set('plugin', data.plugin);
-    redirectUri.searchParams.set('plugin_url', device.host);
+    // Where the browser is sent once the token is stored. The device host alone drops the
+    // reader on Now Playing, with the dialog they left behind on another page — and the
+    // dialog only comes back when the page asks for the plugin's UIConfig, which the index
+    // never does. `/plugin/<category>-<name>` is the one address every UI answers: it is
+    // Volumio2-UI's own plugin route, which concept-ui and Manifest still serve, and Nova
+    // claims it too and redirects it to its own settings page (src/routes.ts).
+    redirectUri.searchParams.set('plugin_url',
+        device.host + '/plugin/' + data.plugin.replace('/', '-'));
 
     var performerUrl = new URL(data.performerUrl);
     performerUrl.searchParams.set('redirect_uri', redirectUri.href);
@@ -1209,9 +1216,11 @@ ControllerSpotify.prototype.buildAuthMessage = function (prompt) {
 // and the price is that it cannot be updated: each step closes the previous one and opens
 // its own. `closeAllModals` first is what keeps concept-ui and Manifest from stacking —
 // their modalService.openModal pushes a new instance every time rather than replacing.
-ControllerSpotify.prototype.pushAuthModal = function (title, message, address, done) {
+ControllerSpotify.prototype.pushAuthModal = function (title, message, address, progress) {
     var self = this;
     var buttons = [];
+    // A full bar is what "finished" means here, so it also decides which way out to offer.
+    var done = progress === 100;
 
     // No button carries the address. concept-ui and Manifest answer a button's `url` with
     // `$window.open(url, "_self")` — on a touchscreen that walks the panel onto
@@ -1234,7 +1243,16 @@ ControllerSpotify.prototype.pushAuthModal = function (title, message, address, d
         });
     }
 
-    deviceAuthModal = { title: title, message: message, size: 'lg', buttons: buttons };
+    // progressNumber without `progress: true`: Nova draws the bar from the number alone,
+    // while concept-ui and Manifest key their button-hiding progress dialog off the
+    // boolean — which is exactly the dialog this flow must not be.
+    deviceAuthModal = {
+        title: title,
+        message: message,
+        size: 'lg',
+        progressNumber: progress,
+        buttons: buttons
+    };
     if (address) {
         // Nova-only: it opens this in a tab, or draws it as a QR when the screen is a
         // touchscreen. Unknown keys are ignored by every other UI.
@@ -1525,11 +1543,11 @@ ControllerSpotify.prototype.revokeAuthorization = function () {
 
     deviceAuthInProgress = true;
     self.logger.info('Revoking Spotify authorization');
-    self.pushAuthModal(self.getI18n('REMOVE_AUTHORIZATION'), self.getI18n('PLAYBACK_REVOKING'));
+    self.pushAuthModal(self.getI18n('REMOVE_AUTHORIZATION'), self.getI18n('PLAYBACK_REVOKING'), undefined, 25);
 
     var release = function (message) {
         deviceAuthInProgress = false;
-        self.pushAuthModal(self.getI18n('REMOVE_AUTHORIZATION'), message, undefined, true);
+        self.pushAuthModal(self.getI18n('REMOVE_AUTHORIZATION'), message, undefined, 100);
         defer.resolve('');
     };
 
