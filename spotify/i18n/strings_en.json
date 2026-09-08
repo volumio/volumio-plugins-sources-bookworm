@@ -85,7 +85,6 @@
   "PAIRING_SUCCESSFUL": "Spotify authorized",
   "PAIRING_FAILED": "Authorization did not complete. Try again.",
   "CLOSE": "Close",
-  "OPEN_SPOTIFY": "Open Spotify",
   "CANCEL": "Cancel",
   "AUTHORIZE_CANCELLED": "Authorization cancelled",
   "SIGN_IN_TIMEOUT": "Sign-in was not completed. Try again.",

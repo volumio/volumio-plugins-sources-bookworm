@@ -952,7 +952,8 @@ ControllerSpotify.prototype.buildSignInMessage = function (short) {
         return self.getI18n('STEP_ONE_OPENING');
     }
 
-    return self.getI18n('STEP_ONE_TODO') + self.modalQr(short.qr);
+    return self.joinModalLines([self.getI18n('STEP_ONE_TODO'), '', self.modalLink(short.url)]) +
+        self.modalQr(short.qr);
 };
 
 // concept-ui and Manifest bind the custom dialog's body with `ng-bind-html` through
@@ -963,7 +964,14 @@ ControllerSpotify.prototype.joinModalLines = function (lines) {
     return lines.join('<br>');
 };
 
-// The code, for the readers who cannot follow the button: a touchscreen has nowhere to
+// target=_blank so the Angular UIs open a tab rather than replacing the page they are on;
+// their modal button handler cannot be told to do that, an anchor can. Nova keeps only the
+// text, which is the address itself, and offers its own button beside it.
+ControllerSpotify.prototype.modalLink = function (url) {
+    return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>';
+};
+
+// The code, for the readers who cannot follow the link: a touchscreen has nowhere to
 // come back from and the app's WebView has no second tab, so both scan it with a phone
 // instead. It cannot be shown to only those two — the message is one broadcast, and the
 // Angular UIs expose no kiosk marker a plugin could key on and do not compile expressions
@@ -1188,7 +1196,7 @@ ControllerSpotify.prototype.buildAuthMessage = function (prompt) {
         return self.joinModalLines(lines);
     }
 
-    lines.push(self.getI18n('STEP_TWO_TODO'), '',
+    lines.push(self.getI18n('STEP_TWO_TODO'), '', self.modalLink(prompt.url), '',
         self.getI18n('PAIRING_CODE_IF_ASKED') + ' ' + prompt.code);
 
     // Only when it reads as a time still ahead of us: expires_at has been seen absent, and
@@ -1227,12 +1235,11 @@ ControllerSpotify.prototype.pushAuthModal = function (title, message, address, p
     // A full bar is what "finished" means here, so it also decides which way out to offer.
     var done = progress === 100;
 
-    // A button, not a link in the message: concept-ui and Manifest answer `url` with
-    // `$window.open(url, "_self")`, and Nova opens a tab or — on a touchscreen — withholds
-    // the button and draws `qrUrl` as a QR instead. One field, each UI choosing.
-    if (address) {
-        buttons.push({ name: self.getI18n('OPEN_SPOTIFY'), class: 'btn btn-warning', url: address });
-    }
+    // No button carries the address, on purpose. concept-ui and Manifest answer a button's
+    // `url` with `$window.open(url, "_self")` — the page they are on is replaced, and a
+    // touchscreen never comes back. Their way to a new tab is an anchor in the message,
+    // which they bind as HTML; Nova flattens that to text and makes its own button out of
+    // `qrUrl` below, so putting one here too would give it the same button twice.
 
     // Cancel while it runs, Close once it has stopped — never both, so there is exactly
     // one way out at any moment.

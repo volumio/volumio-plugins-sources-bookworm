@@ -81,7 +81,6 @@
   "PAIRING_SUCCESSFUL": "Spotify autorizzato",
   "PAIRING_FAILED": "Autorizzazione non completata. Riprova.",
   "CLOSE": "Chiudi",
-  "OPEN_SPOTIFY": "Apri Spotify",
   "CANCEL": "Annulla",
   "AUTHORIZE_CANCELLED": "Autorizzazione annullata",
   "SIGN_IN_TIMEOUT": "Accesso non completato. Riprova.",
