@@ -68,6 +68,7 @@
   "CONNECT_DEVICE_ICON_DOC": "Choose which icon will show the device on your Spotify app in Connect Mode",
   "CONNECT_DEVICE_ICON":"Device Icon",
   "PAIRING_CODE_IF_ASKED": "Code, if Spotify asks for one:",
+  "OPEN_APPROVAL_PAGE": "Open the approval page",
   "PAIRING_EXPIRES": "Expires at",
   "PLAYBACK_REVOKED": "Spotify authorization removed",
   "PLAYBACK_REVOKING": "Removing authorization…",

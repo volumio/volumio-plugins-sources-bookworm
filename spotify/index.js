@@ -1207,7 +1207,16 @@ ControllerSpotify.prototype.buildAuthMessage = function (prompt) {
             ('0' + expiry.getHours()).slice(-2) + ':' + ('0' + expiry.getMinutes()).slice(-2));
     }
 
-    return self.joinModalLines(lines);
+    // authorizePlayback shortens the pairing address for this image and pushes the modal a
+    // second time to carry it, and until now nothing here read it: the code reached Nova,
+    // which draws its own from `qrUrl`, and no other UI ever saw one. Withheld only where
+    // the modal offers a button instead, the same way step one withholds it — there the
+    // reader can press, and a code to scan with a second device is noise.
+    if (self.stepTwoCanNavigate()) {
+        return self.joinModalLines(lines);
+    }
+
+    return self.joinModalLines(lines) + self.modalQr(prompt.qr);
 };
 
 // The dialog this flow lives in, replaced a step at a time.
@@ -1235,11 +1244,14 @@ ControllerSpotify.prototype.pushAuthModal = function (title, message, address, p
     // A full bar is what "finished" means here, so it also decides which way out to offer.
     var done = progress === 100;
 
-    // No button carries the address, on purpose. concept-ui and Manifest answer a button's
-    // `url` with `$window.open(url, "_self")` — the page they are on is replaced, and a
-    // touchscreen never comes back. Their way to a new tab is an anchor in the message,
-    // which they bind as HTML; Nova flattens that to text and makes its own button out of
-    // `qrUrl` below, so putting one here too would give it the same button twice.
+    // A button carries the address only where pressing it cannot strand the reader — see
+    // stepTwoCanNavigate. Everywhere else the address stays text in the message: concept-ui
+    // and Manifest answer a button's `url` with `$window.open(url, "_self")`, replacing the
+    // page they are on, and a touchscreen never comes back. Nova ignores this button and
+    // makes its own out of `qrUrl` below, so it is not offered the same thing twice.
+    if (address && self.stepTwoCanNavigate()) {
+        buttons.push({ name: self.getI18n('OPEN_APPROVAL_PAGE'), class: 'btn btn-warning', url: address });
+    }
 
     // Cancel while it runs, Close once it has stopped — never both, so there is exactly
     // one way out at any moment.
@@ -1554,6 +1566,33 @@ ControllerSpotify.prototype.applyManifestOauthAction = function (authorizeButton
         plugin: call.plugin,
         scopes: call.scopes
     };
+};
+
+// Whether pressing step two's address is safe here — a decision about the device, which is
+// all this side can know about a modal that reaches every reader at once.
+//
+// It needs both halves. The UI must be the one whose button behaviour was measured: Manifest
+// replaces the page with the address and comes back through getUIConfig, which reopens this
+// modal; Nova has its own button and concept-ui was not tested with one. And the device must
+// have no screen of its own, because a reader on a touchscreen has nothing to come back
+// with, and nothing here can tell that reader from the phone on the same network.
+//
+// Manifest is also the UI with the least to press otherwise: it ignores the `openUrl`
+// broadcast step two sends for Nova — the name occurs once in its bundle, as a UIConfig
+// action, with no socket listener — so without this there is only an address to read.
+ControllerSpotify.prototype.stepTwoCanNavigate = function () {
+    var self = this;
+
+    return self.getActiveUiName() === 'manifest' && !self.hasKioskScreen();
+};
+
+// Whether this device can put a browser on a screen of its own — a Motivo or Primo
+// touchscreen, an HDMI panel. The unit that drives it ships only in images built for a local
+// display: present on a Motivo, absent on a headless build (measured on both). Enablement is
+// deliberately not consulted — a panel switched off leaves the file behind, and reading that
+// as "no panel here" is the one direction with a cost.
+ControllerSpotify.prototype.hasKioskScreen = function () {
+    return fs.existsSync('/lib/systemd/system/volumio-kiosk.service');
 };
 
 // Which UI this device serves, resolved from the two files the http server resolves it from
