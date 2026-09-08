@@ -964,11 +964,20 @@ ControllerSpotify.prototype.joinModalLines = function (lines) {
     return lines.join('<br>');
 };
 
-// target=_blank so the Angular UIs open a tab rather than replacing the page they are on;
-// their modal button handler cannot be told to do that, an anchor can. Nova keeps only the
-// text, which is the address itself, and offers its own button beside it.
+// A button on the Angular UIs, plain text on Nova.
+//
+// It is an anchor rather than a modal button for two reasons at once: their button handler
+// answers `url` with `$window.open(url, "_self")`, replacing the page the reader is on,
+// while `target="_blank"` opens the tab that was wanted; and `class` survives ngSanitize
+// (its whitelist carries class, target and rel), so the Bootstrap classes their own modal
+// footer already uses make this look like the button it stands in for.
+//
+// Nova strips the tag and keeps the text — the address — then offers its real button beside
+// it, or withholds it and draws a QR when the screen is a touchscreen. The label is the
+// short address for that reason: it has to read as well on its own as it does on a button.
 ControllerSpotify.prototype.modalLink = function (url) {
-    return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>';
+    return '<a href="' + url + '" target="_blank" rel="noopener" class="btn btn-warning">' +
+        url + '</a>';
 };
 
 // The code, for the readers who cannot follow the link: a touchscreen has nowhere to
