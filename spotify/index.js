@@ -945,6 +945,14 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
 // nobody transcribes that, and it buries the rest of the dialog. Without it the sentence
 // points at the tab that opened instead — and Nova puts the same address on a button, or
 // on a QR code when the screen is a touchscreen.
+//
+// Text, not a link. An anchor was tried and it works in a desktop browser and nowhere else:
+// a touchscreen has no tab strip to come back from and the app's WebView has no second tab
+// at all, so on both it is a dead end. Which of the three is reading cannot be told from
+// here — the modal is one broadcast, `ng-bind-html` compiles no expressions, and neither
+// concept-ui nor Manifest puts a kiosk or WebView marker where a plugin's body could reach
+// it — and a link that is right for one reader and a trap for the other two is worse than
+// an address all three can read, with the QR code under it for those who cannot type it.
 ControllerSpotify.prototype.buildSignInMessage = function (short) {
     var self = this;
 
@@ -952,7 +960,7 @@ ControllerSpotify.prototype.buildSignInMessage = function (short) {
         return self.getI18n('STEP_ONE_OPENING');
     }
 
-    return self.joinModalLines([self.getI18n('STEP_ONE_TODO'), '', self.modalLink(short.url)]) +
+    return self.joinModalLines([self.getI18n('STEP_ONE_TODO'), '', short.url]) +
         self.modalQr(short.qr);
 };
 
@@ -964,27 +972,10 @@ ControllerSpotify.prototype.joinModalLines = function (lines) {
     return lines.join('<br>');
 };
 
-// A button on the Angular UIs, plain text on Nova.
-//
-// It is an anchor rather than a modal button for two reasons at once: their button handler
-// answers `url` with `$window.open(url, "_self")`, replacing the page the reader is on,
-// while `target="_blank"` opens the tab that was wanted; and `class` survives ngSanitize
-// (its whitelist carries class, target and rel), so the Bootstrap classes their own modal
-// footer already uses make this look like the button it stands in for.
-//
-// Nova strips the tag and keeps the text — the address — then offers its real button beside
-// it, or withholds it and draws a QR when the screen is a touchscreen. The label is the
-// short address for that reason: it has to read as well on its own as it does on a button.
-ControllerSpotify.prototype.modalLink = function (url) {
-    return '<a href="' + url + '" target="_blank" rel="noopener" class="btn btn-warning">' +
-        url + '</a>';
-};
-
-// The code, for the readers who cannot follow the link: a touchscreen has nowhere to
-// come back from and the app's WebView has no second tab, so both scan it with a phone
-// instead. It cannot be shown to only those two — the message is one broadcast, and the
-// Angular UIs expose no kiosk marker a plugin could key on and do not compile expressions
-// inside bound HTML — so a desktop browser sees it too, small and under the button, where
+// The code, for the readers who cannot type the address in: on a touchscreen there is no
+// keyboard worth the name, so it gets scanned with a phone instead. It cannot be shown to
+// only those readers, for the same reason the address is not a link — one broadcast, no
+// marker to key on — so a desktop browser sees it too, small and under the address, where
 // it reads as the alternative it is. Nova needs none of this: it drops the tag and draws
 // its own from `qrUrl`, panel only.
 //
@@ -1205,7 +1196,7 @@ ControllerSpotify.prototype.buildAuthMessage = function (prompt) {
         return self.joinModalLines(lines);
     }
 
-    lines.push(self.getI18n('STEP_TWO_TODO'), '', self.modalLink(prompt.url), '',
+    lines.push(self.getI18n('STEP_TWO_TODO'), '', prompt.url, '',
         self.getI18n('PAIRING_CODE_IF_ASKED') + ' ' + prompt.code);
 
     // Only when it reads as a time still ahead of us: expires_at has been seen absent, and
