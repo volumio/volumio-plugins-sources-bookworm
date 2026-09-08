@@ -33,8 +33,6 @@ var playbackStartConfirmed = false;
 var deviceAuthInProgress = false;
 var deviceAuthModal;
 var deviceAuthCancelled = false;
-var deviceAuthModalTimer;
-var deviceAuthModalShown = false;
 var wsConnectionStatus = 'started';
 
 // State management
@@ -1212,19 +1210,16 @@ ControllerSpotify.prototype.buildAuthMessage = function (prompt) {
 // markup printed at the reader. Their custom dialog binds HTML and shows its buttons at
 // once, but cannot be updated: `openModal` always pushes a new instance.
 //
-// So: the custom one, replaced. Replacing it is what needs care, because their
-// modalService registers each instance's removal against the index it had when it was
-// pushed and splices there when the instance's `closed` promise resolves. Close and open
-// in the same tick and that promise fires after the new instance has shifted the array,
-// so the splice drops the *live* dialog from the register and leaves the closed one in
-// it — the next close is a no-op and the orphan stays on screen under the following one.
-// Waiting out the close animation before opening is what keeps the register honest.
+// So: the custom one, replaced. On the Angular UIs that replacement leaves the previous
+// dialog behind — their modalService registers each instance's removal against the index
+// it had when it was pushed and splices there when the instance's `closed` promise
+// resolves, so a close and an open in the same tick make the splice drop the *live* dialog
+// from the register and keep the closed one. The orphan stays on screen under the next.
 //
-// A timer, and a real last resort: nothing acknowledges a modal closing. `closeAllModals`
-// is fire and forget, there is no event to chain on, and the promise that would tell us
-// lives in the browser. The cost is a blink between steps on every UI, Nova included,
-// which replaces cleanly and needs none of this.
-var MODAL_REPLACE_DELAY = 450;
+// Known and accepted: the only way to avoid it from here is to wait out the close
+// animation before opening, and the blink that costs on every step, on every UI, was
+// judged worse than the stack. Nova is unaffected either way — it replaces in one
+// assignment and never stacks.
 
 ControllerSpotify.prototype.pushAuthModal = function (title, message, address, progress) {
     var self = this;
@@ -1271,25 +1266,11 @@ ControllerSpotify.prototype.pushAuthModal = function (title, message, address, p
     self.showAuthModal(record);
 };
 
-// Later steps overtake earlier ones — the shortener answers while the opening record is
-// still waiting — so the pending open is always replaced by the newest record rather than
-// queued behind it.
 ControllerSpotify.prototype.showAuthModal = function (record) {
     var self = this;
 
-    clearTimeout(deviceAuthModalTimer);
-
-    if (!deviceAuthModalShown) {
-        deviceAuthModalShown = true;
-        self.commandRouter.broadcastMessage('openModal', record);
-        return;
-    }
-
     self.commandRouter.broadcastMessage('closeAllModals', '');
-    deviceAuthModalTimer = setTimeout(function () {
-        deviceAuthModalTimer = undefined;
-        self.commandRouter.broadcastMessage('openModal', record);
-    }, MODAL_REPLACE_DELAY);
+    self.commandRouter.broadcastMessage('openModal', record);
 };
 
 // A reloaded browser loses the modal but not the work behind it, and the button comes
