@@ -916,20 +916,42 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
         return libQ.resolve({ signedIn: false, reason: 'PAIRING_FAILED' });
     }
 
-    return self.shortenUrl(performerUrl).then(function (url) {
-        self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(url, undefined), 25, url);
+    self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildSignInMessage(undefined), 25);
 
-        // Sent within a breath of the click, which is what lets Nova open a tab at all: a
-        // popup blocker only yields to a gesture that is still warm. That tab is then held
-        // and reused for the pairing address, which arrives far too late to open one of
-        // its own. A kiosk is excluded on the Nova side — spotify.com does not redirect
-        // home and a panel has no way back — so there the modal's button is the way in.
-        self.commandRouter.broadcastMessage('openUrl', url);
+    // Broadcast before shortening, not after. A popup blocker only yields to a gesture
+    // that is still warm — a few seconds — and the shortener is a cloud round trip that
+    // has been seen to take most of that budget or fail outright. The long address is
+    // perfectly good for a machine to open, so the tab goes first and legibility catches
+    // up. A kiosk ignores this on the Nova side and reads the QR instead.
+    self.commandRouter.broadcastMessage('openUrl', performerUrl);
 
-        return self.waitForBrowsingLogin(300000).then(function (signedIn) {
-            return signedIn ? { signedIn: true } : { signedIn: false, reason: 'SIGN_IN_TIMEOUT' };
-        });
+    // Not chained into the returned promise: the wait below must start now, and a
+    // shortener that never answers must not hold the whole flow up.
+    self.shortenUrl(performerUrl).then(function (url) {
+        if (!deviceAuthInProgress || deviceAuthCancelled) {
+            return;
+        }
+        self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildSignInMessage(url), 25, url || performerUrl);
     });
+
+    return self.waitForBrowsingLogin(300000).then(function (signedIn) {
+        return signedIn ? { signedIn: true } : { signedIn: false, reason: 'SIGN_IN_TIMEOUT' };
+    });
+};
+
+// The address only earns a place on screen once it is short enough to be read off one and
+// typed into a phone. Unshortened it is six hundred characters of redirect_uri and scopes:
+// nobody transcribes that, and it buries the rest of the dialog. Without it the sentence
+// points at the tab that opened instead — and Nova puts the same address on a button, or
+// on a QR code when the screen is a touchscreen.
+ControllerSpotify.prototype.buildSignInMessage = function (url) {
+    var self = this;
+
+    if (!url) {
+        return self.getI18n('STEP_ONE_OPENING');
+    }
+
+    return [self.getI18n('STEP_ONE_TODO'), '', url].join('\n');
 };
 
 // The performer url carries a redirect_uri and thirteen scopes — several hundred
@@ -942,19 +964,32 @@ ControllerSpotify.prototype.shortenUrl = function (url) {
 
     var defer = libQ.defer();
 
-    superagent.post('https://volm.io/shorten')
-        .send({ url: url })
-        .accept('application/json')
-        .timeout({ response: 5000, deadline: 8000 })
-        .then(function (results) {
-            defer.resolve(results && results.body && results.body.shortenedURL ? results.body.shortenedURL : url);
-        })
-        .catch(function (error) {
-            // startAuthorization ends on .fail(), so this has to stay a libQ promise:
-            // handing back superagent's native one would break that chain.
-            self.logger.error('Failed to shorten the Spotify login url: ' + error);
-            defer.resolve(url);
-        });
+    // Resolves undefined rather than the long url when it cannot shorten: the caller shows
+    // no address at all in that case, and handing back the original would put the very
+    // thing this exists to avoid on screen. Retried once — off the critical path now, so a
+    // second attempt costs nothing but a second.
+    var attempt = function (retriesLeft) {
+        superagent.post('https://volm.io/shorten')
+            .send({ url: url })
+            .accept('application/json')
+            .timeout({ response: 5000, deadline: 8000 })
+            .then(function (results) {
+                var shortened = results && results.body && results.body.shortenedURL;
+                if (shortened) {
+                    return defer.resolve(shortened);
+                }
+                self.logger.error('The Spotify login url shortener answered without a url');
+                defer.resolve(undefined);
+            })
+            .catch(function (error) {
+                self.logger.error('Failed to shorten the Spotify login url: ' + error);
+                if (retriesLeft > 0) {
+                    return attempt(retriesLeft - 1);
+                }
+                defer.resolve(undefined);
+            });
+    };
+    attempt(1);
 
     return defer.promise;
 };
@@ -968,7 +1003,7 @@ ControllerSpotify.prototype.authorizePlayback = function () {
     // The daemon restart and the code mint take the better part of ten seconds. Without
     // this the modal would sit on step one's link the whole time — done, but still asking
     // to be acted on — so it says where it actually is before the wait starts.
-    self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(undefined, undefined), 50);
+    self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(undefined), 50);
 
     return self.getDaemonPairingPrompt()
         .then(function (pending) {
@@ -1003,7 +1038,7 @@ ControllerSpotify.prototype.authorizePlayback = function () {
             }
 
             self.logger.info('Spotify pairing code issued, awaiting approval');
-            self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(undefined, prompt), 75, prompt.url);
+            self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(prompt), 75, prompt.url);
 
             // Step one navigates itself, through the core `oauth` action; step two has no
             // such action because the device flow has no redirect leg — the daemon polls,
@@ -1086,14 +1121,10 @@ ControllerSpotify.prototype.waitForBrowsingLogin = function (timeoutMs) {
 // why each step is a bare link and the pairing code is repeated only as a fallback.
 // Whichever step is not running shows its outcome instead, so the modal always says where
 // in the pair the user is.
-ControllerSpotify.prototype.buildAuthMessage = function (performerUrl, prompt) {
+ControllerSpotify.prototype.buildAuthMessage = function (prompt) {
     var self = this;
     var lines = [];
     var signedInAs = self.config.get('logged_user_id', '');
-
-    if (performerUrl) {
-        return [self.getI18n('STEP_ONE_TODO'), '', performerUrl].join('\n');
-    }
 
     // Named or not at all: "Signed in as" with nothing after it claims a step that has not
     // happened.
