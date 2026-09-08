@@ -932,7 +932,7 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
             return;
         }
         self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildSignInMessage(short),
-            (short && short.url) || performerUrl, 25);
+            short || performerUrl, 25);
     });
 
     return self.waitForBrowsingLogin(300000).then(function (signedIn) {
@@ -945,48 +945,25 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
 // nobody transcribes that, and it buries the rest of the dialog. Without it the sentence
 // points at the tab that opened instead — and Nova puts the same address on a button, or
 // on a QR code when the screen is a touchscreen.
-ControllerSpotify.prototype.buildSignInMessage = function (short) {
+ControllerSpotify.prototype.buildSignInMessage = function (url) {
     var self = this;
 
-    if (!short) {
+    if (!url) {
         return self.getI18n('STEP_ONE_OPENING');
     }
 
-    return self.joinModalLines([self.getI18n('STEP_ONE_TODO'), '', self.modalLink(short.url)]) +
-        self.modalQr(short.qr);
+    return self.joinModalLines([self.getI18n('STEP_ONE_TODO'), '', url]);
 };
 
-// concept-ui and Manifest render the message with `ng-bind-html` through ngSanitize, so
-// `<br>`, `<a>` and `<img>` all survive there — and Nova, which flattens markup, turns
-// `<br>` back into the newline it stands for and drops the rest (BackendModal stripHtml).
-// One message therefore serves both: a real link and a scannable code on the Angular UIs,
-// the same words as plain text on Nova, which has its own button and its own QR.
+// Plain text, and it has to stay that way. The dialog is a progress modal — the only kind
+// concept-ui and Manifest update in place rather than replace — and their
+// modal-progress.html renders the body through `{{ }}`, which escapes markup and prints it
+// at the reader. Only modal-custom.html binds HTML, and that is the one that cannot be
+// replaced without corrupting their instance register (see pushAuthModal). So: no anchor,
+// no image, and the newlines below survive on Nova, which keeps them with
+// whitespace-pre-line, while the Angular UIs run them together on one line.
 ControllerSpotify.prototype.joinModalLines = function (lines) {
-    return lines.join('<br>');
-};
-
-// target=_blank so the Angular UIs open a tab rather than walking the page — their button
-// handler uses _self, and this is the way around it. Nova keeps only the text, which is
-// the address itself.
-ControllerSpotify.prototype.modalLink = function (url) {
-    return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>';
-};
-
-// Second, under the link, and small: on a panel it is the only way in, but the same
-// message reaches every other Angular client — a phone, a desktop, the app's WebView —
-// where the link above it is what the reader will use and the code is a convenience they
-// scan with a second device, if at all. 160px still scans from arm's length on the
-// touchscreen; it does not dominate anywhere else.
-//
-// No inline style: ngSanitize strips the attribute. The shortener's codes come on white
-// already, so width and height are all that is needed. Nova drops the tag entirely and
-// draws its own from `qrUrl`, panel only.
-ControllerSpotify.prototype.modalQr = function (qr) {
-    if (!qr) {
-        return '';
-    }
-
-    return '<br><br><img src="' + qr + '" width="160" height="160" alt="QR">';
+    return lines.join('\n');
 };
 
 // The performer url carries a redirect_uri and thirteen scopes — several hundred
@@ -999,7 +976,7 @@ ControllerSpotify.prototype.shortenUrl = function (url) {
 
     var defer = libQ.defer();
 
-    // Resolves {url, qr}, or undefined when it cannot shorten: the caller shows no address
+    // Resolves the short url, or undefined when it cannot shorten: the caller shows no address
     // at all in that case, and handing back the original would put the very thing this
     // exists to avoid on screen. Retried once — off the critical path now, so a second
     // attempt costs nothing but a second.
@@ -1011,9 +988,7 @@ ControllerSpotify.prototype.shortenUrl = function (url) {
             .then(function (results) {
                 var body = (results && results.body) || {};
                 if (body.shortenedURL) {
-                    // qrCodeURL rides along in the same answer, so the code costs nothing
-                    // beyond this round trip.
-                    return defer.resolve({ url: body.shortenedURL, qr: body.qrCodeURL });
+                    return defer.resolve(body.shortenedURL);
                 }
                 self.logger.error('The Spotify login url shortener answered without a url');
                 defer.resolve(undefined);
@@ -1077,15 +1052,6 @@ ControllerSpotify.prototype.authorizePlayback = function () {
             self.logger.info('Spotify pairing code issued, awaiting approval');
             self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(prompt), prompt.url, 75);
 
-            // The pairing address is short already; this is only for the code image the
-            // Angular UIs draw, so it lands late rather than holding the code back.
-            self.shortenUrl(prompt.url).then(function (short) {
-                if (!deviceAuthInProgress || deviceAuthCancelled || !short || !short.qr) {
-                    return;
-                }
-                var withQr = Object.assign({}, prompt, { qr: short.qr });
-                self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(withQr), prompt.url, 75);
-            });
 
             // Step one navigates itself, through the core `oauth` action; step two has no
             // such action because the device flow has no redirect leg — the daemon polls,
@@ -1195,7 +1161,7 @@ ControllerSpotify.prototype.buildAuthMessage = function (prompt) {
         return self.joinModalLines(lines);
     }
 
-    lines.push(self.getI18n('STEP_TWO_TODO'), '', self.modalLink(prompt.url), '',
+    lines.push(self.getI18n('STEP_TWO_TODO'), '', prompt.url, '',
         self.getI18n('PAIRING_CODE_IF_ASKED') + ' ' + prompt.code);
 
     // Only when it reads as a time still ahead of us: expires_at has been seen absent, and
@@ -1206,7 +1172,7 @@ ControllerSpotify.prototype.buildAuthMessage = function (prompt) {
             ('0' + expiry.getHours()).slice(-2) + ':' + ('0' + expiry.getMinutes()).slice(-2));
     }
 
-    return self.joinModalLines(lines) + self.modalQr(prompt.qr);
+    return self.joinModalLines(lines);
 };
 
 // The dialog this flow lives in, updated in place.
