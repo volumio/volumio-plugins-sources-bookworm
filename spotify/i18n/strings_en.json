@@ -84,6 +84,11 @@
   "PAIRING_SUCCESSFUL": "Spotify authorized",
   "PAIRING_FAILED": "Authorization did not complete. Try again.",
   "CLOSE": "Close",
+  "CANCEL": "Cancel",
+  "AUTHORIZE_CANCELLED": "Authorization cancelled",
+  "SIGN_IN_TIMEOUT": "Sign-in was not completed. Try again.",
+  "PAIRING_NO_CODE": "Spotify did not answer. Try again.",
+  "PAIRING_NOT_APPROVED": "The device was not approved in time. Try again.",
   "OPEN_SPOTIFY": "Open Spotify",
   "NO_ACTIVE_SESSION": "Spotify is not connected: use Authorize in the plugin settings, or select this device in the Spotify app"
 }

@@ -32,6 +32,7 @@ var playbackStartTimeout = 10000;
 var playbackStartConfirmed = false;
 var deviceAuthInProgress = false;
 var deviceAuthModal;
+var deviceAuthCancelled = false;
 var wsConnectionStatus = 'started';
 
 // State management
@@ -704,6 +705,9 @@ ControllerSpotify.prototype.waitForPairingOutcome = function (timeoutMs) {
     var deadline = Date.now() + (timeoutMs || 300000);
 
     var poll = function () {
+        if (deviceAuthCancelled) {
+            return defer.resolve(false);
+        }
         self.getDaemonPairingPrompt().then(function (prompt) {
             if (!prompt) {
                 return self.hasActiveDaemonSession().then(function (hasSession) {
@@ -789,6 +793,9 @@ ControllerSpotify.prototype.awaitPairingPrompt = function (timeoutMs) {
     var deadline = Date.now() + (timeoutMs || 60000);
 
     var poll = function () {
+        if (deviceAuthCancelled) {
+            return defer.resolve(undefined);
+        }
         self.getDaemonPairingPrompt().then(function (prompt) {
             if (prompt) {
                 return defer.resolve(prompt);
@@ -832,24 +839,30 @@ ControllerSpotify.prototype.startAuthorization = function (data) {
     }
 
     deviceAuthInProgress = true;
+    deviceAuthCancelled = false;
     self.pushAuthModal('openModal', self.getI18n('PAIRING_TITLE'), self.getI18n('PAIRING_CONTACTING'), 10);
 
+    // cancelAuthorization has already closed the modal and said why, and the polls it
+    // interrupted unwind through here a moment later — silently, or they would overwrite
+    // that with a failure the user did not cause.
     var release = function (message) {
         deviceAuthInProgress = false;
-        self.pushAuthModal('modalDone', self.getI18n('PAIRING_TITLE'), message, 100);
+        if (!deviceAuthCancelled) {
+            self.pushAuthModal('modalDone', self.getI18n('PAIRING_TITLE'), message, 100);
+        }
         defer.resolve('');
     };
 
     self.authorizeBrowsing(data)
-        .then(function (signedIn) {
-            if (!signedIn) {
-                return release(self.getI18n('PAIRING_FAILED'));
+        .then(function (outcome) {
+            if (!outcome.signedIn) {
+                return release(self.getI18n(outcome.reason));
             }
 
-            return self.authorizePlayback().then(function (authorized) {
+            return self.authorizePlayback().then(function (playback) {
                 // release() before the refresh, not after: refreshUiConfig goes through
                 // getUIConfig, which re-opens the modal of a flow still marked as running.
-                release(authorized ? self.getI18n('PAIRING_SUCCESSFUL') : self.getI18n('PAIRING_FAILED'));
+                release(self.getI18n(playback.authorized ? 'PAIRING_SUCCESSFUL' : playback.reason));
                 return self.refreshUiConfig();
             });
         })
@@ -861,6 +874,33 @@ ControllerSpotify.prototype.startAuthorization = function (data) {
     return defer.promise;
 };
 
+// Nothing about this flow is quick — a login the user performs elsewhere, then a daemon
+// restart and a code they approve elsewhere again — so it has to be abandonable. The modal
+// closes here rather than when the interrupted poll unwinds, because the click that got us
+// here deserves an answer now.
+//
+// credentials_type goes back to zeroconf without restarting the daemon: the running one
+// keeps the code it already minted, so a user who changes their mind again can still
+// approve it, while the next restart comes up in the state a device should idle in rather
+// than minting a code nobody asked for.
+ControllerSpotify.prototype.cancelAuthorization = function () {
+    var self = this;
+
+    if (!deviceAuthInProgress) {
+        self.logger.info('No Spotify authorization to cancel');
+        self.commandRouter.broadcastMessage('closeAllModals', '');
+        return libQ.resolve('');
+    }
+
+    self.logger.info('Spotify authorization cancelled by the user');
+    deviceAuthCancelled = true;
+    deviceAuthInProgress = false;
+    self.config.set('credentials_type', 'zeroconf');
+    self.pushAuthModal('modalDone', self.getI18n('PAIRING_TITLE'), self.getI18n('AUTHORIZE_CANCELLED'), 100);
+
+    return libQ.resolve('');
+};
+
 // Step one. Already signed in is the common case on a re-run — say so and move on rather
 // than make the user log in again to reach step two.
 ControllerSpotify.prototype.authorizeBrowsing = function (data) {
@@ -868,12 +908,12 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
 
     if (self.config.get('refresh_token', '') !== '') {
         self.logger.info('Spotify browsing login already done');
-        return libQ.resolve(true);
+        return libQ.resolve({ signedIn: true });
     }
 
     var performerUrl = self.buildPerformerUrl(data);
     if (!performerUrl) {
-        return libQ.resolve(false);
+        return libQ.resolve({ signedIn: false, reason: 'PAIRING_FAILED' });
     }
 
     return self.shortenUrl(performerUrl).then(function (url) {
@@ -886,7 +926,9 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
         // home and a panel has no way back — so there the modal's button is the way in.
         self.commandRouter.broadcastMessage('openUrl', url);
 
-        return self.waitForBrowsingLogin(300000);
+        return self.waitForBrowsingLogin(300000).then(function (signedIn) {
+            return signedIn ? { signedIn: true } : { signedIn: false, reason: 'SIGN_IN_TIMEOUT' };
+        });
     });
 };
 
@@ -923,6 +965,11 @@ ControllerSpotify.prototype.shortenUrl = function (url) {
 ControllerSpotify.prototype.authorizePlayback = function () {
     var self = this;
 
+    // The daemon restart and the code mint take the better part of ten seconds. Without
+    // this the modal would sit on step one's link the whole time — done, but still asking
+    // to be acted on — so it says where it actually is before the wait starts.
+    self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(undefined, undefined), 50);
+
     return self.getDaemonPairingPrompt()
         .then(function (pending) {
             if (pending) {
@@ -946,11 +993,13 @@ ControllerSpotify.prototype.authorizePlayback = function () {
         })
         .then(function (prompt) {
             if (prompt && prompt.alreadyAuthorized) {
-                return true;
+                return { authorized: true };
             }
 
             if (!prompt) {
-                return false;
+                // The daemon came back up but never produced a code, or the user walked
+                // away from the flow while it was doing so.
+                return { authorized: false, reason: deviceAuthCancelled ? 'AUTHORIZE_CANCELLED' : 'PAIRING_NO_CODE' };
             }
 
             self.logger.info('Spotify pairing code issued, awaiting approval');
@@ -966,7 +1015,9 @@ ControllerSpotify.prototype.authorizePlayback = function () {
             // handler, so it keeps the link the message carries.
             self.commandRouter.broadcastMessage('openUrl', prompt.url);
 
-            return self.waitForPairingOutcome(300000);
+            return self.waitForPairingOutcome(300000).then(function (authorized) {
+                return authorized ? { authorized: true } : { authorized: false, reason: 'PAIRING_NOT_APPROVED' };
+            });
         });
 };
 
@@ -1009,6 +1060,9 @@ ControllerSpotify.prototype.waitForBrowsingLogin = function (timeoutMs) {
     var deadline = Date.now() + (timeoutMs || 300000);
 
     var poll = function () {
+        if (deviceAuthCancelled) {
+            return defer.resolve(false);
+        }
         if (self.config.get('refresh_token', '') !== '') {
             return defer.resolve(true);
         }
@@ -1016,7 +1070,10 @@ ControllerSpotify.prototype.waitForBrowsingLogin = function (timeoutMs) {
             self.logger.error('Spotify browsing login was not completed in time');
             return defer.resolve(false);
         }
-        setTimeout(poll, 2000);
+        // Half a second, not two: this is a local config read, and the gap between the
+        // token landing and the modal admitting it is dead time the user spends looking at
+        // a step they have already finished.
+        setTimeout(poll, 500);
     };
     poll();
 
@@ -1080,13 +1137,26 @@ ControllerSpotify.prototype.pushAuthModal = function (emit, title, message, prog
     var self = this;
     var buttons = [];
 
-    // A url button is the one control a running progress modal offers, and only Nova
-    // renders it — it is what a kiosk gets in place of the navigation it is denied, and
-    // what anyone gets who came back to the page after the flow had already navigated.
+    // A url button is what a kiosk gets in place of the navigation it is denied, and what
+    // anyone gets whose popup blocker refused the tab.
     if (url) {
         buttons.push({ name: self.getI18n('OPEN_SPOTIFY'), class: 'btn btn-warning', url: url });
     }
-    buttons.push({ name: self.getI18n('CLOSE'), class: 'btn btn-info', emit: '', payload: '' });
+
+    // Cancel while it runs, Close once it has stopped — never both, so there is exactly
+    // one way out of the modal at any moment. The flow can sit for minutes waiting on a
+    // login and then on an approval, both of which happen somewhere else, so abandoning it
+    // has to be possible at every step rather than only at the end.
+    if (emit === 'modalDone') {
+        buttons.push({ name: self.getI18n('CLOSE'), class: 'btn btn-info', emit: '', payload: '' });
+    } else {
+        buttons.push({
+            name: self.getI18n('CANCEL'),
+            class: 'btn btn-info',
+            emit: 'callMethod',
+            payload: { endpoint: 'music_service/spop', method: 'cancelAuthorization', data: '' }
+        });
+    }
 
     deviceAuthModal = {
         progress: true,
