@@ -923,7 +923,12 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
     // has been seen to take most of that budget or fail outright. The long address is
     // perfectly good for a machine to open, so the tab goes first and legibility catches
     // up. A kiosk ignores this on the Nova side and reads the QR instead.
-    self.commandRouter.broadcastMessage('openUrl', performerUrl);
+    //
+    // roundTrip says this address redirects back here on its own — plugin_url returns the
+    // performer to the plugin's page — which is what lets the app navigate in place rather
+    // than reach for a tab its WebView does not have. Step two carries no such promise:
+    // the approval page ends on Spotify.
+    self.commandRouter.broadcastMessage('openUrl', { url: performerUrl, roundTrip: true });
 
     // Not chained into the returned promise: the wait below must start now, and a
     // shortener that never answers must not hold the whole flow up.
