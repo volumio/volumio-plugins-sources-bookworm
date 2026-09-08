@@ -86,6 +86,5 @@
   "SIGN_IN_TIMEOUT": "Accesso non completato. Riprova.",
   "PAIRING_NO_CODE": "Spotify non ha risposto. Riprova.",
   "PAIRING_NOT_APPROVED": "Dispositivo non approvato in tempo. Riprova.",
-  "OPEN_SPOTIFY": "Apri Spotify",
   "NO_ACTIVE_SESSION": "Spotify non è connesso: usa Autorizza nelle impostazioni del plugin, oppure seleziona questo dispositivo nell'app Spotify"
 }
