@@ -33,6 +33,8 @@ var playbackStartConfirmed = false;
 var deviceAuthInProgress = false;
 var deviceAuthModal;
 var deviceAuthCancelled = false;
+var deviceAuthModalTimer;
+var deviceAuthModalShown = false;
 var wsConnectionStatus = 'started';
 
 // State management
@@ -840,7 +842,7 @@ ControllerSpotify.prototype.startAuthorization = function (data) {
 
     deviceAuthInProgress = true;
     deviceAuthCancelled = false;
-    self.pushAuthModal('openModal', self.getI18n('PAIRING_TITLE'), self.getI18n('PAIRING_CONTACTING'), undefined, 10);
+    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.getI18n('PAIRING_CONTACTING'), undefined, 10);
 
     // cancelAuthorization has already closed the modal and said why, and the polls it
     // interrupted unwind through here a moment later — silently, or they would overwrite
@@ -848,7 +850,7 @@ ControllerSpotify.prototype.startAuthorization = function (data) {
     var release = function (message) {
         deviceAuthInProgress = false;
         if (!deviceAuthCancelled) {
-            self.pushAuthModal('modalDone', self.getI18n('PAIRING_TITLE'), message, undefined, 100);
+            self.pushAuthModal(self.getI18n('PAIRING_TITLE'), message, undefined, 100);
         }
         defer.resolve('');
     };
@@ -896,7 +898,7 @@ ControllerSpotify.prototype.cancelAuthorization = function () {
     deviceAuthCancelled = true;
     deviceAuthInProgress = false;
     self.config.set('credentials_type', 'zeroconf');
-    self.pushAuthModal('modalDone', self.getI18n('PAIRING_TITLE'), self.getI18n('AUTHORIZE_CANCELLED'), undefined, 100);
+    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.getI18n('AUTHORIZE_CANCELLED'), undefined, 100);
 
     return libQ.resolve('');
 };
@@ -916,7 +918,7 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
         return libQ.resolve({ signedIn: false, reason: 'PAIRING_FAILED' });
     }
 
-    self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildSignInMessage(undefined), undefined, 25);
+    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildSignInMessage(undefined), undefined, 25);
 
     // Broadcast before shortening, not after. A popup blocker only yields to a gesture
     // that is still warm — a few seconds — and the shortener is a cloud round trip that
@@ -931,8 +933,8 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
         if (!deviceAuthInProgress || deviceAuthCancelled) {
             return;
         }
-        self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildSignInMessage(short),
-            short || performerUrl, 25);
+        self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildSignInMessage(short),
+            (short && short.url) || performerUrl, 25);
     });
 
     return self.waitForBrowsingLogin(300000).then(function (signedIn) {
@@ -945,25 +947,40 @@ ControllerSpotify.prototype.authorizeBrowsing = function (data) {
 // nobody transcribes that, and it buries the rest of the dialog. Without it the sentence
 // points at the tab that opened instead — and Nova puts the same address on a button, or
 // on a QR code when the screen is a touchscreen.
-ControllerSpotify.prototype.buildSignInMessage = function (url) {
+ControllerSpotify.prototype.buildSignInMessage = function (short) {
     var self = this;
 
-    if (!url) {
+    if (!short) {
         return self.getI18n('STEP_ONE_OPENING');
     }
 
-    return self.joinModalLines([self.getI18n('STEP_ONE_TODO'), '', url]);
+    return self.getI18n('STEP_ONE_TODO') + self.modalQr(short.qr);
 };
 
-// Plain text, and it has to stay that way. The dialog is a progress modal — the only kind
-// concept-ui and Manifest update in place rather than replace — and their
-// modal-progress.html renders the body through `{{ }}`, which escapes markup and prints it
-// at the reader. Only modal-custom.html binds HTML, and that is the one that cannot be
-// replaced without corrupting their instance register (see pushAuthModal). So: no anchor,
-// no image, and the newlines below survive on Nova, which keeps them with
-// whitespace-pre-line, while the Angular UIs run them together on one line.
+// concept-ui and Manifest bind the custom dialog's body with `ng-bind-html` through
+// ngSanitize, so `<br>` and `<img>` survive there — and Nova, which flattens markup, turns
+// `<br>` back into the newline it stands for and drops the image (BackendModal stripHtml).
+// One message serves both.
 ControllerSpotify.prototype.joinModalLines = function (lines) {
-    return lines.join('\n');
+    return lines.join('<br>');
+};
+
+// The code, for the readers who cannot follow the button: a touchscreen has nowhere to
+// come back from and the app's WebView has no second tab, so both scan it with a phone
+// instead. It cannot be shown to only those two — the message is one broadcast, and the
+// Angular UIs expose no kiosk marker a plugin could key on and do not compile expressions
+// inside bound HTML — so a desktop browser sees it too, small and under the button, where
+// it reads as the alternative it is. Nova needs none of this: it drops the tag and draws
+// its own from `qrUrl`, panel only.
+//
+// No inline style: ngSanitize strips the attribute. The shortener's codes come on white
+// already, so width and height are all that is needed.
+ControllerSpotify.prototype.modalQr = function (qr) {
+    if (!qr) {
+        return '';
+    }
+
+    return '<br><br><img src="' + qr + '" width="160" height="160" alt="QR">';
 };
 
 // The performer url carries a redirect_uri and thirteen scopes — several hundred
@@ -976,7 +993,7 @@ ControllerSpotify.prototype.shortenUrl = function (url) {
 
     var defer = libQ.defer();
 
-    // Resolves the short url, or undefined when it cannot shorten: the caller shows no address
+    // Resolves {url, qr}, or undefined when it cannot shorten: the caller shows no address
     // at all in that case, and handing back the original would put the very thing this
     // exists to avoid on screen. Retried once — off the critical path now, so a second
     // attempt costs nothing but a second.
@@ -988,7 +1005,9 @@ ControllerSpotify.prototype.shortenUrl = function (url) {
             .then(function (results) {
                 var body = (results && results.body) || {};
                 if (body.shortenedURL) {
-                    return defer.resolve(body.shortenedURL);
+                    // qrCodeURL rides along in the same answer, so the code costs nothing
+                    // beyond this round trip.
+                    return defer.resolve({ url: body.shortenedURL, qr: body.qrCodeURL });
                 }
                 self.logger.error('The Spotify login url shortener answered without a url');
                 defer.resolve(undefined);
@@ -1015,7 +1034,7 @@ ControllerSpotify.prototype.authorizePlayback = function () {
     // The daemon restart and the code mint take the better part of ten seconds. Without
     // this the modal would sit on step one's link the whole time — done, but still asking
     // to be acted on — so it says where it actually is before the wait starts.
-    self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(undefined), undefined, 50);
+    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(undefined), undefined, 50);
 
     return self.getDaemonPairingPrompt()
         .then(function (pending) {
@@ -1050,7 +1069,17 @@ ControllerSpotify.prototype.authorizePlayback = function () {
             }
 
             self.logger.info('Spotify pairing code issued, awaiting approval');
-            self.pushAuthModal('modalProgress', self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(prompt), prompt.url, 75);
+            self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(prompt), prompt.url, 75);
+
+            // The pairing address is short already; this call is only for its code image,
+            // so it lands late rather than holding the code back.
+            self.shortenUrl(prompt.url).then(function (short) {
+                if (!deviceAuthInProgress || deviceAuthCancelled || !short || !short.qr) {
+                    return;
+                }
+                var withQr = Object.assign({}, prompt, { qr: short.qr });
+                self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(withQr), prompt.url, 75);
+            });
 
 
             // Step one navigates itself, through the core `oauth` action; step two has no
@@ -1161,7 +1190,7 @@ ControllerSpotify.prototype.buildAuthMessage = function (prompt) {
         return self.joinModalLines(lines);
     }
 
-    lines.push(self.getI18n('STEP_TWO_TODO'), '', prompt.url, '',
+    lines.push(self.getI18n('STEP_TWO_TODO'), '',
         self.getI18n('PAIRING_CODE_IF_ASKED') + ' ' + prompt.code);
 
     // Only when it reads as a time still ahead of us: expires_at has been seen absent, and
@@ -1175,33 +1204,40 @@ ControllerSpotify.prototype.buildAuthMessage = function (prompt) {
     return self.joinModalLines(lines);
 };
 
-// The dialog this flow lives in, updated in place.
+// The dialog this flow lives in, replaced a step at a time.
 //
-// Replacing it is what a plain modal would force, and that is exactly what cannot be done
-// here: concept-ui's modalService — and Manifest's byte-identical copy — registers each
-// instance's removal against the index it had when it was pushed, then splices at that
-// index when the instance's `closed` promise resolves. Close and open in the same tick and
-// the promise fires after the new instance has already shifted the array, so the splice
-// removes the *live* modal from the register and leaves the closed one in it. The next
-// close is a no-op on a dialog nobody is tracking any more, and it stays on screen under
-// the following one. Four steps, four orphans, stacked.
+// Neither modal concept-ui and Manifest offer does both halves of what this needs. Their
+// progress dialog updates in place but renders the body through `{{ }}` and keeps its
+// footer empty until `modalDone` — no buttons for the minutes this flow waits, and any
+// markup printed at the reader. Their custom dialog binds HTML and shows its buttons at
+// once, but cannot be updated: `openModal` always pushes a new instance.
 //
-// A progress dialog is the only kind those UIs update rather than replace, so this flow
-// uses one and nothing is ever closed mid-flight. The cost is theirs too: their
-// modal-progress.html renders the footer only on `modalDone`, so on Angular the way out
-// arrives with the outcome. Nova shows it throughout — a progress dialog there offers the
-// buttons that do something, and draws the bar (volumio-nova-theme#138).
-ControllerSpotify.prototype.pushAuthModal = function (emit, title, message, address, progress) {
+// So: the custom one, replaced. Replacing it is what needs care, because their
+// modalService registers each instance's removal against the index it had when it was
+// pushed and splices there when the instance's `closed` promise resolves. Close and open
+// in the same tick and that promise fires after the new instance has shifted the array,
+// so the splice drops the *live* dialog from the register and leaves the closed one in
+// it — the next close is a no-op and the orphan stays on screen under the following one.
+// Waiting out the close animation before opening is what keeps the register honest.
+//
+// A timer, and a real last resort: nothing acknowledges a modal closing. `closeAllModals`
+// is fire and forget, there is no event to chain on, and the promise that would tell us
+// lives in the browser. The cost is a blink between steps on every UI, Nova included,
+// which replaces cleanly and needs none of this.
+var MODAL_REPLACE_DELAY = 450;
+
+ControllerSpotify.prototype.pushAuthModal = function (title, message, address, progress) {
     var self = this;
     var buttons = [];
     // A full bar is what "finished" means here, so it also decides which way out to offer.
     var done = progress === 100;
 
-    // No button carries the address. concept-ui and Manifest answer a button's `url` with
-    // `$window.open(url, "_self")` — on a touchscreen that walks the panel onto
-    // spotify.com, which never redirects home and which the panel has no way back from.
-    // They get the address as a link inside the message instead, where the anchor decides
-    // the target; Nova gets it as `qrUrl` below, a field the Angular UIs ignore.
+    // A button, not a link in the message: concept-ui and Manifest answer `url` with
+    // `$window.open(url, "_self")`, and Nova opens a tab or — on a touchscreen — withholds
+    // the button and draws `qrUrl` as a QR instead. One field, each UI choosing.
+    if (address) {
+        buttons.push({ name: self.getI18n('OPEN_SPOTIFY'), class: 'btn btn-warning', url: address });
+    }
 
     // Cancel while it runs, Close once it has stopped — never both, so there is exactly
     // one way out at any moment.
@@ -1216,8 +1252,10 @@ ControllerSpotify.prototype.pushAuthModal = function (emit, title, message, addr
         });
     }
 
-    deviceAuthModal = {
-        progress: true,
+    // progressNumber without `progress: true`: Nova draws the bar from the number alone,
+    // while concept-ui and Manifest key their button-hiding progress dialog off the
+    // boolean — which is exactly the dialog this flow must not be.
+    var record = {
         progressNumber: progress,
         title: title,
         message: message,
@@ -1225,22 +1263,33 @@ ControllerSpotify.prototype.pushAuthModal = function (emit, title, message, addr
         buttons: buttons
     };
     if (address) {
-        // Nova-only: it opens this in a tab, or draws it as a QR when the screen is a
-        // touchscreen. Unknown keys are ignored by every other UI.
-        deviceAuthModal.qrUrl = address;
+        // Nova-only, and the QR's source there. Unknown keys are ignored by every other UI.
+        record.qrUrl = address;
     }
 
-    self.commandRouter.broadcastMessage(emit, deviceAuthModal);
+    deviceAuthModal = done ? undefined : record;
+    self.showAuthModal(record);
+};
 
-    if (emit === 'openModal') {
-        // concept-ui and Manifest open the progress dialog empty and fill it from the
-        // first modalProgress that follows, so the opening record is sent twice.
-        self.commandRouter.broadcastMessage('modalProgress', deviceAuthModal);
+// Later steps overtake earlier ones — the shortener answers while the opening record is
+// still waiting — so the pending open is always replaced by the newest record rather than
+// queued behind it.
+ControllerSpotify.prototype.showAuthModal = function (record) {
+    var self = this;
+
+    clearTimeout(deviceAuthModalTimer);
+
+    if (!deviceAuthModalShown) {
+        deviceAuthModalShown = true;
+        self.commandRouter.broadcastMessage('openModal', record);
+        return;
     }
 
-    if (done) {
-        deviceAuthModal = undefined;
-    }
+    self.commandRouter.broadcastMessage('closeAllModals', '');
+    deviceAuthModalTimer = setTimeout(function () {
+        deviceAuthModalTimer = undefined;
+        self.commandRouter.broadcastMessage('openModal', record);
+    }, MODAL_REPLACE_DELAY);
 };
 
 // A reloaded browser loses the modal but not the work behind it, and the button comes
@@ -1252,12 +1301,7 @@ ControllerSpotify.prototype.reopenAuthModal = function () {
         return;
     }
 
-    // openModal, not closeAllModals first: closing is what breaks the Angular register
-    // (see pushAuthModal). A client already showing this dialog gets a second copy, which
-    // only happens when two are on the settings page at once; Nova replaces rather than
-    // stacks, so it never does.
-    self.commandRouter.broadcastMessage('openModal', deviceAuthModal);
-    self.commandRouter.broadcastMessage('modalProgress', deviceAuthModal);
+    self.showAuthModal(deviceAuthModal);
     self.commandRouter.broadcastMessage('modalProgress', deviceAuthModal);
 };
 
@@ -1524,11 +1568,11 @@ ControllerSpotify.prototype.revokeAuthorization = function () {
 
     deviceAuthInProgress = true;
     self.logger.info('Revoking Spotify authorization');
-    self.pushAuthModal('openModal', self.getI18n('REMOVE_AUTHORIZATION'), self.getI18n('PLAYBACK_REVOKING'), undefined, 25);
+    self.pushAuthModal(self.getI18n('REMOVE_AUTHORIZATION'), self.getI18n('PLAYBACK_REVOKING'), undefined, 25);
 
     var release = function (message) {
         deviceAuthInProgress = false;
-        self.pushAuthModal('modalDone', self.getI18n('REMOVE_AUTHORIZATION'), message, undefined, 100);
+        self.pushAuthModal(self.getI18n('REMOVE_AUTHORIZATION'), message, undefined, 100);
         defer.resolve('');
     };
 
