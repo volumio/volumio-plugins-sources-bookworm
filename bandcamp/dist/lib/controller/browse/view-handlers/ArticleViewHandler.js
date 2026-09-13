@@ -123,18 +123,36 @@ class ArticleViewHandler extends ExplodableViewHandler_1.default {
     getTrackUri(track) {
         const artistUrl = track.artist?.url || null;
         const albumUrl = track.album?.url || artistUrl;
-        const articleView = {
-            name: 'article',
+        const common = {
             articleUrl: track.articleUrl,
             mediaItemRef: track.mediaItemRef,
             track: track.position?.toString()
         };
         if (artistUrl) {
-            articleView.artistUrl = artistUrl;
+            common.artistUrl = artistUrl;
         }
         if (albumUrl) {
-            articleView.albumUrl = albumUrl;
+            common.albumUrl = albumUrl;
         }
+        const articleView = {
+            name: 'article',
+            ...common,
+            explode: {
+                title: track.name,
+                artist: track.artist?.name,
+                album: track.album?.name,
+                albumart: track.thumbnail,
+                uri: ViewHelper_1.default.constructUriFromViews([
+                    {
+                        name: 'root'
+                    },
+                    {
+                        name: 'article',
+                        ...common
+                    }
+                ])
+            }
+        };
         const uri = `bandcamp/${ViewHelper_1.default.constructUriSegmentFromView(articleView)}`;
         return uri;
     }

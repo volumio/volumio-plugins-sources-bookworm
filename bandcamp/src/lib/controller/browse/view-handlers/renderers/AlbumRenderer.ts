@@ -1,11 +1,13 @@
-import BaseRenderer, { type RenderedHeader, type RenderedListItem } from './BaseRenderer';
+import BaseRenderer, {
+  type RenderedHeader,
+  type RenderedListItem
+} from './BaseRenderer';
 import UIHelper from '../../../../util/UIHelper';
 import type AlbumEntity from '../../../../entities/AlbumEntity';
 import { type AlbumView } from '../AlbumViewHandler';
 import ViewHelper from '../ViewHelper';
 
 export default class AlbumRenderer extends BaseRenderer<AlbumEntity> {
-
   renderToListItem(data: AlbumEntity): RenderedListItem | null {
     if (!data.url) {
       return null;

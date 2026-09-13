@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
@@ -26,7 +49,7 @@ const SearchController_1 = __importDefault(require("./lib/controller/search/Sear
 const PlayController_1 = __importDefault(require("./lib/controller/play/PlayController"));
 const util_1 = require("./lib/util");
 const ViewHelper_1 = __importDefault(require("./lib/controller/browse/view-handlers/ViewHelper"));
-const model_1 = __importDefault(require("./lib/model"));
+const model_1 = __importStar(require("./lib/model"));
 class ControllerBandcamp {
     constructor(context) {
         _ControllerBandcamp_instances.add(this);
@@ -55,6 +78,7 @@ class ControllerBandcamp {
             generalUIConf.content[1].value = BandcampContext_1.default.getConfigValue('combinedSearchResults', 17);
             generalUIConf.content[2].value = BandcampContext_1.default.getConfigValue('searchByItemType', true);
             generalUIConf.content[3].value = BandcampContext_1.default.getConfigValue('prefetch', true);
+            generalUIConf.content[4].value = BandcampContext_1.default.getConfigValue('logDebugMessages', false);
             // My Bandcamp
             const myBandcampType = BandcampContext_1.default.getConfigValue('myBandcampType', 'cookie');
             const myBandcampTypeLabel = myBandcampType === 'cookie' ? BandcampContext_1.default.getI18n('BANDCAMP_COOKIE') : BandcampContext_1.default.getI18n('BANDCAMP_USERNAME');
@@ -99,6 +123,8 @@ class ControllerBandcamp {
         BandcampContext_1.default.setConfigValue('combinedSearchResults', combinedSearchResults);
         BandcampContext_1.default.setConfigValue('searchByItemType', data.searchByItemType);
         BandcampContext_1.default.setConfigValue('prefetch', data.prefetch);
+        BandcampContext_1.default.setConfigValue('logDebugMessages', data.logDebugMessages);
+        model_1.default.setLogDebugMessages(data.logDebugMessages);
         BandcampContext_1.default.toast('success', BandcampContext_1.default.getI18n('BANDCAMP_SETTINGS_SAVED'));
     }
     configSaveMyBandcampSettings(data) {
@@ -159,6 +185,7 @@ class ControllerBandcamp {
                 model_1.default.setCookie(myCookie);
             }
         }
+        model_1.default.setLogDebugMessages(BandcampContext_1.default.getConfigValue('logDebugMessages', false));
         __classPrivateFieldSet(this, _ControllerBandcamp_browseController, new browse_1.default(), "f");
         __classPrivateFieldSet(this, _ControllerBandcamp_searchController, new SearchController_1.default(), "f");
         __classPrivateFieldSet(this, _ControllerBandcamp_playController, new PlayController_1.default(), "f");
@@ -245,7 +272,7 @@ class ControllerBandcamp {
         return (0, util_1.jsPromiseToKew)(__classPrivateFieldGet(this, _ControllerBandcamp_searchController, "f").search(query));
     }
     goto(data) {
-        return (0, util_1.jsPromiseToKew)((() => {
+        return (0, util_1.jsPromiseToKew)((async () => {
             if (!__classPrivateFieldGet(this, _ControllerBandcamp_browseController, "f")) {
                 throw Error('Bandcamp Discover plugin is not started');
             }
@@ -255,7 +282,7 @@ class ControllerBandcamp {
                 if (!trackView) {
                     return __classPrivateFieldGet(this, _ControllerBandcamp_browseController, "f").browseUri('bandcamp');
                 }
-                let gotoView;
+                let gotoView = null;
                 if (data.type === 'album' && trackView.albumUrl) {
                     gotoView = {
                         name: 'album',
@@ -280,13 +307,26 @@ class ControllerBandcamp {
                         articleUrl: trackView.articleUrl
                     };
                 }
-                else {
-                    gotoView = null;
+                else if (trackView.trackUrl) {
+                    const model = model_1.default.getInstance(model_1.ModelType.Track);
+                    const trackInfo = await model.getTrack(trackView.trackUrl);
+                    if (data.type === 'artist' && trackInfo.artist?.url) {
+                        gotoView = {
+                            name: 'band',
+                            bandUrl: trackInfo.artist.url
+                        };
+                    }
+                    else if (data.type === 'album' && trackInfo.album?.url) {
+                        gotoView = {
+                            name: 'album',
+                            albumUrl: trackInfo.album.url
+                        };
+                    }
                 }
                 if (gotoView) {
-                    return __classPrivateFieldGet(this, _ControllerBandcamp_browseController, "f").browseUri(`bandcamp/${ViewHelper_1.default.constructUriSegmentFromView(gotoView)}`);
+                    return await __classPrivateFieldGet(this, _ControllerBandcamp_browseController, "f").browseUri(`bandcamp/${ViewHelper_1.default.constructUriSegmentFromView(gotoView)}`);
                 }
-                return __classPrivateFieldGet(this, _ControllerBandcamp_browseController, "f").browseUri('bandcamp');
+                return await __classPrivateFieldGet(this, _ControllerBandcamp_browseController, "f").browseUri('bandcamp');
             }
             catch (error) {
                 throw Error(`Failed to fetch requested info: ${error.message}`);

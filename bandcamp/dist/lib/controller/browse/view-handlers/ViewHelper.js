@@ -38,7 +38,12 @@ class ViewHelper {
         const skip = ['name', 'pageRef', 'prevPageRefs', 'noExplode', 'combinedSearch', 'inSection'];
         Object.keys(view).filter((key) => !skip.includes(key)).forEach((key) => {
             if (view[key] !== undefined) {
-                segment += `@${key}=${encodeURIComponent(view[key])}`;
+                if (typeof view[key] === 'object') {
+                    segment += `@${key}:o=${encodeURIComponent(JSON.stringify(view[key]))}`;
+                }
+                else {
+                    segment += `@${key}=${encodeURIComponent(view[key])}`;
+                }
             }
         });
         if (view.prevPageRefs) {
@@ -53,6 +58,15 @@ class ViewHelper {
         const segments = views.map((view) => this.constructUriSegmentFromView(view));
         return segments.join('/');
     }
+    static setUriEmbeddedQueueItem(uri, item) {
+        const views = this.getViewsFromUri(uri);
+        const currentView = views.at(-1);
+        if (!currentView) {
+            return uri;
+        }
+        currentView.explode = item;
+        return this.constructUriFromViews(views);
+    }
 }
 _a = ViewHelper, _ViewHelper_getViewFromUriSegment = function _ViewHelper_getViewFromUriSegment(segment) {
     const result = {
@@ -65,13 +79,17 @@ _a = ViewHelper, _ViewHelper_getViewFromUriSegment = function _ViewHelper_getVie
             result.name = s;
         }
         else {
-            const key = s.substring(0, equalIndex);
-            const value = s.substring(equalIndex + 1);
+            let key = s.substring(0, equalIndex);
+            const value = decodeURIComponent(s.substring(equalIndex + 1));
             if (key === 'pageRef' || key === 'prevPageRefs') {
-                result[key] = JSON.parse(decodeURIComponent(value));
+                result[key] = JSON.parse(value);
+            }
+            else if (key.endsWith(':o')) { // `value` is object
+                key = key.substring(0, key.length - 2);
+                result[key] = JSON.parse(value);
             }
             else {
-                result[key] = decodeURIComponent(value);
+                result[key] = value;
             }
         }
     });

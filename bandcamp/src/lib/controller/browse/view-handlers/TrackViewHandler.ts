@@ -19,7 +19,6 @@ export interface TrackView extends View {
 }
 
 export default class TrackViewHandler extends ExplodableViewHandler<TrackView> {
-
   async browse(): Promise<RenderedPage> {
     const trackUrl = this.currentView.trackUrl;
 
@@ -47,7 +46,7 @@ export default class TrackViewHandler extends ExplodableViewHandler<TrackView> {
 
     const trackRenderer = this.getRenderer(RendererType.Track);
     const rendered = trackRenderer.renderToListItem(trackInfo);
-    const listItems: RenderedListItem[] = rendered ? [ rendered ] : [];
+    const listItems: RenderedListItem[] = rendered ? [rendered] : [];
     const viewTrackExternalLink: UILink = {
       url: trackUrl,
       text: bandcamp.getI18n('BANDCAMP_VIEW_LINK_TRACK'),
@@ -61,8 +60,12 @@ export default class TrackViewHandler extends ExplodableViewHandler<TrackView> {
         info: trackRenderer.renderToHeader(trackInfo),
         lists: [
           {
-            title: UIHelper.constructListTitleWithLink('', viewTrackExternalLink, true),
-            availableListViews: [ 'list' ],
+            title: UIHelper.constructListTitleWithLink(
+              '',
+              viewTrackExternalLink,
+              true
+            ),
+            availableListViews: ['list'],
             items: listItems
           }
         ]

@@ -1,9 +1,12 @@
+import { type UriEmbeddedQueueItem } from './ExplodableViewHandler';
+
 interface View extends Record<string, any> {
   name: string;
   pageRef?: PageRef;
   prevPageRefs?: PageRef[];
   limit?: number;
   inSection?: '1';
+  explode?: UriEmbeddedQueueItem;
   noExplode?: '1';
 }
 

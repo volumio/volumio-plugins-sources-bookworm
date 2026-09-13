@@ -1,14 +1,20 @@
 import bandcamp from '../../../../BandcampContext';
-import BaseRenderer, { type RenderedHeader, type RenderedListItem } from './BaseRenderer';
+import BaseRenderer, {
+  type RenderedHeader,
+  type RenderedListItem
+} from './BaseRenderer';
 import type LabelEntity from '../../../../entities/LabelEntity';
 import type ArtistEntity from '../../../../entities/ArtistEntity';
 import type BandEntity from '../../../../entities/BandEntity';
 import { type BandView } from '../BandViewHandler';
 import ViewHelper from '../ViewHelper';
 
-export default class BandRenderer extends BaseRenderer<ArtistEntity | LabelEntity> {
-
-  renderToListItem(data: ArtistEntity | LabelEntity | BandEntity): RenderedListItem | null {
+export default class BandRenderer extends BaseRenderer<
+  ArtistEntity | LabelEntity
+> {
+  renderToListItem(
+    data: ArtistEntity | LabelEntity | BandEntity
+  ): RenderedListItem | null {
     if (!data.url) {
       return null;
     }

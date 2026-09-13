@@ -1,11 +1,13 @@
 import bandcamp from '../../../../BandcampContext';
-import BaseRenderer, { type RenderedHeader, type RenderedListItem } from './BaseRenderer';
+import BaseRenderer, {
+  type RenderedHeader,
+  type RenderedListItem
+} from './BaseRenderer';
 import type TagEntity from '../../../../entities/TagEntity';
 import ViewHelper from '../ViewHelper';
 import { type DiscoverView } from '../DiscoverViewHandler';
 
 export default class TagRenderer extends BaseRenderer<TagEntity> {
-
   renderToListItem(data: TagEntity): RenderedListItem | null {
     const discoverView: DiscoverView = {
       name: 'discover',

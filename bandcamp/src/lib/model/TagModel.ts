@@ -4,11 +4,12 @@ import BaseModel from './BaseModel';
 import EntityConverter from '../util/EntityConverter';
 
 export default class TagModel extends BaseModel {
-
   async getTags() {
-    const tags = await bandcamp.getCache().getOrSet(
-      this.getCacheKeyForFetch('tags'),
-      () => bcfetch.limiter.discovery.getRecommendedTagsAndLocations());
+    const tags = await bandcamp
+      .getCache()
+      .getOrSet(this.getCacheKeyForFetch('tags'), () =>
+        bcfetch.limiter.discovery.getRecommendedTagsAndLocations()
+      );
 
     return {
       tags: tags.tags.map((tag) => EntityConverter.convertTag(tag))
@@ -16,15 +17,16 @@ export default class TagModel extends BaseModel {
   }
 
   async getRelatedTags(tags: string[]) {
-    const related = await bandcamp.getCache().getOrSet(
-      this.getCacheKeyForFetch('relatedTags', tags),
-      () => bcfetch.limiter.tag.getRelated({ tags }));
+    const related = await bandcamp
+      .getCache()
+      .getOrSet(this.getCacheKeyForFetch('relatedTags', tags), () =>
+        bcfetch.limiter.tag.getRelated({ tags })
+      );
 
     let tagsArr;
     if (related.combo && related.combo.length > 0) {
       tagsArr = related.combo;
-    }
-    else {
+    } else {
       tagsArr = related.single.find((row) => row.related.length > 0)?.related;
     }
 

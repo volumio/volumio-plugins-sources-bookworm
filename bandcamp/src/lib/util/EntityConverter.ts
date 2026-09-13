@@ -1,4 +1,21 @@
-import { type Album, type Article, type ArticleListItem, type Artist, type Label, type LabelArtist, type SearchResultAlbum, type SearchResultArtist, type SearchResultLabel, type SearchResultTrack, type Show, type Tag, type Track, type UserKind } from 'bandcamp-fetch';
+import {
+  type Playlist,
+  type PlaylistListItem,
+  type Album,
+  type Article,
+  type ArticleListItem,
+  type Artist,
+  type Label,
+  type LabelArtist,
+  type SearchResultAlbum,
+  type SearchResultArtist,
+  type SearchResultLabel,
+  type SearchResultTrack,
+  type Show,
+  type Tag,
+  type Track,
+  type UserKind
+} from 'bandcamp-fetch';
 import type AlbumEntity from '../entities/AlbumEntity';
 import type ArtistEntity from '../entities/ArtistEntity';
 import type BandEntity from '../entities/BandEntity';
@@ -6,8 +23,15 @@ import type LabelEntity from '../entities/LabelEntity';
 import type TrackEntity from '../entities/TrackEntity';
 import type TagEntity from '../entities/TagEntity';
 import type ShowEntity from '../entities/ShowEntity';
-import {type ArticleEntityMediaItem, type ArticleEntitySection} from '../entities/ArticleEntity';
+import {
+  type ArticleEntityMediaItem,
+  type ArticleEntitySection
+} from '../entities/ArticleEntity';
 import type ArticleEntity from '../entities/ArticleEntity';
+import {
+  type PlaylistEntity,
+  type PlaylistListItemEntity
+} from '../entities/PlaylistEntity';
 
 export default class EntityConverter {
   static convertAlbum(data: Album): AlbumEntity {
@@ -25,10 +49,15 @@ export default class EntityConverter {
       result.artist = this.convertArtist({ ...data.artist, type: 'artist' });
     }
     if (data.tracks) {
-      result.tracks = data.tracks.map((track) => this.convertTrack({ ...track, type: 'track', album: undefined }));
+      result.tracks = data.tracks.map((track) =>
+        this.convertTrack({ ...track, type: 'track', album: undefined })
+      );
     }
     if (data.featuredTrack) {
-      result.featuredTrack = this.convertTrack({ ...data.featuredTrack, type: 'track' });
+      result.featuredTrack = this.convertTrack({
+        ...data.featuredTrack,
+        type: 'track'
+      });
     }
     if (data.releaseDate) {
       result.releaseDate = data.releaseDate;
@@ -56,7 +85,7 @@ export default class EntityConverter {
     return result;
   }
 
-  static convertArtist(data: Artist | LabelArtist) : ArtistEntity {
+  static convertArtist(data: Artist | LabelArtist): ArtistEntity {
     const result: ArtistEntity = {
       ...this.convertBand({ ...data, type: 'artist' }),
       type: 'artist'
@@ -96,12 +125,15 @@ export default class EntityConverter {
     }
     if (data.streamUrlHQ) {
       result.streamUrl = data.streamUrlHQ;
-    }
-    else if (data.streamUrl) {
+    } else if (data.streamUrl) {
       result.streamUrl = data.streamUrl;
     }
     if (data.album) {
-      result.album = this.convertAlbum({ ...data.album, type: 'album', tracks: undefined });
+      result.album = this.convertAlbum({
+        ...data.album,
+        type: 'album',
+        tracks: undefined
+      });
     }
     if (data.artist) {
       result.artist = this.convertArtist({ ...data.artist, type: 'artist' });
@@ -122,7 +154,13 @@ export default class EntityConverter {
     return result;
   }
 
-  static convertSearchResultItem(item: SearchResultArtist | SearchResultLabel | SearchResultAlbum | SearchResultTrack): ArtistEntity | LabelEntity | AlbumEntity | TrackEntity {
+  static convertSearchResultItem(
+    item:
+      | SearchResultArtist
+      | SearchResultLabel
+      | SearchResultAlbum
+      | SearchResultTrack
+  ): ArtistEntity | LabelEntity | AlbumEntity | TrackEntity {
     switch (item.type) {
       case 'artist':
         return this.convertArtist(item);
@@ -163,7 +201,9 @@ export default class EntityConverter {
       result.duration = data.duration;
     }
     if (data.tracks) {
-      result.tracks = data.tracks.map((track) => this.convertTrack({ ...track, type: 'track' }));
+      result.tracks = data.tracks.map((track) =>
+        this.convertTrack({ ...track, type: 'track' })
+      );
     }
 
     return result;
@@ -242,8 +282,7 @@ export default class EntityConverter {
           ...this.convertAlbum(item),
           featuredTrackPosition: item.featuredTrackPosition
         } as ArticleEntityMediaItem<AlbumEntity>;
-      }
-      else {
+      } else {
         entityMediaItem = {
           ...this.convertTrack(item),
           featuredTrackPosition: item.featuredTrackPosition
@@ -294,5 +333,50 @@ export default class EntityConverter {
     }
 
     return result;
+  }
+
+  static convertPlaylistListItem(
+    data: PlaylistListItem
+  ): PlaylistListItemEntity {
+    return {
+      type: 'playlist',
+      ...data
+    };
+  }
+
+  static convertPlaylist(data: Playlist): PlaylistEntity {
+    return {
+      type: 'playlist',
+      ...data,
+      tracks: data.tracks.map(
+        (track, i) =>
+          ({
+            type: 'track',
+            id: track.id,
+            name: track.title,
+            url: track.url,
+            duration: track.duration,
+            thumbnail: track.imageUrl ?? undefined,
+            streamUrl: track.streamUrl ?? undefined,
+            position: i,
+            album:
+              track.album ?
+                {
+                  type: 'album',
+                  name: track.album.title,
+                  url: track.album.url
+                }
+              : undefined,
+            artist:
+              track.artist ?
+                {
+                  type: 'artist',
+                  name: track.artist.name,
+                  thumbnail: track.artist.imageUrl ?? undefined
+                }
+              : undefined
+          }) satisfies TrackEntity
+      )
+    };
   }
 }

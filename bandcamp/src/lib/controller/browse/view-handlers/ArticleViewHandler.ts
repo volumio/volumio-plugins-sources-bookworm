@@ -1,7 +1,10 @@
-import { type ArticleCategory, type ArticleCategorySection } from 'bandcamp-fetch';
+import {
+  type ArticleCategory,
+  type ArticleCategorySection
+} from 'bandcamp-fetch';
 import bandcamp from '../../../BandcampContext';
 import type AlbumEntity from '../../../entities/AlbumEntity';
-import {type ArticleEntityMediaItem} from '../../../entities/ArticleEntity';
+import { type ArticleEntityMediaItem } from '../../../entities/ArticleEntity';
 import type ArticleEntity from '../../../entities/ArticleEntity';
 import type TrackEntity from '../../../entities/TrackEntity';
 import { ModelType } from '../../../model';
@@ -37,18 +40,15 @@ interface ArticleMediaItemExplodeTrack extends TrackEntity {
 }
 
 export default class ArticleViewHandler extends ExplodableViewHandler<ArticleView> {
-
   browse(): Promise<RenderedPage> {
     const view = this.currentView;
     if (view.articleUrl) {
       return this.#browseArticle(view.articleUrl);
-    }
-    else if (view.select) {
+    } else if (view.select) {
       return this.#browseCategories();
     }
 
     return this.#browseList();
-
   }
 
   async #browseList(): Promise<RenderedPage> {
@@ -56,7 +56,7 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
     if (!category.url) {
       throw Error('Category URL missing');
     }
-    const lists: RenderedList[] = [ this.#getParamsList(category) ];
+    const lists: RenderedList[] = [this.#getParamsList(category)];
     const articleList = await this.#getArticleList(category.url);
     lists.push(articleList);
 
@@ -75,26 +75,42 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
     }
 
     if (categoryUrl) {
-      const categorySections = await this.getModel(ModelType.Article).getArticleCategories();
-      const category = this.#findCategoryInSections(categoryUrl, categorySections);
+      const categorySections = await this.getModel(
+        ModelType.Article
+      ).getArticleCategories();
+      const category = this.#findCategoryInSections(
+        categoryUrl,
+        categorySections
+      );
       if (category) {
         return category;
       }
     }
 
-    return bandcamp.getConfigValue('defaultArticleCategory', ARTICLE_CATEGORY_ALL, true);
+    return bandcamp.getConfigValue(
+      'defaultArticleCategory',
+      ARTICLE_CATEGORY_ALL,
+      true
+    );
   }
 
-  #findCategoryInSections(categoryUrl: string, sections: ArticleCategorySection[]): ArticleCategory | null {
+  #findCategoryInSections(
+    categoryUrl: string,
+    sections: ArticleCategorySection[]
+  ): ArticleCategory | null {
     for (const section of sections) {
       if (section.sections) {
-        const result = this.#findCategoryInSections(categoryUrl, section.sections);
+        const result = this.#findCategoryInSections(
+          categoryUrl,
+          section.sections
+        );
         if (result) {
           return result;
         }
-      }
-      else if (section.categories) {
-        const result = section.categories.find((category) => category.url === categoryUrl);
+      } else if (section.categories) {
+        const result = section.categories.find(
+          (category) => category.url === categoryUrl
+        );
         if (result) {
           return result;
         }
@@ -118,13 +134,20 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
       text: bandcamp.getI18n('BANDCAMP_SET_DEFAULT_ARTICLE_CATEGORY'),
       onclick: setDefaultJS.replace(/"/g, '&quot;').replace(/\r?\n|\r/g, '')
     };
-    const title = UIHelper.constructListTitleWithLink(UIHelper.addBandcampIconToListTitle(bandcamp.getI18n('BANDCAMP_DAILY')), setDefaultLink, true);
+    const title = UIHelper.constructListTitleWithLink(
+      UIHelper.addBandcampIconToListTitle(bandcamp.getI18n('BANDCAMP_DAILY')),
+      setDefaultLink,
+      true
+    );
     const paramsList: RenderedList = {
       title,
-      availableListViews: [ 'list' ],
+      availableListViews: ['list'],
       items: []
     };
-    const categoryName = category.url !== ARTICLE_CATEGORY_ALL.url ? category.name : bandcamp.getI18n('BANDCAMP_ALL_CATEGORIES');
+    const categoryName =
+      category.url !== ARTICLE_CATEGORY_ALL.url ?
+        category.name
+      : bandcamp.getI18n('BANDCAMP_ALL_CATEGORIES');
     paramsList.items.push({
       service: 'bandcamp',
       type: 'item-no-menu',
@@ -138,7 +161,10 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
   async #getArticleList(categoryUrl: string): Promise<RenderedList> {
     const view = this.currentView;
     const modelParams: ArticleModelGetArticlesParams = {
-      limit: view.inSection ? bandcamp.getConfigValue('itemsPerSection', 5) : bandcamp.getConfigValue('itemsPerPage', 47)
+      limit:
+        view.inSection ?
+          bandcamp.getConfigValue('itemsPerSection', 5)
+        : bandcamp.getConfigValue('itemsPerPage', 47)
     };
 
     if (view.pageRef) {
@@ -150,23 +176,31 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
       modelParams.categoryUrl = categoryUrl;
     }
 
-    const articleList = await this.getModel(ModelType.Article).getArticles(modelParams);
+    const articleList = await this.getModel(ModelType.Article).getArticles(
+      modelParams
+    );
     const articleRenderer = this.getRenderer(RendererType.Article);
-    const listItems = articleList.items.reduce<RenderedListItem[]>((result, article) => {
-      const rendered = articleRenderer.renderToListItem(article);
-      if (rendered) {
-        result.push(rendered);
-      }
-      return result;
-    }, []);
-    const nextPageRef = this.constructPageRef(articleList.nextPageToken, articleList.nextPageOffset);
+    const listItems = articleList.items.reduce<RenderedListItem[]>(
+      (result, article) => {
+        const rendered = articleRenderer.renderToListItem(article);
+        if (rendered) {
+          result.push(rendered);
+        }
+        return result;
+      },
+      []
+    );
+    const nextPageRef = this.constructPageRef(
+      articleList.nextPageToken,
+      articleList.nextPageOffset
+    );
     if (nextPageRef) {
       const nextUri = this.constructNextUri(nextPageRef);
       listItems.push(this.constructNextPageItem(nextUri));
     }
 
     return {
-      availableListViews: [ 'list', 'grid' ],
+      availableListViews: ['list', 'grid'],
       items: listItems
     };
   }
@@ -174,14 +208,20 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
   async #browseCategories(): Promise<RenderedPage> {
     const currentCategory = await this.#getCategoryFromUriOrDefault();
     const firstList: RenderedList = {
-      title: UIHelper.addIconToListTitle('fa fa-filter', bandcamp.getI18n('BANDCAMP_ARTICLE_CATEGORIES')),
-      availableListViews: [ 'list' ],
+      title: UIHelper.addIconToListTitle(
+        'fa fa-filter',
+        bandcamp.getI18n('BANDCAMP_ARTICLE_CATEGORIES')
+      ),
+      availableListViews: ['list'],
       items: []
     };
     let allCategoriesTitle = bandcamp.getI18n('BANDCAMP_ALL_CATEGORIES');
     const isAllCategories = currentCategory.url === ARTICLE_CATEGORY_ALL.url;
     if (isAllCategories) {
-      allCategoriesTitle = UIHelper.styleText(allCategoriesTitle, UI_STYLES.LIST_ITEM_SELECTED);
+      allCategoriesTitle = UIHelper.styleText(
+        allCategoriesTitle,
+        UI_STYLES.LIST_ITEM_SELECTED
+      );
     }
     firstList.items.push({
       service: 'bandcamp',
@@ -191,8 +231,13 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
       uri: this.#constructArticleCategoryUri(ARTICLE_CATEGORY_ALL.url)
     });
 
-    const categorySections = await this.getModel(ModelType.Article).getArticleCategories();
-    const lists = this.#getArticleCategoryListPerSection(categorySections, currentCategory);
+    const categorySections = await this.getModel(
+      ModelType.Article
+    ).getArticleCategories();
+    const lists = this.#getArticleCategoryListPerSection(
+      categorySections,
+      currentCategory
+    );
     lists.unshift(firstList);
 
     return {
@@ -203,20 +248,28 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
     };
   }
 
-  #getArticleCategoryListPerSection(sections: ArticleCategorySection[], currentCategory: ArticleCategory, lists: RenderedList[] = []) {
+  #getArticleCategoryListPerSection(
+    sections: ArticleCategorySection[],
+    currentCategory: ArticleCategory,
+    lists: RenderedList[] = []
+  ) {
     sections.forEach((section) => {
       if (section.sections) {
-        this.#getArticleCategoryListPerSection(section.sections, currentCategory, lists);
-      }
-      else if (section.categories) {
+        this.#getArticleCategoryListPerSection(
+          section.sections,
+          currentCategory,
+          lists
+        );
+      } else if (section.categories) {
         const categoryList: RenderedList = {
           title: section.title,
-          availableListViews: [ 'list' ],
+          availableListViews: ['list'],
           items: []
         };
         section.categories.forEach((category) => {
           if (category.url) {
-            const isSelected = currentCategory ? currentCategory.url === category.url : false;
+            const isSelected =
+              currentCategory ? currentCategory.url === category.url : false;
             let title = category.name;
             if (isSelected) {
               title = UIHelper.styleText(title, UI_STYLES.LIST_ITEM_SELECTED);
@@ -246,18 +299,22 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
       delete targetView.prevPageRefs;
       if (categoryUrl) {
         targetView.categoryUrl = categoryUrl;
-      }
-      else {
+      } else {
         delete targetView.categoryUrl;
       }
     }
     delete targetView.select;
 
-    return ViewHelper.constructUriFromViews([ ...this.previousViews, targetView ]);
+    return ViewHelper.constructUriFromViews([
+      ...this.previousViews,
+      targetView
+    ]);
   }
 
   async #browseArticle(articleUrl: string) {
-    const article = await this.getModel(ModelType.Article).getArticle(articleUrl);
+    const article = await this.getModel(ModelType.Article).getArticle(
+      articleUrl
+    );
 
     return {
       navigation: {
@@ -295,33 +352,54 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
       }
 
       // Section text
-      title += UIHelper.wrapInDiv(this.#formatArticleText(section.text), UI_STYLES.ARTICLE_SECTION.TEXT);
+      title += UIHelper.wrapInDiv(
+        this.#formatArticleText(section.text),
+        UI_STYLES.ARTICLE_SECTION.TEXT
+      );
 
       // Next section's featured track (or all tracks if single media item)
       if (isSingleMediaItem && !nextSection) {
-        const album = article.mediaItems?.find((mi) => mi.type === 'album') as ArticleEntityMediaItem<AlbumEntity>;
+        const album = article.mediaItems?.find(
+          (mi) => mi.type === 'album'
+        ) as ArticleEntityMediaItem<AlbumEntity>;
         if (album) {
           let albumTitle = '';
           if (album.artist) {
             albumTitle = `${UIHelper.styleText(album.artist.name, UI_STYLES.ARTICLE_SECTION.MEDIA_ITEM_ARTIST)}<br/>`;
           }
-          albumTitle += UIHelper.styleText(album.name, UI_STYLES.ARTICLE_SECTION.MEDIA_ITEM_NAME);
+          albumTitle += UIHelper.styleText(
+            album.name,
+            UI_STYLES.ARTICLE_SECTION.MEDIA_ITEM_NAME
+          );
           const gotoLink = this.#getGoToMediaItemLink(album);
           if (gotoLink) {
-            let titleWithGoto = UIHelper.constructListTitleWithLink(albumTitle, gotoLink, true);
-            titleWithGoto = UIHelper.wrapInDiv(titleWithGoto, 'position: relative; top: 18px;');
+            let titleWithGoto = UIHelper.constructListTitleWithLink(
+              albumTitle,
+              gotoLink,
+              true
+            );
+            titleWithGoto = UIHelper.wrapInDiv(
+              titleWithGoto,
+              'position: relative; top: 18px;'
+            );
             title += titleWithGoto;
           }
-          listItems = album.tracks?.map((track) => articleRenderer.renderMediaItemTrack(article, album, track)) || [];
+          listItems =
+            album.tracks?.map((track) =>
+              articleRenderer.renderMediaItemTrack(article, album, track)
+            ) || [];
         }
-      }
-      else if (nextSection?.mediaItemRef) {
-        const mediaItem = article.mediaItems?.find((mi) => mi.mediaItemRef === nextSection.mediaItemRef);
+      } else if (nextSection?.mediaItemRef) {
+        const mediaItem = article.mediaItems?.find(
+          (mi) => mi.mediaItemRef === nextSection.mediaItemRef
+        );
         if (mediaItem) {
           let featuredTrack;
           if (mediaItem.type === 'album') {
             const album = mediaItem as ArticleEntityMediaItem<AlbumEntity>;
-            featuredTrack = album.tracks?.find((tr) => tr.position == album.featuredTrackPosition);
+            featuredTrack = album.tracks?.find(
+              (tr) => tr.position == album.featuredTrackPosition
+            );
           }
           if (mediaItem.type === 'track') {
             featuredTrack = mediaItem;
@@ -332,28 +410,45 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
               if (mediaItem.artist) {
                 mediaItemTitle = `${UIHelper.styleText(mediaItem.artist.name, UI_STYLES.ARTICLE_SECTION.MEDIA_ITEM_ARTIST)}<br/>`;
               }
-              mediaItemTitle += UIHelper.styleText(mediaItem.name, UI_STYLES.ARTICLE_SECTION.MEDIA_ITEM_NAME);
+              mediaItemTitle += UIHelper.styleText(
+                mediaItem.name,
+                UI_STYLES.ARTICLE_SECTION.MEDIA_ITEM_NAME
+              );
             }
             const gotoLink = this.#getGoToMediaItemLink(mediaItem);
             if (gotoLink) {
-              let titleWithGoto = UIHelper.constructListTitleWithLink(mediaItemTitle, gotoLink, true);
+              let titleWithGoto = UIHelper.constructListTitleWithLink(
+                mediaItemTitle,
+                gotoLink,
+                true
+              );
               if (!nextSection.heading) {
-                titleWithGoto = UIHelper.wrapInDiv(titleWithGoto, 'position: relative; top: 28px;');
-              }
-              else {
-                titleWithGoto = UIHelper.wrapInDiv(titleWithGoto, 'position: relative; top: 18px;');
+                titleWithGoto = UIHelper.wrapInDiv(
+                  titleWithGoto,
+                  'position: relative; top: 28px;'
+                );
+              } else {
+                titleWithGoto = UIHelper.wrapInDiv(
+                  titleWithGoto,
+                  'position: relative; top: 18px;'
+                );
               }
               title += titleWithGoto;
             }
-            listItems.push(articleRenderer.renderMediaItemTrack(article, mediaItem, featuredTrack));
+            listItems.push(
+              articleRenderer.renderMediaItemTrack(
+                article,
+                mediaItem,
+                featuredTrack
+              )
+            );
           }
         }
       }
 
       if (sectionIndex > 0) {
         title = UIHelper.wrapInDiv(title, 'width: 100%; margin-top: -48px;');
-      }
-      else {
+      } else {
         title = UIHelper.wrapInDiv(title, 'width: 100%;');
       }
       if (!UIHelper.supportsEnhancedTitles()) {
@@ -362,10 +457,9 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
 
       lists.push({
         title,
-        availableListViews: [ 'list' ],
+        availableListViews: ['list'],
         items: listItems
       });
-
     });
 
     if (article.category?.url) {
@@ -377,19 +471,21 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
       const moreItem: RenderedListItem = {
         service: 'bandcamp',
         type: 'item-no-menu',
-        'title': bandcamp.getI18n('BANDCAMP_MORE_CATEGORY_ARTICLES', article.category.name),
-        'uri': `${moreUri}@noExplode=1`,
-        'icon': 'fa fa-arrow-circle-right'
+        title: bandcamp.getI18n(
+          'BANDCAMP_MORE_CATEGORY_ARTICLES',
+          article.category.name
+        ),
+        uri: `${moreUri}@noExplode=1`,
+        icon: 'fa fa-arrow-circle-right'
       };
 
       const last = lists[lists.length - 1];
       if (last?.items?.length === 0) {
         last.items.push(moreItem);
-      }
-      else {
+      } else {
         lists.push({
-          availableListViews: [ 'list' ],
-          items: [ moreItem ]
+          availableListViews: ['list'],
+          items: [moreItem]
         });
       }
     }
@@ -401,7 +497,9 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
     return s.replace(/(?:\r\n|\r|\n)/g, '<br/>');
   }
 
-  #getGoToMediaItemLink(mediaItem: ArticleEntityMediaItem<AlbumEntity | TrackEntity>): UILink | null {
+  #getGoToMediaItemLink(
+    mediaItem: ArticleEntityMediaItem<AlbumEntity | TrackEntity>
+  ): UILink | null {
     if (!mediaItem.url) {
       return null;
     }
@@ -411,15 +509,17 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
         name: 'album',
         albumUrl: mediaItem.url
       } as AlbumView;
-    }
-    else {
+    } else {
       gotoView = {
         name: 'track',
         trackUrl: mediaItem.url
       } as TrackView;
     }
     const gotoPath = `${this.uri}/${ViewHelper.constructUriSegmentFromView(gotoView)}`;
-    const gotoText = mediaItem.type === 'album' ? bandcamp.getI18n('BANDCAMP_GO_TO_ALBUM') : bandcamp.getI18n('BANDCAMP_GO_TO_TRACK');
+    const gotoText =
+      mediaItem.type === 'album' ?
+        bandcamp.getI18n('BANDCAMP_GO_TO_ALBUM')
+      : bandcamp.getI18n('BANDCAMP_GO_TO_TRACK');
     return {
       url: '#',
       text: gotoText,
@@ -433,13 +533,19 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
     };
   }
 
-  async getTracksOnExplode(): Promise<ArticleMediaItemExplodeTrack | ArticleMediaItemExplodeTrack[]> {
+  async getTracksOnExplode(): Promise<
+    ArticleMediaItemExplodeTrack | ArticleMediaItemExplodeTrack[]
+  > {
     const articleUrl = this.currentView.articleUrl;
     if (!articleUrl) {
       throw Error('No article URL specified');
     }
 
-    const _setTrackProps = (track: TrackEntity, article: ArticleEntity, mediaItem: ArticleEntityMediaItem<AlbumEntity | TrackEntity>) => {
+    const _setTrackProps = (
+      track: TrackEntity,
+      article: ArticleEntity,
+      mediaItem: ArticleEntityMediaItem<AlbumEntity | TrackEntity>
+    ) => {
       const result: ArticleMediaItemExplodeTrack = {
         ...track,
         articleUrl: article.url,
@@ -463,14 +569,20 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
       return result;
     };
 
-    const article = await this.getModel(ModelType.Article).getArticle(articleUrl);
+    const article = await this.getModel(ModelType.Article).getArticle(
+      articleUrl
+    );
     const { mediaItemRef, track } = this.currentView;
     if (mediaItemRef && track) {
       const trackPosition = parseInt(track, 10);
       // Return track corresponding to mediaItemRef and track position
-      const mediaItem = article.mediaItems?.find((mi) => mi.mediaItemRef === mediaItemRef);
+      const mediaItem = article.mediaItems?.find(
+        (mi) => mi.mediaItemRef === mediaItemRef
+      );
       if (mediaItem?.type === 'album') {
-        const track = mediaItem.tracks?.find((tr) => tr.position === trackPosition);
+        const track = mediaItem.tracks?.find(
+          (tr) => tr.position === trackPosition
+        );
         if (track) {
           return _setTrackProps(track, article, mediaItem);
         }
@@ -480,19 +592,23 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
     }
 
     // Return all featured tracks
-    const tracks = article.mediaItems?.reduce<ArticleMediaItemExplodeTrack[]>((result, mediaItem) => {
-      let track;
-      if (mediaItem.type === 'album') {
-        track = mediaItem.tracks?.find((tr) => tr.position == mediaItem.featuredTrackPosition);
-      }
-      else if (mediaItem.type === 'track') {
-        track = mediaItem;
-      }
-      if (track) {
-        result.push(_setTrackProps(track, article, mediaItem));
-      }
-      return result;
-    }, []);
+    const tracks = article.mediaItems?.reduce<ArticleMediaItemExplodeTrack[]>(
+      (result, mediaItem) => {
+        let track;
+        if (mediaItem.type === 'album') {
+          track = mediaItem.tracks?.find(
+            (tr) => tr.position == mediaItem.featuredTrackPosition
+          );
+        } else if (mediaItem.type === 'track') {
+          track = mediaItem;
+        }
+        if (track) {
+          result.push(_setTrackProps(track, article, mediaItem));
+        }
+        return result;
+      },
+      []
+    );
 
     return tracks || [];
   }
@@ -507,19 +623,41 @@ export default class ArticleViewHandler extends ExplodableViewHandler<ArticleVie
     const artistUrl = track.artist?.url || null;
     const albumUrl = track.album?.url || artistUrl;
 
-    const articleView: ArticleView = {
-      name: 'article',
+    const common: Record<string, string | undefined> & {
+      articleUrl: string;
+      mediaItemRef?: string;
+      track?: string;
+    } = {
       articleUrl: track.articleUrl,
       mediaItemRef: track.mediaItemRef,
       track: track.position?.toString()
     };
-
     if (artistUrl) {
-      articleView.artistUrl = artistUrl;
+      common.artistUrl = artistUrl;
     }
     if (albumUrl) {
-      articleView.albumUrl = albumUrl;
+      common.albumUrl = albumUrl;
     }
+
+    const articleView: ArticleView = {
+      name: 'article',
+      ...common,
+      explode: {
+        title: track.name,
+        artist: track.artist?.name,
+        album: track.album?.name,
+        albumart: track.thumbnail,
+        uri: ViewHelper.constructUriFromViews([
+          {
+            name: 'root'
+          },
+          {
+            name: 'article',
+            ...common
+          } satisfies ArticleView
+        ])
+      }
+    };
 
     const uri = `bandcamp/${ViewHelper.constructUriSegmentFromView(articleView)}`;
 

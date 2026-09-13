@@ -1,6 +1,9 @@
 import bandcamp from '../../../BandcampContext';
 import { ModelType } from '../../../model';
-import { SearchItemType, type SearchModelGetSearchResultsParams } from '../../../model/SearchModel';
+import {
+  SearchItemType,
+  type SearchModelGetSearchResultsParams
+} from '../../../model/SearchModel';
 import UIHelper from '../../../util/UIHelper';
 import BaseViewHandler from './BaseViewHandler';
 import type View from './View';
@@ -12,11 +15,10 @@ export interface SearchView extends View {
   name: 'search';
   query: string;
   combinedSearch?: '1';
-  itemType?: SearchItemType
+  itemType?: SearchItemType;
 }
 
 export default class SearchViewHandler extends BaseViewHandler<SearchView> {
-
   async browse(): Promise<RenderedPage> {
     const view = this.currentView;
 
@@ -27,7 +29,10 @@ export default class SearchViewHandler extends BaseViewHandler<SearchView> {
     const modelParams: SearchModelGetSearchResultsParams = {
       query: view.query,
       itemType: SearchItemType.All,
-      limit: view.combinedSearch ? bandcamp.getConfigValue('combinedSearchResults', 17) : bandcamp.getConfigValue('itemsPerPage', 47)
+      limit:
+        view.combinedSearch ?
+          bandcamp.getConfigValue('combinedSearchResults', 17)
+        : bandcamp.getConfigValue('itemsPerPage', 47)
     };
 
     if (view.pageRef) {
@@ -39,17 +44,25 @@ export default class SearchViewHandler extends BaseViewHandler<SearchView> {
       modelParams.itemType = view.itemType;
     }
 
-    const searchResults = await this.getModel(ModelType.Search).getSearchResults(modelParams);
+    const searchResults = await this.getModel(
+      ModelType.Search
+    ).getSearchResults(modelParams);
     const renderer = this.getRenderer(RendererType.SearchResult);
-    const listItems = searchResults.items.reduce<RenderedListItem[]>((result, item) => {
-      const rendered = renderer.renderToListItem(item);
-      if (rendered) {
-        result.push(rendered);
-      }
-      return result;
-    }, []);
+    const listItems = searchResults.items.reduce<RenderedListItem[]>(
+      (result, item) => {
+        const rendered = renderer.renderToListItem(item);
+        if (rendered) {
+          result.push(rendered);
+        }
+        return result;
+      },
+      []
+    );
 
-    const nextPageRef = this.constructPageRef(searchResults.nextPageToken, searchResults.nextPageOffset);
+    const nextPageRef = this.constructPageRef(
+      searchResults.nextPageToken,
+      searchResults.nextPageOffset
+    );
     if (nextPageRef) {
       const nextUri = this.constructNextUri(nextPageRef);
       listItems.push(this.constructNextPageItem(nextUri));
@@ -72,14 +85,16 @@ export default class SearchViewHandler extends BaseViewHandler<SearchView> {
     if (!view.combinedSearch) {
       titleKey += '_FULL';
     }
-    const pageTitle = UIHelper.addBandcampIconToListTitle(bandcamp.getI18n(titleKey, view.query));
+    const pageTitle = UIHelper.addBandcampIconToListTitle(
+      bandcamp.getI18n(titleKey, view.query)
+    );
 
     return {
       navigation: {
         prev: { uri: this.constructPrevUri() },
         lists: [
           {
-            availableListViews: [ 'list', 'grid' ],
+            availableListViews: ['list', 'grid'],
             items: listItems,
             title: pageTitle
           }
