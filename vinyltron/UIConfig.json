@@ -1,0 +1,477 @@
+{
+    "page": {
+        "label": "Vinyltron Settings"
+    },
+    "sections": [
+        {
+            "id": "section_display",
+            "element": "section",
+            "label": "Display",
+            "icon": "fa-television",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "user_interface/vinyltron",
+                "method": "saveDisplay"
+            },
+            "saveButton": {
+                "label": "Save",
+                "data": ["brightness", "gamma", "volumio_artwork_enabled", "progress_bar_height", "progress_bar_foreground", "progress_bar_background", "format_badge", "format_font", "badge_duration", "startup_delay_seconds"],
+                "popup": {
+                    "allowClose": true,
+                    "type": "success",
+                    "message": "Display settings updated"
+                }
+            },
+            "content": [
+                {
+                    "id": "brightness",
+                    "element": "select",
+                    "label": "Brightness",
+                    "value": {},
+                    "options": [
+                        {"value": "10",  "label": "10%"},
+                        {"value": "20",  "label": "20%"},
+                        {"value": "30",  "label": "30%"},
+                        {"value": "40",  "label": "40%"},
+                        {"value": "50",  "label": "50%"},
+                        {"value": "60",  "label": "60%"},
+                        {"value": "70",  "label": "70%"},
+                        {"value": "80",  "label": "80%"},
+                        {"value": "90",  "label": "90%"},
+                        {"value": "100", "label": "100%"}
+                    ],
+                    "doc": "LED panel brightness"
+                },
+                {
+                    "id": "gamma",
+                    "element": "select",
+                    "label": "Gamma",
+                    "value": {},
+                    "options": [
+                        {"value": "1.8", "label": "1.8 — Bright"},
+                        {"value": "2.0", "label": "2.0"},
+                        {"value": "2.2", "label": "2.2 — Default"},
+                        {"value": "2.4", "label": "2.4 — Dark"}
+                    ],
+                    "doc": "Display gamma correction curve"
+                },
+                {
+                    "id": "volumio_artwork_enabled",
+                    "element": "switch",
+                    "label": "Volumio Artwork",
+                    "value": true,
+                    "doc": "Show Volumio album art while music is playing. Turn off to keep the idle image or random photo folder on screen."
+                },
+                {
+                    "id": "progress_bar_height",
+                    "element": "input",
+                    "label": "Progress Height",
+                    "value": {},
+                    "min": 0,
+                    "max": 64,
+                    "doc": "Height of the progress strip in pixels. Set to 0 to disable. Valid range: 0-64."
+                },
+                {
+                    "id": "progress_bar_foreground",
+                    "element": "input",
+                    "label": "Progress Fill",
+                    "value": "255,255,255",
+                    "doc": "Filled portion color as R,G,B — e.g. 255,160,0 for amber, 0,255,255 for cyan"
+                },
+                {
+                    "id": "progress_bar_background",
+                    "element": "input",
+                    "label": "Progress Track",
+                    "value": "",
+                    "doc": "Unfilled portion color as R,G,B. Leave blank to show album art behind the track."
+                },
+                {
+                    "id": "format_badge",
+                    "element": "switch",
+                    "label": "Format Overlay",
+                    "value": false,
+                    "doc": "Show compact audio format text at the top of the display"
+                },
+                {
+                    "id": "format_font",
+                    "element": "select",
+                    "label": "Format Font",
+                    "value": {},
+                    "options": [
+                        {"value": "tom_thumb", "label": "Tom Thumb"},
+                        {"value": "tiny5",     "label": "Tiny5"},
+                        {"value": "spleen",    "label": "Spleen 5x8"}
+                    ],
+                    "doc": "Pixel font used for the compact format overlay"
+                },
+                {
+                    "id": "badge_duration",
+                    "element": "input",
+                    "label": "Format Duration (seconds)",
+                    "value": "10",
+                    "doc": "How long the format badge stays visible after a new track starts"
+                },
+                {
+                    "id": "startup_delay_seconds",
+                    "element": "input",
+                    "label": "Startup Delay (seconds)",
+                    "value": "5",
+                    "min": 0,
+                    "doc": "Extra grace period after Volumio reports ready before the idle display starts. The matrix stays uninitialized during boot while waiting."
+                }
+            ]
+        },
+        {
+            "id": "section_idle",
+            "element": "section",
+            "label": "Idle / Photo Fallback",
+            "icon": "fa-picture-o",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "user_interface/vinyltron",
+                "method": "saveIdle"
+            },
+            "saveButton": {
+                "label": "Save",
+                "data": ["fallback_mode", "fallback_image_folder", "fallback_selected_image", "fallback_rotate_seconds", "photo_manager_port"],
+                "popup": {
+                    "allowClose": true,
+                    "type": "success",
+                    "message": "Idle image settings updated"
+                }
+            },
+            "content": [
+                {
+                    "id": "fallback_mode",
+                    "element": "select",
+                    "label": "Idle Mode",
+                    "value": {},
+                    "options": [
+                        {"value": "single",        "label": "Built-in Idle Image"},
+                        {"value": "selected",      "label": "Selected Folder Image"},
+                        {"value": "random_folder", "label": "Random Folder Image"},
+                        {"value": "screensaver",   "label": "Screensaver"},
+                        {"value": "weather",       "label": "Current Weather"}
+                    ],
+                    "doc": "Controls which image is shown when playback is stopped"
+                },
+                {
+                    "id": "fallback_image_folder",
+                    "element": "input",
+                    "label": "Idle Folder",
+                    "value": "",
+                    "doc": "Copy images into this folder via the Volumio network share or SCP"
+                },
+                {
+                    "id": "fallback_selected_image",
+                    "element": "select",
+                    "label": "Idle Image",
+                    "value": {},
+                    "options": [
+                        {"value": "", "label": "No image found"}
+                    ],
+                    "doc": "Image filename used when Idle Mode is Selected Folder Image"
+                },
+                {
+                    "id": "fallback_rotate_seconds",
+                    "element": "input",
+                    "label": "Photo Interval (seconds)",
+                    "value": "300",
+                    "doc": "When Idle Mode is Random Folder Image, switch photos after this many seconds. 0 disables rotation."
+                },
+                {
+                    "id": "photo_manager_url",
+                    "element": "input",
+                    "label": "Photo Manager",
+                    "value": "http://volumio.local:3018/photos",
+                    "doc": "Open this URL in a browser on the same network to add, select, or delete idle photos."
+                },
+                {
+                    "id": "photo_manager_port",
+                    "element": "input",
+                    "label": "Photo Manager Port",
+                    "value": "3018",
+                    "min": 1024,
+                    "max": 65535,
+                    "doc": "TCP port for the Photo Manager web UI. Default 3018. Change this if the port conflicts with another service on the Pi. Valid range: 1024-65535. Takes effect immediately on save."
+                }
+            ]
+        },
+        {
+            "id": "section_screensaver",
+            "element": "section",
+            "label": "Screensaver",
+            "icon": "fa-magic",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "user_interface/vinyltron",
+                "method": "saveScreensaver"
+            },
+            "saveButton": {
+                "label": "Save",
+                "data": ["screensaver_engine", "screensaver_palette", "screensaver_fps", "screensaver_reset_seconds"],
+                "popup": {
+                    "allowClose": true,
+                    "type": "success",
+                    "message": "Screensaver settings updated"
+                }
+            },
+            "content": [
+                {
+                    "id": "screensaver_engine",
+                    "element": "select",
+                    "label": "Screensaver",
+                    "value": {},
+                    "options": [
+                        {"value": "brians_brain", "label": "Brian's Brain"},
+                        {"value": "langtons_ant", "label": "Langton's Ant"},
+                        {"value": "chaos_game", "label": "Chaos Game"},
+                        {"value": "gray_scott", "label": "Reaction-Diffusion"},
+                        {"value": "lissajous", "label": "Lissajous"}
+                    ],
+                    "doc": "Generated display used when Idle Mode is Screensaver."
+                },
+                {
+                    "id": "screensaver_palette",
+                    "element": "select",
+                    "label": "Palette",
+                    "value": {},
+                    "options": [
+                        {"value": "cyan_amber",    "label": "Cyan / Amber"},
+                        {"value": "green_magenta", "label": "Green / Magenta"},
+                        {"value": "blue_red",      "label": "Blue / Red"},
+                        {"value": "white_violet",  "label": "White / Violet"}
+                    ],
+                    "doc": "Color pair used by the selected screensaver."
+                },
+                {
+                    "id": "screensaver_fps",
+                    "element": "select",
+                    "label": "Speed",
+                    "value": {},
+                    "options": [
+                        {"value": "4",  "label": "Slow"},
+                        {"value": "6",  "label": "Medium"},
+                        {"value": "10", "label": "Fast"}
+                    ],
+                    "doc": "Animation speed for the selected screensaver."
+                },
+                {
+                    "id": "screensaver_reset_seconds",
+                    "element": "input",
+                    "label": "Reset Interval (seconds)",
+                    "value": "300",
+                    "min": 0,
+                    "doc": "Seconds between random state resets. Set to 0 to disable periodic resets."
+                }
+            ]
+        },
+        {
+            "id": "section_hardware",
+            "element": "section",
+            "label": "Hardware — requires restart",
+            "icon": "fa-refresh",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "user_interface/vinyltron",
+                "method": "saveHardware"
+            },
+            "saveButton": {
+                "label": "Save & Restart",
+                "data": ["rotation", "hardware_mapping", "limit_refresh_rate_hz"],
+                "popup": {
+                    "allowClose": true,
+                    "type": "success",
+                    "message": "Vinyltron restarting — display back in a few seconds"
+                }
+            },
+            "content": [
+                {
+                    "id": "rotation",
+                    "element": "select",
+                    "label": "Rotation",
+                    "value": {},
+                    "options": [
+                        {"value": "0",   "label": "0°"},
+                        {"value": "90",  "label": "90°"},
+                        {"value": "180", "label": "180°"},
+                        {"value": "270", "label": "270°"}
+                    ],
+                    "doc": "Rotate to match panel mounting orientation"
+                },
+                {
+                    "id": "hardware_mapping",
+                    "element": "select",
+                    "label": "Matrix Mapping",
+                    "value": {},
+                    "options": [
+                        {"value": "adafruit-hat-pwm", "label": "Bonnet PWM"},
+                        {"value": "adafruit-hat",     "label": "Bonnet"},
+                        {"value": "regular",          "label": "Direct GPIO"}
+                    ],
+                    "doc": "GPIO mapping for the matrix adapter. Bonnet PWM requires the GPIO4-to-GPIO18 quality jumper."
+                },
+                {
+                    "id": "limit_refresh_rate_hz",
+                    "element": "input",
+                    "label": "Refresh Limit (Hz)",
+                    "value": "0",
+                    "doc": "Caps the HUB75 scan refresh rate. 0 is uncapped. 90-140 Hz is a useful tuning range; 120 Hz reduced flicker in testing."
+                }
+            ]
+        },
+        {
+            "id": "section_power",
+            "element": "section",
+            "label": "Power",
+            "icon": "fa-power-off",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "user_interface/vinyltron",
+                "method": "toggleDisplay"
+            },
+            "saveButton": {
+                "label": "Apply",
+                "data": ["display_on", "schedule_enabled", "schedule_on_time", "schedule_off_time"],
+                "popup": {
+                    "allowClose": true,
+                    "type": "success",
+                    "message": "Display updated"
+                }
+            },
+            "content": [
+                {
+                    "id": "display_on",
+                    "element": "switch",
+                    "label": "Display On",
+                    "value": true,
+                    "doc": "Blank the panel without stopping the service. Art resumes instantly when re-enabled."
+                },
+                {
+                    "id": "schedule_enabled",
+                    "element": "switch",
+                    "label": "Schedule",
+                    "value": false,
+                    "doc": "Turn the matrix on and off automatically each day."
+                },
+                {
+                    "id": "schedule_on_time",
+                    "element": "input",
+                    "label": "On Time",
+                    "value": "08:00",
+                    "doc": "Daily local time to turn the matrix on, using 24-hour HH:MM format."
+                },
+                {
+                    "id": "schedule_off_time",
+                    "element": "input",
+                    "label": "Off Time",
+                    "value": "23:00",
+                    "doc": "Daily local time to turn the matrix off, using 24-hour HH:MM format."
+                }
+            ]
+        },
+        {
+            "id": "section_weather",
+            "element": "section",
+            "label": "Weather",
+            "icon": "fa-cloud",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "user_interface/vinyltron",
+                "method": "saveWeather"
+            },
+            "saveButton": {
+                "label": "Save",
+                "data": ["weather_location_label", "weather_latitude", "weather_longitude", "weather_units", "weather_refresh_minutes", "weather_night_icon", "weather_secondary_metric", "weather_fps"],
+                "popup": {
+                    "allowClose": true,
+                    "type": "success",
+                    "message": "Weather settings updated"
+                }
+            },
+            "content": [
+                {
+                    "id": "weather_location_label",
+                    "element": "input",
+                    "label": "Location Label",
+                    "value": "",
+                    "doc": "Optional friendly name for this weather location."
+                },
+                {
+                    "id": "weather_latitude",
+                    "element": "input",
+                    "label": "Latitude",
+                    "value": "0.0",
+                    "doc": "Latitude for Open-Meteo live weather."
+                },
+                {
+                    "id": "weather_longitude",
+                    "element": "input",
+                    "label": "Longitude",
+                    "value": "0.0",
+                    "doc": "Longitude for Open-Meteo live weather. Use negative values west of Greenwich."
+                },
+                {
+                    "id": "weather_units",
+                    "element": "select",
+                    "label": "Units",
+                    "value": {},
+                    "options": [
+                        {"value": "imperial", "label": "Imperial"},
+                        {"value": "metric", "label": "Metric"}
+                    ],
+                    "doc": "Temperature and wind units."
+                },
+                {
+                    "id": "weather_refresh_minutes",
+                    "element": "select",
+                    "label": "Refresh",
+                    "value": {},
+                    "options": [
+                        {"value": "5", "label": "5 minutes"},
+                        {"value": "10", "label": "10 minutes"},
+                        {"value": "15", "label": "15 minutes"},
+                        {"value": "30", "label": "30 minutes"},
+                        {"value": "60", "label": "60 minutes"}
+                    ],
+                    "doc": "How often live weather is refreshed."
+                },
+                {
+                    "id": "weather_night_icon",
+                    "element": "select",
+                    "label": "Night Icon",
+                    "value": {},
+                    "options": [
+                        {"value": "moon", "label": "Moon Phase"},
+                        {"value": "weather", "label": "Weather Icon"}
+                    ],
+                    "doc": "What to show in the large icon area after sunset."
+                },
+                {
+                    "id": "weather_secondary_metric",
+                    "element": "select",
+                    "label": "Bottom Metric",
+                    "value": {},
+                    "options": [
+                        {"value": "humidity", "label": "Humidity"},
+                        {"value": "aqi", "label": "AQI"},
+                        {"value": "wind", "label": "Wind"}
+                    ],
+                    "doc": "What to show in the bottom-left slot."
+                },
+                {
+                    "id": "weather_fps",
+                    "element": "select",
+                    "label": "Animation Speed",
+                    "value": {},
+                    "options": [
+                        {"value": "1", "label": "Slow"},
+                        {"value": "2", "label": "Medium"},
+                        {"value": "4", "label": "Fast"}
+                    ],
+                    "doc": "Weather renderer animation rate."
+                }
+            ]
+        }
+    ]
+}
