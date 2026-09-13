@@ -83,12 +83,14 @@ class NowPlayingContext {
     return this.#pluginContext.logger;
   }
 
-  getDeviceInfo(): DeviceInfo {
-    if (!this.get<DeviceInfo | null>('deviceInfo', null)) {
-      const deviceInfo = this.#pluginContext.coreCommand.executeOnPlugin('system_controller', 'volumiodiscovery', 'getThisDevice');
-      this.set('deviceInfo', deviceInfo);
+  getDeviceInfo(nocache = false): DeviceInfo {
+    let deviceInfo = this.get<DeviceInfo | null>('deviceInfo', null);
+    if (!deviceInfo || nocache) {
+      deviceInfo = this.#pluginContext.coreCommand.executeOnPlugin('system_controller', 'volumiodiscovery', 'getThisDevice');
+      if (!nocache) {
+        this.set('deviceInfo', deviceInfo);
+      }
     }
-    const deviceInfo = this.get<DeviceInfo | null>('deviceInfo', null);
     if (!deviceInfo) {
       this.getLogger().warn('[now-playing] Failed to get device info!');
       return DUMMY_DEVICE_INFO;

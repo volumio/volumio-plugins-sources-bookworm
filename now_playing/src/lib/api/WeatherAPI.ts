@@ -43,6 +43,7 @@ export interface WeatherAPIConfig {
   timezone?: string;
   units: 'imperial' | 'metric';
   cacheMinutes?: number;
+  appUrl: string;
 }
 
 export interface WeatherAPIParsedConfig {
@@ -53,6 +54,7 @@ export interface WeatherAPIParsedConfig {
   locale?: string;
   timezone?: string;
   units: 'imperial' | 'metric';
+  appUrl: string;
 }
 
 class WeatherAPI {
@@ -69,7 +71,8 @@ class WeatherAPI {
     this.#fetchPromises = {};
     this.#cache = new Cache({ weather: 600 }, { weather: 10 });
     this.#config = {
-      units: 'metric'
+      units: 'metric',
+      appUrl: getPluginInfo().appUrl
     };
   }
 
@@ -78,7 +81,7 @@ class WeatherAPI {
   }
 
   setConfig(opts: WeatherAPIConfig) {
-    const { coordinates, locale, timezone, units, cacheMinutes } = opts;
+    const { coordinates, locale, timezone, units, cacheMinutes, appUrl } = opts;
     const minutes = Math.min(1440, Math.max(10, cacheMinutes ?? 10));
     this.#cache.setTTL('weather', minutes * 60);
     const coord = ConfigHelper.parseCoordinates(coordinates);
@@ -87,7 +90,8 @@ class WeatherAPI {
       coordinates: currentCoordinates,
       locale: currentLocale,
       timezone: currentTimezone,
-      units: currentUnits
+      units: currentUnits,
+      appUrl: currentAppUrl
     } = this.#config;
     if (coord && (coord.lat !== currentCoordinates?.lat || coord.lon !== currentCoordinates?.lon)) {
       this.#api.setCoordinates(coord.lat, coord.lon);
@@ -107,6 +111,10 @@ class WeatherAPI {
     if (currentUnits !== units) {
       this.#api.setUnits(units);
       this.#config.units = units;
+      configChanged = true;
+    }
+    if (currentAppUrl !== appUrl) {
+      this.#config.appUrl = appUrl;
       configChanged = true;
     }
     if (configChanged) {
@@ -213,7 +221,7 @@ class WeatherAPI {
 
   #parseCurrent(data: OpenMeteoAPIGetWeatherResult) {
     const currentData = data.current;
-    const appUrl = getPluginInfo().appUrl;
+    const appUrl = this.#config.appUrl;
     const temp = currentData.temp.now;
     const humidity = currentData.humidity;
     const windSpeed = currentData.windSpeed;
@@ -255,7 +263,7 @@ class WeatherAPI {
   }
 
   #parseForecast(data: OpenMeteoAPIGetWeatherResult) {
-    const appUrl = getPluginInfo().appUrl;
+    const appUrl = this.#config.appUrl;
     const forecast: WeatherDataForecastDay[] = [];
     for (const dailyWeather of data.daily) {
       const tempMin = dailyWeather.temp.min;
@@ -295,7 +303,7 @@ class WeatherAPI {
   }
 
   #parseHourly(data: OpenMeteoAPIGetWeatherResult) {
-    const appUrl = getPluginInfo().appUrl;
+    const appUrl = this.#config.appUrl;
     const hourly: WeatherDataHourly[] = [];
     for (const hourlyWeather of data.hourly) {
       const temp = hourlyWeather.temp;
@@ -368,6 +376,11 @@ class WeatherAPI {
   }
 }
 
-const weatherAPI = new WeatherAPI();
+let weatherApi: WeatherAPI | null = null;
 
-export default weatherAPI;
+export function getWeatherAPI() {
+  if (!weatherApi) {
+    weatherApi = new WeatherAPI();
+  }
+  return weatherApi;
+}
