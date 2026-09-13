@@ -1,0 +1,35 @@
+{
+	"name": "mupihat",
+	"version": "2.0.0",
+	"description": "MuPiHAT Battery Management Plugin for Volumio - Enables battery monitoring and management for the MuPiHAT Raspberry Pi HAT.",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "MuPiHAT Team",
+	"license": "GPL-3.0",
+	"repository": "https://github.com/stopfkuchen/MuPiHAT",
+	"volumio_info": {
+		"prettyName": "MuPiHAT",
+		"icon": "fa-battery-half",
+		"plugin_type": "audio_interface",
+		"architectures": [
+			"armhf",
+			"arm64"
+		],
+		"os": [
+			"bookworm"
+		],
+		"details": "MuPiHAT plugin provides battery monitoring and management functionality for the MuPiHAT Raspberry Pi HAT. Features include real-time battery status monitoring, web-based monitoring interface, I2C-based communication with BQ25792 charger IC, configurable logging, and systemd service management. The plugin integrates seamlessly with Volumio to provide battery information and control for portable audio systems.",
+		"changelog": "Initial release with full MuPiHAT integration including battery monitoring service, web interface support, I2C configuration, and systemd service management."
+	},
+	"engines": {
+		"node": ">=20.5.1 <21.0.0",
+		"volumio": ">=4.22.0 <5.0.0"
+	},
+	"dependencies": {
+		"fs-extra": "^0.28.0",
+		"kew": "^0.7.0",
+		"v-conf": "^1.4.0"
+	}
+}
