@@ -22,22 +22,13 @@ class CommandDispatcher {
         __classPrivateFieldSet(this, _CommandDispatcher_rpcConnectParams, (0, Util_1.getServerConnectParams)(player.server, serverCredentials, 'rpc'), "f");
     }
     async sendPlay() {
-        return (0, RPC_1.sendRpcRequest)(__classPrivateFieldGet(this, _CommandDispatcher_rpcConnectParams, "f"), [
-            __classPrivateFieldGet(this, _CommandDispatcher_playerId, "f"),
-            ['play']
-        ]);
+        return (0, RPC_1.sendRpcRequest)(__classPrivateFieldGet(this, _CommandDispatcher_rpcConnectParams, "f"), [__classPrivateFieldGet(this, _CommandDispatcher_playerId, "f"), ['play']]);
     }
     async sendPause() {
-        return (0, RPC_1.sendRpcRequest)(__classPrivateFieldGet(this, _CommandDispatcher_rpcConnectParams, "f"), [
-            __classPrivateFieldGet(this, _CommandDispatcher_playerId, "f"),
-            ['pause']
-        ]);
+        return (0, RPC_1.sendRpcRequest)(__classPrivateFieldGet(this, _CommandDispatcher_rpcConnectParams, "f"), [__classPrivateFieldGet(this, _CommandDispatcher_playerId, "f"), ['pause']]);
     }
     async sendStop() {
-        return (0, RPC_1.sendRpcRequest)(__classPrivateFieldGet(this, _CommandDispatcher_rpcConnectParams, "f"), [
-            __classPrivateFieldGet(this, _CommandDispatcher_playerId, "f"),
-            ['stop']
-        ]);
+        return (0, RPC_1.sendRpcRequest)(__classPrivateFieldGet(this, _CommandDispatcher_rpcConnectParams, "f"), [__classPrivateFieldGet(this, _CommandDispatcher_playerId, "f"), ['stop']]);
     }
     async sendNext() {
         return (0, RPC_1.sendRpcRequest)(__classPrivateFieldGet(this, _CommandDispatcher_rpcConnectParams, "f"), [
@@ -84,4 +75,3 @@ class CommandDispatcher {
 }
 _CommandDispatcher_playerId = new WeakMap(), _CommandDispatcher_rpcConnectParams = new WeakMap();
 exports.default = CommandDispatcher;
-//# sourceMappingURL=CommandDispatcher.js.map

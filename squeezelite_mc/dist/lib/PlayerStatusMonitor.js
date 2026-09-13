@@ -13,201 +13,151 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _PlayerStatusMonitor_instances, _PlayerStatusMonitor_player, _PlayerStatusMonitor_serverCredentials, _PlayerStatusMonitor_notificationListener, _PlayerStatusMonitor_statusRequestTimer, _PlayerStatusMonitor_statusRequestController, _PlayerStatusMonitor_syncMaster, _PlayerStatusMonitor_stdLogError, _PlayerStatusMonitor_handleDisconnect, _PlayerStatusMonitor_handleNotification, _PlayerStatusMonitor_getStatusAndEmit, _PlayerStatusMonitor_abortCurrentAndPendingStatusRequest, _PlayerStatusMonitor_createAndStartNotificationListener, _PlayerStatusMonitor_requestPlayerStatus, _PlayerStatusMonitor_getPlayerSyncMaster, _PlayerStatusMonitor_parsePlayerStatusResult;
+var _PlayerStatusMonitor_instances, _PlayerStatusMonitor_player, _PlayerStatusMonitor_serverCredentials, _PlayerStatusMonitor_child, _PlayerStatusMonitor_deferredEmitTimer, _PlayerStatusMonitor_startPromise, _PlayerStatusMonitor_startResolve, _PlayerStatusMonitor_startReject, _PlayerStatusMonitor_handleChildMessage, _PlayerStatusMonitor_handleChildExit, _PlayerStatusMonitor_handleChildError, _PlayerStatusMonitor_cancelPendingEmit, _PlayerStatusMonitor_getChildModulePath;
 Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = __importDefault(require("events"));
+const path_1 = __importDefault(require("path"));
+const child_process_1 = require("child_process");
 const SqueezeliteMCContext_1 = __importDefault(require("./SqueezeliteMCContext"));
-const lms_cli_notifications_1 = require("lms-cli-notifications");
-const Util_1 = require("./Util");
-const RPC_1 = require("./RPC");
+const ChildProcessUtils_1 = require("./ChildProcessUtils");
 class PlayerStatusMonitor extends events_1.default {
     constructor(player, serverCredentials) {
         super();
         _PlayerStatusMonitor_instances.add(this);
         _PlayerStatusMonitor_player.set(this, void 0);
         _PlayerStatusMonitor_serverCredentials.set(this, void 0);
-        _PlayerStatusMonitor_notificationListener.set(this, void 0);
-        _PlayerStatusMonitor_statusRequestTimer.set(this, void 0);
-        _PlayerStatusMonitor_statusRequestController.set(this, void 0);
-        _PlayerStatusMonitor_syncMaster.set(this, void 0);
+        _PlayerStatusMonitor_child.set(this, void 0);
+        _PlayerStatusMonitor_deferredEmitTimer.set(this, void 0);
+        _PlayerStatusMonitor_startPromise.set(this, void 0);
+        _PlayerStatusMonitor_startResolve.set(this, void 0);
+        _PlayerStatusMonitor_startReject.set(this, void 0);
         __classPrivateFieldSet(this, _PlayerStatusMonitor_player, player, "f");
         __classPrivateFieldSet(this, _PlayerStatusMonitor_serverCredentials, serverCredentials, "f");
-        __classPrivateFieldSet(this, _PlayerStatusMonitor_notificationListener, null, "f");
-        __classPrivateFieldSet(this, _PlayerStatusMonitor_statusRequestTimer, null, "f");
-        __classPrivateFieldSet(this, _PlayerStatusMonitor_statusRequestController, null, "f");
-        __classPrivateFieldSet(this, _PlayerStatusMonitor_syncMaster, null, "f");
+        __classPrivateFieldSet(this, _PlayerStatusMonitor_child, null, "f");
+        __classPrivateFieldSet(this, _PlayerStatusMonitor_deferredEmitTimer, null, "f");
+        __classPrivateFieldSet(this, _PlayerStatusMonitor_startPromise, null, "f");
+        __classPrivateFieldSet(this, _PlayerStatusMonitor_startResolve, null, "f");
+        __classPrivateFieldSet(this, _PlayerStatusMonitor_startReject, null, "f");
     }
     async start() {
-        __classPrivateFieldSet(this, _PlayerStatusMonitor_notificationListener, await __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_createAndStartNotificationListener).call(this), "f");
-        __classPrivateFieldSet(this, _PlayerStatusMonitor_syncMaster, (await __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_getPlayerSyncMaster).call(this)).syncMaster, "f");
-        if (__classPrivateFieldGet(this, _PlayerStatusMonitor_syncMaster, "f")) {
-            SqueezeliteMCContext_1.default.getLogger().info(`[squeezelite_mc] Squeezelite in sync group with sync master ${__classPrivateFieldGet(this, _PlayerStatusMonitor_syncMaster, "f")}.`);
+        if (__classPrivateFieldGet(this, _PlayerStatusMonitor_child, "f")) {
+            return __classPrivateFieldGet(this, _PlayerStatusMonitor_startPromise, "f") ?? Promise.resolve();
         }
-        await __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_getStatusAndEmit).call(this);
+        const childPath = __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_getChildModulePath).call(this);
+        SqueezeliteMCContext_1.default.getLogger().verbose(`[squeezelite_mc] PlayerStatusMonitor: fork child process at ${childPath}`);
+        __classPrivateFieldSet(this, _PlayerStatusMonitor_child, (0, child_process_1.fork)(childPath, [], {
+            stdio: ['pipe', 'pipe', 'pipe', 'ipc']
+        }), "f");
+        __classPrivateFieldSet(this, _PlayerStatusMonitor_startPromise, new Promise((resolve, reject) => {
+            __classPrivateFieldSet(this, _PlayerStatusMonitor_startResolve, resolve, "f");
+            __classPrivateFieldSet(this, _PlayerStatusMonitor_startReject, reject, "f");
+        }), "f");
+        __classPrivateFieldGet(this, _PlayerStatusMonitor_child, "f").on('message', (message) => {
+            __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_handleChildMessage).call(this, message);
+        });
+        __classPrivateFieldGet(this, _PlayerStatusMonitor_child, "f").on('exit', (code, signal) => {
+            __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_handleChildExit).call(this, code, signal);
+        });
+        __classPrivateFieldGet(this, _PlayerStatusMonitor_child, "f").on('error', (error) => {
+            __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_handleChildError).call(this, error);
+        });
+        __classPrivateFieldGet(this, _PlayerStatusMonitor_child, "f").send({
+            type: 'start',
+            payload: {
+                player: __classPrivateFieldGet(this, _PlayerStatusMonitor_player, "f"),
+                serverCredentials: __classPrivateFieldGet(this, _PlayerStatusMonitor_serverCredentials, "f")
+            }
+        });
+        return __classPrivateFieldGet(this, _PlayerStatusMonitor_startPromise, "f");
     }
     async stop() {
-        if (__classPrivateFieldGet(this, _PlayerStatusMonitor_notificationListener, "f")) {
-            await __classPrivateFieldGet(this, _PlayerStatusMonitor_notificationListener, "f").stop();
+        if (!__classPrivateFieldGet(this, _PlayerStatusMonitor_child, "f")) {
+            return;
         }
+        SqueezeliteMCContext_1.default.getLogger().verbose('[squeezelite_mc] PlayerStatusMonitor: stopping child process');
+        const child = __classPrivateFieldGet(this, _PlayerStatusMonitor_child, "f");
+        __classPrivateFieldSet(this, _PlayerStatusMonitor_child, null, "f");
+        if (child.connected) {
+            child.send({ type: 'stop' });
+            child.disconnect();
+        }
+        await new Promise((resolve) => {
+            child.once('exit', () => resolve());
+            if (!child.connected) {
+                resolve();
+            }
+        });
     }
     getPlayer() {
         return __classPrivateFieldGet(this, _PlayerStatusMonitor_player, "f");
     }
     requestUpdate() {
-        __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_getStatusAndEmit).call(this)
-            .catch((error) => {
-            __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_stdLogError).call(this, '#getStatusAndEmit()', error);
-        });
+        if (!__classPrivateFieldGet(this, _PlayerStatusMonitor_child, "f") || !__classPrivateFieldGet(this, _PlayerStatusMonitor_child, "f").connected) {
+            return;
+        }
+        __classPrivateFieldGet(this, _PlayerStatusMonitor_child, "f").send({ type: 'requestUpdate' });
+    }
+    emit(eventName, ...args) {
+        return super.emit(eventName, ...args);
     }
     on(event, listener) {
         return super.on(event, listener);
     }
 }
-_PlayerStatusMonitor_player = new WeakMap(), _PlayerStatusMonitor_serverCredentials = new WeakMap(), _PlayerStatusMonitor_notificationListener = new WeakMap(), _PlayerStatusMonitor_statusRequestTimer = new WeakMap(), _PlayerStatusMonitor_statusRequestController = new WeakMap(), _PlayerStatusMonitor_syncMaster = new WeakMap(), _PlayerStatusMonitor_instances = new WeakSet(), _PlayerStatusMonitor_stdLogError = function _PlayerStatusMonitor_stdLogError(fn, error, stack = false) {
-    SqueezeliteMCContext_1.default.getLogger().error(SqueezeliteMCContext_1.default.getErrorMessage(`[squeezelite_mc] Caught error in ${fn}:`, error, stack));
-}, _PlayerStatusMonitor_handleDisconnect = function _PlayerStatusMonitor_handleDisconnect() {
-    if (!__classPrivateFieldGet(this, _PlayerStatusMonitor_notificationListener, "f")) {
-        return;
-    }
-    __classPrivateFieldGet(this, _PlayerStatusMonitor_notificationListener, "f").removeAllListeners('notification');
-    __classPrivateFieldGet(this, _PlayerStatusMonitor_notificationListener, "f").removeAllListeners('disconnect');
-    __classPrivateFieldSet(this, _PlayerStatusMonitor_notificationListener, null, "f");
-    __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_abortCurrentAndPendingStatusRequest).call(this);
-    this.emit('disconnect', __classPrivateFieldGet(this, _PlayerStatusMonitor_player, "f"));
-}, _PlayerStatusMonitor_handleNotification = function _PlayerStatusMonitor_handleNotification(data) {
-    let preRequestStatus = Promise.resolve();
-    if (data.notification === 'sync') {
-        if (data.params[0] === '-') {
-            if (data.playerId === __classPrivateFieldGet(this, _PlayerStatusMonitor_player, "f").id) { // Unsynced
-                SqueezeliteMCContext_1.default.getLogger().info('[squeezelite_mc] Squeezelite removed from sync group.');
-                __classPrivateFieldSet(this, _PlayerStatusMonitor_syncMaster, null, "f");
-            }
-            else if (data.playerId === __classPrivateFieldGet(this, _PlayerStatusMonitor_syncMaster, "f")) { // Sync master itself unsynced
-                SqueezeliteMCContext_1.default.getLogger().info(`[squeezelite_mc] Squeezelite's sync master (${__classPrivateFieldGet(this, _PlayerStatusMonitor_syncMaster, "f")}) removed from sync group.`);
-                // Need to get updated sync master, if any.
-                preRequestStatus = __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_getPlayerSyncMaster).call(this).then((result) => {
-                    if (result.syncMaster) {
-                        SqueezeliteMCContext_1.default.getLogger().info(`[squeezelite_mc] Squeezelite is now in sync group with sync master ${result.syncMaster}.`);
-                    }
-                    else if (!result.error) {
-                        SqueezeliteMCContext_1.default.getLogger().info('[squeezelite_mc] Squeezelite is now unsynced or in a sync group with itself as the sync master.');
-                    }
-                    __classPrivateFieldSet(this, _PlayerStatusMonitor_syncMaster, result.syncMaster, "f");
-                });
-            }
-        }
-        else if (data.playerId && data.params[0] === __classPrivateFieldGet(this, _PlayerStatusMonitor_player, "f").id) { // Synced
-            __classPrivateFieldSet(this, _PlayerStatusMonitor_syncMaster, data.playerId, "f");
-            SqueezeliteMCContext_1.default.getLogger().info(`[squeezelite_mc] Squeezelite joined sync group with sync master ${__classPrivateFieldGet(this, _PlayerStatusMonitor_syncMaster, "f")}.`);
-        }
-    }
-    if (data.playerId === __classPrivateFieldGet(this, _PlayerStatusMonitor_player, "f").id || data.notification === 'sync' ||
-        (__classPrivateFieldGet(this, _PlayerStatusMonitor_syncMaster, "f") && data.playerId === __classPrivateFieldGet(this, _PlayerStatusMonitor_syncMaster, "f"))) {
-        __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_abortCurrentAndPendingStatusRequest).call(this);
-        preRequestStatus
-            .catch((error) => {
-            __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_stdLogError).call(this, 'preRequestStatus', error);
-        })
-            .finally(() => {
-            __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_abortCurrentAndPendingStatusRequest).call(this);
-            __classPrivateFieldSet(this, _PlayerStatusMonitor_statusRequestTimer, setTimeout(() => {
-                __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_getStatusAndEmit).call(this)
-                    .catch((error) => {
-                    __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_stdLogError).call(this, '#getStatusAndEmit()', error);
-                });
+_PlayerStatusMonitor_player = new WeakMap(), _PlayerStatusMonitor_serverCredentials = new WeakMap(), _PlayerStatusMonitor_child = new WeakMap(), _PlayerStatusMonitor_deferredEmitTimer = new WeakMap(), _PlayerStatusMonitor_startPromise = new WeakMap(), _PlayerStatusMonitor_startResolve = new WeakMap(), _PlayerStatusMonitor_startReject = new WeakMap(), _PlayerStatusMonitor_instances = new WeakSet(), _PlayerStatusMonitor_handleChildMessage = function _PlayerStatusMonitor_handleChildMessage(message) {
+    switch (message.type) {
+        case 'log':
+            (0, ChildProcessUtils_1.logChildProcessMessage)(message.payload.level, message.payload.message);
+            break;
+        case 'started':
+            SqueezeliteMCContext_1.default.getLogger().verbose('[squeezelite_mc] PlayerStatusMonitor: child process started');
+            __classPrivateFieldGet(this, _PlayerStatusMonitor_startResolve, "f")?.call(this);
+            __classPrivateFieldSet(this, _PlayerStatusMonitor_startResolve, null, "f");
+            __classPrivateFieldSet(this, _PlayerStatusMonitor_startReject, null, "f");
+            break;
+        case 'update':
+            __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_cancelPendingEmit).call(this);
+            __classPrivateFieldSet(this, _PlayerStatusMonitor_deferredEmitTimer, setTimeout(() => {
+                this.emit('update', message.payload);
             }, 200), "f");
-        });
+            break;
+        case 'disconnect':
+            this.emit('disconnect', __classPrivateFieldGet(this, _PlayerStatusMonitor_player, "f"));
+            break;
+        case 'error':
+            if (__classPrivateFieldGet(this, _PlayerStatusMonitor_startReject, "f")) {
+                __classPrivateFieldGet(this, _PlayerStatusMonitor_startReject, "f").call(this, new Error(message.payload.message));
+            }
+            else {
+                SqueezeliteMCContext_1.default.getLogger().error(SqueezeliteMCContext_1.default.getErrorMessage('[squeezelite_mc] PlayerStatusMonitor: child process error:', message.payload.message));
+            }
+            break;
     }
-}, _PlayerStatusMonitor_getStatusAndEmit = async function _PlayerStatusMonitor_getStatusAndEmit() {
-    __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_abortCurrentAndPendingStatusRequest).call(this);
-    __classPrivateFieldSet(this, _PlayerStatusMonitor_statusRequestController, new AbortController(), "f");
-    const playerStatus = await __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_requestPlayerStatus).call(this, __classPrivateFieldGet(this, _PlayerStatusMonitor_statusRequestController, "f"));
-    if (playerStatus._requestAborted !== undefined && playerStatus._requestAborted) {
+}, _PlayerStatusMonitor_handleChildExit = function _PlayerStatusMonitor_handleChildExit(code, signal) {
+    SqueezeliteMCContext_1.default.getLogger().verbose(`[squeezelite_mc] PlayerStatusMonitor: child process exited (code: ${code}; signal: ${signal})`);
+    __classPrivateFieldSet(this, _PlayerStatusMonitor_child, null, "f");
+    __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_cancelPendingEmit).call(this);
+    if (__classPrivateFieldGet(this, _PlayerStatusMonitor_startReject, "f")) {
+        __classPrivateFieldGet(this, _PlayerStatusMonitor_startReject, "f").call(this, new Error(`PlayerStatusMonitor: child process exited unexpectedly (${code ?? 'unknown'}${signal ? `, signal ${signal}` : ''})`));
+        __classPrivateFieldSet(this, _PlayerStatusMonitor_startResolve, null, "f");
+        __classPrivateFieldSet(this, _PlayerStatusMonitor_startReject, null, "f");
         return;
     }
-    this.emit('update', {
-        player: __classPrivateFieldGet(this, _PlayerStatusMonitor_player, "f"),
-        status: __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_parsePlayerStatusResult).call(this, playerStatus.result)
-    });
-}, _PlayerStatusMonitor_abortCurrentAndPendingStatusRequest = function _PlayerStatusMonitor_abortCurrentAndPendingStatusRequest() {
-    if (__classPrivateFieldGet(this, _PlayerStatusMonitor_statusRequestTimer, "f")) {
-        clearTimeout(__classPrivateFieldGet(this, _PlayerStatusMonitor_statusRequestTimer, "f"));
-        __classPrivateFieldSet(this, _PlayerStatusMonitor_statusRequestTimer, null, "f");
+    this.emit('disconnect', __classPrivateFieldGet(this, _PlayerStatusMonitor_player, "f"));
+}, _PlayerStatusMonitor_handleChildError = function _PlayerStatusMonitor_handleChildError(error) {
+    SqueezeliteMCContext_1.default.getLogger().error(SqueezeliteMCContext_1.default.getErrorMessage('[squeezelite_mc] PlayerStatusMonitor: child process error: ', error));
+    if (__classPrivateFieldGet(this, _PlayerStatusMonitor_startReject, "f")) {
+        __classPrivateFieldGet(this, _PlayerStatusMonitor_startReject, "f").call(this, error);
+        __classPrivateFieldSet(this, _PlayerStatusMonitor_startResolve, null, "f");
+        __classPrivateFieldSet(this, _PlayerStatusMonitor_startReject, null, "f");
+        return;
     }
-    if (__classPrivateFieldGet(this, _PlayerStatusMonitor_statusRequestController, "f")) {
-        __classPrivateFieldGet(this, _PlayerStatusMonitor_statusRequestController, "f").abort();
-        __classPrivateFieldSet(this, _PlayerStatusMonitor_statusRequestController, null, "f");
+}, _PlayerStatusMonitor_cancelPendingEmit = function _PlayerStatusMonitor_cancelPendingEmit() {
+    if (__classPrivateFieldGet(this, _PlayerStatusMonitor_deferredEmitTimer, "f")) {
+        clearTimeout(__classPrivateFieldGet(this, _PlayerStatusMonitor_deferredEmitTimer, "f"));
+        __classPrivateFieldSet(this, _PlayerStatusMonitor_deferredEmitTimer, null, "f");
     }
-}, _PlayerStatusMonitor_createAndStartNotificationListener = async function _PlayerStatusMonitor_createAndStartNotificationListener() {
-    const notificationListener = new lms_cli_notifications_1.NotificationListener({
-        server: (0, Util_1.getServerConnectParams)(__classPrivateFieldGet(this, _PlayerStatusMonitor_player, "f").server, __classPrivateFieldGet(this, _PlayerStatusMonitor_serverCredentials, "f"), 'cli'),
-        subscribe: ['play', 'stop', 'pause', 'playlist', 'mixer', 'sync']
-    });
-    notificationListener.on('notification', __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_handleNotification).bind(this));
-    notificationListener.on('disconnect', __classPrivateFieldGet(this, _PlayerStatusMonitor_instances, "m", _PlayerStatusMonitor_handleDisconnect).bind(this));
-    await notificationListener.start();
-    return notificationListener;
-}, _PlayerStatusMonitor_requestPlayerStatus = async function _PlayerStatusMonitor_requestPlayerStatus(abortController) {
-    const connectParams = (0, Util_1.getServerConnectParams)(__classPrivateFieldGet(this, _PlayerStatusMonitor_player, "f").server, __classPrivateFieldGet(this, _PlayerStatusMonitor_serverCredentials, "f"), 'rpc');
-    return (0, RPC_1.sendRpcRequest)(connectParams, [
-        __classPrivateFieldGet(this, _PlayerStatusMonitor_player, "f").id,
-        [
-            'status',
-            '-',
-            1,
-            'tags:cgAABbehldiqtyrTISSuoKLNJj'
-        ]
-    ], abortController);
-}, _PlayerStatusMonitor_getPlayerSyncMaster = 
-// If player is in a sync group, then get the master player of the group.
-// Returns null if player is not in a sync group or it is the master player itself.
-async function _PlayerStatusMonitor_getPlayerSyncMaster() {
-    const connectParams = (0, Util_1.getServerConnectParams)(__classPrivateFieldGet(this, _PlayerStatusMonitor_player, "f").server, __classPrivateFieldGet(this, _PlayerStatusMonitor_serverCredentials, "f"), 'rpc');
-    try {
-        const status = await (0, RPC_1.sendRpcRequest)(connectParams, [
-            __classPrivateFieldGet(this, _PlayerStatusMonitor_player, "f").id,
-            [
-                'status'
-            ]
-        ]);
-        return {
-            syncMaster: status.result.sync_master !== __classPrivateFieldGet(this, _PlayerStatusMonitor_player, "f").id ? status.result.sync_master : null
-        };
-    }
-    catch (error) {
-        SqueezeliteMCContext_1.default.getLogger().error(SqueezeliteMCContext_1.default.getErrorMessage('[squeezelite_mc] Error in getting Squeezelite\'s sync master: ', error));
-        return {
-            error: error
-        };
-    }
-}, _PlayerStatusMonitor_parsePlayerStatusResult = function _PlayerStatusMonitor_parsePlayerStatusResult(data) {
-    const result = {
-        mode: data.mode,
-        time: data.time,
-        volume: data['mixer volume'],
-        repeatMode: data['playlist repeat'],
-        shuffleMode: data['playlist shuffle'],
-        canSeek: data['can_seek']
-    };
-    const track = data.playlist_loop?.[0];
-    if (track) {
-        result.currentTrack = {
-            type: track.type,
-            title: track.title,
-            artist: track.artist,
-            trackArtist: track.trackartist,
-            albumArtist: track.albumartist,
-            album: track.album,
-            remoteTitle: track.remote_title,
-            artworkUrl: track.artwork_url,
-            coverArt: track.coverart,
-            duration: track.duration,
-            sampleRate: track.samplerate,
-            sampleSize: track.samplesize,
-            bitrate: track.bitrate
-        };
-    }
-    return result;
+}, _PlayerStatusMonitor_getChildModulePath = function _PlayerStatusMonitor_getChildModulePath() {
+    return path_1.default.join(__dirname, 'PlayerStatusMonitorChild.js');
 };
 exports.default = PlayerStatusMonitor;
-//# sourceMappingURL=PlayerStatusMonitor.js.map

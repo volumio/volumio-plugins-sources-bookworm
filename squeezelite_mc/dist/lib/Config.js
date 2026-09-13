@@ -5,12 +5,10 @@ const defaultBasicPlayerConfig = {
     type: 'basic',
     playerNameType: 'hostname',
     playerName: '',
-    dsdPlayback: 'auto',
-    fadeOnPauseResume: true
+    dsdPlayback: 'auto'
 };
 const defaultManualPlayerConfig = {
     type: 'manual',
-    fadeOnPauseResume: true,
     startupOptions: ''
 };
 exports.PLUGIN_CONFIG_SCHEMA = {
@@ -19,4 +17,3 @@ exports.PLUGIN_CONFIG_SCHEMA = {
     manualPlayerConfig: { defaultValue: defaultManualPlayerConfig, json: true },
     serverCredentials: { defaultValue: {}, json: true }
 };
-//# sourceMappingURL=Config.js.map

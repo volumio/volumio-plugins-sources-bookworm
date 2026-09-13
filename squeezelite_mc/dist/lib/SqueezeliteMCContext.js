@@ -18,6 +18,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const string_format_1 = __importDefault(require("string-format"));
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const Config_1 = require("./Config");
+const Util_1 = require("./Util");
 class SqueezeliteMCContext {
     constructor() {
         _SqueezeliteMCContext_instances.add(this);
@@ -39,7 +40,9 @@ class SqueezeliteMCContext {
         __classPrivateFieldGet(this, _SqueezeliteMCContext_data, "f")[key] = value;
     }
     get(key, defaultValue) {
-        return (__classPrivateFieldGet(this, _SqueezeliteMCContext_data, "f")[key] !== undefined) ? __classPrivateFieldGet(this, _SqueezeliteMCContext_data, "f")[key] : (defaultValue || null);
+        return __classPrivateFieldGet(this, _SqueezeliteMCContext_data, "f")[key] !== undefined ?
+            __classPrivateFieldGet(this, _SqueezeliteMCContext_data, "f")[key]
+            : defaultValue || null;
     }
     delete(key) {
         delete __classPrivateFieldGet(this, _SqueezeliteMCContext_data, "f")[key];
@@ -57,7 +60,9 @@ class SqueezeliteMCContext {
         __classPrivateFieldGet(this, _SqueezeliteMCContext_pluginContext, "f").coreCommand.pushToastMessage(type, title, message);
     }
     refreshUIConfig() {
-        return __classPrivateFieldGet(this, _SqueezeliteMCContext_pluginContext, "f").coreCommand.getUIConfigOnPlugin('music_service', 'squeezelite_mc', {}).then((config) => {
+        return __classPrivateFieldGet(this, _SqueezeliteMCContext_pluginContext, "f").coreCommand
+            .getUIConfigOnPlugin('music_service', 'squeezelite_mc', {})
+            .then((config) => {
             __classPrivateFieldGet(this, _SqueezeliteMCContext_pluginContext, "f").coreCommand.broadcastMessage('pushUiConfig', config);
         });
     }
@@ -65,19 +70,7 @@ class SqueezeliteMCContext {
         return __classPrivateFieldGet(this, _SqueezeliteMCContext_pluginContext, "f").logger;
     }
     getErrorMessage(message, error, stack = true) {
-        let result = message;
-        if (typeof error == 'object') {
-            if (error.message) {
-                result += ` ${error.message}`;
-            }
-            if (stack && error.stack) {
-                result += ` ${error.stack}`;
-            }
-        }
-        else if (typeof error == 'string') {
-            result += ` ${error}`;
-        }
-        return result.trim();
+        return (0, Util_1.getErrorMessage)(message, error, stack);
     }
     hasConfigKey(key) {
         return __classPrivateFieldGet(this, _SqueezeliteMCContext_pluginConfig, "f").has(key);
@@ -132,9 +125,10 @@ class SqueezeliteMCContext {
         if (key.indexOf('.') > 0) {
             const mainKey = key.split('.')[0];
             const secKey = key.split('.')[1];
-            str = __classPrivateFieldGet(this, _SqueezeliteMCContext_i18n, "f")[mainKey]?.[secKey] ||
-                __classPrivateFieldGet(this, _SqueezeliteMCContext_i18nDefaults, "f")[mainKey]?.[secKey] ||
-                key;
+            str =
+                __classPrivateFieldGet(this, _SqueezeliteMCContext_i18n, "f")[mainKey]?.[secKey] ||
+                    __classPrivateFieldGet(this, _SqueezeliteMCContext_i18nDefaults, "f")[mainKey]?.[secKey] ||
+                    key;
         }
         else {
             str = (__classPrivateFieldGet(this, _SqueezeliteMCContext_i18n, "f")[key] || __classPrivateFieldGet(this, _SqueezeliteMCContext_i18nDefaults, "f")[key] || key);
@@ -174,4 +168,3 @@ _SqueezeliteMCContext_singletons = new WeakMap(), _SqueezeliteMCContext_data = n
     __classPrivateFieldGet(this, _SqueezeliteMCContext_instances, "m", _SqueezeliteMCContext_loadI18n).call(this);
 };
 exports.default = new SqueezeliteMCContext();
-//# sourceMappingURL=SqueezeliteMCContext.js.map
