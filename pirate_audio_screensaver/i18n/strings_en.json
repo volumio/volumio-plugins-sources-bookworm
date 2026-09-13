@@ -1,0 +1,14 @@
+{
+  "PLUGIN_CONFIGURATION": "Pirate Audio Screensaver configuration",
+  "SETTINGS": "Settings",
+  "SAVE": "Save",
+  "IDLE_DELAY_SECONDS": "Idle delay before screensaver starts",
+  "IDLE_DELAY_SECONDS_DOC": "Delay in seconds after playback stops. Default: 300 seconds.",
+  "DISPLAY_ROTATION": "Display rotation",
+  "DISPLAY_ROTATION_DOC": "Rotation for the ST7789 display. Default: 90.",
+  "FONT_SIZE": "Font size",
+  "BLANK_TURNS_BACKLIGHT_OFF": "Turn backlight off when blanked",
+  "BUTTONS_ENABLED": "Watch Pirate Audio buttons",
+  "BUTTON_PINS": "Button GPIO pins",
+  "LOG_LEVEL": "Log level"
+}

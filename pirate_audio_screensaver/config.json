@@ -1,0 +1,30 @@
+{
+  "idle_delay_seconds": {
+    "type": "number",
+    "value": 300
+  },
+  "font_size": {
+    "type": "number",
+    "value": 58
+  },
+  "display_rotation": {
+    "type": "number",
+    "value": 90
+  },
+  "blank_turns_backlight_off": {
+    "type": "boolean",
+    "value": true
+  },
+  "buttons_enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "button_pins": {
+    "type": "string",
+    "value": "5,6,16,24"
+  },
+  "log_level": {
+    "type": "string",
+    "value": "INFO"
+  }
+}
