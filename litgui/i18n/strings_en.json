@@ -1,0 +1,5 @@
+{
+  "OPEN_SECTION_LABEL": "Open LitGUI",
+  "OPEN_SECTION_DESC": "LitGUI runs on port 7777. Open it using the address that matches the network you use to reach this device.",
+  "OPEN_BUTTON_LABEL": "Open LitGUI"
+}
