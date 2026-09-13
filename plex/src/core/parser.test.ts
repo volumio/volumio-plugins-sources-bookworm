@@ -194,6 +194,35 @@ describe("parseTracks", () => {
     expect(parseTracks(empty)).toEqual([]);
   });
 
+  it("uses originalTitle as track artist when present (compilation tracks)", () => {
+    const compilation: RawTrackResponse = {
+      MediaContainer: {
+        size: 1,
+        Metadata: [
+          {
+            ratingKey: "3001",
+            key: "/library/metadata/3001",
+            title: "Blue Monday",
+            grandparentTitle: "Various Artists",
+            grandparentKey: "/library/metadata/3000/children",
+            originalTitle: "New Order",
+            parentTitle: "80s Hits",
+            parentKey: "/library/metadata/3000/children",
+            duration: 220000,
+            Media: [],
+          },
+        ],
+      },
+    };
+    const result = parseTracks(compilation);
+    expect(result[0]!.artist).toBe("New Order");
+  });
+
+  it("falls back to grandparentTitle when originalTitle is absent", () => {
+    const result = parseTracks(tracksFixture as RawTrackResponse);
+    expect(result[0]!.artist).toBe("Radiohead");
+  });
+
   it("handles track with empty Media array gracefully", () => {
     const badTrack: RawTrackResponse = {
       MediaContainer: {

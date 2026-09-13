@@ -289,8 +289,9 @@ describe("VolumioAdapter", () => {
     it("returns artists from first library when no pagination state", async () => {
       const result = (await adapter.handleBrowseUri("plex/artists")) as NavigationPage;
 
-      expect(mockService.getArtistsPaginated).toHaveBeenCalledWith("1", 0, 100);
-      const items = result.navigation.lists[0]!.items;
+      expect(mockService.getArtistsPaginated).toHaveBeenCalledWith("1", 0, 100, undefined);
+      // lists[0] is sort picker, lists[1] is artist list
+      const items = result.navigation.lists[1]!.items;
       // 2 artists + "Load more..." (rolls over to second library)
       expect(items).toHaveLength(3);
       expect(items[0]!.title).toBe("Radiohead");
@@ -302,9 +303,29 @@ describe("VolumioAdapter", () => {
       expect(items[2]!.uri).toBe("plex/artists@3:0");
     });
 
+    it("shows sort picker as the first list with 6 options", async () => {
+      const result = (await adapter.handleBrowseUri("plex/artists")) as NavigationPage;
+
+      const sortList = result.navigation.lists[0]!;
+      expect(sortList.title).toBe("Sort by");
+      expect(sortList.items).toHaveLength(6);
+      expect(sortList.items[0]!.title).toBe("By Name (A → Z)");
+      expect(sortList.items[0]!.uri).toBe("plex/artists~titleSort:asc");
+      expect(sortList.items[1]!.title).toBe("By Name (Z → A)");
+      expect(sortList.items[1]!.uri).toBe("plex/artists~titleSort:desc");
+      expect(sortList.items[2]!.title).toBe("Recently Added");
+      expect(sortList.items[2]!.uri).toBe("plex/artists~addedAt:desc");
+      expect(sortList.items[3]!.title).toBe("Added (Oldest First)");
+      expect(sortList.items[3]!.uri).toBe("plex/artists~addedAt:asc");
+      expect(sortList.items[4]!.title).toBe("Most Played");
+      expect(sortList.items[4]!.uri).toBe("plex/artists~viewCount:desc");
+      expect(sortList.items[5]!.title).toBe("Least Played");
+      expect(sortList.items[5]!.uri).toBe("plex/artists~viewCount:asc");
+    });
+
     it("artist URIs encode the albumsKey", async () => {
       const result = (await adapter.handleBrowseUri("plex/artists")) as NavigationPage;
-      const items = result.navigation.lists[0]!.items;
+      const items = result.navigation.lists[1]!.items;
       expect(items[0]!.uri).toBe("plex/artist/%2Flibrary%2Fmetadata%2F500%2Fchildren");
     });
 
@@ -316,7 +337,7 @@ describe("VolumioAdapter", () => {
       });
 
       const result = (await adapter.handleBrowseUri("plex/artists")) as NavigationPage;
-      const items = result.navigation.lists[0]!.items;
+      const items = result.navigation.lists[1]!.items;
       const lastItem = items[items.length - 1]!;
       expect(lastItem.title).toBe("Load more...");
       expect(lastItem.uri).toBe("plex/artists@1:2");
@@ -330,7 +351,7 @@ describe("VolumioAdapter", () => {
       });
 
       const result = (await adapter.handleBrowseUri("plex/artists@1:0")) as NavigationPage;
-      const items = result.navigation.lists[0]!.items;
+      const items = result.navigation.lists[1]!.items;
       const lastItem = items[items.length - 1]!;
       expect(lastItem.title).toBe("Load more...");
       expect(lastItem.uri).toBe("plex/artists@3:0");
@@ -338,12 +359,12 @@ describe("VolumioAdapter", () => {
 
     it("fetches with correct offset from paginated URI", async () => {
       await adapter.handleBrowseUri("plex/artists@1:100");
-      expect(mockService.getArtistsPaginated).toHaveBeenCalledWith("1", 100, 100);
+      expect(mockService.getArtistsPaginated).toHaveBeenCalledWith("1", 100, 100, undefined);
     });
 
     it("shows Previous page on subsequent pages", async () => {
       const result = (await adapter.handleBrowseUri("plex/artists@1:100")) as NavigationPage;
-      const items = result.navigation.lists[0]!.items;
+      const items = result.navigation.lists[1]!.items;
       expect(items[0]!.title).toBe("Previous page");
       expect(items[0]!.uri).toBe("plex/artists");
       expect(items[0]!.icon).toBe("fa fa-arrow-circle-up");
@@ -351,14 +372,14 @@ describe("VolumioAdapter", () => {
 
     it("Previous page links to intermediate page when not near the start", async () => {
       const result = (await adapter.handleBrowseUri("plex/artists@1:200")) as NavigationPage;
-      const items = result.navigation.lists[0]!.items;
+      const items = result.navigation.lists[1]!.items;
       expect(items[0]!.title).toBe("Previous page");
       expect(items[0]!.uri).toBe("plex/artists@1:100");
     });
 
     it("omits Previous page on first page", async () => {
       const result = (await adapter.handleBrowseUri("plex/artists")) as NavigationPage;
-      const items = result.navigation.lists[0]!.items;
+      const items = result.navigation.lists[1]!.items;
       expect(items[0]!.title).not.toBe("Previous page");
     });
 
@@ -372,8 +393,34 @@ describe("VolumioAdapter", () => {
       });
 
       const result = (await adapter.handleBrowseUri("plex/artists")) as NavigationPage;
-      const items = result.navigation.lists[0]!.items;
+      const items = result.navigation.lists[1]!.items;
       expect(items.every((i) => i.title !== "Load more...")).toBe(true);
+    });
+
+    it("passes sort to getArtistsPaginated when sort is in URI", async () => {
+      await adapter.handleBrowseUri("plex/artists~titleSort:desc");
+
+      expect(mockService.getArtistsPaginated).toHaveBeenCalledWith("1", 0, 100, "titleSort:desc");
+    });
+
+    it("preserves sort in Load more URI", async () => {
+      vi.mocked(mockService.getArtistsPaginated).mockResolvedValue({
+        items: artistsFixture,
+        totalSize: 500,
+        offset: 0,
+      });
+
+      const result = (await adapter.handleBrowseUri("plex/artists~addedAt:desc")) as NavigationPage;
+      const items = result.navigation.lists[1]!.items;
+      const lastItem = items[items.length - 1]!;
+      expect(lastItem.uri).toBe("plex/artists~addedAt:desc@1:2");
+    });
+
+    it("preserves sort in Previous page URI", async () => {
+      const result = (await adapter.handleBrowseUri("plex/artists~titleSort:asc@1:100")) as NavigationPage;
+      const items = result.navigation.lists[1]!.items;
+      expect(items[0]!.title).toBe("Previous page");
+      expect(items[0]!.uri).toBe("plex/artists~titleSort:asc");
     });
   });
 
@@ -412,8 +459,9 @@ describe("VolumioAdapter", () => {
     it("returns albums from first library when no pagination state", async () => {
       const result = (await adapter.handleBrowseUri("plex/albums")) as NavigationPage;
 
-      expect(mockService.getAlbumsPaginated).toHaveBeenCalledWith("1", 0, 100);
-      const items = result.navigation.lists[0]!.items;
+      expect(mockService.getAlbumsPaginated).toHaveBeenCalledWith("1", 0, 100, undefined);
+      // lists[0] is sort picker, lists[1] is album list
+      const items = result.navigation.lists[1]!.items;
       // 2 albums + "Load more..." (rolls over to second library)
       expect(items).toHaveLength(3);
       expect(items[0]!.title).toBe("OK Computer");
@@ -424,9 +472,33 @@ describe("VolumioAdapter", () => {
       expect(items[2]!.title).toBe("Load more...");
     });
 
+    it("shows sort picker as the first list with 8 options", async () => {
+      const result = (await adapter.handleBrowseUri("plex/albums")) as NavigationPage;
+
+      const sortList = result.navigation.lists[0]!;
+      expect(sortList.title).toBe("Sort by");
+      expect(sortList.items).toHaveLength(8);
+      expect(sortList.items[0]!.title).toBe("By Artist (A → Z)");
+      expect(sortList.items[0]!.uri).toBe("plex/albums~artist.titleSort:asc");
+      expect(sortList.items[1]!.title).toBe("By Artist (Z → A)");
+      expect(sortList.items[1]!.uri).toBe("plex/albums~artist.titleSort:desc");
+      expect(sortList.items[2]!.title).toBe("By Title (A → Z)");
+      expect(sortList.items[2]!.uri).toBe("plex/albums~titleSort:asc");
+      expect(sortList.items[3]!.title).toBe("By Title (Z → A)");
+      expect(sortList.items[3]!.uri).toBe("plex/albums~titleSort:desc");
+      expect(sortList.items[4]!.title).toBe("By Release Date (Newest)");
+      expect(sortList.items[4]!.uri).toBe("plex/albums~originallyAvailableAt:desc");
+      expect(sortList.items[5]!.title).toBe("By Release Date (Oldest)");
+      expect(sortList.items[5]!.uri).toBe("plex/albums~originallyAvailableAt:asc");
+      expect(sortList.items[6]!.title).toBe("Recently Added (Newest)");
+      expect(sortList.items[6]!.uri).toBe("plex/albums~addedAt:desc");
+      expect(sortList.items[7]!.title).toBe("Recently Added (Oldest)");
+      expect(sortList.items[7]!.uri).toBe("plex/albums~addedAt:asc");
+    });
+
     it("album URIs encode the trackListKey", async () => {
       const result = (await adapter.handleBrowseUri("plex/albums")) as NavigationPage;
-      const items = result.navigation.lists[0]!.items;
+      const items = result.navigation.lists[1]!.items;
       expect(items[0]!.uri).toBe("plex/album/%2Flibrary%2Fmetadata%2F1001%2Fchildren");
     });
 
@@ -438,7 +510,7 @@ describe("VolumioAdapter", () => {
       });
 
       const result = (await adapter.handleBrowseUri("plex/albums")) as NavigationPage;
-      const items = result.navigation.lists[0]!.items;
+      const items = result.navigation.lists[1]!.items;
       const lastItem = items[items.length - 1]!;
       expect(lastItem.title).toBe("Load more...");
       expect(lastItem.uri).toBe("plex/albums@1:2");
@@ -446,9 +518,41 @@ describe("VolumioAdapter", () => {
 
     it("shows Previous page on subsequent pages", async () => {
       const result = (await adapter.handleBrowseUri("plex/albums@1:100")) as NavigationPage;
-      const items = result.navigation.lists[0]!.items;
+      const items = result.navigation.lists[1]!.items;
       expect(items[0]!.title).toBe("Previous page");
       expect(items[0]!.uri).toBe("plex/albums");
+    });
+
+    it("passes sort to getAlbumsPaginated when sort is in URI", async () => {
+      await adapter.handleBrowseUri("plex/albums~titleSort:asc");
+
+      expect(mockService.getAlbumsPaginated).toHaveBeenCalledWith("1", 0, 100, "titleSort:asc");
+    });
+
+    it("preserves sort in Load more URI", async () => {
+      vi.mocked(mockService.getAlbumsPaginated).mockResolvedValue({
+        items: albumsFixture,
+        totalSize: 500,
+        offset: 0,
+      });
+
+      const result = (await adapter.handleBrowseUri("plex/albums~titleSort:asc")) as NavigationPage;
+      const items = result.navigation.lists[1]!.items;
+      const lastItem = items[items.length - 1]!;
+      expect(lastItem.uri).toBe("plex/albums~titleSort:asc@1:2");
+    });
+
+    it("preserves sort in Previous page URI", async () => {
+      const result = (await adapter.handleBrowseUri("plex/albums~titleSort:asc@1:100")) as NavigationPage;
+      const items = result.navigation.lists[1]!.items;
+      expect(items[0]!.title).toBe("Previous page");
+      expect(items[0]!.uri).toBe("plex/albums~titleSort:asc");
+    });
+
+    it("passes descending sort to getAlbumsPaginated", async () => {
+      await adapter.handleBrowseUri("plex/albums~titleSort:desc");
+
+      expect(mockService.getAlbumsPaginated).toHaveBeenCalledWith("1", 0, 100, "titleSort:desc");
     });
   });
 

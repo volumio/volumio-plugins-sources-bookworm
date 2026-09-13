@@ -112,10 +112,25 @@ export interface BrowseSource {
   albumart: string;
 }
 
+/**
+ * Info header shown at the top of a browse page.
+ * When type is "song", Volumio renders album art + "Play Next / Add to queue /
+ * Add to Playlist" action buttons. uri must be explodable via explodeUri.
+ */
+export interface NavigationInfo {
+  service: string;
+  type: "song";
+  uri: string;
+  albumart: string;
+  album?: string;
+  artist?: string;
+}
+
 /** The full response from handleBrowseUri. */
 export interface NavigationPage {
   navigation: {
     prev: { uri: string };
+    info?: NavigationInfo;
     lists: NavigationList[];
   };
 }
