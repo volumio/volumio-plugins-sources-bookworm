@@ -6,6 +6,9 @@ This plugin installs the [Lyrion Music Server](https://lyrion.org/) on your Volu
 
 ## Changelog
 
+1.1.0:
+- Installs: Lyrion Music Server v9.1.0
+
 1.0.0:
 - Initial release
 - Installs: Logitech Media Server v8.5.2 (Lyrion Music Server v9 is still under development)

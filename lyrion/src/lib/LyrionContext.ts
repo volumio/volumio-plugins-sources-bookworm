@@ -6,7 +6,6 @@ import type winston from 'winston';
 export type I18nKey = keyof typeof I18nSchema;
 
 class LyrionContext {
-
   #pluginContext?: any;
 
   #i18n: Record<string, string | Record<string, string>>;
@@ -24,12 +23,19 @@ class LyrionContext {
 
     this.#loadI18n();
     if (!this.#i18CallbackRegistered) {
-      this.#pluginContext.coreCommand.sharedVars.registerCallback('language_code', this.#onSystemLanguageChanged.bind(this));
+      this.#pluginContext.coreCommand.sharedVars.registerCallback(
+        'language_code',
+        this.#onSystemLanguageChanged.bind(this)
+      );
       this.#i18CallbackRegistered = true;
     }
   }
 
-  toast(type: 'success' | 'info' | 'error' | 'warning', message: string, title = 'Lyrion Music Server') {
+  toast(
+    type: 'success' | 'info' | 'error' | 'warning',
+    message: string,
+    title = 'Lyrion Music Server'
+  ) {
     this.#pluginContext.coreCommand.pushToastMessage(type, title, message);
   }
 
@@ -46,8 +52,7 @@ class LyrionContext {
       if (stack && error.stack) {
         result += ` ${error.stack}`;
       }
-    }
-    else if (typeof error == 'string') {
+    } else if (typeof error == 'string') {
       result += ` ${error}`;
     }
     return result.trim();
@@ -62,11 +67,11 @@ class LyrionContext {
     if (key.indexOf('.') > 0) {
       const mainKey = key.split('.')[0];
       const secKey = key.split('.')[1];
-      str = (this.#i18n[mainKey] as Record<string, string>)?.[secKey] ||
+      str =
+        (this.#i18n[mainKey] as Record<string, string>)?.[secKey] ||
         (this.#i18nDefaults[mainKey] as Record<string, string>)?.[secKey] ||
         key;
-    }
-    else {
+    } else {
       str = (this.#i18n[key] || this.#i18nDefaults[key] || key) as string;
     }
 
@@ -78,7 +83,11 @@ class LyrionContext {
   }
 
   getDeviceInfo() {
-    return this.#pluginContext.coreCommand.executeOnPlugin('system_controller', 'volumiodiscovery', 'getThisDevice');
+    return this.#pluginContext.coreCommand.executeOnPlugin(
+      'system_controller',
+      'volumiodiscovery',
+      'getThisDevice'
+    );
   }
 
   #loadI18n() {
@@ -87,16 +96,17 @@ class LyrionContext {
 
       try {
         this.#i18nDefaults = fs.readJsonSync(`${i18nPath}/strings_en.json`);
-      }
-      catch (e) {
+      } catch (e) {
         this.#i18nDefaults = {};
       }
 
       try {
-        const language_code = this.#pluginContext.coreCommand.sharedVars.get('language_code');
-        this.#i18n = fs.readJsonSync(`${i18nPath}/strings_${language_code}.json`);
-      }
-      catch (e) {
+        const language_code =
+          this.#pluginContext.coreCommand.sharedVars.get('language_code');
+        this.#i18n = fs.readJsonSync(
+          `${i18nPath}/strings_${language_code}.json`
+        );
+      } catch (e) {
         this.#i18n = this.#i18nDefaults;
       }
     }
