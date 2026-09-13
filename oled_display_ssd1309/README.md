@@ -1,4 +1,4 @@
-# OLED SSD1309 Display Plugin for Volumio – v1.7.28
+# OLED SSD1309 Display Plugin for Volumio – v1.7.30
 
 > **⚠️ Disclaimer**
 >
@@ -42,6 +42,19 @@ Displays playback information on a 128×64 SSD1309 I2C OLED connected to a Raspb
 ---
 
 ## Changelog
+
+### v1.7.30
+
+**Bug fix (Cyrillic):**
+
+1. **Corrected the glyphs for Й and й.** Two fixes based on user feedback: uppercase Й (0x0419) had a transcription error in the original contributed data and is now `[0x7F, 0x10, 0x09, 0x04, 0x7F]` (И with a breve). Lowercase й (0x0439) was incorrectly overridden in v1.7.29 to render as plain и without its breve — this is now restored to `[0x7C, 0x21, 0x11, 0x09, 0x7C]`, which carries the breve on the top pixel row above the x-height body. The v1.7.29 assumption that the breve wouldn't fit at 5×7 was wrong; it fits fine on the top row that the x-height glyph leaves free.
+
+### v1.7.29
+
+**New feature + bug fix:**
+
+1. **Russian Cyrillic alphabet support.** Added hand-designed 5×7 glyphs for the full basic Russian alphabet (А–Я, а–я, plus Ё/ё) contributed by a user. Two rendering adjustments within the 5×7 constraint: uppercase Ё renders identically to Е (no room for the diaeresis above a full-height capital — lowercase ё keeps its dots), and lowercase й uses the lowercase и form so it renders at proper x-height mid-word (the breve doesn't fit above an x-height glyph and is omitted).
+2. **Fixed malformed audio info for Spotify and other lossy streaming services.** Spotify puts a bitrate string like "320 kbps" into Volumio's `samplerate` field, which the formatter previously appended "kHz" to, producing nonsense like "16bit / 320kbpskHz". The audio-info formatter now detects when the samplerate field carries a bitrate unit (kbps/bps) and displays just the bitrate ("320 Kbps"), dropping the meaningless bit depth (bit depth is not relevant for lossy codecs). Sample-rate-bearing services (Tidal, Qobuz, local files) are unaffected. Also hardened the fallback so an unrecognized samplerate value is shown as-is rather than getting a bogus "kHz" appended.
 
 ### v1.7.28
 
@@ -366,14 +379,14 @@ Initial attempt at the reboot/shutdown power-off fix. Used the wrong method name
 
 ```bash
 # 1. Transfer the tarball to Volumio (run on your PC, not the Pi)
-scp oled_display_ssd1309-v1.7.28.tar volumio@volumio.local:~/
+scp oled_display_ssd1309-v1.7.30.tar volumio@volumio.local:~/
 
 # 2. SSH into Volumio
 ssh volumio@volumio.local
 # password: volumio
 
 # 3. Extract the source folder (anywhere works — home directory is fine)
-tar xf oled_display_ssd1309-v1.7.28.tar
+tar xf oled_display_ssd1309-v1.7.30.tar
 cd oled_display_ssd1309
 
 # 4. Install via Volumio's plugin manager
@@ -405,11 +418,11 @@ ssh volumio@volumio.local
 mkdir -p /data/plugins/user_interface/oled_display_ssd1309
 
 # 3. Transfer the tarball (run on your PC, not the Pi)
-scp oled_display_ssd1309-v1.7.28.tar volumio@volumio.local:/tmp/
+scp oled_display_ssd1309-v1.7.30.tar volumio@volumio.local:/tmp/
 
 # 4. Extract directly into the plugins directory
 cd /data/plugins/user_interface
-tar xf /tmp/oled_display_ssd1309-v1.7.28.tar
+tar xf /tmp/oled_display_ssd1309-v1.7.30.tar
 
 # 5. Run the installer manually
 cd /data/plugins/user_interface/oled_display_ssd1309
