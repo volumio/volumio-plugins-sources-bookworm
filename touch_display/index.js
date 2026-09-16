@@ -11,6 +11,24 @@ const unixDomSocket = new net.Socket();
 const volumioSocket = io.connect('http://localhost:3000');
 const als = '/etc/als'; // The plugin expects the current value of an optional ambient light sensor (ALS) as a single number in /etc/als.
 const alsProgression = [];
+// How the kiosk browser identifies itself.
+//
+// Both UIs decide whether they are running on the device's own screen by
+// sniffing the user agent for 'volumiokiosk' — Manifest in
+// ui-settings.service.js, Nova in src/kiosk.ts — and for 'touch' to turn on the
+// touch-sized affordances. The value below is what the kiosk images built by
+// volumio-os send (scripts/components/install-kiosk-vivaldi.sh), and it is the
+// default here for the same reason: a screen this plugin drives is a device
+// screen, not somebody's browser.
+//
+// The '-panel' suffix is added when an actual touch input device is attached,
+// and says the screen is the device's own panel rather than a plugged-in
+// monitor. Nova needs that distinction and cannot derive it: it otherwise
+// guesses from VOLUMIO_HARDWARE, which is plain 'pi' both for a Pi with a DSI
+// touchscreen and for a Pi with an HDMI monitor, and it boots the latter into
+// its read-only display mode.
+const kioskUserAgent = 'volumiokiosk-touch';
+const kioskPanelUserAgent = 'volumiokiosk-touch-panel';
 const configTxtGpuMemBanner = '#### Touch Display gpu_mem setting below: do not alter ####' + os.EOL;
 const configTxtRotationBanner = '#### Touch Display rotation setting below: do not alter ####' + os.EOL;
 let pi5 = false;
@@ -1528,6 +1546,84 @@ TouchDisplay.prototype.initScreenOrientation = function () {
   return defer.promise;
 };
 
+/**
+ * Keep the kiosk browser's user agent in step with what is actually attached.
+ *
+ * install.sh writes the flag for new installations, but the script it writes is
+ * only rewritten on (re)install — and whether a touch device is attached can
+ * change at any boot. So the value is settled here, on the same
+ * read-the-script-and-patch-it footing initHDMIAudio() uses, and every
+ * X server start gets it right.
+ *
+ * Resolves true when the script was changed, i.e. when the browser has to be
+ * restarted for the new value to take effect.
+ */
+TouchDisplay.prototype.ensureKioskUserAgent = function () {
+  const self = this;
+  const defer = libQ.defer();
+  const scriptPath = '/opt/volumiokiosk.sh';
+  // The line every version of the script has: the browser invocation itself.
+  const browserLine = /^([ \t]*\/usr\/bin\/chromium-browser[ \t]*\\)$/m;
+  const agentLine = /^[ \t]*--user-agent=(['"]?)([^'"\s]*)\1[ \t]*\\$/m;
+
+  // A detection failure must not be reported as "no touch screen attached":
+  // that would downgrade a panel's user agent on any boot where xinput was not
+  // ready yet. Leave the script alone instead and try again next time.
+  self.detectTouchDevice()
+    .fail(() => undefined)
+    .then(touchDevices => {
+      if (touchDevices === undefined) {
+        defer.resolve(false);
+        return;
+      }
+      const wanted = touchDevices !== null && touchDevices.length > 0 ? kioskPanelUserAgent : kioskUserAgent;
+
+      fs.readFile(scriptPath, 'utf8', (err, data) => {
+        if (err !== null) {
+          self.logger.error(self.pluginName + ': Error reading volumiokiosk.sh: ' + err);
+          defer.resolve(false);
+          return;
+        }
+        const current = agentLine.exec(data);
+        if (current !== null && current[2] === wanted) {
+          defer.resolve(false);
+          return;
+        }
+        let patched;
+        if (current !== null) {
+          patched = data.replace(agentLine, '    --user-agent=\'' + wanted + '\' \\');
+        } else if (browserLine.test(data)) {
+          patched = data.replace(browserLine, '$1' + os.EOL + '    --user-agent=\'' + wanted + '\' \\');
+        } else {
+          self.logger.error(self.pluginName + ': Cannot set the kiosk user agent: no browser invocation found in volumiokiosk.sh.');
+          defer.resolve(false);
+          return;
+        }
+
+        self.logger.info(self.pluginName + ': Setting the kiosk user agent to ' + wanted + '.');
+        const tmpPath = path.join(os.tmpdir(), 'volumiokiosk.sh');
+        fs.writeFile(tmpPath, patched, 'utf8', error => {
+          if (error !== null) {
+            self.logger.error(self.pluginName + ': Error writing ' + tmpPath + ': ' + error);
+            defer.resolve(false);
+            return;
+          }
+          // cp rather than mv: the destination keeps its own ownership and mode.
+          exec('/bin/echo volumio | /usr/bin/sudo -S /bin/cp ' + tmpPath + ' ' + scriptPath, { uid: 1000, gid: 1000 }, (error, stdout, stderr) => {
+            if (error !== null) {
+              self.logger.error(self.pluginName + ': Error modifying ' + scriptPath + ': ' + error);
+              defer.resolve(false);
+            } else {
+              self.logger.info(self.pluginName + ': Kiosk user agent set to ' + wanted + ' in volumiokiosk.sh.');
+              defer.resolve(true);
+            }
+          });
+        });
+      });
+    });
+  return defer.promise;
+};
+
 TouchDisplay.prototype.initHDMIAudio = function () {
   const self = this;
   const defer = libQ.defer();
@@ -1600,7 +1696,11 @@ TouchDisplay.prototype.watchUDS = function () {
             self.setScreenTimeout(self.config.get('timeout'), false);
           }
         });
-      self.initHDMIAudio();
+      // A script that had to be patched needs the browser restarted to pick the
+      // flag up, and that brings us back through this handler — where the check
+      // now passes and the HDMI audio setup runs as usual.
+      self.ensureKioskUserAgent()
+        .then(patched => (patched ? self.restart() : self.initHDMIAudio()));
       attempts = 0;
       unixDomSocket.removeAllListeners();
       unixDomSocket.destroy();

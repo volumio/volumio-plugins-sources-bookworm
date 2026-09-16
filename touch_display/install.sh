@@ -93,6 +93,7 @@ while true; do
     --load-extension= \\
     --kiosk \\
     --touch-events \\
+    --user-agent='volumiokiosk-touch' \\
     --no-first-run \\
     --noerrdialogs \\
     --disable-gpu-compositing \\
