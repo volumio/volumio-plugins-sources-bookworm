@@ -153,6 +153,9 @@
           "initial_volume",
           "align_volume",
           "output_trim_db",
+          "loudness_normalization",
+          "crossfade",
+          "crossfade_ms",
           "buffer_ms"
         ]
       },
@@ -193,6 +196,36 @@
             },
             {
               "max": 12
+            }
+          ]
+        },
+        {
+          "id": "loudness_normalization",
+          "element": "switch",
+          "label": "TRANSLATE.LOUDNESS_NORMALIZATION",
+          "doc": "TRANSLATE.LOUDNESS_NORMALIZATION_DOC",
+          "value": true
+        },
+        {
+          "id": "crossfade",
+          "element": "switch",
+          "label": "TRANSLATE.CROSSFADE",
+          "doc": "TRANSLATE.CROSSFADE_DOC",
+          "value": false
+        },
+        {
+          "id": "crossfade_ms",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.CROSSFADE_MS",
+          "doc": "TRANSLATE.CROSSFADE_MS_DOC",
+          "value": 2000,
+          "attributes": [
+            {
+              "min": 1000
+            },
+            {
+              "max": 12000
             }
           ]
         },
@@ -505,7 +538,25 @@
       "label": "TRANSLATE.UPDATE_SECTION",
       "icon": "fa-refresh",
       "description": "TRANSLATE.UPDATE_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/soloist_connect",
+        "method": "saveSoloistSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "auto_update_binary"
+        ]
+      },
       "content": [
+        {
+          "id": "auto_update_binary",
+          "element": "switch",
+          "label": "TRANSLATE.AUTO_UPDATE_BINARY",
+          "doc": "TRANSLATE.AUTO_UPDATE_BINARY_DOC",
+          "value": false
+        },
         {
           "id": "update_binary",
           "element": "button",
