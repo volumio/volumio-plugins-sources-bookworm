@@ -163,6 +163,9 @@ fi
 
 echo "SoloistConnect: plugin=$PLUGIN_VER shim=$SHIM_VER rev=$SHIM_REV userspace=$APULSE_ARCH device=$APULSE_PLAYBACK_DEVICE tlength_cap=${APULSE_MAX_TLENGTH_MS}ms external_volume=${EXTERNAL_VOLUME:-false} trim=${OUTPUT_TRIM_DB:-0}dB diag=${APULSE_DIAG:-off} uname=$(uname -m)" >&2
 
+# Engine prefs, startup only. Failure here must not block exec.
+bash "$PLUGIN_DIR/apply-engine-prefs.sh" || true
+
 # writeEnvFile() always emits API_KEY, DEVICE_NAME, INITIAL_VOLUME,
 # CACHE_SIZE and EXTERNAL_VOLUME, and validates them before writing.
 #

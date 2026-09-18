@@ -55,6 +55,12 @@
   "QUEUE_FETCH_MS_DOC": "How long the Spotify Queue tile waits for a fresh list from Soloist (0-10000). 0 shows the last event immediately and still asks in the background. Default 2500.",
   "OUTPUT_TRIM_DB": "Output Trim (dB)",
   "OUTPUT_TRIM_DB_DOC": "Fixed gain applied to the Soloist stream before the ALSA chain (-12 to +12). Raises or lowers what Peppy and SoftMaster see from this source. The volume knob is unchanged. Default 0. About +6 if the meters sit at half height.",
+  "LOUDNESS_NORMALIZATION": "Loudness normalization",
+  "LOUDNESS_NORMALIZATION_DOC": "Spotify's own track-to-track level matching, written into the engine prefs at start. On is the current behaviour. Off leaves the original track level. This is not Output Trim. Saving restarts Soloist. The engine has no official switch for this.",
+  "CROSSFADE": "Crossfade",
+  "CROSSFADE_DOC": "Spotify's own fade between consecutive tracks, written into the engine prefs at start. Off is a hard cut, which is the current behaviour. This is not Output buffer. Saving restarts Soloist. The engine has no official switch for this.",
+  "CROSSFADE_MS": "Crossfade time (\u33b3)",
+  "CROSSFADE_MS_DOC": "How long the fade lasts when Crossfade is on (1000-12000). Used only when the switch is on. Below 1000 does nothing. Default 2000. Saving restarts Soloist.",
   "QUEUE_PLAYBACK": "Play Spotify tracks from the Volumio queue",
   "QUEUE_PLAYBACK_DOC": "Let a Spotify track sitting in a Volumio playlist or queue play through Soloist, so one list can mix Spotify with local files, UPnP and web radio. Off by default. When this is on, a Spotify Queue tile also appears on Browse; tapping a track there uses the same play path. Off hides that tile, because those songs would otherwise skip. A Spotify entry needs service 'soloist_connect' in the playlist; entries saved for the old Spotify plugin say 'spop' and are not affected. Turning this off does not hide those rows: they still appear in the queue and are skipped when reached, and the list carries on with the next track. Requires a paired Spotify session; the Spotify app does not have to be open. Names and artwork come from what Soloist has already reported this session, so a track it has not seen shows a placeholder until it starts playing.",
   "QUEUE_REMOTE_PLAYBACK": "Let a queued track play on the active Spotify device",
@@ -76,6 +82,8 @@
   "SECTION_BACKUP_DELETE_DESC": "Remove a named backup from this device. Live settings are not changed.",
   "BACKUP_DELETE": "Delete backup",
   "UPDATE_SECTION": "Binary Update",
-  "UPDATE_DESC": "Spotify Soloist builds expire 90 days after their build date. The plugin re-downloads automatically when the build expires. Updating here shows a progress modal, then a 15 second reboot countdown with Restart and Cancel. Do not power off while it downloads.",
+  "UPDATE_DESC": "Spotify Soloist builds expire 90 days after their build date. On start the plugin re-downloads an already-dead build. While the plugin stays up, a once-a-day check can warn or, if you turn the switch on, pull a new binary when seven days or fewer remain. That silent pull does not reboot. The button here still shows a progress modal, then a 15 second reboot countdown with Restart and Cancel. We do not review the tarball Spotify serves. Do not power off while it downloads.",
+  "AUTO_UPDATE_BINARY": "Download a new Soloist binary before it expires",
+  "AUTO_UPDATE_BINARY_DOC": "Off by default. When on, a once-a-day check downloads from Spotify if the installed build has seven days or fewer left, or has already expired, and Spotify is not playing here. Web radio and other sources count as idle. The new binary is started in place. No reboot. The Update button below still reboots. We do not review that tarball. Applies immediately. Does not restart Soloist.",
   "UPDATE_BUTTON": "Update Soloist binary now"
 }

@@ -1,6 +1,6 @@
 {
   "name": "soloist_connect",
-  "version": "0.8.5",
+  "version": "0.9.0",
   "description": "Spotify Connect on Volumio 4 via Spotify Soloist, playing through pcm.volumio (ALSA, no Pulse)",
   "main": "index.js",
   "scripts": {
@@ -14,14 +14,13 @@
     "plugin_type": "music_service",
     "icon": "fa-spotify",
     "architectures": [
-      "amd64",
       "armhf"
     ],
     "os": [
       "bookworm"
     ],
-    "details": "Beta. Turns Volumio 4 into a Spotify Connect device using Spotify Soloist. Audio goes through pcm.volumio via an in-tree Pulse shim (0.2.9), with no PulseAudio or PipeWire. Requires your own Soloist API key from the Spotify for Developers dashboard. Unofficial and not affiliated with Spotify AB. The Soloist binary is downloaded from Spotify at install time and is not bundled. This repository is the cutting-edge line; an accepted build is published to the store separately.",
-    "changelog": "0.8.5: named settings backups on this device (create, restore, delete). Restore uses the same validation as Save. The API key is stored in a backup only when Retain my API key is on; a backup without a key keeps the key already on the box. Not a clone of the Spotify login. Playback, takeover and the shim unchanged (0.2.9)."
+    "details": "Stable. Turns Volumio 4 into a Spotify Connect device using Spotify Soloist. Audio goes through pcm.volumio via an in-tree Pulse shim (0.2.9), with no PulseAudio or PipeWire. Requires your own Soloist API key from the Spotify for Developers dashboard. Unofficial and not affiliated with Spotify AB. The Soloist binary is downloaded from Spotify at install time and is not bundled. This repository is the cutting-edge line; an accepted build is published to the store separately.",
+    "changelog": "0.9.0: Promoted to stable."
   },
   "engines": {
     "node": ">=20",

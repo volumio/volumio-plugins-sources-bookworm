@@ -28,6 +28,9 @@ const SETTINGS_BACKUP_KEYS = [
   'initial_volume',
   'align_volume',
   'output_trim_db',
+  'loudness_normalization',
+  'crossfade',
+  'crossfade_ms',
   'buffer_ms',
   'cache_location',
   'cache_size_mb',
@@ -39,6 +42,7 @@ const SETTINGS_BACKUP_KEYS = [
   'queue_playback',
   'queue_remote_playback',
   'verbose_logging',
+  'auto_update_binary',
 ];
 
 // RAM cache ceiling, as a fraction of MemTotal.
@@ -109,6 +113,11 @@ const BROWSE_NAME = 'Spotify Queue';
 // Volumio's albumart server, same path rtlsdr_radio uses for radio.svg.
 const BROWSE_ALBUMART =
   '/albumart?sourceicon=music_service/soloist_connect/assets/spotify.svg';
+// Spotify kills a Soloist build 90 days after its build date. The plugin
+// process timer (not cron, not a unit) inspects once a day while we stay up.
+const BINARY_LIFE_DAYS = 90;
+const FRESHNESS_CHECK_MS = 24 * 60 * 60 * 1000;
+const AUTO_UPDATE_WITHIN_DAYS = 7;
 // data/cache dirs are fixed in launch-soloist.sh
 
 module.exports = SoloistConnect;
@@ -192,6 +201,8 @@ function SoloistConnect(context) {
   this.browseRefreshTimer = null;
   this.browseRefreshInFlight = false;
   this.browseRefreshDirty = false;
+  this.freshnessTimer = null;
+  this.binaryUpdateBusy = false;
 }
 
 // ---------------------------------------------------------------------------
@@ -307,6 +318,7 @@ SoloistConnect.prototype.onStart = function () {
   const self = this;
 
   this.logPluginIdentity();
+  this.armFreshnessTimer({ initial: true });
 
   if (!this.volumeCallbackRegistered) {
     this.commandRouter.addCallback('volumioupdatevolume', (vol) => {
@@ -351,6 +363,7 @@ SoloistConnect.prototype.onStop = function () {
   this.clearInactiveHold();
   this.clearQualityRetry();
   this.clearQueueStartTimer();
+  this.clearFreshnessTimer();
   this.leaveQueueMode('plugin stop', false);
   this.removeFromBrowseSources();
   this.disconnectWebSocket();
@@ -465,6 +478,146 @@ SoloistConnect.prototype.ensureBinaryFresh = function () {
   return defer.promise;
 };
 
+// Days until Spotify's 90-day kill, from `soloist --version`.
+// Exit 10 is already dead. Junk output is null: do not download on that.
+SoloistConnect.prototype.remainingBinaryDays = function (stdout, exitCode, nowMs) {
+  if (exitCode === 10) return 0;
+  const text = String(stdout || '');
+  const m = text.match(/\((\d{8})\)/);
+  if (!m) return null;
+  const y = parseInt(m[1].slice(0, 4), 10);
+  const mo = parseInt(m[1].slice(4, 6), 10) - 1;
+  const day = parseInt(m[1].slice(6, 8), 10);
+  const built = Date.UTC(y, mo, day);
+  if (!Number.isFinite(built)) return null;
+  const now = Number.isFinite(nowMs) ? nowMs : Date.now();
+  const remaining = Math.floor((built + BINARY_LIFE_DAYS * 86400000 - now) / 86400000);
+  return remaining > 0 ? remaining : 0;
+};
+
+SoloistConnect.prototype.clearFreshnessTimer = function () {
+  if (this.freshnessTimer) {
+    clearTimeout(this.freshnessTimer);
+    this.freshnessTimer = null;
+  }
+};
+
+// First fire is one period later. startDaemon already ran ensureBinaryFresh.
+SoloistConnect.prototype.armFreshnessTimer = function (opts) {
+  const self = this;
+  opts = opts || {};
+  this.clearFreshnessTimer();
+  const delay = this.freshnessCheckMs || FRESHNESS_CHECK_MS;
+  this.freshnessTimer = setTimeout(function () {
+    self.freshnessTimer = null;
+    self.runFreshnessTick();
+  }, delay);
+  if (opts.initial) {
+    this.logger.info('SoloistConnect: freshness armed period=24h');
+  }
+};
+
+SoloistConnect.prototype.binaryFreshnessRemaining = function (done) {
+  const bin = this.binaryPath();
+  if (!fs.existsSync(bin)) {
+    done(null, null);
+    return;
+  }
+  exec(this.runPath() + ' --version', { timeout: 15000 }, (error, stdout) => {
+    const code = error && typeof error.code === 'number' ? error.code : 0;
+    done(null, this.remainingBinaryDays(stdout, code));
+  });
+};
+
+SoloistConnect.prototype.runFreshnessTick = function () {
+  const self = this;
+  this.armFreshnessTimer();
+  this.binaryFreshnessRemaining(function (err, remaining) {
+    self.applyFreshness(remaining);
+  });
+};
+
+SoloistConnect.prototype.applyFreshness = function (remaining) {
+  const auto = this.config.get('auto_update_binary') === true;
+  let action = 'noop';
+  if (this.binaryUpdateBusy) {
+    action = 'skip-busy';
+  } else if (remaining == null) {
+    action = 'noop';
+  } else if (!auto) {
+    action = remaining === 0 ? 'expired-off' : 'noop';
+  } else if (remaining > AUTO_UPDATE_WITHIN_DAYS) {
+    action = 'noop';
+  } else if (this.owningPlayback()) {
+    action = 'skip-play';
+  } else {
+    action = 'pull';
+  }
+
+  this.logger.info(
+    'SoloistConnect: freshness remaining=' +
+      (remaining == null ? 'unknown' : remaining) +
+      ' auto=' + (auto ? 'on' : 'off') +
+      ' action=' + action
+  );
+
+  if (action === 'expired-off') {
+    this.commandRouter.pushToastMessage(
+      'info',
+      'Spotify Soloist',
+      'The Soloist build has expired. Press Update Soloist binary now.'
+    );
+    return;
+  }
+  if (action === 'skip-play') {
+    this.commandRouter.pushToastMessage(
+      'info',
+      'Spotify Soloist',
+      'Soloist binary is near expiry. Update is waiting until Spotify is not playing here.'
+    );
+    return;
+  }
+  if (action === 'pull') this.pullFreshBinary();
+};
+
+// Same script as the Update button. No reboot countdown.
+SoloistConnect.prototype.pullFreshBinary = function () {
+  const self = this;
+  if (this.binaryUpdateBusy) return;
+  this.binaryUpdateBusy = true;
+  this.commandRouter.pushToastMessage(
+    'info',
+    'Spotify Soloist',
+    'Downloading a new Soloist binary from Spotify. We do not review that tarball.'
+  );
+  this.runDownloadScript(function (error) {
+    if (error) {
+      self.binaryUpdateBusy = false;
+      self.commandRouter.pushToastMessage(
+        'error',
+        'Spotify Soloist',
+        'Automatic Soloist update failed. The running binary was left alone.'
+      );
+      return;
+    }
+    libQ.resolve()
+      .then(function () { return self.startDaemon(); })
+      .then(function () { self.connectWebSocket(); })
+      .then(function () {
+        self.binaryUpdateBusy = false;
+        self.commandRouter.pushToastMessage(
+          'success',
+          'Spotify Soloist',
+          'Soloist binary updated. No reboot.'
+        );
+      })
+      .fail(function (e) {
+        self.binaryUpdateBusy = false;
+        self.logger.error('SoloistConnect: auto-update start failed: ' + e);
+      });
+  });
+};
+
 // Largest tmpfs cache this board can carry, in MB, or 0 if RAM mode is not
 // viable here. Read from MemTotal rather than assumed: the same plugin runs on
 // a 512 MB Zero 2 W and a 16 GB x86 box.
@@ -556,6 +709,9 @@ SoloistConnect.prototype.writeEnvFile = function () {
     `CACHE_TMPFS_MB="${ramMb}"`,
     `TLENGTH_MS="${this.config.get('buffer_ms')}"`,
     `OUTPUT_TRIM_DB="${this.config.get('output_trim_db')}"`,
+    `LOUDNESS_NORMALIZATION="${this.config.get('loudness_normalization') !== false ? 'true' : 'false'}"`,
+    `CROSSFADE="${this.config.get('crossfade') === true ? 'true' : 'false'}"`,
+    `CROSSFADE_MS="${parseInt(this.config.get('crossfade_ms'), 10) || 2000}"`,
     `EXTERNAL_VOLUME="${this.mixerIsExternal() ? 'true' : 'false'}"`,
     // Read by uninstall.sh, which runs after the plugin config has been
     // rendered unreadable and cannot consult it.
@@ -1632,6 +1788,12 @@ SoloistConnect.prototype.setStatus = function (soloistStatus) {
   if (mapped === 'play' && this.state.status !== 'play') {
     if (this.pendingYieldAt && Date.now() - this.pendingYieldAt < 1500 &&
         !this.isCurrentService()) {
+      this.state.status = 'pause';
+      this.syncSeekTimer();
+      return;
+    }
+    if (!this.queueMode && !this.deviceActive && !this.isCurrentService()) {
+      this.logger.info('SoloistConnect: not claiming: playing while is_active=false');
       this.state.status = 'pause';
       this.syncSeekTimer();
       return;
@@ -3363,9 +3525,13 @@ SoloistConnect.prototype.getUIConfig = function () {
       set('quality_retry_max', self.qualityRetryMax());
       set('queue_fetch_ms', self.queueFetchMs());
       set('output_trim_db', self.config.get('output_trim_db'));
+      set('loudness_normalization', self.config.get('loudness_normalization') !== false);
+      set('crossfade', self.config.get('crossfade') === true);
+      set('crossfade_ms', self.config.get('crossfade_ms'));
       set('queue_playback', self.config.get('queue_playback') === true);
       set('queue_remote_playback', self.config.get('queue_remote_playback') === true);
       set('verbose_logging', self.config.get('verbose_logging') === true);
+      set('auto_update_binary', self.config.get('auto_update_binary') === true);
       set('convert_overwrite', false);
       set('convert_name', '');
       return self.listConvertiblePlaylists()
@@ -3461,6 +3627,13 @@ SoloistConnect.prototype.validateSettings = function (data) {
     return { ok: false, message: 'Output trim must be an integer between -12 and 12 dB.' };
   }
 
+  const crossfadeMs = this.postedOrStoredInt(
+    data, 'crossfade_ms', 2000, (n) => n >= 1000 && n <= 12000
+  );
+  if (!crossfadeMs.ok) {
+    return { ok: false, message: 'Crossfade time must be between 1000 and 12000 ms.' };
+  }
+
   // A UI select hands back either the bare value or {value,label}, depending on
   // how the field was rendered and whether it was touched. Take both.
   //
@@ -3549,6 +3722,21 @@ SoloistConnect.prototype.validateSettings = function (data) {
       quality_retry_max: qualityRetryMax.value,
       queue_fetch_ms: queueFetch.value,
       output_trim_db: outputTrimDb.value,
+      loudness_normalization: this.postedOrStoredBool(
+        data,
+        'loudness_normalization',
+        this.config.get('loudness_normalization') === undefined
+          ? true
+          : this.config.get('loudness_normalization')
+      ),
+      crossfade: this.postedOrStoredBool(
+        data,
+        'crossfade',
+        this.config.get('crossfade') === undefined
+          ? false
+          : this.config.get('crossfade')
+      ),
+      crossfade_ms: crossfadeMs.value,
       retain_api_key: this.postedOrStoredBool(
         data, 'retain_api_key', this.config.get('retain_api_key')
       ),
@@ -3560,6 +3748,9 @@ SoloistConnect.prototype.validateSettings = function (data) {
       ),
       verbose_logging: this.postedOrStoredBool(
         data, 'verbose_logging', this.config.get('verbose_logging')
+      ),
+      auto_update_binary: this.postedOrStoredBool(
+        data, 'auto_update_binary', this.config.get('auto_update_binary')
       ),
     },
   };
@@ -3589,6 +3780,9 @@ const DAEMON_SETTINGS = [
   'cache_location',
   'buffer_ms',
   'output_trim_db',
+  'loudness_normalization',
+  'crossfade',
+  'crossfade_ms',
   'verbose_logging',
 ];
 
@@ -3624,10 +3818,14 @@ SoloistConnect.prototype.applyValidatedSettings = function (values, opts) {
   this.config.set('quality_retry_max', values.quality_retry_max);
   this.config.set('queue_fetch_ms', values.queue_fetch_ms);
   this.config.set('output_trim_db', values.output_trim_db);
+  this.config.set('loudness_normalization', values.loudness_normalization);
+  this.config.set('crossfade', values.crossfade);
+  this.config.set('crossfade_ms', values.crossfade_ms);
   this.config.set('retain_api_key', values.retain_api_key);
   this.config.set('queue_playback', values.queue_playback);
   this.config.set('queue_remote_playback', values.queue_remote_playback);
   this.config.set('verbose_logging', values.verbose_logging);
+  this.config.set('auto_update_binary', values.auto_update_binary);
   this.clearPendingSeek();
   this.syncBrowseSource();
 
@@ -3998,6 +4196,7 @@ SoloistConnect.prototype.updateSoloistBinary = function () {
     if (typeof self.commandRouter.closeModals === 'function') {
       self.commandRouter.closeModals();
     }
+    self.binaryUpdateBusy = false;
     self.initUpdateRebootCountdown();
     defer.resolve();
   });

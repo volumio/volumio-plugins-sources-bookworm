@@ -1,7 +1,6 @@
 # Spotify Soloist Connect
 
-> **Beta, version 0.8.5.**
-> First beta. Expect remaining rough edges, and see "Things to know" below.
+> **Stable, version 0.9.0.**
 > This package tracks the cutting-edge line. An accepted build is published to the Volumio plugin store as a separate process.
 
 Turns a Volumio 4 device into a Spotify Connect endpoint using Spotify Soloist.
@@ -42,7 +41,7 @@ It belongs to the account that generated it and must not be shared.
 
 ## Settings
 
-The page is split by what a save does. **Save & Restart Soloist** is for Spotify identity, sound, cache and diagnostics: those values are read by the daemon, so playback stops and comes back. **Save** is for the Volumio queue switches and the timing fields: this process reads them on the next row or the next event, and Soloist keeps playing. **Convert playlist** rewrites a saved Volumio list and does not restart. **Backup settings** writes a named snapshot on this device; restore runs the same checks as Save.
+The page is split by what a save does. **Save & Restart Soloist** is for Spotify identity, sound, cache and diagnostics: those values are read by the daemon, so playback stops and comes back. **Save** is for the Volumio queue switches, the timing fields, and the binary auto-update switch: this process reads them on the next row, the next event, or the next daily check, and Soloist keeps playing. **Convert playlist** rewrites a saved Volumio list and does not restart. **Backup settings** writes a named snapshot on this device; restore runs the same checks as Save.
 
 | Setting | Section | Default | Notes |
 |---|---|---|---|
@@ -57,7 +56,9 @@ The page is split by what a save does. **Save & Restart Soloist** is for Spotify
 | Initial volume | Sound | 50 | 0 to 100. Saving restarts. Unused when Align volume on start is on, except as a fallback if Volumio has no mixer. |
 | Align volume on start | Sound | off | Copy Volumio's volume to Spotify when this speaker becomes the active Connect device, instead of applying Initial Volume. Saving restarts. |
 | Output trim (dB) | Sound | 0 | -12 to +12. A fixed gain on the Spotify stream before it reaches the ALSA chain. Saving restarts. |
-| Output buffer (ms) | Sound | 500 | 100 to 2000. How much audio is buffered ahead of the DAC. Saving restarts. |
+| Loudness normalization | Sound | on | Spotify's own track-to-track matching. Off leaves the original track level. Not Output Trim. Saving restarts. The engine has no official switch; the plugin writes the prefs key at spawn. |
+| Crossfade | Sound | off | Spotify's own fade between consecutive tracks. Off is a hard cut. Not Output buffer. Saving restarts. The engine has no official switch; the plugin writes the prefs keys at spawn. |
+| Crossfade time (ms) | Sound | 2000 | 1000 to 12000. Used only when Crossfade is on. Below 1000 does nothing. Saving restarts. |
 | Cache location | Cache | Disk | **Disk** survives a reboot. **RAM** takes writes off a slow SD card, costs that much memory, and is emptied on every reboot and daemon restart. Saving restarts. |
 | Cache size (MB) | Cache | 1024 | `0` means no limit. Other values must be 100 or more. In RAM mode the size is capped to what the board can spare. Saving restarts. |
 | Seek coalesce (ms) | Timing | 200 | 0 to 2000. How long after the last slider move before one seek is sent. 0 sends every move. Does not restart. |
@@ -69,8 +70,10 @@ The page is split by what a save does. **Save & Restart Soloist** is for Spotify
 | Backup name | Backup settings | — | Named snapshot of the stored settings under `/data/INTERNAL/soloist_connect/backups`. The API key is included only when Retain my API key is on. This is not a clone of the Spotify login. The restore list updates on this page. |
 | Backup | Restore settings | — | Applies through the same checks as Save. A backup without a key keeps the key already on this box. Restore of Spotify identity, sound, cache or diagnostics restarts Soloist. |
 | Backup | Delete settings backup | — | Removes the named file. Live settings are not changed. |
+| Download a new Soloist binary before it expires | Binary Update | off | Once a day, if seven days or fewer remain or the build is already dead, and Spotify is not playing here, pull from Spotify and start the new binary. No reboot. We do not review that tarball. Does not restart on Save. |
+| Update Soloist binary now | Binary Update | — | Manual pull. Progress modal, then a 15 second reboot countdown with Restart and Cancel. A failed download leaves the running binary alone. |
 
-The page also has an **update** button, which fetches a fresh Soloist build from Spotify. A progress modal stays up while it downloads. On success a 15 second reboot countdown appears, with Restart and Cancel. A failed download leaves the running binary alone.
+The **update** button still reboots after a successful download. The switch above does not.
 
 ---
 
@@ -156,8 +159,8 @@ It is then not a Spotify Connect endpoint. Pause and Volumio Stop do not stop th
 
 **Soloist builds expire after 90 days.**
 This is a Spotify design decision, not a plugin limitation.
-The plugin checks on start and re-downloads automatically, and there is a manual update button.
-The button installs the new binary, then shows a 15 second reboot countdown with Restart and Cancel; a failed download does not replace what is already running.
+On start the plugin re-downloads an already-dead build. While the plugin stays up, a once-a-day check logs remaining days. With **Download a new Soloist binary before it expires** on, that check pulls from Spotify when seven days or fewer remain, or the build is already dead, and Spotify is not playing here. That silent pull starts the new binary and does not reboot. Off, the check only logs, and an already-dead build toasts to use the button. The button still shows a 15 second reboot countdown with Restart and Cancel; a failed download does not replace what is already running.
+We do not review the tarball Spotify serves.
 A device left powered off past the expiry will refresh on its next start, provided it can reach the internet.
 
 **Skip and seek are not instant.**
@@ -172,7 +175,7 @@ At lossless the plugin buffers half a second of audio before the DAC, which is w
 It is downloaded from Spotify's official CDN during install, because Spotify does not permit redistributing it.
 
 **A RAM cache is emptied on every restart.**
-That is what it is: memory, not storage. Saving Spotify, Sound, Cache or Diagnostics restarts the daemon, so the cache is discarded then too, and the next track is downloaded again. Saving the Volumio queue or Timing sections does not. RAM is worth choosing when the boot medium is slow, not otherwise.
+That is what it is: memory, not storage. Saving Spotify, Sound, Cache or Diagnostics restarts the daemon, so the cache is discarded then too, and the next track is downloaded again. Saving the Volumio queue, Timing, or Binary Update sections does not. RAM is worth choosing when the boot medium is slow, not otherwise.
 
 **A mixed-playlist Spotify row needs this plugin's service name.**
 `soloist_connect`, not `spop`. **Convert playlist** rewrites `spop` track rows in a saved Volumio list. A list that is already `soloist_connect` is left alone and does not appear in the selector. With queue playback off, converted rows still appear and are skipped when reached.
@@ -202,7 +205,7 @@ journalctl -u volumio -f | grep -i soloist
 Turn on **Verbose logging** first when investigating playback problems. Without it the audio shim is silent about what it does when ALSA reports a fault, and the log shows the symptom with nothing on either side of it. The startup line is always printed. It names the plugin, the shim, and which mode it is in:
 
 ```
-SoloistConnect: plugin=0.8.5 shim=0.2.9 rev=... userspace=armhf device=plug:volumio ... diag=1
+SoloistConnect: plugin=0.9.0 shim=0.2.9 rev=... userspace=armhf device=plug:volumio ... diag=1
 ```
 
 The journal on Volumio is held in memory and is destroyed by a reboot. Capture it before restarting:
