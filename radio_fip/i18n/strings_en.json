@@ -1,0 +1,17 @@
+{
+  "PLUGIN_CONFIGURATION": "FIP Radio Configuration",
+  "NO_CONFIGURATION_AVAILABLE": "No configuration available",
+  "PLUGIN_NAME": "FIP Radio",
+
+  "WAIT_FOR_RADIO_CHANNEL": "Please wait for radio channel....",
+  "STOP_RADIO_CHANNEL": "Stopped FIP Radio",
+
+  "ERROR_STREAM_SERVER": "There is a problem with {0} radio streaming server.",
+  "INCORRECT_RESPONSE": "There is an incorrect response from {0} radio streaming server.",
+
+  "SAVE": "Save",
+  "SAVE_CONFIG_MESSAGE": "Configuration saved successfully.",
+
+  "API_DELAY": "Metadata refresh interval",
+  "API_DELAY_DESCRIPTION": "Delay between Radio France metadata updates in seconds."
+}
