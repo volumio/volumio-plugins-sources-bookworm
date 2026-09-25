@@ -1,0 +1,45 @@
+{
+  "name": "waveshare28",
+  "version": "1.0.2",
+  "description": "Waveshare 2.8 inch SPI touch panel (SKU 27579) for Volumio. Installs the panel program from this plugin and shows only the controls that apply to this Raspberry Pi.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Just a Nerd",
+  "license": "MIT",
+  "volumio_info": {
+    "prettyName": "Waveshare 2.8 SPI Panel",
+    "icon": "fa-desktop",
+    "plugin_type": "system_controller",
+    "details": "Waveshare 2.8 inch SPI touch panel for Volumio. The plugin installs its own panel program and settings tool. The panel shows the cover, the track, transport, volume, and status. In portrait the title slot scrolls through artist and album. If a cover does not arrive on the first try, the art box says it is still retrieving the picture. Settings are Panel and UI, and only the controls for this board are shown. Panel: rotation, SPI speed, and backend. Console appears only for the framebuffer backend. HDMI appears only on a Pi 4 with framebuffer. A Pi 3A+ shows a read-only KMS line. UI: theme, boot address text, and the track strip. Cover art is not recoloured. The settings page follows Volumio's language: German, French, Spanish, Dutch, Italian, Polish, Portuguese, and English. Enable applies the setup. Disable removes the live screen setup and keeps /boot/waveshare28.conf. Does not edit volumioconfig.txt. Pi 1 and the original Pi Zero are not supported.",
+    "changelog": "First store release. Panel, the settings for this board, and the settings page in Volumio's languages.",
+    "categories": [
+      "system_hardware"
+    ],
+    "keywords": [
+      "waveshare",
+      "display",
+      "touch",
+      "spi",
+      "raspberry pi"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "architectures": [
+      "armhf"
+    ],
+    "has_settings_page": true
+  },
+  "engines": {
+    "volumio": ">=4",
+    "node": ">=20"
+  },
+  "dependencies": {
+    "fs-extra": "^11.2.0",
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.3"
+  },
+  "repository": "https://github.com/foonerd/rpi-waveshare28/tree/main/plugin/waveshare28"
+}
