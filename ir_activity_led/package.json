@@ -1,0 +1,35 @@
+{
+  "name": "ir_activity_led",
+  "version": "2.0.0",
+  "description": "Indicate IR remote activity via GPIO or built-in LED: blink LED a few times on command received",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Andrew Pono",
+  "license": "ISC",
+  "repository": "https://github.com/andrewpono/volumio-plugins-sources-bookworm",
+  "volumio_info": {
+    "prettyName": "IR Activity LED",
+    "icon": "fa-microchip",
+    "plugin_type": "system_hardware",
+    "architectures": [
+      "armhf"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "details": "Indicate IR remote activity via GPIO or built-in LED for Volumio 4 by Andrew Pono.",
+    "changelog": "2.0.0 - Initial release for Volumio 4 (bookworm)."
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "fs-extra": "^8.1.0",
+    "kew": "^0.7.0",
+    "@iiot2k/gpiox": "^2.1.4",
+    "v-conf": "^1.4.3"
+  }
+}
