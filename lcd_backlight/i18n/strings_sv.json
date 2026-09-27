@@ -1,0 +1,21 @@
+{
+  "PLUGIN_NAME": "LCD-bakgrundsbelysning kontroll",
+  "GENERAL_SETTINGS": "Allmänna inställningar",
+  "MEASUREMENT_INTERVAL": "Mätintervall (sekunder)",
+  "MEASUREMENT_INTERVAL_DOC": "Tid mellan ljussensoravläsningar. Lägre värden ger snabbare ljusstyrkesändringar men kan öka CPU-användningen.",
+  "MIN_BACKLIGHT": "Minsta ljusstyrka",
+  "MIN_BACKLIGHT_DOC": "Den lägsta ljusstyrkesnivån som displayen kommer att nå (0-255). Förhindrar att skärmen blir för mörk.",
+  "MAX_BACKLIGHT": "Maximal ljusstyrka",
+  "MAX_BACKLIGHT_DOC": "Den högsta ljusstyrkesnivån som displayen kommer att nå (0-255). Kan minskas för att spara ström.",
+  "LUX_MULTIPLIER": "Lux-multiplikator",
+  "LUX_MULTIPLIER_DOC": "Kalibreringsmultiplikator för VEML7700-sensorn. Öka för ljusare respons, minska för mörkare respons.",
+  "SMOOTHING_FACTOR": "Utjämningsfaktor",
+  "SMOOTHING_FACTOR_DOC": "Styr hur snabbt ljusstyrkeövergångar sker (0,0-1,0). Lägre värden skapar långsammare, mjukare övergångar.",
+  "PLAYBACK_BOOST": "Uppspelning ljusstyrkeförstärkning",
+  "PLAYBACK_BOOST_DOC": "Extra ljusstyrka som läggs till under musikuppspelning (0-255). Ställ in på 0 för att inaktivera denna funktion.",
+  "PLAYBACK_BOOST_DURATION": "Förstärkningstid efter uppspelning (sekunder)",
+  "PLAYBACK_BOOST_DURATION_DOC": "Hur länge ljusstyrkeförstärkningen ska bibehållas efter att uppspelningen stoppats (0-300 sekunder). Rekommenderat: 30 sekunder.",
+  "SAVE": "Spara inställningar",
+  "SAVE_SUCCESS": "Konfiguration sparad",
+  "SAVE_ERROR": "Fel vid sparande av konfiguration"
+}

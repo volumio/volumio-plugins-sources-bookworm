@@ -1,0 +1,21 @@
+{
+  "PLUGIN_NAME": "Sterowanie podświetleniem LCD",
+  "GENERAL_SETTINGS": "Ustawienia ogólne",
+  "MEASUREMENT_INTERVAL": "Interwał pomiaru (sekundy)",
+  "MEASUREMENT_INTERVAL_DOC": "Czas między odczytami czujnika światła. Niższe wartości zapewniają bardziej responsywne zmiany jasności, ale mogą zwiększyć obciążenie procesora.",
+  "MIN_BACKLIGHT": "Minimalna jasność",
+  "MIN_BACKLIGHT_DOC": "Najniższy poziom jasności, jaki osiągnie wyświetlacz (0-255). Zapobiega zbyt ciemnemu ekranowi.",
+  "MAX_BACKLIGHT": "Maksymalna jasność",
+  "MAX_BACKLIGHT_DOC": "Najwyższy poziom jasności, jaki osiągnie wyświetlacz (0-255). Można zmniejszyć w celu oszczędzania energii.",
+  "LUX_MULTIPLIER": "Mnożnik luksów",
+  "LUX_MULTIPLIER_DOC": "Mnożnik kalibracji dla czujnika VEML7700. Zwiększ dla jaśniejszej odpowiedzi, zmniejsz dla ciemniejszej odpowiedzi.",
+  "SMOOTHING_FACTOR": "Współczynnik wygładzania",
+  "SMOOTHING_FACTOR_DOC": "Kontroluje szybkość przejść jasności (0,0-1,0). Niższe wartości tworzą wolniejsze, płynniejsze przejścia.",
+  "PLAYBACK_BOOST": "Zwiększenie jasności podczas odtwarzania",
+  "PLAYBACK_BOOST_DOC": "Dodatkowa jasność dodawana podczas odtwarzania muzyki (0-255). Ustaw na 0, aby wyłączyć tę funkcję.",
+  "PLAYBACK_BOOST_DURATION": "Czas trwania zwiększenia po odtwarzaniu (sekundy)",
+  "PLAYBACK_BOOST_DURATION_DOC": "Jak długo utrzymywać zwiększenie jasności po zatrzymaniu odtwarzania (0-300 sekund). Zalecane: 30 sekund.",
+  "SAVE": "Zapisz ustawienia",
+  "SAVE_SUCCESS": "Konfiguracja zapisana pomyślnie",
+  "SAVE_ERROR": "Błąd podczas zapisywania konfiguracji"
+}
