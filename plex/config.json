@@ -38,5 +38,9 @@
   "clientId": {
     "type": "string",
     "value": ""
+  },
+  "scrobble": {
+    "type": "boolean",
+    "value": false
   }
 }
