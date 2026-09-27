@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Vinyltron Photos</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #101214;
+            --panel: #191d21;
+            --panel-2: #22272d;
+            --text: #f4f4f0;
+            --muted: #a8b0b8;
+            --accent: #2dd4bf;
+            --danger: #ff6b5f;
+            --border: #333a42;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font: 16px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        main {
+            width: min(760px, 100%);
+            margin: 0 auto;
+            padding: 18px 14px calc(28px + env(safe-area-inset-bottom));
+        }
+
+        header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0;
+        }
+
+        .status {
+            min-height: 22px;
+            color: var(--muted);
+            font-size: 14px;
+            text-align: right;
+        }
+
+        .toolbar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        button,
+        .file-button {
+            appearance: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--panel-2);
+            color: var(--text);
+            min-height: 46px;
+            padding: 11px 12px;
+            font: inherit;
+            font-weight: 650;
+            text-align: center;
+        }
+
+        button.primary,
+        .file-button {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #071312;
+        }
+
+        button.danger {
+            color: var(--danger);
+        }
+
+        button:disabled {
+            opacity: 0.55;
+        }
+
+        input[type="file"] {
+            position: fixed;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+            gap: 10px;
+        }
+
+        .tile {
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--panel);
+        }
+
+        .thumb {
+            display: block;
+            width: 100%;
+            aspect-ratio: 1;
+            image-rendering: pixelated;
+            object-fit: cover;
+            background: #050607;
+        }
+
+        .name {
+            min-height: 34px;
+            padding: 7px 8px 0;
+            color: var(--muted);
+            font-size: 12px;
+            overflow-wrap: anywhere;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 42px;
+            gap: 6px;
+            padding: 8px;
+        }
+
+        .actions button {
+            min-height: 36px;
+            padding: 7px 8px;
+            font-size: 13px;
+        }
+
+        .empty {
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            color: var(--muted);
+            padding: 22px;
+            text-align: center;
+        }
+
+        @media (max-width: 420px) {
+            header {
+                display: block;
+            }
+
+            .status {
+                margin-top: 4px;
+                text-align: left;
+            }
+
+            .toolbar {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <header>
+        <h1>Vinyltron Photos</h1>
+        <div id="status" class="status"></div>
+    </header>
+
+    <div class="toolbar">
+        <label class="file-button" for="photo-input">Add Photos</label>
+        <button id="random-button" type="button">Use Random Photos</button>
+    </div>
+    <input id="photo-input" type="file" accept="image/*" multiple>
+
+    <section id="grid" class="grid" aria-live="polite"></section>
+</main>
+
+<script>
+(function () {
+    var statusEl = document.getElementById('status');
+    var gridEl = document.getElementById('grid');
+    var inputEl = document.getElementById('photo-input');
+    var randomButton = document.getElementById('random-button');
+
+    function setStatus(text) {
+        statusEl.textContent = text || '';
+    }
+
+    function api(path, options) {
+        options = options || {};
+        if (options.body && typeof options.body !== 'string') {
+            options.body = JSON.stringify(options.body);
+            options.headers = {'Content-Type': 'application/json'};
+        }
+        return fetch('/api/' + path, options).then(function (res) {
+            return res.json().then(function (data) {
+                if (!res.ok || data.ok === false) {
+                    throw new Error(data.error || res.statusText);
+                }
+                return data;
+            });
+        });
+    }
+
+    function imageUrl(name) {
+        return '/image/' + encodeURIComponent(name) + '?t=' + Date.now();
+    }
+
+    function render(images) {
+        gridEl.innerHTML = '';
+        if (!images.length) {
+            var empty = document.createElement('div');
+            empty.className = 'empty';
+            empty.textContent = 'No idle photos yet.';
+            gridEl.appendChild(empty);
+            return;
+        }
+
+        images.forEach(function (image) {
+            var tile = document.createElement('article');
+            tile.className = 'tile';
+
+            var img = document.createElement('img');
+            img.className = 'thumb';
+            img.alt = image.name;
+            img.src = imageUrl(image.name);
+
+            var name = document.createElement('div');
+            name.className = 'name';
+            name.textContent = image.name;
+
+            var actions = document.createElement('div');
+            actions.className = 'actions';
+
+            var select = document.createElement('button');
+            select.type = 'button';
+            select.textContent = image.selected ? 'Selected' : 'Select';
+            select.disabled = image.selected;
+            select.addEventListener('click', function () {
+                setStatus('Selecting...');
+                api('select', {method: 'POST', body: {filename: image.name}})
+                    .then(refresh)
+                    .catch(function (err) { setStatus(err.message); });
+            });
+
+            var remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'danger';
+            remove.textContent = 'x';
+            remove.setAttribute('aria-label', 'Delete ' + image.name);
+            remove.addEventListener('click', function () {
+                if (!confirm('Delete ' + image.name + '?')) return;
+                setStatus('Deleting...');
+                api('delete', {method: 'POST', body: {filename: image.name}})
+                    .then(refresh)
+                    .catch(function (err) { setStatus(err.message); });
+            });
+
+            actions.appendChild(select);
+            actions.appendChild(remove);
+            tile.appendChild(img);
+            tile.appendChild(name);
+            tile.appendChild(actions);
+            gridEl.appendChild(tile);
+        });
+    }
+
+    function refresh() {
+        return api('images').then(function (data) {
+            render(data.images || []);
+            setStatus((data.images || []).length + ' photos');
+        });
+    }
+
+    function readFile(file) {
+        return new Promise(function (resolve, reject) {
+            var reader = new FileReader();
+            reader.onload = function () {
+                var text = String(reader.result || '');
+                resolve(text.split(',')[1] || '');
+            };
+            reader.onerror = function () {
+                reject(reader.error || new Error('Could not read file'));
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    inputEl.addEventListener('change', function () {
+        var files = Array.prototype.slice.call(inputEl.files || []);
+        if (!files.length) return;
+
+        var chain = Promise.resolve();
+        files.forEach(function (file, index) {
+            chain = chain.then(function () {
+                setStatus('Uploading ' + (index + 1) + ' of ' + files.length + '...');
+                return readFile(file).then(function (base64) {
+                    return api('upload', {
+                        method: 'POST',
+                        body: {
+                            filename: file.name,
+                            type: file.type,
+                            data: base64
+                        }
+                    });
+                });
+            });
+        });
+
+        chain.then(function () {
+            inputEl.value = '';
+            return refresh();
+        }).catch(function (err) {
+            inputEl.value = '';
+            setStatus(err.message);
+        });
+    });
+
+    randomButton.addEventListener('click', function () {
+        setStatus('Updating...');
+        api('random', {method: 'POST', body: {}})
+            .then(refresh)
+            .catch(function (err) { setStatus(err.message); });
+    });
+
+    refresh().catch(function (err) {
+        setStatus(err.message);
+    });
+}());
+</script>
+</body>
+</html>

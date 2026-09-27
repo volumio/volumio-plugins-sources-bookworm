@@ -1,0 +1,28 @@
+{
+    "name": "vinyltron",
+    "version": "0.3.0",
+    "description": "64×64 HUB75 LED matrix album art display for Volumio",
+    "main": "index.js",
+    "scripts": {},
+    "engines": {
+        "node": ">=20",
+        "volumio": ">=4"
+    },
+    "volumio_info": {
+        "prettyName": "Vinyltron",
+        "plugin_type": "user_interface",
+        "icon": "fa-television",
+        "architectures": ["armhf"],
+        "os": ["bookworm"],
+        "details": "Real-time album art on a 64×64 HUB75E LED matrix, driven by Volumio pushState.",
+        "changelog": "0.3.0: add Lissajous orbit-trail screensaver engine"
+    },
+    "author": "Martin Raumann",
+    "license": "MIT",
+    "repository": "https://github.com/emuck/vinyltron",
+    "dependencies": {
+        "fs-extra": "^7.0.1",
+        "kew": "^0.7.0",
+        "v-conf": "^1.4.0"
+    }
+}
