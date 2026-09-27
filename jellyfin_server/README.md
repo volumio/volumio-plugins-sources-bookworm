@@ -2,9 +2,9 @@
 
 This plugin installs the [Jellyfin](https://jellyfin.org/) media server app on your Volumio device. The server starts when the plugin is enabled.
 
-The plugin has been tested on Volumio 3 running on a Raspberry Pi 3b (`armhf` architecture) and x86 PC (`x86_64 / amd64` architecture). For performance reasons, do not install the plugin on devices with less than 1GB RAM. Jellyfin is not exactly lightweight and poor performance due to insufficient memory can in turn lead to stability issues.
+The plugin has been tested on Volumio 4 running on a Raspberry Pi 4 (`armhf` architecture) and x86 PC (`amd64` architecture). For performance reasons, do not install the plugin on devices with less than 1GB RAM 一 2GB or more is recommended. Jellyfin is not exactly lightweight and poor performance due to insufficient memory can in turn lead to stability issues.
 
->Although the plugin runs reasonably well on the Raspberry Pi 3b with 1GB RAM, 2GB or more is in fact recommended.
+The plugin installs the latest version of Jellyfin available at the time of its release. Refer to the [Changelog](#changelog) for the exact version installed. For `armhf` architectures, however, the version is fixed at `v10.10.6`, as support for `armhf` was dropped in subsequent releases.
 
 ## Initial Setup
 
@@ -101,6 +101,14 @@ It is possible, but details on how to do it **safely** is beyond the scope of th
 If you are thinking of configuring port forwarding on your router to direct external requests to Volumio (and the Jellyfin server running on it), then **STOP THINKING FURTHER!** Creating a zero-security passage from the World Wide Web to a zero-security device on your network is a really bad idea. Instead, research on "reverse proxy" or "setup VPN" for better ideas.
 
 ## Changelog
+
+2.1.1:
+- Just some changes in TypeScript config
+
+2.1.0:
+- Bump Jellyfin version:
+  - `amd64`: v10.11.8
+  - `armhf`: v10.10.6
 
 2.0.0:
 - Preliminary release for Bookworm-based, alpha-stage Volumio

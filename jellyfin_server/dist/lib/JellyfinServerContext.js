@@ -105,4 +105,3 @@ _JellyfinServerContext_pluginContext = new WeakMap(), _JellyfinServerContext_i18
     __classPrivateFieldGet(this, _JellyfinServerContext_instances, "m", _JellyfinServerContext_loadI18n).call(this);
 };
 exports.default = new JellyfinServerContext();
-//# sourceMappingURL=JellyfinServerContext.js.map
