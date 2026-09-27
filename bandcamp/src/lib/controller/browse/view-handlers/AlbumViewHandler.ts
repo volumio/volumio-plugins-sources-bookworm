@@ -4,7 +4,11 @@ import UIHelper, { type UILink } from '../../../util/UIHelper';
 import { type BandView } from './BandViewHandler';
 import ExplodableViewHandler from './ExplodableViewHandler';
 import type View from './View';
-import { type RenderedList, type RenderedPage, type RenderedPageContents } from './ViewHandler';
+import {
+  type RenderedList,
+  type RenderedPage,
+  type RenderedPageContents
+} from './ViewHandler';
 import ViewHelper from './ViewHelper';
 import { RendererType } from './renderers';
 import { type RenderedListItem } from './renderers/BaseRenderer';
@@ -19,7 +23,6 @@ export interface AlbumView extends View {
 }
 
 export default class AlbumViewHandler extends ExplodableViewHandler<AlbumView> {
-
   async browse(): Promise<RenderedPage> {
     const albumUrl = this.currentView.albumUrl;
 
@@ -37,13 +40,19 @@ export default class AlbumViewHandler extends ExplodableViewHandler<AlbumView> {
 
     const albumInfo = await model.getAlbum(albumUrl);
 
-    const trackItems = albumInfo.tracks?.reduce<RenderedListItem[]>((result, track) => {
-      const parsed = trackRenderer.renderToListItem({...track, type: 'track'});
-      if (parsed) {
-        result.push(parsed);
-      }
-      return result;
-    }, []);
+    const trackItems = albumInfo.tracks?.reduce<RenderedListItem[]>(
+      (result, track) => {
+        const parsed = trackRenderer.renderToListItem({
+          ...track,
+          type: 'track'
+        });
+        if (parsed) {
+          result.push(parsed);
+        }
+        return result;
+      },
+      []
+    );
 
     const header = albumRenderer.renderToHeader(albumInfo);
 
@@ -51,10 +60,12 @@ export default class AlbumViewHandler extends ExplodableViewHandler<AlbumView> {
       navigation: {
         prev: { uri: this.constructPrevUri() },
         info: header,
-        lists: [ {
-          availableListViews: [ 'list' ],
-          items: trackItems || []
-        } ]
+        lists: [
+          {
+            availableListViews: ['list'],
+            items: trackItems || []
+          }
+        ]
       }
     };
 
@@ -67,11 +78,19 @@ export default class AlbumViewHandler extends ExplodableViewHandler<AlbumView> {
       target: '_blank'
     };
     if (page.navigation?.lists) {
-      if (page.navigation?.lists.length > 1) { // Artist link added
-        page.navigation.lists[1].title = UIHelper.constructListTitleWithLink('', link, false);
-      }
-      else {
-        page.navigation.lists[0].title = UIHelper.constructListTitleWithLink('', link, true);
+      if (page.navigation?.lists.length > 1) {
+        // Artist link added
+        page.navigation.lists[1].title = UIHelper.constructListTitleWithLink(
+          '',
+          link,
+          false
+        );
+      } else {
+        page.navigation.lists[0].title = UIHelper.constructListTitleWithLink(
+          '',
+          link,
+          true
+        );
       }
     }
 
@@ -104,8 +123,8 @@ export default class AlbumViewHandler extends ExplodableViewHandler<AlbumView> {
         uri: `${this.uri}/${ViewHelper.constructUriSegmentFromView(bandView)}`
       };
       const linksList: RenderedList = {
-        availableListViews: [ 'list' ],
-        items: [ artistLinkItem ]
+        availableListViews: ['list'],
+        items: [artistLinkItem]
       };
       if (!nav.lists) {
         nav.lists = [];

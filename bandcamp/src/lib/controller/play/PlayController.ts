@@ -3,7 +3,7 @@
 import libQ from 'kew';
 
 import bandcamp from '../../BandcampContext';
-import { type ExplodedTrackInfo } from '../browse/view-handlers/ExplodableViewHandler';
+import { type QueueItem } from '../browse/view-handlers/ExplodableViewHandler';
 import ViewHelper from '../browse/view-handlers/ViewHelper';
 import Model, { ModelType } from '../../model';
 import { type TrackView } from '../browse/view-handlers/TrackViewHandler';
@@ -17,7 +17,6 @@ import { kewToJSPromise } from '../../util';
 import EventEmitter from 'events';
 
 export default class PlayController {
-
   #mpdPlugin: any;
   #prefetchPlaybackStateFixer: PrefetchPlaybackStateFixer | null;
 
@@ -33,17 +32,20 @@ export default class PlayController {
    * - bandcamp/article@articleUrl={articleUrl}@mediaItemRef={...}@track={trackPosition}@artistUrl={...}@albumUrl={...}
    * - bandcamp/album@albumUrl={...}@[track | trackId]={...}@artistUrl={...}@albumUrl={...}
    */
-  async clearAddPlayTrack(track: ExplodedTrackInfo) {
-    bandcamp.getLogger().info(`[bandcamp-play] clearAddPlayTrack: ${track.uri}`);
+  async clearAddPlayTrack(track: QueueItem) {
+    bandcamp
+      .getLogger()
+      .info(`[bandcamp-play] clearAddPlayTrack: ${track.uri}`);
 
     this.#prefetchPlaybackStateFixer?.notifyPrefetchCleared();
 
     let streamUrl;
     try {
       streamUrl = await this.#getStreamUrl(track);
-    }
-    catch (error: any) {
-      bandcamp.getLogger().error(`[bandcamp-play] Error getting stream: ${error}`);
+    } catch (error: any) {
+      bandcamp
+        .getLogger()
+        .error(`[bandcamp-play] Error getting stream: ${error}`);
       throw error;
     }
 
@@ -91,7 +93,7 @@ export default class PlayController {
     this.#prefetchPlaybackStateFixer = null;
   }
 
-  async prefetch(track: ExplodedTrackInfo) {
+  async prefetch(track: QueueItem) {
     const prefetchEnabled = bandcamp.getConfigValue('prefetch', true);
     if (!prefetchEnabled) {
       /**
@@ -110,36 +112,50 @@ export default class PlayController {
     let streamUrl;
     try {
       streamUrl = await this.#getStreamUrl(track, true);
-    }
-    catch (error: any) {
+    } catch (error: any) {
       bandcamp.getLogger().error(`[bandcamp] Prefetch failed: ${error}`);
       bandcamp.getStateMachine().prefetchDone = false;
       return;
     }
 
     const mpdPlugin = this.#mpdPlugin;
-    const res = await kewToJSPromise(mpdPlugin.sendMpdCommand(`addid "${streamUrl}"`, [])
-      .then((addIdResp: { Id: string }) => this.#mpdAddTags(addIdResp, track))
-      .then(() => {
-        bandcamp.getLogger().info(`[bandcamp-play] Prefetched and added track to MPD queue: ${track.name}`);
-        return mpdPlugin.sendMpdCommand('consume 1', []);
-      }));
+    const res = await kewToJSPromise(
+      mpdPlugin
+        .sendMpdCommand(`addid "${streamUrl}"`, [])
+        .then((addIdResp: { Id: string }) => this.#mpdAddTags(addIdResp, track))
+        .then(() => {
+          bandcamp
+            .getLogger()
+            .info(
+              `[bandcamp-play] Prefetched and added track to MPD queue: ${track.name}`
+            );
+          return mpdPlugin.sendMpdCommand('consume 1', []);
+        })
+    );
 
     this.#prefetchPlaybackStateFixer?.notifyPrefetched(track);
 
     return res;
   }
 
-  async #getStreamUrl(track: ExplodedTrackInfo, isPrefetching = false): Promise<string> {
+  async #getStreamUrl(
+    track: QueueItem,
+    isPrefetching = false
+  ): Promise<string> {
     let streamUrl = await this.#doGetStreamUrl(track, isPrefetching);
 
     // Ensure stream URL is valid
     const ensuredUrl = await Model.ensureStreamURL(streamUrl);
     if (!ensuredUrl) {
       if (!isPrefetching) {
-        bandcamp.toast('error', bandcamp.getI18n('BANDCAMP_ERR_REFRESH_STREAM', track.title));
+        bandcamp.toast(
+          'error',
+          bandcamp.getI18n('BANDCAMP_ERR_REFRESH_STREAM', track.title)
+        );
       }
-      throw Error(`Failed to refresh stream URL for ${track.title}: ${streamUrl}`);
+      throw Error(
+        `Failed to refresh stream URL for ${track.title}: ${streamUrl}`
+      );
     }
 
     // Safe
@@ -153,8 +169,7 @@ export default class PlayController {
     if (streamUrl.includes('mp3-128')) {
       track.samplerate = '128 kbps';
       streamUrl += '&t.mp3';
-    }
-    else if (streamUrl.includes('mp3-v0')) {
+    } else if (streamUrl.includes('mp3-v0')) {
       track.samplerate = 'HQ VBR';
       streamUrl += '&t.mp3';
     }
@@ -162,8 +177,10 @@ export default class PlayController {
     return streamUrl;
   }
 
-  async #doGetStreamUrl(track: ExplodedTrackInfo, isPrefetching = false): Promise<string> {
-
+  async #doGetStreamUrl(
+    track: QueueItem,
+    isPrefetching = false
+  ): Promise<string> {
     const _toast = (type: 'error' | 'warning', msg: string) => {
       if (!isPrefetching) {
         bandcamp.toast(type, msg);
@@ -184,18 +201,19 @@ export default class PlayController {
       const model = Model.getInstance(ModelType.Track);
       const trackInfo = await model.getTrack(trackUrl);
       if (!trackInfo.streamUrl) {
-        _toast('warning', bandcamp.getI18n('BANDCAMP_SKIP_NON_PLAYABLE_TRACK', trackInfo.name));
+        _toast(
+          'warning',
+          bandcamp.getI18n('BANDCAMP_SKIP_NON_PLAYABLE_TRACK', trackInfo.name)
+        );
         if (!isPrefetching) {
           bandcamp.getStateMachine().next();
         }
         throw Error('Skipping non-playable track');
-      }
-      else {
+      } else {
         const safeUri = trackInfo.streamUrl.replace(/"/g, '\\"');
         return safeUri;
       }
-    }
-    else if (trackView.name === 'show') {
+    } else if (trackView.name === 'show') {
       const { showUrl } = trackView as ShowView;
       if (!showUrl) {
         _toast('error', bandcamp.getI18n('BANDCAMP_ERR_INVALID_PLAY_REQUEST'));
@@ -205,51 +223,84 @@ export default class PlayController {
       const showInfo = await model.getShow(showUrl);
       const streamUrl = showInfo.streamUrl;
       if (!streamUrl) {
-        _toast('error', bandcamp.getI18n('BANDCAMP_ERR_STREAM_NOT_FOUND', showInfo.name));
+        _toast(
+          'error',
+          bandcamp.getI18n('BANDCAMP_ERR_STREAM_NOT_FOUND', showInfo.name)
+        );
         throw Error(`Stream not found for show URL: ${showUrl}`);
       }
       const safeUri = streamUrl.replace(/"/g, '\\"');
       return safeUri;
-    }
-    else if (trackView.name === 'article') {
-      const { articleUrl, mediaItemRef, track: trackPosition } = trackView as ArticleView;
+    } else if (trackView.name === 'article') {
+      const {
+        articleUrl,
+        mediaItemRef,
+        track: trackPosition
+      } = trackView as ArticleView;
       if (!articleUrl || !mediaItemRef) {
         _toast('error', bandcamp.getI18n('BANDCAMP_ERR_INVALID_PLAY_REQUEST'));
-        throw Error('Article URL, mediaItemRef or track position not specified');
+        throw Error(
+          'Article URL, mediaItemRef or track position not specified'
+        );
       }
       const model = Model.getInstance(ModelType.Article);
       const article = await model.getArticle(articleUrl);
-      const mediaItem = article.mediaItems?.find((mi) => mi.mediaItemRef === mediaItemRef);
+      const mediaItem = article.mediaItems?.find(
+        (mi) => mi.mediaItemRef === mediaItemRef
+      );
       if (!mediaItem) {
-        _toast('error', bandcamp.getI18n('BANDCAMP_ERR_STREAM_NOT_FOUND', track.name));
-        throw Error(`Target mediaItemRef '${mediaItemRef}' not found for article URL: ${articleUrl}`);
+        _toast(
+          'error',
+          bandcamp.getI18n('BANDCAMP_ERR_STREAM_NOT_FOUND', track.name)
+        );
+        throw Error(
+          `Target mediaItemRef '${mediaItemRef}' not found for article URL: ${articleUrl}`
+        );
       }
       let matchedTrack: TrackEntity | undefined;
       if (mediaItem.type === 'album') {
         if (!trackPosition) {
-          _toast('error', bandcamp.getI18n('BANDCAMP_ERR_INVALID_PLAY_REQUEST'));
-          throw Error(`Track position not specified for mediaItemRef '${mediaItemRef}' (article URL: ${articleUrl})`);
+          _toast(
+            'error',
+            bandcamp.getI18n('BANDCAMP_ERR_INVALID_PLAY_REQUEST')
+          );
+          throw Error(
+            `Track position not specified for mediaItemRef '${mediaItemRef}' (article URL: ${articleUrl})`
+          );
         }
-        matchedTrack = (mediaItem as ArticleEntityMediaItem<AlbumEntity>).tracks?.find((tr) => tr.position?.toString() === trackPosition);
+        matchedTrack = (
+          mediaItem as ArticleEntityMediaItem<AlbumEntity>
+        ).tracks?.find((tr) => tr.position?.toString() === trackPosition);
         if (!matchedTrack) {
-          _toast('error', bandcamp.getI18n('BANDCAMP_ERR_STREAM_NOT_FOUND', track.name));
-          throw Error(`No track at position ${trackPosition} for mediaItemRef '${mediaItemRef}' (article URL: ${articleUrl})`);
+          _toast(
+            'error',
+            bandcamp.getI18n('BANDCAMP_ERR_STREAM_NOT_FOUND', track.name)
+          );
+          throw Error(
+            `No track at position ${trackPosition} for mediaItemRef '${mediaItemRef}' (article URL: ${articleUrl})`
+          );
         }
-      }
-      else {
-        matchedTrack = mediaItem as ArticleEntityMediaItem<TrackEntity>;
+      } else {
+        matchedTrack = mediaItem;
       }
       if (matchedTrack.streamUrl) {
         const safeUri = matchedTrack.streamUrl.replace(/"/g, '\\"');
         return safeUri;
       }
 
-      _toast('error', bandcamp.getI18n('BANDCAMP_ERR_STREAM_NOT_FOUND', matchedTrack.name));
-      throw Error(`Stream URL missing for track matching ${trackPosition ? `${trackPosition}@` : ''}${mediaItemRef} (article URL: ${articleUrl})`);
-
-    }
-    else if (trackView.name === 'album') {
-      const { albumUrl, track: trackPosition, trackId } = trackView as AlbumView;
+      _toast(
+        'error',
+        bandcamp.getI18n('BANDCAMP_ERR_STREAM_NOT_FOUND', matchedTrack.name)
+      );
+      throw Error(
+        `Stream URL missing for track matching ${trackPosition ? `${trackPosition}@` : ''}${mediaItemRef} (article URL: ${articleUrl})`
+      );
+    } else if (trackView.name === 'album') {
+      const {
+        albumUrl,
+        track: trackPosition,
+        trackId
+      } = trackView as AlbumView;
       if (!albumUrl || (!trackPosition && !trackId)) {
         throw Error('Album URL or track position / ID not specified');
       }
@@ -258,20 +309,31 @@ export default class PlayController {
       let albumTrack;
       if (trackPosition !== undefined) {
         albumTrack = album.tracks?.[parseInt(trackPosition, 10) - 1];
-      }
-      else if (trackId !== undefined) {
-        albumTrack = album.tracks?.find((track) => track.id !== undefined && String(track.id) === trackId);
+      } else if (trackId !== undefined) {
+        albumTrack = album.tracks?.find(
+          (track) => track.id !== undefined && String(track.id) === trackId
+        );
       }
       if (albumTrack?.streamUrl) {
         const safeUri = albumTrack.streamUrl.replace(/"/g, '\\"');
         return safeUri;
       }
-      _toast('error', bandcamp.getI18n('BANDCAMP_ERR_STREAM_NOT_FOUND', albumTrack?.name || track.name));
+      _toast(
+        'error',
+        bandcamp.getI18n(
+          'BANDCAMP_ERR_STREAM_NOT_FOUND',
+          albumTrack?.name || track.name
+        )
+      );
       if (trackPosition !== undefined) {
-        throw Error(`Track or stream URL missing at position ${trackPosition} for album URL: ${albumUrl}`);
+        throw Error(
+          `Track or stream URL missing at position ${trackPosition} for album URL: ${albumUrl}`
+        );
       }
       if (trackId !== undefined) {
-        throw Error(`Track matching ID ${trackId} or its stream URL missing for album URL: ${albumUrl}`);
+        throw Error(
+          `Track matching ID ${trackId} or its stream URL missing for album URL: ${albumUrl}`
+        );
       }
     }
 
@@ -280,10 +342,11 @@ export default class PlayController {
   }
 
   // Returns kew promise!
-  #doPlay(streamUrl: string, track: ExplodedTrackInfo) {
+  #doPlay(streamUrl: string, track: QueueItem) {
     const mpdPlugin = this.#mpdPlugin;
 
-    return mpdPlugin.sendMpdCommand('stop', [])
+    return mpdPlugin
+      .sendMpdCommand('stop', [])
       .then(() => {
         return mpdPlugin.sendMpdCommand('clear', []);
       })
@@ -298,23 +361,23 @@ export default class PlayController {
   }
 
   // Returns kew promise!
-  #mpdAddTags(mpdAddIdResponse: { Id: string }, track: ExplodedTrackInfo) {
+  #mpdAddTags(mpdAddIdResponse: { Id: string }, track: QueueItem) {
     const songId = mpdAddIdResponse?.Id;
     if (songId !== undefined) {
       const cmds = [];
       cmds.push({
         command: 'addtagid',
-        parameters: [ songId, 'title', track.title ]
+        parameters: [songId, 'title', track.title]
       });
       if (track.album) {
         cmds.push({
           command: 'addtagid',
-          parameters: [ songId, 'album', track.album ]
+          parameters: [songId, 'album', track.album]
         });
       }
       cmds.push({
         command: 'addtagid',
-        parameters: [ songId, 'artist', track.artist ]
+        parameters: [songId, 'artist', track.artist]
       });
 
       return this.#mpdPlugin.sendMpdCommandArray(cmds);
@@ -340,9 +403,8 @@ export default class PlayController {
  * and triggers an MPD `pushState()` if necessary.
  */
 class PrefetchPlaybackStateFixer extends EventEmitter {
-
   #positionAtPrefetch: number;
-  #prefetchedTrack: ExplodedTrackInfo | null;
+  #prefetchedTrack: QueueItem | null;
   #volumioPushStateListener: ((state: any) => void) | null;
 
   constructor() {
@@ -357,7 +419,7 @@ class PrefetchPlaybackStateFixer extends EventEmitter {
     this.removeAllListeners();
   }
 
-  notifyPrefetched(track: ExplodedTrackInfo) {
+  notifyPrefetched(track: QueueItem) {
     this.#positionAtPrefetch = bandcamp.getStateMachine().currentPosition;
     this.#prefetchedTrack = track;
     this.#addPushStateListener();
@@ -370,16 +432,23 @@ class PrefetchPlaybackStateFixer extends EventEmitter {
   #addPushStateListener() {
     if (!this.#volumioPushStateListener) {
       this.#volumioPushStateListener = this.#handleVolumioPushState.bind(this);
-      bandcamp.volumioCoreCommand?.addCallback('volumioPushState', this.#volumioPushStateListener);
+      bandcamp.volumioCoreCommand?.addCallback(
+        'volumioPushState',
+        this.#volumioPushStateListener
+      );
     }
   }
 
   #removePushStateListener() {
     if (this.#volumioPushStateListener) {
-      const listeners = bandcamp.volumioCoreCommand?.callbacks?.['volumioPushState'] || [];
+      const listeners =
+        bandcamp.volumioCoreCommand?.callbacks?.['volumioPushState'] || [];
       const index = listeners.indexOf(this.#volumioPushStateListener);
       if (index >= 0) {
-        bandcamp.volumioCoreCommand.callbacks['volumioPushState'].splice(index, 1);
+        bandcamp.volumioCoreCommand.callbacks['volumioPushState'].splice(
+          index,
+          1
+        );
       }
       this.#volumioPushStateListener = null;
       this.#positionAtPrefetch = -1;
@@ -394,11 +463,20 @@ class PrefetchPlaybackStateFixer extends EventEmitter {
       this.#removePushStateListener();
       return;
     }
-    if (this.#positionAtPrefetch >= 0 && this.#positionAtPrefetch !== currentPosition) {
+    if (
+      this.#positionAtPrefetch >= 0 &&
+      this.#positionAtPrefetch !== currentPosition
+    ) {
       const track = sm.getTrack(currentPosition);
       const pf = this.#prefetchedTrack;
       this.#removePushStateListener();
-      if (track && state && pf && track.service === 'bandcamp' && pf.uri === track.uri) {
+      if (
+        track &&
+        state &&
+        pf &&
+        track.service === 'bandcamp' &&
+        pf.uri === track.uri
+      ) {
         if (state.uri !== track.uri) {
           const mpdPlugin = bandcamp.getMpdPlugin();
           mpdPlugin.getState().then((st: any) => mpdPlugin.pushState(st));
@@ -411,12 +489,18 @@ class PrefetchPlaybackStateFixer extends EventEmitter {
     }
   }
 
-  emit(event: 'playPrefetch', info: { track: ExplodedTrackInfo; position: number; }): boolean;
+  emit(
+    event: 'playPrefetch',
+    info: { track: QueueItem; position: number }
+  ): boolean;
   emit(event: string | symbol, ...args: any[]): boolean {
     return super.emit(event, ...args);
   }
 
-  on(event: 'playPrefetch', listener: (info: { track: ExplodedTrackInfo; position: number; }) => void): this;
+  on(
+    event: 'playPrefetch',
+    listener: (info: { track: QueueItem; position: number }) => void
+  ): this;
   on(event: string | symbol, listener: (...args: any[]) => void): this {
     super.on(event, listener);
     return this;

@@ -29,7 +29,6 @@ export interface RenderedHeader {
 }
 
 export default abstract class BaseRenderer<T> {
-
   #uri: string;
   #currentView: View;
   #previousViews: View[];
@@ -42,8 +41,7 @@ export default abstract class BaseRenderer<T> {
 
   abstract renderToListItem(data: T, ...args: any[]): RenderedListItem | null;
 
-   
-  renderToHeader(data: T): RenderedHeader | null {
+  renderToHeader(_data: T): RenderedHeader | null {
     return null;
   }
 
@@ -60,7 +58,11 @@ export default abstract class BaseRenderer<T> {
   }
 
   protected addType(type: string, text: string) {
-    return UIHelper.addTextBefore(text, bandcamp.getI18n(`BANDCAMP_${type.toUpperCase()}`), UI_STYLES.RESOURCE_TYPE);
+    return UIHelper.addTextBefore(
+      text,
+      bandcamp.getI18n(`BANDCAMP_${type.toUpperCase()}`),
+      UI_STYLES.RESOURCE_TYPE
+    );
   }
 
   // https://github.com/volumio/Volumio2-UI/blob/master/src/app/browse-music/browse-music.controller.js
@@ -82,10 +84,12 @@ export default abstract class BaseRenderer<T> {
     return null;
   }
 
-  getStringFromIdNamePair(data: { id: string, name: string }[]): string {
-    return data.reduce<string[]>((parts, d) => {
-      parts.push(d.name);
-      return parts;
-    }, []).join(', ');
+  getStringFromIdNamePair(data: { id: string; name: string }[]): string {
+    return data
+      .reduce<string[]>((parts, d) => {
+        parts.push(d.name);
+        return parts;
+      }, [])
+      .join(', ');
   }
 }

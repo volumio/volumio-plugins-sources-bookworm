@@ -4,6 +4,7 @@ import BandViewHandler from './BandViewHandler';
 import type BaseViewHandler from './BaseViewHandler';
 import DiscoverViewHandler from './DiscoverViewHandler';
 import FanViewHandler from './FanViewHandler';
+import PlaylistViewHandler from './PlaylistViewHandler';
 import RootViewHandler from './RootViewHandler';
 import SearchViewHandler from './SearchViewHandler';
 import ShowViewHandler from './ShowViewHandler';
@@ -12,24 +13,27 @@ import TrackViewHandler from './TrackViewHandler';
 import type View from './View';
 import ViewHelper from './ViewHelper';
 
-type HandlerClass<V extends View, T extends BaseViewHandler<V>> =
-  new (uri: string, currentView: V, previousViews: View[]) => T;
+type HandlerClass<V extends View, T extends BaseViewHandler<V>> = new (
+  uri: string,
+  currentView: V,
+  previousViews: View[]
+) => T;
 
 const VIEW_NAME_TO_CLASS: Record<string, HandlerClass<any, any>> = {
-  'root': RootViewHandler,
-  'discover': DiscoverViewHandler,
-  'band': BandViewHandler,
-  'album': AlbumViewHandler,
-  'track': TrackViewHandler,
-  'search': SearchViewHandler,
-  'show': ShowViewHandler,
-  'article': ArticleViewHandler,
-  'tag': TagViewHandler,
-  'fan': FanViewHandler
+  root: RootViewHandler,
+  discover: DiscoverViewHandler,
+  band: BandViewHandler,
+  album: AlbumViewHandler,
+  track: TrackViewHandler,
+  search: SearchViewHandler,
+  show: ShowViewHandler,
+  article: ArticleViewHandler,
+  tag: TagViewHandler,
+  fan: FanViewHandler,
+  playlist: PlaylistViewHandler
 };
 
 export default class ViewHandlerFactory {
-
   static getHandler<V extends View>(uri: string): BaseViewHandler<V> {
     const views = ViewHelper.getViewsFromUri(uri);
     const currentView = views.pop();
@@ -56,17 +60,19 @@ export default class ViewHandlerFactory {
         currentView.bandUrl = currentView.labelUrl;
         delete currentView.labelUrl;
       }
-    }
+    } else if (currentView.name === 'articles') {
     /**
      * 'articles' and 'shows' are also absolute (replaced by singular form)
      */
-    else if (currentView.name === 'articles') {
       currentView.name = 'article';
-    }
-    else if (currentView.name === 'shows') {
+    } else if (currentView.name === 'shows') {
       currentView.name = 'show';
     }
 
-    return new VIEW_NAME_TO_CLASS[currentView.name](uri, currentView, previousViews);
+    return new VIEW_NAME_TO_CLASS[currentView.name](
+      uri,
+      currentView,
+      previousViews
+    );
   }
 }

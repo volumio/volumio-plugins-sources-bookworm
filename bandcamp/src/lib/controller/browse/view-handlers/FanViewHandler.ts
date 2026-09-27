@@ -9,15 +9,19 @@ import { type RenderedListItem } from './renderers/BaseRenderer';
 import UIHelper, { type UILink } from '../../../util/UIHelper';
 import { type FanModelGetFanItemsParams } from '../../../model/FanModel';
 import ViewHelper from './ViewHelper';
+import { type PlaylistView } from './PlaylistViewHandler';
 
 export interface FanView extends View {
   name: 'fan';
   username: string;
-  view?: 'collection' | 'wishlist' | 'followingArtistsAndLabels' | 'followingGenres';
+  view?:
+    | 'collection'
+    | 'wishlist'
+    | 'followingArtistsAndLabels'
+    | 'followingGenres';
 }
 
 export default class FanViewHandler extends BaseViewHandler<FanView> {
-
   browse(): Promise<RenderedPage> {
     if (!this.currentView.username) {
       throw Error('Username missing');
@@ -83,7 +87,10 @@ export default class FanViewHandler extends BaseViewHandler<FanView> {
           rendered = tagRenderer.renderGenreListItem(item);
           break;
         case 'track':
-          rendered = trackRenderer.renderToListItem(item, true, true);
+          rendered = trackRenderer.renderToListItem(item, {
+            addType: true,
+            fakeAlbum: true
+          });
           break;
         default:
           rendered = null;
@@ -93,14 +100,17 @@ export default class FanViewHandler extends BaseViewHandler<FanView> {
       }
     });
 
-    const nextPageRef = this.constructPageRef(fanItems.nextPageToken, fanItems.nextPageOffset);
+    const nextPageRef = this.constructPageRef(
+      fanItems.nextPageToken,
+      fanItems.nextPageOffset
+    );
     if (nextPageRef) {
       const nextUri = this.constructNextUri(nextPageRef);
       listItems.push(this.constructNextPageItem(nextUri));
     }
 
     const fanItemsList: RenderedList = {
-      availableListViews: [ 'list', 'grid' ],
+      availableListViews: ['list', 'grid'],
       items: listItems
     };
     const fanInfo = await model.getInfo(view.username);
@@ -112,7 +122,7 @@ export default class FanViewHandler extends BaseViewHandler<FanView> {
     return {
       navigation: {
         prev: { uri: this.constructPrevUri() },
-        lists: [ fanItemsList ]
+        lists: [fanItemsList]
       }
     };
   }
@@ -128,36 +138,63 @@ export default class FanViewHandler extends BaseViewHandler<FanView> {
     };
     const summaryItems: RenderedListItem[] = [
       {
-        'service': 'bandcamp',
-        'type': 'item-no-menu',
-        'title': bandcamp.getI18n('BANDCAMP_COLLECTION', fanInfo.collectionItemCount),
-        'albumart': `/albumart?sourceicon=${baseImgPath}musiclibraryicon.png`,
-        'uri': `${baseUri}/${ViewHelper.constructUriSegmentFromView({...fanView, view: 'collection'})}`
+        service: 'bandcamp',
+        type: 'item-no-menu',
+        title: bandcamp.getI18n(
+          'BANDCAMP_COLLECTION',
+          fanInfo.collectionItemCount
+        ),
+        albumart: `/albumart?sourceicon=${baseImgPath}musiclibraryicon.png`,
+        uri: `${baseUri}/${ViewHelper.constructUriSegmentFromView({ ...fanView, view: 'collection' })}`
       },
       {
-        'service': 'bandcamp',
-        'type': 'item-no-menu',
-        'title': bandcamp.getI18n('BANDCAMP_WISHLIST', fanInfo.wishlistItemCount),
-        'albumart': `/albumart?sourceicon=${baseImgPath}favouritesicon.png`,
-        'uri': `${baseUri}/${ViewHelper.constructUriSegmentFromView({...fanView, view: 'wishlist'})}`
+        service: 'bandcamp',
+        type: 'item-no-menu',
+        title: bandcamp.getI18n('BANDCAMP_WISHLIST', fanInfo.wishlistItemCount),
+        albumart: `/albumart?sourceicon=${baseImgPath}favouritesicon.png`,
+        uri: `${baseUri}/${ViewHelper.constructUriSegmentFromView({ ...fanView, view: 'wishlist' })}`
       },
       {
-        'service': 'bandcamp',
-        'type': 'item-no-menu',
-        'title': bandcamp.getI18n('BANDCAMP_FOLLOWING_ARTISTS_AND_LABELS', fanInfo.followingArtistsAndLabelsCount),
-        'albumart': `/albumart?sourceicon=${baseImgPath}artisticon.png`,
-        'uri': `${baseUri}/${ViewHelper.constructUriSegmentFromView({...fanView, view: 'followingArtistsAndLabels'})}`
+        service: 'bandcamp',
+        type: 'item-no-menu',
+        title: bandcamp.getI18n(
+          'BANDCAMP_FOLLOWING_ARTISTS_AND_LABELS',
+          fanInfo.followingArtistsAndLabelsCount
+        ),
+        albumart: `/albumart?sourceicon=${baseImgPath}artisticon.png`,
+        uri: `${baseUri}/${ViewHelper.constructUriSegmentFromView({ ...fanView, view: 'followingArtistsAndLabels' })}`
       },
       {
-        'service': 'bandcamp',
-        'type': 'item-no-menu',
-        'title': bandcamp.getI18n('BANDCAMP_FOLLOWING_GENRES', fanInfo.followingGenresCount),
-        'albumart': `/albumart?sourceicon=${baseImgPath}genreicon.png`,
-        'uri': `${baseUri}/${ViewHelper.constructUriSegmentFromView({...fanView, view: 'followingGenres'})}`
+        service: 'bandcamp',
+        type: 'item-no-menu',
+        title: bandcamp.getI18n(
+          'BANDCAMP_FOLLOWING_GENRES',
+          fanInfo.followingGenresCount
+        ),
+        albumart: `/albumart?sourceicon=${baseImgPath}genreicon.png`,
+        uri: `${baseUri}/${ViewHelper.constructUriSegmentFromView({ ...fanView, view: 'followingGenres' })}`
       }
     ];
+
+    const playlistCount = await this.getModel(
+      ModelType.Playlist
+    ).getPlaylistCount(fanInfo.fanId);
+    if (playlistCount > 0) {
+      const playlistView: PlaylistView = {
+        name: 'playlist',
+        username: fanInfo.username
+      };
+      summaryItems.push({
+        service: 'bandcamp',
+        type: 'item-no-menu',
+        title: bandcamp.getI18n('BANDCAMP_PLAYLISTS', playlistCount),
+        albumart: `/albumart?sourceicon=${baseImgPath}playlisticon.png`,
+        uri: `${baseUri}/${ViewHelper.constructUriSegmentFromView(playlistView)}`
+      });
+    }
+
     const summaryItemsList: RenderedList = {
-      availableListViews: [ 'list', 'grid' ],
+      availableListViews: ['list', 'grid'],
       items: summaryItems
     };
     const listTitle = this.#getTitle(fanInfo);
@@ -168,7 +205,7 @@ export default class FanViewHandler extends BaseViewHandler<FanView> {
     return {
       navigation: {
         prev: { uri: this.constructPrevUri() },
-        lists: [ summaryItemsList ]
+        lists: [summaryItemsList]
       }
     };
   }
@@ -201,9 +238,14 @@ export default class FanViewHandler extends BaseViewHandler<FanView> {
         titleKey = 'BANDCAMP_MY_BANDCAMP';
     }
     const mainTitle = bandcamp.getI18n(titleKey);
-    const secondaryTitle = fanInfo.location ?
-      bandcamp.getI18n('BANDCAMP_MY_BANDCAMP_NAME_LOCATION', fanInfo.name, fanInfo.location) :
-      fanInfo.name;
+    const secondaryTitle =
+      fanInfo.location ?
+        bandcamp.getI18n(
+          'BANDCAMP_MY_BANDCAMP_NAME_LOCATION',
+          fanInfo.name,
+          fanInfo.location
+        )
+      : fanInfo.name;
 
     return UIHelper.constructDoubleLineTitleWithImageAndLink({
       imgSrc: fanInfo.imageUrl,

@@ -1,4 +1,8 @@
-import bcfetch, { type Album, type LabelArtist, type Track } from 'bandcamp-fetch';
+import bcfetch, {
+  type Album,
+  type LabelArtist,
+  type Track
+} from 'bandcamp-fetch';
 import bandcamp from '../BandcampContext';
 import BaseModel, { type LoopFetchCallbackParams } from './BaseModel';
 import type ArtistEntity from '../entities/ArtistEntity';
@@ -30,7 +34,6 @@ interface GetDiscographyLoopFetchCallbackParams extends LoopFetchCallbackParams 
 }
 
 export default class BandModel extends BaseModel {
-
   getLabelArtists(params: BandModelGetLabelArtistsParams) {
     return this.loopFetch({
       callbackParams: { ...params },
@@ -48,9 +51,11 @@ export default class BandModel extends BaseModel {
       labelUrl: params.labelUrl,
       imageFormat: this.getArtistImageFormat()
     };
-    return bandcamp.getCache().getOrSet(
-      this.getCacheKeyForFetch('artists', queryParams),
-      () => bcfetch.limiter.band.getLabelArtists(queryParams));
+    return bandcamp
+      .getCache()
+      .getOrSet(this.getCacheKeyForFetch('artists', queryParams), () =>
+        bcfetch.limiter.band.getLabelArtists(queryParams)
+      );
   }
 
   #getLabelArtistsFromFetchResult(result: LabelArtist[]) {
@@ -65,7 +70,8 @@ export default class BandModel extends BaseModel {
     return this.loopFetch({
       callbackParams: { ...params },
       getFetchPromise: this.#getDiscographyFetchPromise.bind(this),
-      getItemsFromFetchResult: this.#getDiscographyItemsFromFetchResult.bind(this),
+      getItemsFromFetchResult:
+        this.#getDiscographyItemsFromFetchResult.bind(this),
       convertToEntity: this.#convertFetchedDiscographyItemToEntity.bind(this),
       pageOffset: params.pageOffset,
       pageToken: params.pageToken,
@@ -78,16 +84,20 @@ export default class BandModel extends BaseModel {
       bandUrl: params.bandUrl,
       imageFormat: this.getAlbumImageFormat()
     };
-    return bandcamp.getCache().getOrSet(
-      this.getCacheKeyForFetch('discography', queryParams),
-      () => bcfetch.limiter.band.getDiscography(queryParams));
+    return bandcamp
+      .getCache()
+      .getOrSet(this.getCacheKeyForFetch('discography', queryParams), () =>
+        bcfetch.limiter.band.getDiscography(queryParams)
+      );
   }
 
   #getDiscographyItemsFromFetchResult(result: Array<Album | Track>) {
     return result.slice(0);
   }
 
-  #convertFetchedDiscographyItemToEntity(item: Album | Track): AlbumEntity | TrackEntity {
+  #convertFetchedDiscographyItemToEntity(
+    item: Album | Track
+  ): AlbumEntity | TrackEntity {
     if (item.type === 'album') {
       return EntityConverter.convertAlbum(item);
     }
@@ -101,9 +111,11 @@ export default class BandModel extends BaseModel {
       imageFormat: this.getArtistImageFormat()
     };
 
-    const band = await bandcamp.getCache().getOrSet(
-      this.getCacheKeyForFetch('band', queryParams),
-      () => bcfetch.limiter.band.getInfo(queryParams));
+    const band = await bandcamp
+      .getCache()
+      .getOrSet(this.getCacheKeyForFetch('band', queryParams), () =>
+        bcfetch.limiter.band.getInfo(queryParams)
+      );
 
     if (band.type === 'artist') {
       return EntityConverter.convertArtist(band);

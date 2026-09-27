@@ -81,7 +81,10 @@ _FanViewHandler_instances = new WeakSet(), _FanViewHandler_browseList = async fu
                 rendered = tagRenderer.renderGenreListItem(item);
                 break;
             case 'track':
-                rendered = trackRenderer.renderToListItem(item, true, true);
+                rendered = trackRenderer.renderToListItem(item, {
+                    addType: true,
+                    fakeAlbum: true
+                });
                 break;
             default:
                 rendered = null;
@@ -149,6 +152,20 @@ _FanViewHandler_instances = new WeakSet(), _FanViewHandler_browseList = async fu
             'uri': `${baseUri}/${ViewHelper_1.default.constructUriSegmentFromView({ ...fanView, view: 'followingGenres' })}`
         }
     ];
+    const playlistCount = await this.getModel(model_1.ModelType.Playlist).getPlaylistCount(fanInfo.fanId);
+    if (playlistCount > 0) {
+        const playlistView = {
+            name: 'playlist',
+            username: fanInfo.username
+        };
+        summaryItems.push({
+            'service': 'bandcamp',
+            'type': 'item-no-menu',
+            'title': BandcampContext_1.default.getI18n('BANDCAMP_PLAYLISTS', playlistCount),
+            'albumart': `/albumart?sourceicon=${baseImgPath}playlisticon.png`,
+            'uri': `${baseUri}/${ViewHelper_1.default.constructUriSegmentFromView(playlistView)}`
+        });
+    }
     const summaryItemsList = {
         availableListViews: ['list', 'grid'],
         items: summaryItems
