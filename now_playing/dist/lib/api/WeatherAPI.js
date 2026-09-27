@@ -15,6 +15,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _WeatherAPI_instances, _WeatherAPI_api, _WeatherAPI_fetchPromises, _WeatherAPI_cache, _WeatherAPI_config, _WeatherAPI_getFetchPromise, _WeatherAPI_getWeatherIconPath, _WeatherAPI_getWeatherIconUrls, _WeatherAPI_getTemperatureText, _WeatherAPI_getWindSpeedText, _WeatherAPI_getHumidityText, _WeatherAPI_parseLocation, _WeatherAPI_parseCurrent, _WeatherAPI_parseForecast, _WeatherAPI_parseHourly, _WeatherAPI_doFetchInfo, _WeatherAPI_isConfigValid;
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getWeatherAPI = getWeatherAPI;
 const md5_1 = __importDefault(require("md5"));
 const NowPlayingContext_1 = __importDefault(require("../NowPlayingContext"));
 const Cache_1 = __importDefault(require("../utils/Cache"));
@@ -60,19 +61,20 @@ class WeatherAPI {
         __classPrivateFieldSet(this, _WeatherAPI_fetchPromises, {}, "f");
         __classPrivateFieldSet(this, _WeatherAPI_cache, new Cache_1.default({ weather: 600 }, { weather: 10 }), "f");
         __classPrivateFieldSet(this, _WeatherAPI_config, {
-            units: 'metric'
+            units: 'metric',
+            appUrl: (0, System_1.getPluginInfo)().appUrl
         }, "f");
     }
     clearCache() {
         __classPrivateFieldGet(this, _WeatherAPI_cache, "f").clear();
     }
     setConfig(opts) {
-        const { coordinates, locale, timezone, units, cacheMinutes } = opts;
+        const { coordinates, locale, timezone, units, cacheMinutes, appUrl } = opts;
         const minutes = Math.min(1440, Math.max(10, cacheMinutes ?? 10));
         __classPrivateFieldGet(this, _WeatherAPI_cache, "f").setTTL('weather', minutes * 60);
         const coord = ConfigHelper_1.default.parseCoordinates(coordinates);
         let configChanged = false;
-        const { coordinates: currentCoordinates, locale: currentLocale, timezone: currentTimezone, units: currentUnits } = __classPrivateFieldGet(this, _WeatherAPI_config, "f");
+        const { coordinates: currentCoordinates, locale: currentLocale, timezone: currentTimezone, units: currentUnits, appUrl: currentAppUrl } = __classPrivateFieldGet(this, _WeatherAPI_config, "f");
         if (coord && (coord.lat !== currentCoordinates?.lat || coord.lon !== currentCoordinates?.lon)) {
             __classPrivateFieldGet(this, _WeatherAPI_api, "f").setCoordinates(coord.lat, coord.lon);
             __classPrivateFieldGet(this, _WeatherAPI_config, "f").coordinates = coord;
@@ -91,6 +93,10 @@ class WeatherAPI {
         if (currentUnits !== units) {
             __classPrivateFieldGet(this, _WeatherAPI_api, "f").setUnits(units);
             __classPrivateFieldGet(this, _WeatherAPI_config, "f").units = units;
+            configChanged = true;
+        }
+        if (currentAppUrl !== appUrl) {
+            __classPrivateFieldGet(this, _WeatherAPI_config, "f").appUrl = appUrl;
             configChanged = true;
         }
         if (configChanged) {
@@ -201,7 +207,7 @@ _WeatherAPI_api = new WeakMap(), _WeatherAPI_fetchPromises = new WeakMap(), _Wea
     };
 }, _WeatherAPI_parseCurrent = function _WeatherAPI_parseCurrent(data) {
     const currentData = data.current;
-    const appUrl = (0, System_1.getPluginInfo)().appUrl;
+    const appUrl = __classPrivateFieldGet(this, _WeatherAPI_config, "f").appUrl;
     const temp = currentData.temp.now;
     const humidity = currentData.humidity;
     const windSpeed = currentData.windSpeed;
@@ -241,7 +247,7 @@ _WeatherAPI_api = new WeakMap(), _WeatherAPI_fetchPromises = new WeakMap(), _Wea
     };
     return result;
 }, _WeatherAPI_parseForecast = function _WeatherAPI_parseForecast(data) {
-    const appUrl = (0, System_1.getPluginInfo)().appUrl;
+    const appUrl = __classPrivateFieldGet(this, _WeatherAPI_config, "f").appUrl;
     const forecast = [];
     for (const dailyWeather of data.daily) {
         const tempMin = dailyWeather.temp.min;
@@ -279,7 +285,7 @@ _WeatherAPI_api = new WeakMap(), _WeatherAPI_fetchPromises = new WeakMap(), _Wea
     }
     return forecast.slice(1); // First day of forecast is actually current day
 }, _WeatherAPI_parseHourly = function _WeatherAPI_parseHourly(data) {
-    const appUrl = (0, System_1.getPluginInfo)().appUrl;
+    const appUrl = __classPrivateFieldGet(this, _WeatherAPI_config, "f").appUrl;
     const hourly = [];
     for (const hourlyWeather of data.hourly) {
         const temp = hourlyWeather.temp;
@@ -322,5 +328,10 @@ _WeatherAPI_api = new WeakMap(), _WeatherAPI_fetchPromises = new WeakMap(), _Wea
 }, _WeatherAPI_isConfigValid = function _WeatherAPI_isConfigValid(config) {
     return !!(config.coordinates && config.units);
 };
-const weatherAPI = new WeatherAPI();
-exports.default = weatherAPI;
+let weatherApi = null;
+function getWeatherAPI() {
+    if (!weatherApi) {
+        weatherApi = new WeatherAPI();
+    }
+    return weatherApi;
+}

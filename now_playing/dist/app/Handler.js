@@ -47,7 +47,7 @@ const NowPlayingContext_1 = __importDefault(require("../lib/NowPlayingContext"))
 const System_1 = require("../lib/utils/System");
 const MetadataAPI_1 = __importDefault(require("../lib/api/MetadataAPI"));
 const SettingsAPI_1 = __importDefault(require("../lib/api/SettingsAPI"));
-const WeatherAPI_1 = __importDefault(require("../lib/api/WeatherAPI"));
+const WeatherAPI_1 = require("../lib/api/WeatherAPI");
 const UnsplashAPI_1 = __importDefault(require("../lib/api/UnsplashAPI"));
 const CommonSettingsLoader_1 = __importDefault(require("../lib/config/CommonSettingsLoader"));
 const now_playing_common_1 = require("now-playing-common");
@@ -55,11 +55,17 @@ const MyBackgroundMonitor_1 = __importDefault(require("../lib/utils/MyBackground
 const Misc_1 = require("../lib/utils/Misc");
 const SystemUtils = __importStar(require("../lib/utils/System"));
 const FontHelper_1 = require("../lib/utils/FontHelper");
+const getAPIs = {
+    metadata: () => MetadataAPI_1.default,
+    settings: () => SettingsAPI_1.default,
+    weather: () => (0, WeatherAPI_1.getWeatherAPI)(),
+    unsplash: () => UnsplashAPI_1.default
+};
 const APIs = {
-    metadata: MetadataAPI_1.default,
-    settings: SettingsAPI_1.default,
-    weather: WeatherAPI_1.default,
-    unsplash: UnsplashAPI_1.default
+    metadata: null,
+    settings: null,
+    weather: null,
+    unsplash: null
 };
 async function index(req, res) {
     const html = await renderView('index', req, {
@@ -119,7 +125,14 @@ function myBackground(params, res) {
     }
 }
 async function api(apiName, method, params, res) {
-    const api = apiName && method ? APIs[apiName] : null;
+    let api = null;
+    if (apiName && method) {
+        api = APIs[apiName];
+        if (!api && getAPIs[apiName]) {
+            api = getAPIs[apiName]();
+            APIs[apiName] = api;
+        }
+    }
     const fn = api && typeof api[method] === 'function' ? api[method] : null;
     if (fn) {
         try {
