@@ -1,0 +1,160 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_CONFIGURATION"
+  },
+  "sections": [
+    {
+      "id": "battery_configuration",
+      "element": "section",
+      "label": "TRANSLATE.BATTERY_CONFIGURATION",
+      "icon": "fa-battery-full",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "audio_interface/mupihat",
+        "method": "setUIConfig"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "battery_type",
+          "custom_v_100",
+          "custom_v_75",
+          "custom_v_50",
+          "custom_v_25",
+          "custom_v_0",
+          "custom_th_warning",
+          "custom_th_shutdown"
+        ]
+      },
+      "content": [
+        {
+          "id": "battery_type",
+          "element": "select",
+          "label": "TRANSLATE.BATTERY_TYPE",
+          "doc": "TRANSLATE.BATTERY_TYPE_DOC",
+          "value": "Custom",
+          "options": [
+            {
+              "value": "Ansmann 2S1P",
+              "label": "Ansmann 2S1P"
+            },
+            {
+              "value": "ENERpower 2S2P 10.000mAh",
+              "label": "ENERpower 2S2P 10.000mAh"
+            },
+            {
+              "value": "USB-C mode (no battery)",
+              "label": "USB-C mode (no battery)"
+            },
+            {
+              "value": "Custom",
+              "label": "Custom"
+            }
+          ]
+        },
+        {
+          "id": "custom_v_100",
+          "element": "input",
+          "label": "TRANSLATE.VOLTAGE_100",
+          "doc": "TRANSLATE.VOLTAGE_100_DOC",
+          "type": "number",
+          "value": 8100,
+          "visibleIf": {
+            "field": "battery_type",
+            "value": "Custom"
+          }
+        },
+        {
+          "id": "custom_v_75",
+          "element": "input",
+          "label": "TRANSLATE.VOLTAGE_75",
+          "doc": "TRANSLATE.VOLTAGE_75_DOC",
+          "type": "number",
+          "value": 7800,
+          "visibleIf": {
+            "field": "battery_type",
+            "value": "Custom"
+          }
+        },
+        {
+          "id": "custom_v_50",
+          "element": "input",
+          "label": "TRANSLATE.VOLTAGE_50",
+          "doc": "TRANSLATE.VOLTAGE_50_DOC",
+          "type": "number",
+          "value": 7400,
+          "visibleIf": {
+            "field": "battery_type",
+            "value": "Custom"
+          }
+        },
+        {
+          "id": "custom_v_25",
+          "element": "input",
+          "label": "TRANSLATE.VOLTAGE_25",
+          "doc": "TRANSLATE.VOLTAGE_25_DOC",
+          "type": "number",
+          "value": 7000,
+          "visibleIf": {
+            "field": "battery_type",
+            "value": "Custom"
+          }
+        },
+        {
+          "id": "custom_v_0",
+          "element": "input",
+          "label": "TRANSLATE.VOLTAGE_0",
+          "doc": "TRANSLATE.VOLTAGE_0_DOC",
+          "type": "number",
+          "value": 6700,
+          "visibleIf": {
+            "field": "battery_type",
+            "value": "Custom"
+          }
+        },
+        {
+          "id": "custom_th_warning",
+          "element": "input",
+          "label": "TRANSLATE.WARNING_THRESHOLD",
+          "doc": "TRANSLATE.WARNING_THRESHOLD_DOC",
+          "type": "number",
+          "value": 7000,
+          "visibleIf": {
+            "field": "battery_type",
+            "value": "Custom"
+          }
+        },
+        {
+          "id": "custom_th_shutdown",
+          "element": "input",
+          "label": "TRANSLATE.SHUTDOWN_THRESHOLD",
+          "doc": "TRANSLATE.SHUTDOWN_THRESHOLD_DOC",
+          "type": "number",
+          "value": 6700,
+          "visibleIf": {
+            "field": "battery_type",
+            "value": "Custom"
+          }
+        }
+      ]
+    },
+    {
+      "id": "mupihat_status",
+      "element": "section",
+      "label": "TRANSLATE.MUPIHAT_STATUS",
+      "icon": "fa-info-circle",
+      "content": [
+        {
+          "id": "show_status",
+          "element": "button",
+          "label": "TRANSLATE.SHOW_STATUS",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "audio_interface/mupihat",
+            "method": "showMuPiHATStatus"
+          }
+        }
+      ]
+    }
+  ]
+}
