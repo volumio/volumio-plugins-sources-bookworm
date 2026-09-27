@@ -13,7 +13,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _PlaybackTimer_seek, _PlaybackTimer_timer;
+var _PlaybackTimer_instances, _PlaybackTimer_seek, _PlaybackTimer_timer, _PlaybackTimer_sm, _PlaybackTimer_updateStateMachineSeek;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PlaybackTimer = void 0;
 exports.getNetworkInterfaces = getNetworkInterfaces;
@@ -22,18 +22,21 @@ exports.getServerConnectParams = getServerConnectParams;
 exports.jsPromiseToKew = jsPromiseToKew;
 exports.kewToJSPromise = kewToJSPromise;
 exports.basicPlayerStartupParamsToSqueezeliteOpts = basicPlayerStartupParamsToSqueezeliteOpts;
+exports.getLmsPlayerMonitorConfig = getLmsPlayerMonitorConfig;
+exports.getErrorMessage = getErrorMessage;
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 const kew_1 = __importDefault(require("kew"));
 const os_1 = __importDefault(require("os"));
 const System_1 = require("./System");
+const SqueezeliteMCContext_1 = __importDefault(require("./SqueezeliteMCContext"));
 const DSD_FORMAT_TO_SQUEEZELITE_OPT = {
-    'dop': 'dop',
-    'DSD_U8': 'u8',
-    'DSD_U16_LE': 'u16le',
-    'DSD_U16_BE': 'u16be',
-    'DSD_U32_LE': 'u32le',
-    'DSD_U32_BE': 'u32be'
+    dop: 'dop',
+    DSD_U8: 'u8',
+    DSD_U16_LE: 'u16le',
+    DSD_U16_BE: 'u16be',
+    DSD_U32_LE: 'u32le',
+    DSD_U32_BE: 'u32be'
 };
 function getNetworkInterfaces() {
     const result = {};
@@ -65,7 +68,8 @@ function getServerConnectParams(server, serverCredentials, connectType) {
 }
 function jsPromiseToKew(promise) {
     const defer = kew_1.default.defer();
-    promise.then((result) => {
+    promise
+        .then((result) => {
         defer.resolve(result);
     })
         .catch((error) => {
@@ -75,12 +79,14 @@ function jsPromiseToKew(promise) {
 }
 function kewToJSPromise(promise) {
     // Guard against a JS promise from being passed to this function.
-    if (typeof promise.catch === 'function' && typeof promise.fail === 'undefined') {
+    if (typeof promise.catch === 'function' &&
+        typeof promise.fail === 'undefined') {
         // JS promise - return as is
         return promise;
     }
     return new Promise((resolve, reject) => {
-        promise.then((result) => {
+        promise
+            .then((result) => {
             resolve(result);
         })
             .fail((error) => {
@@ -90,16 +96,21 @@ function kewToJSPromise(promise) {
 }
 class PlaybackTimer {
     constructor() {
+        _PlaybackTimer_instances.add(this);
         _PlaybackTimer_seek.set(this, void 0);
         _PlaybackTimer_timer.set(this, void 0);
+        _PlaybackTimer_sm.set(this, void 0);
         __classPrivateFieldSet(this, _PlaybackTimer_seek, 0, "f");
         __classPrivateFieldSet(this, _PlaybackTimer_timer, null, "f");
+        __classPrivateFieldSet(this, _PlaybackTimer_sm, SqueezeliteMCContext_1.default.getStateMachine(), "f");
     }
     start(seek = 0) {
         this.stop();
         __classPrivateFieldSet(this, _PlaybackTimer_seek, seek, "f");
+        __classPrivateFieldGet(this, _PlaybackTimer_instances, "m", _PlaybackTimer_updateStateMachineSeek).call(this);
         __classPrivateFieldSet(this, _PlaybackTimer_timer, setInterval(() => {
             __classPrivateFieldSet(this, _PlaybackTimer_seek, __classPrivateFieldGet(this, _PlaybackTimer_seek, "f") + 1000, "f");
+            __classPrivateFieldGet(this, _PlaybackTimer_instances, "m", _PlaybackTimer_updateStateMachineSeek).call(this);
         }, 1000), "f");
     }
     stop() {
@@ -114,14 +125,13 @@ class PlaybackTimer {
     }
 }
 exports.PlaybackTimer = PlaybackTimer;
-_PlaybackTimer_seek = new WeakMap(), _PlaybackTimer_timer = new WeakMap();
+_PlaybackTimer_seek = new WeakMap(), _PlaybackTimer_timer = new WeakMap(), _PlaybackTimer_sm = new WeakMap(), _PlaybackTimer_instances = new WeakSet(), _PlaybackTimer_updateStateMachineSeek = function _PlaybackTimer_updateStateMachineSeek() {
+    __classPrivateFieldGet(this, _PlaybackTimer_sm, "f").volatileState.seek = __classPrivateFieldGet(this, _PlaybackTimer_seek, "f");
+};
 function basicPlayerStartupParamsToSqueezeliteOpts(params) {
     // Returns:
     // -o squeezelite -C 1 -n {playerName} -D 3:{dsdFormat} -V {mixer} -f ${logFile}
-    const parts = [
-        '-o squeezelite',
-        '-C 1'
-    ];
+    const parts = ['-o squeezelite', '-C 1'];
     if (params.playerName) {
         parts.push(`-n "${params.playerName}"`);
     }
@@ -137,4 +147,33 @@ function basicPlayerStartupParamsToSqueezeliteOpts(params) {
     parts.push(`-f ${System_1.SQUEEZELITE_LOG_FILE}`);
     return parts.join(' ');
 }
-//# sourceMappingURL=Util.js.map
+function getLmsPlayerMonitorConfig(server, serverCredentials, logger) {
+    const connectParams = getServerConnectParams(server, serverCredentials, 'rpc');
+    return {
+        server: {
+            host: server.ip,
+            port: server.jsonPort,
+            username: connectParams.username,
+            password: connectParams.password
+        },
+        logger
+    };
+}
+function getErrorMessage(message, error, stack = false) {
+    let result = message;
+    if (error instanceof Error) {
+        if (error.message) {
+            result += ` ${error.message}`;
+        }
+        if (stack && error.stack) {
+            result += ` ${error.stack}`;
+        }
+    }
+    else if (typeof error == 'string') {
+        result += ` ${error}`;
+    }
+    else {
+        result += ` ${String(error)}`;
+    }
+    return result.trim();
+}

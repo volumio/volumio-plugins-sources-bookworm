@@ -2,13 +2,14 @@ import type Server from './Server';
 
 interface Player {
   id: string;
-  uuid: string;
-  ip: string;
+  ip?: string;
   name: string;
-  server: Server
+  server: Server;
 }
 
-export type PlayerStartupParams = BasicPlayerStartupParams | ManualPlayerStartupParams;
+export type PlayerStartupParams =
+  | BasicPlayerStartupParams
+  | ManualPlayerStartupParams;
 
 export interface AlsaConfig {
   card: string;
@@ -33,7 +34,7 @@ export interface PlayerStatus {
   volume?: number;
   repeatMode?: number;
   shuffleMode?: number;
-  canSeek?: number;
+  canSeek?: boolean;
   currentTrack?: {
     type?: string;
     title?: string;
@@ -43,7 +44,7 @@ export interface PlayerStatus {
     album?: string;
     remoteTitle?: string;
     artworkUrl?: string;
-    coverArt?: string;
+    coverId?: string;
     duration?: number;
     sampleRate?: number;
     sampleSize?: number;
