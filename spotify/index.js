@@ -371,7 +371,14 @@ ControllerSpotify.prototype.initializeSpotifyPlaybackInVolatileMode = function (
     self.commandRouter.stateMachine.setConsumeUpdateService(undefined);
     self.context.coreCommand.stateMachine.setVolatile({
         service: 'spop',
-        callback: self.libRespotGoUnsetVolatile()
+        // Pass the function, don't call it -- the core invokes this later, on volatile stop.
+        // Called here, the body ran immediately (taking its `status !== 'stop'` branch and
+        // stopping the outgoing track), and because the method returns nothing, `undefined`
+        // was registered as volatileCallback -- which unSetVolatile's `!== undefined` guard
+        // then skipped, so the real unset handling never ran.
+        // bind is required: unSetVolatile invokes it as this.volatileCallback.call(), with no
+        // receiver, and this file is 'use strict'.
+        callback: self.libRespotGoUnsetVolatile.bind(self)
     });
 
     setTimeout(()=>{
