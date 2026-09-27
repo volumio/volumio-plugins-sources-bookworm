@@ -12,7 +12,7 @@ const LyrionContext_1 = __importDefault(require("./LyrionContext"));
 const child_process_1 = require("child_process");
 const fs_1 = __importDefault(require("fs"));
 const os_1 = require("os");
-const SYSTEMD_SERVICE_NAME = 'logitechmediaserver';
+const SYSTEMD_SERVICE_NAME = 'lyrionmusicserver';
 const PREFS_FILE = '/var/lib/squeezeboxserver/prefs/server.prefs';
 const DEFAULT_SERVER_PORT = '9000';
 function execCommand(cmd, sudo = false) {
@@ -20,11 +20,13 @@ function execCommand(cmd, sudo = false) {
         LyrionContext_1.default.getLogger().info(`[lyrion] Executing ${cmd}`);
         (0, child_process_1.exec)(sudo ? `echo volumio | sudo -S ${cmd}` : cmd, { uid: 1000, gid: 1000 }, function (error, stdout, stderr) {
             if (error) {
-                LyrionContext_1.default.getLogger().error(LyrionContext_1.default.getErrorMessage(`[lyrion] Failed to execute ${cmd}: ${stderr.toString()}`, error));
+                LyrionContext_1.default
+                    .getLogger()
+                    .error(LyrionContext_1.default.getErrorMessage(`[lyrion] Failed to execute ${cmd}: ${stderr}`, error));
                 reject(error);
             }
             else {
-                resolve(stdout.toString());
+                resolve(stdout);
             }
         });
     });
@@ -84,7 +86,9 @@ async function getServiceStatus() {
     const regex = /Active: (.*) \(.*\)/gm;
     const out = await systemctl('status', SYSTEMD_SERVICE_NAME);
     const matches = [...out.matchAll(regex)];
-    if (matches[0] && matches[0][1] && recognizedStatuses.includes(matches[0][1])) {
+    if (matches[0] &&
+        matches[0][1] &&
+        recognizedStatuses.includes(matches[0][1])) {
         return matches[0][1];
     }
     return 'inactive';
@@ -95,13 +99,15 @@ function getServerPrefs() {
     }
     try {
         const prefs = fs_1.default.readFileSync(PREFS_FILE, 'utf8');
-        const parsed = prefs.split(os_1.EOL).reduce((result, row) => {
+        const parsed = prefs
+            .split(os_1.EOL)
+            .reduce((result, row) => {
             const h = row.split(':');
             if (h.length === 2) {
                 const prop = h[0].trim();
                 const value = h[1].trim();
                 let parsedValue = value;
-                if (value.startsWith('\'') && value.endsWith('\'')) {
+                if (value.startsWith("'") && value.endsWith("'")) {
                     parsedValue = value.substring(1, value.length - 1);
                 }
                 Reflect.set(result, prop, parsedValue);
@@ -111,7 +117,9 @@ function getServerPrefs() {
         return parsed;
     }
     catch (error) {
-        LyrionContext_1.default.getLogger().error(LyrionContext_1.default.getErrorMessage('[lyrion] Error reading server prefs file:', error));
+        LyrionContext_1.default
+            .getLogger()
+            .error(LyrionContext_1.default.getErrorMessage('[lyrion] Error reading server prefs file:', error));
         return {};
     }
 }
@@ -119,4 +127,3 @@ function getServerPort() {
     const prefs = getServerPrefs();
     return prefs['httpport'] || DEFAULT_SERVER_PORT;
 }
-//# sourceMappingURL=System.js.map
