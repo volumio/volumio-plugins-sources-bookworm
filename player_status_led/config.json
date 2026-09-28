@@ -1,0 +1,14 @@
+{
+  "gpioPin": {
+    "type": "number",
+    "value": 22
+  },
+  "activeState": {
+    "type": "number",
+    "value": 0
+  },
+  "blinkPeriodMs": {
+    "type": "number",
+    "value": 1000
+  }
+}

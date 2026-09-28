@@ -1,0 +1,48 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_CONFIGURATION"
+  },
+  "sections": [
+    {
+      "id": "section_settings",
+      "element": "section",
+      "label": "TRANSLATE.PLUGIN_SECTION_TITLE",
+      "icon": "fa-plug",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/player_status_led",
+        "method": "saveSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["gpioPin", "activeState", "blinkPeriodMs"]
+      },
+      "content": [
+        {
+          "id": "gpioPin",
+          "element": "input",
+          "type": "number",
+          "doc": "TRANSLATE.GPIO_PIN_DOC",
+          "label": "TRANSLATE.GPIO_PIN_LBL",
+          "value": 22
+        },
+        {
+          "id": "activeState",
+          "element": "input",
+          "type": "number",
+          "doc": "TRANSLATE.ACTIVE_STATE_DOC",
+          "label": "TRANSLATE.ACTIVE_STATE_LBL",
+          "value": 0
+        },
+        {
+          "id": "blinkPeriodMs",
+          "element": "input",
+          "type": "number",
+          "doc": "TRANSLATE.BLINK_PERIOD_DOC",
+          "label": "TRANSLATE.BLINK_PERIOD_LBL",
+          "value": 1000
+        }
+      ]
+    }
+  ]
+}

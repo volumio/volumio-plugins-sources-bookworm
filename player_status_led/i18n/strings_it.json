@@ -1,0 +1,24 @@
+{
+  "PLUGIN_CONFIGURATION": "Configurazione del LED di stato del lettore",
+  "PLUGIN_SECTION_TITLE": "Impostazioni del LED di stato del lettore",
+  "SAVE": "Salva",
+  "SUCCESS_TITLE": "Impostazioni salvate",
+  "SUCCESS_MESSAGE": "Impostazioni salvate correttamente",
+
+  "GPIO_PIN_DOC": "Inserisci il numero GPIO a cui è collegato il LED",
+  "GPIO_PIN_LBL": "Numero GPIO",
+  "ACTIVE_STATE_DOC": "Imposta 0 se il LED si accende con un livello GPIO basso, oppure 1 con un livello alto",
+  "ACTIVE_STATE_LBL": "Stato attivo GPIO",
+  "BLINK_PERIOD_DOC": "Inserisci il periodo di lampeggio in millisecondi (durata di un ciclo completo acceso/spento)",
+  "BLINK_PERIOD_LBL": "Periodo di lampeggio",
+
+  "ERROR_OUT_OF_RANGE_TITLE": " valore fuori intervallo",
+  "ERROR_OUT_OF_RANGE_MESSAGE": "Inserisci un numero compreso tra ",
+  "ERROR_TITLE": "Errore del LED di stato del lettore",
+  "ERROR_MESSAGE": "Impossibile applicare le impostazioni",
+
+  "ERROR_NOT_FOUND_TITLE": " non trovato",
+
+  "ERROR_BLINKING_TITLE": "Il LED sta lampeggiando",
+  "ERROR_BLINKING_MESSAGE": "Impossibile modificare le impostazioni mentre il LED lampeggia. Riprendi o interrompi la riproduzione, quindi riprova."
+}
