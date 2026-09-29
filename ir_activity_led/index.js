@@ -295,6 +295,12 @@ function blinkBuiltinLed(self, ledInstance, toggleIndex = 0, state) {
   return defer.promise;
 }
 
+// gpiox reports failures (bad pin, chip error, busy, etc.) via a false return value rather than
+// throwing, so every gpiox call below is wrapped with this to surface errors to our catch blocks.
+function checkGpioResult(ok) {
+  if (!ok) throw new Error(gpiox.error_text());
+}
+
 function blinkGpioLed(self, ledInstance, toggleIndex = 0, state) {
   if (!ledInstance || ledInstance.released || self.activeLed !== ledInstance)
     return libQ.resolve();
@@ -303,9 +309,14 @@ function blinkGpioLed(self, ledInstance, toggleIndex = 0, state) {
   try {
     // gpiox reads and wrires synchronously, so no need to use promises here.
     // The gpiox library is a thin wrapper around the sysfs interface.
-    if (toggleIndex == 0) state = gpiox.get_gpio(ledInstance.pin);
+    if (toggleIndex == 0) {
+      state = gpiox.get_gpio(ledInstance.pin);
+      // unlike other gpiox calls, get_gpio signals failure with undefined, not false
+      // (false is a valid LOW reading), so it needs its own check instead of checkGpioResult.
+      if (state === undefined) throw new Error(gpiox.error_text());
+    }
     state ^= 1;
-    gpiox.set_gpio(ledInstance.pin, state);
+    checkGpioResult(gpiox.set_gpio(ledInstance.pin, state));
     toggleIndex >= ledInstance.toggleCount
       ? defer.resolve()
       : setTimeout(
@@ -343,7 +354,7 @@ function getConfigValue(config, key, legacyKey, defaultValue) {
 // Range constraints for numeric settings, shared by saveSettings (validates user input) and initLed
 // (sanitizes values already stored in config.json, e.g. from a manual edit or an older plugin version).
 const SETTINGS_BOUNDS = {
-  gpioPin: { min: 0, max: 200 },
+  gpioPin: { min: 2, max: 27 }, // matches gpiox's documented valid pin range
   blinkPeriodMs: { min: 10, max: 500 },
   blinkCycles: { min: 1, max: 50 },
 };
@@ -430,14 +441,20 @@ IRActivityLEDController.prototype.initLed = function (
     self.log("initializing GPIO LED");
     pendingLed.pin = gpioPin;
     try {
-      gpiox.init_gpio(pendingLed.pin, gpiox.GPIO_MODE_OUTPUT, 0);
+      checkGpioResult(
+        gpiox.init_gpio(pendingLed.pin, gpiox.GPIO_MODE_OUTPUT, 0),
+      );
     } catch (err) {
       self.activeLed = undefined;
       defer.reject(err);
       return defer.promise;
     }
     if (initGeneration !== self.lifecycleGeneration) {
-      gpiox.deinit_gpio(pendingLed.pin);
+      try {
+        checkGpioResult(gpiox.deinit_gpio(pendingLed.pin));
+      } catch (err) {
+        self.log("releasing cancelled GPIO init failed: " + String(err));
+      }
       self.activeLed = undefined;
       defer.reject("startup cancelled");
       return defer.promise;
@@ -530,7 +547,7 @@ IRActivityLEDController.prototype.releaseActiveLed = function () {
   if (releasedLed.pin !== undefined) {
     self.log("releasing GPIO LED");
     try {
-      gpiox.deinit_gpio(releasedLed.pin);
+      checkGpioResult(gpiox.deinit_gpio(releasedLed.pin));
       defer.resolve();
     } catch (err) {
       defer.reject(err);

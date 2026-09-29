@@ -33,7 +33,7 @@ Open the plugin settings under **System Hardware**.
 
 The valid ranges are:
 
-- GPIO pin: `0` to `200`
+- GPIO pin: `2` to `27`
 - Blink period: `10` to `500` milliseconds
 - Blink cycles: `1` to `50`
 
