@@ -121,7 +121,9 @@ FusionDsp.prototype.onStart = function () {
     self.hwinfo();
     self.purecamillagui();
     self.getIP();
-    self.startPeqGraphServer();
+    if ((self.config.get('selectedsp') === 'PEQ') || (self.config.get('selectedsp') === 'EQ15') || (self.config.get('selectedsp') === '2XEQ15')) {
+      self.startPeqGraphServer();
+    }
     self.volumioState();
     self.reportFusionEnabled();
     self.checksamplerate();
@@ -1294,6 +1296,13 @@ FusionDsp.prototype.choosedsp = function (data) {
     self.purecamillagui()
   }
 
+  if (selectedsp == 'PEQ' || selectedsp == 'EQ15' || selectedsp == '2XEQ15') {
+    self.startPeqGraphServer();
+    self.logger.info(logPrefix + ' Starting PEQ Graph server for PEQ or EQ15 or 2XEQ15');
+  } else {
+    self.stopPeqGraphServer();
+    self.logger.info(logPrefix + ' Stoping PEQ Graph server for PEQ or EQ15 or 2XEQ15');
+  }
   self.config.set('effect', true)
   self.config.set('selectedsp', selectedsp)
   // Clear bypass state when switching modes to prevent stale bypass in the new mode
@@ -2784,7 +2793,6 @@ FusionDsp.prototype.areSampleswitch = function () {
   self.refreshUI();
 };
 
-/*
 //------------Here we detect if clipping occurs while playing ------
 FusionDsp.prototype.testclipping = function () {
   const self = this;
@@ -2795,129 +2803,6 @@ FusionDsp.prototype.testclipping = function () {
   let filelength = self.config.get('filter_size');
   let track = '/data/plugins/audio_interface/fusiondsp/testclipping/testclipping.wav';
 
-  const cmd = '/usr/bin/aplay -c2 --device=volumio ' + track;
-    self.socket.emit('pause');
-
-  setTimeout(function () {
-
-    self.config.set('loudness', false);
-    self.config.set('monooutput', false);
-    self.config.set('crossfeed', 'None');
-    self.config.set('attenuationl', 0);
-    self.config.set('attenuationr', 0);
-    self.config.set('muteleft', false);
-    self.config.set('muteright', false);
-    self.config.set('testclipping', true)
-
-    self.createCamilladspfile(() => {
-      setTimeout(() => {
-        try {
-          exec(cmd, (error, stdout, stderr) => {
-            if (error) {
-              self.logger.error(logPrefix + ' Error executing aplay: ' + error.message);
-              return;
-            }
-            if (stderr) {
-              self.logger.warn(logPrefix + ' aplay stderr: ' + stderr);
-            }
-            self.logger.info(logPrefix + ' aplay stdout: ' + stdout);
-          });
-        } catch (error) {
-          self.logger.error(logPrefix + ' Error in clipping detection: ' + error.message);
-        }
-      }, 400);
-    });
-  }, 300);
-
-  setTimeout(function () {
-
-    let rawlog
-    try {
-      rawlog = fs.readFileSync("/tmp/camilladsp.log", "utf8");
-      var o = 0;
-      var result = (rawlog.split("\n"));
-      for (o; o < result.length; o++) {
-        if (result[o].indexOf("Clipping detected") != -1) {
-
-          let filteredMessage = result[o].replace(" dB", ",").replace("peak +", "").split(",");
-
-          let attcalculated = filteredMessage[2]
-          messageDisplayed = Number(attcalculated);
-          self.logger.info(logPrefix + ' clipping detection gives values in line ' + o + " " + messageDisplayed)
-          arr.push(messageDisplayed);
-        }
-      }
-
-    } catch (err) {
-      self.logger.error(logPrefix + ' An error occurs while reading file');
-    }
-
-    arr.sort((a, b) => {
-      if (a > b) return 1;
-      if (a < b) return -1;
-      return 0;
-    });
-
-    let offset = 1// 3.8;
-    let arrreducedr = ((arr.toString().split(',')).pop());
-    arrreduced = (+arrreducedr + offset).toFixed(2);
-
-    self.config.set('attenuationl', arrreduced);
-    self.config.set('attenuationr', arrreduced);
-    self.config.set('testclipping', false)
-    self.commandRouter.pushToastMessage('info', self.commandRouter.getI18nString('FILTER_LENGTH') + filelength, self.commandRouter.getI18nString('AUTO_ATTENUATION_SET') + arrreduced + ' dB');
-
-    let ltest, rtest, cleftfilter, crightfilter, test
-
-    cleftfilter = filterfolder + self.config.get('leftfilter')
-    crightfilter = filterfolder + self.config.get('rightfilter')
-
-    ltest = ('Eq1' + '|' + 'Conv' + '|L' + cleftfilter + '|' + arrreduced + '|');
-    rtest = ('Eq2' + '|' + 'Conv' + '|R' + crightfilter + '|' + arrreduced + '|');
-    test = ltest + rtest
-    self.config.set('mergedeq', test);
-    self.config.set('savedmergedeqfir', test)
-    // Read the saved state4Clipping object
-    let restoreState4Clipping = self.config.get("state4Clipping");
-
-    const state = restoreState4Clipping
-
-    self.config.set('crossfeed', state.crossfeed || "None");
-    self.config.set('monooutput', state.monooutput || false);
-    self.config.set('loudness', state.loudness || false);
-    self.config.set('leftlevel', state.leftlevel || 0);
-    self.config.set('rightlevel', state.rightlevel || 0);
-    self.config.set('delay', state.delay || 0);
-    self.config.set('delayscope', state.delayscope || "None");
-    self.config.set('muteleft', state.muteleft || false);
-    self.config.set('muteright', state.muteright || false);
-    self.config.set('ldistance', state.ldistance || 0);
-    self.config.set('rdistance', state.rdistance || 0);
-    self.config.set('permutchannel', state.permutchannel || false);
-    self.logger.info(logPrefix + ' Restored State4Clipping: ' + JSON.stringify(restoreState4Clipping, null, 2));
-
-    self.refreshUI();
-    self.createCamilladspfile();
-
-  }, 9110);
-  return defer.promise;
-
-};
-*/
-
-//------------Here we detect if clipping occurs while playing ------
-FusionDsp.prototype.testclipping = function () {
-  const self = this;
-  let defer = libQ.defer();
-  let messageDisplayed;
-  let arrreduced;
-  let arr = [];
-  let filelength = self.config.get('filter_size');
-  let track = '/data/plugins/audio_interface/fusiondsp/testclipping/testclipping.wav';
-
-  // IMPORTANT: the clipping test must actually play through the Volumio ALSA device.
-  // The test tone is routed through CamillaDSP by setting testclipping=true, but it still needs
-  // to be triggered on the real device so aplay really executes.
   const cmd = '/usr/bin/aplay -c2 --device=volumio ' + track;
 
   const setState = function () {
@@ -2938,8 +2823,7 @@ FusionDsp.prototype.testclipping = function () {
 
 
       try {
-        // Keep TestClipping on the normal reload path so CamillaDSP is reloaded,
-        // but wait before creating the config so the device is ready.
+      
         new Promise((delayResolve) => setTimeout(delayResolve, 4000))
           .then(() => self._doCreateCamilladspfile(null))
           .then(() => resolve())
@@ -2963,7 +2847,7 @@ FusionDsp.prototype.testclipping = function () {
     }
   };
   const launchAplay = function () {
-          self.commandRouter.pushToastMessage('info', '⏳⌛⏳⌛');
+    self.commandRouter.pushToastMessage('info', '⏳⌛⏳⌛');
 
     return new Promise((resolve, reject) => {
       self.logger.info(logPrefix + ' Waiting 2s before starting clipping test tone via aplay on device=volumio');
@@ -3029,7 +2913,7 @@ FusionDsp.prototype.testclipping = function () {
       self.config.set('attenuationl', arrreduced);
       self.config.set('attenuationr', arrreduced);
       self.config.set('testclipping', false);
-      self.commandRouter.pushToastMessage('success', self.commandRouter.getI18nString('AUTO_ATTENUATION_SET') + arrreduced + ' dB',  self.commandRouter.getI18nString('FILTER_LENGTH') + filelength);
+      self.commandRouter.pushToastMessage('success', self.commandRouter.getI18nString('AUTO_ATTENUATION_SET') + arrreduced + ' dB', self.commandRouter.getI18nString('FILTER_LENGTH') + filelength);
       resolve();
     });
   };
@@ -3326,7 +3210,7 @@ FusionDsp.prototype.getCamillaFiltersConfig = function (selectedsp, chunksize, h
     composeout += '    format: S32_LE' + '\n';
 
   } else if (testclipping == false) {
-    self.logger.info(logPrefix + ' Clipping test mode disabled, output will be sent to postDsp in camilla');
+  //  self.logger.info(logPrefix + ' Clipping test mode disabled, output will be sent to postDsp in camilla');
 
     var composeout = ''
     composeout += '  playback:' + '\n';
@@ -4673,8 +4557,7 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
   const self = this;
   let defer = libQ.defer();
   let test = '';
-  let selectedsp = self.config.get('selectedsp')
-
+  const selectedsp = self.config.get('selectedsp');
 
   if (selectedsp == 'PEQ') {
     var nbreq = self.config.get('nbreq')
