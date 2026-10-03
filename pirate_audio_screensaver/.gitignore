@@ -1,0 +1,10 @@
+.gitignore
+node_modules
+*.zip
+package-lock.json
+__pycache__/
+*.pyc
+artifacts/
+venv/
+python/build/
+*.egg-info/
