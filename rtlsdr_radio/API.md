@@ -483,6 +483,114 @@ data: {"status":"complete","measurements":[...],"summary":{"12A":{"optimalGain":
 - Phrases are case-insensitive
 - Blocklist has separate backup/restore from stations and config
 
+## Plugin Update API
+
+### Get Update State
+
+**Endpoint:** `GET /api/update`
+
+**Description:** Returns the installed version, what the channel in force offers, and how an update under way is doing. The store and GitHub are asked when the last look is older than a day.
+
+**Response:**
+```json
+{
+  "current": "1.3.10",
+  "channel": "preview",
+  "chosen": "preview",
+  "testMode": true,
+  "checkedAt": "2026-10-03T10:00:00.000Z",
+  "offer": {
+    "version": "1.3.11",
+    "channel": "preview",
+    "source": "github",
+    "notes": "...",
+    "page": "https://github.com/foonerd/rtlsdr-radio/releases/tag/v1.3.11",
+    "bytes": 9612677,
+    "publishedAt": "2026-10-03T09:30:00Z"
+  },
+  "available": true,
+  "newest": { "stable": "1.3.9", "beta": null, "preview": "1.3.11" },
+  "problems": {},
+  "previous": null,
+  "last": null,
+  "job": null
+}
+```
+
+**Fields:**
+- `channel`: the channel in force: `stable`, `beta` or `preview`
+- `chosen`: the channel chosen in the Station Manager; it is in force only while the player is in plugin test mode
+- `testMode`: whether the player is in Volumio's plugin test mode (the file `/data/testplugins`, switched on the player's `/dev` page); without it the channel in force is `stable`
+- `offer`: the newest version the channel offers, or `null`; `source` is `store` or `github`
+- `available`: whether the offer is newer than the installed version
+- `newest`: the newest version of each channel by itself
+- `problems`: `store` is `store-login` (the player is not signed in to MyVolumio) or `store` (no answer); `github` is set when GitHub gave no answer
+- `previous`: the version kept from before the last update, `{ "version", "at" }`, or `null`
+- `last`: the last update, `{ "from", "to", "source", "at", "phase", "ok" }`; `ok` says whether the new version was running after the restart
+- `job`: an update under way, `{ "kind", "state", "progress", "error" }`; `state` is one of `downloading`, `verifying`, `backing-up`, `keeping`, `applying`, `restarting`, `failed`
+
+### Check Now
+
+**Endpoint:** `POST /api/update/check`
+
+**Description:** Asks the store and GitHub again and returns the state as above.
+
+### Choose the Channel
+
+**Endpoint:** `POST /api/update/channel`
+
+**Request Body:**
+```json
+{ "channel": "preview" }
+```
+
+**Description:** Sets the channel chosen, checks, and returns the state. The choice is kept on a player that is not in plugin test mode, and applies once it is. Any other value than `stable`, `beta` or `preview` is answered with 400.
+
+### Install, Go Back
+
+**Endpoints:** `POST /api/update/install`, `POST /api/update/rollback`
+
+**Description:** Installs the version offered, or puts back the version kept from before the last update. Returns at once with the state; the work goes on in the background and ends with a restart of the player's software, during which the Station Manager does not answer. Answered with 409 and an `error` (`up-to-date`, `no-offer`, `no-digest`, `no-previous`, `busy`) when there is nothing to do.
+
+## Station Logos API
+
+### Get Logo Status
+
+**Endpoint:** `GET /api/logos/status`
+
+**Description:** Returns how many DAB stations have a logo and whether logos are being fetched.
+
+**Response:**
+```json
+{
+  "state": "idle",
+  "queued": 0,
+  "stations": 170,
+  "own": 122,
+  "group": 0,
+  "none": 48
+}
+```
+
+**Fields:**
+- `state`: `idle` (nothing to fetch), `fetching`, or `waiting` (no internet connection; fetching resumes by itself)
+- `queued`: lookups still to be done
+- `stations`: DAB stations in the list, not counting deleted ones
+- `own`: stations shown with their own logo
+- `group`: stations shown with their broadcaster's logo
+- `none`: stations shown with the DAB icon
+
+### Refresh Logos
+
+**Endpoint:** `POST /api/logos/refresh`
+
+**Description:** Asks again for every station without a logo, then checks the logos already kept for newer versions. Returns at once with the status as above; the work is done in the background.
+
+**Notes:**
+- Stations without a logo are handled before the logos already kept
+- Pictures that have not changed are not downloaded again
+- Without an internet connection the request is accepted and carried out when the connection is back
+
 ## Backup and Restore API
 
 ### Get Maintenance Settings
@@ -910,7 +1018,7 @@ No authentication is currently required. Access control should be implemented at
 ## File Locations
 
 ### Station Database
-- Path: `/data/plugins/music_service/rtlsdr_radio/stations.json`
+- Path: `/data/configuration/music_service/rtlsdr_radio/stations.json`
 - Format: JSON
 - Versioned: Yes (version field in JSON)
 
@@ -1135,6 +1243,18 @@ curl -X POST http://volumio.local:3456/api/maintenance/backup/upload \
 ```
 
 ## Changelog
+
+### API v1.3.10
+- No new endpoints and no changed request or response shapes
+- Storage: the station list is `/data/configuration/music_service/rtlsdr_radio/stations.json`
+  (was in the plugin's folder); a last good copy is kept in `/data/rtlsdr_radio_backups/last-good/`
+- POST `/api/stations`, `/api/stations/purge`, `/api/stations/clear-fm`, `/api/stations/clear-dab`,
+  `/api/csv/import`: answer with an error when the list could not be saved (was: success)
+- POST `/api/stations`: a list that fails validation is refused with 400 and the reasons
+- POST `/api/antenna/validate-dab`, `/api/antenna/snr-scan`: `channels` must be DAB channel
+  names (5A to 13F), otherwise 400; gain values and integration time are bounded
+- The antenna tools answer 409 when a later request took the tuner before they started
+- Backup endpoints: `type` must be `stations`, `config` or `blocklist`
 
 ### API v1.3.9
 - New configuration option:

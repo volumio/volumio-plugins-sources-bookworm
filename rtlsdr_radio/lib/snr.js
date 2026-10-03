@@ -46,6 +46,9 @@ function getChannelFrequency(channel) {
 function validateChannels(channels) {
   var valid = [];
   for (var i = 0; i < channels.length; i++) {
+    if (typeof channels[i] !== 'string') {
+      continue;
+    }
     var ch = channels[i].toUpperCase();
     if (DAB_FREQS[ch]) {
       valid.push(ch);
@@ -189,9 +192,10 @@ function parseRtlPowerOutput(csvOutput, channels, gain) {
  * @param {number} gain - Gain setting
  * @param {number} integration - Integration time in seconds
  * @param {object} logger - Logger instance
+ * @param {function} spawnProcess - Starts the process; defaults to child_process.spawn
  * @returns {promise} - Resolves with array of results
  */
-function measureAtGain(channels, gain, integration, logger) {
+function measureAtGain(channels, gain, integration, logger, spawnProcess) {
   var defer = libQ.defer();
   
   var span = calculateFrequencySpan(channels);
@@ -203,7 +207,7 @@ function measureAtGain(channels, gain, integration, logger) {
     logger.info('[SNR] Running fn-rtl_power with gain=' + gain);
   }
   
-  var rtlPower = spawn('fn-rtl_power', args);
+  var rtlPower = (spawnProcess || spawn)('fn-rtl_power', args);
   var csvOutput = '';
   var stderrOutput = '';
   
@@ -325,6 +329,10 @@ function runSnrScan(options) {
   var gainStop = (options.gainStop !== undefined) ? options.gainStop : 49;
   var gainStep = (options.gainStep !== undefined) ? options.gainStep : 5;
   var integration = options.integration || 2;
+  // A step that does not advance would never end the loop below
+  if (!(gainStep >= 1)) {
+    gainStep = 1;
+  }
   var logger = options.logger;
   var onProgress = options.onProgress;
   
@@ -358,7 +366,7 @@ function runSnrScan(options) {
     var gain = gainValues[currentIndex];
     currentIndex++;
     
-    measureAtGain(channels, gain, integration, logger)
+    measureAtGain(channels, gain, integration, logger, options.spawn)
       .then(function(results) {
         // Add to all results
         for (var i = 0; i < results.length; i++) {
