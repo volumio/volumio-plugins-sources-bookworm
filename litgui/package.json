@@ -1,0 +1,29 @@
+{
+  "name": "litgui",
+  "version": "0.1.1",
+  "description": "LitGUI — Beautiful alternative UI for Volumio",
+  "main": "index.js",
+  "author": "Jon Katz",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "kew": "^0.7.0",
+    "express": "^4.18.2"
+  },
+  "volumio_info": {
+    "prettyName": "LitGUI",
+    "plugin_type": "user_interface",
+    "icon": "fa-paint-brush",
+    "architectures": ["armhf", "amd64"],
+    "os": ["bookworm"],
+    "details": "A beautiful, audiophile-grade alternative UI for Volumio. Provides a polished playback, browse, and queue experience with high-quality album art, audio quality badges, and direct deep links into Volumio system pages.",
+    "changelog": "Initial release"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jonkatz1/ha-volumio-ws.git"
+  }
+}

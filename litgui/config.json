@@ -1,0 +1,10 @@
+{
+  "enabled": {
+    "type": "boolean",
+    "value": true
+  },
+  "port": {
+    "type": "number",
+    "value": 7777
+  }
+}
