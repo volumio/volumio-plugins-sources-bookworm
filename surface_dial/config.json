@@ -1,0 +1,11 @@
+{
+  "device_mac": {"type": "string", "value": ""},
+  "reverse_rotation": {"type": "boolean", "value": false},
+  "single_press": {"type": "string", "value": "toggle"},
+  "double_press": {"type": "string", "value": "next"},
+  "long_press": {"type": "string", "value": "previous"},
+  "double_press_ms": {"type": "number", "value": 420},
+  "long_press_ms": {"type": "number", "value": 700},
+  "reconnect_seconds": {"type": "number", "value": 5},
+  "haptics": {"type": "boolean", "value": true}
+}
