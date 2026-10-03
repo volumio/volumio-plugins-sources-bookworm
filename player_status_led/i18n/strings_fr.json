@@ -1,0 +1,24 @@
+{
+  "PLUGIN_CONFIGURATION": "configuration de Player Status LED",
+  "PLUGIN_SECTION_TITLE": "Paramètres de Player Status LED",
+  "SAVE": "Enregistrer",
+  "SUCCESS_TITLE": "Paramètres enregistrés",
+  "SUCCESS_MESSAGE": "Enregistrement réussi",
+
+  "GPIO_PIN_DOC": "Saisissez le numéro GPIO auquel la LED est connectée",
+  "GPIO_PIN_LBL": "Numéro GPIO",
+  "ACTIVE_STATE_DOC": "Saisissez 0 si la LED s'allume avec un niveau GPIO bas, ou 1 avec un niveau GPIO haut",
+  "ACTIVE_STATE_LBL": "État actif GPIO",
+  "BLINK_PERIOD_DOC": "Saisissez la période de clignotement en millisecondes (durée d'un cycle complet allumé/éteint)",
+  "BLINK_PERIOD_LBL": "Période de clignotement",
+
+  "ERROR_OUT_OF_RANGE_TITLE": " valeur hors plage",
+  "ERROR_OUT_OF_RANGE_MESSAGE": "Entrez un nombre entre ",
+  "ERROR_TITLE": "Erreur Player Status LED",
+  "ERROR_MESSAGE": "Impossible d'appliquer les paramètres",
+
+  "ERROR_NOT_FOUND_TITLE": " pas trouvé",
+
+  "ERROR_BLINKING_TITLE": "La LED clignote",
+  "ERROR_BLINKING_MESSAGE": "Impossible de modifier les paramètres pendant que la LED clignote. Reprenez ou arrêtez la lecture, puis réessayez."
+}

@@ -1,0 +1,24 @@
+{
+  "PLUGIN_CONFIGURATION": "Configuración del LED de estado del reproductor",
+  "PLUGIN_SECTION_TITLE": "Ajustes del LED de estado del reproductor",
+  "SAVE": "Guardar",
+  "SUCCESS_TITLE": "Ajustes guardados",
+  "SUCCESS_MESSAGE": "Los ajustes se guardaron correctamente",
+
+  "GPIO_PIN_DOC": "Introduce el número GPIO al que está conectado el LED",
+  "GPIO_PIN_LBL": "Número GPIO",
+  "ACTIVE_STATE_DOC": "Usa 0 si el LED se enciende con un nivel GPIO bajo, o 1 con un nivel alto",
+  "ACTIVE_STATE_LBL": "Estado activo GPIO",
+  "BLINK_PERIOD_DOC": "Introduce el período de parpadeo en milisegundos (duración de un ciclo completo de encendido/apagado)",
+  "BLINK_PERIOD_LBL": "Período de parpadeo",
+
+  "ERROR_OUT_OF_RANGE_TITLE": " valor fuera de rango",
+  "ERROR_OUT_OF_RANGE_MESSAGE": "Introduce un número entre ",
+  "ERROR_TITLE": "Error del LED de estado del reproductor",
+  "ERROR_MESSAGE": "No se han podido aplicar los ajustes",
+
+  "ERROR_NOT_FOUND_TITLE": " no encontrado",
+
+  "ERROR_BLINKING_TITLE": "El LED está parpadeando",
+  "ERROR_BLINKING_MESSAGE": "No se pueden cambiar los ajustes mientras el LED parpadea. Reanuda o detén la reproducción e inténtalo de nuevo."
+}
