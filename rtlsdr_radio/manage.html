@@ -1596,7 +1596,47 @@
     </div>
     
     <div id="maintenance-tab" class="tab-content">
+      <!-- Plugin Update Section -->
       <div class="tab-header">
+        <div class="flex-1">
+          <h2 class="maintenance-header" id="update-section-title">Plugin Update</h2>
+        </div>
+      </div>
+      
+      <div class="backup-section">
+        <p style="font-size: 14px; margin-bottom: 12px;" id="update-installed"></p>
+        <div class="backup-form-row">
+          <label class="restore-label" id="update-channel-label" for="update-channel">Update channel:</label>
+          <select id="update-channel" class="restore-select" onchange="setUpdateChannel(this.value)">
+            <option value="stable" id="update-channel-stable">Stable (plugin store)</option>
+            <option value="beta" id="update-channel-beta">Beta (plugin store)</option>
+            <option value="preview" id="update-channel-preview">Preview (GitHub)</option>
+          </select>
+        </div>
+        <p style="color: #888; font-size: 13px; margin-bottom: 12px;" id="update-channel-desc"></p>
+        <p style="font-size: 14px; margin-bottom: 6px;" id="update-status"></p>
+        <p style="color: #888; font-size: 13px; margin-bottom: 12px;" id="update-detail"></p>
+        <div id="update-notes-box" style="display: none; margin-bottom: 15px;">
+          <div class="csv-section-header" id="update-notes-title">What is new</div>
+          <pre id="update-notes" style="white-space: pre-wrap; font-family: inherit; font-size: 13px; color: #bbb; max-height: 220px; overflow-y: auto; margin: 0;"></pre>
+        </div>
+        <div class="tab-header tab-header-no-margin">
+          <button class="btn btn-secondary" id="btn-update-check" onclick="checkUpdate()">
+            <i class="fa fa-refresh"></i>
+            <span id="btn-update-check-text">Check Now</span>
+          </button>
+          <button class="btn btn-primary" id="btn-update-install" onclick="installUpdate()" style="display: none;">
+            <i class="fa fa-download"></i>
+            <span id="btn-update-install-text">Install</span>
+          </button>
+          <button class="btn btn-secondary" id="btn-update-rollback" onclick="rollbackUpdate()" style="display: none;">
+            <i class="fa fa-undo"></i>
+            <span id="btn-update-rollback-text">Go Back</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="tab-header" style="margin-top: 30px;">
         <div class="flex-1">
           <h2 class="maintenance-header" id="maintenance-title">Backup & Restore</h2>
         </div>
@@ -1799,6 +1839,25 @@
       
       <div id="csv-validation-results">
         <div id="csv-validation-content"></div>
+      </div>
+    </div>
+    
+    <!-- Station Logos Section -->
+    <div class="tab-header" style="margin-top: 30px;">
+      <div class="flex-1">
+        <h2 class="maintenance-header" id="logos-section-title">Station Logos</h2>
+      </div>
+    </div>
+    
+    <div class="backup-section">
+      <p style="color: #888; font-size: 13px; margin-bottom: 15px;" id="logos-desc">Station logos come from the broadcasters and are fetched in the background whenever there is an internet connection.</p>
+      <p style="font-size: 14px; margin-bottom: 6px;" id="logos-counts"></p>
+      <p style="color: #888; font-size: 13px; margin-bottom: 15px;" id="logos-state"></p>
+      <div class="tab-header tab-header-no-margin">
+        <button class="btn btn-primary" id="btn-logos-refresh" onclick="refreshLogos()">
+          <i class="fa fa-refresh"></i>
+          <span id="btn-logos-refresh-text">Refresh Station Logos</span>
+        </button>
       </div>
     </div>
   </div>
@@ -2421,6 +2480,16 @@
       
       // CSV Import/Export translations
       document.getElementById('csv-section-title').textContent = t('CSV_IMPORT_EXPORT');
+      document.getElementById('update-section-title').textContent = t('UPDATE_TITLE');
+      document.getElementById('update-channel-label').textContent = t('UPDATE_CHANNEL');
+      document.getElementById('update-channel-stable').textContent = t('UPDATE_CHANNEL_STABLE');
+      document.getElementById('update-channel-beta').textContent = t('UPDATE_CHANNEL_BETA');
+      document.getElementById('update-channel-preview').textContent = t('UPDATE_CHANNEL_PREVIEW');
+      document.getElementById('update-notes-title').textContent = t('UPDATE_NOTES');
+      document.getElementById('btn-update-check-text').textContent = t('UPDATE_CHECK');
+      document.getElementById('logos-section-title').textContent = t('LOGOS_TITLE');
+      document.getElementById('logos-desc').textContent = t('LOGOS_DESC');
+      document.getElementById('btn-logos-refresh-text').textContent = t('LOGOS_REFRESH');
       document.getElementById('csv-export-header').textContent = t('CSV_EXPORT_TITLE');
       document.getElementById('csv-export-desc').textContent = t('CSV_EXPORT_DESC');
       document.getElementById('btn-export-fm').textContent = t('CSV_EXPORT_FM');
@@ -3863,6 +3932,204 @@
       return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
     }
     
+    // Plugin update: what is installed, what the chosen channel offers, and how an
+    // update under way is doing
+    let updatePollTimer = null;
+    let updateWatching = false;   // an update is under way, as far as this page knows
+    let updateView = null;
+    
+    function megabytes(bytes) {
+      return ((bytes || 0) / 1048576).toFixed(1);
+    }
+    
+    function updateFailure(error) {
+      const known = { checksum: 'CHECKSUM', size: 'CHECKSUM', network: 'NETWORK', keep: 'KEEP', apply: 'APPLY', 'no-digest': 'NO_DIGEST' };
+      return t('UPDATE_FAILED', t('UPDATE_ERR_' + (known[error && error.code] || 'FAILED')));
+    }
+    
+    function updateJobText(job) {
+      switch (job.state) {
+        case 'downloading':
+          return t('UPDATE_STATE_DOWNLOADING', megabytes(job.progress && job.progress.done), megabytes(job.progress && job.progress.total));
+        case 'verifying': return t('UPDATE_STATE_VERIFYING');
+        case 'backing-up': return t('UPDATE_STATE_BACKING_UP');
+        case 'keeping': return t('UPDATE_STATE_KEEPING');
+        case 'restarting': return t('UPDATE_STATE_RESTARTING');
+        case 'failed': return updateFailure(job.error);
+        default: return t('UPDATE_STATE_APPLYING');
+      }
+    }
+    
+    function showUpdate(view) {
+      updateView = view;
+      const job = view.job;
+      const working = !!job && job.state !== 'failed';
+      
+      document.getElementById('update-installed').textContent = t('UPDATE_INSTALLED', view.current);
+      // The choice is the user's; it applies while the player is in plugin test mode
+      document.getElementById('update-channel').value = view.chosen || view.channel;
+      document.getElementById('update-channel').disabled = working || !view.testMode;
+      document.getElementById('update-channel-desc').textContent = t('UPDATE_CHANNEL_' + view.channel.toUpperCase() + '_DESC');
+      
+      let status = '';
+      if (job) {
+        status = updateJobText(job);
+      } else if (updateWatching && view.last && view.last.phase === 'done') {
+        // The backend has come back after an update this page watched
+        status = view.last.ok ? t('UPDATE_DONE', view.current) : t('UPDATE_NOT_TAKEN', view.current);
+      } else if (view.available) {
+        status = t('UPDATE_AVAILABLE', view.offer.version);
+      } else if (view.checkedAt) {
+        status = t('UPDATE_UP_TO_DATE');
+      }
+      document.getElementById('update-status').textContent = status;
+      
+      const details = [];
+      const problems = view.problems || {};
+      if (problems.store === 'store-login') {
+        details.push(t('UPDATE_STORE_LOGIN'));
+      } else if (problems.store) {
+        details.push(t('UPDATE_STORE_UNREACHABLE'));
+      }
+      if (!view.testMode) {
+        details.push(t('UPDATE_BETA_NEEDS_TEST_MODE'));
+      }
+      if (problems.github) {
+        details.push(t('UPDATE_GITHUB_UNREACHABLE'));
+      }
+      if (view.checkedAt) {
+        details.push(t('UPDATE_LAST_CHECKED', new Date(view.checkedAt).toLocaleString()));
+      }
+      document.getElementById('update-detail').textContent = details.join(' ');
+      
+      const notes = !working && view.available && view.offer.notes ? view.offer.notes : '';
+      document.getElementById('update-notes').textContent = notes;
+      document.getElementById('update-notes-box').style.display = notes ? '' : 'none';
+      
+      document.getElementById('btn-update-check').disabled = working;
+      const install = document.getElementById('btn-update-install');
+      install.style.display = view.available && !working ? '' : 'none';
+      if (view.available) {
+        document.getElementById('btn-update-install-text').textContent = t('UPDATE_INSTALL', view.offer.version);
+      }
+      const back = document.getElementById('btn-update-rollback');
+      back.style.display = view.previous && !working ? '' : 'none';
+      if (view.previous) {
+        document.getElementById('btn-update-rollback-text').textContent = t('UPDATE_ROLLBACK', view.previous.version);
+      }
+      
+      clearTimeout(updatePollTimer);
+      if (working) {
+        updateWatching = true;
+        updatePollTimer = setTimeout(loadUpdate, 1500);
+      } else if (!job && updateWatching && view.last && view.last.phase === 'done') {
+        updateWatching = false;
+      }
+    }
+    
+    async function loadUpdate() {
+      try {
+        const response = await fetch('/api/update');
+        showUpdate(await response.json());
+      } catch (e) {
+        // While the plugin is being replaced and the backend restarts, nobody answers
+        if (updateWatching) {
+          document.getElementById('update-status').textContent = t('UPDATE_STATE_RESTARTING');
+          clearTimeout(updatePollTimer);
+          updatePollTimer = setTimeout(loadUpdate, 3000);
+        }
+      }
+    }
+    
+    async function postUpdate(path, body) {
+      try {
+        const response = await fetch(path, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body || {})
+        });
+        const view = await response.json();
+        if (view.current) {
+          showUpdate(view);
+        }
+        if (!response.ok && view.error) {
+          showToast(updateFailure(view.error), 'error');
+        }
+      } catch (e) {
+        showToast(updateFailure(null), 'error');
+      }
+    }
+    
+    function checkUpdate() {
+      return postUpdate('/api/update/check');
+    }
+    
+    function setUpdateChannel(channel) {
+      return postUpdate('/api/update/channel', { channel: channel });
+    }
+    
+    async function installUpdate() {
+      if (!updateView || !updateView.available) {
+        return;
+      }
+      if (await showConfirmModal(t('UPDATE_INSTALL', updateView.offer.version), t('UPDATE_CONFIRM'), 'warning')) {
+        updateWatching = true;
+        await postUpdate('/api/update/install');
+      }
+    }
+    
+    async function rollbackUpdate() {
+      if (!updateView || !updateView.previous) {
+        return;
+      }
+      if (await showConfirmModal(t('UPDATE_ROLLBACK', updateView.previous.version), t('UPDATE_CONFIRM'), 'warning')) {
+        updateWatching = true;
+        await postUpdate('/api/update/rollback');
+      }
+    }
+    
+    // Station logos: how things stand, and the refresh the user can ask for
+    let logosPollTimer = null;
+    
+    function showLogosStatus(status) {
+      document.getElementById('logos-counts').textContent =
+        t('LOGOS_COUNTS', status.own + status.group, status.stations, status.group, status.none);
+      let state = t('LOGOS_STATE_IDLE');
+      if (status.state === 'fetching') {
+        state = t('LOGOS_STATE_FETCHING', status.queued);
+      } else if (status.state === 'waiting') {
+        state = t('LOGOS_STATE_WAITING', status.queued);
+      }
+      document.getElementById('logos-state').textContent = state;
+      
+      // While there is work under way, look again
+      clearTimeout(logosPollTimer);
+      if (status.state !== 'idle') {
+        logosPollTimer = setTimeout(loadLogosStatus, status.state === 'fetching' ? 2000 : 10000);
+      }
+    }
+    
+    async function loadLogosStatus() {
+      try {
+        const response = await fetch('/api/logos/status');
+        showLogosStatus(await response.json());
+      } catch (e) {
+        // The plugin is not answering; the next visit to the tab asks again
+      }
+    }
+    
+    async function refreshLogos() {
+      try {
+        const response = await fetch('/api/logos/refresh', { method: 'POST' });
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+        showLogosStatus(await response.json());
+      } catch (e) {
+        showToast(t('LOGOS_REFRESH_FAILED'), 'error');
+      }
+    }
+    
     // Initialize maintenance tab when clicked
     document.addEventListener('DOMContentLoaded', function() {
       const maintenanceTab = document.querySelector('[data-tab="maintenance"]');
@@ -3870,6 +4137,8 @@
         maintenanceTab.addEventListener('click', function() {
           initMaintenanceTab();
         }, { once: true });
+        maintenanceTab.addEventListener('click', loadLogosStatus);
+        maintenanceTab.addEventListener('click', loadUpdate);
       }
       
       // Initialize blocklist tab when clicked

@@ -1,0 +1,113 @@
+{
+  "repository": {
+    "commit": "64e44ab92b8cd972a8ea2716474b3e3537a82bc3",
+    "describe": "64e44ab"
+  },
+  "sources": {
+    "liquid-dsp": {
+      "url": "https://github.com/jgaeddert/liquid-dsp.git",
+      "commit": "8bf87b6fe325d98c250d6911fa50518d14175d86",
+      "ref": "v1.6.0"
+    },
+    "redsea": {
+      "url": "https://github.com/windytan/redsea.git",
+      "commit": "98a2edcad13bb2355af287eda1d0da6ba8279c43",
+      "ref": "v1.2.0"
+    },
+    "rtl-sdr": {
+      "url": "https://github.com/osmocom/rtl-sdr.git",
+      "commit": "ae0dd6d4f09088d13500a854091b45ad281ca4f0",
+      "ref": "master of 2025-11-09 (2.0.2)"
+    }
+  },
+  "targets": {
+    "arm": {
+      "bin/fn-dab": {
+        "sha256": "a2f8f940fb55185ff4d197db1aca178433fbf3802e9563305397f1cfb4178ab0",
+        "size": 264488
+      },
+      "bin/fn-dab-scanner": {
+        "sha256": "d159663453739372600741fa1de6ac89360b8f46f497b16941a8bc411d20f8f4",
+        "size": 293056
+      },
+      "bin/fn-redsea": {
+        "sha256": "b706fded5d3f730b8ecfda301716e3119ac83ecabecb60ff39263523bbc11277",
+        "size": 1851228
+      },
+      "packages/foonerd-rtlsdr_1.0.1-1_arm.deb": {
+        "sha256": "508b916d90a287fe729f3a5dbc5b890a440cb4efb73c0513cdf6111cec7b8f2a",
+        "size": 38856
+      },
+      "packages/libfn-rtlsdr0_1.0.1-1_arm.deb": {
+        "sha256": "d89596adf3d67bf065934834ac1311b5c54632c68c4529efb4465ab8d8cabab4",
+        "size": 24936
+      }
+    },
+    "armv7": {
+      "bin/fn-dab": {
+        "sha256": "3fae7f68b5ed37200c85db2b14c00e26cfb9df6cb060fcc1d4c9e62c10be97bd",
+        "size": 160520
+      },
+      "bin/fn-dab-scanner": {
+        "sha256": "df5a9a7ee3d80b497e68041e88c31ae25d2ebe5412d3df1d6964a130f0df5f72",
+        "size": 139724
+      },
+      "bin/fn-redsea": {
+        "sha256": "3191d7665115857b3c165dd5bb4341c403a774ca7157b21e11bcc4c117358006",
+        "size": 1425644
+      },
+      "packages/foonerd-rtlsdr_1.0.1-1_armv7.deb": {
+        "sha256": "7f42ebe01767b49653a61de99fd83fe01915d7da9f29aaefeb4e1d8a1834dbae",
+        "size": 39856
+      },
+      "packages/libfn-rtlsdr0_1.0.1-1_armv7.deb": {
+        "sha256": "b0e05f327de21fa7ed2aa7e3d17ebf77216580b2c75a8a143b6cdc4e79603c0c",
+        "size": 25204
+      }
+    },
+    "armv8": {
+      "bin/fn-dab": {
+        "sha256": "9ec0ec68ddb1882fde9c9b16231e08c7b1964c28a7f06a7fd3277486cb671f50",
+        "size": 268520
+      },
+      "bin/fn-dab-scanner": {
+        "sha256": "5e2a88981b5200dc51b70726279d4f35535eccc7ecf7d737fec74a7f001fe6a7",
+        "size": 202576
+      },
+      "bin/fn-redsea": {
+        "sha256": "03d9d7fc385e33114b2640404ddf26a23f66d51b5cb2d30ddd454945d522acde",
+        "size": 2170760
+      },
+      "packages/foonerd-rtlsdr_1.0.1-1_armv8.deb": {
+        "sha256": "faf757d3297be4a5d42826c48122b4af7cffd5e017f192cd12ceb232a7c26806",
+        "size": 40784
+      },
+      "packages/libfn-rtlsdr0_1.0.1-1_armv8.deb": {
+        "sha256": "c3e2062aa8fb963a7180a5d2ff7e35d4c23ad98326dd63dfea4b271dbc705ac3",
+        "size": 27164
+      }
+    },
+    "x64": {
+      "bin/fn-dab": {
+        "sha256": "bc41a595374bd76be8f3c22ee7151d6509354b93164d11cac335a18519b063f5",
+        "size": 244152
+      },
+      "bin/fn-dab-scanner": {
+        "sha256": "18186a6dbed640ac88a416866c46d7c2210f6a37cfc341a32f1a7b0195c55e66",
+        "size": 219152
+      },
+      "bin/fn-redsea": {
+        "sha256": "3bcc0206e51e347f31e6477cf0630dc406c300801fb5c95b451fc359a1c8fe51",
+        "size": 2261256
+      },
+      "packages/foonerd-rtlsdr_1.0.1-1_x64.deb": {
+        "sha256": "84ae1b32f618a4afb81b0db544ec770f8d1243786b69e4cb00380d96a1fc6c65",
+        "size": 44032
+      },
+      "packages/libfn-rtlsdr0_1.0.1-1_x64.deb": {
+        "sha256": "c2f904569f68b1ba8658189fb0655817dee943ad583e39cc928b0f822683bafb",
+        "size": 28156
+      }
+    }
+  }
+}

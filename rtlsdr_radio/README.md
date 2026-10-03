@@ -89,8 +89,8 @@ The plugin includes a comprehensive backup and restore system to protect your co
 3. Select backup type and click "Create Backup Now"
 4. Download backups or restore from history table (three columns: Stations, Config, Block List)
 
-**Auto-Backup:**
-Enable "Automatic backup before uninstall" checkbox to automatically create a full backup when uninstalling the plugin. Backups are preserved even after uninstall.
+**Last good copy:**
+Whenever the plugin stops, and so before every update or uninstall, the current station list and block list are copied to the backup folder. A later install finds them there and restores them when it has no list of its own. Backups are preserved even after uninstall. The "Automatic backup before uninstall" checkbox has no effect in this version.
 
 ### CSV Import/Export
 
@@ -212,6 +212,68 @@ Phrases in the blocklist are excluded from artwork lookup. The plugin uses fuzzy
 Default blocklist includes: traffic update, news update, weather, breaking news, travel news.
 
 Add station-specific phrases as you encounter false matches. The blocklist has separate backup/restore from stations.
+
+### Station Logos
+DAB stations are shown with their logo in the station lists, and on the player screen whenever the station has no artwork of its own to show.
+
+**Where the logos come from:**
+
+The logos are published by the broadcasters themselves and found through RadioDNS, the same service digital radios use. Nothing is taken from third-party collections.
+
+- A station registered by its broadcaster is shown with its own logo.
+- A station its broadcaster lists on other ensembles than the one you receive is recognised by its service identifier and shown with its own logo too.
+- A station without a logo of its own is shown with its broadcaster's logo, when the broadcaster publishes one and the station carries the broadcaster's name (a local BBC station, for example).
+- A station nobody publishes a logo for keeps the DAB icon.
+
+**When they are fetched:**
+
+- In the background after the plugin starts and after a DAB scan, and whenever a station without a logo is listed or played. The station being played is fetched first.
+- Only when there is an internet connection. Without one (flight mode, hotspot mode, a network that is down) nothing is fetched, nothing is reported as an error, and fetching carries on by itself when the connection is back.
+- A station without a published logo is asked about again after a week.
+
+**Refreshing on demand (Station Manager > Maintenance > Station Logos):**
+
+The section shows how many stations have a logo and whether fetching is under way. **Refresh Station Logos** asks again for every station without a logo, then checks the logos already kept for newer versions; pictures that have not changed are not downloaded again.
+
+**Where they are kept:**
+
+Logos are kept in `/data/rtlsdr_radio_logos` and survive plugin updates. Uninstalling the plugin removes them, unless *Auto-backup before uninstall* is selected, in which case they are kept for the next installation.
+
+### Plugin Update
+The plugin can be updated from the Station Manager (Maintenance > Plugin Update), without waiting for the player to offer the update.
+
+**Channels:**
+
+| Channel | Where the versions come from | For |
+| --- | --- | --- |
+| Stable | Volumio plugin store, released versions | everyday use |
+| Beta | Volumio plugin store, versions in testing | trying a version before it is released |
+| Preview | the project's pre-releases on GitHub | trying a version before it goes to the store; may have faults |
+
+A channel includes the ones above it: Beta offers stable versions too, Preview offers whatever is newest.
+
+**Which channel is in force is the player's to say.** Volumio has a switch for testing plugins: *Plugins Test Mode* on the player's `/dev` page (`http://<player>/dev`).
+
+- Off, which is how a player comes: the plugin stays on Stable, whatever is chosen in the Station Manager.
+- On: the channel chosen in the Station Manager applies, Beta or Preview.
+
+Switching test mode off again puts the player back on Stable; nothing else has to be undone.
+
+The section shows the installed version and the newest version the channel in force offers.
+
+- The plugin store answers only players signed in to MyVolumio. A player that is not is still offered the stable version: the release on GitHub that is not a pre-release is the version that is stable in the store.
+- A version from GitHub is downloaded by the plugin and checked against the size and SHA-256 checksum GitHub publishes for it. A download that does not match is discarded.
+
+**What an update does:**
+
+1. Backs up the station list, the settings and the block list.
+2. Keeps the installed version as a zip.
+3. Hands the new version to Volumio's own plugin manager, which installs it the way it installs any plugin update.
+4. Restarts the player's software so that the new version is loaded.
+
+Playback stops and the player is unavailable for about a minute. When it is back, the section says which version is running.
+
+**Going back:** after an update, *Go Back to (version)* reinstalls the version that was installed before, the same way. One previous version is kept, in `/data/rtlsdr_radio_backups/update`.
 
 ### Antenna Positioning Tools
 The plugin includes professional-grade tools for optimizing antenna placement and orientation:
@@ -372,7 +434,7 @@ Target repository: https://github.com/volumio/volumio-plugins-sources-bookworm
 
 ## Architecture
 
-- Uses ALSA loopback for lightweight audio routing
+- Plays through Volumio's own audio output, so volume, DSP and multiroom apply
 - Minimal CPU overhead (suitable for Pi Zero W2)
 - Direct PCM passthrough for FM (no encoding/decoding)
 - Sox resampling for DAB (handles variable sample rates: 32kHz, 48kHz)
@@ -417,7 +479,60 @@ Just a Nerd
 
 ## Version History
 
-### v1.3.9 (Current)
+### v1.3.12 (Current)
+- The version submitted to the Volumio plugin store. No functional change from 1.3.10;
+  everything new since 1.3.9 is listed under v1.3.10 below
+- **Updating from 1.3.9 or earlier: create a backup in the Station Manager
+  (Maintenance) first.** The update removes the old plugin folder, where 1.3.9 kept the
+  station list; this version then restores the newest backup by itself
+
+### v1.3.11
+- No functional change. Published to try the plugin's own update path (Station Manager >
+  Maintenance > Plugin Update) from one version to the next.
+
+### v1.3.10
+- The station list and the artwork block list survive plugin updates
+  - They are kept with the plugin's settings instead of in the plugin's own folder,
+    which Volumio replaces on every update
+  - A list from an earlier version is moved over at the first start
+  - A missing or unreadable list is restored from the newest backup
+  - **Updating from 1.3.9 or earlier: create a backup in the Station Manager
+    (Maintenance) first.** The update itself still removes the old folder; 1.3.10
+    then restores the newest backup by itself
+- Saving the station list can no longer fail silently or leave half a file behind
+- Reliable switching and stopping
+  - One part of the plugin owns the tuner: playback, scans and the antenna tools take
+    turns, and each starts only when the one before has let the dongle go
+  - Stopping ends the plugin's own processes and nothing else on the player
+  - Rapid station changes end with the last station playing, once
+  - A decoder that stops (dongle unplugged, DAB service not found) stops playback and
+    says so, instead of showing "playing" in silence
+- Station names with quotes or other special characters play correctly
+- SNR measurement: a gain step of 0 no longer makes the player unresponsive
+- Restoring an uploaded block list no longer overwrites the settings; restored settings
+  take effect at once
+- Binaries rebuilt
+  - Raspberry Pi (arm): built for ARMv6, so they start on every Pi
+  - x86-64: the RDS decoder no longer requires a processor with AVX2
+- Installer: no sudoers entry, no loopback module, no removal of unrelated packages
+- Station logos for DAB
+  - Fetched from the broadcasters through RadioDNS, shown in the station lists and on
+    the player screen
+  - A station without a logo of its own is shown with its broadcaster's
+  - Fetched in the background and only when there is an internet connection; kept
+    across plugin updates
+  - Station Manager > Maintenance > Station Logos shows the state and refreshes on demand
+- FM tune level measured from the reception itself (the stereo pilot against the noise
+  above it) instead of derived from RDS
+- Artwork that changes while a station plays (a logo, the picture found for a song)
+  is shown on the player screen
+- Plugin update from the Station Manager, with a choice of channel: Stable and Beta
+  from the Volumio plugin store, Preview from the project's pre-releases on GitHub;
+  a test channel applies only on a player in Volumio's Plugins Test Mode; the version
+  before an update can be put back
+- New setting: the update channel (Station Manager > Maintenance > Plugin Update)
+
+### v1.3.9
 - New FM Scan Offset setting to align scan frequency grid with country channel plans
   - Configurable in FM Region section: 0 kHz (default), 50 kHz, or 100 kHz
   - Fixes station detection in countries where FM channels are at odd frequencies

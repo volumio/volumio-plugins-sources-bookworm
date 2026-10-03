@@ -75,6 +75,10 @@
     "type": "boolean",
     "value": true
   },
+  "update_channel": {
+    "type": "string",
+    "value": "stable"
+  },
   "show_artwork_settings": {
     "type": "boolean",
     "value": false

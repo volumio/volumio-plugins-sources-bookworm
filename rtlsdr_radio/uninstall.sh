@@ -22,16 +22,25 @@ if [ -f /etc/modprobe.d/blacklist-rtl-sdr.conf ]; then
   echo "NOTE: DVB-T drivers will load automatically on next RTL-SDR dongle connection"
 fi
 
-# Remove ALSA loopback from persistent modules
-sed -i '/snd-aloop/d' /etc/modules
-
-# Unload ALSA loopback module
-rmmod snd-aloop 2>/dev/null
-
 # Remove DAB and RDS binaries
 rm -f /usr/local/bin/fn-dab
 rm -f /usr/local/bin/fn-dab-scanner
 rm -f /usr/local/bin/fn-redsea
+
+# The station logos fetched from the broadcasters can be fetched again, so they go with
+# the plugin, unless a backup before uninstalling is selected: then they are kept, as
+# the backups are. Volumio removes the plugin's configuration after this script has
+# run, so the setting can still be read here.
+PLUGIN_CONFIG=/data/configuration/music_service/rtlsdr_radio/config.json
+KEEP_LOGOS=$(node -e 'try { var c = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); process.stdout.write(c.auto_backup_on_uninstall && c.auto_backup_on_uninstall.value === true ? "yes" : "no"); } catch (e) { process.stdout.write("no"); }' "$PLUGIN_CONFIG" 2>/dev/null)
+if [ "$KEEP_LOGOS" = "no" ]; then
+  rm -rf /data/rtlsdr_radio_logos
+  LOGOS_NOTE="- Station logos"
+  echo "Removed station logos"
+else
+  LOGOS_NOTE=""
+  echo "Station logos kept in /data/rtlsdr_radio_logos"
+fi
 
 # Remove foonerd RTL-SDR packages
 echo "Removing foonerd RTL-SDR packages..."
@@ -74,5 +83,6 @@ echo "- foonerd-rtlsdr package"
 echo "- libfn-rtlsdr0 package"
 echo "- DAB binaries (fn-dab, fn-dab-scanner)"
 echo "- RDS binary (fn-redsea)"
+[ -n "$LOGOS_NOTE" ] && echo "$LOGOS_NOTE"
 echo ""
 echo "pluginuninstallend"
