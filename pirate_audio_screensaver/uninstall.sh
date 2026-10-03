@@ -18,6 +18,8 @@ fi
 
 systemctl stop "${APP_NAME}.service" || true
 systemctl disable "${APP_NAME}.service" || true
+sh "${PLUGIN_DIR}/display-bridge.sh" disable
+sh "${PLUGIN_DIR}/bridge-permissions.sh" remove
 rm -f "${SERVICE_FILE}"
 systemctl daemon-reload
 

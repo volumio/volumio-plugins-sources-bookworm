@@ -44,6 +44,35 @@
           "value": { "value": 90, "label": "90" }
         }
       ]
+    },
+    {
+      "id": "fonts",
+      "element": "section",
+      "label": "TRANSLATE.CLOCK_FONTS",
+      "description": "TRANSLATE.CLOCK_FONTS_DESCRIPTION",
+      "icon": "fa-font",
+      "onSave": {
+        "type": "plugin",
+        "endpoint": "user_interface/pirate_audio_screensaver",
+        "method": "saveFontSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": []
+      },
+      "content": [
+        {
+          "id": "font_previews",
+          "element": "button",
+          "label": "TRANSLATE.FONT_PREVIEWS",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "user_interface/pirate_audio_screensaver",
+            "method": "showFontPreviews",
+            "data": []
+          }
+        }
+      ]
     }
   ]
 }

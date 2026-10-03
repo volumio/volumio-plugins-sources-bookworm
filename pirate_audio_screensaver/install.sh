@@ -32,7 +32,7 @@ python3 -m venv --system-site-packages "${VENV_DIR}"
 cat > "${SERVICE_FILE}" <<SERVICE
 [Unit]
 Description=Volumio Pirate Audio screen saver
-After=network-online.target volumio.service
+After=network-online.target volumio.service pirateaudio.service
 Wants=network-online.target
 
 [Service]
@@ -68,9 +68,11 @@ DISPLAY_BACKLIGHT=13
 DISPLAY_SPI_SPEED=80000000
 DISPLAY_OFFSET_LEFT=0
 DISPLAY_OFFSET_TOP=0
+DISPLAY_BRIDGE_SOCKET=/run/volumio-screensaver/pirateaudio.sock
 
 FONT_SIZE=58
 FONT_PATH=/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf
+# ENABLED_FONTS is written from persistent settings when the plugin starts.
 SCREEN_PADDING=8
 BLANK_TURNS_BACKLIGHT_OFF=true
 LOG_LEVEL=INFO
@@ -78,6 +80,8 @@ ENV
 fi
 
 systemctl daemon-reload
+
+sh "${PLUGIN_DIR}/bridge-permissions.sh" install
 
 # Remove build artifacts created by pip/setuptools during local installation.
 # These can be owned by root and prevent Volumio from uninstalling the plugin cleanly.

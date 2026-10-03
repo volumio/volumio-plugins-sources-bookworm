@@ -1,4 +1,8 @@
 {
+  "enabled_fonts": {
+    "type": "string",
+    "value": "cose-grottesche,dot-matrix,ds-digital,good-old-dos-3d,good-old-dos-distorted,good-old-dos-outline,good-old-dos-smooth,good-old-dos,super-mario-85,led-display,alarm-clock,chintzy,digital-7,game-over,poxel"
+  },
   "idle_delay_seconds": {
     "type": "number",
     "value": 300

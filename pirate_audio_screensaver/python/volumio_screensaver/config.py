@@ -3,6 +3,8 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
+from .fonts import parse_enabled_fonts
+
 
 def _env(name: str, default: str) -> str:
     return os.environ.get(name, default).strip()
@@ -54,6 +56,8 @@ class Config:
     screen_padding: int
     blank_turns_backlight_off: bool
     log_level: str
+    enabled_fonts: tuple[str, ...] | None = None
+    display_bridge_socket: str = ""
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -83,4 +87,6 @@ class Config:
             screen_padding=_env_int("SCREEN_PADDING", 8),
             blank_turns_backlight_off=_env_bool("BLANK_TURNS_BACKLIGHT_OFF", True),
             log_level=_env("LOG_LEVEL", "INFO").upper(),
+            enabled_fonts=parse_enabled_fonts(os.environ.get("ENABLED_FONTS")),
+            display_bridge_socket=_env("DISPLAY_BRIDGE_SOCKET", ""),
         )

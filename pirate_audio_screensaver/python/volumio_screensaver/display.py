@@ -6,11 +6,10 @@ from pathlib import Path
 from typing import Any
 
 from .config import Config
+from .fonts import bundled_font_paths, is_disabled_bundled_font, normalize_enabled_fonts
 
 LOGGER = logging.getLogger(__name__)
 
-FONT_EXTENSIONS = {".otf", ".ttf"}
-FONTS_DIR_NAME = "fonts"
 MIN_COLOR_COMPONENT = 96
 MIN_COLOR_LUMINANCE = 150
 REFERENCE_CLOCK_TEXT = "88:88"
@@ -21,18 +20,6 @@ MIN_AUTO_FONT_SIZE = 12
 MAX_AUTO_FONT_SIZE = 180
 PLAY_ICON_POINTS = ((8, 41), (8, 57), (22, 49))
 PLAY_ICON_COLOR = (255, 255, 255)
-
-
-def bundled_font_paths() -> list[Path]:
-    fonts_dir = Path(__file__).resolve().parent / FONTS_DIR_NAME
-    if not fonts_dir.is_dir():
-        return []
-
-    return sorted(
-        path
-        for path in fonts_dir.iterdir()
-        if path.is_file() and path.suffix.lower() in FONT_EXTENSIONS
-    )
 
 
 def random_visible_color(rng: random.Random | None = None) -> tuple[int, int, int]:
@@ -50,7 +37,6 @@ def random_visible_color(rng: random.Random | None = None) -> tuple[int, int, in
 class ClockDisplay:
     def __init__(self, config: Config) -> None:
         from PIL import Image, ImageDraw, ImageFont
-        import st7789
 
         self._image_cls = Image
         self._draw_cls = ImageDraw
@@ -59,22 +45,37 @@ class ClockDisplay:
         self._height = config.display_height
         self._blank_turns_backlight_off = config.blank_turns_backlight_off
         self._configured_font_size = config.font_size
-        self._font_paths = self._discover_font_paths(config.font_path)
+        self._font_paths = self._discover_font_paths(config.font_path, config.enabled_fonts)
         self._font_color = (255, 255, 255)
         self._selected_font_path: Path | None = self._font_paths[0] if self._font_paths else None
+        self._shared = bool(config.display_bridge_socket)
 
-        self._disp = st7789.ST7789(
-            port=config.display_port,
-            cs=config.display_cs,
-            dc=config.display_dc,
-            backlight=config.display_backlight,
-            width=config.display_width,
-            height=config.display_height,
-            rotation=config.display_rotation,
-            spi_speed_hz=config.display_spi_speed,
-            offset_left=config.display_offset_left,
-            offset_top=config.display_offset_top,
-        )
+        if self._shared:
+            from .bridge import SharedDisplay
+
+            # Pirate Audio keeps the only GPIO/SPI display instance. Connecting
+            # is lazy so the screensaver can start before its service is ready.
+            self._disp = SharedDisplay(
+                config.display_bridge_socket,
+                rotation=config.display_rotation,
+                width=config.display_width,
+                height=config.display_height,
+            )
+        else:
+            import st7789
+
+            self._disp = st7789.ST7789(
+                port=config.display_port,
+                cs=config.display_cs,
+                dc=config.display_dc,
+                backlight=config.display_backlight,
+                width=config.display_width,
+                height=config.display_height,
+                rotation=config.display_rotation,
+                spi_speed_hz=config.display_spi_speed,
+                offset_left=config.display_offset_left,
+                offset_top=config.display_offset_top,
+            )
         self._disp.begin()
         self._font = self._load_fitted_font(self._selected_font_path)
         if self._selected_font_path:
@@ -90,6 +91,21 @@ class ClockDisplay:
     @property
     def height(self) -> int:
         return self._height
+
+    def release(self) -> None:
+        if self._shared:
+            self._disp.release()
+
+    def close(self) -> None:
+        if self._shared:
+            self._disp.close()
+
+    def heartbeat(self) -> None:
+        if self._shared:
+            self._disp.heartbeat()
+
+    def consume_activity(self) -> bool:
+        return self._disp.consume_activity() if self._shared else False
 
     def choose_random_style(self, rng: random.Random | None = None) -> None:
         generator = rng or random
@@ -149,18 +165,31 @@ class ClockDisplay:
     def _draw_play_hint(self, draw: Any) -> None:
         draw.polygon(PLAY_ICON_POINTS, fill=PLAY_ICON_COLOR)
 
-    def _discover_font_paths(self, configured_path: str) -> list[Path]:
-        bundled_fonts = bundled_font_paths()
+    def _discover_font_paths(
+        self, configured_path: str, enabled_fonts: tuple[str, ...] | None = None
+    ) -> list[Path]:
+        enabled_fonts = normalize_enabled_fonts(enabled_fonts)
+        bundled_fonts = bundled_font_paths(enabled_fonts)
         if bundled_fonts:
-            LOGGER.info("Loaded %d bundled clock fonts", len(bundled_fonts))
+            LOGGER.info("Loaded %d enabled bundled clock fonts", len(bundled_fonts))
             return bundled_fonts
 
+        LOGGER.warning("No enabled bundled clock fonts available; using configured/system fallback")
         candidates = [
             Path(configured_path) if configured_path else None,
             Path("/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf"),
             Path("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"),
         ]
-        return [path for path in candidates if path and path.exists()]
+        fallback_paths = []
+        for path in candidates:
+            if not path or not path.is_file():
+                continue
+            if is_disabled_bundled_font(path, enabled_fonts):
+                LOGGER.warning("Skipping disabled bundled clock font fallback: %s", path.name)
+                continue
+            if path not in fallback_paths:
+                fallback_paths.append(path)
+        return fallback_paths
 
     def _load_font(self, path: Path | None, size: int):
         if path and path.exists():
