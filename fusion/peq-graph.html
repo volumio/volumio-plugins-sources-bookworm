@@ -101,7 +101,7 @@
     }
 
     body {
-      background: linear-gradient(180deg, #1a1f1f 0%, #171b1b 100%);
+      background: var(--bg-primary);
       color: var(--content-primary);
       font-family: var(--font-sans);
       overflow: hidden;
@@ -122,7 +122,7 @@
       gap: 14px;
       min-height: 76px;
       padding: 16px 20px 14px;
-      background: rgba(18, 21, 21, 0.72);
+      background: var(--bg-secondary);
       border-bottom: 1px solid var(--border-subtle);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
@@ -263,7 +263,7 @@
       border: 1px solid var(--border-subtle);
       border-radius: 22px;
       overflow: hidden;
-      background: linear-gradient(180deg, rgba(40, 61, 61, 0.82) 0%, rgba(20, 26, 26, 0.96) 100%);
+      background: var(--bg-secondary);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), var(--shadow-md);
     }
 
@@ -279,7 +279,7 @@
       pointer-events: none;
       z-index: 5;
       display: inline-block;
-      background: rgba(23, 27, 27, 0.92);
+      background: var(--bg-secondary);
       border: 1px solid rgba(81, 178, 137, 0.6);
       border-radius: 10px;
       padding: 6px 10px;
@@ -311,7 +311,7 @@
       margin: 0 20px;
       border: 1px solid var(--border-subtle);
       border-radius: 16px;
-      background: rgba(12, 15, 15, 0.82);
+      background: var(--bg-secondary);
       overflow-x: auto;
       font-family: 'SFMono-Regular', Consolas, monospace;
       scrollbar-width: thin;
@@ -407,7 +407,7 @@
       padding: 12px;
       border: 1px solid rgba(81, 178, 137, 0.48);
       border-radius: 18px;
-      background: rgba(19, 23, 23, 0.96);
+      background: var(--bg-secondary);
       box-shadow: 0 16px 36px rgba(0, 0, 0, 0.42);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
@@ -639,6 +639,49 @@
       }
     }
 
+    .theme-mode {
+      min-height: 36px;
+      max-width: 116px;
+      padding: 6px 8px;
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-button);
+      background: var(--bg-input);
+      color: var(--content-primary);
+      font: 500 12px/1 var(--font-sans);
+    }
+
+    :root[data-theme=light] {
+      color-scheme: light;
+      --bg-primary: #fafafa;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #eef0ee;
+      --bg-input: #e9ebe8;
+      --bg-overlay: rgba(28, 29, 26, 0.45);
+      --content-primary: #1c1d1a;
+      --content-secondary: #485555;
+      --content-tertiary: #6e6f75;
+      --content-disabled: #a6a7ac;
+      --content-highlight: var(--volumio-green-700);
+      --content-success: #2f9e6b;
+      --content-error: #d9453b;
+      --content-warning: #b4791a;
+      --content-hires: #1559b0;
+      --border-subtle: rgba(18, 23, 23, 0.08);
+      --border-control: rgba(18, 23, 23, 0.18);
+      --border-default: rgba(18, 23, 23, 0.12);
+      --fill-hover: rgba(18, 23, 23, 0.04);
+      --fill-press: rgba(18, 23, 23, 0.07);
+      --fill-selected: rgba(81, 178, 137, 0.12);
+      --shadow-md: 0 10px 24px rgba(18, 23, 23, 0.12);
+    }
+
+    :root[data-theme=light] body { background: var(--bg-primary); }
+    :root[data-theme=light] #header,
+    :root[data-theme=light] #canvas-container,
+    :root[data-theme=light] #crosshair-info,
+    :root[data-theme=light] #octave-table,
+    :root[data-theme=light] #filter-popup { background: var(--bg-secondary); }
+
     input,
     button,
     select,
@@ -664,6 +707,11 @@
       <button class="header-btn save-btn" id="btn-save">Save</button>
       <button class="header-btn" id="btn-toggle-legend">Legend</button>
       <button class="header-btn" id="btn-toggle-octave">1/3 Oct</button>
+            <select id="theme-mode" class="theme-mode" aria-label="PEQ graph theme">
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
       <button class="header-btn channel-toggle active" id="btn-toggle-left" style="display:none;">L</button>
       <button class="header-btn channel-toggle active" id="btn-toggle-right" style="display:none;">R</button>
       <div id="info">Sample rate: <span id="samplerate">--</span> Hz <span id="peakgain-info"
@@ -682,6 +730,62 @@
   <script>
     (function () {
       'use strict';
+
+      var themeModeSelect = document.getElementById('theme-mode');
+
+      function getThemePreference() {
+        try {
+          return localStorage.getItem('fusiondsp-theme-mode') || 'system';
+        } catch (e) {
+          return 'system';
+        }
+      }
+
+      function applyGraphTheme() {
+        var preference = getThemePreference();
+        var dark = preference === 'dark' || (preference === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        var theme = dark ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.style.colorScheme = theme;
+        if (themeModeSelect) themeModeSelect.value = preference;
+        if (canvas && lastResponses) {
+          resizeCanvas();
+          render(lastResponses);
+        }
+      }
+
+      applyGraphTheme();
+      if (themeModeSelect) {
+        themeModeSelect.addEventListener('change', function () {
+          try {
+            localStorage.setItem('fusiondsp-theme-mode', themeModeSelect.value);
+          } catch (e) { }
+          applyGraphTheme();
+        });
+      }
+      if (window.matchMedia) {
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+        if (prefersDark.addEventListener) {
+          prefersDark.addEventListener('change', function () {
+            if (getThemePreference() === 'system') applyGraphTheme();
+          });
+        }
+      }
+
+      function getCanvasThemePalette() {
+        var style = getComputedStyle(document.documentElement);
+        var light = document.documentElement.getAttribute('data-theme') === 'light';
+        return {
+          bg: style.getPropertyValue('--bg-primary').trim(),
+          grid: style.getPropertyValue('--border-default').trim(),
+          gridSoft: style.getPropertyValue('--border-subtle').trim(),
+          text: style.getPropertyValue('--content-primary').trim(),
+          secondary: style.getPropertyValue('--content-secondary').trim(),
+          axis: style.getPropertyValue('--content-tertiary').trim(),
+          accent: style.getPropertyValue('--content-highlight').trim(),
+          crosshair: light ? 'rgba(0, 0, 0, 0.28)' : 'rgba(255, 255, 255, 0.3)'
+        };
+      }
 
       var canvas = document.getElementById('graph');
       var ctx = canvas.getContext('2d');
@@ -1750,6 +1854,7 @@
       function render(responses) {
         var w = canvas.width / dpr;
         var h = canvas.height / dpr;
+        var palette = getCanvasThemePalette();
 
         ctx.clearRect(0, 0, w, h);
 
@@ -1794,14 +1899,14 @@
         var plotH = h - margin.top - margin.bottom;
 
         // Draw background
-        ctx.fillStyle = '#333';
+        ctx.fillStyle = palette.bg;
         ctx.fillRect(0, 0, w, h);
 
         // Draw grid - vertical (frequency)
-        ctx.strokeStyle = '#4a4a4a';
+        ctx.strokeStyle = palette.gridSoft;
         ctx.lineWidth = 0.5;
         ctx.font = '11px Lato, sans-serif';
-        ctx.fillStyle = '#999';
+        ctx.fillStyle = palette.secondary;
         ctx.textAlign = 'center';
 
         for (var i = 0; i < gridFreqs.length; i++) {
@@ -1818,11 +1923,11 @@
         for (var db = dbMin; db <= dbMax; db += 6) {
           var y = dbToY(db, dbMin, dbMax);
           if (db === 0) {
-            ctx.strokeStyle = '#ffffff';
+            ctx.strokeStyle = palette.text;
             ctx.lineWidth = 0.8;
             ctx.setLineDash([5, 5]);
           } else {
-            ctx.strokeStyle = '#4a4a4a';
+            ctx.strokeStyle = palette.gridSoft;
             ctx.lineWidth = 0.5;
             ctx.setLineDash([]);
           }
@@ -1830,13 +1935,13 @@
           ctx.moveTo(margin.left, y);
           ctx.lineTo(w - margin.right, y);
           ctx.stroke();
-          ctx.fillStyle = db === 0 ? '#fff' : '#999';
+          ctx.fillStyle = db === 0 ? palette.text : palette.secondary;
           ctx.fillText(db + ' dB', margin.left - 8, y + 4);
         }
         ctx.setLineDash([]);
 
         // Draw axis labels
-        ctx.fillStyle = '#AAA';
+        ctx.fillStyle = palette.axis;
         ctx.textAlign = 'center';
         ctx.fillText('Hz', w - margin.right + 15, h - margin.bottom + 16);
 
