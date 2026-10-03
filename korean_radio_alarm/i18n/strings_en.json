@@ -1,0 +1,51 @@
+{
+  "PAGE": {
+    "LABEL": "Korean Radio Alarm"
+  },
+  "SECTION": {
+    "ALARM": "Alarm",
+    "ALARM_SLOT_1": "Alarm 1",
+    "ALARM_SLOT_2": "Alarm 2",
+    "ALARM_SLOT_3": "Alarm 3",
+    "ALARM_SLOT": "Alarm Slot"
+  },
+  "BUTTON": {
+    "SAVE": "Save",
+    "ADD_ALARM": "Add alarm",
+    "DELETE_ALARM": "Delete alarm"
+  },
+  "ALARM": {
+    "TITLE": "Korean Radio Alarm",
+    "ADD_SUCCESS": "Alarm added successfully",
+    "DELETE_MISSING_SLOT": "No slot provided",
+    "DELETE_SUCCESS": "Alarm deleted successfully",
+    "ENABLED": "Enable alarm",
+    "ACTION": "Alarm action",
+    "ACTION_PLAY": "Play",
+    "ACTION_STOP": "Stop",
+    "HOUR": "Hour",
+    "MINUTE": "Minute",
+    "STATION": "Station",
+    "VOLUME": "Alarm volume",
+    "SAVE_SUCCESS": "Alarm settings saved and rescheduled",
+    "SAVE_ERROR": "Failed to save alarm settings",
+    "NO_STATION": "Selected station is not valid",
+    "NO_MPD": "MPD plugin is not available",
+    "NO_URI": "Could not resolve station URL",
+    "BAD_VOLUME": "Invalid alarm volume",
+    "NOT_CONFIGURED": "No station configured"
+  },
+  "WEEKDAY": {
+    "MONDAY": "Monday",
+    "TUESDAY": "Tuesday",
+    "WEDNESDAY": "Wednesday",
+    "THURSDAY": "Thursday",
+    "FRIDAY": "Friday",
+    "SATURDAY": "Saturday",
+    "SUNDAY": "Sunday"
+  },
+  "BROWSE": {
+    "ROOT": "Korean Radio",
+    "GROUPS": "Radio Groups"
+  }
+}

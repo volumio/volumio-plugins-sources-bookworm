@@ -1,0 +1,50 @@
+{
+  "name": "korean_radio_alarm",
+  "version": "0.1.4",
+  "description": "Korean radio music service with a configurable weekly alarm for Volumio 4 Bookworm.",
+  "main": "index.js",
+  "author": "rightway-p",
+  "license": "MIT",
+  "keywords": [
+    "volumio",
+    "volumio plugin",
+    "korean radio",
+    "alarm",
+    "music service"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "volumio_info": {
+    "prettyName": "Korean Radio Alarm",
+    "plugin_type": "music_service",
+    "icon": "fa-clock-o",
+    "architectures": [
+      "amd64",
+      "armhf"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "details": "Scheduled Korean radio alarm plugin for Volumio 4 (Bookworm).",
+    "changelog": "0.1.4: add per-slot alarm action (play/stop); 0.1.3: fix dynamic alarm-slot migration, id persistence, and UI section rendering; 0.1.2: resolve KBS stream URLs through KBS play API and cache resolver results in-memory; 0.1.1: review-prep/default alarm-slot config and submission readiness updates; 0.1.0: initial release."
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rightway-p/volumio-korean-radio-alarm"
+  },
+  "homepage": "https://github.com/rightway-p/volumio-korean-radio-alarm",
+  "bugs": {
+    "url": "https://github.com/rightway-p/volumio-korean-radio-alarm/issues"
+  },
+  "dependencies": {
+    "fs-extra": "^11.3.0",
+    "kew": "^0.7.0",
+    "node-cron": "^4.6.0",
+    "v-conf": "^1.4.3"
+  }
+}

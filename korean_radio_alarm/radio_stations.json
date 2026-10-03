@@ -1,0 +1,64 @@
+{
+  "groups": [
+    {
+      "id": "kbs",
+      "name": "KBS",
+      "stations": [
+        {
+          "id": "kbs-classic-fm",
+          "name": "KBS Classic FM",
+          "streamResolver": {
+            "type": "kbs-play-api",
+            "channelId": "1fm"
+          }
+        },
+        {
+          "id": "kbs-cool-fm",
+          "name": "KBS Cool FM",
+          "streamResolver": {
+            "type": "kbs-play-api",
+            "channelId": "2fm"
+          }
+        },
+        {
+          "id": "kbs-hanminjok",
+          "name": "KBS Hanminjok",
+          "streamResolver": {
+            "type": "kbs-play-api",
+            "channelId": "hanminjokradio"
+          }
+        },
+        {
+          "id": "kbs-world-radio",
+          "name": "KBS World Radio",
+          "streamResolver": {
+            "type": "kbs-play-api",
+            "channelId": "worldradio"
+          }
+        }
+      ]
+    },
+    {
+      "id": "news",
+      "name": "News",
+      "stations": [
+        {
+          "id": "ytn-radio",
+          "name": "YTN Radio",
+          "streamUrl": "https://radiolive.ytn.co.kr/radio/_definst_/20211118_fmlive/playlist.m3u8"
+        }
+      ]
+    },
+    {
+      "id": "music",
+      "name": "Music",
+      "stations": [
+        {
+          "id": "cbs-music-fm",
+          "name": "CBS Music FM",
+          "streamUrl": "https://m-aac.cbs.co.kr/cbs939/_definst_/cbs939.stream/playlist.m3u8"
+        }
+      ]
+    }
+  ]
+}
