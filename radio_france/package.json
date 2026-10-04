@@ -1,0 +1,32 @@
+{
+	"name": "radio_france",
+	"version": "1.0.0",
+	"description": "Radio France plugin for Volumio",
+	"main": "index.js",
+	"author": "balbuze",
+	"license": "GPL-3.0",
+	"repository": "",
+	"volumio_info": {
+		"prettyName": "Radio France",
+		"icon": "fa-music",
+		"plugin_type": "music_service",
+		"os": [
+			"bookworm"
+		],
+		"architectures": [
+			"armhf",
+			"amd64"
+		],
+		"details": "Radio France for Volumio 4",
+		"changelog": ""
+	},
+	"engines": {
+		"volumio": ">=4",
+		"node": ">=14.0.0"
+	},
+	"dependencies": {
+		"fs-extra": "*",
+		"kew": "*",
+		"v-conf": "*"
+	}
+}

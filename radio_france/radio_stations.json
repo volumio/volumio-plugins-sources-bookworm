@@ -1,0 +1,345 @@
+[
+    {
+        "id": "france-inter",
+        "title": "France Inter",
+        "stream": "https://stream.radiofrance.fr/franceinter/franceinter_hifi.m3u8",
+        "metadataId": 1,
+        "metadataType": "national"
+    },
+    {
+        "id": "france-info",
+        "title": "franceinfo",
+        "stream": "https://stream.radiofrance.fr/franceinfo/franceinfo_hifi.m3u8",
+        "metadataId": 2,
+        "metadataType": "national"
+    },
+    {
+        "id": "france-culture",
+        "title": "France Culture",
+        "stream": "https://stream.radiofrance.fr/franceculture/franceculture_hifi.m3u8",
+        "metadataId": 5,
+        "metadataType": "national"
+    },
+    {
+        "id": "france-musique",
+        "title": "France Musique",
+        "stream": "https://stream.radiofrance.fr/francemusique/francemusique_hifi.m3u8",
+        "metadataId": 4,
+        "metadataType": "national"
+    },
+    {
+        "id": "ici-alsace",
+        "title": "ICI Alsace",
+        "stream": "https://icecast.radiofrance.fr/fbalsace-midfi.mp3",
+        "metadataId": 12,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-armorique",
+        "title": "ICI Armorique",
+        "stream": "https://icecast.radiofrance.fr/fbarmorique-midfi.mp3",
+        "metadataId": 13,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-auxerre",
+        "title": "ICI Auxerre",
+        "stream": "https://icecast.radiofrance.fr/fbauxerre-midfi.mp3",
+        "metadataId": 14,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-azur",
+        "title": "ICI Azur",
+        "stream": "https://icecast.radiofrance.fr/fbazur-midfi.mp3",
+        "metadataId": 49,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-bearn-bigorre",
+        "title": "ICI Béarn Bigorre",
+        "stream": "https://icecast.radiofrance.fr/fbbearn-midfi.mp3",
+        "metadataId": 15,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-belfort-montbeliard",
+        "title": "ICI Belfort-Montbéliard",
+        "stream": "https://icecast.radiofrance.fr/fbbelfort-midfi.mp3",
+        "metadataId": 16,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-berry",
+        "title": "ICI Berry",
+        "stream": "https://icecast.radiofrance.fr/fbberry-midfi.mp3",
+        "metadataId": 17,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-besancon",
+        "title": "ICI Besançon",
+        "stream": "https://icecast.radiofrance.fr/fbbesancon-midfi.mp3",
+        "metadataId": 18,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-bourgogne",
+        "title": "ICI Bourgogne",
+        "stream": "https://icecast.radiofrance.fr/fbbourgogne-midfi.mp3",
+        "metadataId": 19,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-breizh-izel",
+        "title": "ICI Breizh Izel",
+        "stream": "https://icecast.radiofrance.fr/fbbreizizel-midfi.mp3",
+        "metadataId": 20,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-champagne-ardenne",
+        "title": "ICI Champagne-Ardenne",
+        "stream": "https://icecast.radiofrance.fr/fbchampagne-midfi.mp3",
+        "metadataId": 21,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-cotentin",
+        "title": "ICI Cotentin",
+        "stream": "https://icecast.radiofrance.fr/fbcotentin-midfi.mp3",
+        "metadataId": 37,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-creuse",
+        "title": "ICI Creuse",
+        "stream": "https://icecast.radiofrance.fr/fbcreuse-midfi.mp3",
+        "metadataId": 23,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-drome-ardeche",
+        "title": "ICI Drôme Ardèche",
+        "stream": "https://icecast.radiofrance.fr/fbdromeardeche-midfi.mp3",
+        "metadataId": 24,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-elsass",
+        "title": "ICI Elsass",
+        "stream": "https://icecast.radiofrance.fr/fbelsass-midfi.mp3",
+        "metadataId": 90,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-gard-lozere",
+        "title": "ICI Gard Lozère",
+        "stream": "https://icecast.radiofrance.fr/fbgardlozere-midfi.mp3",
+        "metadataId": 25,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-gascogne",
+        "title": "ICI Gascogne",
+        "stream": "https://icecast.radiofrance.fr/fbgascogne-midfi.mp3",
+        "metadataId": 26,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-gironde",
+        "title": "ICI Gironde",
+        "stream": "https://icecast.radiofrance.fr/fbgironde-midfi.mp3",
+        "metadataId": 27,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-herault",
+        "title": "ICI Hérault",
+        "stream": "https://icecast.radiofrance.fr/fbherault-midfi.mp3",
+        "metadataId": 28,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-isere",
+        "title": "ICI Isère",
+        "stream": "https://icecast.radiofrance.fr/fbisere-midfi.mp3",
+        "metadataId": 29,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-la-rochelle",
+        "title": "ICI La Rochelle",
+        "stream": "https://icecast.radiofrance.fr/fblarochelle-midfi.mp3",
+        "metadataId": 30,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-limousin",
+        "title": "ICI Limousin",
+        "stream": "https://icecast.radiofrance.fr/fblimousin-midfi.mp3",
+        "metadataId": 31,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-loire-ocean",
+        "title": "ICI Loire Océan",
+        "stream": "https://icecast.radiofrance.fr/fbloireocean-midfi.mp3",
+        "metadataId": 32,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-lorraine-moselle",
+        "title": "ICI Lorraine (Moselle et Pays Haut)",
+        "stream": "https://icecast.radiofrance.fr/fblorrainenord-midfi.mp3",
+        "metadataId": 50,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-maine",
+        "title": "ICI Maine",
+        "stream": "https://icecast.radiofrance.fr/fbmaine-midfi.mp3",
+        "metadataId": 91,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-mayenne",
+        "title": "ICI Mayenne",
+        "stream": "https://icecast.radiofrance.fr/fbmayenne-midfi.mp3",
+        "metadataId": 34,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-nord",
+        "title": "ICI Nord",
+        "stream": "https://icecast.radiofrance.fr/fbnord-midfi.mp3",
+        "metadataId": 36,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-normandie-caen",
+        "title": "ICI Normandie (Calvados - Orne)",
+        "stream": "https://icecast.radiofrance.fr/fbbassenormandie-midfi.mp3",
+        "metadataId": 22,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-normandie-rouen",
+        "title": "ICI Normandie (Seine-Maritime - Eure)",
+        "stream": "https://icecast.radiofrance.fr/fbhautenormandie-midfi.mp3",
+        "metadataId": 38,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-occitanie",
+        "title": "ICI Occitanie",
+        "stream": "https://icecast.radiofrance.fr/fbtoulouse-midfi.mp3",
+        "metadataId": 92,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-orleans",
+        "title": "ICI Orléans",
+        "stream": "https://icecast.radiofrance.fr/fborleans-midfi.mp3",
+        "metadataId": 39,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-paris-ile-de-france",
+        "title": "ICI Paris Île-de-France",
+        "stream": "https://icecast.radiofrance.fr/fb1071-midfi.mp3",
+        "metadataId": 68,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-pays-basque",
+        "title": "ICI Pays Basque",
+        "stream": "https://icecast.radiofrance.fr/fbpaysbasque-midfi.mp3",
+        "metadataId": 41,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-pays-auvergne",
+        "title": "ICI Pays d'Auvergne",
+        "stream": "https://icecast.radiofrance.fr/fbpaysdauvergne-midfi.mp3",
+        "metadataId": 40,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-pays-savoie",
+        "title": "ICI Pays de Savoie",
+        "stream": "https://icecast.radiofrance.fr/fbpaysdesavoie-midfi.mp3",
+        "metadataId": 42,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-perigord",
+        "title": "ICI Périgord",
+        "stream": "https://icecast.radiofrance.fr/fbperigord-midfi.mp3",
+        "metadataId": 43,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-picardie",
+        "title": "ICI Picardie",
+        "stream": "https://icecast.radiofrance.fr/fbpicardie-midfi.mp3",
+        "metadataId": 44,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-poitou",
+        "title": "ICI Poitou",
+        "stream": "https://icecast.radiofrance.fr/fbpoitou-midfi.mp3",
+        "metadataId": 54,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-provence",
+        "title": "ICI Provence",
+        "stream": "https://icecast.radiofrance.fr/fbprovence-midfi.mp3",
+        "metadataId": 45,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-rcfm",
+        "title": "ICI RCFM",
+        "stream": "https://icecast.radiofrance.fr/fbfrequenzamora-midfi.mp3",
+        "metadataId": 11,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-roussillon",
+        "title": "ICI Roussillon",
+        "stream": "https://icecast.radiofrance.fr/fbroussillon-midfi.mp3",
+        "metadataId": 46,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-saint-etienne-loire",
+        "title": "ICI Saint-Étienne Loire",
+        "stream": "https://icecast.radiofrance.fr/fbstetienne-midfi.mp3",
+        "metadataId": 93,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-lorraine-meurthe-moselle",
+        "title": "ICI Lorraine (Meurthe-et-Moselle et Vosges)",
+        "stream": "https://icecast.radiofrance.fr/fbsudlorraine-midfi.mp3",
+        "metadataId": 33,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-touraine",
+        "title": "ICI Touraine",
+        "stream": "https://icecast.radiofrance.fr/fbtouraine-midfi.mp3",
+        "metadataId": 47,
+        "metadataType": "ici"
+    },
+    {
+        "id": "ici-vaucluse",
+        "title": "ICI Vaucluse",
+        "stream": "https://icecast.radiofrance.fr/fbvaucluse-midfi.mp3",
+        "metadataId": 48,
+        "metadataType": "ici"
+    }
+]
