@@ -1,6 +1,19 @@
 #!/bin/bash
 echo "Installing FM/DAB Radio plugin dependencies"
 
+# The station logos are kept outside the plugin's folder, which an update replaces, and
+# are reached through a link in it. The link is made here, first of all, so that a
+# screen asking for a logo while the rest of the installation runs is not answered with
+# the player's default picture, which it would then keep.
+PLUGIN_DIR="$(cd "$(dirname "$0")" && pwd)"
+mkdir -p /data/rtlsdr_radio_logos
+ln -sfn /data/rtlsdr_radio_logos "$PLUGIN_DIR/logos"
+chown volumio:volumio /data/rtlsdr_radio_logos 2>/dev/null
+chown -h volumio:volumio "$PLUGIN_DIR/logos" 2>/dev/null
+# The same for the pictures a DAB station sends, which the decoder writes to /tmp/dab
+ln -sfn /tmp/dab "$PLUGIN_DIR/slides"
+chown -h volumio:volumio "$PLUGIN_DIR/slides" 2>/dev/null
+
 # Get Volumio architecture - direct match to bin/ folder
 ARCH=$(cat /etc/os-release | grep ^VOLUMIO_ARCH | tr -d 'VOLUMIO_ARCH="')
 
@@ -295,6 +308,11 @@ echo "Installing RDS decoder binary..."
 cp "$BIN_SOURCE/fn-redsea" /usr/local/bin/
 chmod +x /usr/local/bin/fn-redsea
 
+# Copy the tool that measures the gain the dongle should be set to
+echo "Installing gain measurement tool..."
+cp "$BIN_SOURCE/fn-rtl-gain" /usr/local/bin/
+chmod +x /usr/local/bin/fn-rtl-gain
+
 # Verify installation
 if [ ! -f /usr/local/bin/fn-dab ]; then
   echo "ERROR: fn-dab installation failed"
@@ -346,7 +364,7 @@ echo ""
 echo "=========================================="
 echo "FM/DAB Radio plugin installation complete"
 echo "=========================================="
-echo "Version: 1.3.12"
+echo "Version: 1.4.0"
 echo "Architecture: $ARCH"
 echo ""
 echo "Installed packages:"

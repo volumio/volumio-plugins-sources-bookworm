@@ -127,16 +127,34 @@ function bearersOf(service) {
   });
 }
 
-// The logos SI.xml lists for the service with the given bearer: [{ url, width, height, mime }]
-function logosOf(siXml, bearer) {
+// The service of a list that is broadcast on the given bearer, or null. An FM programme
+// is named by its country and PI code; the frequency only says where it is heard, and
+// lists name some of a programme's frequencies, all of them, or none ("*").
+function serviceOf(siXml, bearer) {
   var wanted = bearer.toLowerCase();
+  var programme = /^(fm:[0-9a-f]{3}\.[0-9a-f]{4}\.)/.exec(wanted);
   var services = servicesOf(siXml);
   for (var i = 0; i < services.length; i++) {
-    if (bearersOf(services[i]).indexOf(wanted) !== -1) {
-      return multimediaOf(services[i]);
+    var carried = bearersOf(services[i]).some(function(listed) {
+      return listed === wanted || (programme && listed.indexOf(programme[1]) === 0);
+    });
+    if (carried) {
+      return services[i];
     }
   }
-  return [];
+  return null;
+}
+
+// The logos SI.xml lists for the service with the given bearer: [{ url, width, height, mime }]
+function logosOf(siXml, bearer) {
+  var service = serviceOf(siXml, bearer);
+  return service ? multimediaOf(service) : [];
+}
+
+// What a list calls a service: the name made for a display of 16 characters, failing
+// that the long one, failing that the short one
+function nameOf(service) {
+  return textOf(service, 'mediumName') || textOf(service, 'longName') || textOf(service, 'shortName');
 }
 
 // Every DAB service of a list that has a logo, by country and service id:
@@ -155,6 +173,50 @@ function dabServicesOf(siXml) {
       logo = logo || bestLogo(multimediaOf(service));
       if (logo) {
         found[parts[1] + '.' + parts[2]] = logo.url;
+      }
+    });
+  });
+  return found;
+}
+
+// Every FM programme of a list that has a logo, by country and PI code:
+// { '<gcc>.<pi>': { url, name } }, name being what the list calls the programme
+function fmServicesOf(siXml) {
+  var found = {};
+  servicesOf(siXml).forEach(function(service) {
+    var logo = null;
+    bearersOf(service).forEach(function(bearer) {
+      var parts = /^fm:([0-9a-f]{3})\.([0-9a-f]{4})\./.exec(bearer);
+      if (!parts) {
+        return;
+      }
+      logo = logo || bestLogo(multimediaOf(service));
+      if (logo) {
+        found[parts[1] + '.' + parts[2]] = { url: logo.url, name: nameOf(service) || null };
+      }
+    });
+  });
+  return found;
+}
+
+// Every service of a list that has a logo, by the names the list gives it:
+// { '<name>': { url, small } }, url being the logo to show and small the one to show
+// among many (the square one nearest 128 pixels). The short name (8 characters) is left
+// out: it abbreviates, and abbreviations of different stations look alike.
+function namedServicesOf(siXml) {
+  var found = {};
+  servicesOf(siXml).forEach(function(service) {
+    var logos = multimediaOf(service);
+    var logo = bestLogo(logos);
+    if (!logo) {
+      return;
+    }
+    var small = logos.filter(function(l) { return l.width >= 64 && l.width === l.height; })
+      .sort(function(a, b) { return Math.abs(a.width - 128) - Math.abs(b.width - 128); })[0] || logo;
+    ['mediumName', 'longName'].forEach(function(tag) {
+      var name = textOf(service, tag);
+      if (name && !(name in found)) {
+        found[name] = { url: logo.url, small: small.url };
       }
     });
   });
@@ -356,8 +418,12 @@ function listUrl(provider) {
 }
 
 Lookup.prototype._list = function(provider) {
+  return this.listAt(listUrl(provider));
+};
+
+// A broadcaster's list by its address, as an earlier lookup named it
+Lookup.prototype.listAt = function(url) {
   var self = this;
-  var url = listUrl(provider);
   if (!self.lists[url]) {
     self.lists[url] = self.network.get(url, SI_MAX_BYTES).then(function(answer) {
       var xml = answer.body.toString('utf8');
@@ -376,9 +442,10 @@ Lookup.prototype._list = function(provider) {
 };
 
 // Find the logos of a service. candidates: [{ gcc, name, bearer }], tried in turn.
-// Resolves with { gcc, list, logos: [{ url, width, height, mime }] } for a service whose
-// broadcaster is found (list names the broadcaster's service list; logos are the ones
-// worth showing, the best first), or with null when the service is not registered.
+// Resolves with { gcc, list, logos: [{ url, width, height, mime }], called } for a service
+// whose broadcaster is found (list names the broadcaster's service list; logos are the
+// ones worth showing, the best first; called is what the list calls the service, or
+// null), or with null when the service is not registered.
 // Rejects when the network gave no answer: that is not an answer about the station.
 Lookup.prototype.find = function(candidates) {
   var self = this;
@@ -395,7 +462,13 @@ Lookup.prototype.find = function(candidates) {
       }
       // The broadcaster is found; whether it lists a logo or not, the search ends here
       return self._list(provider).then(function(xml) {
-        return { gcc: candidate.gcc, list: listUrl(provider), logos: rankLogos(logosOf(xml, candidate.bearer)) };
+        var service = serviceOf(xml, candidate.bearer);
+        return {
+          gcc: candidate.gcc,
+          list: listUrl(provider),
+          logos: rankLogos(service ? multimediaOf(service) : []),
+          called: service ? nameOf(service) || null : null
+        };
       });
     });
   }
@@ -467,6 +540,8 @@ module.exports = {
   fmCandidates: fmCandidates,
   logosOf: logosOf,
   dabServicesOf: dabServicesOf,
+  fmServicesOf: fmServicesOf,
+  namedServicesOf: namedServicesOf,
   providerOf: providerOf,
   startsWith: startsWith,
   rankLogos: rankLogos,

@@ -233,6 +233,219 @@
       color: #e74c3c;
     }
     
+    /* The station's logo at the front of its row; a press opens the logo dialog */
+    .station-logo {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      padding: 0;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      background: #1e1e1e;
+      color: #666;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-size: 18px;
+    }
+    
+    .station-logo:hover,
+    .station-logo:focus {
+      border-color: #54c688;
+      outline: none;
+    }
+    
+    .station-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    
+    .station-logo.missing {
+      border-style: dashed;
+      opacity: 0.55;
+    }
+    
+    .stat-card.stat-filter {
+      cursor: pointer;
+    }
+    
+    .stat-card.stat-filter:hover,
+    .stat-card.stat-filter.active {
+      border-color: #54c688;
+    }
+    
+    .stat-card.stat-filter.active .stat-label {
+      color: #54c688;
+    }
+    
+    .modal.logo-modal {
+      max-width: 680px;
+    }
+    
+    .logo-section {
+      border-top: 1px solid #404040;
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+    
+    .logo-section h3 {
+      font-size: 14px;
+      font-weight: 500;
+      margin: 0 0 10px 0;
+      color: #ccc;
+    }
+    
+    .logo-now {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .logo-frame {
+      width: 120px;
+      height: 120px;
+      flex-shrink: 0;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      color: #555;
+      font-size: 40px;
+      /* a chequered ground, so that what is see-through in a picture shows as such */
+      background-color: #2a2a2a;
+      background-image: linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%),
+        linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 8px 8px;
+    }
+    
+    .logo-frame img,
+    .logo-frame canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    
+    .logo-source {
+      color: #999;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    
+    .logo-rules {
+      color: #ccc;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+    
+    .logo-upload {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    
+    .logo-upload-side {
+      flex: 1;
+      min-width: 200px;
+      font-size: 13px;
+      color: #999;
+    }
+    
+    .logo-upload-side label {
+      display: block;
+      margin: 4px 0;
+      color: #ccc;
+      cursor: pointer;
+    }
+    
+    .logo-message {
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.4;
+      min-height: 18px;
+    }
+    
+    .logo-message.error {
+      color: #e74c3c;
+    }
+    
+    .logo-message.warning {
+      color: #f39c12;
+    }
+    
+    .logo-search {
+      width: 100%;
+      padding: 8px 10px;
+      background: #1e1e1e;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    
+    .logo-grid-title {
+      font-size: 12px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 10px 0 6px 0;
+    }
+    
+    .logo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+      gap: 8px;
+      max-height: 232px;
+      overflow-y: auto;
+    }
+    
+    .logo-choice {
+      background: #1e1e1e;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      padding: 6px;
+      cursor: pointer;
+      color: #ccc;
+      font-size: 11px;
+      text-align: center;
+      line-height: 1.3;
+    }
+    
+    .logo-choice:hover,
+    .logo-choice:focus {
+      border-color: #54c688;
+      outline: none;
+    }
+    
+    .logo-choice img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 4px auto;
+    }
+    
+    .logo-choice span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .logo-empty {
+      color: #777;
+      font-size: 13px;
+      padding: 6px 0;
+      grid-column: 1 / -1;
+    }
+    
     .signal-indicator {
       display: flex;
       align-items: center;
@@ -1513,6 +1726,10 @@
           <div class="stat-label"><i class="fa fa-eye-slash"></i> <span id="stat-hidden-label-fm">Hidden</span></div>
           <div class="stat-value" id="fm-hidden">0</div>
         </div>
+        <div class="stat-card stat-filter" id="fm-nologo-card" data-logo-filter="fm" role="button" tabindex="0">
+          <div class="stat-label"><i class="fa fa-picture-o"></i> <span id="stat-nologo-label-fm">No logo</span></div>
+          <div class="stat-value" id="fm-nologo">0</div>
+        </div>
       </div>
       
       <div class="tab-header">
@@ -1554,6 +1771,10 @@
         <div class="stat-card">
           <div class="stat-label"><i class="fa fa-eye-slash"></i> <span id="stat-hidden-label-dab">Hidden</span></div>
           <div class="stat-value" id="dab-hidden">0</div>
+        </div>
+        <div class="stat-card stat-filter" id="dab-nologo-card" data-logo-filter="dab" role="button" tabindex="0">
+          <div class="stat-label"><i class="fa fa-picture-o"></i> <span id="stat-nologo-label-dab">No logo</span></div>
+          <div class="stat-value" id="dab-nologo">0</div>
         </div>
       </div>
       
@@ -2225,6 +2446,68 @@
     </div>
   </div>
   
+  <!-- Station Logo Modal -->
+  <div class="modal-overlay" id="logo-modal">
+    <div class="modal logo-modal">
+      <div class="modal-header">
+        <i class="fa fa-picture-o"></i>
+        <h2 id="logo-modal-title">Logo</h2>
+      </div>
+      <div class="modal-body">
+        <div class="logo-now">
+          <div class="logo-frame" id="logo-now-frame"></div>
+          <div>
+            <div class="logo-grid-title" id="logo-now-label">Shown now</div>
+            <div class="logo-source" id="logo-now-source"></div>
+            <button class="btn btn-secondary" id="logo-automatic" style="margin-top: 10px;">
+              <i class="fa fa-undo"></i>
+              <span id="logo-automatic-text">Back to automatic</span>
+            </button>
+          </div>
+        </div>
+        
+        <div class="logo-section">
+          <h3 id="logo-upload-title">Your own picture</h3>
+          <div class="logo-rules" id="logo-rules">PNG, JPEG or SVG. Square, 600 x 600 pixels is ideal. Up to 2 MB.</div>
+          <div class="logo-upload">
+            <div class="logo-frame" id="logo-preview-frame"><i class="fa fa-picture-o"></i></div>
+            <div class="logo-upload-side">
+              <input type="file" id="logo-file" accept="image/png,image/jpeg,image/svg+xml,.png,.jpg,.jpeg,.svg" style="display: none;">
+              <button class="btn btn-secondary" id="logo-file-btn">
+                <i class="fa fa-folder-open"></i>
+                <span id="logo-file-text">Choose a picture</span>
+              </button>
+              <div id="logo-fit-options" style="display: none; margin-top: 8px;">
+                <label><input type="radio" name="logo-fit" value="fit" checked> <span id="logo-fit-text">Fit (whole picture)</span></label>
+                <label><input type="radio" name="logo-fit" value="fill"> <span id="logo-fill-text">Fill (cropped to the centre)</span></label>
+              </div>
+              <div class="logo-message" id="logo-dimensions"></div>
+              <div class="logo-message" id="logo-message"></div>
+              <button class="btn btn-primary" id="logo-use" disabled style="margin-top: 8px;">
+                <i class="fa fa-check"></i>
+                <span id="logo-use-text">Use this picture</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="logo-section">
+          <h3 id="logo-search-title">Choose a logo</h3>
+          <input type="text" class="logo-search" id="logo-search" placeholder="Search by station name">
+          <div class="logo-grid-title" id="logo-listed-title">From the broadcasters</div>
+          <div class="logo-grid" id="logo-listed"></div>
+          <div class="logo-grid-title" id="logo-kept-title">On this player</div>
+          <div class="logo-grid" id="logo-kept"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="logo-close">
+          <span id="logo-close-text">Close</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
   <!-- Scanning Progress Modal -->
   <div class="modal-overlay" id="scanning-modal">
     <div class="modal">
@@ -2252,6 +2535,10 @@
   <script>
     let fmStations = [];
     let dabStations = [];
+    // The logo each station is shown with, as the player tells it, and whether a list
+    // shows only the stations without one
+    let stationLogos = { fm: {}, dab: {} };
+    let logoFilter = { fm: false, dab: false };
     let hasChanges = false;
     let i18n = {};
     let pendingFreqChange = null;
@@ -2380,6 +2667,12 @@
           
           const data = await response.json();
           
+          if (data.deviceState === expectedState && data.scan && typeof data.scan.percent === 'number') {
+            // How far the scan has come
+            const info = type === 'fm' ? t('MODAL_SCANNING_WAIT_FM') : t('MODAL_SCANNING_WAIT_DAB');
+            document.getElementById('scanning-info').textContent = info + ' ' + data.scan.percent + '%';
+          }
+          
           if (data.deviceState !== expectedState) {
             // Scan complete
             hideScanningModal();
@@ -2437,6 +2730,21 @@
       document.getElementById('stat-total-label-dab').textContent = t('STAT_TOTAL');
       document.getElementById('stat-favorites-label-dab').textContent = t('STAT_FAVORITES');
       document.getElementById('stat-hidden-label-dab').textContent = t('STAT_HIDDEN');
+      document.getElementById('stat-nologo-label-fm').textContent = t('STAT_NO_LOGO');
+      document.getElementById('stat-nologo-label-dab').textContent = t('STAT_NO_LOGO');
+      document.getElementById('logo-now-label').textContent = t('LOGO_CURRENT');
+      document.getElementById('logo-automatic-text').textContent = t('LOGO_AUTOMATIC');
+      document.getElementById('logo-upload-title').textContent = t('LOGO_UPLOAD_TITLE');
+      document.getElementById('logo-rules').textContent = t('LOGO_RULES');
+      document.getElementById('logo-file-text').textContent = t('LOGO_CHOOSE_FILE');
+      document.getElementById('logo-fit-text').textContent = t('LOGO_FIT');
+      document.getElementById('logo-fill-text').textContent = t('LOGO_FILL');
+      document.getElementById('logo-use-text').textContent = t('LOGO_USE');
+      document.getElementById('logo-search-title').textContent = t('LOGO_SEARCH_TITLE');
+      document.getElementById('logo-search').placeholder = t('LOGO_SEARCH_PLACEHOLDER');
+      document.getElementById('logo-listed-title').textContent = t('LOGO_LISTED');
+      document.getElementById('logo-kept-title').textContent = t('LOGO_KEPT');
+      document.getElementById('logo-close-text').textContent = t('LOGO_CLOSE');
       document.getElementById('btn-clear-fm').textContent = t('BTN_CLEAR_ALL_FM');
       document.getElementById('btn-rescan-fm').textContent = t('BTN_RESCAN_FM');
       document.getElementById('btn-clear-dab').textContent = t('BTN_CLEAR_ALL_DAB');
@@ -2656,6 +2964,7 @@
         renderRecycleBin();
         updateStats();
         updateRecycleCount();
+        loadLogos();
         
         hasChanges = false;
         updateSaveStatus(t('STATUS_NO_CHANGES'), false);
@@ -2673,6 +2982,9 @@
       const searchTerm = searchEl.value.toLowerCase();
       
       let filtered = stations.filter(s => !s.deleted);
+      if (logoFilter[type]) {
+        filtered = filtered.filter(s => !logoOf(type, s).url);
+      }
       if (searchTerm) {
         filtered = filtered.filter(s => {
           const name = s.customName || s.name || '';
@@ -2692,14 +3004,12 @@
         const realIdx = stations.indexOf(station);
         const displayName = station.customName || station.name || t('STATION_NAME_UNKNOWN');
         
-        let icon = '';
-        if (station.favorite) {
-          icon = '<i class="fa fa-star station-icon favorite"></i>';
-        } else if (station.hidden) {
-          icon = '<i class="fa fa-eye-slash station-icon hidden-icon"></i>';
-        } else {
-          icon = '<i class="fa fa-circle-o station-icon"></i>';
-        }
+        // The station's logo; pressed, it opens the logo dialog. Not a button of the
+        // row's own kind (data-type): those mark the row as changed.
+        const logo = logoOf(type, station);
+        let icon = '<div class="station-logo' + (logo.url ? '' : ' missing') + '" role="button" tabindex="0" title="' + escapeHtml(t('LOGO_CHANGE')) +
+          '" data-logo-type="' + type + '" data-index="' + realIdx + '">' +
+          (logo.url ? '<img src="' + escapeHtml(logo.url) + '" alt="" loading="lazy">' : '<i class="fa fa-picture-o"></i>') + '</div>';
         
         const favoriteClass = station.favorite ? 'active favorite' : '';
         const hiddenClass = station.hidden ? 'active hidden' : '';
@@ -2828,6 +3138,17 @@
     
     // Attach event listeners
     function attachEventListeners(type) {
+      document.querySelectorAll(`.station-logo[data-logo-type="${type}"]`).forEach(logo => {
+        const open = () => openLogoModal(type, parseInt(logo.dataset.index));
+        logo.addEventListener('click', open);
+        logo.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            open();
+          }
+        });
+      });
+      
       document.querySelectorAll(`input.station-name-input[data-type="${type}"]`).forEach(input => {
         input.addEventListener('input', (e) => {
           const idx = parseInt(e.target.dataset.index);
@@ -2993,7 +3314,371 @@
       document.getElementById('dab-total').textContent = dabFiltered.length;
       document.getElementById('dab-favorites').textContent = dabFiltered.filter(s => s.favorite).length;
       document.getElementById('dab-hidden').textContent = dabFiltered.filter(s => s.hidden).length;
+      document.getElementById('fm-nologo').textContent = fmFiltered.filter(s => !logoOf('fm', s).url).length;
+      document.getElementById('dab-nologo').textContent = dabFiltered.filter(s => !logoOf('dab', s).url).length;
     }
+    
+    // ---- Station logos ----
+    
+    // What the player knows a station by: an FM station by its frequency, a DAB station
+    // by its channel and its exact name
+    function stationId(type, station) {
+      return type === 'fm' ? { type: 'fm', frequency: String(station.frequency) } :
+        { type: 'dab', channel: station.channel, exactName: station.exactName };
+    }
+    
+    function logoOf(type, station) {
+      const key = type === 'fm' ? String(station.frequency) : station.channel + '|' + station.exactName;
+      return stationLogos[type][key] || { url: null, from: null, ref: null };
+    }
+    
+    function setLogoOf(type, station, logo) {
+      const key = type === 'fm' ? String(station.frequency) : station.channel + '|' + station.exactName;
+      stationLogos[type][key] = logo;
+    }
+    
+    async function loadLogos() {
+      try {
+        const response = await fetch('/api/logos/stations');
+        if (!response.ok) {
+          return;
+        }
+        stationLogos = await response.json();
+        renderStations('fm', fmStations);
+        renderStations('dab', dabStations);
+        updateStats();
+      } catch (error) {
+        // The lists work without the logos
+      }
+    }
+    
+    // The "No logo" cards: a press shows only the stations without one
+    document.querySelectorAll('[data-logo-filter]').forEach(card => {
+      const toggle = () => {
+        const type = card.dataset.logoFilter;
+        logoFilter[type] = !logoFilter[type];
+        card.classList.toggle('active', logoFilter[type]);
+        renderStations(type, type === 'fm' ? fmStations : dabStations);
+      };
+      card.addEventListener('click', toggle);
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggle();
+        }
+      });
+    });
+    
+    // The logo dialog: the station it is open for, and the picture made ready to send
+    let logoTarget = null;
+    let logoReady = null;
+    let logoPicture = null;
+    let logoSearchTimer = null;
+    const LOGO_SIDE = 600;       // what a picture is brought to before it is sent
+    const LOGO_LEAST = 128;      // below this a picture cannot look sharp, and is not taken
+    const LOGO_BETTER = 300;     // below this it is taken with a warning
+    
+    function logoSourceText(logo) {
+      if (logo.from === 'user') return t('LOGO_FROM_USER');
+      if (logo.from === 'broadcaster') return t('LOGO_FROM_BROADCASTER');
+      if (logo.from === 'pi') return t('LOGO_FROM_PI');
+      if (logo.from === 'name') return t('LOGO_FROM_NAME', logo.ref || '');
+      if (logo.from === 'group') return t('LOGO_FROM_GROUP', logo.ref || '');
+      return t('LOGO_FROM_NONE');
+    }
+    
+    function showLogoNow() {
+      const logo = logoOf(logoTarget.type, logoTarget.station);
+      const frame = document.getElementById('logo-now-frame');
+      frame.innerHTML = logo.url ? '<img src="' + escapeHtml(logo.url) + '" alt="">' : '<i class="fa fa-picture-o"></i>';
+      document.getElementById('logo-now-source').textContent = logoSourceText(logo);
+      document.getElementById('logo-automatic').style.display = logo.from === 'user' ? '' : 'none';
+    }
+    
+    function logoMessage(text, kind) {
+      const el = document.getElementById('logo-message');
+      el.textContent = text || '';
+      el.className = 'logo-message' + (kind ? ' ' + kind : '');
+    }
+    
+    function resetLogoUpload() {
+      logoReady = null;
+      logoPicture = null;
+      document.getElementById('logo-file').value = '';
+      document.getElementById('logo-preview-frame').innerHTML = '<i class="fa fa-picture-o"></i>';
+      document.getElementById('logo-fit-options').style.display = 'none';
+      document.getElementById('logo-dimensions').textContent = '';
+      document.getElementById('logo-use').disabled = true;
+      logoMessage('');
+    }
+    
+    function openLogoModal(type, idx) {
+      const stations = type === 'fm' ? fmStations : dabStations;
+      const station = stations[idx];
+      if (!station) {
+        return;
+      }
+      logoTarget = { type: type, station: station };
+      const name = station.customName || station.name || t('STATION_NAME_UNKNOWN');
+      document.getElementById('logo-modal-title').textContent = t('LOGO_TITLE', name);
+      showLogoNow();
+      resetLogoUpload();
+      // The search starts with the station's own name, unless that is only its frequency
+      const search = document.getElementById('logo-search');
+      search.value = /^FM \d/.test(name) ? '' : name;
+      searchLogos();
+      document.getElementById('logo-modal').classList.add('show');
+    }
+    
+    function closeLogoModal() {
+      document.getElementById('logo-modal').classList.remove('show');
+      logoTarget = null;
+      resetLogoUpload();
+    }
+    
+    // The player's answer to a logo that was set or given back
+    function logoChanged(logo, toast) {
+      setLogoOf(logoTarget.type, logoTarget.station, logo);
+      showLogoNow();
+      resetLogoUpload();
+      // What is kept on the player has changed with it
+      searchLogos();
+      renderStations(logoTarget.type, logoTarget.type === 'fm' ? fmStations : dabStations);
+      updateStats();
+      showToast(toast, 'success');
+    }
+    
+    // Why the player, or this page, does not take a picture: in the user's words
+    function logoRefusal(problem) {
+      const megabytes = (bytes) => String(Math.round((bytes || 0) / 1024 / 1024 * 10) / 10);
+      switch (problem && problem.error) {
+        case 'too-small': return t('LOGO_ERR_TOO_SMALL', problem.width, problem.height);
+        case 'too-many': return t('LOGO_ERR_TOO_MANY', problem.width, problem.height);
+        case 'too-large': return t('LOGO_ERR_TOO_LARGE', megabytes(problem.limit));
+        case 'unsafe': return t('LOGO_ERR_UNSAFE');
+        case 'not-a-picture': return t('LOGO_ERR_NOT_PICTURE');
+        case 'not-fetched': return t('LOGO_ERR_NOT_FETCHED');
+        default: return t('LOGO_ERR_FAILED', (problem && (problem.message || problem.error)) || '');
+      }
+    }
+    
+    // Draw the chosen picture into the square it will be shown in, and keep the result
+    // as the PNG to send
+    function drawLogo() {
+      if (!logoPicture) {
+        return;
+      }
+      const fill = document.querySelector('input[name="logo-fit"]:checked').value === 'fill';
+      const canvas = document.createElement('canvas');
+      canvas.width = LOGO_SIDE;
+      canvas.height = LOGO_SIDE;
+      const w = logoPicture.naturalWidth;
+      const h = logoPicture.naturalHeight;
+      const scale = fill ? Math.max(LOGO_SIDE / w, LOGO_SIDE / h) : Math.min(LOGO_SIDE / w, LOGO_SIDE / h);
+      const drawn = { w: w * scale, h: h * scale };
+      const context = canvas.getContext('2d');
+      context.imageSmoothingQuality = 'high';
+      context.drawImage(logoPicture, (LOGO_SIDE - drawn.w) / 2, (LOGO_SIDE - drawn.h) / 2, drawn.w, drawn.h);
+      const frame = document.getElementById('logo-preview-frame');
+      frame.innerHTML = '';
+      frame.appendChild(canvas);
+      document.getElementById('logo-use').disabled = true;
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          logoMessage(t('LOGO_ERR_NOT_PICTURE'), 'error');
+          return;
+        }
+        logoReady = { blob: blob, name: logoReady && logoReady.name ? logoReady.name : 'logo.png' };
+        document.getElementById('logo-use').disabled = false;
+      }, 'image/png');
+    }
+    
+    // A file has been chosen: shown as it will look, brought to size, or refused with the reason
+    function logoFileChosen(file) {
+      resetLogoUpload();
+      if (!file) {
+        return;
+      }
+      const frame = document.getElementById('logo-preview-frame');
+      const isSvg = file.type === 'image/svg+xml' || /\.svg$/i.test(file.name);
+      
+      if (isSvg) {
+        // A drawing is kept as it is: it has no pixels to count
+        const reader = new FileReader();
+        reader.onload = () => {
+          const text = String(reader.result || '');
+          if (!/<svg[\s>]/i.test(text)) {
+            logoMessage(t('LOGO_ERR_NOT_PICTURE'), 'error');
+            return;
+          }
+          if (/<\s*(script|foreignObject|iframe|embed|object)\b/i.test(text) || /<[^>]*\son[a-z]+\s*=/i.test(text) || /javascript\s*:/i.test(text)) {
+            logoMessage(t('LOGO_ERR_UNSAFE'), 'error');
+            return;
+          }
+          const shown = document.createElement('img');
+          shown.alt = '';
+          shown.onerror = () => {
+            frame.innerHTML = '<i class="fa fa-picture-o"></i>';
+            document.getElementById('logo-use').disabled = true;
+            logoMessage(t('LOGO_ERR_NOT_PICTURE'), 'error');
+          };
+          shown.src = URL.createObjectURL(file);
+          frame.innerHTML = '';
+          frame.appendChild(shown);
+          logoReady = { blob: file, name: file.name };
+          document.getElementById('logo-dimensions').textContent = t('LOGO_SVG_NOTE');
+          document.getElementById('logo-use').disabled = false;
+        };
+        reader.onerror = () => logoMessage(t('LOGO_ERR_NOT_PICTURE'), 'error');
+        reader.readAsText(file);
+        return;
+      }
+      
+      const picture = new Image();
+      picture.onload = () => {
+        const w = picture.naturalWidth;
+        const h = picture.naturalHeight;
+        document.getElementById('logo-dimensions').textContent = t('LOGO_DIMENSIONS', w, h);
+        if (Math.min(w, h) < LOGO_LEAST) {
+          logoMessage(t('LOGO_ERR_TOO_SMALL', w, h), 'error');
+          return;
+        }
+        if (Math.min(w, h) < LOGO_BETTER) {
+          logoMessage(t('LOGO_WARN_SMALL'), 'warning');
+        }
+        logoPicture = picture;
+        logoReady = { blob: null, name: file.name.replace(/\.[^.]*$/, '') + '.png' };
+        // Only a picture that is not square has a choice between fitting and filling
+        document.getElementById('logo-fit-options').style.display = w === h ? 'none' : 'block';
+        drawLogo();
+      };
+      picture.onerror = () => logoMessage(t('LOGO_ERR_NOT_PICTURE'), 'error');
+      picture.src = URL.createObjectURL(file);
+    }
+    
+    async function sendLogo() {
+      if (!logoTarget || !logoReady || !logoReady.blob) {
+        return;
+      }
+      const form = new FormData();
+      const id = stationId(logoTarget.type, logoTarget.station);
+      Object.keys(id).forEach(key => form.append(key, id[key]));
+      form.append('file', logoReady.blob, logoReady.name);
+      document.getElementById('logo-use').disabled = true;
+      try {
+        const response = await fetch('/api/logos/upload', { method: 'POST', body: form });
+        const answer = await response.json();
+        if (!response.ok) {
+          logoMessage(logoRefusal(answer), 'error');
+          return;
+        }
+        logoChanged(answer.logo, t('LOGO_SET'));
+      } catch (error) {
+        logoMessage(t('LOGO_ERR_FAILED', error.message), 'error');
+      }
+    }
+    
+    async function chooseLogo(body) {
+      if (!logoTarget) {
+        return;
+      }
+      body.station = stationId(logoTarget.type, logoTarget.station);
+      try {
+        const response = await fetch('/api/logos/choose', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const answer = await response.json();
+        if (!response.ok) {
+          logoMessage(logoRefusal(answer), 'error');
+          return;
+        }
+        logoChanged(answer.logo, t('LOGO_SET'));
+      } catch (error) {
+        logoMessage(t('LOGO_ERR_FAILED', error.message), 'error');
+      }
+    }
+    
+    async function clearLogo() {
+      if (!logoTarget) {
+        return;
+      }
+      try {
+        const response = await fetch('/api/logos/clear', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ station: stationId(logoTarget.type, logoTarget.station) }) });
+        const answer = await response.json();
+        if (!response.ok) {
+          logoMessage(logoRefusal(answer), 'error');
+          return;
+        }
+        logoChanged(answer.logo, t('LOGO_CLEARED'));
+      } catch (error) {
+        logoMessage(t('LOGO_ERR_FAILED', error.message), 'error');
+      }
+    }
+    
+    // One picture to choose, with the name it goes by. A picture that does not load
+    // (the browser has no way to the broadcaster) leaves the name to choose by.
+    function logoChoice(name, src, onChoose) {
+      const choice = document.createElement('button');
+      choice.className = 'logo-choice';
+      choice.title = name;
+      const picture = document.createElement('img');
+      picture.alt = '';
+      picture.loading = 'lazy';
+      picture.onerror = () => picture.remove();
+      picture.src = src;
+      const label = document.createElement('span');
+      label.textContent = name;
+      choice.appendChild(picture);
+      choice.appendChild(label);
+      choice.addEventListener('click', onChoose);
+      return choice;
+    }
+    
+    function fillLogoGrid(id, entries, make) {
+      const grid = document.getElementById(id);
+      grid.innerHTML = '';
+      if (entries.length === 0) {
+        grid.innerHTML = '<div class="logo-empty">' + escapeHtml(t('LOGO_NOTHING_FOUND')) + '</div>';
+        return;
+      }
+      entries.forEach(entry => grid.appendChild(make(entry)));
+    }
+    
+    async function searchLogos() {
+      const query = document.getElementById('logo-search').value.trim();
+      try {
+        const response = await fetch('/api/logos/library?limit=60&q=' + encodeURIComponent(query));
+        if (!response.ok) {
+          return;
+        }
+        const library = await response.json();
+        // Asked for something else in the meantime
+        if (query !== document.getElementById('logo-search').value.trim()) {
+          return;
+        }
+        fillLogoGrid('logo-listed', library.listed, (entry) =>
+          logoChoice(entry.name, entry.small, () => chooseLogo({ source: 'list', url: entry.url })));
+        fillLogoGrid('logo-kept', library.kept, (entry) =>
+          logoChoice(entry.name, entry.url, () => chooseLogo({ source: 'kept', file: entry.file, name: entry.name })));
+      } catch (error) {
+        // The dialog works without the library: a picture can still be uploaded
+      }
+    }
+    
+    document.getElementById('logo-file-btn').addEventListener('click', () => document.getElementById('logo-file').click());
+    document.getElementById('logo-file').addEventListener('change', (e) => logoFileChosen(e.target.files[0]));
+    document.querySelectorAll('input[name="logo-fit"]').forEach(option => option.addEventListener('change', drawLogo));
+    document.getElementById('logo-use').addEventListener('click', sendLogo);
+    document.getElementById('logo-automatic').addEventListener('click', clearLogo);
+    document.getElementById('logo-close').addEventListener('click', closeLogoModal);
+    document.getElementById('logo-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'logo-modal') {
+        closeLogoModal();
+      }
+    });
+    document.getElementById('logo-search').addEventListener('input', () => {
+      clearTimeout(logoSearchTimer);
+      logoSearchTimer = setTimeout(searchLogos, 250);
+    });
     
     // Update recycle count
     function updateRecycleCount() {
