@@ -11,9 +11,17 @@
     "type": "boolean",
     "value": false
   },
+  "fm_gain_auto": {
+    "type": "boolean",
+    "value": true
+  },
   "fm_gain": {
     "type": "number",
     "value": 50
+  },
+  "dab_gain_auto": {
+    "type": "boolean",
+    "value": true
   },
   "dab_gain": {
     "type": "number",
@@ -94,5 +102,9 @@
   "artwork_persistence": {
     "type": "string",
     "value": "artist"
+  },
+  "artwork_hold": {
+    "type": "number",
+    "value": 2
   }
 }

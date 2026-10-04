@@ -258,11 +258,11 @@ function download(url, file, limit, onProgress) {
   });
 }
 
-// The installed plugin as a zip, without what is not the plugin's own (the link to
-// the station logos)
+// The installed plugin as a zip, without what is not the plugin's own (the links to
+// the station logos and to the stations' pictures)
 function zipFolder(folder, file) {
   return new Promise(function(resolve, reject) {
-    execFile('zip', ['-q', '-r', '-y', file, '.', '-x', 'logos', 'logos/*'], { cwd: folder, maxBuffer: 1024 * 1024 }, function(error) {
+    execFile('zip', ['-q', '-r', '-y', file, '.', '-x', 'logos', 'logos/*', 'slides', 'slides/*'], { cwd: folder, maxBuffer: 1024 * 1024 }, function(error) {
       if (error) {
         reject(error);
       } else {
@@ -296,6 +296,7 @@ function Updater(options) {
   this.channel = options.channel || function() { return 'stable'; };
   this.logger = options.logger || { info: function() {}, error: function() {} };
   this.network = options.network || { json: json, download: download };
+  this.releasesUrl = options.releasesUrl || RELEASES_URL;
   this.zip = options.zip || zipFolder;
   this.stagingDir = options.stagingDir || STAGING_DIR;
   this.waits = options.waits || DOWNLOAD_WAITS;
@@ -386,7 +387,7 @@ Updater.prototype.check = function(force) {
     self.logger.info('[RTL-SDR Radio] Update: the store did not answer: ' + (error && error.message || error));
   });
 
-  var github = self.network.json(RELEASES_URL).then(function(list) {
+  var github = self.network.json(self.releasesUrl).then(function(list) {
     found.github = newestReleases(list);
   }).catch(function(error) {
     found.problems.github = error && error.code || 'network';
@@ -607,3 +608,4 @@ module.exports.offerFor = offerFor;
 module.exports.newestPerChannel = newestPerChannel;
 module.exports.UpdateError = UpdateError;
 module.exports.SERVED_FROM = SERVED_FROM;
+module.exports.network = { json: json, download: download };

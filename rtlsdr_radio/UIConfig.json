@@ -284,6 +284,7 @@
         "label": "TRANSLATE.SAVE_FM_SETTINGS",
         "data": [
           "fm_enabled",
+          "fm_gain_auto",
           "fm_gain",
           "fm_oversampling",
           "fm_sample_rate",
@@ -299,14 +300,25 @@
           "doc": "TRANSLATE.ENABLE_FM_DOC"
         },
         {
+          "id": "fm_gain_auto",
+          "element": "switch",
+          "label": "TRANSLATE.FM_GAIN_AUTO",
+          "doc": "TRANSLATE.FM_GAIN_AUTO_DOC",
+          "value": true,
+          "visibleIf": {
+            "field": "fm_enabled",
+            "value": true
+          }
+        },
+        {
           "id": "fm_gain",
           "element": "input",
           "label": "TRANSLATE.FM_GAIN",
           "value": 50,
           "doc": "TRANSLATE.FM_GAIN_DOC",
           "visibleIf": {
-            "field": "fm_enabled",
-            "value": true
+            "field": "fm_gain_auto",
+            "value": false
           }
         },
         {
@@ -407,6 +419,7 @@
         "label": "TRANSLATE.SAVE_DAB_SETTINGS",
         "data": [
           "dab_enabled",
+          "dab_gain_auto",
           "dab_gain",
           "dab_ppm"
         ]
@@ -420,14 +433,25 @@
           "doc": "TRANSLATE.ENABLE_DAB_DOC"
         },
         {
+          "id": "dab_gain_auto",
+          "element": "switch",
+          "label": "TRANSLATE.DAB_GAIN_AUTO",
+          "doc": "TRANSLATE.DAB_GAIN_AUTO_DOC",
+          "value": true,
+          "visibleIf": {
+            "field": "dab_enabled",
+            "value": true
+          }
+        },
+        {
           "id": "dab_gain",
           "element": "input",
           "label": "TRANSLATE.DAB_GAIN",
           "value": 80,
           "doc": "TRANSLATE.DAB_GAIN_DOC",
           "visibleIf": {
-            "field": "dab_enabled",
-            "value": true
+            "field": "dab_gain_auto",
+            "value": false
           }
         },
         {
@@ -476,6 +500,7 @@
           "artwork_threshold",
           "artwork_persistence",
           "artwork_ttl",
+          "artwork_hold",
           "artwork_debug_logging"
         ]
       },
@@ -556,6 +581,28 @@
             { "value": "30", "label": "TRANSLATE.ARTWORK_TTL_30MIN" }
           ],
           "doc": "TRANSLATE.ARTWORK_TTL_DOC",
+          "visibleIf": {
+            "field": "show_artwork_settings",
+            "value": true
+          }
+        },
+        {
+          "id": "artwork_hold",
+          "element": "select",
+          "label": "TRANSLATE.ARTWORK_HOLD",
+          "value": {
+            "value": "2",
+            "label": "2 seconds (recommended)"
+          },
+          "options": [
+            { "value": "0", "label": "TRANSLATE.ARTWORK_HOLD_OFF" },
+            { "value": "1", "label": "TRANSLATE.ARTWORK_HOLD_1S" },
+            { "value": "2", "label": "TRANSLATE.ARTWORK_HOLD_2S" },
+            { "value": "3", "label": "TRANSLATE.ARTWORK_HOLD_3S" },
+            { "value": "5", "label": "TRANSLATE.ARTWORK_HOLD_5S" },
+            { "value": "10", "label": "TRANSLATE.ARTWORK_HOLD_10S" }
+          ],
+          "doc": "TRANSLATE.ARTWORK_HOLD_DOC",
           "visibleIf": {
             "field": "show_artwork_settings",
             "value": true
