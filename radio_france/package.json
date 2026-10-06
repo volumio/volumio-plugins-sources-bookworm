@@ -1,6 +1,6 @@
 {
 	"name": "radio_france",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Radio France plugin for Volumio",
 	"main": "index.js",
 	"author": "balbuze",
@@ -18,7 +18,7 @@
 			"amd64"
 		],
 		"details": "Radio France for Volumio 4",
-		"changelog": ""
+		"changelog": "allow search in radio stations"
 	},
 	"engines": {
 		"volumio": ">=4",
