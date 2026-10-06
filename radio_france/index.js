@@ -322,26 +322,33 @@ ControllerRadioFrance.prototype.handleBrowseUri = function(curUri) {
 };
 
 /*
+ * Builds the browse item for one station.
+ * Shared by the root list and search results.
+ */
+ControllerRadioFrance.prototype.getStationItem = function(station) {
+    return {
+        service: this.serviceName,
+        type: 'mywebradio',
+        title: station.title,
+        artist: '',
+        album: '',
+        icon: 'fa fa-music',
+        uri: 'france-radio/' + station.id,
+        albumart:
+            '/albumart?sourceicon=music_service/radio_france/images/' +
+            this.getStationLogo(station)
+    };
+};
+
+/*
  * Builds the Radio France root navigation content.
  *
  * Creates the list of available Radio France stations.
  */
 ControllerRadioFrance.prototype.getRootContent = function() {
     var self = this;
-    var items = [];
-    self.radioStations.forEach(function(station) {
-        items.push({
-            service: self.serviceName,
-            type: 'mywebradio',
-            title: station.title,
-            artist: '',
-            album: '',
-            icon: 'fa fa-music',
-            uri: 'france-radio/' + station.id,
-            albumart:
-                '/albumart?sourceicon=music_service/radio_france/images/' +
-                self.getStationLogo(station)
-        });
+    var items = self.radioStations.map(function(station) {
+        return self.getStationItem(station);
     });
     return libQ.resolve({
         navigation: {
@@ -952,6 +959,55 @@ ControllerRadioFrance.prototype.updateBitrate = function() {
     });
 };
 
-ControllerRadioFrance.prototype.search = function() {
-    return libQ.resolve([]);
+/*
+ * Lowercases and strips accents, so "bearn" finds "ICI Béarn Bigorre".
+ */
+ControllerRadioFrance.prototype.normalizeSearchText = function(text) {
+    return String(text || '')
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase();
+};
+
+/*
+ * Searches the station list by title.
+ *
+ * Every word of the query has to appear in the station title,
+ * in any order: "ici" finds all ICI stations, "ici azur" only ICI Azur.
+ * Returns one list in the same shape as the root browse list,
+ * or an empty array when nothing matches.
+ */
+ControllerRadioFrance.prototype.search = function(query) {
+    var self = this;
+    var value = query && query.value ? query.value : '';
+    var words = self.normalizeSearchText(value)
+        .split(/\s+/)
+        .filter(function(word) {
+            return word.length > 0;
+        });
+    if (words.length === 0) {
+        return libQ.resolve([]);
+    }
+    var items = [];
+    self.radioStations.forEach(function(station) {
+        var title = self.normalizeSearchText(station.title);
+        var matches = words.every(function(word) {
+            return title.indexOf(word) !== -1;
+        });
+        if (matches) {
+            items.push(self.getStationItem(station));
+        }
+    });
+    self.debugLog(
+        'RadioFrance search "' + value + '" found ' + items.length + ' stations'
+    );
+    if (items.length === 0) {
+        return libQ.resolve([]);
+    }
+    return libQ.resolve({
+        title: 'Radio France',
+        icon: 'fa fa-music',
+        availableListViews: ['list'],
+        items: items
+    });
 };
