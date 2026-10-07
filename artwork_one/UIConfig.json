@@ -1,0 +1,37 @@
+{
+  "page": { "label": "TRANSLATE.ARTWORK_ONE.TITLE" },
+  "sections": [
+    {
+      "id": "section_interface",
+      "element": "section",
+      "label": "TRANSLATE.ARTWORK_ONE.SECTION",
+      "icon": "fa-paint-brush",
+      "content": [
+        {
+          "id": "status",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.ARTWORK_ONE.STATUS",
+          "doc": "TRANSLATE.ARTWORK_ONE.STATUS_DOC",
+          "value": "",
+          "attributes": [{ "readonly": true }]
+        },
+        {
+          "id": "switch",
+          "element": "button",
+          "label": "TRANSLATE.ARTWORK_ONE.SWITCH",
+          "onClick": { "type": "plugin", "endpoint": "user_interface/artwork_one", "method": "switchTo", "data": {} }
+        },
+        {
+          "id": "settings",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.ARTWORK_ONE.SETTINGS",
+          "doc": "TRANSLATE.ARTWORK_ONE.SETTINGS_DOC",
+          "value": "Settings → Appearance",
+          "attributes": [{ "readonly": true }]
+        }
+      ]
+    }
+  ]
+}
