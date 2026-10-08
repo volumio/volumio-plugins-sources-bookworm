@@ -1,0 +1,17 @@
+{
+  "ARTWORK_ONE": {
+    "TITLE": "Artwork One",
+    "SECTION": "Interface",
+    "STATUS": "Status",
+    "STATUS_DOC": "Whether Artwork One is the interface this player serves. Switch it here, or under Settings → System → User Interface layout design; the page reloads in the chosen interface.",
+    "SWITCH": "Switch to Artwork One",
+    "SWITCH_BACK": "Switch back to the previous interface",
+    "SETTINGS": "Settings",
+    "SETTINGS_DOC": "The theme (dark, light, system), the ambient display and the pins are set under Settings → Appearance while Artwork One is the active interface. They are kept on the player, for every screen it drives.",
+    "ACTIVE": "Artwork One is the active interface",
+    "INACTIVE": "Another interface is active; Artwork One is ready",
+    "SWITCHED": "Artwork One is now the interface",
+    "SWITCHED_BACK": "Switched back to {name}",
+    "ERROR": "Artwork One"
+  }
+}

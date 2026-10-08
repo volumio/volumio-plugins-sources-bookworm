@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en" data-aw-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a0c0e" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Volumio" />
+    <!-- the legacy apple-mobile-web-app-* tags alone have no concept of "scope": as soon as the
+         SPA's router changes the URL (any button, any menu item), iOS can decide the standalone
+         window has navigated outside the app and hand it off to a full Safari tab. A real
+         manifest with scope:"/" is what keeps every same-origin route inside standalone mode. -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <!-- the bundled stylesheet is render-blocking but still costs a network round-trip on this
+         device; without a colour before it lands, the browser's own default white shows first -->
+    <style>html, body { background: #0a0c0e; }</style>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="preload" href="/fonts/214b6e5d-60ab-4013-af8b-697b2594b903.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/material-symbols-rounded.woff" as="font" type="font/woff" crossorigin />
+    <title>Volumio</title>
+    <script type="module" crossorigin src="/assets/index-CEAFk0pc.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/rolldown-runtime-hePW80VL.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-CBQVUoag.js">
+    <link rel="modulepreload" crossorigin href="/assets/socket-CuG-0-vF.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-D5um4-n8.css">
+  </head>
+  <body id="artwork">
+    <div id="root"></div>
+  </body>
+</html>
