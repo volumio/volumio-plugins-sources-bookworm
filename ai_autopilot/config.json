@@ -1,0 +1,221 @@
+{
+  "enabled": {
+    "type": "boolean",
+    "value": true
+  },
+  "source": {
+    "type": "string",
+    "value": "auto"
+  },
+  "trigger_mode": {
+    "type": "string",
+    "value": "keep_ahead"
+  },
+  "keep_ahead_count": {
+    "type": "number",
+    "value": 3
+  },
+  "cooldown_sec": {
+    "type": "number",
+    "value": 5
+  },
+  "http_api_port": {
+    "type": "number",
+    "value": 8488
+  },
+  "recommender": {
+    "type": "string",
+    "value": "llm"
+  },
+  "history_window": {
+    "type": "number",
+    "value": 20
+  },
+  "avoid_same_album_window": {
+    "type": "number",
+    "value": 10
+  },
+  "avoid_same_artist_window": {
+    "type": "number",
+    "value": 0
+  },
+  "llm_provider": {
+    "type": "string",
+    "value": "anthropic"
+  },
+  "llm_api_key": {
+    "type": "string",
+    "value": ""
+  },
+  "llm_api_key_anthropic": {
+    "type": "string",
+    "value": ""
+  },
+  "llm_api_key_openai": {
+    "type": "string",
+    "value": ""
+  },
+  "llm_api_key_google": {
+    "type": "string",
+    "value": ""
+  },
+  "llm_api_key_groq": {
+    "type": "string",
+    "value": ""
+  },
+  "llm_api_key_deepseek": {
+    "type": "string",
+    "value": ""
+  },
+  "llm_api_key_xai": {
+    "type": "string",
+    "value": ""
+  },
+  "llm_api_key_mistral": {
+    "type": "string",
+    "value": ""
+  },
+  "llm_api_key_openrouter": {
+    "type": "string",
+    "value": ""
+  },
+  "llm_api_key_perplexity": {
+    "type": "string",
+    "value": ""
+  },
+  "llm_api_key_together": {
+    "type": "string",
+    "value": ""
+  },
+  "llm_api_key_custom": {
+    "type": "string",
+    "value": ""
+  },
+  "llm_model": {
+    "type": "string",
+    "value": ""
+  },
+  "llm_model_custom": {
+    "type": "string",
+    "value": ""
+  },
+  "llm_base_url": {
+    "type": "string",
+    "value": ""
+  },
+  "llm_hints": {
+    "type": "string",
+    "value": ""
+  },
+  "llm_system_prompt": {
+    "type": "string",
+    "value": ""
+  },
+  "prompt_preset_selected": {
+    "type": "string",
+    "value": "default"
+  },
+  "prompt_sub_default": { "type": "string", "value": "" },
+  "prompt_sub_jazz_curator": { "type": "string", "value": "" },
+  "prompt_sub_eclectic_explorer": { "type": "string", "value": "" },
+  "prompt_sub_greatest_hits": { "type": "string", "value": "" },
+  "prompt_sub_mood_matcher": { "type": "string", "value": "" },
+  "prompt_sub_deep_cuts": { "type": "string", "value": "" },
+  "prompt_sub_discovery": { "type": "string", "value": "" },
+  "prompt_sub_era_faithful": { "type": "string", "value": "" },
+  "prompt_sub_genre_faithful": { "type": "string", "value": "" },
+  "prompt_sub_mood_shifter": { "type": "string", "value": "" },
+  "prompt_sub_rock_curator": { "type": "string", "value": "" },
+  "prompt_sub_electronic_curator": { "type": "string", "value": "" },
+  "prompt_sub_hiphop_curator": { "type": "string", "value": "" },
+  "prompt_sub_classical_curator": { "type": "string", "value": "" },
+  "prompt_sub_metal_curator": { "type": "string", "value": "" },
+  "prompt_sub_folk_acoustic": { "type": "string", "value": "" },
+  "prompt_sub_soul_funk": { "type": "string", "value": "" },
+  "prompt_sub_world_music": { "type": "string", "value": "" },
+  "prompt_sub_ambient_focus": { "type": "string", "value": "" },
+  "prompt_sub_pop_curator": { "type": "string", "value": "" },
+  "prompt_sub_country_americana": { "type": "string", "value": "" },
+  "prompt_sub_blues_curator": { "type": "string", "value": "" },
+  "prompt_sub_rnb_curator": { "type": "string", "value": "" },
+  "prompt_sub_cinematic": { "type": "string", "value": "" },
+  "prompt_sub_activity_dj": { "type": "string", "value": "" },
+  "prompt_sub_sonic_signature": { "type": "string", "value": "" },
+  "prompt_sub_lyrical_theme": { "type": "string", "value": "" },
+  "hint_preset_selected": {
+    "type": "string",
+    "value": "none"
+  },
+  "energy_min": {
+    "type": "number",
+    "value": 0
+  },
+  "energy_max": {
+    "type": "number",
+    "value": 10
+  },
+  "lastfm_api_key": {
+    "type": "string",
+    "value": ""
+  },
+  "lastfm_user": {
+    "type": "string",
+    "value": ""
+  },
+  "spotify_client_id": {
+    "type": "string",
+    "value": ""
+  },
+  "spotify_client_secret": {
+    "type": "string",
+    "value": ""
+  },
+  "spotify_refresh_token": {
+    "type": "string",
+    "value": ""
+  },
+  "verbose_log": {
+    "type": "boolean",
+    "value": false
+  },
+  "feedback_use_skip": {
+    "type": "boolean",
+    "value": false
+  },
+  "download_enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "download_dir": {
+    "type": "string",
+    "value": "/mnt/INTERNAL/qobuz-tap"
+  },
+  "download_quality": {
+    "type": "number",
+    "value": 7
+  },
+  "qobuz_email": {
+    "type": "string",
+    "value": ""
+  },
+  "qobuz_password": {
+    "type": "string",
+    "value": ""
+  },
+  "qobuz_user_id": {
+    "type": "string",
+    "value": ""
+  },
+  "qobuz_auth_token": {
+    "type": "string",
+    "value": ""
+  },
+  "prefetch_count": {
+    "type": "number",
+    "value": 0
+  },
+  "quiet_mode_enabled": {
+    "type": "boolean",
+    "value": false
+  }
+}
