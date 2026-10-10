@@ -1,6 +1,6 @@
 {
   "name": "artwork_one",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "Artwork One: a cover-led interface for Volumio. The cover of what plays fills the screen; every control floats above it.",
   "main": "index.js",
   "author": "Michal Tamas",
@@ -19,7 +19,7 @@
       "bookworm"
     ],
     "details": "A cover-led interface for Volumio: the cover of what plays fills the screen, softly blurred, and every control floats above it on frosted glass. Three faces of Now Playing (cover, info, lyrics), an ambient display for the player's own screen, a labelled rail, Zones, and every Volumio source and setting as before. After enabling, pick Artwork One under Settings → System → User Interface layout design (or press Switch on this page).",
-    "changelog": "3.2.1: plugin settings pages and dialogs behave as in Volumio's own interfaces (FusionDsp values, progress dialogs, the Spotify sign-in button); the DAC Model and output names show what is set; in the folder view, folders stay covers while the songs inside open as a list."
+    "changelog": "3.2.2: Check Updates shows its answer and the update its progress, as in Volumio's own interfaces; Wi-Fi in the first-run wizard connects through the wizard (no cut-off over the hotspot); Home · Library tabs; \"Add a source\" opens Settings → Sources. Includes 3.2.1: plugin settings and dialogs as in Volumio (FusionDsp values, progress dialogs, Spotify sign-in), DAC Model and output names, folder view."
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
