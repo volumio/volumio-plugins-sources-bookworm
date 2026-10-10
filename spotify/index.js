@@ -98,6 +98,10 @@ ControllerSpotify.prototype.onStart = function () {
 
     self.loadI18n();
     self.browseCache = new NodeCache({ stdTTL: 3600, checkperiod: 120 });
+    if (self.config.get('credentials_type', 'zeroconf') === 'device_auth' && !self.getPlaybackAuthorization().authorized) {
+        self.logger.info('Spotify pairing was never completed, starting in Spotify Connect mode');
+        self.config.set('credentials_type', 'zeroconf');
+    }
     self.initializeLibrespotDaemon();
     self.initializeSpotifyBrowsingFacility();
     self.applySpotifyHostsFix();
@@ -860,6 +864,9 @@ ControllerSpotify.prototype.startAuthorization = function (data) {
             }
 
             return self.authorizePlayback().then(function (playback) {
+                if (!playback.authorized && !deviceAuthCancelled) {
+                    self.fallBackToConnect();
+                }
                 // release() before the refresh, not after: refreshUiConfig goes through
                 // getUIConfig, which re-opens the modal of a flow still marked as running.
                 release(self.getI18n(playback.authorized ? 'PAIRING_SUCCESSFUL' : playback.reason));
@@ -868,6 +875,7 @@ ControllerSpotify.prototype.startAuthorization = function (data) {
         })
         .fail(function (e) {
             self.logger.error('Failed authorizing Spotify: ' + e);
+            self.fallBackToConnect();
             release(self.getI18n('PAIRING_FAILED'));
         });
 
@@ -883,6 +891,18 @@ ControllerSpotify.prototype.startAuthorization = function (data) {
 // keeps the code it already minted, so a user who changes their mind again can still
 // approve it, while the next restart comes up in the state a device should idle in rather
 // than minting a code nobody asked for.
+ControllerSpotify.prototype.fallBackToConnect = function () {
+    var self = this;
+
+    if (self.config.get('credentials_type', 'zeroconf') !== 'device_auth' || self.getPlaybackAuthorization().authorized) {
+        return libQ.resolve('');
+    }
+
+    self.logger.info('Spotify pairing not completed, back to Spotify Connect mode');
+    self.config.set('credentials_type', 'zeroconf');
+    return self.initializeLibrespotDaemon();
+};
+
 ControllerSpotify.prototype.cancelAuthorization = function () {
     var self = this;
 
