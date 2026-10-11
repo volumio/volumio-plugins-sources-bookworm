@@ -1,0 +1,247 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_NAME"
+  },
+  "sections": [
+    {
+      "id": "section_power",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_POWER",
+      "icon": "fa-power-off",
+      "description": "TRANSLATE.POWER_SECTION_DOC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/argon_one_power_fan",
+        "method": "savePower"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["powerEnabled", "powerLogOnly", "powerDoubleTap", "uartSignal"]
+      },
+      "content": [
+        {
+          "id": "powerEnabled",
+          "element": "switch",
+          "label": "TRANSLATE.POWER_ENABLED",
+          "doc": "TRANSLATE.POWER_ENABLED_DOC",
+          "value": true
+        },
+        {
+          "id": "powerDoubleTap",
+          "element": "select",
+          "label": "TRANSLATE.POWER_DOUBLE_TAP",
+          "doc": "TRANSLATE.POWER_DOUBLE_TAP_DOC",
+          "value": {
+            "value": "reboot",
+            "label": "TRANSLATE.POWER_DOUBLE_TAP_REBOOT"
+          },
+          "options": [
+            {
+              "value": "reboot",
+              "label": "TRANSLATE.POWER_DOUBLE_TAP_REBOOT"
+            },
+            {
+              "value": "restart",
+              "label": "TRANSLATE.POWER_DOUBLE_TAP_RESTART"
+            }
+          ],
+          "visibleIf": {
+            "field": "powerEnabled",
+            "value": true
+          }
+        },
+        {
+          "id": "powerLogOnly",
+          "element": "switch",
+          "label": "TRANSLATE.POWER_LOG_ONLY",
+          "doc": "TRANSLATE.POWER_LOG_ONLY_DOC",
+          "value": false,
+          "visibleIf": {
+            "field": "powerEnabled",
+            "value": true
+          }
+        },
+        {
+          "id": "uartSignal",
+          "element": "switch",
+          "label": "TRANSLATE.UART_SIGNAL",
+          "doc": "TRANSLATE.UART_SIGNAL_DOC",
+          "value": false,
+          "visibleIf": {
+            "field": "powerEnabled",
+            "value": true
+          }
+        },
+        {
+          "id": "uartStatus",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.UART_STATUS",
+          "value": "",
+          "attributes": [{ "readonly": true }],
+          "visibleIf": {
+            "field": "powerEnabled",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_fan",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_FAN",
+      "icon": "fa-snowflake-o",
+      "description": "TRANSLATE.FAN_SECTION_DOC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/argon_one_power_fan",
+        "method": "saveFan"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "fanMode",
+          "fanOnTemp",
+          "fanT1",
+          "fanS1",
+          "fanT2",
+          "fanS2",
+          "fanT3",
+          "fanS3"
+        ]
+      },
+      "content": [
+        {
+          "id": "fanMode",
+          "element": "select",
+          "label": "TRANSLATE.FAN_MODE",
+          "doc": "TRANSLATE.FAN_MODE_DOC",
+          "value": {
+            "value": "onoff",
+            "label": "TRANSLATE.FAN_OPT_ONOFF"
+          },
+          "options": [
+            {
+              "value": "off",
+              "label": "TRANSLATE.FAN_OPT_OFF"
+            },
+            {
+              "value": "onoff",
+              "label": "TRANSLATE.FAN_OPT_ONOFF"
+            },
+            {
+              "value": "steps",
+              "label": "TRANSLATE.FAN_OPT_STEPS"
+            }
+          ]
+        },
+        {
+          "id": "fanOnTemp",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.FAN_ON_TEMP",
+          "doc": "TRANSLATE.FAN_ON_TEMP_DOC",
+          "value": 55,
+          "attributes": [{ "min": 0, "max": 100, "step": 1 }],
+          "visibleIf": {
+            "field": "fanMode",
+            "value": "onoff"
+          }
+        },
+        {
+          "id": "fanT1",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.FAN_TEMP_1",
+          "doc": "TRANSLATE.FAN_TEMP_DOC",
+          "value": 55,
+          "attributes": [{ "min": 0, "max": 100, "step": 1 }],
+          "visibleIf": {
+            "field": "fanMode",
+            "value": "steps"
+          }
+        },
+        {
+          "id": "fanS1",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.FAN_SPEED_1",
+          "doc": "TRANSLATE.FAN_SPEED_DOC",
+          "value": 30,
+          "attributes": [{ "min": 0, "max": 100, "step": 1 }],
+          "visibleIf": {
+            "field": "fanMode",
+            "value": "steps"
+          }
+        },
+        {
+          "id": "fanT2",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.FAN_TEMP_2",
+          "doc": "TRANSLATE.FAN_TEMP_DOC",
+          "value": 60,
+          "attributes": [{ "min": 0, "max": 100, "step": 1 }],
+          "visibleIf": {
+            "field": "fanMode",
+            "value": "steps"
+          }
+        },
+        {
+          "id": "fanS2",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.FAN_SPEED_2",
+          "doc": "TRANSLATE.FAN_SPEED_DOC",
+          "value": 55,
+          "attributes": [{ "min": 0, "max": 100, "step": 1 }],
+          "visibleIf": {
+            "field": "fanMode",
+            "value": "steps"
+          }
+        },
+        {
+          "id": "fanT3",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.FAN_TEMP_3",
+          "doc": "TRANSLATE.FAN_TEMP_DOC",
+          "value": 65,
+          "attributes": [{ "min": 0, "max": 100, "step": 1 }],
+          "visibleIf": {
+            "field": "fanMode",
+            "value": "steps"
+          }
+        },
+        {
+          "id": "fanS3",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.FAN_SPEED_3",
+          "doc": "TRANSLATE.FAN_SPEED_DOC",
+          "value": 100,
+          "attributes": [{ "min": 0, "max": 100, "step": 1 }],
+          "visibleIf": {
+            "field": "fanMode",
+            "value": "steps"
+          }
+        },
+        {
+          "id": "showTemp",
+          "element": "button",
+          "label": "TRANSLATE.SHOW_TEMP",
+          "doc": "TRANSLATE.SHOW_TEMP_DOC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_hardware/argon_one_power_fan",
+              "method": "showTemperature",
+              "data": ""
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
