@@ -78,6 +78,9 @@
   --cover-veil-2:rgba(8,10,12,.86);
   /* panels that float over the page (the queue, the sheets) and the scrim behind them */
   --panel-fill:rgba(13,15,18,.86);
+  --panel-dock:rgba(11,13,16,.78);
+  --panel-dock-top:rgba(11,13,16,.5);
+  --panel-dock-line:rgba(255,255,255,.10);
   --panel-deep:rgba(0,0,0,.9);
   --panel-sheet:rgba(13,15,18,.92);
   --scrim-page:rgba(5,6,8,.5);
@@ -212,6 +215,9 @@
   --bar-solid:rgba(252,251,249,.90);
   --bar-veil:rgba(255,255,255,.72);
   --panel-fill:rgba(252,251,249,.90);
+  --panel-dock:rgba(252,251,249,.90);
+  --panel-dock-top:rgba(252,251,249,.66);
+  --panel-dock-line:rgba(20,22,26,.09);
   --panel-deep:rgba(252,251,249,.96);
   --panel-sheet:rgba(252,251,249,.97);
   --scrim-page:rgba(24,20,14,.28);
@@ -344,6 +350,9 @@
     --bar-solid:rgba(252,251,249,.90);
     --bar-veil:rgba(255,255,255,.72);
     --panel-fill:rgba(252,251,249,.90);
+    --panel-dock:rgba(252,251,249,.90);
+    --panel-dock-top:rgba(252,251,249,.66);
+    --panel-dock-line:rgba(20,22,26,.09);
     --panel-deep:rgba(252,251,249,.96);
     --panel-sheet:rgba(252,251,249,.97);
     --scrim-page:rgba(24,20,14,.28);
@@ -1617,6 +1626,12 @@ body#artwork #main-menu .rail__scan-icon {
   margin: 0;
   text-wrap: pretty;
 }
+#np {
+  /* two lines at most: ClampedTitle shortens the text itself (a clip would cut the descenders) */
+}
+#np .np-title {
+  overflow-wrap: anywhere;
+}
 #np .np-byline {
   display: contents;
 }
@@ -2404,6 +2419,10 @@ body#artwork #np.np--info .np-chip .np-chip-unit {
   display: flex;
   gap: 13px;
 }
+#np .np-upnext--covers-away .np-upnext-label, #np .np-upnext--covers-away .np-upnext-films {
+  display: none;
+}
+#np { /* beside the docked queue, when the row has no room for them */ }
 #np .np-upnext-film {
   display: block;
   padding: 0;
@@ -2616,6 +2635,9 @@ html.aw-is-light body#artwork #np .np-about__rule {
     display: none;
   }
 }
+body#artwork #np.np--cramped .np-seg {
+  display: none;
+} /* beside the docked queue, when the footer no longer fits (NowPlaying.tsx) */
 @media (max-width: 1080px) {
   body#artwork #np .np-upnext-films {
     display: none;
@@ -13807,7 +13829,8 @@ body#artwork .aw-menu-btn--float {
   body#artwork .aw-pe {
     padding-top: 0;
   }
-}/* Floating queue panel (mockup): 560px sheet on the right, 20px from the edges and above the mini player. */
+}
+/* Floating queue panel (mockup): 560px sheet on the right, 20px from the edges and above the mini player. */
 @keyframes aw-queue-eq {
   0%, 100% {
     transform: scaleY(1);
@@ -13877,7 +13900,7 @@ body#artwork .aw-queue__sub {
   color: var(--ink-muted);
   line-height: normal;
 }
-body#artwork .aw-queue__close {
+body#artwork .aw-queue__close, body#artwork .aw-queue__pin {
   margin-left: auto;
   width: 38px;
   height: 38px;
@@ -13890,12 +13913,39 @@ body#artwork .aw-queue__close {
   color: var(--ink-3);
   cursor: pointer;
 }
-body#artwork .aw-queue__close .material-symbols-rounded {
+body#artwork .aw-queue__close .material-symbols-rounded, body#artwork .aw-queue__pin .material-symbols-rounded {
   font-size: 21px;
 }
-body#artwork .aw-queue__close:hover {
+body#artwork .aw-queue__close:hover, body#artwork .aw-queue__pin:hover {
   background: var(--fill-08);
   color: var(--ink);
+}
+body#artwork .aw-queue__close:focus-visible, body#artwork .aw-queue__pin:focus-visible {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 2px;
+}
+body#artwork .aw-queue .aw-queue__pin + .aw-queue__close {
+  margin-left: -4px;
+}
+body#artwork .aw-queue { /* pin and X side by side at the right, 10px apart (the head's gap is 14) */ }
+body#artwork .aw-queue__pin.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--on-ink);
+}
+body#artwork .aw-queue__pin.active:hover {
+  background: var(--ink);
+  color: var(--on-ink);
+}
+body#artwork .aw-queue {
+  /* only the glyph turns: tilted while the queue floats, upright once it is pinned */
+}
+body#artwork .aw-queue__pin .material-symbols-rounded {
+  transform: rotate(45deg);
+  transition: transform 0.24s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+body#artwork .aw-queue__pin.active .material-symbols-rounded {
+  transform: none;
 }
 body#artwork .aw-queue__chips {
   display: flex;
@@ -14164,8 +14214,96 @@ body#artwork .aw-queue.on-playback {
   bottom: 20px;
 }
 
+/* pinned (Now Playing, wide windows only — DOCK_QUERY in core/store/ui.ts): the queue is a column of
+   the page, edge to edge and full height, and the page beside it is narrower by its width */
+body#artwork {
+  --queue-dock-w: 440px;
+}
+
+@media (min-width: 1101px) {
+  body#artwork .aw-queue.is-docked {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: var(--queue-dock-w);
+    border-radius: 0;
+    border: 0;
+    border-left: 1px solid var(--panel-dock-line);
+    box-shadow: none;
+    transform: none;
+    background: linear-gradient(180deg, var(--panel-dock-top) 0%, var(--panel-dock) 55%);
+    -webkit-backdrop-filter: blur(48px);
+    backdrop-filter: blur(48px);
+  } /* the mockup's docked column, dark and light, lighter at the top where the cover shows through */
+  body#artwork #contentWrapper.aw-queue-docked {
+    width: calc(100% - var(--rail-w) - var(--queue-dock-w));
+  }
+  /* the narrower column: Shuffle, Repeat and Save as playlist as 36px round icons (the tooltip names
+     them), Clear keeps its label at the right */
+  body#artwork .aw-queue.is-docked .aw-queue__chip:not(.aw-queue__chip--danger) {
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+  body#artwork .aw-queue.is-docked .aw-queue__chip:not(.aw-queue__chip--danger) > span:last-child {
+    display: none;
+  }
+  body#artwork .aw-queue.is-docked .aw-queue__chip:not(.aw-queue__chip--danger) .material-symbols-rounded {
+    font-size: 20px;
+  }
+  body#artwork .aw-queue.is-docked .aw-queue__chip--danger {
+    margin-left: auto;
+  }
+  /* the docked column's own measures (mockup "Pinned — 1440 × 900"): a tighter head, 64px rows on a
+     12px inset with 42px covers; the floating sheet keeps its own */
+  body#artwork .aw-queue.is-docked .aw-queue__head {
+    gap: 10px;
+    padding: 26px 20px 0 24px;
+  }
+  body#artwork .aw-queue.is-docked .aw-queue__pin {
+    width: 36px;
+    height: 36px;
+  }
+  body#artwork .aw-queue.is-docked .aw-queue__pin .material-symbols-rounded {
+    font-size: 20px;
+  }
+  body#artwork .aw-queue.is-docked .aw-queue__chip .material-symbols-rounded {
+    font-size: 19px;
+  }
+  body#artwork .aw-queue.is-docked .aw-queue__chip--danger {
+    gap: 7px;
+  }
+  body#artwork .aw-queue.is-docked .aw-queue__chip--danger .material-symbols-rounded {
+    font-size: 18px;
+  }
+  body#artwork .aw-queue.is-docked .aw-queue__scroll {
+    padding: 10px 12px 0;
+  }
+  body#artwork .aw-queue.is-docked .aw-queue__row {
+    height: 64px;
+    gap: 14px;
+    padding: 0 12px;
+  }
+  body#artwork .aw-queue.is-docked .aw-queue__drag {
+    font-size: 18px;
+    width: 16px;
+  }
+  body#artwork .aw-queue.is-docked .aw-queue__slot {
+    width: 22px;
+  }
+  body#artwork .aw-queue.is-docked .aw-queue__num, body#artwork .aw-queue.is-docked .aw-queue__time {
+    font-size: 12px;
+  }
+  body#artwork .aw-queue.is-docked .aw-queue__cover {
+    width: 42px;
+    height: 42px;
+  }
+  body#artwork .aw-queue.is-docked .aw-queue__remove .material-symbols-rounded {
+    font-size: 19px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  body#artwork .aw-queue {
+  body#artwork .aw-queue, body#artwork .aw-queue__pin .material-symbols-rounded {
     transition: none;
   }
 }
