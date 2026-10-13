@@ -82,9 +82,10 @@ ArtworkOne.prototype.onVolumioStart = function () {
 ArtworkOne.prototype.onStart = function () {
   var self = this;
   try {
+    var fresh = self.isFreshInstall();   // asked before the script install's settings are taken over
     self.takeOverScriptInstall();
     self.registerUI();
-    self.comeBack();
+    if (fresh) { self.introduce(); } else { self.comeBack(); }
   } catch (e) {
     self.logger.error('[artwork_one] start failed: ' + e);
     return libQ.reject(new Error('Artwork One could not register its interface: ' + e));
@@ -114,13 +115,34 @@ ArtworkOne.prototype.onStop = function () {
 ArtworkOne.prototype.comeBack = function () {
   if (!this.config.get('wasActive')) { return; }
   this.config.set('wasActive', false);
-  if (this.isActive()) { return; }
+  if (this.activate()) { this.logger.info('[artwork_one] the player showed Artwork One before the stop: it does again'); }
+};
+
+// The first start after an installation: whoever installed and enabled the plugin wants to see it, so the
+// player switches to it (once — later starts leave the choice alone, and someone who went back to another
+// interface stays there). An installation is a configuration with nothing in it: Volumio deletes it on an
+// uninstall, an update from the store keeps it (the stop before it writes wasActive), and a player that ran
+// the older script install brings its settings across first.
+ArtworkOne.prototype.isFreshInstall = function () {
+  try { return this.config.getKeys().length === 0; } catch (e) { return false; }
+};
+ArtworkOne.prototype.introduce = function () {
+  this.config.set('introduced', true);
+  try { this.config.save(); } catch (e) { /* v-conf writes it within a second anyway */ }   // at once: a restart right after must not switch again
+  if (this.activate()) { this.logger.info('[artwork_one] installed and enabled: the player shows Artwork One'); }
+};
+
+// switches the player to Artwork One, with the Appearance plugin's own switch when that one is up — a toast
+// and a reload for the screens — and by hand when it is not yet (at boot nobody is watching). Returns whether
+// it switched (false when Artwork One was showing already).
+ArtworkOne.prototype.activate = function () {
+  if (this.isActive()) { return false; }
   try { this.setActiveUI(UI_NAME); } catch (e) { this.logger.warn('[artwork_one] appearance switch: ' + e); }
   if (!this.isActive()) {
     this.writeJson(this.paths.ACTIVE_UI, this.uiEntry());
     process.env.VOLUMIO_ACTIVE_UI_PATH = this.paths.UI_DIR; process.env.VOLUMIO_ACTIVE_UI_NAME = UI_NAME; process.env.VOLUMIO_ACTIVE_UI_PRETTY_NAME = UI_PRETTY_NAME;
   }
-  this.logger.info('[artwork_one] the player showed Artwork One before the stop: it does again');
+  return true;
 };
 
 // --- the interface in Volumio's list --------------------------------------------------------

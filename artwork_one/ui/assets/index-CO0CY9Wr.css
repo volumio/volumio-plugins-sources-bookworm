@@ -8215,25 +8215,35 @@ body#artwork .aw-select {
   display: inline-flex;
   align-items: center;
   height: 38px;
-  padding: 0 8px 0 14px;
+  padding: 0;
   border-radius: 999px;
   background: var(--fill-10);
   border: 1px solid var(--fill-13);
   color: var(--ink);
   cursor: pointer;
+  /* the select is the whole pill, so a tap anywhere on it opens the list (it used to be as wide as its text: wide on a phone, the rest of the pill did nothing) */
 }
 body#artwork .aw-select select {
   appearance: none;
   -webkit-appearance: none;
+  flex: 1;
+  align-self: stretch;
+  width: 100%;
+  min-width: 0;
   border: 0;
+  border-radius: inherit;
   background: transparent;
   color: inherit;
   font-family: var(--font-ui);
   font-size: 14px;
   font-weight: 500;
-  padding-right: 28px;
+  padding: 0 36px 0 14px;
   cursor: pointer;
   outline: 0;
+}
+body#artwork .aw-select:has(select:focus-visible) {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 2px;
 }
 body#artwork .aw-select select option {
   color: #14161a;
@@ -16844,10 +16854,7 @@ body#artwork .aw-amb__title {
   letter-spacing: -0.032em;
   line-height: 1.02;
   text-wrap: pretty; /* 34/44/64/92 across the four frames */
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  overflow-wrap: anywhere; /* three lines at most: ClampedText shortens the text (a clip cuts the descenders) */
 }
 
 body#artwork .aw-amb__artist {
@@ -16855,20 +16862,14 @@ body#artwork .aw-amb__artist {
   font-weight: 600;
   letter-spacing: -0.01em;
   margin-top: 2vh;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
+  overflow-wrap: anywhere;
+} /* two lines at most (ClampedText) */
 body#artwork .aw-amb__album {
   font-size: clamp(15px, 2.5vh, 24px);
   color: var(--amb-ink-2);
   margin-top: 1.1vh;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
+  overflow-wrap: anywhere;
+} /* two lines at most (ClampedText) */
 body#artwork .aw-amb__row {
   display: flex;
   align-items: center;
@@ -17097,7 +17098,6 @@ body#artwork .aw-amb--cover .aw-amb__title {
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.05;
-  -webkit-line-clamp: 2;
 }
 body#artwork .aw-amb--cover .aw-amb__artist {
   font-size: clamp(16px, 3vh, 34px);
@@ -17262,7 +17262,6 @@ body#artwork .aw-amb--clock .aw-amb__title {
   font-size: clamp(22px, 4.7vh, 48px);
   font-weight: 700;
   letter-spacing: -0.02em;
-  -webkit-line-clamp: 2;
 }
 body#artwork .aw-amb--clock .aw-amb__artist {
   font-size: clamp(15px, 2.8vh, 28px);
