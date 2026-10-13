@@ -1,7 +1,7 @@
 {
   "repository": {
-    "commit": "5b15dd8a21a66450a8c7083c9bad9d17e1cdeb0a",
-    "describe": "5b15dd8"
+    "commit": "fa21b7279f3fe39c0299d4c33eac34b79c857cbc",
+    "describe": "fa21b72"
   },
   "sources": {
     "liquid-dsp": {
@@ -35,8 +35,8 @@
         "size": 1851228
       },
       "bin/fn-rtl-gain": {
-        "sha256": "23da6962ba8c0c807c26997beca41b5e854b1d7989f4da4f2691ee322cc61c32",
-        "size": 26216
+        "sha256": "a150b5882c0c09dbffc2ba0a1836f132db669e110c43d95572863424ed255a17",
+        "size": 30324
       },
       "packages/foonerd-rtlsdr_1.0.1-1_arm.deb": {
         "sha256": "40c2215428f20d9b3613a1706fc2bc7e3c66b59d1f089ba94591525058ba4b8d",
@@ -61,8 +61,8 @@
         "size": 1425644
       },
       "bin/fn-rtl-gain": {
-        "sha256": "18cc25821dc68b84204ccc5aa199006000f42f11a602a0769ed53b6c747ef8c5",
-        "size": 22148
+        "sha256": "b34a859ac3a86ba1f00b30005a7fc02c04bc2720c67907d65a499738e8970772",
+        "size": 26256
       },
       "packages/foonerd-rtlsdr_1.0.1-1_armv7.deb": {
         "sha256": "36a72f3b1ea7b86e090b76c84f5334ba5adf270d14e21e7993c2bb5b66ad275f",
@@ -87,8 +87,8 @@
         "size": 2170760
       },
       "bin/fn-rtl-gain": {
-        "sha256": "8ef8dea2a63591cbbd84abe38a82dab535bd649b9b9b6cc845b24184318a41c6",
-        "size": 67944
+        "sha256": "a671516b61bfc9e66e7f0ea8ad7887ccb2e74fee15d731a9bc16cdda2632bad8",
+        "size": 67960
       },
       "packages/foonerd-rtlsdr_1.0.1-1_armv8.deb": {
         "sha256": "ef0ac6bf43a70c4656e3951bf880cf000b69460629de1a617aa66310c856e046",
@@ -113,8 +113,8 @@
         "size": 2261256
       },
       "bin/fn-rtl-gain": {
-        "sha256": "18bb0b16f42d802023420670432e5d77e430e7a66325d57f2b56bc7d7fcd6a9b",
-        "size": 39384
+        "sha256": "38ea834eaa01ae6731ed42ec278bd2be71e421300489764d053cebbfbe9098ff",
+        "size": 43504
       },
       "packages/foonerd-rtlsdr_1.0.1-1_x64.deb": {
         "sha256": "f0ee91befc2679c4c25877d887766709d78e9eddeaa29dd798bf25d9d0cabbfb",

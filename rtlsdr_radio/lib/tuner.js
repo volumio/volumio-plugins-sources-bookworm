@@ -22,7 +22,7 @@ var libQ = require('kew');
 // The programs that open the dongle. A process with one of these names that is not part
 // of the running job is a stray (left by a crash, or started by hand) and is removed
 // before a job starts, so that the job finds the dongle free.
-var HOLDERS = ['fn-rtl_fm', 'fn-rtl_power', 'fn-rtl-gain', 'fn-dab', 'fn-dab-scanner'];
+var HOLDERS = ['fn-rtl_fm', 'fn-rtl_power', 'fn-rtl-gain', 'fn-dab', 'fn-dab-scanner', 'fn-rtl_test', 'fn-rtl_sdr'];
 
 var POLL = 50;  // ms between looks at whether processes have gone
 
