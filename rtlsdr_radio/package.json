@@ -1,6 +1,6 @@
 {
   "name": "rtlsdr_radio",
-  "version": "1.4.0",
+  "version": "1.4.12",
   "description": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "has_configuration": true,
     "has_alsa_contribution": true,
     "details": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
-    "changelog": "v1.4.0 - Gain measured instead of set by hand, a new FM scan, DAB on cheap dongles without a PPM value, FM at the level of DAB, station logos, steadier artwork, plain messages when a station cannot be played"
+    "changelog": "v1.4.12 - FM Oversampling removed (it cost reception), song recognition asks less on talk, the FM Sample Rate choices say what the rate does"
   },
   "engines": {
     "node": ">=20",

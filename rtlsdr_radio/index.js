@@ -12,9 +12,11 @@ var Tuner = require('./lib/tuner');
 var FmQuality = require('./lib/fmquality');
 var fmscan = require('./lib/fmscan');
 var Logos = require('./lib/logos');
+var Recogniser = require('./lib/recognise');
 var pictures = require('./lib/pictures');
 var Slides = require('./lib/slides');
 var Updater = require('./lib/update');
+var DongleReport = require('./lib/donglereport');
 
 // The plugin's own pictures as Volumio's artwork endpoint serves them. The endpoint
 // tells screens to keep an answer for a month, the player's default picture included,
@@ -117,7 +119,30 @@ function ControllerRtlsdrRadio(context) {
     }
   });
 
+  // A report on the dongle that is plugged in, for the Station Manager to hand out.
+  // It is put together and kept on the player's storage, beside the backups.
+  self.REPORT_DIR = '/data/rtlsdr_radio_report';
+  self.dongleReport = new DongleReport({
+    dir: self.REPORT_DIR,
+    logger: self.logger,
+    acquire: function() { return self.acquireForTool('dongle report', { keepOpen: true }); },
+    band: function() { return Object.assign(self.fmSurveyBand(), { args: self.fmSurveyArgs() }); },
+    sensitivity: function() { return self.config.get('scan_sensitivity', 8); },
+    slice: function() { return self.receiverSlice(); },
+    settings: function() { return self.receptionSettings(); },
+    player: function() { return self.playerFacts(); },
+    usb: function() { return self.usbDongle(); },
+    dabChannels: function() { return self.dabChannelsByStations(); },
+    pack: function(folder, file) { return self.zipReport(folder, file); }
+  });
+
   // Station logos, fetched from the broadcasters when the player is online
+  // Song recognition from the sound, with a key of the user's own (lib/recognise.js)
+  self.recogniser = new Recogniser({
+    logger: self.logger,
+    onSong: function(song) { self.songRecognised(song); }
+  });
+  
   self.logos = new Logos({
     logger: self.logger,
     stations: function() { return (self.stationsDb && self.stationsDb.dab) || []; },
@@ -134,14 +159,14 @@ function ControllerRtlsdrRadio(context) {
   self.SIGNAL_HOLD = 4000;           // A new tune level must hold this long before it is shown
   self.LOGOS_START_DELAY = 30000;    // Station logos are looked for this long after the plugin starts
   self.STORE_TIMEOUT = 15000;        // How long the plugin store is given to say which versions it has
-  self.GAIN_SAMPLE_RATE = 1200000;   // About the rate fn-rtl_fm reads the dongle at, and so what the gain is measured at
+  self.RDS_LISTEN_RATE = '171k';     // The receiver rate a station is listened to at for its RDS code during a scan
   self.FM_GAIN_KEEP = 7 * 24 * 3600 * 1000;  // How long a station's measured gain is used before it is measured again
   self.RDS_WORTH_DB = 36;            // The pilot (dB) from which RDS can be read within seconds: such stations are listened to in a scan
   self.RDS_LISTEN = 4000;            // How long a scan listens to one of them for its PI code
   self.RDS_LISTEN_MOST = 20;         // How many stations a scan listens to at most
   self.RDS_PI_READINGS = 5;          // A PI code read alike this many times running is the station's
   self.RDS_PS_HOLD = 30000;          // An RDS name that has stood this long is the station's name, not running text
-  self.GAIN_RULE = 2;                // How the gain is measured: 1 not cut off, 2 not cut off and the tuner not overloaded
+  self.GAIN_RULE = 3;                // How the gain is measured: 1 not cut off, 2 and the tuner not overloaded, 3 on the slice the receiver reads
   self.DLS_UPDATE_INTERVAL = 2000;   // Minimum between DLS state pushes
   self.DLS_POLL_INTERVAL = 2000;     // DLS file polling interval
   self.TMC_THROTTLE = 30000;         // Traffic alert throttle (30s)
@@ -154,8 +179,18 @@ function ControllerRtlsdrRadio(context) {
   self.FM_SCAN_TIMEOUT = 30000;      // FM scan timeout (30s)
   self.FM_DEVIATION = 75000;         // Hz: the deviation of a fully modulated FM broadcast
   self.FM_PEAK_DB = -1;              // where that deviation is put, in dB of full scale
-  self.DONGLE_STEADY_RATE = 2800000; // samples a second a dongle delivers without losing any
-  self.FM_SURVEY_TIMEOUT = 180000;   // The FM band survey: seconds on a fast board, a minute or two on the slowest
+  self.FM_PPM_LEAST = 5;             // parts per million: a dongle off by less (0.5 kHz) is not corrected
+  self.FM_PPM_STEP = 3;              // a kept correction is changed when a scan finds it off by this or more
+  self.FM_PPM_MOST = 200;            // beyond any crystal: such a finding is not used
+  self.FM_DEEMPHASIS_CHOICES = ['region', '50', '75', 'off']; // the region's own, a curve in microseconds, or none
+  self.LEVEL_LOWEST = -12;           // how far the user can take FM or DAB down, in dB
+  self.CLIPPED_FEW = 100;            // samples a minute at full scale below which nothing is heard of it
+  self.FM_SURVEY_TIMEOUT = 600000;   // The FM band survey: under a minute on a fast board, minutes on the slowest
+  self.TUNE_STEPS = 5;               // The tune dialog looks this many channels either side of a station
+  self.TUNE_SURVEY_TIMEOUT = 120000; // and gives the survey of them this long: seconds on a fast board
+  self.TUNE_PLAYER_WAIT = 10000;     // and waits this long for the player to answer a request
+  self.TUNE_ABANDONED = 180000;      // a frequency tried out that no page has asked about for this long is ended
+  self.WEAK_RECEPTION_DB = 12;       // below this reading (level 1 at most) full scale is reached by noise, not by the programme
   self.DAB_SCAN_TIMEOUT = 300000;    // DAB scan timeout (5 minutes)
   self.DAB_DETECTION_TIMEOUT = 30000; // DAB ensemble detection timeout
   self.DAB_NOT_RECEIVED = 22;        // fn-dab's exit code when it finds no ensemble it can read
@@ -193,7 +228,11 @@ ControllerRtlsdrRadio.prototype.onVolumioStart = function() {
   );
   self.config = new (require('v-conf'))();
   self.config.loadFile(configFile);
-  
+  self.carryDeemphasisOver();
+  self.carryRecognitionOver();
+  self.dropOversampling();
+  self.recogniser.configure(self.recognitionSettings());
+
   // Load FM region data
   try {
     var regionFile = __dirname + '/region.json';
@@ -265,6 +304,8 @@ ControllerRtlsdrRadio.prototype.onStart = function() {
 
 ControllerRtlsdrRadio.prototype.onStop = function() {
   var self = this;
+  self.tuneWatchStop();
+  self.recogniser.stop();
   var defer = libQ.defer();
   
   // Stop all processes; the stop is complete only when they are gone
@@ -1483,11 +1524,115 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
     self.expressApp.post('/api/stations/scan-fm', function(req, res) {
       try {
         self.logger.info('[RTL-SDR Radio] FM scan triggered via web interface');
+        // the kind of scan chosen in the dialog is the setting from then on
+        if (req.body && (req.body.depth === 'fast' || req.body.depth === 'detailed')) {
+          self.config.set('fm_scan_depth', req.body.depth);
+        }
         self.scanFm();
         res.json({ success: true, message: 'FM scan started' });
       } catch (e) {
         self.logger.error('[RTL-SDR Radio] Error starting FM scan: ' + e);
         res.status(500).json({ error: 'Failed to start FM scan' });
+      }
+    });
+    
+    // Song recognition: its state, and its setting from the Manager (the same setting
+    // as on the settings page)
+    self.expressApp.get('/api/recognition', function(req, res) {
+      res.json(self.recognitionView());
+    });
+    // The token itself, for the eye on the Manager's field: given on request only,
+    // never with the state, and the log says it was shown
+    self.expressApp.get('/api/recognition/key', function(req, res) {
+      self.logger.info('[RTL-SDR Radio] Song recognition: the token was shown in the Station Manager');
+      res.json({ key: String(self.config.get('recognise_key', '') || '') });
+    });
+    self.expressApp.post('/api/recognition', function(req, res) {
+      try {
+        var body = req.body || {};
+        if (body.key !== undefined && typeof body.key !== 'string') {
+          return res.status(400).json({ error: 'The key must be text' });
+        }
+        if (body.when !== undefined && body.when !== 'missing' && body.when !== 'always') {
+          return res.status(400).json({ error: 'when is missing or always' });
+        }
+        if (body.on !== undefined && typeof body.on !== 'boolean') {
+          return res.status(400).json({ error: 'on is true or false' });
+        }
+        self.setRecognition({ on: body.on, key: body.key, when: body.when });
+        res.json(self.recognitionView());
+      } catch (e) {
+        self.logger.error('[RTL-SDR Radio] Song recognition settings: ' + e);
+        res.status(500).json({ error: String((e && e.message) || e) });
+      }
+    });
+    
+    // The tune dialog (an FM station's frequency): what a scan would say of the channels
+    // around a frequency
+    self.expressApp.post('/api/tune/survey', function(req, res) {
+      var frequency = self.tuneFrequency(req.body && req.body.frequency);
+      if (!frequency) {
+        return res.status(400).json({ error: 'Not a frequency of the band' });
+      }
+      self.tuneSurvey(frequency, self.tuneFrequency(req.body.station)).then(function(found) {
+        res.json(found);
+      }).catch(function(e) {
+        res.status(e && e.superseded ? 409 : 500).json({ error: String((e && e.message) || e) });
+      });
+    });
+    
+    // Tune dialog: what it shows while it is open. Asking is also how the page says it is
+    // still there: a frequency tried out that nobody asks about any more is ended.
+    self.expressApp.get('/api/tune', function(req, res) {
+      self.tuneSeen = Date.now();
+      res.json({
+        frequency: self.tuneTrial ? self.tuneTrial.frequency : null,
+        deviceState: self.deviceState,
+        signal: self.signalNow(),
+        band: self.tuneBand()
+      });
+    });
+    
+    // Tune dialog: play a frequency, to be listened to
+    self.expressApp.post('/api/tune/listen', function(req, res) {
+      var frequency = self.tuneFrequency(req.body && req.body.frequency);
+      if (!frequency) {
+        return res.status(400).json({ error: 'Not a frequency of the band' });
+      }
+      self.tuneListen(frequency).then(function() {
+        res.json({ success: true, frequency: frequency });
+      }).catch(function(e) {
+        self.logger.error('[RTL-SDR Radio] Tune: ' + frequency + ' MHz could not be played: ' + e);
+        res.status(500).json({ error: String((e && e.message) || e) });
+      });
+    });
+    
+    // Tune dialog: done listening; the player goes back to what it was on
+    self.expressApp.post('/api/tune/end', function(req, res) {
+      self.tuneEnd().then(function(ended) {
+        res.json({ success: true, ended: ended });
+      }).catch(function(e) {
+        self.logger.error('[RTL-SDR Radio] Tune: ' + e);
+        res.status(500).json({ error: String((e && e.message) || e) });
+      });
+    });
+    
+    // Tune dialog: the station is given the frequency. keep says which of two stations
+    // stays where another holds that frequency already: 'this' or 'other'.
+    self.expressApp.post('/api/tune/keep', function(req, res) {
+      try {
+        var from = self.tuneFrequency(req.body && req.body.from);
+        var to = self.tuneFrequency(req.body && req.body.to);
+        if (!from || !to) {
+          return res.status(400).json({ error: 'Not a frequency of the band' });
+        }
+        var kept = self.tuneKeep(from, to, req.body.keep);
+        var code = kept.status || 200;
+        delete kept.status;
+        res.status(code).json(kept);
+      } catch (e) {
+        self.logger.error('[RTL-SDR Radio] Tune: ' + e);
+        res.status(500).json({ error: String((e && e.message) || e) });
       }
     });
     
@@ -1558,23 +1703,7 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
           return !s.deleted; 
         }).length : 0;
         
-        // Get current signal info
-        var signalInfo = null;
-        if (self.deviceState === 'playing_fm' && self.currentRds) {
-          signalInfo = {
-            type: 'fm',
-            level: self.currentRds.signalLevel || 0,
-            percent: self.currentRds.signalPercent || 0,
-            frequency: self.currentFmFrequency || null
-          };
-        } else if (self.deviceState === 'playing_dab' && self.currentDabSignal) {
-          signalInfo = {
-            type: 'dab',
-            level: self.currentDabSignal.level || 0,
-            percent: self.currentDabSignal.percent || 0,
-            station: self.currentDabStation || null
-          };
-        }
+        var signalInfo = self.signalNow();
         
         res.json({ 
           deviceState: self.deviceState,
@@ -1583,6 +1712,10 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
           dbLoadedAt: self.dbLoadedAt,
           dbVersion: self.stationsDb.version || 0,
           serverPort: self.MANAGEMENT_PORT,
+          fmScanDepth: self.fmScanDepth(),
+          // the frequency the tune dialog is trying out, if any, and the band it steps through
+          tune: self.tuneTrial ? self.tuneTrial.frequency : null,
+          fmBand: self.tuneBand(),
           signal: signalInfo,
           scan: self.scanProgress ? {
             type: self.scanProgress.type,
@@ -2302,6 +2435,56 @@ ControllerRtlsdrRadio.prototype.startManagementServer = function() {
       });
     });
     
+    // API: Dongle report - how far it is, or what the last one found
+    self.expressApp.get('/api/dongle-report', function(req, res) {
+      res.json(self.dongleReport.view());
+    });
+    
+    // API: Dongle report - make one. Our own playback is stopped for it; a scan or an
+    // antenna tool that has the dongle is not pushed aside.
+    self.expressApp.post('/api/dongle-report/start', function(req, res) {
+      function refuse(code, message) {
+        res.status(409).json(Object.assign(self.dongleReport.view(), { error: { code: code, message: message } }));
+      }
+      // A report being made comes first: it holds the dongle itself
+      if (self.dongleReport.running()) {
+        return refuse('busy', 'a report is being made');
+      }
+      if (self.deviceState.indexOf('playing_') !== 0 && self.tuner.busy()) {
+        return refuse('in-use', 'the dongle is in use: ' + self.tuner.busy());
+      }
+      self.dongleReport.start({ recordings: !(req.body && req.body.recordings === false) }).then(function(view) {
+        res.json(view);
+      }, function(e) {
+        refuse(e && e.code || 'failed', String(e && e.message || e));
+      });
+    });
+    
+    // API: Dongle report - stop the one being made
+    self.expressApp.post('/api/dongle-report/cancel', function(req, res) {
+      self.dongleReport.cancel().then(function(view) {
+        res.json(view);
+      });
+    });
+    
+    // API: Dongle report - the summary of the last one, as text
+    self.expressApp.get('/api/dongle-report/summary', function(req, res) {
+      var summary = self.dongleReport.summaryText();
+      if (summary === null) {
+        return res.status(404).json({ error: { code: 'no-report', message: 'no report has been made' } });
+      }
+      res.type('text/plain').send(summary);
+    });
+    
+    // API: Dongle report - the last one as a ZIP file
+    self.expressApp.get('/api/dongle-report/download', function(req, res) {
+      var zip = self.dongleReport.zipFile();
+      if (!zip || !fs.existsSync(zip.path)) {
+        return res.status(404).json({ error: { code: 'no-report', message: 'no report has been made' } });
+      }
+      res.download(zip.path, zip.name);
+    });
+    
     // API: Plugin update - install the version offered, or put back the one before
     ['install', 'rollback'].forEach(function(action) {
       self.expressApp.post('/api/update/' + action, function(req, res) {
@@ -2788,9 +2971,14 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
       };
     }
     
-    var fmDeemphasis = findContentItem(fmRegionSection, 'fm_deemphasis');
-    if (fmDeemphasis) {
-      fmDeemphasis.value = self.config.get('fm_deemphasis', false);
+    var fmDeemphasisChoice = findContentItem(fmRegionSection, 'fm_deemphasis_choice');
+    if (fmDeemphasisChoice) {
+      // the words of the first choice say what the region's own is
+      var deemphasisChoice = self.fmDeemphasisChoice();
+      fmDeemphasisChoice.value = { value: deemphasisChoice, label: self.fmDeemphasisLabel(deemphasisChoice) };
+      fmDeemphasisChoice.options = self.FM_DEEMPHASIS_CHOICES.map(function(choice) {
+        return { value: choice, label: self.fmDeemphasisLabel(choice) };
+      });
     }
     
     // Hide override fields when region is not 'custom'
@@ -2798,7 +2986,7 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
     var currentRegion = self.config.get('fm_region', 'europe');
     if (currentRegion !== 'custom') {
       // Remove override fields from content array - they're not applicable
-      var overrideFields = ['fm_lower_freq', 'fm_upper_freq', 'fm_channel_spacing', 'fm_deemphasis'];
+      var overrideFields = ['fm_lower_freq', 'fm_upper_freq', 'fm_channel_spacing'];
       fmRegionSection.content = fmRegionSection.content.filter(function(item) {
         return overrideFields.indexOf(item.id) === -1;
       });
@@ -2830,6 +3018,11 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
       fmGain.value = self.config.get('fm_gain', 50);
     }
     
+    var fmLevelItem = findContentItem(fmSection, 'fm_level');
+    if (fmLevelItem) {
+      fmLevelItem.value = { value: self.levelSetting('fm_level'), label: self.levelSetting('fm_level') + ' dB' };
+    }
+    
     var scanSensitivity = findContentItem(fmSection, 'scan_sensitivity');
     if (scanSensitivity) {
       var sensitivityValue = self.config.get('scan_sensitivity', 8);
@@ -2839,10 +3032,14 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
       };
     }
     
-    var fmOversampling = findContentItem(fmSection, 'fm_oversampling');
-    if (fmOversampling) {
-      fmOversampling.value = self.config.get('fm_oversampling', false);
+    var fmScanDepth = findContentItem(fmSection, 'fm_scan_depth');
+    if (fmScanDepth) {
+      fmScanDepth.value = {
+        value: self.fmScanDepth(),
+        label: self.getI18nString(self.fmScanDepth() === 'detailed' ? 'FM_SCAN_DETAILED' : 'FM_SCAN_FAST')
+      };
     }
+    
     
     var fmSampleRate = findContentItem(fmSection, 'fm_sample_rate');
     if (fmSampleRate) {
@@ -2877,11 +3074,34 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
     if (dabPpm) {
       dabPpm.value = self.config.get('dab_ppm', 0);
     }
+    
+    var dabLevelItem = findContentItem(dabSection, 'dab_level');
+    if (dabLevelItem) {
+      dabLevelItem.value = { value: self.levelSetting('dab_level'), label: self.levelSetting('dab_level') + ' dB' };
+    }
   }
   
-  // SECTION 6: ARTWORK SETTINGS
+  // SECTION 6: SONG RECOGNITION
+  var recognitionSection = uiconf.sections[5];
+  if (recognitionSection) {
+    var recogniseOn = findContentItem(recognitionSection, 'recognise_on');
+    if (recogniseOn) {
+      recogniseOn.value = self.config.get('recognise_on', true) !== false;
+    }
+    var recogniseKey = findContentItem(recognitionSection, 'recognise_key');
+    if (recogniseKey) {
+      recogniseKey.value = self.config.get('recognise_key', '');
+    }
+    var recogniseWhen = findContentItem(recognitionSection, 'recognise_when');
+    if (recogniseWhen) {
+      var whenValue = self.config.get('recognise_when', 'missing') === 'always' ? 'always' : 'missing';
+      recogniseWhen.value = { value: whenValue, label: self.getI18nString(whenValue === 'always' ? 'RECOGNISE_WHEN_ALWAYS' : 'RECOGNISE_WHEN_MISSING') };
+    }
+  }
+  
+  // SECTION 7: ARTWORK SETTINGS
   // ============================
-  var artworkSection = uiconf.sections[5];
+  var artworkSection = uiconf.sections[6];
   if (artworkSection) {
     var showArtworkSettings = findContentItem(artworkSection, 'show_artwork_settings');
     if (showArtworkSettings) {
@@ -2956,9 +3176,9 @@ ControllerRtlsdrRadio.prototype.populateUIConfig = function(uiconf) {
     }
   }
   
-  // SECTION 7: DIAGNOSTICS
+  // SECTION 8: DIAGNOSTICS
   // =======================
-  var diagnosticsSection = uiconf.sections[6];
+  var diagnosticsSection = uiconf.sections[7];
   if (diagnosticsSection) {
     var showDiagnostics = findContentItem(diagnosticsSection, 'show_diagnostics');
     if (showDiagnostics) {
@@ -3040,7 +3260,7 @@ ControllerRtlsdrRadio.prototype.getRegionSettings = function() {
       band_start: parseFloat(self.config.get('fm_lower_freq', '87.5')),
       band_end: parseFloat(self.config.get('fm_upper_freq', '108.0')),
       spacing_khz: spacingKhz,
-      deemphasis_us: self.config.get('fm_deemphasis', false) ? 50 : 0,
+      deemphasis_us: 50,
       scan_offset_khz: scanOffsetKhz
     };
   }
@@ -3215,9 +3435,13 @@ ControllerRtlsdrRadio.prototype.saveFmRegion = function(data) {
         }
       }
       
-      // Save FM de-emphasis
-      if (data.fm_deemphasis !== undefined) {
-        self.config.set('fm_deemphasis', data.fm_deemphasis);
+    }
+    
+    // Save FM de-emphasis (applies to all regions)
+    if (data.fm_deemphasis_choice !== undefined) {
+      var deemphasisValue = String(data.fm_deemphasis_choice.value || data.fm_deemphasis_choice);
+      if (self.FM_DEEMPHASIS_CHOICES.indexOf(deemphasisValue) !== -1) {
+        self.config.set('fm_deemphasis_choice', deemphasisValue);
       }
     }
     
@@ -3280,10 +3504,19 @@ ControllerRtlsdrRadio.prototype.saveFmSettings = function(data) {
       }
     }
     
-    // Save FM oversampling
-    if (data.fm_oversampling !== undefined) {
-      self.config.set('fm_oversampling', data.fm_oversampling);
+    // Save the kind of FM scan
+    if (data.fm_scan_depth !== undefined) {
+      var depth = data.fm_scan_depth && data.fm_scan_depth.value !== undefined ? data.fm_scan_depth.value : data.fm_scan_depth;
+      if (depth === 'fast' || depth === 'detailed') {
+        self.config.set('fm_scan_depth', depth);
+      }
     }
+    
+    // Save the FM level
+    if (data.fm_level !== undefined && self.levelFromForm(data.fm_level) !== null) {
+      self.config.set('fm_level', self.levelFromForm(data.fm_level));
+    }
+    
     
     // Save FM sample rate
     if (data.fm_sample_rate !== undefined) {
@@ -3334,6 +3567,11 @@ ControllerRtlsdrRadio.prototype.saveDabSettings = function(data) {
       if (!isNaN(dabPpm) && dabPpm >= -200 && dabPpm <= 200) {
         self.config.set('dab_ppm', dabPpm);
       }
+    }
+    
+    // Save the DAB level
+    if (data.dab_level !== undefined && self.levelFromForm(data.dab_level) !== null) {
+      self.config.set('dab_level', self.levelFromForm(data.dab_level));
     }
     
     self.commandRouter.pushToastMessage('success', 'FM/DAB Radio', 
@@ -4217,6 +4455,9 @@ ControllerRtlsdrRadio.prototype.showFmView = function() {
     });
   }
   
+  // The stations of the list: the lines added below are not stations
+  var stationCount = items.length;
+  
   if (items.length === 0) {
     items.push({
       service: 'rtlsdr_radio',
@@ -4255,7 +4496,7 @@ ControllerRtlsdrRadio.prototype.showFmView = function() {
     navigation: {
       prev: { uri: 'rtlsdr://' },
       lists: [{
-        title: self.formatString(self.getI18nString('BROWSE_FM_COUNT'), items.length - 1),
+        title: self.formatString(self.getI18nString('BROWSE_FM_COUNT'), stationCount),
         icon: 'fa fa-signal',
         availableListViews: ['list'],
         items: items
@@ -4652,6 +4893,9 @@ ControllerRtlsdrRadio.prototype.showHiddenView = function() {
     });
   }
   
+  // The hidden stations: the line that says there are none is not one
+  var hiddenCount = items.length;
+  
   if (items.length === 0) {
     items.push({
       service: 'rtlsdr_radio',
@@ -4668,7 +4912,7 @@ ControllerRtlsdrRadio.prototype.showHiddenView = function() {
     navigation: {
       prev: { uri: 'rtlsdr://' },
       lists: [{
-        title: self.formatString(self.getI18nString('BROWSE_HIDDEN_COUNT'), items.length),
+        title: self.formatString(self.getI18nString('BROWSE_HIDDEN_COUNT'), hiddenCount),
         icon: 'fa fa-eye-slash',
         availableListViews: ['list'],
         items: items
@@ -4952,7 +5196,8 @@ ControllerRtlsdrRadio.prototype.startFmPlayback = function(job, freq, stationNam
   var freqStr = hasSubDecimal ? freq.toFixed(2) : freq.toFixed(1);
   var uri = 'rtlsdr://fm/' + freqStr;
   var stationInfo = self.getStationByUri(uri);
-  if (stationInfo) {
+  // (a frequency tried out in the tune dialog is not a play of the station)
+  if (stationInfo && !self.tuneUncounted(uri)) {
     stationInfo.station.playCount = (stationInfo.station.playCount || 0) + 1;
     stationInfo.station.lastPlayed = new Date().toISOString();
     self.saveStations();
@@ -4993,7 +5238,7 @@ ControllerRtlsdrRadio.prototype.fmStartState = function(freqStr, stationName) {
     album: self.getI18nString('FM_RADIO'),
     albumart: '/albumart?sourceicon=' + self.fmIcon(playing ? playing.station : null, true),
     uri: 'rtlsdr://fm/' + freqStr,
-    trackType: 'FM ' + self.getSignalBars(0),
+    trackType: self.fmTrackType(0, !!(playing && playing.station && playing.station.mono)),
     samplerate: '48 KHz',
     bitdepth: '16 bit',
     channels: 2,
@@ -5008,12 +5253,9 @@ ControllerRtlsdrRadio.prototype.launchFmReceiver = function(job, freq, freqStr, 
   var self = this;
   
   // Get settings from config
-  var fmOversampling = self.config.get('fm_oversampling', false);
   var fmSampleRate = self.config.get('fm_sample_rate', '171k');
-  var fmDeemphasis = self.config.get('fm_deemphasis', false);
   
-  // Get region settings for de-emphasis
-  var regionSettings = self.getRegionSettings();
+  // The region, for the log
   var regionKey = self.config.get('fm_region', 'europe');
   
   // Reset RDS state
@@ -5030,34 +5272,22 @@ ControllerRtlsdrRadio.prototype.launchFmReceiver = function(job, freq, freqStr, 
   // Build fn-rtl_fm command for RDS-compatible output
   // -M fm: FM mode without stereo decode (outputs MPX baseband for RDS)
   // -s: Sample rate (171k optimal for RDS, 200k for audio quality)
-  // -o 4: Oversampling (reduces distortion in strong signal areas, may reduce RDS quality)
   // -l 0: Squelch off
   // -A std: Standard audio
   // -F 9: FIR filter size
   var rtlArgs = ['-f', freq + 'M', '-M', 'fm', '-s', fmSampleRate, '-l', '0', '-A', 'std', '-g', String(gain), '-F', '9'];
+  // on the station's carrier, where the dongle is known to tune off
+  rtlArgs = rtlArgs.concat(self.fmCorrectionArgs());
   
-  // Add oversampling if enabled (helps with strong signals, may reduce RDS quality).
-  // It asks the dongle for sixteen times the receiver rate: 2.7 million samples a
-  // second at 171k, and more than a dongle delivers at any higher rate, where the
-  // receiver then gives noise at full level. There it is left out.
-  if (fmOversampling && self.fmCanOversample(fmSampleRate)) {
-    rtlArgs.splice(6, 0, '-o', '4');
-  } else if (fmOversampling) {
-    self.logger.info('[RTL-SDR Radio] FM oversampling is not used at ' + fmSampleRate + ': the dongle cannot sample that fast');
-  }
-  
-  // Apply de-emphasis based on region settings
-  // In custom mode, use manual toggle; otherwise use region's de-emphasis
-  var applyDeemphasis = (regionKey === 'custom') ? fmDeemphasis : (regionSettings.deemphasis_us > 0);
-  var deemphasisUs = (regionKey === 'custom') ? (fmDeemphasis ? 50 : 0) : regionSettings.deemphasis_us;
-  
-  if (applyDeemphasis) {
-    // Note: rtl_fm -E deemp provides 50us de-emphasis (Europe/Asia/Australia standard)
-    // Americas uses 75us but rtl_fm only supports 50us natively
-    // For Americas, we apply 50us which is close enough for most listening
-    rtlArgs.push('-E', 'deemp');
-    self.logger.info('[RTL-SDR Radio] De-emphasis enabled (' + deemphasisUs + 'us, region: ' + regionKey + ')');
-  }
+  // De-emphasis: a broadcast is sent with its treble raised, by a curve named after a
+  // time constant (50 us in most of the world, 75 us in the Americas), and a receiver
+  // takes it down again by the same curve. The region says which, unless one is chosen
+  // (fmDeemphasisUs). It is applied to the sound (sox, below), not by the receiver:
+  // fn-rtl_fm's own (-E deemp) knows the 75 us curve only, and would take it out of
+  // what the RDS decoder and the reception meter are given as well.
+  var deemphasisUs = self.fmDeemphasisUs();
+  self.logger.info('[RTL-SDR Radio] De-emphasis: ' + (deemphasisUs > 0 ? deemphasisUs + ' us' : 'none') +
+    (self.fmDeemphasisChoice() === 'region' ? ' (region: ' + regionKey + ')' : ' (chosen; region: ' + regionKey + ')'));
   
   self.logger.info('[RTL-SDR Radio] Starting FM with RDS: fn-rtl_fm ' + rtlArgs.join(' '));
   
@@ -5073,14 +5303,33 @@ ControllerRtlsdrRadio.prototype.launchFmReceiver = function(job, freq, freqStr, 
     { stdio: ['pipe', 'pipe', 'pipe'] });
   self.redseaProcess = redseaProcess;
   
-  // sox for resampling: FM sample rate mono -> output rate stereo, and for the level
+  // sox for de-emphasis, for resampling (FM sample rate mono -> output rate stereo) and
+  // for the level, in that order
   var soxArgs = ['-t', 'raw', '-r', fmSampleRate, '-e', 'signed', '-b', '16', '-c', '1', '-',
                  '-t', 'raw', '-r', String(self.OUTPUT_SAMPLE_RATE), '-e', 'signed', '-b', '16', '-c', '2', '-'];
+  // De-emphasis is one pole at 1 / (2 pi x the time constant): 3183 Hz for 50 us, 2122 Hz
+  // for 75 us. At the receiver's rate, before the resampler, sox's filter follows the
+  // curve within 0.1 dB up to 15 kHz; at the output rate it would be 1.4 dB off there.
   var levelGain = self.fmLevelGain(fmSampleRate);
-  if (levelGain !== null) {
-    soxArgs.push('vol', levelGain.toFixed(2) + 'dB');
+  var fmLevel = self.levelSetting('fm_level');
+  var levelled = levelGain !== null || fmLevel !== 0;
+  if (deemphasisUs > 0) {
+    soxArgs.push('lowpass', '-1', (1e6 / (2 * Math.PI * deemphasisUs)).toFixed(1));
   }
-  var soxProcess = job.spawn('sox', soxArgs, { stdio: ['pipe', 'pipe', 'pipe'] });
+  // The level is applied to the sound at the output rate, after sox's resampler: what
+  // the receiver delivers above the audio band (the stereo pilot and subcarriers, the
+  // noise of a weak station) would otherwise count against full scale and be cut off.
+  // (An effect named makes sox put its resampler last unless it is named too.)
+  if (deemphasisUs > 0 || levelled) {
+    soxArgs.push('rate');
+  }
+  if (levelled) {
+    soxArgs.push('vol', ((levelGain || 0) + fmLevel).toFixed(2) + 'dB');
+  }
+  var soxStarted = Date.now();
+  var soxProcess = job.run('sox', soxArgs, { stdio: ['pipe', 'pipe', 'pipe'] }, function(entry) {
+    self.logClipping('FM ' + freqStr + ' MHz', fmLevel, entry, soxStarted, job.reception);
+  });
   self.soxProcess = soxProcess;
   
   // aplay for audio output
@@ -5092,15 +5341,24 @@ ControllerRtlsdrRadio.prototype.launchFmReceiver = function(job, freq, freqStr, 
   // Pipe sox -> aplay
   soxProcess.stdout.pipe(aplayProcess.stdin);
   
+  // The sound goes to the song recogniser as well, which keeps the last twenty seconds
+  self.recognising = { freq: freqStr, name: stationName };
+  self.recogniser.start('rtlsdr://fm/' + freqStr);
+  soxProcess.stdout.on('data', function(chunk) {
+    self.recogniser.feed(chunk);
+  });
+  
   // The reception is measured on the same signal, once a second
   var meter = null;
   var meterRate = FmQuality.parseRate(fmSampleRate);
+  var listed = self.getStationByUri('rtlsdr://fm/' + freqStr);
   if (meterRate) {
     meter = new FmQuality(meterRate, {
-      deemphasis: applyDeemphasis,
-      onReading: function(db) {
+      // a station the scan listed as sending no pilot is read by its carrier from the start
+      mono: !!(listed && listed.station && listed.station.mono),
+      onReading: function(db, reading, mono) {
         if (self.tuner.current === job && !job.stopping) {
-          self.considerFmLevel(db, freqStr, stationName);
+          self.considerFmLevel(db, freqStr, stationName, mono);
         }
       }
     });
@@ -5455,6 +5713,13 @@ ControllerRtlsdrRadio.prototype.sanitizeRdsText = function(text) {
   return sanitized;
 };
 
+// What the player shows beside the title for FM: "FM", the word MONO for a station that
+// sends no stereo pilot, and the reception dots. (All FM is played in mono; the word
+// says what the station sends, and that its dots are read from the carrier.)
+ControllerRtlsdrRadio.prototype.fmTrackType = function(level, mono) {
+  return 'FM ' + (mono ? 'MONO ' : '') + this.getSignalBars(level);
+};
+
 // Generate signal strength bars using Unicode block characters
 // Level 0-5 returns centered circle visualization with empty placeholders
 ControllerRtlsdrRadio.prototype.getSignalBars = function(level) {
@@ -5737,6 +6002,14 @@ ControllerRtlsdrRadio.prototype.artworkFor = function(song, fallbackIcon, push) 
   }
   self.artworkSong = key;
 
+  // A cover the song recogniser found: shown as it is
+  if (song.artworkUrl) {
+    self.lastValidArtwork = { url: song.artworkUrl, artist: song.artist, title: song.title };
+    self.artworkTimestamp = Date.now();
+    push(song.artworkUrl);
+    return;
+  }
+
   // The text itself names the album (a soundtrack, for one): no lookup needed
   if (song.album) {
     push(pictureOf({ artist: song.artist, album: song.album }));
@@ -5786,14 +6059,20 @@ ControllerRtlsdrRadio.prototype.pushRdsState = function(freq, stationName) {
       if (tag['content-type'] === 'item.title') title = tag.data;
     }
   }
+  // the song as the broadcaster tags it (RT+), which a song recognised from the sound gives way to
+  var tagged = !!(artist && title);
   if (!artist) artist = parsed.artist;
   if (!title) title = parsed.title;
+  // A song recognised from the sound stands ahead of the text, unless the text is tagged
+  var recognised = rds.recognised || null;
   
   // Throttle updates - minimum interval between pushes
-  // Exception: Signal level changes bypass throttle for responsive UI
+  // Exception: Signal level changes bypass throttle for responsive UI, and so does the
+  // MONO mark beside the level
   var now = Date.now();
   var sigLevel = rds.signalLevel || 0;
-  var signalChanged = (self.lastSignalLevel !== undefined && self.lastSignalLevel !== sigLevel);
+  var signalChanged = (self.lastSignalLevel !== undefined &&
+    (self.lastSignalLevel !== sigLevel || self.lastMonoMark !== rds.mono));
   
   if (!signalChanged && (now - self.lastRdsUpdate) < self.RDS_UPDATE_INTERVAL) {
     return;
@@ -5823,7 +6102,9 @@ ControllerRtlsdrRadio.prototype.pushRdsState = function(freq, stationName) {
   // Build state key fields for comparison (include signal level for UI updates)
   // Must match actual state values to detect changes correctly
   // Note: sigLevel already defined above for throttle bypass
-  var stateKey = displayName + '|' + (artist || rds.radiotext || '') + '|' + (title || rds.prog_type || '') + '|' + sigLevel;
+  var mono = rds.mono !== undefined ? rds.mono : !!(station && station.mono);
+  var stateKey = displayName + '|' + (artist || rds.radiotext || '') + '|' + (title || rds.prog_type || '') + '|' + sigLevel +
+    (mono ? '|mono' : '') + (recognised ? '|' + recognised.artist + '|' + recognised.title : '');
   
   // Skip if state hasn't changed
   if (self.lastRdsState === stateKey) {
@@ -5834,6 +6115,7 @@ ControllerRtlsdrRadio.prototype.pushRdsState = function(freq, stationName) {
   self.lastRdsState = stateKey;
   self.lastRdsUpdate = now;
   self.lastSignalLevel = sigLevel;
+  self.lastMonoMark = rds.mono;
   
   // Get artwork settings
   var bestEffortArtwork = self.config.get('best_effort_artwork', true);
@@ -5860,7 +6142,7 @@ ControllerRtlsdrRadio.prototype.pushRdsState = function(freq, stationName) {
       album: title || rds.prog_type || self.getI18nString('FM_RADIO'),
       albumart: artUrl,
       uri: 'rtlsdr://fm/' + freq,
-      trackType: 'FM ' + self.getSignalBars(rds.signalLevel),
+      trackType: self.fmTrackType(rds.signalLevel, mono),
       samplerate: '48 KHz',
       bitdepth: '16 bit',
       channels: channels,
@@ -5887,6 +6169,12 @@ ControllerRtlsdrRadio.prototype.pushRdsState = function(freq, stationName) {
 
   var song = bestEffortArtwork && artist && title && parsed.confidence >= artworkThreshold && !artistBlocked && !titleBlocked ?
     { artist: artist, title: title, confidence: parsed.confidence } : null;
+  self.recogniser.textNamesSong(!!song);
+  if (recognised && (!song || !tagged)) {
+    artist = recognised.artist;
+    title = recognised.title;
+    song = { artist: recognised.artist, title: recognised.title, album: recognised.album, artworkUrl: recognised.artwork, confidence: 100 };
+  }
   self.artworkFor(song, fallbackIcon, pushFmState);
 };
 
@@ -6155,7 +6443,11 @@ ControllerRtlsdrRadio.prototype.handleDabDls = function(label, dlPlusData) {
     artworkArtist: artworkArtist, // For Cover Art Archive
     artworkTitle: artworkTitle,   // For Cover Art Archive
     artworkAlbum: artworkAlbum,   // From soundtrack pattern - skip Last.fm if present
-    parsedConfidence: (dlPlusData && dlPlusData.artist) ? 100 : (parsed ? parsed.confidence : 0)
+    parsedConfidence: (dlPlusData && dlPlusData.artist) ? 100 : (parsed ? parsed.confidence : 0),
+    // the song as the broadcaster tags it (DL Plus), which a song recognised from the sound gives way to
+    artworkTagged: !!(dlPlusData && dlPlusData.artist && dlPlusData.title),
+    // a song recognised from the sound outlives the text's changes
+    recognised: (self.currentDls && self.currentDls.recognised) || null
   };
   
   // Push updated state
@@ -6276,6 +6568,13 @@ ControllerRtlsdrRadio.prototype.pushDabState = function() {
 
   var song = bestEffortArtwork && dls.artworkArtist && dls.artworkTitle && dls.parsedConfidence >= artworkThreshold && !artistBlocked && !titleBlocked ?
     { artist: dls.artworkArtist, title: dls.artworkTitle, album: dls.artworkAlbum || null, confidence: dls.parsedConfidence } : null;
+  self.recogniser.textNamesSong(!!song);
+  if (dls.recognised && (!song || !dls.artworkTagged)) {
+    // a song recognised from the sound stands ahead of the text, unless the broadcaster
+    // tags a song in the text
+    dlsText = dls.recognised.artist + ' - ' + dls.recognised.title;
+    song = { artist: dls.recognised.artist, title: dls.recognised.title, album: dls.recognised.album, artworkUrl: dls.recognised.artwork, confidence: 100 };
+  }
   self.artworkFor(song, fallbackIcon, pushState);
 };
 
@@ -6353,7 +6652,10 @@ ControllerRtlsdrRadio.prototype.holdArtwork = function(state) {
   var meant = Object.assign({}, state);
   state.albumart = shown.url;
   self.artTimer = setTimeout(function() {
+    // The time is up by the timer's clock; the wall clock may be a millisecond behind,
+    // which must not hold the picture a second time
     self.artTimer = null;
+    self.artShown = { uri: meant.uri, url: meant.albumart, since: Date.now() };
     self.pushPlayingState(meant);
   }, left);
 };
@@ -6439,6 +6741,8 @@ ControllerRtlsdrRadio.prototype.resume = function() {
 // by their own ids, and a job started afterwards is never reached.
 ControllerRtlsdrRadio.prototype.stopDecoder = function() {
   var self = this;
+  self.recogniser.stop();
+  self.recognising = null;
   
   self.logger.info('[RTL-SDR Radio] Stopping all processes');
   self.intentionalStop = true;
@@ -6540,7 +6844,8 @@ ControllerRtlsdrRadio.prototype.dongleSilent = function(job, what) {
 // The FM tune level, from a reading of the reception (lib/fmquality.js, once a second).
 // A station without a pilot gives no reading; then what RDS tells is all there is.
 // A new level is shown when it has held for a few seconds, the first one at once.
-ControllerRtlsdrRadio.prototype.considerFmLevel = function(db, freq, stationName) {
+// mono: the reading is taken from the carrier, there being no pilot.
+ControllerRtlsdrRadio.prototype.considerFmLevel = function(db, freq, stationName, mono) {
   var self = this;
   if (!self.currentRds) {
     self.currentRds = {};
@@ -6548,6 +6853,13 @@ ControllerRtlsdrRadio.prototype.considerFmLevel = function(db, freq, stationName
   var rds = self.currentRds;
   
   var level = FmQuality.level(db);
+  // What the station sends, by this reading: no pilot where its carrier was read, a
+  // pilot where one stands out. Where neither can be said (a weak station) the word of
+  // the station list holds (pushRdsState).
+  var sends = mono ? true : level !== null ? false : undefined;
+  var marked = sends !== rds.mono;
+  rds.mono = sends;
+  
   if (level !== null) {
     rds.signalPercent = Math.max(0, Math.min(100, Math.round(db * 2)));
   } else {
@@ -6555,25 +6867,33 @@ ControllerRtlsdrRadio.prototype.considerFmLevel = function(db, freq, stationName
     rds.signalPercent = rds.blerSmoothed !== undefined ? Math.max(0, Math.round(100 - rds.blerSmoothed)) : 0;
   }
   rds.receptionDb = Math.round(db * 10) / 10;
+  // kept with the play, for the line about its sound when it ends
+  if (self.playingJob) {
+    self.playingJob.reception = { db: rds.receptionDb, level: rds.signalLevel === undefined ? level : rds.signalLevel };
+  }
   
   var now = Date.now();
+  var settled = false;
   if (rds.signalLevel === undefined) {
     rds.signalLevel = level;
+    settled = true;
   } else if (level === rds.signalLevel) {
     rds.pendingLevel = undefined;
-    return;
   } else if (rds.pendingLevel !== level) {
     rds.pendingLevel = level;
     rds.pendingSince = now;
-    return;
-  } else if (now - rds.pendingSince < self.SIGNAL_HOLD) {
-    return;
-  } else {
+  } else if (now - rds.pendingSince >= self.SIGNAL_HOLD) {
     rds.signalLevel = level;
     rds.pendingLevel = undefined;
+    settled = true;
+  }
+  // the mark does not wait for a level to settle
+  if (!settled && !marked) {
+    return;
   }
   
-  self.logger.info('[RTL-SDR Radio] FM reception: ' + rds.receptionDb + ' dB, level ' + rds.signalLevel + '/5');
+  self.logger.info('[RTL-SDR Radio] FM reception: ' + rds.receptionDb + ' dB, level ' + rds.signalLevel + '/5' +
+    (rds.mono ? ' (no pilot: read from the carrier)' : ''));
   self.pushRdsState(freq, stationName);
 };
 
@@ -6850,14 +7170,17 @@ function parseGainOutput(text) {
 }
 
 // Measure the gain the dongle should be set to at the given frequencies (Hz), as a
-// step of the tuner job that holds the dongle. Resolves with what parseGainOutput
+// step of the tuner job that holds the dongle. rate: the samples a second the receiver
+// will read the dongle at (fmCaptureRate): the tool measures the slice the receiver
+// takes in, not one of its own. Resolves with what parseGainOutput
 // gives; an empty list when the tool could not be run. Never rejects.
 ControllerRtlsdrRadio.prototype.measureGain = function(job, frequencies, rate) {
   var self = this;
   return new Promise(function(resolve) {
     var args = [];
     frequencies.forEach(function(hz) { args.push('-f', String(hz)); });
-    args.push('-s', String(rate || self.GAIN_SAMPLE_RATE));
+    args.push('-s', String(rate));
+    args = args.concat(self.fmCorrectionArgs());
     
     // The tool ends before the receiver starts: the job outlives it
     var keepOpen = job.keepOpen;
@@ -6909,29 +7232,141 @@ ControllerRtlsdrRadio.prototype.measureGain = function(job, frequencies, rate) {
 // another, or moved to another port, changes the mark; nothing is opened to read it.
 // "none" where the player's USB devices cannot be listed.
 ControllerRtlsdrRadio.prototype.usbMark = function() {
-  var base = '/sys/bus/usb/devices';
   try {
-    var devices = [];
-    fs.readdirSync(base).forEach(function(port) {
-      if (!/^\d+-[\d.]+$/.test(port)) {
-        return;                       // an interface or a root hub, not a device
-      }
-      function read(file) {
-        try {
-          return fs.readFileSync(base + '/' + port + '/' + file, 'utf8').trim();
-        } catch (e) {
-          return '';
-        }
-      }
-      if (read('bDeviceClass') === '09') {
-        return;                       // a hub
-      }
-      devices.push([port, read('idVendor'), read('idProduct'), read('manufacturer'), read('product'), read('serial')].join(':'));
+    var devices = this.usbDevices().map(function(d) {
+      return [d.port, d.vendor, d.product, d.manufacturer, d.name, d.serial].join(':');
     });
     return require('crypto').createHash('sha1').update(devices.sort().join('|')).digest('hex').slice(0, 12);
   } catch (e) {
     return 'none';
   }
+};
+
+// The USB devices plugged into the player, hubs left out, as they describe themselves:
+// [{ port, vendor, product, manufacturer, name, serial, speed }]. Throws when the
+// system does not show them.
+ControllerRtlsdrRadio.prototype.usbDevices = function() {
+  var base = '/sys/bus/usb/devices';
+  var devices = [];
+  fs.readdirSync(base).forEach(function(port) {
+    if (!/^\d+-[\d.]+$/.test(port)) {
+      return;                       // an interface or a root hub, not a device
+    }
+    function read(file) {
+      try {
+        return fs.readFileSync(base + '/' + port + '/' + file, 'utf8').trim();
+      } catch (e) {
+        return '';
+      }
+    }
+    if (read('bDeviceClass') === '09') {
+      return;                       // a hub
+    }
+    devices.push({ port: port, vendor: read('idVendor'), product: read('idProduct'), manufacturer: read('manufacturer'),
+      name: read('product'), serial: read('serial'), speed: read('speed') });
+  });
+  return devices;
+};
+
+// The dongle among them, as a report names it, or null: a device with one of the USB
+// ids the receiver library opens (its list of known devices, osmocom rtl-sdr 2.0.2).
+// Nothing else that is plugged into the player is named.
+var RTL_DONGLES = ('0413:6680 0413:6f0f 0458:707f 0bda:2832 0bda:2838 0ccd:00a9 0ccd:00b3 0ccd:00b4 0ccd:00b5 0ccd:00b7 ' +
+  '0ccd:00b8 0ccd:00b9 0ccd:00c0 0ccd:00c6 0ccd:00d3 0ccd:00d7 0ccd:00e0 1554:5020 15f4:0131 15f4:0133 185b:0620 ' +
+  '185b:0650 185b:0680 1b80:d393 1b80:d394 1b80:d395 1b80:d397 1b80:d398 1b80:d39d 1b80:d3a4 1b80:d3a8 1b80:d3af ' +
+  '1b80:d3b0 1d19:1101 1d19:1102 1d19:1103 1d19:1104 1f4d:a803 1f4d:b803 1f4d:c803 1f4d:d286 1f4d:d803').split(' ');
+ControllerRtlsdrRadio.prototype.usbDongle = function() {
+  try {
+    var dongle = this.usbDevices().filter(function(d) {
+      return RTL_DONGLES.indexOf((d.vendor + ':' + d.product).toLowerCase()) !== -1;
+    })[0];
+    return dongle ? { id: dongle.vendor + ':' + dongle.product, manufacturer: dongle.manufacturer, product: dongle.name,
+      serial: dongle.serial, port: dongle.port, speed: dongle.speed } : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+// The FM band as the survey tool takes it, on the region's raster and with the scan
+// offset: { range: "87.50M:108M:100k", label: the same in words }
+ControllerRtlsdrRadio.prototype.fmSurveyBand = function() {
+  var region = this.getRegionSettings();
+  var start = region.band_start + (region.scan_offset_khz / 1000);
+  return {
+    range: start.toFixed(2) + 'M:' + region.band_end + 'M:' + region.spacing_khz + 'k',
+    label: this.config.get('fm_region', 'europe') + ', ' + start.toFixed(2) + ' to ' + region.band_end + ' MHz, raster ' + region.spacing_khz + ' kHz'
+  };
+};
+
+// The settings that bear on what a dongle receives, as a report names them
+ControllerRtlsdrRadio.prototype.receptionSettings = function() {
+  var self = this;
+  return {
+    'FM gain': self.config.get('fm_gain_auto', true) ? 'automatic' : 'set to ' + self.config.get('fm_gain', 50),
+    'FM scan sensitivity': '+' + self.config.get('scan_sensitivity', 8) + ' dB',
+    'FM scan': self.fmScanDepth(),
+    'FM scan offset': self.getRegionSettings().scan_offset_khz + ' kHz',
+    'FM sample rate': self.config.get('fm_sample_rate', '171k'),
+    'FM level': self.levelSetting('fm_level') + ' dB',
+    'FM de-emphasis': (self.fmDeemphasisUs() > 0 ? self.fmDeemphasisUs() + ' us' : 'none') +
+      (self.fmDeemphasisChoice() === 'region' ? ' (the region\'s)' : ' (chosen)'),
+    'FM tuning correction': self.fmCorrection() + ' ppm (found by the last scan; the report measures without it)',
+    'Song recognition': self.recogniser.said(),
+    'DAB gain': self.config.get('dab_gain_auto', true) ? 'automatic' : 'set to ' + self.numberSetting('dab_gain', 80),
+    'DAB PPM correction': self.numberSetting('dab_ppm', 0),
+    'DAB level': self.levelSetting('dab_level') + ' dB'
+  };
+};
+
+// The player as a report names it: the versions and the board, nothing that tells one
+// player of a kind from another
+ControllerRtlsdrRadio.prototype.playerFacts = function() {
+  function read(file) {
+    try {
+      return fs.readFileSync(file, 'utf8');
+    } catch (e) {
+      return '';
+    }
+  }
+  var release = read('/etc/os-release');
+  function field(name) {
+    var found = new RegExp('^' + name + '="?([^"\\n]*)"?$', 'm').exec(release);
+    return found ? found[1] : null;
+  }
+  return {
+    plugin: require('./package.json').version,
+    volumio: field('VOLUMIO_VERSION'),
+    hardware: field('VOLUMIO_HARDWARE'),
+    board: read('/proc/device-tree/model').replace(/\0/g, '').trim() || null,
+    arch: [field('VOLUMIO_ARCH'), process.arch].filter(Boolean).join(' / '),
+    kernel: require('os').release(),
+    node: process.version
+  };
+};
+
+// The DAB channels of the station list, the one with the most stations first
+ControllerRtlsdrRadio.prototype.dabChannelsByStations = function() {
+  var counts = {};
+  ((this.stationsDb && this.stationsDb.dab) || []).forEach(function(station) {
+    if (station.channel && !station.deleted) {
+      counts[station.channel] = (counts[station.channel] || 0) + 1;
+    }
+  });
+  return Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a] || (a < b ? -1 : 1); });
+};
+
+// A report's folder as one ZIP file. Compressed lightly: recordings hardly shrink, and
+// the smallest boards should not labour over them.
+ControllerRtlsdrRadio.prototype.zipReport = function(folder, file) {
+  return new Promise(function(resolve, reject) {
+    require('child_process').execFile('zip', ['-q', '-r', '-1', file, '.'], { cwd: folder, maxBuffer: 1024 * 1024 }, function(error) {
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
 };
 
 // The gain an FM station is received with: measured at its frequency and kept with the
@@ -6951,13 +7386,212 @@ ControllerRtlsdrRadio.prototype.fmLevelGain = function(rate) {
   return this.FM_PEAK_DB + 20 * Math.log10(hz / this.FM_DEVIATION);
 };
 
-// Whether the dongle can deliver what four times oversampling asks of it at this
-// receiver rate: sixteen times the rate, of the 3.2 million samples a second that are
-// its limit and the 2.8 million it delivers without losing any.
-ControllerRtlsdrRadio.prototype.fmCanOversample = function(rate) {
+// The level the user has set for FM or DAB, in dB: 0, which leaves the sound where it
+// is, or down to LEVEL_LOWEST. Never above 0: both arrive just below full scale.
+ControllerRtlsdrRadio.prototype.levelSetting = function(key) {
+  var level = Math.round(this.numberSetting(key, 0));
+  return level < 0 ? Math.max(level, this.LEVEL_LOWEST) : 0;
+};
+
+// A level as it comes from the settings page (a choice sends { value, label }), or
+// null when it is none.
+ControllerRtlsdrRadio.prototype.levelFromForm = function(sent) {
+  var raw = sent !== null && typeof sent === 'object' ? sent.value : sent;
+  var level = raw === '' || raw === null || raw === undefined ? NaN : Number(raw);
+  return isFinite(level) && level <= 0 && level >= this.LEVEL_LOWEST ? Math.round(level) : null;
+};
+
+// What sox reports when it ends, as one line in the log: whether the sound of the
+// station stayed below full scale, or how much of it was cut off there and in which
+// stage. It is what a report of loud or distorted sound is read from. A few samples a
+// minute are what a resampler makes of a broadcast that already reaches full scale:
+// they are named, and not as a fault. Nor is what the noise of a weak station reaches
+// (reception: the last reading of the play, where there is one): that is hiss, not
+// loud sound, and the line says so.
+ControllerRtlsdrRadio.prototype.logClipping = function(what, level, entry, startedAt, reception) {
+  if (!entry || entry.error) {
+    // sox could not be started: there was no sound to report on
+    return;
+  }
+  var stages = [];
+  var most = 0;
+  var pattern = /(\w+) clipped (\d+) samples/g;
+  var found;
+  while ((found = pattern.exec(entry.said || '')) !== null) {
+    stages.push(found[2] + (found[2] === '1' ? ' sample in ' : ' samples in ') + found[1]);
+    most = Math.max(most, Number(found[2]));
+  }
+  var minutes = Math.max((Date.now() - (startedAt || Date.now())) / 60000, 1 / 60);
+  var verdict = 'stayed below full scale';
+  if (stages.length > 0 && most / minutes < this.CLIPPED_FEW) {
+    verdict = 'touched full scale now and then, too seldom to hear (' + stages.join(', ') + ')';
+  } else if (stages.length > 0 && reception && typeof reception.db === 'number' && reception.db < this.WEAK_RECEPTION_DB) {
+    verdict = 'reached full scale in the noise of a weak station (' + stages.join(', ') + '; reception ' + reception.db + ' dB), which is hiss and not loud sound';
+  } else if (stages.length > 0) {
+    verdict = 'cut off at full scale (' + stages.join(', ') + ')';
+  }
+  this.logger.info('[RTL-SDR Radio] Sound of ' + what + ', level ' + level + ' dB: ' + verdict);
+};
+
+// The samples a second fn-rtl_fm reads the dongle at for a receiver rate ("171k"), as
+// it works that out itself: at least a million, in a power of two times the receiver
+// rate. It sets the tuner a quarter of this above the station, so the slice it takes
+// in reaches from a quarter of it below the station to three quarters above: 1.4 MHz
+// at 171k, 1.9 MHz at 240k, 2.4 MHz at 300k.
+ControllerRtlsdrRadio.prototype.fmCaptureRate = function(rate) {
   var match = /^(\d+(?:\.\d+)?)(k?)$/i.exec(String(rate).trim());
-  var hz = match ? parseFloat(match[1]) * (match[2] ? 1000 : 1) : 0;
-  return hz > 0 && hz * 16 <= this.DONGLE_STEADY_RATE;
+  var hz = match ? parseFloat(match[1]) * (match[2] ? 1000 : 1) : 171000;
+  var passes = Math.floor(Math.log2(Math.floor(1000000 / hz) + 1)) + 1;
+  return Math.round(hz * Math.pow(2, passes));
+};
+
+// What tells one dongle from another, wherever it is plugged in: its ids and the names
+// and serial number it gives itself. "none" when no dongle is found.
+ControllerRtlsdrRadio.prototype.dongleName = function() {
+  var dongle = this.usbDongle();
+  return dongle ? [dongle.id, dongle.manufacturer, dongle.product, dongle.serial].join(':') : 'none';
+};
+
+// The correction of the dongle's tuning for FM, in parts per million. A dongle's crystal
+// is off by a fixed share of the frequency (a cheap one by 50 parts per million and
+// more: 5 kHz in the FM band), and so every station lies off its channel by that share.
+// A scan tells it from the stations' carriers (noteTuningError); it is kept for the
+// dongle that scan was made with and is 0 for any other.
+ControllerRtlsdrRadio.prototype.fmCorrection = function() {
+  var ppm = Math.round(Number(this.config.get('fm_ppm_found', 0)));
+  if (!isFinite(ppm) || ppm === 0 || Math.abs(ppm) > this.FM_PPM_MOST ||
+      this.config.get('fm_ppm_dongle', '') !== this.dongleName()) {
+    return 0;
+  }
+  return ppm;
+};
+
+// The correction as fn-rtl_fm and fn-rtl-gain take it: nothing when there is none
+ControllerRtlsdrRadio.prototype.fmCorrectionArgs = function() {
+  var ppm = this.fmCorrection();
+  return ppm !== 0 ? ['-p', String(ppm)] : [];
+};
+
+// After a scan: what the carriers of its stations say of the dongle's tuning.
+// surveyedWith: the correction the survey was made with; what it finds comes on top.
+ControllerRtlsdrRadio.prototype.noteTuningError = function(survey, surveyedWith) {
+  var self = this;
+  var found = fmscan.tuningError(survey, { sensitivity: self.config.get('scan_sensitivity', 8) });
+  if (!found) {
+    return;
+  }
+  var dongle = self.dongleName();
+  var same = self.config.get('fm_ppm_dongle', '') === dongle;
+  var total = surveyedWith + found.ppm;
+  self.logger.info('[RTL-SDR Radio] FM scan: by the carriers of ' + found.stations + ' stations the dongle tunes ' +
+    (total === 0 ? 'on frequency' : Math.abs(total) + ' parts per million ' + (total > 0 ? 'high' : 'low') +
+      ' (' + (Math.abs(total) / 10).toFixed(1) + ' kHz at 100 MHz)') +
+    (surveyedWith !== 0 ? ', ' + Math.abs(found.ppm) + ' beside the correction in use' : ''));
+  if (Math.abs(total) > self.FM_PPM_MOST) {
+    return;
+  }
+  if (same && Math.abs(found.ppm) < self.FM_PPM_STEP) {
+    return;
+  }
+  var wanted = Math.abs(total) < self.FM_PPM_LEAST ? 0 : total;
+  if (same && wanted === surveyedWith) {
+    return;
+  }
+  var another = !same && !!self.config.get('fm_ppm_dongle', '');
+  self.config.set('fm_ppm_found', wanted);
+  self.config.set('fm_ppm_dongle', dongle);
+  self.logger.info('[RTL-SDR Radio] FM tuning correction ' + (wanted === 0 ? 'not needed for this dongle' :
+    'set to ' + wanted + ' parts per million for this dongle') +
+    (same ? ' (was ' + surveyedWith + ')' : another ? ' (what was kept was another dongle\'s)' : ''));
+};
+
+// The de-emphasis FM is received with: the region's own, or one chosen. The regions
+// bundle a band, a raster and a de-emphasis, and countries do not always (South Korea has
+// East Asia's band and raster with 75 us). The Custom region's own is 50 us.
+ControllerRtlsdrRadio.prototype.fmDeemphasisChoice = function() {
+  var choice = String(this.config.get('fm_deemphasis_choice', 'region'));
+  return this.FM_DEEMPHASIS_CHOICES.indexOf(choice) === -1 ? 'region' : choice;
+};
+
+// The same in microseconds; 0 for none
+ControllerRtlsdrRadio.prototype.fmDeemphasisUs = function() {
+  var choice = this.fmDeemphasisChoice();
+  if (choice === 'off') {
+    return 0;
+  }
+  return choice === 'region' ? (Number(this.getRegionSettings().deemphasis_us) || 0) : Number(choice);
+};
+
+// Versions before 1.4.7 had a switch for the Custom region only (50 us, or none) and no
+// choice elsewhere. What a Custom region was set to is kept as a choice, once.
+ControllerRtlsdrRadio.prototype.carryDeemphasisOver = function() {
+  if (this.config.has('fm_deemphasis_choice')) {
+    return;
+  }
+  var custom = this.config.get('fm_region', 'europe') === 'custom';
+  this.config.set('fm_deemphasis_choice', !custom ? 'region' : this.config.get('fm_deemphasis', false) ? '50' : 'off');
+};
+
+// 1.4.10 had a switch that only unfolded the fields on the settings page, and a token
+// set then was in use whatever it said: the switch of its own starts as on
+ControllerRtlsdrRadio.prototype.carryRecognitionOver = function() {
+  if (this.config.has('show_song_recognition')) {
+    this.config.delete('show_song_recognition');
+  }
+  if (!this.config.has('recognise_on')) {
+    this.config.set('recognise_on', true);
+  }
+};
+
+// FM oversampling (1.4.11 and before) read the dongle at 2.7 MS/s with the station at
+// the edge of what the tuner passes: measured on an RTL-SDR Blog V4, 17 dB of reception
+// lost at a sane gain, and the gain rule driven to the top step. Taken out; a setting
+// left in a configuration is dropped.
+ControllerRtlsdrRadio.prototype.dropOversampling = function() {
+  if (this.config.has('fm_oversampling')) {
+    this.config.delete('fm_oversampling');
+  }
+};
+
+// A choice in words, for the settings page
+ControllerRtlsdrRadio.prototype.fmDeemphasisLabel = function(choice) {
+  if (choice === '50') {
+    return this.getI18nString('FM_DEEMPHASIS_50');
+  }
+  if (choice === '75') {
+    return this.getI18nString('FM_DEEMPHASIS_75');
+  }
+  if (choice === 'off') {
+    return this.getI18nString('FM_DEEMPHASIS_OFF');
+  }
+  var own = Number(this.getRegionSettings().deemphasis_us) || 0;
+  return this.getI18nString('FM_DEEMPHASIS_REGION') + ' (' + (own > 0 ? own + ' \u00b5s' : this.getI18nString('FM_DEEMPHASIS_OFF')) + ')';
+};
+
+// How thoroughly an FM scan searches the band: 'fast' listens to the channels that stand
+// out from their neighbours and to the stations the list holds; 'detailed' listens to
+// every channel, finds the weak stations that do not stand out, and takes about half as
+// long again.
+ControllerRtlsdrRadio.prototype.fmScanDepth = function() {
+  return this.config.get('fm_scan_depth', 'fast') === 'detailed' ? 'detailed' : 'fast';
+};
+
+// What the survey tool is given beside the band: -e for a detailed scan, and the
+// frequencies of the stations the list holds (-n), which are listened to either way
+ControllerRtlsdrRadio.prototype.fmSurveyArgs = function() {
+  var args = this.fmScanDepth() === 'detailed' ? ['-e'] : [];
+  (this.stationsDb.fm || []).forEach(function(station) {
+    var hz = Math.round(parseFloat(station.frequency) * 1e6);
+    if (!station.deleted && isFinite(hz) && hz > 0 && args.length < 500) {
+      args.push('-n', String(hz));
+    }
+  });
+  return args;
+};
+
+// The samples a second the receiver reads the dongle at with the settings as they are
+ControllerRtlsdrRadio.prototype.receiverSlice = function() {
+  return this.fmCaptureRate(this.config.get('fm_sample_rate', '171k'));
 };
 
 ControllerRtlsdrRadio.prototype.fmGainFor = function(job, freq, station) {
@@ -6966,16 +7600,19 @@ ControllerRtlsdrRadio.prototype.fmGainFor = function(job, freq, station) {
   if (!self.config.get('fm_gain_auto', true)) {
     return Promise.resolve(manual);
   }
+  // The slice the receiver will take in: the gain is measured on that, and a gain
+  // measured for another receiver rate was measured on another slice
+  var slice = self.receiverSlice();
   // A gain measured by an earlier rule, or with another dongle, counts as not measured:
   // what suits one tuner overloads another
   var dongle = self.usbMark();
   var measured = station && typeof station.gain === 'number' && station.gainMeasured &&
-    station.gainRule === self.GAIN_RULE && station.gainOn === dongle ?
+    station.gainRule === self.GAIN_RULE && station.gainOn === dongle && station.gainSlice === slice ?
     Date.now() - new Date(station.gainMeasured).getTime() : Infinity;
   if (measured < self.FM_GAIN_KEEP) {
     return Promise.resolve(station.gain);
   }
-  return self.measureGain(job, [Math.round(freq * 1e6)]).then(function(result) {
+  return self.measureGain(job, [Math.round(freq * 1e6)], slice).then(function(result) {
     var found = result.list[0];
     job.dongleSilent = !!result.silent;
     if (!found) {
@@ -6989,6 +7626,7 @@ ControllerRtlsdrRadio.prototype.fmGainFor = function(job, freq, station) {
       station.gain = found.gain;
       station.gainRule = self.GAIN_RULE;
       station.gainOn = dongle;
+      station.gainSlice = slice;
       station.gainMeasured = new Date().toISOString();
       self.saveStations();
     }
@@ -8223,6 +8861,7 @@ ControllerRtlsdrRadio.prototype.mergeStationData = function(existingStation, new
     merged.signal_strength = newStation.signal_strength;
     merged.quality = newStation.quality;
     merged.level = newStation.level;
+    merged.mono = !!newStation.mono;
     if (newStation.pi) {
       merged.pi = newStation.pi;
     }
@@ -8260,6 +8899,644 @@ ControllerRtlsdrRadio.prototype.mergeStationData = function(existingStation, new
 // FM SCANNING METHODS - Phase 3 Implementation
 // ============================================
 
+// The reception of the station being played, for the Station Manager's status; null when
+// none is played or no reading is there yet
+ControllerRtlsdrRadio.prototype.signalNow = function() {
+  var self = this;
+  if (self.deviceState === 'playing_fm' && self.currentRds) {
+    var db = typeof self.currentRds.receptionDb === 'number' ? self.currentRds.receptionDb : null;
+    return {
+      type: 'fm',
+      // the level shown, which holds for a few seconds before it changes
+      level: self.currentRds.signalLevel || 0,
+      percent: self.currentRds.signalPercent || 0,
+      // the reading behind it, once there is one, the level that reading alone would
+      // give, and whether it is of the carrier of a station without a pilot
+      db: db,
+      now: db === null ? 0 : (FmQuality.level(db) || 0),
+      mono: !!self.currentRds.mono,
+      frequency: self.currentFmFrequency || null
+    };
+  }
+  if (self.deviceState === 'playing_dab' && self.currentDabSignal) {
+    return {
+      type: 'dab',
+      level: self.currentDabSignal.level || 0,
+      percent: self.currentDabSignal.percent || 0,
+      station: self.currentDabStation || null
+    };
+  }
+  return null;
+};
+
+// The song recogniser has a song (or has lost it): the state shows it, where the
+// station's text names none
+ControllerRtlsdrRadio.prototype.songRecognised = function(song) {
+  var self = this;
+  if (self.deviceState === 'playing_fm' && self.recognising) {
+    if (!self.currentRds) {
+      self.currentRds = {};
+    }
+    self.currentRds.recognised = song;
+    self.lastRdsUpdate = 0;
+    self.pushRdsState(self.recognising.freq, self.recognising.name);
+  } else if (self.deviceState === 'playing_dab' && self.currentDls) {
+    self.currentDls.recognised = song;
+    self.pushDabState();
+  }
+};
+
+// The one setting of song recognition, set from the settings page or from the Station
+// Manager: on or off (off keeps the token), the token (an empty one removes it) and
+// when to ask
+ControllerRtlsdrRadio.prototype.setRecognition = function(wanted) {
+  var self = this;
+  if (wanted.on !== undefined) {
+    self.config.set('recognise_on', wanted.on === true || wanted.on === 'true');
+  }
+  if (wanted.key !== undefined) {
+    self.config.set('recognise_key', String(wanted.key || '').trim());
+  }
+  if (wanted.when !== undefined) {
+    self.config.set('recognise_when', wanted.when === 'always' ? 'always' : 'missing');
+  }
+  self.recogniser.configure(self.recognitionSettings());
+  self.logger.info('[RTL-SDR Radio] Song recognition: ' + self.recognitionSaid());
+};
+
+ControllerRtlsdrRadio.prototype.recognitionSettings = function() {
+  return {
+    on: this.config.get('recognise_on', true) !== false,
+    key: this.config.get('recognise_key', ''),
+    when: this.config.get('recognise_when', 'missing')
+  };
+};
+
+// The state in words, with the token's tail: "on, asks when the station's text names
+// no song (token …0c7c)"
+ControllerRtlsdrRadio.prototype.recognitionSaid = function() {
+  var key = String(this.config.get('recognise_key', '') || '');
+  return this.recogniser.said() + (key ? ' (token …' + key.slice(-4) + ')' : '');
+};
+
+// What the Station Manager shows of it: the token's last four characters and its
+// length, not the token, which the eye on the field asks for separately
+ControllerRtlsdrRadio.prototype.recognitionView = function() {
+  var key = String(this.config.get('recognise_key', '') || '');
+  var status = this.recogniser.status();
+  status.key = { set: key !== '', tail: key ? key.slice(-4) : null, length: key.length };
+  return status;
+};
+
+// Settings: song recognition
+ControllerRtlsdrRadio.prototype.saveRecognitionSettings = function(data) {
+  var self = this;
+  var defer = libQ.defer();
+  try {
+    self.setRecognition({
+      on: data.recognise_on,
+      key: data.recognise_key,
+      when: data.recognise_when !== undefined ? (data.recognise_when.value || data.recognise_when) : undefined
+    });
+    self.commandRouter.pushToastMessage('success', 'FM/DAB Radio', self.getI18nString('SAVE_SUCCESS'));
+    defer.resolve();
+  } catch (e) {
+    self.logger.error('[RTL-SDR Radio] Failed to save song recognition settings: ' + e);
+    self.commandRouter.pushToastMessage('error', 'FM/DAB Radio', self.getI18nString('SAVE_ERROR'));
+    defer.reject(e);
+  }
+  return defer.promise;
+};
+
+// ---- The tune dialog of the Station Manager: an FM station's frequency, tried out ----
+
+// A frequency as the station list writes it, or null for what is none the receiver takes
+ControllerRtlsdrRadio.prototype.tuneFrequency = function(value) {
+  var freq = parseFloat(value);
+  if (!isFinite(freq) || freq < this.getRegionSettings().band_start || freq > 108) {
+    return null;
+  }
+  var units = Math.round(freq * 100);
+  return (units / 100).toFixed(units % 10 !== 0 ? 2 : 1);
+};
+
+ControllerRtlsdrRadio.prototype.tuneBand = function() {
+  var region = this.getRegionSettings();
+  return { start: region.band_start, end: region.band_end, step_khz: region.spacing_khz };
+};
+
+// The channels the dialog looks at, in kHz: the station's own and TUNE_STEPS either side
+// on the region's raster, as far as the band goes
+ControllerRtlsdrRadio.prototype.tuneChannels = function(frequency) {
+  var region = this.getRegionSettings();
+  var centre = Math.round(parseFloat(frequency) * 1000);
+  var list = [];
+  for (var k = -this.TUNE_STEPS; k <= this.TUNE_STEPS; k++) {
+    var khz = centre + k * region.spacing_khz;
+    if (khz >= Math.round(region.band_start * 1000) && khz <= Math.round(region.band_end * 1000)) {
+      list.push(khz);
+    }
+  }
+  return list;
+};
+
+// One survey of the channels around a frequency, every one of them listened to, and what
+// a scan would say of each. A station of ours that is playing is stopped for it, as for
+// a scan. listed: the frequency of the station being tuned, where it is not the one
+// looked around. Resolves with { frequency, step_khz, gain, channels, best }; best is
+// the nearest channel a scan would list that no other station of the list holds, the
+// better received of two equally near, or null.
+ControllerRtlsdrRadio.prototype.tuneSurvey = function(frequency, listed) {
+  var self = this;
+  var wanted = self.tuneChannels(frequency);
+  if (wanted.length === 0) {
+    return Promise.reject(new Error('outside the band of the region'));
+  }
+  var range = (wanted[0] / 1000).toFixed(2) + 'M:' + (wanted[wanted.length - 1] / 1000).toFixed(2) + 'M:' +
+    self.getRegionSettings().spacing_khz + 'k';
+  var args = ['-b', range, '-e'].concat(self.fmSurveyArgs().filter(function(arg) {
+    return arg !== '-e';
+  }), self.fmCorrectionArgs());
+  
+  return new Promise(function(resolve, reject) {
+    self.acquireForTool('tune_survey').then(function(job) {
+      var printed = '';
+      self.logger.info('[RTL-SDR Radio] Tune: looking around ' + frequency + ' MHz: fn-rtl-gain ' + args.join(' '));
+      var tool = job.run('fn-rtl-gain', args, { stdio: ['ignore', 'pipe', 'pipe'] }, function(entry) {
+        var survey = fmscan.parse(printed);
+        if (job.stopping || entry.error || survey.channels.length === 0) {
+          var stopped = job.stopping && !job.timedOut;
+          var failure = new Error(stopped ? 'stopped: the dongle was wanted for something else' :
+            job.timedOut ? 'timed out' :
+            entry.error ? String(entry.error.code || entry.error) :
+            ((entry.said || '').trim().split('\n').pop() || 'nothing was read'));
+          failure.superseded = stopped;
+          self.logger.info('[RTL-SDR Radio] Tune: no survey around ' + frequency + ' MHz: ' + failure.message);
+          reject(failure);
+          return;
+        }
+        var found = self.tuneSaid(frequency, wanted, survey, listed || frequency);
+        self.logger.info('[RTL-SDR Radio] Tune: around ' + frequency + ' MHz: ' + found.channels.map(function(channel) {
+          return channel.frequency + ' ' + channel.says + (channel.reading !== null ? ' ' + channel.reading + ' dB' : '');
+        }).join(', ') + '; best: ' + (found.best || 'none'));
+        resolve(found);
+      });
+      if (tool.stdout) {
+        tool.stdout.on('data', function(data) {
+          printed += data.toString();
+        });
+      }
+      job.limit(self.TUNE_SURVEY_TIMEOUT);
+    }).fail(reject);
+  });
+};
+
+// What a survey says of the channels the dialog asked about
+ControllerRtlsdrRadio.prototype.tuneSaid = function(frequency, wanted, survey, listed) {
+  var self = this;
+  var said = {};
+  fmscan.said(survey, {
+    sensitivity: self.config.get('scan_sensitivity', 8),
+    known: (self.stationsDb.fm || []).filter(function(station) {
+      return !station.deleted;
+    }).map(function(station) {
+      return Math.round(parseFloat(station.frequency) * 1e6);
+    })
+  }).forEach(function(channel) {
+    said[Math.round(channel.freq / 1000)] = channel;
+  });
+  
+  var centre = Math.round(parseFloat(frequency) * 1000);
+  var own = Math.round(parseFloat(listed) * 1000);
+  var best = null;
+  var channels = wanted.map(function(khz) {
+    var heard = said[khz];
+    var name = self.tuneFrequency(khz / 1000);
+    var other = khz !== own ? self.getStationByUri('rtlsdr://fm/' + name) : null;
+    var channel = {
+      frequency: name,
+      // 'unread': the survey did not reach this channel
+      says: heard ? heard.says : 'unread',
+      reading: heard && typeof heard.reading === 'number' ? Math.round(heard.reading * 10) / 10 : null,
+      level: heard && heard.level !== null && heard.level !== undefined ? heard.level : null,
+      mono: !!(heard && heard.mono),
+      offset: heard && typeof heard.offset === 'number' ? Math.round(heard.offset) : null,
+      // the name of another station of the list that holds this frequency
+      held: other && !other.station.deleted ? (other.station.customName || other.station.name || ('FM ' + name)) : null,
+      own: khz === own,
+      best: false
+    };
+    if ((channel.says === 'stereo' || channel.says === 'mono') && !channel.held) {
+      var away = Math.abs(khz - centre);
+      if (!best || away < best.away || (away === best.away && channel.reading > best.channel.reading)) {
+        best = { away: away, channel: channel };
+      }
+    }
+    return channel;
+  });
+  if (best) {
+    best.channel.best = true;
+  }
+  // kept for the station that is given one of these frequencies (tuneKeep)
+  self.tuneSurveyed = { at: Date.now(), channels: channels };
+  return {
+    frequency: frequency,
+    step_khz: self.getRegionSettings().spacing_khz,
+    gain: survey.slices.length ? survey.slices[0].gain : null,
+    channels: channels,
+    best: best ? best.channel.frequency : null
+  };
+};
+
+// The player as it is now: what the dialog puts back when it is done
+ControllerRtlsdrRadio.prototype.tunePlayerNow = function() {
+  var state = null;
+  try {
+    state = this.commandRouter.volumioGetState();
+  } catch (e) {
+    // no state to be had: nothing is put back
+  }
+  state = state && typeof state === 'object' ? state : {};
+  return { status: state.status, position: state.position, service: state.service, uri: state.uri, volatile: !!state.volatile };
+};
+
+ControllerRtlsdrRadio.prototype.tuneQueue = function() {
+  var queue = null;
+  try {
+    queue = this.commandRouter.volumioGetQueue();
+  } catch (e) {
+    // no queue to be had
+  }
+  return Array.isArray(queue) ? queue : [];
+};
+
+// Whether a play that is starting is one the tune dialog makes: a frequency tried out, or
+// the station that was playing before put on again. Neither is a play of the station.
+ControllerRtlsdrRadio.prototype.tuneUncounted = function(uri) {
+  var resumed = this.tuneResumes === uri;
+  this.tuneResumes = null;
+  return resumed || !!(this.tuneTrial && this.tuneTrial.uri === uri);
+};
+
+// What the player is asked for is waited for, but not for ever: Volumio does not answer
+// every request (removing the queue item it is on is one it leaves unanswered). Resolves
+// or rejects as the request does, or resolves with nothing when the time is up.
+ControllerRtlsdrRadio.prototype.tuneWithin = function(asked, ms) {
+  return new Promise(function(resolve, reject) {
+    var timer = setTimeout(resolve, ms);
+    Promise.resolve(asked).then(function(value) {
+      clearTimeout(timer);
+      resolve(value);
+    }, function(e) {
+      clearTimeout(timer);
+      reject(e);
+    });
+  });
+};
+
+// Where in the queue the dialog's own item is, or -1: where it was put, if it is still
+// there. Anything else is left alone: an item too many is better than one of the user's gone.
+ControllerRtlsdrRadio.prototype.tuneItemAt = function(trial) {
+  if (!trial || !trial.mine) {
+    return -1;
+  }
+  var item = this.tuneQueue()[trial.index];
+  return item && item.service === 'rtlsdr_radio' && item.uri === trial.uri ? trial.index : -1;
+};
+
+// The dialog's own queue item is taken out again. Whether it has gone is read from the
+// queue itself.
+ControllerRtlsdrRadio.prototype.tuneDropItem = function(trial) {
+  var self = this;
+  var index = self.tuneItemAt(trial);
+  if (index === -1) {
+    return Promise.resolve();
+  }
+  trial.mine = false;
+  var had = self.tuneQueue().length;
+  try {
+    Promise.resolve(self.commandRouter.volumioRemoveQueueItem({ value: index })).catch(function() {});
+  } catch (e) {
+    self.logger.info('[RTL-SDR Radio] Tune: the queue item of ' + trial.frequency + ' MHz could not be removed: ' + e);
+    return Promise.resolve();
+  }
+  return new Promise(function(resolve) {
+    var looks = 0;
+    (function look() {
+      if (self.tuneQueue().length < had || ++looks > 30) {
+        resolve();
+      } else {
+        setTimeout(look, 100);
+      }
+    })();
+  });
+};
+
+// Play a frequency for the user to listen to: as an item at the end of the player's own
+// queue, so that the sound, the gain and the reception level are those of any station.
+// It is no play of a station of the list, and the item is the dialog's: the next
+// frequency is played as the same item, and tuneEnd removes it.
+ControllerRtlsdrRadio.prototype.tuneListen = function(frequency) {
+  var self = this;
+  return self.tuneInTurn(function() {
+    return self.tuneListenNow(frequency);
+  });
+};
+
+// One change to the player's queue at a time: a step asked for while the one before is
+// still being put on waits for it
+ControllerRtlsdrRadio.prototype.tuneInTurn = function(what) {
+  var turn = (this.tuneTurn || Promise.resolve()).then(what, what);
+  this.tuneTurn = turn.catch(function() {});
+  return turn;
+};
+
+ControllerRtlsdrRadio.prototype.tuneListenNow = function(frequency) {
+  var self = this;
+  var router = self.commandRouter;
+  var uri = 'rtlsdr://fm/' + frequency;
+  var earlier = self.tuneTrial;
+  var before = earlier ? earlier.before : self.tunePlayerNow();
+  self.logger.info('[RTL-SDR Radio] Tune: listening to ' + frequency + ' MHz');
+  self.tuneSeen = Date.now();
+  self.tuneWatchStart();
+  
+  // The dialog has an item in the queue already: it is given the new frequency. (Taken
+  // out and put in again, every step would be told to the user as a removal.)
+  if (self.tuneItemAt(earlier) !== -1) {
+    return self.tuneWithin(router.volumioStop(), self.TUNE_PLAYER_WAIT).then(function() {
+      return self.explodeUri(uri);
+    }).then(function(tracks) {
+      var index = self.tuneItemAt(earlier);
+      if (index === -1 || !tracks || !tracks[0]) {
+        earlier.mine = false;
+        return self.tuneListenNow(frequency);   // gone meanwhile: as a new item
+      }
+      var item = self.tuneQueue()[index];
+      ['uri', 'title', 'name', 'artist', 'album', 'albumart'].forEach(function(field) {
+        item[field] = tracks[0][field];
+      });
+      self.tuneTrial = { uri: uri, frequency: frequency, before: before, index: index, mine: true };
+      try {
+        router.volumioPushQueue(self.tuneQueue());
+      } catch (e) {
+        // the queue is shown as it was until the player next tells it
+      }
+      return self.tuneWithin(router.volumioPlay(index), self.TUNE_PLAYER_WAIT);
+    });
+  }
+  
+  var had = self.tuneQueue().length;
+  var trial = self.tuneTrial = { uri: uri, frequency: frequency, before: before, index: had, mine: false };
+  return self.tuneWithin(router.addQueueItems([{ service: 'rtlsdr_radio', uri: uri }]), self.TUNE_PLAYER_WAIT).then(function(added) {
+    if (added && typeof added.firstItemIndex === 'number') {
+      trial.index = added.firstItemIndex;
+    }
+    // (an item the queue ended with already is not added a second time: then it is the user's)
+    trial.mine = self.tuneQueue().length > had;
+    if (!self.tuneQueue()[trial.index]) {
+      throw new Error('the player did not take the frequency into its queue');
+    }
+    return self.tuneWithin(router.volumioPlay(trial.index), self.TUNE_PLAYER_WAIT);
+  });
+};
+
+// The dialog is done: what it played is stopped, its queue item removed, and the player
+// put back on the item it was on, playing if it was. What the user has put on meanwhile
+// is left alone. Resolves with whether there was anything to end.
+ControllerRtlsdrRadio.prototype.tuneEnd = function() {
+  var self = this;
+  return self.tuneInTurn(function() {
+    return self.tuneEndNow();
+  });
+};
+
+// A page that is closed without a word (the browser gone, the network lost) leaves the
+// frequency it tried playing. The dialog asks about it every second while it is open;
+// when nobody has asked for a while, it is ended as if Cancel had been pressed.
+ControllerRtlsdrRadio.prototype.tuneWatchStart = function() {
+  var self = this;
+  if (self.tuneWatch) {
+    return;
+  }
+  self.tuneWatch = setInterval(function() {
+    if (!self.tuneTrial) {
+      self.tuneWatchStop();
+    } else if (Date.now() - self.tuneSeen > self.TUNE_ABANDONED) {
+      self.logger.info('[RTL-SDR Radio] Tune: no page has asked about ' + self.tuneTrial.frequency + ' MHz for ' +
+        Math.round(self.TUNE_ABANDONED / 60000) + ' minutes: ended');
+      self.tuneEnd();
+    }
+  }, Math.max(100, Math.min(15000, self.TUNE_ABANDONED / 4)));
+  self.tuneWatch.unref();
+};
+
+ControllerRtlsdrRadio.prototype.tuneWatchStop = function() {
+  if (this.tuneWatch) {
+    clearInterval(this.tuneWatch);
+    this.tuneWatch = null;
+  }
+};
+
+ControllerRtlsdrRadio.prototype.tuneEndNow = function() {
+  var self = this;
+  var router = self.commandRouter;
+  var trial = self.tuneTrial;
+  self.tuneWatchStop();
+  if (!trial) {
+    return Promise.resolve(false);
+  }
+  self.tuneTrial = null;
+  
+  var now = self.tunePlayerNow();
+  var ours = now.service === 'rtlsdr_radio' && now.uri === trial.uri;
+  var elsewhere = now.status === 'play' && !ours;
+  var back = !elsewhere && typeof trial.before.position === 'number' && !!self.tuneQueue()[trial.before.position] &&
+    trial.before.position !== self.tuneItemAt(trial) ? trial.before.position : null;
+  var resume = back !== null && trial.before.status === 'play' && !trial.before.volatile;
+  
+  return self.tuneWithin(ours && now.status === 'play' ? router.volumioStop() : null, self.TUNE_PLAYER_WAIT).then(function() {
+    // Volumio, asked to remove the item it is on, stays on none (and does not answer):
+    // it is put on the earlier item first
+    if (back !== null) {
+      try {
+        router.stateMachine.currentPosition = back;
+        if (self.tuneItemAt(trial) === -1) {
+          router.volumioPushState(router.stateMachine.getState());
+        }
+      } catch (e) {
+        // the player's own business: the item is removed all the same
+      }
+    }
+    return self.tuneDropItem(trial);
+  }).then(function() {
+    self.logger.info('[RTL-SDR Radio] Tune: done' + (resume ? ', back to what was playing' : ''));
+    if (resume) {
+      var item = self.tuneQueue()[back];
+      self.tuneResumes = item && item.service === 'rtlsdr_radio' ? item.uri : null;
+      return self.tuneWithin(router.volumioPlay(back), self.TUNE_PLAYER_WAIT);
+    }
+  }).then(function() {
+    return true;
+  });
+};
+
+// The player keeps its playlists and its favourites as files of entries, each with a
+// service and an address: the entries that are the station at the one frequency are
+// given the other, as the queue's items are
+ControllerRtlsdrRadio.prototype.tuneListsFollow = function(from, to) {
+  var self = this;
+  var folders = [];
+  try {
+    var manager = self.commandRouter.playListManager;
+    [manager.playlistFolder, manager.favouritesPlaylistFolder].forEach(function(folder) {
+      if (typeof folder === 'string' && folder) {
+        folders.push(folder);
+      }
+    });
+  } catch (e) {
+    // the player's own places are used
+  }
+  if (folders.length === 0) {
+    folders = ['/data/playlist/', '/data/favourites/'];
+  }
+  var followed = [];
+  folders.forEach(function(folder) {
+    var names;
+    try {
+      names = fs.readdirSync(folder);
+    } catch (e) {
+      return;
+    }
+    names.forEach(function(name) {
+      var file = folder.replace(/\/?$/, '/') + name;
+      var list;
+      try {
+        if (!fs.statSync(file).isFile()) {
+          return;
+        }
+        list = fs.readJsonSync(file);
+      } catch (e) {
+        return;   // not a list of entries: not the player's, or not readable
+      }
+      if (!Array.isArray(list)) {
+        return;
+      }
+      var changed = 0;
+      list.forEach(function(entry) {
+        if (entry && entry.service === 'rtlsdr_radio' && entry.uri === 'rtlsdr://fm/' + from) {
+          entry.uri = 'rtlsdr://fm/' + to;
+          if (entry.title === 'FM ' + from) {
+            entry.title = 'FM ' + to;
+          }
+          if (entry.artist === from + ' MHz') {
+            entry.artist = to + ' MHz';
+          }
+          changed++;
+        }
+      });
+      if (changed === 0) {
+        return;
+      }
+      try {
+        fs.writeJsonSync(file + '.tmp', list);
+        fs.renameSync(file + '.tmp', file);
+        followed.push(name + ' (' + changed + ')');
+      } catch (e) {
+        self.logger.info('[RTL-SDR Radio] Tune: the player\'s list ' + name + ' could not be written: ' + e);
+      }
+    });
+  });
+  if (followed.length > 0) {
+    self.logger.info('[RTL-SDR Radio] Tune: in the player\'s playlists and favourites ' + from + ' MHz is now ' + to + ' MHz: ' + followed.join(', '));
+  }
+};
+
+// The player's queue knows a station by its frequency: its items for the one go to the other
+ControllerRtlsdrRadio.prototype.tuneQueueFollows = function(from, to) {
+  try {
+    var machine = this.commandRouter.stateMachine;
+    var queue = machine.playQueue.arrayQueue;
+    var followed = 0;
+    queue.forEach(function(item) {
+      if (item && item.service === 'rtlsdr_radio' && item.uri === 'rtlsdr://fm/' + from) {
+        item.uri = 'rtlsdr://fm/' + to;
+        item.artist = to + ' MHz';
+        followed++;
+      }
+    });
+    if (followed > 0) {
+      this.commandRouter.volumioPushQueue(queue);
+      machine.playQueue.saveQueue();
+    }
+  } catch (e) {
+    // no queue to be found: its items keep the old frequency
+  }
+};
+
+// The station at one frequency is given another. Its name, logo, favourite mark and
+// play count stay with it; what the dialog's survey read at the new frequency is noted;
+// items of the player's queue that are this station follow it. Where another station of
+// the list holds the new frequency, keep says which of the two stays: 'this' (the other
+// is taken out of the list) or 'other' (this one is deleted, and can be restored).
+// Without it nothing is changed and the answer names the other ({ conflict }, 409).
+ControllerRtlsdrRadio.prototype.tuneKeep = function(from, to, keep) {
+  var self = this;
+  var entry = self.getStationByUri('rtlsdr://fm/' + from);
+  if (!entry || entry.station.deleted) {
+    return { status: 404, error: 'No station at ' + from + ' MHz' };
+  }
+  var station = entry.station;
+  if (from === to) {
+    return { success: true, station: station, removed: null };
+  }
+  
+  var others = (self.stationsDb.fm || []).filter(function(other) {
+    return other !== station && parseFloat(other.frequency) === parseFloat(to);
+  });
+  var live = others.filter(function(other) { return !other.deleted; })[0];
+  if (live && keep !== 'this' && keep !== 'other') {
+    return { status: 409, conflict: { frequency: to, name: live.customName || live.name || ('FM ' + to) } };
+  }
+  if (live && keep === 'other') {
+    station.deleted = true;
+    if (!self.saveStations()) {
+      return { status: 500, error: 'The station list could not be saved' };
+    }
+    self.tuneQueueFollows(from, to);
+    self.tuneListsFollow(from, to);
+    self.logger.info('[RTL-SDR Radio] Tune: ' + from + ' MHz deleted: ' + to + ' MHz holds the station already');
+    return { success: true, station: live, removed: from, deleted: true };
+  }
+  
+  // One station to a frequency: whatever else the list has there, deleted ones too, goes
+  self.stationsDb.fm = self.stationsDb.fm.filter(function(other) {
+    return others.indexOf(other) === -1;
+  });
+  station.frequency = to;
+  if (/^FM \d/.test(String(station.name || ''))) {
+    station.name = 'FM ' + to;   // a name that was only the frequency
+  }
+  var read = self.tuneSurveyed && Date.now() - self.tuneSurveyed.at < 600000 ?
+    self.tuneSurveyed.channels.filter(function(channel) { return channel.frequency === to; })[0] : null;
+  if (read && (read.says === 'stereo' || read.says === 'mono')) {
+    station.quality = read.reading;
+    station.level = read.level;
+    station.mono = read.mono;
+    station.last_seen = new Date().toISOString();
+  }
+  if (!self.saveStations()) {
+    return { status: 500, error: 'The station list could not be saved' };
+  }
+  self.logos.retuned({ frequency: from }, { frequency: to });
+  self.tuneQueueFollows(from, to);
+  self.tuneListsFollow(from, to);
+  
+  self.logger.info('[RTL-SDR Radio] Tune: the station at ' + from + ' MHz is now at ' + to + ' MHz' +
+    (live ? '; the entry that was there is taken out of the list' : ''));
+  return { success: true, station: station, removed: live ? to : null };
+};
+
 ControllerRtlsdrRadio.prototype.scanFm = function() {
   var self = this;
   var defer = libQ.defer();
@@ -8276,7 +9553,7 @@ ControllerRtlsdrRadio.prototype.scanFm = function() {
       // processes one after another, so the job ends when the scan says so
       job.keepOpen = true;
       
-      self.logger.info('[RTL-SDR Radio] Starting FM scan...');
+      self.logger.info('[RTL-SDR Radio] Starting FM scan (' + self.fmScanDepth() + ')...');
       self.commandRouter.pushToastMessage('info', self.getI18nString('FM_RADIO'), self.getI18nString('TOAST_FM_SCANNING_UI'));
       
       // fn-rtl-gain -b [lower]M:[upper]M:[spacing]k surveys the band on the region's
@@ -8287,7 +9564,8 @@ ControllerRtlsdrRadio.prototype.scanFm = function() {
       var lowerFreq = effectiveStart.toFixed(2);
       var upperFreq = regionSettings.band_end;
       var spacing = regionSettings.spacing_khz + 'k';
-      var scanArgs = ['-b', lowerFreq + 'M:' + upperFreq + 'M:' + spacing];
+      var surveyedWith = self.fmCorrection();
+      var scanArgs = ['-b', self.fmSurveyBand().range].concat(self.fmSurveyArgs(), self.fmCorrectionArgs());
       
       // The tool takes the band in slices of 2 MHz and names each as it finishes it
       var slices = Math.max(1, Math.ceil((upperFreq - effectiveStart + regionSettings.spacing_khz / 1000) / 2));
@@ -8371,6 +9649,7 @@ ControllerRtlsdrRadio.prototype.scanFm = function() {
             return looked[parseFloat(frequency).toFixed(places)] === true;
           });
           self.saveStations();
+          self.noteTuningError(survey, surveyedWith);
           
           var totalStations = self.stationsDb.fm.length;
           self.commandRouter.pushToastMessage('success', self.getI18nString('FM_RADIO'), 
@@ -8466,7 +9745,7 @@ ControllerRtlsdrRadio.prototype.listenForPi = function(job, frequency, gain) {
     try {
       // 171k: the rate the RDS decoder works best at
       receiver = job.spawn('fn-rtl_fm', ['-f', frequency + 'M', '-M', 'fm', '-s', '171k', '-l', '0', '-A', 'std',
-        '-g', String(gain), '-F', '9'], { stdio: ['ignore', 'pipe', 'pipe'] });
+        '-g', String(gain), '-F', '9'].concat(self.fmCorrectionArgs()), { stdio: ['ignore', 'pipe', 'pipe'] });
       decoder = job.spawn('fn-redsea', ['-r', '171k'], { stdio: ['pipe', 'pipe', 'pipe'] });
     } catch (e) {
       if (receiver) {
@@ -8554,15 +9833,32 @@ ControllerRtlsdrRadio.prototype.stationsFromSurvey = function(survey, regionSett
   var self = this;
   var sensitivity = self.config.get('scan_sensitivity', 8);
   var now = new Date().toISOString();
+  // The stations the list holds already stay on a little less than a new one must show
+  var judged = {
+    sensitivity: sensitivity,
+    known: (self.stationsDb.fm || []).filter(function(station) {
+      return !station.deleted;
+    }).map(function(station) {
+      return Math.round(parseFloat(station.frequency) * 1e6);
+    })
+  };
   
   survey.slices.forEach(function(slice) {
     self.logger.info('[RTL-SDR Radio] FM scan: slice at ' + (slice.freq / 1e6).toFixed(2) + ' MHz, gain ' + slice.gain + ' dB' +
       (slice.backoff > 0 ? ' (taken down ' + slice.backoff + ' dB: the tuner was overloaded)' : '') +
       ', level ' + slice.level + ' of 127, cut off ' + slice.cut + '%');
   });
-  fmscan.ghosts(survey, { sensitivity: sensitivity }).forEach(function(channel) {
+  fmscan.ghosts(survey, judged).forEach(function(channel) {
     self.logger.info('[RTL-SDR Radio] FM scan: the signal at ' + (channel.freq / 1e6).toFixed(2) +
-      ' MHz is made in the tuner, not a station (pilot ' + channel.pilot + ' dB, ' + channel.again + ' dB with the gain lowered)');
+      ' MHz is made in the tuner, not a station (' + (channel.mono ?
+        'no pilot, carrier ' + channel.quiet + ' dB clear of the noise, ' + channel.againq :
+        'pilot ' + channel.pilot + ' dB, ' + channel.again) + ' dB with the gain lowered)');
+  });
+  fmscan.mirrors(survey, judged).forEach(function(channel) {
+    self.logger.info('[RTL-SDR Radio] FM scan: the signal at ' + (channel.freq / 1e6).toFixed(2) +
+      ' MHz is the tuner\'s mirror of a stronger station, not a station (' + (channel.mono ?
+        'no pilot, carrier ' + channel.quiet + ' dB clear of the noise, ' + channel.movedq :
+        'pilot ' + channel.pilot + ' dB, ' + channel.moved) + ' dB with the tuner set elsewhere)');
   });
   
   // Format to appropriate decimal places based on spacing and offset
@@ -8570,16 +9866,20 @@ ControllerRtlsdrRadio.prototype.stationsFromSurvey = function(survey, regionSett
   var spacingMHz = regionSettings.spacing_khz / 1000;
   var decimalPlaces = (spacingMHz < 0.1 || regionSettings.scan_offset_khz % 100 !== 0) ? 2 : 1;
   
-  return fmscan.stations(survey, { sensitivity: sensitivity }).map(function(found) {
+  return fmscan.stations(survey, judged).map(function(found) {
     var freqFormatted = (found.freq / 1e6).toFixed(decimalPlaces);
-    self.logger.info('[RTL-SDR Radio] Found station: ' + freqFormatted + ' MHz (pilot ' + found.pilot +
-      ' dB, level ' + found.level + '/5, carrier ' + Math.round(found.offset) + ' Hz off)');
+    self.logger.info('[RTL-SDR Radio] Found station: ' + freqFormatted + ' MHz (' +
+      (found.mono ? 'no pilot: mono, carrier ' + found.pilot + ' dB clear of the noise' : 'pilot ' + found.pilot + ' dB') +
+      ', level ' + (found.level === null ? 'none' : found.level + '/5') + ', carrier ' + Math.round(found.offset) + ' Hz off' +
+      (found.held ? '; less than a new station must show, kept as one the list holds' : '') + ')');
     return {
       frequency: freqFormatted,
       name: 'FM ' + freqFormatted,
       signal_strength: found.rf.toFixed(1),
       quality: found.pilot,
       level: found.level,
+      // sends no stereo pilot: its reception is read by its carrier, in a scan and when played
+      mono: !!found.mono,
       last_seen: now
     };
   });
@@ -8892,7 +10192,7 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(job, channel, servic
   // Update play statistics
   var uri = 'rtlsdr://dab/' + channel + '/' + encodeURIComponent(serviceName);
   var stationInfo = self.getStationByUri(uri);
-  if (stationInfo) {
+  if (stationInfo && !self.tuneUncounted(uri)) {
     stationInfo.station.playCount = (stationInfo.station.playCount || 0) + 1;
     stationInfo.station.lastPlayed = new Date().toISOString();
     self.saveStations();
@@ -8981,17 +10281,30 @@ ControllerRtlsdrRadio.prototype.startDabPlayback = function(job, channel, servic
       
       self.logger.info('[RTL-SDR Radio] Detected PCM format: ' + sampleRate + ' Hz, ' + channels + ' channels');
       
-      // sox resamples to the output rate, aplay plays into Volumio's device
-      var soxProcess = job.spawn('sox',
-        ['-t', 'raw', '-r', String(sampleRate), '-c', String(channels), '-e', 'signed-integer', '-b', '16', '-',
-         '-t', 'raw', '-r', String(self.OUTPUT_SAMPLE_RATE), '-c', '2', '-'],
-        { stdio: ['pipe', 'pipe', 'pipe'] });
+      // sox resamples to the output rate, aplay plays into Volumio's device. The sound
+      // is left at the broadcaster's level unless the user has taken DAB down.
+      var soxArgs = ['-t', 'raw', '-r', String(sampleRate), '-c', String(channels), '-e', 'signed-integer', '-b', '16', '-',
+                     '-t', 'raw', '-r', String(self.OUTPUT_SAMPLE_RATE), '-c', '2', '-'];
+      var dabLevel = self.levelSetting('dab_level');
+      if (dabLevel !== 0) {
+        soxArgs.push('vol', dabLevel.toFixed(2) + 'dB');
+      }
+      var soxStarted = Date.now();
+      var soxProcess = job.run('sox', soxArgs, { stdio: ['pipe', 'pipe', 'pipe'] }, function(entry) {
+        self.logClipping('DAB ' + channel + ' ' + serviceName.trim(), dabLevel, entry, soxStarted);
+      });
       var aplayProcess = job.spawn('aplay',
         ['-D', 'volumio', '-f', 'S16_LE', '-r', String(self.OUTPUT_SAMPLE_RATE), '-c', '2'],
         { stdio: ['pipe', 'ignore', 'pipe'] });
       
       dabProcess.stdout.pipe(soxProcess.stdin);
       soxProcess.stdout.pipe(aplayProcess.stdin);
+      
+      // The sound goes to the song recogniser as well
+      self.recogniser.start('rtlsdr://dab/' + channel + '/' + encodeURIComponent(serviceName));
+      soxProcess.stdout.on('data', function(chunk) {
+        self.recogniser.feed(chunk);
+      });
       
       self.soxProcess = soxProcess;
       self.aplayProcess = aplayProcess;
