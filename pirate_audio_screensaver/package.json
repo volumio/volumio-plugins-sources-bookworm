@@ -1,0 +1,33 @@
+{
+  "name": "pirate_audio_screensaver",
+  "version": "0.1.6",
+  "description": "Idle clock screensaver for Pimoroni Pirate Audio ST7789 displays on Volumio",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test tests/plugin.test.js"
+  },
+  "author": "arut16",
+  "license": "MIT",
+  "repository": "https://github.com/arut16/Ecran-Veille-Volumio",
+  "volumio_info": {
+    "prettyName": "Pirate Audio Screensaver",
+    "icon": "fa-clock-o",
+    "plugin_type": "user_interface",
+    "architectures": [
+      "armhf"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "details": "Displays an idle clock on Pimoroni Pirate Audio ST7789 displays with configurable idle delay, display rotation and individually selectable bundled fonts with 12:34 previews.",
+    "changelog": "0.1.6: Select individual bundled clock fonts, preview 12:34 in a three-column gallery, persist font selection, and share the display with Pirate Audio to avoid exclusive GPIO conflicts."
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "kew": "*",
+    "v-conf": "*"
+  }
+}
