@@ -1,0 +1,4 @@
+Pillow>=5.4,<10
+requests>=2.21,<3
+toml>=0.10,<1
+python-socketio[client]==4.6.1
