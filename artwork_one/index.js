@@ -327,6 +327,8 @@ ArtworkOne.prototype.cleanAmbient = function (a) {
   if (isTime(a.nightTo)) { out.nightTo = a.nightTo; }
   if (TEXT_SIZES.indexOf(a.textSize) > -1) { out.textSize = a.textSize; }   // the display's own text size and volume
   if (typeof a.hideVolume === 'boolean') { out.hideVolume = a.hideVolume; }
+  if (typeof a.keysWake === 'boolean') { out.keysWake = a.keysWake; }   // a remote that types (Flirc) may leave the ambient screen up
+  if (typeof a.transparency === 'boolean') { out.transparency = a.transparency; }   // the display's frosted glass, or solid surfaces
   return Object.keys(out).length ? out : null;
 };
 

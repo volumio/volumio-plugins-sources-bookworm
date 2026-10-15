@@ -3,6 +3,11 @@
    The selectors keep the theme's names (body#artwork, the same classes) so the design's rules
    port one to one; there is no Bootstrap and no inherited theme underneath any more. */
 :root {
+  /* the system bars a screen draws under (iPhone notch, Android status and navigation bars): what the browser reports.
+     Volumio's Android app is the exception: its WebView reports the phone's bars although the app draws them itself
+     above and below it, so there the theme leaves no room for them (core/insets.ts sets the class). */
+  --sa-t: env(safe-area-inset-top, 0px);
+  --sa-b: env(safe-area-inset-bottom, 0px);
   /* ground & ink (spec §3.1) */
   --ground:#0a0c0e;
   --ground-deep:#080a0c;
@@ -137,6 +142,37 @@
   --q-radio-line:rgba(255,255,255,.26);
   /* a plain surface a step off the ground (inherited panels that are not glass) */
   --surface-2:#333333;
+  /* the settings cards (handoff 15): the card, its hairlines, the icon tile, the controls, a changed card's ink edge, the footer */
+  --sc-fill:rgba(255,255,255,.05);
+  --sc-line:rgba(255,255,255,.09);
+  --sc-fill-dirty:rgba(255,255,255,.07);
+  --sc-line-dirty:rgba(255,255,255,.20);
+  --sc-head-line:rgba(255,255,255,.08);
+  --sc-row-line:rgba(255,255,255,.06);
+  --sc-tile:rgba(255,255,255,.08);
+  --sc-icon:#c2c8cd;
+  --sc-ctl-fill:rgba(255,255,255,.08);
+  --sc-ctl-line:rgba(255,255,255,.13);
+  --sc-ctl-fill-on:rgba(255,255,255,.10);
+  --sc-ctl-line-on:#f2f3f5;
+  --sc-input-fill:rgba(0,0,0,.20);
+  --sc-save-off:rgba(255,255,255,.06);
+  --sc-save-off-ink:#71777d;
+  --sc-unsaved:#e6b35a;
+  --sc-danger:#ff8f8f;
+  --sc-danger-line:rgba(255,107,107,.30);
+  --sc-danger-card:rgba(255,255,255,.03);
+  --sc-danger-card-line:rgba(255,107,107,.22);
+  --sc-danger-tile:rgba(255,107,107,.10);
+  --sc-pill-line:rgba(255,255,255,.16);
+  --sc-pill-fill:rgba(255,255,255,.08);
+  --sc-switch-off:rgba(255,255,255,.16);
+  --sc-knob-off:#c2c8cd;
+  /* the transport bars (handoff 16): the pills, the quiet glyphs (shuffle, repeat, the speaker), the seek and volume tracks */
+  --tb-pill:rgba(255,255,255,.10);
+  --tb-pill-line:rgba(255,255,255,.13);
+  --tb-dim:#c2c8cd;
+  --tb-track:rgba(255,255,255,.20);
   /* radius / space / rail (spec §3.4) */
   --r-frame:18px;
   --r-panel:16px;
@@ -304,6 +340,36 @@
   --q-lossy-line:rgba(20,22,26,.10);
   --q-radio-ink:#14161a;
   --q-radio-line:rgba(20,22,26,.26);
+  /* the settings cards on paper: white cards, ink edges (handoff 15C) */
+  --sc-fill:#ffffff;
+  --sc-line:rgba(20,22,26,.08);
+  --sc-fill-dirty:#ffffff;
+  --sc-line-dirty:#14161a;
+  --sc-head-line:rgba(20,22,26,.08);
+  --sc-row-line:rgba(20,22,26,.07);
+  --sc-tile:rgba(20,22,26,.05);
+  --sc-icon:#5e646c;
+  --sc-ctl-fill:#faf8f5;
+  --sc-ctl-line:rgba(20,22,26,.14);
+  --sc-ctl-fill-on:#faf8f5;
+  --sc-ctl-line-on:#14161a;
+  --sc-input-fill:#faf8f5;
+  --sc-save-off:rgba(20,22,26,.05);
+  --sc-save-off-ink:#596069;
+  --sc-unsaved:#8a5a12;
+  --sc-danger:#a8231c;
+  --sc-danger-line:rgba(179,38,30,.30);
+  --sc-danger-card:#ffffff;
+  --sc-danger-card-line:rgba(179,38,30,.24);
+  --sc-danger-tile:rgba(179,38,30,.07);
+  --sc-pill-line:rgba(20,22,26,.14);
+  --sc-pill-fill:#faf8f5;
+  --sc-switch-off:rgba(20,22,26,.14);
+  --sc-knob-off:#ffffff;
+  --tb-pill:rgba(255,255,255,.70);
+  --tb-pill-line:rgba(20,22,26,.12);
+  --tb-dim:#5e646c;
+  --tb-track:rgba(20,22,26,.14);
   --art-1:#fbf9f6;
   --art-2:#f6f3ef;
   --aw-band:#faf8f5;
@@ -439,11 +505,46 @@
     --q-lossy-line:rgba(20,22,26,.10);
     --q-radio-ink:#14161a;
     --q-radio-line:rgba(20,22,26,.26);
+    /* the settings cards on paper: white cards, ink edges (handoff 15C) */
+    --sc-fill:#ffffff;
+    --sc-line:rgba(20,22,26,.08);
+    --sc-fill-dirty:#ffffff;
+    --sc-line-dirty:#14161a;
+    --sc-head-line:rgba(20,22,26,.08);
+    --sc-row-line:rgba(20,22,26,.07);
+    --sc-tile:rgba(20,22,26,.05);
+    --sc-icon:#5e646c;
+    --sc-ctl-fill:#faf8f5;
+    --sc-ctl-line:rgba(20,22,26,.14);
+    --sc-ctl-fill-on:#faf8f5;
+    --sc-ctl-line-on:#14161a;
+    --sc-input-fill:#faf8f5;
+    --sc-save-off:rgba(20,22,26,.05);
+    --sc-save-off-ink:#596069;
+    --sc-unsaved:#8a5a12;
+    --sc-danger:#a8231c;
+    --sc-danger-line:rgba(179,38,30,.30);
+    --sc-danger-card:#ffffff;
+    --sc-danger-card-line:rgba(179,38,30,.24);
+    --sc-danger-tile:rgba(179,38,30,.07);
+    --sc-pill-line:rgba(20,22,26,.14);
+    --sc-pill-fill:#faf8f5;
+    --sc-switch-off:rgba(20,22,26,.14);
+    --sc-knob-off:#ffffff;
+    --tb-pill:rgba(255,255,255,.70);
+    --tb-pill-line:rgba(20,22,26,.12);
+    --tb-dim:#5e646c;
+    --tb-track:rgba(20,22,26,.14);
     --art-1:#fbf9f6;
     --art-2:#f6f3ef;
     --aw-band:#faf8f5;
   }
 }
+:root.aw-android-app {
+  --sa-t: 0px;
+  --sa-b: 0px;
+}
+
 /* ---- type ---- */
 @font-face {
   font-family: "Figtree";
@@ -1057,6 +1158,34 @@ body#artwork #main-menu .rail__scan-icon {
   display: none;
 }
 
+/* the total turns into the time remaining on a tap (SeekBar) */
+.artwork-seek button.seek-time {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-family: var(--font-mono);
+  line-height: inherit;
+  text-align: right;
+  cursor: pointer;
+}
+.artwork-seek button.seek-time:hover {
+  color: var(--ink);
+}
+.artwork-seek button.seek-time:focus-visible {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.artwork-seek.is-remain .seek-remaining {
+  display: block;
+  margin-left: auto;
+}
+
+.artwork-seek.is-remain .seek-duration {
+  display: none;
+}
+
 .artwork-seek__hit {
   position: relative;
   flex: 1 1 auto;
@@ -1222,7 +1351,70 @@ body#artwork #main-menu .rail__scan-icon {
 .volume-slider input[type=range]:disabled {
   cursor: default;
 }
-/* Artwork mini player (spec §5.10 / mockup): identity · transport + seek · volume, zone, queue. */
+
+/* ---- the bars' pills (handoff 16D): where the music plays, the queue; the sizes are each bar's ---- */
+.tb-pill {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--tb-pill-line);
+  background: var(--tb-pill);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  cursor: pointer;
+  min-width: 0;
+  max-width: 200px;
+}
+.tb-pill .material-symbols-rounded {
+  color: var(--ink);
+}
+.tb-pill.tb-pill--output .material-symbols-rounded {
+  color: var(--tb-dim);
+}
+.tb-pill .tb-pill__name {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tb-pill .tb-pill__count {
+  font-size: 12px;
+  font-weight: 700;
+}
+.tb-pill:hover {
+  background: var(--fill-16);
+}
+.tb-pill.active {
+  background: var(--ink-1);
+  border-color: var(--ink-1);
+  color: var(--on-ink);
+}
+.tb-pill.active .material-symbols-rounded {
+  color: var(--on-ink);
+}
+.tb-pill:focus-visible {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 2px;
+}
+
+/* the filled heart (FavIcon): sits where the font's glyph would, at its size */
+.aw-fav-fill {
+  display: block;
+  flex: none;
+}
+
+.np-heart .aw-fav-fill {
+  font-size: 24px;
+}
+
+.mini-fav .aw-fav-fill {
+  font-size: 22px;
+}
+
+.np-m-tile .aw-fav-fill {
+  font-size: 24px;
+}
+/* Artwork mini player (handoff 16C): the track · the transport over the seek row · volume, output, queue. */
 #footer-content {
   position: fixed;
   left: var(--rail-w);
@@ -1246,35 +1438,40 @@ body#artwork #main-menu .rail__scan-icon {
 #footer-content #player-bar {
   height: 100%;
 }
+#footer-content {
+  /* handoff 16C: the Now Playing bar at 0.65 — one grid, three zones, the transport centred */
+}
 #footer-content .artwork-mini {
   height: 100%;
   display: grid;
-  grid-template-columns: minmax(0, min(300px, 23%)) minmax(auto, 1fr) auto;
-  grid-template-rows: auto auto;
-  align-content: center;
+  grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 1fr);
   align-items: center;
-  row-gap: clamp(3px, (var(--mini-h) - 80px) / 2, 9px);
-  column-gap: clamp(10px, 1.67vw, 24px);
+  column-gap: clamp(12px, 1.67vw, 24px);
 }
 #footer-content .mini-identity {
-  grid-column: 1;
-  grid-row: 1/3;
-  align-self: center;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+#footer-content .mini-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   min-width: 0;
 }
 #footer-content .mini-transport {
-  grid-column: 2;
-  grid-row: 1;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 #footer-content .mini-transport #playerButtons {
-  gap: clamp(4px, 1vw, 14px);
+  gap: clamp(12px, 1.53vw, 22px);
 }
 #footer-content .mini-transport .btn-link {
   color: var(--ink);
-  padding: 6px;
+  padding: 0;
 }
 #footer-content .mini-transport .btn-link .material-symbols-rounded {
   font-size: 28px;
@@ -1283,7 +1480,7 @@ body#artwork #main-menu .rail__scan-icon {
   color: var(--ink);
 }
 #footer-content .mini-transport .player-action-shuffle, #footer-content .mini-transport .repeat-button {
-  color: var(--ink-65);
+  color: var(--tb-dim);
 }
 #footer-content .mini-transport .player-action-shuffle .material-symbols-rounded, #footer-content .mini-transport .repeat-button .material-symbols-rounded {
   font-size: 22px;
@@ -1295,141 +1492,170 @@ body#artwork #main-menu .rail__scan-icon {
   color: var(--ink);
 }
 #footer-content .mini-transport .playPause {
-  width: 46px;
-  height: 46px;
-  color: var(--ground);
+  width: 48px;
+  height: 48px;
+  background: var(--ink-1);
+  color: var(--on-ink);
 }
 #footer-content .mini-transport .playPause .material-symbols-rounded {
-  font-size: 27px;
+  font-size: 28px;
 }
 #footer-content .mini-transport .playPause:hover {
-  color: var(--ground);
+  background: var(--ink);
+  color: var(--on-ink);
 }
+#footer-content .mini-seek {
+  width: clamp(220px, 38vw, 552px);
+  min-width: 0;
+}
+#footer-content .mini-seek .artwork-seek {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 36px;
+  column-gap: 10px;
+}
+#footer-content .mini-seek .artwork-seek__hit {
+  height: 16px;
+}
+#footer-content .mini-seek .seek-time {
+  font-size: 11px;
+}
+#footer-content .mini-seek .seek-elapsed {
+  color: var(--ink-2);
+}
+#footer-content .mini-seek .seek-remaining, #footer-content .mini-seek .seek-duration {
+  justify-self: end;
+  color: var(--tb-dim);
+}
+#footer-content .mini-seek .seek-track {
+  height: 4px;
+  background: var(--tb-track);
+}
+#footer-content .mini-seek .seek-handle {
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  background: var(--ink);
+}
+#footer-content { /* the shared knob's ring (controls.scss) stays */ }
 #footer-content .mini-right {
-  grid-column: 3;
-  grid-row: 1/3;
-  align-self: center;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 18px;
+  gap: 10px;
+  min-width: 0;
 }
 #footer-content .mini-volume {
   display: flex;
   align-items: center;
   min-width: 0;
   flex: none;
+  margin-right: 6px;
 }
-#footer-content .mini-zone {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 36px;
+#footer-content .mini-volume .volume-slider {
+  gap: 10px;
+}
+#footer-content .mini-volume .volume-slider input[type=range] {
+  width: clamp(64px, 6.7vw, 96px);
+}
+#footer-content .mini-volume .volume-slider input[type=range]::-webkit-slider-runnable-track {
+  background: linear-gradient(90deg, var(--ink-1) var(--aw-fill), var(--tb-track) var(--aw-fill));
+}
+#footer-content .mini-volume .volume-slider input[type=range]::-webkit-slider-thumb {
+  width: 12px;
+  height: 12px;
+  margin-top: -4px;
+  opacity: 1;
+  background: var(--ink);
+  box-shadow: 0 0 0 3px var(--fill-14), 0 2px 6px var(--shadow-soft);
+}
+#footer-content .mini-volume .volume-slider input[type=range]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  opacity: 1;
+  background: var(--ink);
+  box-shadow: 0 0 0 3px var(--fill-14), 0 2px 6px var(--shadow-soft);
+}
+#footer-content .mini-volume .volume-slider .button-mute {
+  width: 22px;
+  height: 22px;
+  color: var(--tb-dim);
+}
+#footer-content .mini-volume .volume-slider .button-mute .material-symbols-rounded {
+  font-size: 20px;
+}
+#footer-content .tb-pill {
+  height: 38px;
   padding: 0 12px;
-  border-radius: 18px;
-  background: var(--fill-10);
-  border: 1px solid var(--fill-12);
-  color: var(--ink-2);
-  cursor: pointer;
-  max-width: 160px;
+  gap: 7px;
+  border-radius: 19px;
 }
-#footer-content .mini-zone .material-symbols-rounded {
+#footer-content .tb-pill .material-symbols-rounded {
   font-size: 19px;
-  color: var(--ink-2);
 }
-#footer-content .mini-zone .mini-zone-name {
+#footer-content .tb-pill.tb-pill--output .material-symbols-rounded {
+  font-size: 18px;
+}
+#footer-content .tb-pill .tb-pill__name {
   font-size: 13px;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
-#footer-content .mini-zone:hover {
-  background: var(--fill-16);
-}
-#footer-content .mini-queue {
-  color: var(--ink-3);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 4px;
-  height: 36px;
-}
-#footer-content .mini-queue .material-symbols-rounded {
-  font-size: 24px;
-}
-#footer-content .mini-queue .mini-queue__count {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 15.7px;
-}
-#footer-content .mini-queue:hover, #footer-content .mini-queue.selected {
-  color: var(--ink);
-}
-#footer-content .mini-seek {
-  grid-column: 2;
-  grid-row: 2;
-  min-width: 0;
+#footer-content .tb-pill .tb-pill__count {
+  font-size: 12px;
 }
 #footer-content {
-  /* identity: 60px cover, three fixed lines centred on it */
+  /* the track: a 56px cover, the title over the artist and the quality; the heart after a title that shortens */
 }
 #footer-content #trackInfo-compact {
+  flex: 0 1 auto;
+  min-width: 0;
   display: grid;
-  grid-template-columns: 60px 1fr;
-  grid-template-areas: "cover title" "cover artist" "cover rates";
-  grid-template-rows: var(--mini-rows, 18px 15px 15px);
+  grid-template-columns: 56px minmax(0, 1fr);
+  grid-template-areas: "cover title" "cover byline";
+  grid-template-rows: auto auto;
   align-content: center;
-  align-items: center;
   column-gap: 14px;
-  row-gap: var(--mini-line-gap, 4px);
-  min-height: 60px;
-  padding: 0;
-  overflow-y: hidden;
-  scrollbar-width: none;
-}
-#footer-content {
-  /* the frame's own leftover: between 992 and 1199px the compact block gets 4px of padding */
-}
-@media (min-width: 992px) and (max-width: 1199px) {
-  #footer-content #trackInfo-compact {
-    padding: 4px;
-  }
+  row-gap: 3px;
 }
 #footer-content .trackInfo-album-art-wrapper {
   grid-area: cover;
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   overflow: hidden;
-  border-radius: 5px;
+  border-radius: 6px;
 }
 #footer-content img.album-art {
-  width: 60px;
-  height: 60px;
-  border-radius: 5px;
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
   object-fit: cover;
   cursor: pointer;
   display: block;
 }
 #footer-content #trackInfo-title {
   grid-area: title;
-  max-width: 98%;
+  align-self: end;
+  min-width: 0;
   font-size: 15px;
   font-weight: 600;
   line-height: 18px;
-  color: var(--ink-1);
+  color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
 }
+#footer-content .mini-byline {
+  grid-area: byline;
+  align-self: start;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
 #footer-content #trackInfo-artist-album {
-  grid-area: artist;
-  max-width: 98%;
+  min-width: 0;
   font-size: 13px;
   line-height: 15px;
-  color: var(--ink-65);
+  color: var(--ink-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1440,11 +1666,11 @@ body#artwork #main-menu .rail__scan-icon {
   line-height: 15px;
 }
 #footer-content .track-info-rates {
-  grid-area: rates;
+  flex: none;
   font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 0.06em;
-  color: var(--ink-muted);
+  letter-spacing: 0.12em;
+  color: var(--ink-dim);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1453,9 +1679,19 @@ body#artwork #main-menu .rail__scan-icon {
   overflow: hidden;
   white-space: nowrap;
 }
-#footer-content .track-info-rates .track-info-rate + .track-info-type::before {
-  content: "·";
-  margin-right: 6px;
+#footer-content .mini-fav {
+  flex: none;
+  margin-left: 6px;
+  color: var(--tb-dim);
+}
+#footer-content .mini-fav .material-symbols-rounded {
+  font-size: 22px;
+}
+#footer-content .mini-fav:hover {
+  color: var(--ink);
+}
+#footer-content .mini-fav.active {
+  color: var(--ink);
 }
 
 @supports not (backdrop-filter: blur(1px)) {
@@ -1464,11 +1700,8 @@ body#artwork #main-menu .rail__scan-icon {
   }
 }
 @media (max-width: 900px) {
-  body#artwork #footer-content .mini-zone .mini-zone-name {
+  body#artwork #footer-content .tb-pill--output .tb-pill__name {
     display: none;
-  }
-  body#artwork #footer-content .mini-zone {
-    padding: 0 11px;
   }
   body#artwork #footer-content .mini-volume {
     display: none;
@@ -1486,6 +1719,7 @@ body#artwork #main-menu .rail__scan-icon {
 }
 /* ============ Now Playing (spec §6.1) — the theme's rules, one to one ============ */
 #np {
+  --np-title: clamp(34px, 4.44vw, 64px);
   position: relative;
   z-index: 1;
   display: flex;
@@ -1494,7 +1728,7 @@ body#artwork #main-menu .rail__scan-icon {
   min-height: 100%;
   overflow: hidden;
   box-sizing: border-box;
-  padding: clamp(20px, 4.9vh, 44px) var(--pad-screen) clamp(16px, 4.2vh, 38px);
+  padding: clamp(20px, 3.8vh, 34px) var(--pad-screen) clamp(16px, 3.1vh, 28px);
   color: var(--ink-1);
 }
 #np #np-topbar {
@@ -1504,20 +1738,20 @@ body#artwork #main-menu .rail__scan-icon {
   min-height: 40px;
 }
 #np #np-topbar .np-chevron {
-  color: var(--ink-1);
+  color: var(--ink-2);
   cursor: pointer;
   display: inline-grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 11px;
-  background: var(--fill-12);
+  background: var(--fill-10);
 }
 #np #np-topbar .np-chevron .material-symbols-rounded {
-  font-size: 21px;
+  font-size: 22px;
 }
 #np #np-topbar .np-chevron:hover {
-  background: var(--fill-18);
+  background: var(--fill-16);
 }
 #np .np-menu-btn {
   display: none;
@@ -1530,16 +1764,16 @@ body#artwork #main-menu .rail__scan-icon {
 }
 #np .np-zone {
   font-size: 11px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ink-25);
+  color: var(--ink-2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 40vw;
 }
 #np .np-zone .np-zone-out {
-  color: var(--ink-dim);
+  color: var(--ink-muted);
 }
 #np #np-badge-slot {
   display: flex;
@@ -1581,7 +1815,7 @@ body#artwork #main-menu .rail__scan-icon {
   display: flex;
   align-items: flex-start;
   gap: clamp(20px, 3.9vw, 56px);
-  margin-top: clamp(14px, 4vh, 36px);
+  margin-top: clamp(14px, 3.1vh, 28px);
   flex: 1 1 0;
   min-height: 0;
   container-type: size;
@@ -1591,19 +1825,19 @@ body#artwork #main-menu .rail__scan-icon {
   width: min(100cqh, 50cqw);
   height: min(100cqh, 50cqw);
   aspect-ratio: 1/1;
-  border-radius: 11px;
+  border-radius: 6px;
 }
 #np #np-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
-  border-radius: 11px;
+  border-radius: 6px;
   box-shadow: var(--shadow-cover);
 }
 #np #np-meta {
   min-width: 0;
-  padding-top: 14px;
+  padding-top: 0;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -1612,15 +1846,15 @@ body#artwork #main-menu .rail__scan-icon {
 #np { /* the theme's fluid clamp for this never applied (csso dropped it): 14px is what shipped */ }
 #np .np-eyebrow {
   font-size: 11px;
-  letter-spacing: 0.2em;
-  color: var(--ink-35);
-  margin-bottom: clamp(8px, 1.8vh, 16px);
+  letter-spacing: 0.16em;
+  color: var(--ink-muted);
+  margin-bottom: 10px;
 }
 #np .np-title {
   font-family: var(--font-ui);
-  font-size: var(--t-display);
-  line-height: 0.98;
-  letter-spacing: -0.035em;
+  font-size: var(--np-title);
+  line-height: 1;
+  letter-spacing: -0.032em;
   font-weight: 800;
   color: var(--ink);
   margin: 0;
@@ -1636,15 +1870,16 @@ body#artwork #main-menu .rail__scan-icon {
   display: contents;
 }
 #np .np-artist {
-  font-size: clamp(17px, 1.6vw, 23px);
-  font-weight: 400;
-  color: var(--ink-2);
-  margin-top: clamp(10px, 2.4vh, 22px);
+  font-size: clamp(17px, 1.67vw, 24px);
+  font-weight: 600;
+  color: var(--ink);
+  margin-top: 14px;
+  text-wrap: pretty;
 }
 #np .np-album {
-  font-size: clamp(14px, 1.25vw, 18px);
+  font-size: clamp(14px, 1.18vw, 17px);
   font-weight: 400;
-  color: var(--ink-muted);
+  color: var(--ink-2);
   margin-top: 5px;
 }
 #np #np-chip-slot {
@@ -1655,42 +1890,28 @@ body#artwork #main-menu .rail__scan-icon {
   align-items: center;
   gap: 12px;
 }
+#np {
+  /* the quality chip (16B): depth/rate, then the format */
+}
 #np .np-chip {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  height: 38px;
-  padding: 0 15px;
+  height: 30px;
+  padding: 0 11px;
   border-radius: var(--r-pill);
-  background: var(--glass-2-fill);
-  border: 1px solid var(--glass-2-border);
+  background: var(--tb-pill);
+  border: 1px solid var(--tb-pill-line);
 }
 #np .np-chip-num {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--ink);
-}
-#np .np-chip-num--rate {
-  margin-left: 6px;
+  color: var(--ink-2);
 }
 #np .np-chip-unit {
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.14em;
   color: var(--ink-3);
-}
-#np .np-chip-unit--bit {
-  text-transform: uppercase;
-}
-#np .np-chip-val {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--ink);
-}
-#np .np-format {
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  color: var(--ink-muted);
   text-transform: uppercase;
 }
 #np .np-signalpath {
@@ -1711,13 +1932,52 @@ body#artwork #main-menu .rail__scan-icon {
 }
 #np {
   /* the column's face switch (handoff 6a) */
+  /* the face switch's row, the heart pinned to its end */
+}
+#np .np-tabrow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 46px;
+  margin-bottom: 26px;
+}
+#np .np-heart {
+  margin-left: auto;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: var(--fill-08);
+  border: 1px solid var(--fill-14);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+#np .np-heart .material-symbols-rounded {
+  font-size: 24px;
+}
+#np .np-heart:hover {
+  color: var(--ink);
+  background: var(--fill-12);
+}
+#np .np-heart.active {
+  color: var(--ink);
+}
+#np .np-heart:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+#np .np-heart:focus-visible {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 2px;
 }
 #np .np-seg {
   display: inline-flex;
   align-self: flex-start;
   padding: 3px;
   border-radius: 999px;
-  margin-bottom: 22px;
   background: var(--fill-10);
   border: 1px solid var(--fill-13);
 }
@@ -1773,16 +2033,6 @@ body#artwork #main-menu .rail__scan-icon {
 }
 #np .np-meta--lyrics {
   align-self: stretch;
-}
-#np .np-library {
-  margin-top: 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  color: var(--ink-3);
-  text-transform: uppercase;
 }
 #np {
   /* ---- the Info face (12B–12D) ---- */
@@ -2303,101 +2553,66 @@ body#artwork #np.np--info .np-chip .np-chip-unit {
   flex: none;
   margin-bottom: 12px;
 }
+#np {
+  /* ---- the bar (handoff 16B): the seek row full width, then one grid of three zones — up next, the
+     transport centred on the content area, volume · output · queue ---- */
+}
 #np #np-footer {
   margin-top: auto;
-  padding-top: clamp(14px, 4.8vh, 44px);
+  padding-top: clamp(14px, 3vh, 28px);
 }
-#np #np-seek {
-  margin-bottom: clamp(10px, 2vh, 18px);
+#np #np-seek .artwork-seek {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  column-gap: 16px;
+  align-items: center;
+}
+#np #np-seek .artwork-seek__hit {
+  width: 100%;
+  height: 24px;
+}
+#np #np-seek .seek-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--tb-track);
+}
+#np #np-seek .seek-fill {
+  background: var(--ink-1);
+}
+#np #np-seek .seek-handle {
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  background: var(--ink);
+  box-shadow: 0 0 0 4px var(--fill-14), 0 0 18px rgba(255, 255, 255, 0.45), 0 3px 8px var(--shadow-soft);
+}
+#np { /* the knob keeps its ring and glow */ }
+#np #np-seek .seek-time {
+  font-size: 12px;
+}
+#np #np-seek .seek-elapsed {
+  color: var(--ink-2);
+}
+#np #np-seek .seek-remaining, #np #np-seek .seek-duration {
+  justify-self: end;
+  color: var(--tb-dim);
 }
 #np #np-footer-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 24px;
-  margin-top: 4px;
-  flex-wrap: wrap;
-  row-gap: 12px;
-}
-#np {
-  /* the row is 50px tall and the play disc overhangs it, sitting 7px high, as the theme lays it out */
-  /* the row is 50px tall; each button carries 8px side margins and the play disc overhangs a
-     55px slot, sitting 7px high — the geometry the theme ended up with, kept to the pixel */
-}
-#np #np-transport {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: clamp(20px, 2.6vw, 36px);
-  height: 50px;
-}
-#np #np-transport #playerButtons {
-  gap: clamp(20px, 2.6vw, 36px);
-  height: 50px;
-}
-#np #np-transport #playerButtons > button {
-  margin: 0 8px;
-}
-#np #np-transport #playerButtons > .playPause {
-  margin: 0 calc(63px - clamp(56px, 5.3vw, 76px)) 0 8px;
-}
-#np #np-transport .btn-link {
-  color: var(--ink-2);
-  padding: 0;
-  height: 34.84px;
-}
-#np #np-transport .btn-link .material-symbols-rounded {
-  font-size: 28px;
-}
-#np #np-transport .btn-link:hover {
-  color: var(--ink);
-}
-#np #np-transport { /* the line boxes the theme's inline glyphs made */ }
-#np #np-transport #prev-button, #np #np-transport #next-button {
-  height: 43.56px;
-}
-#np #np-transport #prev-button .material-symbols-rounded, #np #np-transport #next-button .material-symbols-rounded {
-  font-size: 36px;
-  color: var(--ink);
-}
-#np #np-transport .np-fav {
-  color: var(--ink-1);
-}
-#np #np-transport .np-fav.active {
-  color: var(--ink);
-}
-#np #np-transport .playPause {
-  width: clamp(56px, 5.3vw, 76px);
-  height: clamp(56px, 5.3vw, 76px);
-  padding: 0;
-  color: var(--ground);
-  position: relative;
-  top: -7px;
-  flex: none;
-  margin: 0 calc(63px - clamp(56px, 5.3vw, 76px)) 0 8px;
-}
-#np #np-transport .playPause .material-symbols-rounded {
-  font-size: 42px;
-}
-#np #np-transport .playPause:hover {
-  color: var(--ground);
-}
-#np #np-footer-right {
-  display: flex;
-  align-items: center;
-  gap: clamp(16px, 2.2vw, 30px);
-  margin-left: auto;
-  flex: none;
-  min-width: 0;
+  margin-top: 16px;
 }
 #np #np-upnext {
   display: flex;
   align-items: center;
-  gap: 13px;
-  flex: none;
+  gap: 10px;
+  min-width: 0;
 }
 #np .np-upnext-label {
-  font-size: 11px;
+  margin-left: 6px;
+  font-size: 10px;
   letter-spacing: 0.16em;
   color: var(--ink-muted);
   white-space: nowrap;
@@ -2417,19 +2632,19 @@ body#artwork #np.np--info .np-chip .np-chip-unit {
 }
 #np .np-upnext-films {
   display: flex;
-  gap: 13px;
+  gap: 10px;
 }
 #np .np-upnext--covers-away .np-upnext-label, #np .np-upnext--covers-away .np-upnext-films {
   display: none;
 }
-#np { /* beside the docked queue, when the row has no room for them */ }
+#np { /* no room in the left zone */ }
 #np .np-upnext-film {
   display: block;
   padding: 0;
   margin: 0;
   border: 0;
   background: transparent;
-  border-radius: 11px;
+  border-radius: 6px;
   cursor: pointer;
   transition: transform 0.15s ease;
 }
@@ -2437,18 +2652,21 @@ body#artwork #np.np--info .np-chip .np-chip-unit {
   display: block;
   width: 44px;
   height: 44px;
-  border-radius: 11px;
+  border-radius: 6px;
   object-fit: cover;
   transition: opacity 0.15s ease;
+}
+#np .np-upnext-film {
+  /* the order reads at a glance: 1 → .45 → .18 */
 }
 #np .np-upnext-film:nth-child(1) img {
   opacity: 1;
 }
 #np .np-upnext-film:nth-child(2) img {
-  opacity: 0.6;
+  opacity: 0.45;
 }
 #np .np-upnext-film:nth-child(3) img {
-  opacity: 0.34;
+  opacity: 0.18;
 }
 #np .np-upnext-film:hover {
   transform: translateY(-2px);
@@ -2460,112 +2678,108 @@ body#artwork #np.np--info .np-chip .np-chip-unit {
   outline: 2px solid var(--ink-1);
   outline-offset: 2px;
 }
-#np .np-queue {
-  min-width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  padding: 0 14px;
-  background: var(--fill-12);
-  border: 0;
-  color: var(--ink-1);
-  display: inline-flex;
+#np #np-transport {
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  cursor: pointer;
 }
-#np .np-queue .material-symbols-rounded {
-  font-size: 22px;
+#np #np-transport #playerButtons {
+  gap: clamp(20px, 2.2vw, 32px);
 }
-#np .np-queue .np-queue__count {
-  font-size: 12px;
-  font-weight: 700;
+#np #np-transport .btn-link {
+  color: var(--ink-1);
+  padding: 0;
 }
-#np .np-queue:hover {
-  background: var(--glass-2-hover);
+#np #np-transport .btn-link .material-symbols-rounded {
+  font-size: 36px;
 }
-#np .np-queue.active {
+#np #np-transport .btn-link:hover {
+  color: var(--ink);
+}
+#np #np-transport .player-action-shuffle, #np #np-transport .repeat-button {
+  color: var(--tb-dim);
+}
+#np #np-transport .player-action-shuffle .material-symbols-rounded, #np #np-transport .repeat-button .material-symbols-rounded {
+  font-size: 26px;
+}
+#np #np-transport .player-action-shuffle.active, #np #np-transport .repeat-button.active {
+  color: var(--ink);
+}
+#np #np-transport .playPause {
+  width: clamp(56px, 5.3vw, 76px);
+  height: clamp(56px, 5.3vw, 76px);
+  padding: 0;
+  background: var(--ink-1);
+  color: var(--on-ink);
+  flex: none;
+}
+#np #np-transport .playPause .material-symbols-rounded {
+  font-size: clamp(32px, 2.9vw, 42px);
+}
+#np #np-transport .playPause:hover {
   background: var(--ink);
   color: var(--on-ink);
+}
+#np #np-footer-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: 0;
 }
 #np .np-volume {
   display: flex;
   align-items: center;
+  margin-right: 6px;
 }
 #np .np-volume .volume-slider {
-  gap: 10px;
+  gap: 12px;
 }
 #np .np-volume .volume-slider input[type=range] {
-  width: clamp(90px, 11vw, 150px);
+  width: clamp(80px, 7.6vw, 110px);
+  height: 20px;
 }
 #np .np-volume .volume-slider input[type=range]::-webkit-slider-runnable-track {
-  height: 5px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--ink-1) var(--aw-fill), var(--tb-track) var(--aw-fill));
 }
 #np .np-volume .volume-slider input[type=range]::-webkit-slider-thumb {
-  width: 13px;
-  height: 13px;
-  margin-top: -4px;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
   opacity: 1;
+  background: var(--ink);
   box-shadow: 0 0 0 3px var(--fill-14), 0 2px 6px var(--shadow-soft);
 }
 #np .np-volume .volume-slider input[type=range]::-moz-range-thumb {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
   opacity: 1;
+  background: var(--ink);
+  box-shadow: 0 0 0 3px var(--fill-14), 0 2px 6px var(--shadow-soft);
 }
 #np .np-volume .volume-slider .button-mute {
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
+  color: var(--tb-dim);
 }
 #np .np-volume .volume-slider .button-mute .material-symbols-rounded {
-  font-size: 23px;
+  font-size: 22px;
 }
-#np {
-  /* the seek bar here: 8px track, 20px handle, the timecodes under it */
+#np .tb-pill {
+  height: 44px;
+  padding: 0 14px;
+  gap: 8px;
+  border-radius: 22px;
 }
-#np #np-seek .artwork-seek {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  grid-template-areas: "track track track" "elapsed remaining duration";
-  row-gap: 12px;
-  column-gap: 0;
+#np .tb-pill .material-symbols-rounded {
+  font-size: 20px;
 }
-#np #np-seek .artwork-seek__hit {
-  grid-area: track;
-  width: 100%;
-  height: 36px;
+#np .tb-pill.tb-pill--output .material-symbols-rounded {
+  font-size: 19px;
 }
-#np #np-seek .seek-track {
-  height: 8px;
-  border-radius: 4px;
-  background: var(--fill-14);
-}
-#np #np-seek .seek-fill {
-  background: linear-gradient(90deg, var(--ink-25), var(--ink));
-}
-#np #np-seek .seek-handle {
-  width: 20px;
-  height: 20px;
-  margin: -10px 0 0 -10px;
-  box-shadow: 0 0 0 4px var(--fill-14), 0 0 18px rgba(255, 255, 255, 0.45), 0 3px 8px var(--shadow-soft);
-}
-#np #np-seek .seek-time {
-  font-size: 12px;
-}
-#np #np-seek .seek-elapsed {
-  grid-area: elapsed;
-  justify-self: start;
-  color: var(--ink-1);
-}
-#np #np-seek .seek-remaining {
-  display: block;
-  grid-area: remaining;
-  justify-self: center;
-}
-#np #np-seek .seek-duration {
-  grid-area: duration;
-  justify-self: end;
-  margin-left: 0;
+#np .tb-pill .tb-pill__name {
+  font-size: 14px;
 }
 #np .np-m-actions, #np .np-m-bar {
   display: none;
@@ -2638,16 +2852,6 @@ html.aw-is-light body#artwork #np .np-about__rule {
 body#artwork #np.np--cramped .np-seg {
   display: none;
 } /* beside the docked queue, when the footer no longer fits (NowPlaying.tsx) */
-@media (max-width: 1080px) {
-  body#artwork #np .np-upnext-films {
-    display: none;
-  }
-}
-@media (max-width: 900px) {
-  body#artwork #np .np-upnext-label {
-    display: none;
-  }
-}
 /* tall or narrow: the cover above the text (a landscape window merely resized boxy — not
    actually tall — keeps the cover beside the text instead; only real portrait shapes stack) */
 @media (max-aspect-ratio: 3/4), (max-width: 760px) {
@@ -2952,7 +3156,7 @@ body#artwork #np.np--empty .np-empty__dur {
 }
 /* Now Playing's text size, a screen's own choice (Appearance → This screen): the meta column scaled, the cover untouched */
 html[data-aw-text=s] body#artwork #np .np-title {
-  font-size: calc(var(--t-display) * 0.85);
+  font-size: calc(var(--np-title) * 0.85);
 }
 
 html[data-aw-text=s] body#artwork #np .np-artist, html[data-aw-text=s] body#artwork #np .np-album {
@@ -2960,7 +3164,7 @@ html[data-aw-text=s] body#artwork #np .np-artist, html[data-aw-text=s] body#artw
 }
 
 html[data-aw-text=l] body#artwork #np .np-title {
-  font-size: calc(var(--t-display) * 1.25);
+  font-size: calc(var(--np-title) * 1.25);
 }
 
 html[data-aw-text=l] body#artwork #np .np-artist {
@@ -2972,7 +3176,7 @@ html[data-aw-text=l] body#artwork #np .np-album {
 }
 
 html[data-aw-text=xl] body#artwork #np .np-title {
-  font-size: calc(var(--t-display) * 1.55);
+  font-size: calc(var(--np-title) * 1.55);
 }
 
 html[data-aw-text=xl] body#artwork #np .np-artist {
@@ -3021,6 +3225,32 @@ html[data-aw-text=l] body#artwork #np #np-meta, html[data-aw-text=xl] body#artwo
 }
 html[data-aw-text=l] body#artwork #np #np-meta::-webkit-scrollbar, html[data-aw-text=xl] body#artwork #np #np-meta::-webkit-scrollbar {
   display: none;
+}
+
+/* the cover face's byline (16B): the artist on its own line, then the album · year with the quality chip
+   beside it; the signal path and an outside source's note on lines of their own (not on the phone) */
+@media not all and (max-width: 700px) and (orientation: portrait) {
+  body#artwork #np:not(.np--info) #np-meta:not(.np-meta--lyrics) .np-byline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 12px;
+  }
+  body#artwork #np:not(.np--info) #np-meta:not(.np-meta--lyrics) .np-artist {
+    flex-basis: 100%;
+  }
+  body#artwork #np:not(.np--info) #np-meta:not(.np-meta--lyrics) .np-album {
+    margin-top: 10px;
+  }
+  body#artwork #np:not(.np--info) #np-meta:not(.np-meta--lyrics) #np-chip-slot {
+    display: contents;
+  }
+  body#artwork #np:not(.np--info) #np-meta:not(.np-meta--lyrics) .np-quality {
+    margin-top: 10px;
+  }
+  body#artwork #np:not(.np--info) #np-meta:not(.np-meta--lyrics) .np-external, body#artwork #np:not(.np--info) #np-meta:not(.np-meta--lyrics) .np-signalpath {
+    flex-basis: 100%;
+  }
 }
 /* The shared page head, the tabs and the search pill, and the cards every shelf is built from. */
 .aw-head {
@@ -7157,7 +7387,7 @@ body#artwork #toast-container > .toast {
   html body#artwork #toast-container {
     left: 12px !important;
     right: 12px !important;
-    top: calc(12px + env(safe-area-inset-top, 0px)) !important;
+    top: calc(12px + var(--sa-t)) !important;
     align-items: stretch;
   }
   html body#artwork #toast-container > .toast {
@@ -7723,13 +7953,12 @@ body#artwork .btn-danger {
   color: var(--ink);
   border: 0;
 }
-body#artwork .setting-container, body#artwork .setting-container .panel, body#artwork .setting-container .panel-body, body#artwork .setting-container .panel-heading,
 body#artwork #pluginWrapper .panel, body#artwork #pluginWrapper .panel-default, body#artwork #pluginWrapper .panel-body, body#artwork #pluginWrapper .panel-heading {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
 }
-body#artwork .panel-title, body#artwork .setting-container h2, body#artwork .config-section-title, body#artwork .section-label {
+body#artwork .panel-title, body#artwork .config-section-title, body#artwork .section-label {
   font-family: var(--font-ui);
   font-weight: 700;
   color: var(--ink-1);
@@ -7763,22 +7992,31 @@ body#artwork #contentWrapper.aw-settings-shell > #content {
   gap: 2px;
   min-width: 0;
   height: 100%;
-  padding: 40px 16px 24px;
-  border-right: 1px solid var(--fill-07);
+  padding: 32px 14px calc(var(--mini-h) + 24px);
+  border-right: 1px solid var(--fill-06);
+  overflow-y: auto;
+  scrollbar-width: none;
 }
-.aw-snav__eyebrow {
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  color: var(--ink-dim);
-  padding: 0 14px 14px;
+.aw-snav::-webkit-scrollbar {
+  display: none;
+}
+.aw-snav__title {
+  padding: 0 12px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 27px;
+  color: var(--ink);
 }
 .aw-snav__item {
+  flex: none;
   display: flex;
   align-items: center;
   gap: 12px;
   height: 42px;
-  padding: 0 14px;
+  padding: 0 12px;
   border-radius: 11px;
+  border: 1px solid transparent;
   color: var(--ink-3);
   font-size: 15px;
   cursor: pointer;
@@ -7794,27 +8032,241 @@ body#artwork #contentWrapper.aw-settings-shell > #content {
 }
 .aw-snav__item.active {
   background: var(--fill-10);
-  color: var(--ink-1);
+  color: var(--ink);
   font-weight: 600;
 }
 .aw-snav__item.active .material-symbols-rounded {
-  color: var(--ink-1);
+  color: var(--ink);
 }
 .aw-snav__item:focus-visible {
   outline: 2px solid var(--ink-1);
   outline-offset: 2px;
+}
+.aw-snav__item {
+  /* during a search: the sections without a match step back, the one you were in keeps a dashed edge */
+}
+.aw-snav__item.is-dim {
+  color: var(--ink-dim);
+}
+.aw-snav__item.is-dim .material-symbols-rounded {
+  color: inherit;
+}
+.aw-snav__item.was-here {
+  border: 1px dashed var(--fill-18);
+}
+.aw-snav__item.was-here .material-symbols-rounded {
+  color: inherit;
 }
 .aw-snav__label {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.aw-snav__count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--ink-2);
+}
+.aw-snav__out.material-symbols-rounded {
+  margin-left: auto;
+  font-size: 16px;
+}
+.aw-snav {
+  /* Help and the shop: under a hairline at the foot */
+}
 .aw-snav__foot {
   margin-top: auto;
-  padding: 0 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--fill-08);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.aw-snav__item--foot {
+  height: 40px;
+  font-size: 14px;
+  color: var(--ink-muted);
+}
+.aw-snav__item--foot .material-symbols-rounded {
+  font-size: 19px;
+}
+
+/* the settings search field: at the top of the menu, and on the phone's landing */
+.aw-sfield {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 42px;
+  margin: 14px 0;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--fill-07);
+  border: 1px solid var(--fill-11);
+  cursor: text;
+  font-weight: 400;
+}
+.aw-sfield > .material-symbols-rounded {
+  font-size: 19px;
+  color: var(--ink-muted);
+}
+.aw-sfield input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0 !important;
+  background: transparent !important;
+  outline: 0 !important;
+  box-shadow: none;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--ink);
+}
+.aw-sfield input::placeholder {
+  color: var(--ink-muted);
+}
+.aw-sfield input::-webkit-search-cancel-button {
+  display: none;
+}
+.aw-sfield__key {
+  margin-left: auto;
   font-size: 10px;
+  color: var(--ink-faint);
+}
+.aw-sfield__clear {
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+.aw-sfield__clear .material-symbols-rounded {
+  font-size: 18px;
+}
+.aw-sfield__clear:hover {
+  color: var(--ink);
+}
+.aw-sfield.is-active, .aw-sfield:focus-within {
+  background: var(--fill-12);
+  border-color: var(--ink-1);
+}
+.aw-sfield.is-active > .material-symbols-rounded, .aw-sfield:focus-within > .material-symbols-rounded {
+  color: var(--ink);
+}
+
+/* the results: the content area's own page while a search is open */
+#content > .aw-under.aw-under--searched {
+  display: none;
+}
+
+.aw-sres-host {
+  padding: 40px clamp(24px, 3.9vw, 56px);
+}
+
+.aw-sres__head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: 14px;
+}
+.aw-sres__title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.028em;
+  line-height: 43px;
+  color: var(--ink);
+}
+.aw-sres__count {
+  font-size: 12px;
   letter-spacing: 0.14em;
-  color: var(--ink-75);
+  color: var(--ink-muted);
+}
+.aw-sres__list {
+  margin-top: 28px;
+  padding: 6px 10px;
+  border-radius: 18px;
+  background: var(--sc-fill);
+  border: 1px solid var(--sc-line);
+}
+.aw-sres__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border-bottom: 1px solid var(--sc-row-line);
+  cursor: pointer;
+}
+.aw-sres__row:last-child {
+  border-bottom-color: transparent;
+}
+.aw-sres__row.is-focus {
+  background: var(--fill-08);
+  border-bottom-color: transparent;
+  outline: 2px solid var(--ink-1);
+  outline-offset: -2px;
+}
+.aw-sres__text {
+  min-width: 0;
+}
+.aw-sres__eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--ink-dim);
+}
+.aw-sres__eyebrow + .aw-sres__name {
+  margin-top: 4px;
+}
+.aw-sres__name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.aw-sres__sub {
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.aw-sres__chev.material-symbols-rounded {
+  font-size: 21px;
+  color: var(--ink-3);
+}
+.aw-sres__hint {
+  margin: 16px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-dim);
+}
+.aw-sres__none {
+  padding: 34px 2px 30px;
+  font-size: 16px;
+  color: var(--ink-muted);
+}
+.aw-sres__loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 0 2px;
+}
+.aw-sres__loading .mono {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--ink-dim);
+}
+.aw-sres__spin {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid var(--fill-20);
+  border-top-color: var(--ink-3);
+  animation: aw-spin 0.9s linear infinite;
 }
 
 .aw-mnav {
@@ -7917,6 +8369,36 @@ body#artwork #contentWrapper.aw-settings-shell > #content {
   text-transform: uppercase;
 }
 
+/* the side column's player card (15D): plain rows split by hairlines, the label left, the value right */
+.aw-kv.aw-kv--rows {
+  margin-top: 16px;
+  padding: 6px 20px;
+  border-radius: 16px;
+  background: var(--sc-fill);
+  border-color: var(--sc-line);
+}
+.aw-kv.aw-kv--rows .aw-kv__row {
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--sc-row-line);
+}
+.aw-kv.aw-kv--rows .aw-kv__row:last-child {
+  border-bottom: 0;
+}
+.aw-kv.aw-kv--rows .aw-kv__row > span:first-child {
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.aw-kv.aw-kv--rows .aw-kv__row > span:last-child {
+  font-size: 14px;
+  color: var(--ink);
+  text-align: right;
+}
+.aw-kv.aw-kv--rows .aw-kv__row > .mono:last-child {
+  font-size: 13px;
+}
+
 .aw-kv {
   margin-top: 26px;
   padding: 18px 20px;
@@ -7948,69 +8430,6 @@ body#artwork #contentWrapper.aw-settings-shell > #content {
   word-break: break-word;
 }
 
-/* the landing */
-body#artwork .setting-container.panel {
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  margin: 0;
-  padding: 40px 34px 0;
-}
-body#artwork .setting-container.panel .panel-heading {
-  background: transparent;
-  border: 0;
-  padding: 0;
-}
-body#artwork .setting-container.panel .panel-title {
-  font-family: var(--font-ui);
-  font-size: 34px;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  color: var(--ink);
-  margin: 0;
-}
-body#artwork .setting-container.panel .panel-title .fa {
-  display: none;
-}
-body#artwork .setting-container.panel .panel-body {
-  padding: 0;
-}
-body#artwork .setting-container.panel {
-  /* the frame's row/column boxes under the heading (the clearfix keeps the search pill's margin inside) */
-}
-body#artwork .setting-container.panel .panel-body > .row {
-  margin: 0 -15px;
-}
-body#artwork .setting-container.panel .panel-body > .row::before, body#artwork .setting-container.panel .panel-body > .row::after {
-  content: " ";
-  display: table;
-}
-body#artwork .setting-container.panel .panel-body > .row::after {
-  clear: both;
-}
-body#artwork .setting-container.panel .panel-body > .row > .col-xs-24 {
-  position: relative;
-  float: left;
-  width: 100%;
-  min-height: 1px;
-  padding: 0 15px;
-  box-sizing: border-box;
-}
-body#artwork .setting-container.panel .hardwareToggleCheckbox {
-  margin-top: 16px;
-  font-size: 14px;
-  color: var(--ink-2);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.aw-settings-hint {
-  margin: 34px 0 10px;
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  color: var(--ink-dim);
-} /* a paragraph keeps the frame's 10px foot */
 /* the theme card and the ambient rows (the appearance slot) */
 body#artwork .aw-theme-card {
   display: flex;
@@ -8296,177 +8715,7 @@ body#artwork .aw-amb-save .control-buttons {
   justify-content: flex-start;
 }
 
-/* the settings search (handoff 11a) */
-body#artwork .aw-ssearch {
-  margin: 20px 0 0;
-  max-width: 652px;
-}
-
-body#artwork .aw-ssearch__field {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  height: 46px;
-  padding: 0 16px;
-  border-radius: 999px;
-  margin: 0;
-  font-weight: 400;
-  cursor: text;
-  background: var(--fill-10);
-  border: 1px solid var(--fill-13);
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-body#artwork .aw-ssearch__field > .material-symbols-rounded {
-  font-size: 21px;
-  color: var(--ink-3);
-}
-body#artwork .aw-ssearch__field input {
-  flex: 1;
-  min-width: 0;
-  border: 0;
-  background: transparent;
-  outline: 0;
-  padding: 0;
-  font-family: var(--font-ui);
-  font-size: 15px;
-  color: var(--ink);
-}
-body#artwork .aw-ssearch__field input::placeholder {
-  color: var(--ink-muted);
-}
-body#artwork .aw-ssearch__field input::-webkit-search-cancel-button {
-  display: none;
-}
-
-body#artwork .aw-ssearch.is-active .aw-ssearch__field, body#artwork .aw-ssearch__field:focus-within {
-  background: var(--fill-14);
-  border-color: var(--ink-1);
-}
-body#artwork .aw-ssearch.is-active .aw-ssearch__field > .material-symbols-rounded, body#artwork .aw-ssearch__field:focus-within > .material-symbols-rounded {
-  color: var(--ink-1);
-}
-
-body#artwork .aw-ssearch__key {
-  margin-left: auto;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  color: var(--ink-faint);
-}
-
-body#artwork .aw-ssearch__clear {
-  margin-left: auto;
-  border: 0;
-  background: transparent;
-  padding: 0;
-  display: grid;
-  place-items: center;
-  color: var(--ink-3);
-  cursor: pointer;
-}
-body#artwork .aw-ssearch__clear .material-symbols-rounded {
-  font-size: 19px;
-}
-body#artwork .aw-ssearch__clear:hover {
-  color: var(--ink);
-}
-
-body#artwork .aw-ssearch__count {
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  color: var(--ink-dim);
-  margin-top: 20px;
-}
-
-body#artwork .aw-ssearch__list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 10px;
-}
-
-body#artwork .aw-ssearch__row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  cursor: pointer;
-}
-body#artwork .aw-ssearch__row.is-focus {
-  background: var(--fill-10);
-  outline: 2px solid var(--ink-1);
-  outline-offset: 2px;
-}
-body#artwork .aw-ssearch__row.is-focus .aw-ssearch__chev {
-  color: var(--ink-3);
-}
-
-body#artwork .aw-ssearch__text {
-  min-width: 0;
-}
-
-body#artwork .aw-ssearch__eyebrow {
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  color: var(--ink-dim);
-  margin-bottom: 4px;
-}
-
-body#artwork .aw-ssearch__title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ink);
-}
-
-body#artwork .aw-ssearch__sub {
-  font-size: 13px;
-  color: var(--ink-muted);
-  margin-top: 2px;
-}
-
-body#artwork .aw-ssearch__chev {
-  font-size: 20px;
-  color: var(--ink-dim);
-}
-
-body#artwork .aw-ssearch__loading {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 16px;
-  padding: 0 14px;
-}
-body#artwork .aw-ssearch__loading .mono {
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  color: var(--ink-dim);
-}
-
-body#artwork .aw-ssearch__spin {
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  border: 2px solid var(--fill-20);
-  border-top-color: var(--ink-3);
-  animation: aw-spin 0.9s linear infinite;
-}
-
-body#artwork .aw-ssearch__none {
-  padding: 34px 14px 30px;
-  font-size: 16px;
-  color: #5e646c;
-}
-
-body#artwork .aw-ssearch-host + .aw-settings-hint {
-  margin-top: 24px;
-}
-
-body#artwork .aw-ssearch-host.is-active ~ .aw-settings-hint {
-  display: none;
-}
-
-body#artwork #pluginWrapper .panel.aw-flash {
+body#artwork #pluginWrapper .panel.aw-flash, body#artwork #pluginWrapper .aw-sc-row.aw-flash {
   animation: aw-flash 0.6s ease-out;
 }
 
@@ -8480,23 +8729,38 @@ body#artwork #pluginWrapper .panel.aw-flash {
 }
 /* fluid: the shell's columns */
 body#artwork #contentWrapper.aw-settings-shell {
-  grid-template-columns: clamp(170px, 15vw, 216px) 1fr clamp(250px, 23.6vw, 340px);
+  --aw-side-w: clamp(250px, 23.6vw, 340px);
+  grid-template-columns: clamp(170px, 16.7vw, 240px) 1fr var(--aw-side-w);
 }
 
-body#artwork #contentWrapper.aw-settings-shell.aw-settings-shell--noside {
-  grid-template-columns: clamp(170px, 15vw, 216px) 1fr;
+/* the page scrolls under the side column, so its scrollbar is the window's right edge: the content area spans
+   both columns and, when the page has a side column, keeps its width clear; the column (nothing to click in
+   it) sits beneath. A page without one takes the whole width. */
+@media (min-width: 1181px) {
+  body#artwork #contentWrapper.aw-settings-shell > #content {
+    grid-column: 2/-1;
+    grid-row: 1;
+    z-index: 1;
+  }
+  body#artwork #contentWrapper.aw-settings-shell--side > #content {
+    padding-right: var(--aw-side-w);
+  }
+  body#artwork #contentWrapper.aw-settings-shell > .aw-settings-side {
+    grid-column: 3;
+    grid-row: 1;
+    z-index: 0;
+  }
 }
-
 @media (max-width: 1180px) {
-  body#artwork #contentWrapper.aw-settings-shell, body#artwork #contentWrapper.aw-settings-shell.aw-settings-shell--noside {
-    grid-template-columns: clamp(170px, 15vw, 216px) 1fr;
+  body#artwork #contentWrapper.aw-settings-shell {
+    grid-template-columns: clamp(170px, 16.7vw, 240px) 1fr;
   }
   body#artwork #contentWrapper.aw-settings-shell > .aw-settings-side {
     display: none;
   }
 }
 @media (max-width: 720px) {
-  body#artwork #contentWrapper.aw-settings-shell, body#artwork #contentWrapper.aw-settings-shell.aw-settings-shell--noside {
+  body#artwork #contentWrapper.aw-settings-shell {
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
   }
@@ -8513,7 +8777,7 @@ body#artwork #contentWrapper.aw-settings-shell.aw-settings-shell--noside {
   body#artwork #contentWrapper.aw-settings-shell .aw-snav::-webkit-scrollbar {
     display: none;
   }
-  body#artwork #contentWrapper.aw-settings-shell .aw-snav__eyebrow, body#artwork #contentWrapper.aw-settings-shell .aw-snav__foot {
+  body#artwork #contentWrapper.aw-settings-shell .aw-snav__title, body#artwork #contentWrapper.aw-settings-shell .aw-snav .aw-sfield, body#artwork #contentWrapper.aw-settings-shell .aw-snav__foot {
     display: none;
   }
   body#artwork #contentWrapper.aw-settings-shell .aw-snav__item {
@@ -8976,6 +9240,300 @@ body#artwork .modal-content .alert {
   margin-bottom: 14px;
 }
 
+body#artwork .outputs__menu .aw-dsp .ui-select-container.ui-select-bootstrap {
+  position: relative;
+  width: 100%;
+  height: 44px;
+  border-radius: 11px;
+  color: var(--ink-1);
+  background: var(--fill-08);
+  border: 1px solid var(--fill-13);
+  box-shadow: none !important;
+}
+body#artwork .outputs__menu .aw-dsp .ui-select-container.ui-select-bootstrap:focus-within {
+  border-color: var(--fill-30);
+}
+body#artwork .outputs__menu .aw-dsp .ui-select-container.ui-select-bootstrap select {
+  width: 100%;
+  height: 42px;
+  line-height: 42px;
+  padding: 0 40px 0 14px;
+  background: transparent;
+  border: 0;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 500;
+  font-family: var(--font-ui);
+  appearance: none;
+  -webkit-appearance: none;
+  outline: 0;
+  cursor: pointer;
+}
+body#artwork .outputs__menu .aw-dsp .ui-select-container.ui-select-bootstrap select option {
+  color: #14161a;
+}
+body#artwork .outputs__menu .aw-dsp .ui-select-container.ui-select-bootstrap .caret {
+  border: 0;
+  width: auto;
+  height: auto;
+  margin: 0;
+  position: absolute;
+  right: 14px;
+  top: 0;
+  bottom: 0;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  pointer-events: none;
+}
+body#artwork .outputs__menu .aw-dsp .ui-select-container.ui-select-bootstrap .caret::before {
+  content: "";
+  display: block;
+  width: 20px;
+  height: 20px;
+  background: no-repeat center/20px 20px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M6.75 8.75 L10 11.25 L13.25 8.75' fill='none' stroke='%23a7adb3' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+body#artwork .outputs__menu .aw-dsp .bootstrap-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px !important;
+  height: 32px;
+  border-radius: 13px;
+  border: 0;
+  background: var(--fill-16);
+  overflow: visible;
+  margin-right: 44px;
+  cursor: pointer;
+  vertical-align: middle;
+}
+body#artwork .outputs__menu .aw-dsp .bootstrap-switch input[type=checkbox] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  z-index: 2;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+body#artwork .outputs__menu .aw-dsp .bootstrap-switch::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--ground);
+  transition: left 0.15s ease;
+}
+body#artwork .outputs__menu .aw-dsp .bootstrap-switch::after {
+  content: "Off";
+  position: absolute;
+  left: 62px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: var(--ink-dim);
+  white-space: nowrap;
+}
+body#artwork .outputs__menu .aw-dsp .bootstrap-switch.bootstrap-switch-on {
+  background: var(--ink);
+}
+body#artwork .outputs__menu .aw-dsp .bootstrap-switch.bootstrap-switch-on::before {
+  left: 27px;
+}
+body#artwork .outputs__menu .aw-dsp .bootstrap-switch.bootstrap-switch-on::after {
+  content: "On";
+  color: var(--ink-2);
+}
+body#artwork .outputs__menu .aw-dsp input[type=checkbox].custom-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 50px;
+  height: 32px;
+  border-radius: 13px;
+  border: 0;
+  margin: 0;
+  background: var(--fill-16);
+  cursor: pointer;
+  vertical-align: middle;
+}
+body#artwork .outputs__menu .aw-dsp input[type=checkbox].custom-checkbox::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--ground);
+  transition: left 0.15s ease;
+}
+body#artwork .outputs__menu .aw-dsp input[type=checkbox].custom-checkbox:checked {
+  background: var(--ink);
+}
+body#artwork .outputs__menu .aw-dsp input[type=checkbox].custom-checkbox:checked::before {
+  left: 27px;
+}
+body#artwork .outputs__menu .aw-dsp .aw-segment {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 52px;
+  padding: 4px;
+  border-radius: 11px;
+  background: var(--fill-06);
+  border: 1px solid var(--fill-10);
+}
+body#artwork .outputs__menu .aw-dsp .aw-segment__opt {
+  flex: 1;
+  height: 100%;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  color: var(--ink-muted);
+  background: transparent;
+  border: 0;
+  padding: 0 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-ui);
+}
+body#artwork .outputs__menu .aw-dsp .aw-segment__opt:hover {
+  color: var(--ink-1);
+}
+body#artwork .outputs__menu .aw-dsp .aw-segment__opt.active {
+  background: var(--ink);
+  color: var(--on-ink);
+  font-weight: 700;
+}
+body#artwork .outputs__menu .aw-dsp .aw-segment__opt:focus-visible {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 2px;
+}
+body#artwork .outputs__menu .aw-dsp input.form-control, body#artwork .outputs__menu .aw-dsp textarea.form-control {
+  display: block;
+  width: 100%;
+  height: 42px;
+  border-radius: 11px;
+  background: var(--fill-08);
+  border: 1px solid var(--fill-13);
+  color: var(--ink);
+  font-size: 15px;
+  box-shadow: none;
+  padding: 0 14px;
+  outline: 0;
+  font-family: var(--font-ui);
+}
+body#artwork .outputs__menu .aw-dsp input.form-control:focus, body#artwork .outputs__menu .aw-dsp textarea.form-control:focus {
+  border-color: var(--fill-30);
+  box-shadow: none;
+}
+body#artwork .outputs__menu .aw-dsp input.form-control::placeholder, body#artwork .outputs__menu .aw-dsp textarea.form-control::placeholder {
+  color: var(--ink-dim);
+}
+body#artwork .outputs__menu .aw-dsp textarea.form-control {
+  height: auto;
+  padding: 10px 14px;
+}
+body#artwork .outputs__menu .aw-dsp .btn {
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 21px;
+  border: 1px solid var(--fill-18);
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: none;
+  line-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  text-decoration: none;
+}
+body#artwork .outputs__menu .aw-dsp .btn:hover {
+  background: var(--fill-08);
+  color: var(--ink);
+}
+body#artwork .outputs__menu .aw-dsp .btn {
+  /* the base's 13px FontAwesome glyph in a pill: 11px wide */
+}
+body#artwork .outputs__menu .aw-dsp .btn .material-symbols-rounded {
+  font-size: 13px;
+  width: 11px;
+  display: inline-block;
+  text-align: center;
+  overflow: visible;
+  vertical-align: middle;
+}
+body#artwork .outputs__menu .aw-dsp {
+  /* a plugin's own button element (it carries plugin-attributes) stays the outline pill */
+}
+body#artwork .outputs__menu .aw-dsp .btn.btn-info:not([plugin-attributes]), body#artwork .outputs__menu .aw-dsp .btn.btn-primary, body#artwork .outputs__menu .aw-dsp .btn.btn-success {
+  background: var(--ink);
+  color: var(--on-ink);
+  border: 0;
+  height: 40px;
+  line-height: 40px;
+  font-weight: 700;
+}
+body#artwork .outputs__menu .aw-dsp .btn.btn-info:not([plugin-attributes]):hover, body#artwork .outputs__menu .aw-dsp .btn.btn-primary:hover, body#artwork .outputs__menu .aw-dsp .btn.btn-success:hover {
+  background: var(--ink-1);
+  color: var(--on-ink);
+}
+body#artwork .outputs__menu .aw-dsp .btn.btn-danger {
+  color: var(--err);
+  border-color: var(--err-line);
+  background: transparent;
+}
+body#artwork .outputs__menu .aw-dsp .btn.btn-danger:hover {
+  background: var(--err-wash);
+  color: var(--err);
+}
+body#artwork .outputs__menu .aw-dsp .btn.btn-link {
+  border: 0;
+  background: transparent;
+  height: auto;
+  line-height: normal;
+  padding: 0 8px;
+}
+body#artwork .outputs__menu .aw-dsp .progress {
+  height: 20px;
+  border-radius: 10px;
+  background: var(--fill-10);
+  overflow: hidden;
+  margin: 10px 0;
+}
+body#artwork .outputs__menu .aw-dsp .progress .progress-bar {
+  height: 100%;
+  background: var(--ink);
+  color: var(--on-ink);
+  font-size: 11px;
+  line-height: 20px;
+  text-align: center;
+  transition: width 0.3s ease;
+}
+body#artwork .outputs__menu .aw-dsp .alert {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--fill-06);
+  border: 1px solid var(--fill-10);
+  color: var(--ink-2);
+  margin-bottom: 14px;
+}
+
+/* the DSP preset in Zones & outputs: the same select as the plugin pages */
 body#artwork #pluginWrapper .ui-select-container.ui-select-bootstrap {
   position: relative;
   width: 100%;
@@ -9269,7 +9827,7 @@ body#artwork #pluginWrapper .alert {
   margin-bottom: 14px;
 }
 body#artwork #pluginWrapper {
-  padding: 40px 34px 60px;
+  padding: 40px clamp(24px, 3.9vw, 56px) 60px;
 }
 body#artwork #pluginWrapper .box {
   background: transparent;
@@ -9469,11 +10027,79 @@ body#artwork #pluginWrapper .equalizer-label {
   font-size: 11px;
   color: var(--ink-dim);
 }
+body#artwork #pluginWrapper {
+  /* the equalizer's bars as the theme's sliders (Now Playing's volume): a 5px track filled with ink up to the
+     value, a 13px ink thumb in a soft ring; vertical bars fill from the bottom, where the minimum is */
+}
+body#artwork #pluginWrapper .equalizer input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  --aw-fill: 0%;
+}
+body#artwork #pluginWrapper .equalizer input[type=range]::-webkit-slider-runnable-track {
+  width: 5px;
+  height: 5px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--ink) var(--aw-fill), var(--fill-20) var(--aw-fill));
+}
+body#artwork #pluginWrapper .equalizer input[type=range]::-moz-range-track {
+  width: 5px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--fill-20);
+}
+body#artwork #pluginWrapper .equalizer input[type=range]::-moz-range-progress {
+  width: 5px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--ink);
+}
+body#artwork #pluginWrapper .equalizer input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 0;
+  box-shadow: 0 0 0 3px var(--fill-14), 0 2px 6px var(--shadow-soft);
+}
+body#artwork #pluginWrapper .equalizer input[type=range]::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 0 0 3px var(--fill-14);
+}
+body#artwork #pluginWrapper .equalizer input[type=range]:focus-visible {
+  outline: none;
+}
+body#artwork #pluginWrapper .equalizer input[type=range]:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--fill-30), 0 2px 6px var(--shadow-soft);
+}
+body#artwork #pluginWrapper .equalizer.horizontal input[type=range] {
+  width: 100%;
+  height: 20px;
+}
 body#artwork #pluginWrapper .equalizer.vertical input[type=range] {
   writing-mode: vertical-lr;
   direction: rtl;
   height: 140px;
   width: 20px;
+}
+body#artwork #pluginWrapper .equalizer.vertical input[type=range]::-webkit-slider-runnable-track {
+  width: 5px;
+  height: 100%;
+  background: linear-gradient(0deg, var(--ink) var(--aw-fill), var(--fill-20) var(--aw-fill));
+}
+body#artwork #pluginWrapper .equalizer.vertical input[type=range]::-webkit-slider-thumb {
+  margin-top: 0;
+  margin-left: -4px;
 }
 body#artwork #pluginWrapper .equalizer-bars {
   display: flex;
@@ -9948,16 +10574,19 @@ body#artwork .aw-state-volumio-plugin-manager #content .alert {
   margin-bottom: 14px;
 }
 body#artwork .aw-state-volumio-plugin-manager #content > .box, body#artwork .aw-state-volumio-plugin-manager #content .box {
-  padding: 40px 34px 60px;
+  padding: 40px clamp(24px, 3.9vw, 56px) 60px;
   background: transparent;
   border: 0;
   box-shadow: none;
+}
+body#artwork .aw-state-volumio-plugin-manager #content { /* the settings pages' own margins */
+  /* the title as on every settings page (.aw-sp-head__title) */
 }
 body#artwork .aw-state-volumio-plugin-manager #content .boxHeader {
   background: transparent;
   border: 0;
   padding: 0;
-  margin: 20px 0 0;
+  margin: 0;
 }
 body#artwork .aw-state-volumio-plugin-manager #content .boxHeader .title {
   margin: 0 12px 0 0;
@@ -9968,9 +10597,10 @@ body#artwork .aw-state-volumio-plugin-manager #content .boxHeader .title h2 {
   background: transparent;
   padding: 0;
   font-family: var(--font-ui);
-  font-size: 34px;
+  font-size: 38px;
   font-weight: 800;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.028em;
+  line-height: 1.05;
   color: var(--ink);
   text-transform: capitalize;
 }
@@ -10012,7 +10642,7 @@ body#artwork .aw-state-volumio-plugin-manager #content .box > .panel.panel-defau
 body#artwork .aw-state-volumio-plugin-manager #content .nav-tabs {
   display: flex;
   list-style: none;
-  margin: 18px 0 22px;
+  margin: 34px 0 22px;
   padding: 0;
   border-bottom: 1px solid var(--fill-10);
 }
@@ -10052,16 +10682,19 @@ body#artwork .aw-state-volumio-plugin-manager #content .col-sm-4, body#artwork .
   padding: 0 15px;
   min-width: 0;
 }
+body#artwork .aw-state-volumio-plugin-manager #content {
+  /* the categories take the width of their longest name ("System hardware"), the cards the rest */
+}
 @media (min-width: 768px) {
   body#artwork .aw-state-volumio-plugin-manager #content .row {
     display: flex;
     align-items: flex-start;
   }
   body#artwork .aw-state-volumio-plugin-manager #content .col-sm-4 {
-    flex: 0 0 16.6667%;
+    flex: 0 0 auto;
   }
   body#artwork .aw-state-volumio-plugin-manager #content .col-sm-20 {
-    flex: 0 0 83.3333%;
+    flex: 1 1 0%;
   }
 }
 body#artwork .aw-state-volumio-plugin-manager #content .btn.pluginCategoryBtn {
@@ -10084,6 +10717,55 @@ body#artwork .aw-state-volumio-plugin-manager #content .btn.pluginCategoryBtn:ho
 body#artwork .aw-state-volumio-plugin-manager #content .btn.pluginCategoryBtn.active {
   color: var(--ink);
   font-weight: 600;
+}
+body#artwork .aw-state-volumio-plugin-manager #content {
+  /* narrower than the two-column layout: the categories become one row of chips (the dialogs' pills),
+     scrolled sideways, the chosen one in ink */
+}
+@media (max-width: 767px) {
+  body#artwork .aw-state-volumio-plugin-manager #content .aw-plugin-cats {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    margin: 0 -5px 18px;
+    padding: 2px 20px 4px;
+  }
+  body#artwork .aw-state-volumio-plugin-manager #content .aw-plugin-cats::-webkit-scrollbar {
+    display: none;
+  }
+  body#artwork .aw-state-volumio-plugin-manager #content .aw-plugin-cats > div {
+    flex: none;
+  }
+  body#artwork .aw-state-volumio-plugin-manager #content .aw-plugin-cats > .clearfix {
+    display: none;
+  }
+  body#artwork .aw-state-volumio-plugin-manager #content .aw-plugin-cats .btn.pluginCategoryBtn {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 19px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--ink-2);
+    background: var(--fill-06);
+    border: 1px solid var(--fill-11);
+  }
+  body#artwork .aw-state-volumio-plugin-manager #content .aw-plugin-cats .btn.pluginCategoryBtn:hover {
+    background: var(--fill-10);
+    color: var(--ink);
+  }
+  body#artwork .aw-state-volumio-plugin-manager #content .aw-plugin-cats .btn.pluginCategoryBtn.active {
+    font-weight: 600;
+    color: var(--on-ink);
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+  body#artwork .aw-state-volumio-plugin-manager #content .aw-plugin-cats .btn.pluginCategoryBtn:focus-visible {
+    outline: 2px solid var(--ink-1);
+    outline-offset: 2px;
+  }
 }
 body#artwork .aw-state-volumio-plugin-manager #content .panel-body .panel.panel-default {
   background: var(--fill-06);
@@ -10822,7 +11504,7 @@ body#artwork #pluginWrapper #networkDrives table.table, body#artwork #pluginWrap
 }
 body#artwork #pluginWrapper #networkDrives table.table tr {
   display: grid;
-  grid-template-columns: 1fr 210px 150px 44px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 210px) 80px 90px 84px; /* alias · path · mounted · size · edit/delete: fixed, so the head row and the drive rows line up */
   align-items: center;
   gap: 18px;
   padding: 14px 12px;
@@ -10873,18 +11555,47 @@ body#artwork #pluginWrapper #networkDrives table.table tr td:nth-child(4) {
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--ink-3);
+  white-space: nowrap;
+}
+body#artwork #pluginWrapper #networkDrives table.table tr td.commandCol {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
 }
 body#artwork #pluginWrapper #networkDrives table.table tr td.commandCol .btn {
   height: 32px;
   line-height: 30px;
   padding: 0 10px;
 }
+body#artwork #pluginWrapper {
+  /* narrower: no path column (below 768px the table has none at all, PluginPage's phone markup) */
+}
 @media (max-width: 900px) {
   body#artwork #pluginWrapper #networkDrives table.table tr {
-    grid-template-columns: 1fr 120px 44px;
+    grid-template-columns: minmax(0, 1fr) 70px 80px 84px;
   }
-  body#artwork #pluginWrapper #networkDrives table.table tr td:nth-child(2) {
+}
+@media (min-width: 768px) and (max-width: 900px) {
+  body#artwork #pluginWrapper #networkDrives table.table tr td:nth-child(2), body#artwork #pluginWrapper #networkDrives table.table tr th:nth-child(2) {
     display: none;
+  }
+}
+body#artwork #pluginWrapper {
+  /* the phone: the mounted state is its icon alone (no head), the alias keeps the room */
+}
+@media (max-width: 767px) {
+  body#artwork #pluginWrapper #networkDrives table.table tr {
+    grid-template-columns: minmax(0, 1fr) 22px 66px 80px;
+    gap: 10px;
+  }
+  body#artwork #pluginWrapper #networkDrives table.table tr th:nth-child(2) {
+    visibility: hidden;
+  }
+  body#artwork #pluginWrapper #networkDrives table.table tr td:nth-child(1) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 body#artwork #pluginWrapper #systemVersion > .panel-body {
@@ -10909,6 +11620,947 @@ body#artwork #pluginWrapper #systemVersion > .panel-body .sv-sub {
   color: var(--ink-dim);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+/* The settings pages after handoff 15: the page head (title, the plugin's version and author, Help,
+   Enabled), then one card per section — header, rows, footer. Values are the mockup's: 15B (a plugin,
+   a 920px column), 15D (System beside the side column: a 736px card), 15C (the phone, light and dark).
+   The card's own layout follows its column, not the window: a container query on the card list. */
+/* --- the page head --- */
+body#artwork .aw-sp-head__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+body#artwork .aw-sp-head__back .material-symbols-rounded {
+  font-size: 20px;
+}
+body#artwork .aw-sp-head__back:hover {
+  color: var(--ink-1);
+}
+body#artwork .aw-sp-head__back:focus-visible {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+body#artwork .aw-sp-head__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+}
+body#artwork .aw-sp-head__text {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+body#artwork .aw-sp-head__title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: -0.028em;
+  line-height: 1.05;
+  color: var(--ink);
+  text-wrap: balance;
+}
+body#artwork .aw-sp-head__sub {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  column-gap: 14px;
+  row-gap: 4px;
+  margin-top: 8px;
+}
+body#artwork .aw-sp-head__subtitle {
+  font-size: 15px;
+  color: var(--ink-3);
+}
+body#artwork .aw-sp-head__meta {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--ink-dim);
+}
+body#artwork .aw-sp-head__desc {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+
+body#artwork .aw-sp-help {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--sc-pill-line);
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+body#artwork .aw-sp-help .material-symbols-rounded {
+  font-size: 19px;
+}
+body#artwork .aw-sp-help:hover {
+  background: var(--fill-06);
+  color: var(--ink);
+}
+body#artwork .aw-sp-help:focus-visible {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 2px;
+}
+
+body#artwork #pluginWrapper .aw-sp-enabled {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  height: 42px;
+  padding: 0 6px 0 16px;
+  border-radius: 999px;
+  background: var(--fill-08);
+  border: 1px solid var(--fill-12);
+}
+body#artwork #pluginWrapper .aw-sp-enabled__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+body#artwork #pluginWrapper .aw-sp-enabled .bootstrap-switch {
+  width: 48px !important;
+  height: 28px;
+  border-radius: 14px;
+}
+body#artwork #pluginWrapper .aw-sp-enabled .bootstrap-switch::before {
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+}
+body#artwork #pluginWrapper .aw-sp-enabled .bootstrap-switch.bootstrap-switch-on::before {
+  left: 23px;
+}
+
+/* the phone's head carries Help as an icon (the page's own head row) */
+body#artwork .aw-sp-helpicon {
+  display: none;
+}
+
+/* --- the switch of the cards and the head: 52×30, a 24px knob 3px in; ink when on --- */
+body#artwork #pluginWrapper :is(.aw-sc-switch, .aw-sp-enabled) .bootstrap-switch {
+  margin: 0;
+  background: var(--sc-switch-off);
+  flex: none;
+}
+body#artwork #pluginWrapper :is(.aw-sc-switch, .aw-sp-enabled) .bootstrap-switch::before {
+  background: var(--sc-knob-off);
+}
+body#artwork #pluginWrapper :is(.aw-sc-switch, .aw-sp-enabled) .bootstrap-switch::after {
+  display: none;
+}
+body#artwork #pluginWrapper :is(.aw-sc-switch, .aw-sp-enabled) .bootstrap-switch.bootstrap-switch-on {
+  background: var(--ink-1);
+}
+body#artwork #pluginWrapper :is(.aw-sc-switch, .aw-sp-enabled) .bootstrap-switch.bootstrap-switch-on::before {
+  background: var(--on-ink);
+}
+body#artwork #pluginWrapper :is(.aw-sc-switch, .aw-sp-enabled) .bootstrap-switch:has(input:focus-visible) {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 2px;
+}
+
+body#artwork #pluginWrapper .aw-sc-switch {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+body#artwork #pluginWrapper .aw-sc-switch__state {
+  font-size: 14px;
+  color: var(--ink-muted);
+}
+body#artwork #pluginWrapper .aw-sc-switch:has(.bootstrap-switch-on) .aw-sc-switch__state {
+  color: var(--ink-3);
+}
+body#artwork #pluginWrapper .aw-sc-switch .bootstrap-switch {
+  width: 52px !important;
+  height: 30px;
+  border-radius: 15px;
+}
+body#artwork #pluginWrapper .aw-sc-switch .bootstrap-switch::before {
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+}
+body#artwork #pluginWrapper .aw-sc-switch .bootstrap-switch.bootstrap-switch-on::before {
+  left: 25px;
+}
+
+/* --- the cards --- */
+body#artwork #pluginWrapper .aw-sp-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 34px;
+  container-type: inline-size;
+  container-name: aw-sc;
+}
+
+body#artwork #pluginWrapper .aw-sc {
+  border-radius: 18px;
+  background: var(--sc-fill);
+  border: 1px solid var(--sc-line);
+  padding: 0 28px;
+  min-width: 0;
+}
+body#artwork #pluginWrapper .aw-sc.is-dirty {
+  background: var(--sc-fill-dirty);
+  border-color: var(--sc-line-dirty);
+}
+body#artwork #pluginWrapper .aw-sc.aw-flash {
+  animation: aw-flash 0.6s ease-out;
+}
+body#artwork #pluginWrapper .aw-sc__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 0 18px;
+  border-bottom: 1px solid var(--sc-head-line);
+}
+body#artwork #pluginWrapper .aw-sc__icon {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: var(--sc-tile);
+  display: grid;
+  place-items: center;
+  color: var(--ink-1);
+}
+body#artwork #pluginWrapper .aw-sc__icon .material-symbols-rounded {
+  font-size: 21px;
+}
+body#artwork #pluginWrapper .aw-sc__titles {
+  min-width: 0;
+}
+body#artwork #pluginWrapper .aw-sc__title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 22px;
+  letter-spacing: 0;
+  color: var(--ink);
+  text-transform: none;
+}
+body#artwork #pluginWrapper .aw-sc__desc {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+body#artwork #pluginWrapper .aw-sc__foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  padding: 14px 0 18px;
+  border-top: 1px solid var(--sc-head-line);
+}
+body#artwork #pluginWrapper .aw-sc__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--sc-unsaved);
+}
+body#artwork #pluginWrapper .aw-sc__status i {
+  width: 6px;
+  height: 6px;
+  background: var(--sc-unsaved);
+}
+body#artwork #pluginWrapper .aw-sc__cancel {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+body#artwork #pluginWrapper .aw-sc__cancel:hover {
+  color: var(--ink);
+}
+body#artwork #pluginWrapper .aw-sc__cancel:focus-visible {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+body#artwork #pluginWrapper .aw-sc__save {
+  height: 38px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: var(--sc-save-off);
+  color: var(--sc-save-off-ink);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+body#artwork #pluginWrapper .aw-sc__save:hover {
+  color: var(--ink-3);
+}
+body#artwork #pluginWrapper .aw-sc__save.is-on {
+  background: var(--ink-1);
+  color: var(--on-ink);
+  font-weight: 700;
+}
+body#artwork #pluginWrapper .aw-sc__save.is-on:hover {
+  background: var(--ink);
+  color: var(--on-ink);
+}
+body#artwork #pluginWrapper .aw-sc__save:focus-visible {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 2px;
+}
+body#artwork #pluginWrapper .aw-sc {
+  /* Volumio's own sections keep their markup; the card is their frame and its header replaces theirs */
+}
+body#artwork #pluginWrapper .aw-sc__titles {
+  flex: 1;
+}
+body#artwork #pluginWrapper .aw-sc__action {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+body#artwork #pluginWrapper .aw-sc__action .material-symbols-rounded {
+  font-size: 20px;
+}
+body#artwork #pluginWrapper .aw-sc__action:hover {
+  background: var(--fill-08);
+  color: var(--ink);
+}
+body#artwork #pluginWrapper .aw-sc__action:focus-visible {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 2px;
+}
+body#artwork #pluginWrapper .aw-sc__core {
+  padding-top: 18px;
+}
+body#artwork #pluginWrapper .aw-sc__core > .panel > .panel-heading, body#artwork #pluginWrapper .aw-sc__core > div > .panel > .panel-heading, body#artwork #pluginWrapper .aw-sc__core > div > .panel-heading {
+  display: none !important;
+}
+body#artwork #pluginWrapper .aw-sc__core #myMusic > .panel-body, body#artwork #pluginWrapper .aw-sc__core #systemVersion > .panel-body {
+  padding: 0 !important;
+  margin: 0;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0;
+}
+body#artwork #pluginWrapper .aw-sc__core #networkDrives #addNewDrive {
+  margin-top: 0;
+  float: none;
+}
+body#artwork #pluginWrapper .aw-sc__core #wifiPlugin table.table tr:first-child {
+  background: transparent;
+}
+body#artwork #pluginWrapper .aw-sc--danger {
+  background: var(--sc-danger-card);
+  border-color: var(--sc-danger-card-line);
+}
+body#artwork #pluginWrapper .aw-sc--danger .aw-sc__icon {
+  background: var(--sc-danger-tile);
+  color: var(--sc-danger);
+}
+
+body#artwork #pluginWrapper .aw-sc-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 32px;
+  align-items: center;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--sc-row-line);
+}
+body#artwork #pluginWrapper .aw-sc-row:last-child {
+  border-bottom: 0;
+}
+body#artwork #pluginWrapper .aw-sc-row__label {
+  display: block;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 18px;
+  color: var(--ink);
+  text-transform: none;
+}
+body#artwork #pluginWrapper .aw-sc-row__hint {
+  margin-top: 3px;
+  font-size: 13px;
+  line-height: 1.2;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+body#artwork #pluginWrapper .aw-sc-row__hint.mono {
+  margin-top: 5px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+body#artwork #pluginWrapper .aw-sc-row__control {
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+body#artwork #pluginWrapper .aw-sc-row {
+  /* the controls: a 44px field with a 12px corner; ink edge on the one that was changed or has focus */
+}
+body#artwork #pluginWrapper .aw-sc-row .ui-select-container.ui-select-bootstrap {
+  height: 46px;
+  border-radius: 12px;
+  background: var(--sc-ctl-fill);
+  border: 1px solid var(--sc-ctl-line);
+}
+body#artwork #pluginWrapper .aw-sc-row .ui-select-container.ui-select-bootstrap select {
+  height: 44px;
+  line-height: 44px;
+  padding: 0 44px 0 16px;
+  font-size: 14px;
+  font-weight: 400;
+}
+body#artwork #pluginWrapper .aw-sc-row .ui-select-container.ui-select-bootstrap .caret {
+  right: 12px;
+}
+body#artwork #pluginWrapper .aw-sc-row .ui-select-container.ui-select-bootstrap:focus-within {
+  border-color: var(--sc-ctl-line-on);
+}
+body#artwork #pluginWrapper .aw-sc-row.is-changed .ui-select-container.ui-select-bootstrap {
+  background: var(--sc-ctl-fill-on);
+  border-color: var(--sc-ctl-line-on);
+}
+body#artwork #pluginWrapper .aw-sc-row .aw-sc-input {
+  display: block;
+  width: 100%;
+  height: 46px;
+  padding: 0 16px;
+  border-radius: 12px;
+  background: var(--sc-input-fill);
+  border: 1px solid var(--sc-ctl-line);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  outline: 0;
+  box-shadow: none;
+}
+body#artwork #pluginWrapper .aw-sc-row .aw-sc-input:focus {
+  border-color: var(--sc-ctl-line-on);
+  outline: 0;
+}
+body#artwork #pluginWrapper .aw-sc-row .aw-sc-input::placeholder {
+  color: var(--ink-dim);
+}
+body#artwork #pluginWrapper .aw-sc-row.is-changed .aw-sc-input {
+  border-color: var(--sc-ctl-line-on);
+}
+body#artwork #pluginWrapper .aw-sc-row .aw-segment {
+  width: 100%;
+  height: 46px;
+}
+body#artwork #pluginWrapper .aw-sc-row {
+  /* the row's button: a pill (Run, Check now); one that leads somewhere says Open with a chevron */
+}
+body#artwork #pluginWrapper .aw-sc-row .aw-sc-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--sc-pill-fill);
+  border: 1px solid var(--sc-ctl-line);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  max-width: 100%;
+}
+body#artwork #pluginWrapper .aw-sc-row .aw-sc-pill .aw-sc-pill__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body#artwork #pluginWrapper .aw-sc-row .aw-sc-pill .material-symbols-rounded {
+  font-size: 19px;
+  color: var(--ink-3);
+}
+body#artwork #pluginWrapper .aw-sc-row .aw-sc-pill:hover {
+  background: var(--fill-12);
+}
+body#artwork #pluginWrapper .aw-sc-row .aw-sc-pill:focus-visible {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 2px;
+}
+body#artwork #pluginWrapper .aw-sc-row .aw-sc-pill--open {
+  padding: 0 12px 0 16px;
+}
+body#artwork #pluginWrapper .aw-sc-row .aw-sc-pill--danger {
+  background: transparent;
+  border-color: var(--sc-danger-line);
+  color: var(--sc-danger);
+}
+body#artwork #pluginWrapper .aw-sc-row .aw-sc-pill--danger:hover {
+  background: var(--err-wash);
+}
+body#artwork #pluginWrapper .aw-sc-row {
+  /* the equalizer: label and hint over the bars, across the card */
+}
+body#artwork #pluginWrapper .aw-sc-row--eq {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+body#artwork #pluginWrapper .aw-sc-row .aw-sc-eq {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+/* System beside the side column (15D): a narrower card, the same rows a little tighter */
+@container aw-sc (max-width: 800px) {
+  body#artwork #pluginWrapper .aw-sc {
+    padding: 0 26px;
+  }
+  body#artwork #pluginWrapper .aw-sc__head {
+    padding: 20px 0 16px;
+  }
+  body#artwork #pluginWrapper .aw-sc__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+  body#artwork #pluginWrapper .aw-sc__icon .material-symbols-rounded {
+    font-size: 20px;
+  }
+  body#artwork #pluginWrapper .aw-sc-row {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 28px;
+    padding: 16px 0;
+  }
+  body#artwork #pluginWrapper .aw-sc-row--eq {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+}
+/* the phone (15C), or any column as narrow: the label above wide controls, beside narrow ones */
+@container aw-sc (max-width: 560px) {
+  body#artwork #pluginWrapper .aw-sc {
+    border-radius: 16px;
+    padding: 0 18px;
+  }
+  body#artwork #pluginWrapper .aw-sc__head {
+    gap: 12px;
+    padding: 16px 0 14px;
+  }
+  body#artwork #pluginWrapper .aw-sc__icon {
+    width: auto;
+    height: auto;
+    background: transparent;
+    border-radius: 0;
+    color: var(--sc-icon);
+  }
+  body#artwork #pluginWrapper .aw-sc__icon .material-symbols-rounded {
+    font-size: 21px;
+  }
+  body#artwork #pluginWrapper .aw-sc--danger .aw-sc__icon {
+    background: transparent;
+  }
+  body#artwork #pluginWrapper .aw-sc__title {
+    font-size: 17px;
+    line-height: 20px;
+  }
+  body#artwork #pluginWrapper .aw-sc__desc {
+    font-size: 12px;
+  }
+  body#artwork #pluginWrapper .aw-sc__foot {
+    gap: 12px;
+    padding: 12px 0 16px;
+  }
+  body#artwork #pluginWrapper .aw-sc__status {
+    font-size: 10px;
+    margin-right: auto;
+  }
+  body#artwork #pluginWrapper .aw-sc__status i {
+    display: none;
+  }
+  body#artwork #pluginWrapper .aw-sc__cancel {
+    display: none;
+  }
+  body#artwork #pluginWrapper .aw-sc__save {
+    height: 40px;
+    margin-left: auto;
+  }
+  body#artwork #pluginWrapper .aw-sc-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 12px 0;
+    min-height: 58px;
+  }
+  body#artwork #pluginWrapper .aw-sc-row__label {
+    font-size: 15px;
+  }
+  body#artwork #pluginWrapper .aw-sc-row__hint {
+    margin-top: 2px;
+    font-size: 12px;
+  }
+  body#artwork #pluginWrapper .aw-sc-row__control {
+    flex: none;
+  }
+  body#artwork #pluginWrapper .aw-sc-switch__state {
+    display: none;
+  }
+  /* a select or a text field takes the card's width under its label, the hint under it */
+  body#artwork #pluginWrapper .aw-sc-row--wide, body#artwork #pluginWrapper .aw-sc-row--seg {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "label" "control" "hint";
+    gap: 0;
+    padding: 14px 0 16px;
+  }
+  body#artwork #pluginWrapper .aw-sc-row--wide .aw-sc-row__text, body#artwork #pluginWrapper .aw-sc-row--seg .aw-sc-row__text {
+    display: contents;
+  }
+  body#artwork #pluginWrapper .aw-sc-row--wide .aw-sc-row__label, body#artwork #pluginWrapper .aw-sc-row--seg .aw-sc-row__label {
+    grid-area: label;
+    font-size: 14px;
+    line-height: 17px;
+  }
+  body#artwork #pluginWrapper .aw-sc-row--wide .aw-sc-row__control, body#artwork #pluginWrapper .aw-sc-row--seg .aw-sc-row__control {
+    grid-area: control;
+    margin-top: 8px;
+  }
+  body#artwork #pluginWrapper .aw-sc-row--wide .aw-sc-row__hint, body#artwork #pluginWrapper .aw-sc-row--seg .aw-sc-row__hint {
+    grid-area: hint;
+    margin-top: 7px;
+  }
+  body#artwork #pluginWrapper .aw-sc-row--wide .ui-select-container.ui-select-bootstrap {
+    height: 48px;
+  }
+  body#artwork #pluginWrapper .aw-sc-row--wide .ui-select-container.ui-select-bootstrap select {
+    height: 46px;
+    line-height: 46px;
+    padding-left: 14px;
+  }
+  body#artwork #pluginWrapper .aw-sc-row--wide .aw-sc-input {
+    height: 48px;
+    padding: 0 14px;
+  }
+  /* a row that leads somewhere is one tap target with a chevron */
+  body#artwork #pluginWrapper .aw-sc-row--link {
+    position: relative;
+  }
+  body#artwork #pluginWrapper .aw-sc-row--link .aw-sc-pill {
+    position: static;
+    height: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    gap: 0;
+  }
+  body#artwork #pluginWrapper .aw-sc-row--link .aw-sc-pill::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+  body#artwork #pluginWrapper .aw-sc-row--link .aw-sc-pill .aw-sc-pill__text {
+    display: none;
+  }
+  body#artwork #pluginWrapper .aw-sc-row--link .aw-sc-pill .material-symbols-rounded {
+    font-size: 22px;
+  }
+  body#artwork #pluginWrapper .aw-sc-row--eq {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+}
+/* the network's status tiles: side by side while they fit, one under the other when not */
+body#artwork #pluginWrapper .aw-sc-bare #networkStatus .networkStatus {
+  flex-wrap: wrap;
+}
+body#artwork #pluginWrapper .aw-sc-bare #networkStatus .networkStatus > .panel {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+/* the phone page: cards 14px from the screen's edge, the plugin's head on one line with its switch */
+@media (max-width: 700px) and (orientation: portrait) {
+  body#artwork .aw-sp-cards {
+    margin: 20px -6px 0;
+    gap: 14px;
+  }
+  body#artwork .aw-sp-head__back, body#artwork .aw-sp-help, body#artwork .aw-sp-head__subtitle, body#artwork .aw-sp-enabled__label {
+    display: none;
+  }
+  body#artwork .aw-sp-head__row {
+    align-items: center;
+    gap: 14px;
+  }
+  body#artwork .aw-sp-head__title {
+    font-size: 28px;
+    letter-spacing: -0.025em;
+    line-height: normal;
+  }
+  body#artwork .aw-sp-head__sub {
+    margin-top: 4px;
+  }
+  body#artwork .aw-sp-head__meta {
+    font-size: 10px;
+  }
+  body#artwork #pluginWrapper .aw-sp-enabled {
+    height: auto;
+    padding: 0;
+    background: transparent;
+    border: 0;
+  }
+  body#artwork #pluginWrapper .aw-sp-enabled .bootstrap-switch {
+    width: 52px !important;
+    height: 30px;
+    border-radius: 15px;
+  }
+  body#artwork #pluginWrapper .aw-sp-enabled .bootstrap-switch::before {
+    width: 24px;
+    height: 24px;
+  }
+  body#artwork #pluginWrapper .aw-sp-enabled .bootstrap-switch.bootstrap-switch-on::before {
+    left: 25px;
+  }
+  body#artwork .aw-sp-helpicon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+  body#artwork .aw-sp-helpicon .material-symbols-rounded {
+    font-size: 22px;
+  }
+}
+/* Volumio's own sections end on their own content (My Music's buttons): the card keeps a foot of 22px at
+   every width (the narrow columns' padding above would take it away) */
+body#artwork #pluginWrapper .aw-sc.aw-sc--core {
+  padding-bottom: 22px;
+}
+
+/* Network drives (Sources): the add button, what the scan found, and the form on the card's own rows */
+body#artwork #pluginWrapper #networkDrives #addNewDrive.aw-sc-pill {
+  float: none;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 18px 0 14px;
+  border-radius: 999px;
+  background: var(--sc-pill-fill);
+  border: 1px solid var(--sc-ctl-line);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+body#artwork #pluginWrapper #networkDrives #addNewDrive.aw-sc-pill .material-symbols-rounded {
+  font-size: 19px;
+  color: var(--ink-3);
+}
+body#artwork #pluginWrapper #networkDrives #addNewDrive.aw-sc-pill:hover {
+  background: var(--fill-12);
+}
+body#artwork #pluginWrapper #networkDrives {
+  /* the table: a row being edited spans the columns */
+}
+body#artwork #pluginWrapper #networkDrives table.table tr > td[colspan] {
+  grid-column: 1/-1;
+  padding: 0;
+}
+
+body#artwork #pluginWrapper .aw-drive {
+  margin-top: 14px;
+}
+body#artwork #pluginWrapper .aw-drive__found {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+body#artwork #pluginWrapper .aw-drive__note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--fill-06);
+  border: 1px solid var(--fill-10);
+  font-size: 14px;
+  color: var(--ink-2);
+}
+body#artwork #pluginWrapper .aw-drive__note .material-symbols-rounded {
+  font-size: 20px;
+  color: var(--ink-3);
+}
+body#artwork #pluginWrapper .aw-drive__nas {
+  border-radius: 12px;
+  background: var(--fill-06);
+  border: 1px solid var(--fill-10);
+  overflow: hidden;
+}
+body#artwork #pluginWrapper .aw-drive__nas-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+body#artwork #pluginWrapper .aw-drive__nas-head > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body#artwork #pluginWrapper .aw-drive__nas-head .material-symbols-rounded {
+  font-size: 20px;
+  color: var(--ink-3);
+}
+body#artwork #pluginWrapper .aw-drive__nas-head:hover {
+  background: var(--fill-06);
+}
+body#artwork #pluginWrapper .aw-drive__shares {
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px 10px 46px;
+}
+body#artwork #pluginWrapper .aw-drive__share {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  font-size: 14px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+body#artwork #pluginWrapper .aw-drive__share input {
+  accent-color: var(--ink);
+}
+body#artwork #pluginWrapper .aw-drive__field {
+  position: relative;
+}
+body#artwork #pluginWrapper .aw-drive__field .aw-sc-input {
+  padding-right: 46px;
+}
+body#artwork #pluginWrapper .aw-drive__eye {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+body#artwork #pluginWrapper .aw-drive__eye .material-symbols-rounded {
+  font-size: 20px;
+}
+body#artwork #pluginWrapper .aw-drive__eye:hover {
+  color: var(--ink);
+}
+body#artwork #pluginWrapper .aw-drive .aw-sc-row:last-of-type {
+  border-bottom: 0;
+}
+body#artwork #pluginWrapper .aw-drive__foot {
+  padding-bottom: 0;
+}
+body#artwork #pluginWrapper .aw-drive__foot .aw-sc__save {
+  gap: 8px;
+}
+body#artwork #pluginWrapper .aw-drive__foot .aw-sc__save:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+body#artwork #pluginWrapper .aw-drive__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 4px 0 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--err-wash);
+  border: 1px solid var(--err-line);
+  font-size: 14px;
+  color: var(--ink-2);
+}
+body#artwork #pluginWrapper .aw-drive__error .material-symbols-rounded {
+  font-size: 20px;
+  color: var(--sc-danger);
+}
+body#artwork #pluginWrapper .aw-drive__more {
+  margin-right: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--ink-3);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+body#artwork #pluginWrapper .aw-drive__more:hover {
+  color: var(--ink);
 }
 /* ============================================================
    MyVolumio (the frame's pages under the theme's dress). Bootstrap-era markup: the frame's
@@ -14026,6 +15678,20 @@ body#artwork .aw-queue__hint {
   font-size: 13px;
   color: var(--ink-dim);
 }
+body#artwork .aw-queue {
+  /* how to reorder, said for the pointer in hand: a finger holds the row first */
+}
+body#artwork .aw-queue .aw-queue__hint--touch {
+  display: none;
+}
+@media (pointer: coarse) {
+  body#artwork .aw-queue .aw-queue__hint--mouse {
+    display: none;
+  }
+  body#artwork .aw-queue .aw-queue__hint--touch {
+    display: inline;
+  }
+}
 body#artwork .aw-queue__scroll {
   flex: 1;
   min-height: 0;
@@ -14036,6 +15702,9 @@ body#artwork .aw-queue__list {
   display: flex;
   flex-direction: column;
 }
+body#artwork .aw-queue {
+  /* the whole row is the drag handle (QueuePanel): a held row neither selects its text nor opens the phone's callout */
+}
 body#artwork .aw-queue__row {
   display: flex;
   align-items: center;
@@ -14045,6 +15714,9 @@ body#artwork .aw-queue__row {
   padding: 0 16px;
   cursor: pointer;
   position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   border-bottom: 1px solid var(--fill-05);
   transition: transform 0.18s ease;
 }
@@ -14057,6 +15729,7 @@ body#artwork .aw-queue__row.is-current {
   border-bottom-color: transparent;
 }
 body#artwork .aw-queue__row.is-dragging {
+  cursor: grabbing;
   transition: none;
   z-index: 2;
   border-radius: 11px;
@@ -14069,16 +15742,6 @@ body#artwork .aw-queue__list.is-reordering {
 }
 body#artwork .aw-queue .aw-queue__list.is-reordering .aw-queue__row {
   pointer-events: none;
-}
-body#artwork .aw-queue__drag {
-  font-size: 20px;
-  color: var(--ink-75);
-  cursor: grab;
-  flex: none;
-  touch-action: none;
-}
-body#artwork .aw-queue__drag:active {
-  cursor: grabbing;
 }
 body#artwork .aw-queue__slot {
   width: 26px;
@@ -14293,10 +15956,6 @@ body#artwork {
     height: 64px;
     gap: 14px;
     padding: 0 12px;
-  }
-  body#artwork .aw-queue.is-docked .aw-queue__drag {
-    font-size: 18px;
-    width: 16px;
   }
   body#artwork .aw-queue.is-docked .aw-queue__slot {
     width: 22px;
@@ -15050,7 +16709,7 @@ body#artwork .outputs__menu {
   left: auto;
   width: min(350px, 100vw - 24px);
   max-height: calc(100vh - 91px); /* what Volumio's own frame left the sheet with */
-  padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  padding: 20px 20px calc(20px + var(--sa-b));
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   border-radius: 18px;
@@ -15408,6 +17067,60 @@ body#artwork .aw-local__link {
   text-decoration: underline;
   text-underline-offset: 2px;
   cursor: pointer;
+}
+
+/* FusionDsp's quick controls: the same row as Play in this browser (icon, name and state, the switch),
+   with the plugin's page one tap away, and the preset as the theme's select under it */
+body#artwork .outputs__menu .aw-dsp__row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+}
+body#artwork .outputs__menu .aw-dsp__row .aw-local__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--fill-08);
+}
+body#artwork .outputs__menu .aw-dsp__row .aw-local__icon .material-symbols-rounded {
+  font-size: 22px;
+  color: var(--ink-1);
+}
+body#artwork .outputs__menu .aw-dsp__row .aw-local__hint {
+  font-size: 12px;
+  color: var(--ink-dim);
+  margin-top: 2px;
+}
+
+body#artwork .outputs__menu .aw-dsp__page {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--fill-12);
+  background: transparent;
+  color: var(--ink-3);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+body#artwork .outputs__menu .aw-dsp__page .material-symbols-rounded {
+  font-size: 19px;
+}
+body#artwork .outputs__menu .aw-dsp__page:hover {
+  background: var(--fill-08);
+  color: var(--ink);
+}
+body#artwork .outputs__menu .aw-dsp__page:focus-visible {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 2px;
+}
+
+body#artwork .outputs__menu .aw-dsp__preset {
+  margin-top: 10px;
 }
 /* Phone menu sheet (mockup "Mobile — Menu"): 308px sheet 14px from the edges over a dimmed screen. */
 body#artwork .aw-mm {
@@ -15915,6 +17628,13 @@ body#artwork .aw-sheet--power .aw-power__cancel:hover {
   body#artwork .modal-dialog {
     max-width: calc(100vw - 24px);
   }
+}
+/* the updater's wait: a spinner beside "Please wait" */
+body#artwork .aw-upd-wait {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink-2);
 }
 /* The theme's sheets: sleep timer, alarms, track actions, credits; the form controls they share. */
 @keyframes aw-spin {
@@ -17436,8 +19156,6 @@ body#artwork .aw-amb.is-night .aw-amb__sleep {
 @media (max-width: 700px) and (orientation: portrait) {
   :root {
     --rail-w: 0px;
-    --sa-t: env(safe-area-inset-top, 0px);
-    --sa-b: env(safe-area-inset-bottom, 0px);
     --mini-h: calc(80px + var(--sa-b));
     --pad-screen: 20px;
     --pad-top: calc(14px + var(--sa-t));
@@ -17460,10 +19178,10 @@ body#artwork .aw-amb.is-night .aw-amb__sleep {
     top: 0;
     left: 0;
     right: 0;
-    height: calc(env(safe-area-inset-top, 0px) + 52px);
+    height: calc(var(--sa-t) + 52px);
     z-index: 2;
     pointer-events: none;
-    background: linear-gradient(to bottom, var(--aw-band, var(--ground)) 0, var(--aw-band, var(--ground)) calc(env(safe-area-inset-top, 0px) + 8px), transparent 100%);
+    background: linear-gradient(to bottom, var(--aw-band, var(--ground)) 0, var(--aw-band, var(--ground)) calc(var(--sa-t) + 8px), transparent 100%);
   }
   /* the document itself never scrolls: the screens scroll inside, so Safari keeps its bars still.
      Neither vh unit is right for both browsing modes on iOS: a regular Safari TAB needs `dvh`
@@ -17521,7 +19239,7 @@ body#artwork .aw-amb.is-night .aw-amb__sleep {
     grid-column: 1;
     grid-row: 1;
   }
-  body#artwork #footer-content .mini-transport {
+  body#artwork #footer-content .mini-center {
     grid-column: 2;
     grid-row: 1;
   }
@@ -17530,7 +19248,7 @@ body#artwork .aw-amb.is-night .aw-amb__sleep {
     grid-row: 1;
     gap: 14px;
   }
-  body#artwork #footer-content .mini-queue, body#artwork #footer-content .mini-seek, body#artwork #footer-content .mini-volume,
+  body#artwork #footer-content .tb-pill--queue, body#artwork #footer-content .mini-seek, body#artwork #footer-content .mini-volume, body#artwork #footer-content .mini-fav,
   body#artwork #footer-content .mini-transport .repeat-button, body#artwork #footer-content .mini-transport .player-action-shuffle, body#artwork #footer-content .mini-transport #prev-button {
     display: none;
   }
@@ -17547,27 +19265,31 @@ body#artwork .aw-amb.is-night .aw-amb__sleep {
   body#artwork #footer-content .mini-transport .btn-link .material-symbols-rounded {
     font-size: 26px;
   }
-  body#artwork #footer-content .mini-zone {
+  body#artwork #footer-content .tb-pill--output {
     padding: 0;
     height: auto;
     background: transparent;
     border: 0;
   }
-  body#artwork #footer-content .mini-zone .material-symbols-rounded {
+  body#artwork #footer-content .tb-pill--output .material-symbols-rounded {
     font-size: 24px;
     color: var(--ink-3);
   }
-  body#artwork #footer-content .mini-zone .mini-zone-name {
+  body#artwork #footer-content .tb-pill--output .tb-pill__name {
     display: none;
   }
   body#artwork #footer-content #trackInfo-compact {
     grid-template-columns: 52px 1fr;
     column-gap: 12px;
-    --mini-rows: 18px 16px 15px;
-    --mini-line-gap: 2px;
+    row-gap: 2px;
     height: auto;
     min-height: 52px;
   }
+  body#artwork #footer-content .mini-byline {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  } /* the phone keeps its three lines: title, artist, the quality */
   body#artwork #footer-content .trackInfo-album-art-wrapper {
     width: 52px;
     height: 52px;
@@ -17847,6 +19569,17 @@ body#artwork .aw-amb.is-night .aw-amb__sleep {
     grid-template-columns: 1fr auto;
     grid-template-areas: "track track" "elapsed remaining";
     row-gap: 2px;
+    column-gap: 0;
+  }
+  body#artwork #np #np-seek .artwork-seek__hit {
+    grid-area: track;
+  }
+  body#artwork #np #np-seek .seek-elapsed {
+    grid-area: elapsed;
+    justify-self: start;
+  }
+  body#artwork #np #np-seek .seek-remaining {
+    grid-area: remaining;
   }
   body#artwork #np #np-seek .seek-time {
     font-size: 11px;
@@ -17855,8 +19588,9 @@ body#artwork .aw-amb.is-night .aw-amb__sleep {
     color: var(--ink);
   }
   body#artwork #np #np-seek .seek-remaining {
+    display: block;
     justify-self: end;
-  }
+  } /* the phone shows the time remaining always */
   body#artwork #np #np-seek .seek-duration {
     display: none;
   }
@@ -17915,9 +19649,9 @@ body#artwork .aw-amb.is-night .aw-amb__sleep {
   body#artwork #content.playback {
     padding-bottom: 0;
   }
-  body#artwork #np .np-seg, body#artwork #np .np-library {
+  body#artwork #np .np-tabrow {
     display: none;
-  }
+  } /* the face switch and the heart: the phone has its tiles */
   body#artwork #np .np-m-tile--lyrics:disabled {
     opacity: 0.35;
   }
@@ -18282,9 +20016,6 @@ body#artwork .aw-amb.is-night .aw-amb__sleep {
     gap: 13px;
     padding: 0 12px;
     border-radius: 12px;
-  }
-  body#artwork .aw-queue__drag {
-    font-size: 19px;
   }
   body#artwork .aw-queue__slot {
     width: 20px;
@@ -18729,7 +20460,7 @@ body#artwork .aw-amb.is-night .aw-amb__sleep {
     min-height: 44px;
   }
   /* --- Settings: grouped list on the landing; plugin pages full width with their own back --- */
-  body#artwork #contentWrapper.aw-settings-shell, body#artwork #contentWrapper.aw-settings-shell.aw-settings-shell--noside {
+  body#artwork #contentWrapper.aw-settings-shell {
     grid-template-columns: 1fr;
     grid-template-rows: minmax(0, 1fr);
   }
@@ -18755,71 +20486,50 @@ body#artwork .aw-amb.is-night .aw-amb__sleep {
   body#artwork #contentWrapper.aw-settings-shell.aw-state-volumio-settings > #content {
     display: none;
   }
-  body#artwork .aw-mnav__head {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    margin-top: 0;
-    min-height: 44px;
-  }
-  body#artwork .aw-mnav__back {
-    height: 44px;
-    width: 32px;
-    align-self: flex-start;
-    margin-top: 0;
-    border: 0;
-    background: transparent;
-    padding: 0;
-    color: var(--ink-2);
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-  }
-  body#artwork .aw-mnav__back .material-symbols-rounded {
-    font-size: 24px;
-  }
-  body#artwork .aw-mnav__titles {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    line-height: normal;
-  }
+  /* the landing (15E): the title, the search, the sections in one card; Help and the shop as links under it */
   body#artwork .aw-mnav__title {
-    font-size: 24px;
+    padding: 10px 2px 0;
+    font-size: 32px;
     font-weight: 800;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
+    line-height: normal;
     color: var(--ink);
   }
-  body#artwork .aw-mnav__sub {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    color: var(--ink-45);
+  body#artwork .aw-sfield--landing {
+    height: 48px;
+    margin: 16px 2px 0;
+    padding: 0 14px;
+    gap: 10px;
   }
-  body#artwork .aw-mnav__eyebrow {
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    color: var(--ink-45);
-    padding: 14px 2px 8px;
-    line-height: normal;
+  body#artwork .aw-sfield--landing > .material-symbols-rounded {
+    font-size: 20px;
   }
+  body#artwork .aw-sfield--landing input {
+    font-size: 15px;
+  }
+  body#artwork .aw-sfield--landing .aw-sfield__key {
+    display: none;
+  }
+  /* the card, the results and the links under them line up with the search field: 22px from the screen's edge */
   body#artwork .aw-mnav__card {
-    border-radius: 14px;
+    margin: 16px 2px 0;
+    padding: 4px 0;
+    border-radius: 16px;
     overflow: hidden;
-    background: var(--fill-05);
-    border: 1px solid var(--fill-10);
+    background: var(--sc-fill);
+    border: 1px solid var(--sc-line);
   }
   body#artwork .aw-mnav__row {
-    display: flex;
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr) auto 22px;
+    gap: 14px;
     align-items: center;
-    gap: 13px;
     height: 52px;
-    padding: 0 14px;
-    border-bottom: 1px solid var(--fill-06);
+    padding: 0 16px;
+    border-bottom: 1px solid var(--sc-row-line);
     cursor: pointer;
     text-decoration: none;
-    color: var(--ink-2);
+    color: var(--ink);
   }
   body#artwork .aw-mnav__row:last-child {
     border-bottom: 0;
@@ -18829,29 +20539,84 @@ body#artwork .aw-amb.is-night .aw-amb__sleep {
     color: var(--ink);
   }
   body#artwork .aw-mnav__row > .material-symbols-rounded:first-child {
-    font-size: 22px;
+    font-size: 21px;
     color: var(--ink-3);
-    width: 22px;
   }
   body#artwork .aw-mnav__label {
-    flex: 1;
+    grid-column: 2;
     min-width: 0;
-    font-size: 15px;
-    font-weight: 500;
+    font-size: 16px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   body#artwork .aw-mnav__value {
+    grid-column: 3;
+    font-size: 13px;
+    color: var(--ink-muted);
+    white-space: nowrap;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  body#artwork .aw-mnav__value.mono {
     font-size: 11px;
-    color: var(--ink-55);
+  }
+  body#artwork .aw-mnav__value--warn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px !important;
+    letter-spacing: 0.1em;
+    color: var(--sc-unsaved);
+  }
+  body#artwork .aw-mnav__value--warn i {
+    width: 5px;
+    height: 5px;
+    background: var(--sc-unsaved);
   }
   body#artwork .aw-mnav__chev {
-    font-size: 20px;
-    color: var(--ink-faint);
+    grid-column: 4;
+    font-size: 22px;
+    color: var(--ink-dim);
+  }
+  body#artwork .aw-mnav__foot {
+    display: flex;
+    gap: 22px;
+    padding: 18px 2px 0;
+  }
+  body#artwork .aw-mnav__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    color: var(--ink-muted);
+    cursor: pointer;
+    text-decoration: none;
+  }
+  body#artwork .aw-mnav__link .material-symbols-rounded {
+    font-size: 15px;
+  }
+  body#artwork .aw-mnav__link:hover {
+    color: var(--ink);
+  }
+  /* the results on the phone: under the field, the card 14px from the screen's edge */
+  body#artwork .aw-mnav .aw-sres {
+    margin-top: 22px;
+  }
+  body#artwork .aw-mnav .aw-sres .aw-sres__title {
+    font-size: 24px;
+    line-height: normal;
+  }
+  body#artwork .aw-mnav .aw-sres .aw-sres__list {
+    margin: 14px 2px 0;
+    padding: 4px 6px;
   }
   body#artwork #pluginWrapper {
     padding: var(--phone-top) 20px calc(var(--mini-h) + 20px);
+  }
+  body#artwork #contentWrapper.aw-settings-shell .aw-mnav .aw-sfield {
+    display: flex;
   }
   body#artwork #pluginWrapper .boxHeader .title h2 {
     display: flex;
@@ -19058,5 +20823,69 @@ body#artwork .aw-amb.is-night .aw-amb__sleep {
   } /* the theme shows the pill with a heavier selector */
   body#artwork .aw-state-myvolumio-plans .box .aw-plans {
     margin-top: 12px;
+  }
+}/* Transparency off (core/transparency.ts sets data-aw-solid on the root): no surface blurs what is under it.
+   The bars, panels and menus draw nearly solid instead, the page head darkens the top with a plain gradient,
+   and the blurred cover behind everything stays (it is drawn once per track, not on every scroll frame). */
+:root[data-aw-solid] *, :root[data-aw-solid] *::before, :root[data-aw-solid] *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+:root[data-aw-solid] .aw-head .aw-hblur {
+  display: none;
+}
+
+:root[data-aw-solid] {
+  --glass-1-fill: rgba(11, 13, 16, .94);
+  --rail-fill: rgba(11, 13, 16, .94);
+  --bar-fill: rgba(11, 13, 16, .94);
+  --bar-veil: rgba(11, 13, 16, .94);
+  --panel-fill: rgba(16, 18, 21, .98);
+  --panel-dock: rgba(14, 16, 19, .97);
+  --panel-dock-top: rgba(14, 16, 19, .9);
+  --panel-sheet: rgba(16, 18, 21, .99);
+  --panel-deep: rgba(10, 12, 14, .98);
+  --menu-fill: #22252a;
+  --glass-3-fill: rgba(16, 18, 21, .97);
+  --scrim-page: rgba(5, 6, 8, .62);
+  --head-tint-1: rgba(8, 10, 12, .97);
+  --head-tint-2: rgba(8, 10, 12, .84);
+}
+
+/* the light theme's own values first, then the solid ones over them (same keys, higher specificity) */
+:root[data-aw-solid][data-aw-theme=light] {
+  --glass-1-fill: rgba(250, 248, 245, .95);
+  --rail-fill: rgba(250, 248, 245, .95);
+  --bar-fill: rgba(250, 248, 245, .95);
+  --bar-veil: rgba(250, 248, 245, .95);
+  --panel-fill: rgba(252, 251, 249, .99);
+  --panel-dock: rgba(252, 251, 249, .98);
+  --panel-dock-top: rgba(252, 251, 249, .92);
+  --panel-sheet: rgba(252, 251, 249, .995);
+  --panel-deep: rgba(252, 251, 249, .99);
+  --menu-fill: #fcfbf9;
+  --glass-3-fill: rgba(252, 251, 249, .98);
+  --scrim-page: rgba(24, 20, 14, .36);
+  --head-tint-1: rgba(250, 248, 245, .98);
+  --head-tint-2: rgba(250, 248, 245, .88);
+}
+
+@media (prefers-color-scheme: light) {
+  :root[data-aw-solid][data-aw-theme=system] {
+    --glass-1-fill: rgba(250, 248, 245, .95);
+    --rail-fill: rgba(250, 248, 245, .95);
+    --bar-fill: rgba(250, 248, 245, .95);
+    --bar-veil: rgba(250, 248, 245, .95);
+    --panel-fill: rgba(252, 251, 249, .99);
+    --panel-dock: rgba(252, 251, 249, .98);
+    --panel-dock-top: rgba(252, 251, 249, .92);
+    --panel-sheet: rgba(252, 251, 249, .995);
+    --panel-deep: rgba(252, 251, 249, .99);
+    --menu-fill: #fcfbf9;
+    --glass-3-fill: rgba(252, 251, 249, .98);
+    --scrim-page: rgba(24, 20, 14, .36);
+    --head-tint-1: rgba(250, 248, 245, .98);
+    --head-tint-2: rgba(250, 248, 245, .88);
   }
 }
