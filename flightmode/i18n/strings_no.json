@@ -1,0 +1,89 @@
+{
+  "PAGE": {
+    "LABEL": "Flymodus"
+  },
+  "SECTION": {
+    "STATUS": "Status",
+    "RADIOS": "Radioer",
+    "CONTROL": "Flymodus",
+    "PERSIST": "Hold Wi-Fi av etter omstart"
+  },
+  "STATUS": {
+    "LABEL": "Status",
+    "OFF": "Radioer på",
+    "ON": "Flymodus på",
+    "WIFI_OFF": "Wi-Fi av",
+    "BT_OFF": "Bluetooth av",
+    "HARD": "Den fysiske flyknappen er på",
+    "SENTINEL": "Wi-Fi-gjenopprettingsfil funnet"
+  },
+  "RADIOS": {
+    "LABEL": "Radioer",
+    "LINE": "{name} ({type}): {soft}, {hard}",
+    "NONE": "Ingen Wi-Fi- eller Bluetooth-radioer funnet",
+    "WLAN": "Wi-Fi",
+    "BLUETOOTH": "Bluetooth"
+  },
+  "SOFT": {
+    "BLOCKED": "programvareblokkert",
+    "UNBLOCKED": "ikke programvareblokkert"
+  },
+  "HARD": {
+    "BLOCKED": "maskinvareblokkert",
+    "UNBLOCKED": "ikke maskinvareblokkert"
+  },
+  "RECOVERY": {
+    "LABEL": "Nettverk",
+    "ETH": "Et kablet nettverk er tilkoblet. Denne enheten kan fortsatt nås via kabelen.",
+    "NO_ETH": "Ingen kablet nettverk. Wi-Fi slås av nå og kommer tilbake etter omstart. Bluetooth forblir av etter omstart hvis du lar den være av.",
+    "NO_ETH_PERSIST": "Ingen kablet nettverk. Wi-Fi forblir av etter omstart til du slår den på eller deaktiverer flymodus på denne siden. Hvis grensesnittet forsvinner: en nettverkskabel, eller en tom fil med navnet wifi på en USB-pinne eller i /boot.",
+    "SENTINEL": "Wi-Fi-gjenopprettingsfil funnet. Wi-Fi forblir på til filen fjernes fra /boot eller USB-volumet."
+  },
+  "HARDBLOCK": {
+    "NOTE": "En fysisk flyknapp har slått av en radio. Det kan ikke oppheves i programvare."
+  },
+  "BUTTON": {
+    "ENABLE": "Slå på flymodus",
+    "DISABLE": "Slå av flymodus",
+    "WIFI_DISABLE": "Slå av Wi-Fi",
+    "WIFI_ENABLE": "Slå på Wi-Fi",
+    "BT_DISABLE": "Slå av Bluetooth",
+    "BT_ENABLE": "Slå på Bluetooth",
+    "PERSIST_UNLOCK": "Hold Wi-Fi av etter omstart"
+  },
+  "CONFIRM": {
+    "ENABLE_TITLE": "Slå på flymodus?",
+    "ENABLE_ETH": "Wi-Fi og Bluetooth slås av og forblir av etter omstart. Denne enheten kan fortsatt nås via kabelen.",
+    "ENABLE_NO_ETH": "Wi-Fi og Bluetooth slås av nå. En omstart slår på Wi-Fi. Bluetooth forblir av etter omstart hvis du lar den være av.",
+    "WIFI_TITLE": "Slå av Wi-Fi?",
+    "WIFI_ETH": "Wi-Fi slås av og forblir av etter omstart. Denne enheten kan fortsatt nås via kabelen.",
+    "WIFI_NO_ETH": "Wi-Fi slås av nå. En omstart slår den på.",
+    "ENABLE_NO_ETH_PERSIST": "Wi-Fi og Bluetooth slås av og forblir av etter omstart til du deaktiverer flymodus eller slår på Wi-Fi på denne siden.",
+    "WIFI_NO_ETH_PERSIST": "Wi-Fi slås av og forblir av etter omstart til du slår den på eller deaktiverer flymodus på denne siden."
+  },
+  "TOAST": {
+    "ENABLED": "Wi-Fi og Bluetooth er av",
+    "DISABLED": "Wi-Fi og Bluetooth er på",
+    "WIFI_OFF": "Wi-Fi er av",
+    "WIFI_ON": "Wi-Fi er på",
+    "BT_OFF": "Bluetooth er av",
+    "BT_ON": "Bluetooth er på",
+    "HARD_DENIED": "En maskinvareknapp blokkerer en radio. Det kan ikke overstyres.",
+    "FAILED": "Kunne ikke ta i bruk radiostatus",
+    "PERSIST_ON": "Wi-Fi forblir av etter omstart",
+    "PERSIST_BAD": "Koden stemmer ikke. Prøv igjen med den nye koden.",
+    "PERSIST_SENTINEL": "Det finnes en Wi-Fi-gjenopprettingsfil. Fjern den før du slår på vedvarende av."
+  },
+  "PERSIST": {
+    "TOKEN": "Skriv denne koden",
+    "TOKEN_DOC": "Skriv koden nøyaktig. Den vises på denne siden slik at du bekrefter at du kan lese den.",
+    "CHALLENGE": "Kode",
+    "STATUS": "Vedvarende",
+    "NOTE_ACTIVE": "Wi-Fi forblir av etter omstart til du slår den på eller deaktiverer flymodus på denne siden.",
+    "NOTE_SENTINEL": "Det finnes en Wi-Fi-gjenopprettingsfil. Vedvarende av kan ikke slås på før filen fjernes fra /boot eller USB-volumet. Mer i denne pluginens README.",
+    "WARN_LABEL": "Advarsel",
+    "NOTE_CHALLENGE": "Ingen nettverkskabel. Etter omstart er denne enheten ikke tilgjengelig over Wi-Fi. Bruk dette bare hvis enheten har en skjerm, eller du har en annen vei tilbake.",
+    "RECOVER_LABEL": "Gjenoppretting",
+    "NOTE_RECOVER": "Denne siden før omstart (slå på Wi-Fi eller deaktiver flymodus), en nettverkskabel, eller en tom fil med navnet wifi på en USB-pinne eller i /boot. Mer i denne pluginens README."
+  }
+}

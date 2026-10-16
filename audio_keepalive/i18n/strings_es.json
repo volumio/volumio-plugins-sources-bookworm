@@ -3,7 +3,7 @@
   "SETTINGS_TITLE": "Configuración de Audio Keepalive",
   "SETTINGS_DESC": "Mantener el dispositivo de salida de audio activo para evitar retrasos de negociación, clics y chasquidos en salidas HDMI, SPDIF y DAC USB.",
   "KEEPALIVE_ENABLED": "Mantener dispositivo de audio activo",
-  "KEEPALIVE_ENABLED_DESC": "Mantiene el dispositivo de salida ALSA abierto permanentemente. Evita que los receptores HDMI/SPDIF y los DAC USB pierdan el bloqueo de señal durante la inactividad, eliminando el retraso al reanudar la reproducción.",
+  "KEEPALIVE_ENABLED_DESC": "Escribe ruido inaudible de forma continua en la salida. La música se mezcla automáticamente. Sin control de volumen extra. Funciona con HDMI, SPDIF y DAC USB.",
   "SETTINGS_SAVED": "Configuración de Audio Keepalive aplicada",
   "SAVE": "Guardar"
 }

@@ -1,0 +1,23 @@
+{
+  "PLUGIN_CONFIGURATION": "Konfiguration der IR-Aktivitäts-LED",
+  "PLUGIN_SECTION_TITLE": "Einstellungen der IR-Aktivitäts-LED",
+  "SAVE": "Speichern",
+  "SUCCESS_TITLE": "Einstellungen gespeichert",
+  "SUCCESS_MESSAGE": "Einstellungen erfolgreich gespeichert",
+  "ERROR_TITLE": "Fehler",
+  "ERROR_MESSAGE": "Einstellungen konnten nicht gespeichert werden",
+
+  "LED_OUTPUT_DOC": "LED zur Anzeige von IR-Aktivität. Integrierte LED (PWR oder ACT) oder externe GPIO-LED",
+  "LED_OUTPUT_LBL": "LED-Ausgang",
+  "GPIO_PIN_DOC": "GPIO-Pin, an den die LED angeschlossen ist",
+  "GPIO_PIN_LBL": "GPIO-Pin",
+  "BLINK_PERIOD_DOC": "Blinkperiode in Millisekunden",
+  "BLINK_PERIOD_LBL": "Blinkperiode",
+  "BLINK_CYCLES_DOC": "Anzahl der Blinkzyklen",
+  "BLINK_CYCLES_LBL": "Blinkzyklen",
+
+  "ERROR_OUT_OF_RANGE_TITLE": " außerhalb des gültigen Bereichs",
+  "ERROR_OUT_OF_RANGE_MESSAGE": "Geben Sie eine Zahl zwischen ",
+
+  "ERROR_NOT_FOUND_TITLE": " nicht gefunden"
+}

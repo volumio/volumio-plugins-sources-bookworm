@@ -1,0 +1,24 @@
+{
+  "include": ["src/**/*.ts"],
+  "compilerOptions": {
+    "rootDir": "src",
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["lib/*"]
+    },
+    "target": "es2022",
+    "module": "commonjs",
+    "outDir": "dist",
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "inlineSources": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "resolveJsonModule": true,
+    "typeRoots": ["node_modules/@types", "src/lib/types"]
+  }
+}

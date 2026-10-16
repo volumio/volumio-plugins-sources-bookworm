@@ -11,15 +11,27 @@
     "type": "boolean",
     "value": false
   },
+  "fm_gain_auto": {
+    "type": "boolean",
+    "value": true
+  },
   "fm_gain": {
     "type": "number",
     "value": 50
+  },
+  "dab_gain_auto": {
+    "type": "boolean",
+    "value": true
   },
   "dab_gain": {
     "type": "number",
     "value": 80
   },
   "dab_ppm": {
+    "type": "number",
+    "value": 0
+  },
+  "dab_level": {
     "type": "number",
     "value": 0
   },
@@ -30,6 +42,10 @@
   "scan_sensitivity": {
     "type": "number",
     "value": 8
+  },
+  "fm_scan_depth": {
+    "type": "string",
+    "value": "fast"
   },
   "show_fm_region": {
     "type": "boolean",
@@ -55,17 +71,17 @@
     "type": "string",
     "value": "0"
   },
-  "fm_oversampling": {
-    "type": "boolean",
-    "value": false
-  },
   "fm_sample_rate": {
     "type": "string",
     "value": "171k"
   },
-  "fm_deemphasis": {
-    "type": "boolean",
-    "value": false
+  "fm_level": {
+    "type": "number",
+    "value": 0
+  },
+  "fm_deemphasis_choice": {
+    "type": "string",
+    "value": "region"
   },
   "sample_rate": {
     "type": "number",
@@ -74,6 +90,10 @@
   "auto_backup_on_uninstall": {
     "type": "boolean",
     "value": true
+  },
+  "update_channel": {
+    "type": "string",
+    "value": "stable"
   },
   "show_artwork_settings": {
     "type": "boolean",
@@ -90,5 +110,21 @@
   "artwork_persistence": {
     "type": "string",
     "value": "artist"
+  },
+  "artwork_hold": {
+    "type": "number",
+    "value": 2
+  },
+  "recognise_on": {
+    "type": "boolean",
+    "value": true
+  },
+  "recognise_key": {
+    "type": "string",
+    "value": ""
+  },
+  "recognise_when": {
+    "type": "string",
+    "value": "missing"
   }
 }

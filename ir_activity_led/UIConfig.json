@@ -1,0 +1,76 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_CONFIGURATION"
+  },
+  "sections": [
+    {
+      "id": "section_settings",
+      "element": "section",
+      "label": "TRANSLATE.PLUGIN_SECTION_TITLE",
+      "icon": "fa-plug",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/ir_activity_led",
+        "method": "saveSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["ledOutput", "gpioPin", "blinkPeriodMs", "blinkCycles"]
+      },
+      "content": [
+        {
+          "id": "ledOutput",
+          "element": "select",
+          "doc": "TRANSLATE.LED_OUTPUT_DOC",
+          "label": "TRANSLATE.LED_OUTPUT_LBL",
+          "value": {
+            "value": "pwr",
+            "label": "PWR"
+          },
+          "options": [
+            {
+              "value": "pwr",
+              "label": "PWR"
+            },
+            {
+              "value": "act",
+              "label": "ACT"
+            },
+            {
+              "value": "gpio",
+              "label": "GPIO"
+            }
+          ]
+        },
+        {
+          "id": "gpioPin",
+          "element": "input",
+          "type": "number",
+          "doc": "TRANSLATE.GPIO_PIN_DOC",
+          "label": "TRANSLATE.GPIO_PIN_LBL",
+          "visibleIf": {
+            "field": "ledOutput",
+            "value": "gpio"
+          },
+          "value": 21
+        },
+        {
+          "id": "blinkPeriodMs",
+          "element": "input",
+          "type": "number",
+          "doc": "TRANSLATE.BLINK_PERIOD_DOC",
+          "label": "TRANSLATE.BLINK_PERIOD_LBL",
+          "value": 70
+        },
+        {
+          "id": "blinkCycles",
+          "element": "input",
+          "type": "number",
+          "doc": "TRANSLATE.BLINK_CYCLES_DOC",
+          "label": "TRANSLATE.BLINK_CYCLES_LBL",
+          "value": 3
+        }
+      ]
+    }
+  ]
+}

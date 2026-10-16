@@ -1,0 +1,9 @@
+[Unit]
+Description=Re-apply Volumio flight mode after rfkill change
+After=systemd-rfkill.service
+
+[Path]
+# FLIGHTMODE_PATHS
+
+[Install]
+WantedBy=multi-user.target

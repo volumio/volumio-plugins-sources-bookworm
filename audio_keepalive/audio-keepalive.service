@@ -1,0 +1,18 @@
+[Unit]
+Description=Volumio Audio Keepalive
+After=local-fs.target sound.target
+Wants=sound.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/audio-keepalive-daemon --pcm keepaliveProxyOut --fallback-pcm volumioOutput
+Restart=always
+RestartSec=1
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=audio-keepalive
+User=root
+Group=audio
+
+[Install]
+WantedBy=multi-user.target

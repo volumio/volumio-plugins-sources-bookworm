@@ -1,0 +1,1 @@
+{"version":3,"file":"time-free-query-model.js","sourceRoot":"","sources":["../../../src/lib/models/time-free-query-model.ts"],"names":[],"mappings":"","sourcesContent":["/**\n * タイムフリー再生に必要な放送区間(ラジオ時間表記、`'yyyyMMddHHmmss'`)。\n */\nexport interface TimeFreeQuery {\n  // 放送開始時刻\n  ft: string;\n  // 放送終了時刻\n  to: string;\n}\n"]}

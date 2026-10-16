@@ -1,0 +1,89 @@
+{
+  "PAGE": {
+    "LABEL": "Flygplansläge"
+  },
+  "SECTION": {
+    "STATUS": "Status",
+    "RADIOS": "Radio",
+    "CONTROL": "Flygplansläge",
+    "PERSIST": "Håll Wi-Fi avstängt efter omstart"
+  },
+  "STATUS": {
+    "LABEL": "Status",
+    "OFF": "Radio på",
+    "ON": "Flygplansläge på",
+    "WIFI_OFF": "Wi-Fi av",
+    "BT_OFF": "Bluetooth av",
+    "HARD": "Den fysiska flygplansknappen är på",
+    "SENTINEL": "Wi-Fi-återställningsfil hittad"
+  },
+  "RADIOS": {
+    "LABEL": "Radio",
+    "LINE": "{name} ({type}): {soft}, {hard}",
+    "NONE": "Inga Wi-Fi- eller Bluetooth-radioenheter hittades",
+    "WLAN": "Wi-Fi",
+    "BLUETOOTH": "Bluetooth"
+  },
+  "SOFT": {
+    "BLOCKED": "programvaruspärrad",
+    "UNBLOCKED": "inte programvaruspärrad"
+  },
+  "HARD": {
+    "BLOCKED": "hårdvaruspärrad",
+    "UNBLOCKED": "inte hårdvaruspärrad"
+  },
+  "RECOVERY": {
+    "LABEL": "Nätverk",
+    "ETH": "Ett trådbundet nätverk är anslutet. Den här enheten går fortfarande att nå via kabeln.",
+    "NO_ETH": "Inget trådbundet nätverk. Wi-Fi stängs av nu och kommer tillbaka efter omstart. Bluetooth förblir avstängt efter omstart om du lämnar det avstängt.",
+    "NO_ETH_PERSIST": "Inget trådbundet nätverk. Wi-Fi förblir avstängt efter omstart tills du slår på det eller inaktiverar flygplansläge på den här sidan. Om gränssnittet försvinner: en nätverkskabel, eller en tom fil med namnet wifi på ett USB-minne eller i /boot.",
+    "SENTINEL": "Wi-Fi-återställningsfil hittad. Wi-Fi förblir på tills filen tas bort från /boot eller USB-volymen."
+  },
+  "HARDBLOCK": {
+    "NOTE": "En fysisk flygplansknapp har stängt av en radio. Det kan inte hävas i programvara."
+  },
+  "BUTTON": {
+    "ENABLE": "Aktivera flygplansläge",
+    "DISABLE": "Inaktivera flygplansläge",
+    "WIFI_DISABLE": "Inaktivera Wi-Fi",
+    "WIFI_ENABLE": "Aktivera Wi-Fi",
+    "BT_DISABLE": "Inaktivera Bluetooth",
+    "BT_ENABLE": "Aktivera Bluetooth",
+    "PERSIST_UNLOCK": "Håll Wi-Fi avstängt efter omstart"
+  },
+  "CONFIRM": {
+    "ENABLE_TITLE": "Aktivera flygplansläge?",
+    "ENABLE_ETH": "Wi-Fi och Bluetooth stängs av och förblir avstängda efter omstart. Den här enheten går fortfarande att nå via kabeln.",
+    "ENABLE_NO_ETH": "Wi-Fi och Bluetooth stängs av nu. En omstart slår på Wi-Fi. Bluetooth förblir avstängt efter omstart om du lämnar det avstängt.",
+    "WIFI_TITLE": "Stänga av Wi-Fi?",
+    "WIFI_ETH": "Wi-Fi stängs av och förblir avstängt efter omstart. Den här enheten går fortfarande att nå via kabeln.",
+    "WIFI_NO_ETH": "Wi-Fi stängs av nu. En omstart slår på det.",
+    "ENABLE_NO_ETH_PERSIST": "Wi-Fi och Bluetooth stängs av och förblir avstängda efter omstart tills du inaktiverar flygplansläge eller slår på Wi-Fi på den här sidan.",
+    "WIFI_NO_ETH_PERSIST": "Wi-Fi stängs av och förblir avstängt efter omstart tills du slår på det eller inaktiverar flygplansläge på den här sidan."
+  },
+  "TOAST": {
+    "ENABLED": "Wi-Fi och Bluetooth är av",
+    "DISABLED": "Wi-Fi och Bluetooth är på",
+    "WIFI_OFF": "Wi-Fi är av",
+    "WIFI_ON": "Wi-Fi är på",
+    "BT_OFF": "Bluetooth är av",
+    "BT_ON": "Bluetooth är på",
+    "HARD_DENIED": "En hårdvaruknapp blockerar en radio. Det kan inte åsidosättas.",
+    "FAILED": "Kunde inte tillämpa radiostatus",
+    "PERSIST_ON": "Wi-Fi förblir avstängt efter omstart",
+    "PERSIST_BAD": "Koden stämmer inte. Försök igen med den nya koden.",
+    "PERSIST_SENTINEL": "En Wi-Fi-återställningsfil finns. Ta bort den innan du aktiverar kvarstående av."
+  },
+  "PERSIST": {
+    "TOKEN": "Skriv den här koden",
+    "TOKEN_DOC": "Skriv koden exakt. Den visas på den här sidan så att du bekräftar att du kan läsa den.",
+    "CHALLENGE": "Kod",
+    "STATUS": "Kvarstående",
+    "NOTE_ACTIVE": "Wi-Fi förblir avstängt efter omstart tills du slår på det eller inaktiverar flygplansläge på den här sidan.",
+    "NOTE_SENTINEL": "En Wi-Fi-återställningsfil finns. Kvarstående av går inte att aktivera förrän filen tas bort från /boot eller USB-volymen. Mer i den här pluginens README.",
+    "WARN_LABEL": "Varning",
+    "NOTE_CHALLENGE": "Ingen nätverkskabel. Efter omstart går den här enheten inte att nå över Wi-Fi. Använd detta bara om enheten har en skärm eller du har en annan väg tillbaka.",
+    "RECOVER_LABEL": "Återställning",
+    "NOTE_RECOVER": "Den här sidan före omstart (slå på Wi-Fi eller inaktivera flygplansläge), en nätverkskabel, eller en tom fil med namnet wifi på ett USB-minne eller i /boot. Mer i den här pluginens README."
+  }
+}

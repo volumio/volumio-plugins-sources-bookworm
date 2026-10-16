@@ -3,15 +3,18 @@
 var libQ = require('kew');
 var fs = require('fs-extra');
 var path = require('path');
+var exec = require('child_process').exec;
 
 var LOG_PREFIX = 'AudioKeepalive: ';
 var ASOUND_CONTRIBUTION_FILENAME = 'keepaliveProxy.keepaliveProxyOut.-1.conf';
 var ASOUND_CONTRIBUTION_CONTENT = [
     'pcm.keepaliveProxy {',
     '    type keepalive',
-    '    slave.pcm "keepaliveProxyOut"',
+    '    socket "/run/audio-keepalive/ctl.sock"',
     '}'
 ].join('\n') + '\n';
+var SYSTEMCTL = '/usr/bin/sudo /bin/systemctl';
+var SERVICE = 'audio-keepalive.service';
 
 module.exports = AudioKeepalive;
 
@@ -40,34 +43,30 @@ AudioKeepalive.prototype.onStart = function () {
     var self = this;
 
     if (self.config.get('keepalive_enabled')) {
-        self._ensureAsoundContribution();
-        self._rebuildALSAConfig();
+        return self._applyEnabled();
     }
 
-    return libQ.resolve();
+    return self._stopDaemon();
 };
 
 AudioKeepalive.prototype.onStop = function () {
     var self = this;
-    var defer = libQ.defer();
 
-    self._removeAsoundContribution();
-    self._rebuildALSAConfig()
+    return self._stopDaemon()
         .then(function () {
-            defer.resolve();
+            self._removeAsoundContribution();
+            return self._rebuildALSAConfig();
         })
         .fail(function () {
-            defer.resolve();
+            return libQ.resolve();
         });
-
-    return defer.promise;
 };
 
 AudioKeepalive.prototype.onRestart = function () {
 };
 
 // ---------------------------------------------------------------------------
-// ALSA contribution management
+// ALSA contribution + daemon
 // ---------------------------------------------------------------------------
 
 AudioKeepalive.prototype._ensureAsoundContribution = function () {
@@ -103,6 +102,62 @@ AudioKeepalive.prototype._rebuildALSAConfig = function () {
         self.logger.error(LOG_PREFIX + 'Failed to rebuild ALSA config: ' + e.message);
         return libQ.resolve();
     }
+};
+
+AudioKeepalive.prototype._systemctl = function (action) {
+    var self = this;
+    var defer = libQ.defer();
+    var cmd = SYSTEMCTL + ' ' + action + ' ' + SERVICE;
+
+    exec(cmd, { uid: 1000, gid: 1000 }, function (error, stdout, stderr) {
+        if (error) {
+            self.logger.error(LOG_PREFIX + 'systemctl ' + action + ' failed: ' +
+                (stderr || error.message));
+            defer.reject(error);
+            return;
+        }
+        self.logger.info(LOG_PREFIX + 'systemctl ' + action + ' ok');
+        defer.resolve();
+    });
+    return defer.promise;
+};
+
+AudioKeepalive.prototype._startDaemon = function () {
+    return this._systemctl('start');
+};
+
+AudioKeepalive.prototype._stopDaemon = function () {
+    var self = this;
+    return self._systemctl('stop').fail(function () {
+        return libQ.resolve();
+    });
+};
+
+AudioKeepalive.prototype._restartDaemon = function () {
+    var self = this;
+    return self._systemctl('restart').fail(function () {
+        return self._startDaemon();
+    });
+};
+
+AudioKeepalive.prototype._applyEnabled = function () {
+    var self = this;
+
+    self._ensureAsoundContribution();
+    return self._rebuildALSAConfig()
+        .then(function () {
+            return self._restartDaemon();
+        });
+};
+
+AudioKeepalive.prototype._applyDisabled = function () {
+    var self = this;
+
+    return self._stopDaemon()
+        .then(function () {
+            self._removeAsoundContribution();
+            return self._rebuildALSAConfig();
+        });
 };
 
 // ---------------------------------------------------------------------------
@@ -146,18 +201,13 @@ AudioKeepalive.prototype.getUIConfig = function () {
 AudioKeepalive.prototype.saveSettings = function (data) {
     var self = this;
     var defer = libQ.defer();
-    var wasEnabled = self.config.get('keepalive_enabled');
     var isEnabled = data.keepalive_enabled;
 
     self.config.set('keepalive_enabled', isEnabled);
 
-    if (isEnabled && !wasEnabled) {
-        self._ensureAsoundContribution();
-    } else if (!isEnabled && wasEnabled) {
-        self._removeAsoundContribution();
-    }
+    var apply = isEnabled ? self._applyEnabled() : self._applyDisabled();
 
-    self._rebuildALSAConfig()
+    apply
         .then(function () {
             self.commandRouter.pushToastMessage('success', 'Audio Keepalive',
                 self.commandRouter.getI18nString('SETTINGS_SAVED'));

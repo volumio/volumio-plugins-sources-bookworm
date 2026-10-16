@@ -1,0 +1,89 @@
+{
+  "PAGE": {
+    "LABEL": "Modalità aereo"
+  },
+  "SECTION": {
+    "STATUS": "Stato",
+    "RADIOS": "Radio",
+    "CONTROL": "Modalità aereo",
+    "PERSIST": "Mantieni il Wi-Fi spento dopo il riavvio"
+  },
+  "STATUS": {
+    "LABEL": "Stato",
+    "OFF": "Radio accese",
+    "ON": "Modalità aereo attiva",
+    "WIFI_OFF": "Wi-Fi spento",
+    "BT_OFF": "Bluetooth spento",
+    "HARD": "L’interruttore aereo hardware è attivo",
+    "SENTINEL": "Trovato file di ripristino Wi-Fi"
+  },
+  "RADIOS": {
+    "LABEL": "Radio",
+    "LINE": "{name} ({type}): {soft}, {hard}",
+    "NONE": "Nessuna radio Wi-Fi o Bluetooth trovata",
+    "WLAN": "Wi-Fi",
+    "BLUETOOTH": "Bluetooth"
+  },
+  "SOFT": {
+    "BLOCKED": "bloccata via software",
+    "UNBLOCKED": "non bloccata via software"
+  },
+  "HARD": {
+    "BLOCKED": "bloccata via hardware",
+    "UNBLOCKED": "non bloccata via hardware"
+  },
+  "RECOVERY": {
+    "LABEL": "Rete",
+    "ETH": "È collegata una rete cablata. Questo dispositivo resta raggiungibile via cavo.",
+    "NO_ETH": "Nessuna rete cablata. Il Wi-Fi si spegne ora e torna dopo il riavvio. Il Bluetooth resta spento dopo il riavvio se lo lasci spento.",
+    "NO_ETH_PERSIST": "Nessuna rete cablata. Il Wi-Fi resterà spento dopo il riavvio finché non lo riaccendi o disattivi la modalità aereo in questa pagina. Se perdi l’interfaccia: un cavo di rete, oppure un file vuoto chiamato wifi su una chiavetta USB o in /boot.",
+    "SENTINEL": "Trovato file di ripristino Wi-Fi. Il Wi-Fi resterà acceso finché quel file non viene rimosso da /boot o dal volume USB."
+  },
+  "HARDBLOCK": {
+    "NOTE": "Un interruttore aereo hardware ha spento una radio. Non è possibile sbloccarla via software."
+  },
+  "BUTTON": {
+    "ENABLE": "Attiva modalità aereo",
+    "DISABLE": "Disattiva modalità aereo",
+    "WIFI_DISABLE": "Disattiva Wi-Fi",
+    "WIFI_ENABLE": "Attiva Wi-Fi",
+    "BT_DISABLE": "Disattiva Bluetooth",
+    "BT_ENABLE": "Attiva Bluetooth",
+    "PERSIST_UNLOCK": "Mantieni il Wi-Fi spento dopo il riavvio"
+  },
+  "CONFIRM": {
+    "ENABLE_TITLE": "Attivare la modalità aereo?",
+    "ENABLE_ETH": "Wi-Fi e Bluetooth verranno spenti e resteranno spenti dopo il riavvio. Questo dispositivo resta raggiungibile via cavo.",
+    "ENABLE_NO_ETH": "Wi-Fi e Bluetooth si spengono ora. Un riavvio riaccende il Wi-Fi. Il Bluetooth resta spento dopo il riavvio se lo lasci spento.",
+    "WIFI_TITLE": "Spegnere il Wi-Fi?",
+    "WIFI_ETH": "Il Wi-Fi verrà spento e resterà spento dopo il riavvio. Questo dispositivo resta raggiungibile via cavo.",
+    "WIFI_NO_ETH": "Il Wi-Fi si spegne ora. Un riavvio lo riaccende.",
+    "ENABLE_NO_ETH_PERSIST": "Wi-Fi e Bluetooth si spengono e restano spenti dopo il riavvio finché non disattivi la modalità aereo o riaccendi il Wi-Fi in questa pagina.",
+    "WIFI_NO_ETH_PERSIST": "Il Wi-Fi si spegne e resta spento dopo il riavvio finché non lo riaccendi o disattivi la modalità aereo in questa pagina."
+  },
+  "TOAST": {
+    "ENABLED": "Wi-Fi e Bluetooth sono spenti",
+    "DISABLED": "Wi-Fi e Bluetooth sono accesi",
+    "WIFI_OFF": "Il Wi-Fi è spento",
+    "WIFI_ON": "Il Wi-Fi è acceso",
+    "BT_OFF": "Il Bluetooth è spento",
+    "BT_ON": "Il Bluetooth è acceso",
+    "HARD_DENIED": "Un interruttore hardware sta bloccando una radio. Non è possibile ignorarlo.",
+    "FAILED": "Impossibile applicare lo stato delle radio",
+    "PERSIST_ON": "Il Wi-Fi resterà spento dopo il riavvio",
+    "PERSIST_BAD": "Il codice non corrisponde. Riprova con il nuovo codice.",
+    "PERSIST_SENTINEL": "È presente un file di ripristino Wi-Fi. Rimuovilo prima di attivare la persistenza."
+  },
+  "PERSIST": {
+    "TOKEN": "Digita questo codice",
+    "TOKEN_DOC": "Digita il codice esatto. È mostrato in questa pagina per confermare che puoi leggerla.",
+    "CHALLENGE": "Codice",
+    "STATUS": "Persistenza",
+    "NOTE_ACTIVE": "Il Wi-Fi resterà spento dopo il riavvio finché non lo riaccendi o disattivi la modalità aereo in questa pagina.",
+    "NOTE_SENTINEL": "È presente un file di ripristino Wi-Fi. La persistenza non è possibile finché non viene rimosso da /boot o dal volume USB. Maggiori dettagli nel README di questo plugin.",
+    "WARN_LABEL": "Avviso",
+    "NOTE_CHALLENGE": "Nessun cavo di rete. Dopo il riavvio questo dispositivo non sarà raggiungibile via Wi-Fi. Usalo solo se l’unità ha uno schermo o hai un altro modo per rientrare.",
+    "RECOVER_LABEL": "Ripristino",
+    "NOTE_RECOVER": "Questa pagina prima del riavvio (attiva il Wi-Fi o disattiva la modalità aereo), un cavo di rete, o un file vuoto chiamato wifi su una chiavetta USB o in /boot. Maggiori dettagli nel README di questo plugin."
+  }
+}

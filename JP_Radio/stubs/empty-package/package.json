@@ -1,0 +1,6 @@
+{
+  "name": "empty-package",
+  "version": "1.0.0",
+  "description": "Empty stub used via package.json overrides to drop dependency-tree bloat that is never touched at runtime (see overrides comment in package.json).",
+  "main": "index.js"
+}

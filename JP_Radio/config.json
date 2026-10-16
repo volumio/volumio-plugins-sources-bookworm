@@ -1,0 +1,236 @@
+{
+  "servicePort": {
+    "type": "int",
+    "value": 9000
+  },
+  "networkDelay": {
+    "type": "int",
+    "value": 20
+  },
+  "radikoUser": {
+    "type": "string",
+    "value": ""
+  },
+  "radikoPass": {
+    "type": "string",
+    "value": ""
+  },
+  "browseMode1": {
+    "type": "string",
+    "value": "type1"
+  },
+  "browseMode2": {
+    "type": "string",
+    "value": "type1"
+  },
+  "tempo": {
+    "type": "string",
+    "value": "1.0"
+  },
+  "albumartType": {
+    "type": "string",
+    "value": "type3"
+  },
+  "programPeriodFrom": {
+    "type": "int",
+    "value": 7
+  },
+  "programPeriodTo": {
+    "type": "int",
+    "value": 0
+  },
+  "timeFormat": {
+    "type": "string",
+    "value": "yyyy/MM/dd HH:mm-HH:mm"
+  },
+  "radikoAreas": {
+    "JP1": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP2": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP3": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP4": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP5": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP6": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP7": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP8": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP9": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP10": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP11": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP12": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP13": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP14": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP15": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP16": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP17": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP18": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP19": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP20": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP21": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP22": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP23": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP24": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP25": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP26": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP27": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP28": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP29": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP30": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP31": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP32": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP33": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP34": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP35": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP36": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP37": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP38": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP39": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP40": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP41": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP42": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP43": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP44": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP45": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP46": {
+      "type": "boolean",
+      "value": false
+    },
+    "JP47": {
+      "type": "boolean",
+      "value": false
+    }
+  }
+}

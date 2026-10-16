@@ -1,0 +1,89 @@
+{
+  "PAGE": {
+    "LABEL": "Mode avion"
+  },
+  "SECTION": {
+    "STATUS": "État",
+    "RADIOS": "Radios",
+    "CONTROL": "Mode avion",
+    "PERSIST": "Garder le Wi-Fi éteint après redémarrage"
+  },
+  "STATUS": {
+    "LABEL": "État",
+    "OFF": "Radios allumées",
+    "ON": "Mode avion activé",
+    "WIFI_OFF": "Wi-Fi éteint",
+    "BT_OFF": "Bluetooth éteint",
+    "HARD": "L’interrupteur avion matériel est activé",
+    "SENTINEL": "Fichier de rétablissement Wi-Fi trouvé"
+  },
+  "RADIOS": {
+    "LABEL": "Radios",
+    "LINE": "{name} ({type}) : {soft}, {hard}",
+    "NONE": "Aucune radio Wi-Fi ou Bluetooth trouvée",
+    "WLAN": "Wi-Fi",
+    "BLUETOOTH": "Bluetooth"
+  },
+  "SOFT": {
+    "BLOCKED": "bloquée par logiciel",
+    "UNBLOCKED": "non bloquée par logiciel"
+  },
+  "HARD": {
+    "BLOCKED": "bloquée matériellement",
+    "UNBLOCKED": "non bloquée matériellement"
+  },
+  "RECOVERY": {
+    "LABEL": "Réseau",
+    "ETH": "Un réseau filaire est connecté. Cet appareil reste joignable par le câble.",
+    "NO_ETH": "Aucun réseau filaire. Le Wi-Fi s’éteint maintenant et revient après un redémarrage. Le Bluetooth reste éteint après redémarrage si vous le laissez éteint.",
+    "NO_ETH_PERSIST": "Pas de réseau filaire. Le Wi-Fi restera éteint après redémarrage jusqu’à ce que vous le rallumiez ou désactiviez le mode avion sur cette page. Si l’interface disparaît : un câble réseau, ou un fichier vide nommé wifi sur une clé USB ou dans /boot.",
+    "SENTINEL": "Fichier de rétablissement Wi-Fi trouvé. Le Wi-Fi restera allumé jusqu’à la suppression de ce fichier de /boot ou du volume USB."
+  },
+  "HARDBLOCK": {
+    "NOTE": "Un interrupteur avion matériel a éteint une radio. Cela ne peut pas être annulé par logiciel."
+  },
+  "BUTTON": {
+    "ENABLE": "Activer le mode avion",
+    "DISABLE": "Désactiver le mode avion",
+    "WIFI_DISABLE": "Désactiver le Wi-Fi",
+    "WIFI_ENABLE": "Activer le Wi-Fi",
+    "BT_DISABLE": "Désactiver le Bluetooth",
+    "BT_ENABLE": "Activer le Bluetooth",
+    "PERSIST_UNLOCK": "Garder le Wi-Fi éteint après redémarrage"
+  },
+  "CONFIRM": {
+    "ENABLE_TITLE": "Activer le mode avion ?",
+    "ENABLE_ETH": "Le Wi-Fi et le Bluetooth seront éteints et le resteront après un redémarrage. Cet appareil reste joignable par le câble.",
+    "ENABLE_NO_ETH": "Le Wi-Fi et le Bluetooth s’éteignent maintenant. Un redémarrage rallume le Wi-Fi. Le Bluetooth reste éteint après redémarrage si vous le laissez éteint.",
+    "WIFI_TITLE": "Éteindre le Wi-Fi ?",
+    "WIFI_ETH": "Le Wi-Fi sera éteint et le restera après un redémarrage. Cet appareil reste joignable par le câble.",
+    "WIFI_NO_ETH": "Le Wi-Fi s’éteint maintenant. Un redémarrage le rallume.",
+    "ENABLE_NO_ETH_PERSIST": "Le Wi-Fi et le Bluetooth s’éteignent et le resteront après redémarrage jusqu’à désactivation du mode avion ou réactivation du Wi-Fi sur cette page.",
+    "WIFI_NO_ETH_PERSIST": "Le Wi-Fi s’éteint et le restera après redémarrage jusqu’à ce que vous le rallumiez ou désactiviez le mode avion sur cette page."
+  },
+  "TOAST": {
+    "ENABLED": "Wi-Fi et Bluetooth sont éteints",
+    "DISABLED": "Wi-Fi et Bluetooth sont allumés",
+    "WIFI_OFF": "Le Wi-Fi est éteint",
+    "WIFI_ON": "Le Wi-Fi est allumé",
+    "BT_OFF": "Le Bluetooth est éteint",
+    "BT_ON": "Le Bluetooth est allumé",
+    "HARD_DENIED": "Un interrupteur matériel bloque une radio. Impossible de le contourner.",
+    "FAILED": "Impossible d’appliquer l’état des radios",
+    "PERSIST_ON": "Le Wi-Fi restera éteint après redémarrage",
+    "PERSIST_BAD": "Le code ne correspond pas. Réessayez avec le nouveau code.",
+    "PERSIST_SENTINEL": "Un fichier de rétablissement Wi-Fi est présent. Retirez-le avant d’activer la persistance."
+  },
+  "PERSIST": {
+    "TOKEN": "Saisir ce code",
+    "TOKEN_DOC": "Saisissez le code exactement. Il est affiché sur cette page pour confirmer que vous pouvez la lire.",
+    "CHALLENGE": "Code",
+    "STATUS": "Persistance",
+    "NOTE_ACTIVE": "Le Wi-Fi restera éteint après redémarrage jusqu’à ce que vous le rallumiez ou désactiviez le mode avion sur cette page.",
+    "NOTE_SENTINEL": "Un fichier de rétablissement Wi-Fi est présent. La persistance est impossible tant qu’il n’est pas retiré de /boot ou du volume USB. Plus de détail dans le README de ce plugin.",
+    "WARN_LABEL": "Avertissement",
+    "NOTE_CHALLENGE": "Pas de câble réseau. Après redémarrage, cet appareil ne sera plus joignable en Wi-Fi. À n’utiliser que si l’appareil a un écran ou si vous avez un autre moyen d’y revenir.",
+    "RECOVER_LABEL": "Rétablissement",
+    "NOTE_RECOVER": "Cette page avant de redémarrer (activer le Wi-Fi ou désactiver le mode avion), un câble réseau, ou un fichier vide nommé wifi sur une clé USB ou dans /boot. Plus de détail dans le README de ce plugin."
+  }
+}

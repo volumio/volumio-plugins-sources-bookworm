@@ -31,6 +31,10 @@
     "type": "boolean",
     "value": false
   },
+  "hideTrackTimes": {
+    "type": "boolean",
+    "value": false
+  },
   "showRemainingTime": {
     "type": "boolean",
     "value": false
@@ -54,6 +58,18 @@
   "unsplashApiKey": {
     "type": "string",
     "value": ""
+  },
+  "fanartTvApiKey": {
+    "type": "string",
+    "value": ""
+  },
+  "displayFanartBackground": {
+    "type": "boolean",
+    "value": false
+  },
+  "fanartBackgroundGrayscale": {
+    "type": "boolean",
+    "value": false
   },
   "wallpaperUrl": {
     "type": "string",
@@ -198,6 +214,22 @@
   "analogClockShowDate": {
     "type": "boolean",
     "value": true
+  },
+  "clockBackgroundColor": {
+    "type": "string",
+    "value": ""
+  },
+  "clockFrameColor": {
+    "type": "string",
+    "value": ""
+  },
+  "clockFaceColor": {
+    "type": "string",
+    "value": ""
+  },
+  "clockFontColor": {
+    "type": "string",
+    "value": ""
   },
   "useCustomLayout": {
     "type": "boolean",

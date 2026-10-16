@@ -32,7 +32,7 @@
   "LOUDNESS": "Loudness",
   "SETTINGS": "Réglages",
   "CHOOSE_EQ": "Choisissez votre casque",
-  "CROSSFEED": "Utiliser un CrossFeed",
+  "CROSSFEED": "Crossfeed pour casque / Crosstalk pour haut-parleurs",
   "DRCCONFIG": "Choisir une configuration",
   "DELAY_MANUAL": "Cliquez pour délai manuel",
   "DELAY_MANUAL_DOC": "Cliquez pour délai manuel",
@@ -88,7 +88,7 @@
   "CHOOSE_EQ_DOC": "Choisissez votre casque. Peux prendre quelques instants avant d'afficher!",
   "CHOOSE_PRESET": "Choisissez un pré réglage",
   "CREATE_FILTER": "Générer le filtre",
-  "CROSSFEED_DOC": "Choisissez le profil ",
+  "CROSSFEED_DOC": "Choisissez l'effet de crossfeed que vous souhaitez pour vos écouteurs. Si vous choisissez des haut-parleurs, un effet de crosstalk est appliqué.",
   "DOC_DRCCONFIG": "Configuration pour DRC... Normal est un bon réglage!",
   "ENABLE_EFFECT": "Cliquez pour activer les effets",
   "FILTER_LENGTH": "La longueur du filtre est :",
@@ -226,5 +226,14 @@
   "NOT_POSSIBLE_DELETE_FACTORY_PRESET": "Impossible de supprimer un preset d’usine !",
   "FAIL_RENAME_PRESET": "Impossible de renommer le preset",
   "FAIL_TO_DEL_PRESET": "Impossible de supprimer le preset",
-  "WRONG_PRESET_NAME": "Le nom du preset ne peut pas commencer par '.'"
+  "WRONG_PRESET_NAME": "Le nom du preset ne peut pas commencer par '.'",
+  "CROSSTALK_STRENGTH": "Crosstalk strength",
+  "MUTE_BAND": "Mute",
+  "MUTE_BAND_DOC": "Mute this band",
+  "EQ_BYPASS": "Bypass EQ",
+  "EQ_ENABLE": "Enable EQ",
+  "EQ_BYPASS_DOC": "Bypass the equalizer (all bands set to 0 dB)",
+  "CHUNKSIZE": "Camilla Dsp Chunksize",
+  "CHUNKSIZE_DOC": "Chunksize for audio processing. Default is AUTO. Lower values may reduce latency but increase CPU usage. Higher values may reduce CPU usage but increase latency. Choose a value that balances performance and responsiveness for your system.",
+  "CROSSTALK_STRENGTH_DOC": "Set the intensity of crosstalk effect. 0=off, 100=full effect"
 }

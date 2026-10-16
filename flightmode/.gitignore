@@ -1,0 +1,7 @@
+units/volumio-flightmode.path
+units/volumio-flightmode.service
+flightmode.state
+flightmode.mode
+wifi.state
+bluetooth.state
+wifi.persist

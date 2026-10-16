@@ -2,6 +2,7 @@
 
 const { execSync } = require("child_process");
 const { spawn } = require("child_process");
+const fs = require("fs");
 
 let counter = 0;
 
@@ -22,6 +23,11 @@ let CamillaDsp = function (logger) {
     const maxRespawnDelayMs = 10000;
     const maxConsecutiveRespawns = 10;
     const respawnCountResetMs = 30000; // Reset count if up for this long
+
+    // Stop settings
+    const stopTimeoutMs = 3000;        // wait this long for SIGTERM before SIGKILL
+    const stopPollIntervalMs = 50;
+    const deviceReleaseDelayMs = 300;  // let ALSA finish releasing the output device
 
     let run = false;
     let camilla = null;
@@ -120,14 +126,14 @@ let CamillaDsp = function (logger) {
     /**
      * Private function to spawn the camilladsp process.
      * If the process is already started (ie: camilla !== null), does not
-     * spawn another process
+     * spawn another process. Returns true when a process was actually spawned.
      */
     let processSpawn = function() {
 
         let args;
 
         if (camilla !== null)
-            return;
+            return false;
 
         args = [
             "-p",
@@ -149,6 +155,64 @@ let CamillaDsp = function (logger) {
         //camilla.on("exit", listenerExit);
         camilla.on("close", listenerClose);
 
+        return true;
+
+    };
+
+    /**
+     * Blocking sleep. processStop() has to stay synchronous because index.js
+     * calls stop(), then rebuilds the config, then calls start(), and relies on
+     * the process being gone by the time stop() returns.
+     */
+    let sleepSync = function(ms) {
+
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+
+    };
+
+    /**
+     * True once the process has terminated, whether or not it has been reaped.
+     *
+     * A zombie has to count as exited here. We block the event loop while
+     * waiting, so node cannot reap the child in the meantime, and
+     * process.kill(pid, 0) keeps succeeding for a zombie. Reading the state
+     * field out of /proc/<pid>/stat avoids that trap. The field sits right
+     * after the comm value, which is parenthesised and may itself contain
+     * spaces, so index from the last ")" rather than splitting the whole line.
+     */
+    let hasExited = function(pid) {
+
+        let stat;
+
+        try {
+            stat = fs.readFileSync(`/proc/${pid}/stat`, "utf8");
+        } catch (e) {
+            return true; // no /proc entry, process is gone
+        }
+
+        return stat.slice(stat.lastIndexOf(")") + 2).split(" ")[0] === "Z";
+
+    };
+
+    /**
+     * Blocks until pid has terminated, or until timeoutMs has elapsed.
+     * Returns true if the process exited, false on timeout.
+     */
+    let waitForExit = function(pid, timeoutMs) {
+
+        const deadline = Date.now() + timeoutMs;
+
+        while (Date.now() < deadline) {
+
+            if (hasExited(pid))
+                return true;
+
+            sleepSync(stopPollIntervalMs);
+
+        }
+
+        return false;
+
     };
 
     /**
@@ -168,10 +232,32 @@ let CamillaDsp = function (logger) {
 
             logger.info(`camilladsp stopping service pid ${pid}...`);
 
+            // A deliberate stop must not look like a crash. Without this, a
+            // stop() immediately followed by start() lets the queued close event
+            // see run === true again and schedule a spurious respawn on top of
+            // the instance start() just created.
+            camilla.removeListener("close", listenerClose);
+
             camilla.kill();
 
-            // Hacky way to make this function synchronous
-            execSync(`while true; do grep camilladsp /proc/${pid}/cmdline || break; sleep 0.1; done`);
+            if (waitForExit(pid, stopTimeoutMs) === false) {
+
+                logger.warn(`camilladsp pid ${pid} still alive after ${stopTimeoutMs} ms, sending SIGKILL`);
+
+                camilla.kill("SIGKILL");
+                waitForExit(pid, stopTimeoutMs);
+
+            }
+
+            camilla = null;
+
+            // The process is gone but ALSA has not necessarily finished tearing
+            // the stream down, and on some DACs that teardown is slow. Reopening
+            // the device too early makes the next instance exit with
+            // "snd_pcm_open failed with error 'Device or resource busy (16)'",
+            // which then burns the respawn budget until the plugin gives up and
+            // leaves the fifo with no reader.
+            sleepSync(deviceReleaseDelayMs);
 
             logger.debug(`camilladsp stopped pid ${pid}`);
 
@@ -195,7 +281,12 @@ let CamillaDsp = function (logger) {
         consecutiveRespawns = 0;
         respawnStopped = false;
 
-        processSpawn();
+        if (processSpawn() === false) {
+
+            logger.warn(`camilladsp start requested but instance ${uniqueid} is already running, ignoring`);
+            return;
+
+        }
 
         logger.info(`camilladsp service started and running in background, instance ${uniqueid}`);
 

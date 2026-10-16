@@ -1,0 +1,13 @@
+[Unit]
+Description=Apply Volumio flight mode rfkill policy
+After=systemd-rfkill.service
+Before=wireless.service bluetooth.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash __PLUGIN_DIR__/scripts/flightmode-apply.sh
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

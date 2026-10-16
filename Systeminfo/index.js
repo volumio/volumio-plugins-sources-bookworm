@@ -1,10 +1,11 @@
-//Systeminfo - balbuze October 2025
+//Systeminfo - balbuze July 2026
 'use strict';
 
 var libQ = require('kew');
 var fs = require('fs-extra');
 var config = new (require('v-conf'))();
 var exec = require('child_process').exec;
+const http = require('http');
 const si = require('systeminformation');
 const { getBuiltinModule } = require('process');
 const os = require('os');
@@ -18,6 +19,9 @@ function Systeminfo(context) {
     self.context = context;
     self.commandRouter = self.context.coreCommand;
     self.logger = self.commandRouter.logger;
+    self.webServer = null;
+    self.webServerPort = 12334;
+    self.webServerHost = '0.0.0.0';
 };
 
 Systeminfo.prototype.onVolumioStart = function () {
@@ -34,12 +38,26 @@ Systeminfo.prototype.getConfigurationFiles = function () {
 
 Systeminfo.prototype.onStop = function () {
     var defer = libQ.defer();
-    defer.resolve();
+
+    if (this.webServer) {
+        this.webServer.close(function () {
+            this.webServer = null;
+            defer.resolve();
+        }.bind(this));
+    } else {
+        defer.resolve();
+    }
+
     return defer.promise;
 };
 
 Systeminfo.prototype.onStart = function () {
     var defer = libQ.defer();
+
+    setTimeout(() => {
+        this.startWebServer();
+        this.getIP();
+    }, 15100);
     defer.resolve();
     return defer.promise;
 };
@@ -57,17 +75,49 @@ Systeminfo.prototype.onUninstall = function () {
 };
 
 Systeminfo.prototype.getUIConfig = function () {
+    var self = this;
     var defer = libQ.defer();
     var lang_code = this.commandRouter.sharedVars.get('language_code');
 
-    this.commandRouter.i18nJson(__dirname + '/i1n/strings_' + lang_code + '.json',
+    this.commandRouter.i18nJson(
+        __dirname + '/i18n/strings_' + lang_code + '.json',
         __dirname + '/i18n/strings_en.json',
-        __dirname + '/UIConfig.json')
+        __dirname + '/UIConfig.json'
+    )
         .then(function (uiconf) {
+            const IPaddress = self.config && self.config.get('address') || '127.0.0.1';
+            const section = uiconf.sections && uiconf.sections[0];
+
+            if (!section || !section.content) {
+                defer.reject(new Error('Invalid UI config structure'));
+                return;
+            }
+
+            section.content.push({
+                id: 'getsysteminfo',
+                element: 'button',
+                label: '🔍Probe the system',
+                doc: 'Get detailed information about your system hardware and software.',
+                onClick: { type: 'openUrl', url: `http://${IPaddress}:12334` }
+            });
+
+            section.content.push({
+                id: 'runBench',
+                element: 'button',
+                label: '🔥Run benchmarks',
+                doc: 'This will run CPU and Memory benchmarks using sysbench. Please do not play music while running the benchmarks.',
+                onClick: {
+                    type: 'plugin',
+                    endpoint: 'user_interface/Systeminfo',
+                    method: 'runBench'
+                }
+            });
+
             defer.resolve(uiconf);
         })
-        .fail(function () {
-            defer.reject(new Error());
+        .fail(function (err) {
+            self.logger && self.logger.warn && self.logger.warn('Failed to load Systeminfo UI config:', err && err.message ? err.message : err);
+            defer.reject(new Error('Failed to load UI config'));
         });
 
     return defer.promise;
@@ -84,6 +134,22 @@ Systeminfo.prototype.getConf = function (varName) {
 Systeminfo.prototype.setConf = function (varName, varValue) {
     // No specific actions needed for setting config
 };
+
+Systeminfo.prototype.getIP = function () {
+    const self = this;
+    var address
+    var iPAddresses = self.commandRouter.executeOnPlugin('system_controller', 'network', 'getCachedIPAddresses', '');
+    self.logger.info('Systeminfo: ' + '--' + iPAddresses);
+    if (iPAddresses && iPAddresses.eth0 && iPAddresses.eth0 != '') {
+        address = iPAddresses.eth0;
+    } else if (iPAddresses && iPAddresses.wlan0 && iPAddresses.wlan0 != '' && iPAddresses.wlan0 !== '192.168.211.1') {
+        address = iPAddresses.wlan0;
+    } else {
+        address = '127.0.0.1';
+    }
+    self.config.set('address', address)
+};
+
 
 Systeminfo.prototype.getBluetoothVersion = async function () {
     const self = this;
@@ -429,16 +495,16 @@ Systeminfo.prototype.getStorageInfo = async function () {
 
         const [filesystem, size, used, avail, pcent_with_percent_sign, mount] = stdout.trim().replace(/\s+/g, ' ').split(' ');
 
-        const sizeCleaned = size ? size.replace('M', '') : 'N/A';
-        const usedCleaned = used ? used.replace('M', '') : 'N/A';
-        const availCleaned = avail ? avail.replace('M', '') : 'N/A';
+        const sizeCleaned = size ? size.replace(/M$/, '') : 'N/A';
+        const usedCleaned = used ? used.replace(/M$/, '') : 'N/A';
+        const availCleaned = avail ? avail.replace(/M$/, '') : 'N/A';
 
         let pcent = 'N/A';
-        if (sizeCleaned !== 'N/A' && availCleaned !== 'N/A') {
+        if (sizeCleaned !== 'N/A' && usedCleaned !== 'N/A') {
             const total = parseInt(sizeCleaned, 10);
-            const available = parseInt(availCleaned, 10);
+            const usedMb = parseInt(usedCleaned, 10);
             if (total > 0) {
-                pcent = Math.round((available / total) * 100);
+                pcent = Math.round((usedMb / total) * 100);
             }
         }
 
@@ -536,6 +602,66 @@ Systeminfo.prototype.formatUptime = function (uptime) {
     return `${days} days, ${hours} Hrs, ${minutes} Minutes, ${seconds} Seconds`;
 };
 
+Systeminfo.prototype.formatBytes = function (bytes) {
+    if (bytes === null || bytes === undefined || isNaN(bytes)) {
+        return 'N/A';
+    }
+
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    let value = Number(bytes);
+    let unitIndex = 0;
+
+    while (value >= 1024 && unitIndex < units.length - 1) {
+        value /= 1024;
+        unitIndex++;
+    }
+
+    return `${value.toFixed(value >= 10 || unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
+};
+
+Systeminfo.prototype.getCpuTemperature = async function () {
+    const self = this;
+    try {
+        const tempResult = await si.cpuTemperature();
+        const tempValue = tempResult.main || tempResult.max || tempResult.avg;
+        if (tempValue && tempValue > 0) {
+            return `${tempValue.toFixed(0)}°C`;
+        }
+    } catch (e) {
+        self.logger.warn('systeminformation CPU temperature probe failed:', e.message);
+    }
+
+    try {
+        const tempFile = '/sys/class/thermal/thermal_zone0/temp';
+        if (fs.existsSync(tempFile)) {
+            const tempRaw = fs.readFileSync(tempFile, 'utf8').trim();
+            const tempValue = parseInt(tempRaw, 10);
+            if (!isNaN(tempValue) && tempValue > 0) {
+                return `${Math.round(tempValue / 1000)}°C`;
+            }
+        }
+    } catch (e) {
+        self.logger.warn('thermal_zone0 temperature probe failed:', e.message);
+    }
+
+    try {
+        const { stdout } = await new Promise((resolve, reject) => {
+            exec('vcgencmd measure_temp 2>/dev/null', (error, stdout) => {
+                if (error) reject(error);
+                else resolve({ stdout });
+            });
+        });
+        const match = stdout.match(/=([0-9]+\.?[0-9]*)/);
+        if (match) {
+            return `${Math.round(parseFloat(match[1]))}°C`;
+        }
+    } catch (e) {
+        self.logger.debug('vcgencmd temperature probe failed:', e.message);
+    }
+
+    return 'N/A';
+};
+
 Systeminfo.prototype.getBogoMIPS = async function () {
     const self = this;
     try {
@@ -616,146 +742,746 @@ Systeminfo.prototype.getUbootVersion = async function () {
 };
 
 // --- Main function to get system info and display modal ---
+Systeminfo.prototype.startWebServer = function () {
+    const self = this;
+
+    if (self.webServer) {
+        return;
+    }
+
+    self.webServer = http.createServer(async function (req, res) {
+        try {
+            const requestUrl = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`);
+
+            if (requestUrl.pathname === '/api/system') {
+                const data = await self.collectSystemInfoData();
+                res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify(data));
+                return;
+            }
+
+            if (requestUrl.pathname === '/api/quick') {
+                const data = await self.collectQuickSystemInfo();
+                res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify(data));
+                return;
+            }
+
+            if (requestUrl.pathname === '/') {
+                const html = self.renderSystemInfoWebPage();
+                res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+                res.end(html);
+                return;
+            }
+
+            res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+            res.end('Not found');
+        } catch (error) {
+            self.logger.error('Failed to serve Systeminfo web page:', error);
+            res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+            res.end('Failed to load system information');
+        }
+    });
+
+    self.webServer.on('error', function (error) {
+        self.logger.warn('Systeminfo web server failed to start:', error.message);
+    });
+
+    self.webServer.listen(self.webServerPort, self.webServerHost, function () {
+        self.logger.info('Systeminfo web UI listening on port ' + self.webServerPort);
+    });
+};
+
+Systeminfo.prototype.renderSystemInfoWebPage = function () {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volumio System Information</title>
+    <style>
+        :root {
+            --bg: #f5f8ff;
+            --panel: rgba(255, 255, 255, 0.96);
+            --panel-strong: rgba(247, 250, 255, 0.98);
+            --border: rgba(15, 23, 42, 0.10);
+            --text: #08111f;
+            --muted: #53657f;
+            --accent: #0ea5e9;
+            --accent-2: #7c3aed;
+            --success: #15803d;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --shadow: 0 14px 34px rgba(20, 42, 78, 0.16);
+        }
+        body[data-theme="dark"] {
+            --bg: #07111f;
+            --panel: rgba(9, 22, 42, 0.93);
+            --panel-strong: rgba(12, 30, 56, 0.98);
+            --border: rgba(148, 163, 184, 0.18);
+            --text: #eff6ff;
+            --muted: #9db2cf;
+            --accent: #39c0ff;
+            --accent-2: #7c3aed;
+            --success: #22c55e;
+            --shadow: 0 14px 34px rgba(0,0,0,0.3);
+        }
+        body[data-theme="dark"] {
+            background:
+                radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 22%),
+                radial-gradient(circle at top right, rgba(124, 58, 237, 0.22), transparent 28%),
+                linear-gradient(180deg, #020617 0%, #06101d 100%);
+        }
+        body[data-theme="volumio"] {
+            --bg: #10161d;
+            --panel: rgba(24, 31, 40, 0.94);
+            --panel-strong: rgba(34, 43, 54, 0.98);
+            --border: rgba(125, 146, 163, 0.28);
+            --text: #f7fafc;
+            --muted: #b0bcc7;
+            --accent: #3aa96b;
+            --accent-2: #5d6b79;
+            --success: #56c36d;
+            --shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+        }
+        body[data-theme="volumio"] {
+            background:
+                radial-gradient(circle at top left, rgba(58, 169, 107, 0.20), transparent 22%),
+                radial-gradient(circle at top right, rgba(93, 107, 121, 0.24), transparent 28%),
+                linear-gradient(180deg, #0b1117 0%, #141c25 100%);
+        }
+        body[data-theme="light"] .button.secondary,
+        body[data-theme="volumio"] .button.secondary {
+            background: rgba(15, 23, 42, 0.06);
+            border-color: rgba(15, 23, 42, 0.16);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(14, 165, 233, 0.16), transparent 22%),
+                radial-gradient(circle at top right, rgba(124, 58, 237, 0.16), transparent 28%),
+                linear-gradient(180deg, #f9fbff 0%, #eef4ff 100%);
+            padding: 18px;
+        }
+        body[data-theme="light"] {
+            background:
+                radial-gradient(circle at top left, rgba(14, 165, 233, 0.16), transparent 22%),
+                radial-gradient(circle at top right, rgba(124, 58, 237, 0.16), transparent 28%),
+                linear-gradient(180deg, #f9fbff 0%, #eef4ff 100%);
+        }
+        .shell {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+        .hero h1 {
+            margin: 0 0 6px;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            line-height: 1.15;
+        }
+        .hero p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.98rem;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .button {
+            padding: 0 16px;
+            min-height: 44px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.15);
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        }
+        .button.secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 14px;
+        }
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 14px 16px 16px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(6px);
+        }
+        .card.big {
+            grid-column: span 2;
+        }
+        .title {
+            margin: 0 0 10px;
+            font-size: 0.98rem;
+            letter-spacing: 0.02em;
+        }
+        .metric-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .kpi {
+            background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 14px;
+            box-shadow: var(--shadow);
+            display: grid;
+            grid-template-columns: 74px 1fr;
+            gap: 12px;
+            align-items: center;
+        }
+        .kpi .donut {
+            width: 74px;
+            height: 74px;
+        }
+        .kpi .donut::before {
+            inset: 8px;
+        }
+        .kpi .donut-text {
+            font-size: 0.78rem;
+        }
+        .details-wrap {
+            display: grid;
+            gap: 12px;
+        }
+        .details-group {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px;
+        }
+        .details-group-title {
+            font-size: 0.84rem;
+            color: var(--muted);
+            font-weight: 800;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .kpi-title {
+            color: var(--muted);
+            font-size: 0.78rem;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .kpi-value {
+            font-weight: 900;
+            font-size: 1rem;
+        }
+        .metric {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px;
+            padding: 10px 11px;
+        }
+        .metric-label {
+            color: var(--muted);
+            font-size: 0.78rem;
+            margin-bottom: 4px;
+        }
+        .metric-value {
+            font-size: 0.94rem;
+            font-weight: 800;
+        }
+        .meta {
+            display: grid;
+            gap: 8px;
+        }
+        .meta-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            padding-bottom: 6px;
+        }
+        .meta-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .label {
+            color: var(--muted);
+            font-size: 0.86rem;
+        }
+        .value {
+            text-align: right;
+            font-weight: 700;
+            word-break: break-word;
+            font-size: 0.88rem;
+        }
+        .resource-wrap {
+            display: grid;
+            grid-template-columns: 130px 1fr;
+            gap: 16px;
+            align-items: center;
+        }
+        .donut {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            position: relative;
+            background: conic-gradient(var(--accent) 0 0%, rgba(255,255,255,0.08) 0 100%);
+        }
+        .donut::before {
+            content: '';
+            position: absolute;
+            inset: 14px;
+            background: var(--panel-strong);
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.09);
+        }
+        .donut-text {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            font-size: 0.94rem;
+            font-weight: 800;
+        }
+        .bar {
+            width: 100%;
+            height: 12px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .bar > span {
+            display: block;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        }
+        .tiny {
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+        .status-pill {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(34,197,94,0.15);
+            color: var(--success);
+            border: 1px solid rgba(34,197,94,0.25);
+            font-size: 0.82rem;
+            font-weight: 800;
+        }
+        .loading {
+            color: var(--muted);
+            font-style: italic;
+        }
+        @media (max-width: 980px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .card.big {
+                grid-column: auto;
+            }
+        }
+        @media (max-width: 700px) {
+            .hero {
+                align-items: stretch;
+            }
+            .actions {
+                width: 100%;
+            }
+            .button {
+                flex: 1 1 auto;
+            }
+            .metric-row {
+                grid-template-columns: 1fr 1fr;
+            }
+            .resource-wrap { grid-template-columns: 1fr; }
+            .donut { margin: 0 auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <div class="hero">
+            <div>
+                <h1>Volumio System Information</h1>
+                <p>Diagnostics</p>
+            </div>
+            <div class="actions">
+                <button class="button" id="refreshBtn">Refresh</button>
+                <button class="button secondary" id="themeToggle">Toggle theme</button>
+                <button class="button secondary" id="backToVolumio" type="button">Quit</button>
+            </div>
+        </div>
+        <div id="content">
+            <div class="loading">Loading system data…</div>
+        </div>
+    </div>
+    <script>
+        const formatValue = (value) => {
+            if (value === null || value === undefined || value === '') return 'N/A';
+            return String(value);
+        };
+
+        const parseNumeric = (value) => {
+            if (value === null || value === undefined) return 0;
+            const match = String(value).match(/([0-9]+(?:\.[0-9]+)?)/);
+            return match ? Number(match[1]) : 0;
+        };
+
+        const parseBytes = (value) => {
+            if (value === null || value === undefined || value === '') return 0;
+            const stringValue = String(value).trim();
+            const match = stringValue.match(/^([0-9]+(?:\.[0-9]+)?)\s*(B|KB|MB|GB|TB)?/i);
+            if (!match) return 0;
+            const raw = parseFloat(match[1]);
+            const unit = (match[2] || 'B').toUpperCase();
+            const multipliers = {
+                B: 1,
+                KB: 1024,
+                MB: 1024 * 1024,
+                GB: 1024 * 1024 * 1024,
+                TB: 1024 * 1024 * 1024 * 1024
+            };
+            return raw * (multipliers[unit] || 1);
+        };
+
+        const ringStyle = (percent) => {
+            const safe = Math.max(0, Math.min(100, percent || 0));
+            return 'conic-gradient(var(--accent) 0 ' + safe + '%, rgba(255,255,255,0.08) ' + safe + '% 100%)';
+        };
+
+        function buildMetricRow(items) {
+            return '<div class="metric-row">' + items.map(([label, value]) => {
+                return '<div class="metric"><div class="metric-label">' + label + '</div><div class="metric-value">' + formatValue(value) + '</div></div>';
+            }).join('') + '</div>';
+        }
+
+        function updateCard(selector, html) {
+            const target = document.querySelector(selector);
+            if (target) {
+                target.innerHTML = html;
+            }
+        }
+
+        function updateMetricValue(label, value) {
+            const rows = document.querySelectorAll('.grid .card:nth-child(1) .metric-row .metric');
+            rows.forEach(row => {
+                const labelEl = row.querySelector('.metric-label');
+                const valueEl = row.querySelector('.metric-value');
+                if (labelEl && valueEl && labelEl.textContent.trim() === label) {
+                    valueEl.textContent = formatValue(value);
+                }
+            });
+        }
+
+        function card(title, innerHtml, big = false) {
+            return '<section class="card ' + (big ? 'big' : '') + '"><h2 class="title">' + title + '</h2>' + innerHtml + '</section>';
+        }
+
+        function kpiCard(title, percent, subtitle, value) {
+            return '<section class="kpi"><div class="donut" style="background:' + ringStyle(percent) + '"><div class="donut-text"><span class="tiny">Used</span><br>' + percent + '%</div></div><div><div class="kpi-title">' + title + '</div><div class="kpi-value">' + formatValue(value) + '</div><div class="tiny">' + subtitle + '</div></div></section>';
+        }
+
+        function cpuKpiCard(data) {
+            const cpuLoad = Math.max(0, Math.min(100, parseNumeric(data.cpu?.avgLoad)));
+            const cpuTemp = formatValue(data.cpu?.temperature);
+            const cpuModel = formatValue(data.cpu?.modelName || cpuModelName || data.cpu?.brand || data.cpu?.model);
+            return '<section class="kpi"><div class="donut" style="background:' + ringStyle(cpuLoad) + '"><div class="donut-text"><span class="tiny">Load</span><br>' + cpuLoad + '%</div></div><div><div class="kpi-title">CPU</div><div class="kpi-value">' + cpuModel + '</div><div class="tiny">Temp: ' + cpuTemp + '</div></div></section>';
+        }
+
+        function renderSection(block, title) {
+            const entries = Object.entries(block || {});
+            if (!entries.length) return '';
+            return card(title, '<div class="meta">' + entries.map(([key, value]) => {
+                return '<div class="meta-item"><span class="label">' + key + '</span><span class="value">' + formatValue(value) + '</span></div>';
+            }).join('') + '</div>');
+        }
+
+        const themeToggle = document.getElementById('themeToggle');
+        const closeWindowBtn = document.getElementById('backToVolumio');
+        const savedTheme = localStorage.getItem('systeminfo-theme') || 'volumio';
+        const availableThemes = ['light', 'dark', 'volumio'];
+        const currentTheme = availableThemes.includes(savedTheme) ? savedTheme : 'volumio';
+        document.body.setAttribute('data-theme', currentTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const current = document.body.getAttribute('data-theme') || 'light';
+            const index = availableThemes.indexOf(current);
+            const next = availableThemes[(index + 1) % availableThemes.length];
+            document.body.setAttribute('data-theme', next);
+            localStorage.setItem('systeminfo-theme', next);
+        });
+
+        closeWindowBtn.addEventListener('click', () => {
+            if (window.opener) {
+                window.close();
+            } else {
+                window.location.href = 'http://volumio.local/';
+            }
+        });
+
+        const content = document.getElementById('content');
+        let cpuModelName = 'N/A';
+        const refreshInterval = setInterval(loadQuickData, 1000);
+        window.addEventListener('beforeunload', () => clearInterval(refreshInterval));
+
+        function buildOverview(data) {
+            const memoryUsedBytes = data.memory?.usedBytes ?? parseBytes(data.memory?.used);
+            const memoryTotalBytes = data.memory?.totalBytes ?? parseBytes(data.memory?.total);
+            const memoryPercent = memoryTotalBytes ? Math.round((memoryUsedBytes / memoryTotalBytes) * 100) : 0;
+
+            const storageUsed = parseNumeric(data.storage?.used);
+            const storageTotal = parseNumeric(data.storage?.size);
+            const storagePercent = storageTotal ? Math.round((storageUsed / storageTotal) * 100) : parseNumeric(data.storage?.pcent || 0);
+
+            return '<div class="kpi-row">' +
+                kpiCard('Memory', memoryPercent, 'Used / Total system memory', formatValue(data.memory?.used) + ' / ' + formatValue(data.memory?.total)) +
+                kpiCard('Storage', storagePercent, 'Used / Total internal storage', formatValue(data.storage?.used) + ' / ' + formatValue(data.storage?.size) + ' MB') +
+                cpuKpiCard(data) +
+            '</div>';
+        }
+
+        async function loadFullData() {
+            try {
+                const response = await fetch('/api/system');
+                const data = await response.json();
+                cpuModelName = data.cpu?.modelName || data.cpu?.brand || data.cpu?.model || cpuModelName;
+
+                if (!content.querySelector('.grid')) {
+                    content.innerHTML = '<div class="grid">' +
+                        card('Overview', buildMetricRow([
+                            ['Host', data.os?.hostname || 'N/A'],
+                            ['Kernel', data.os?.kernel || 'N/A'],
+                            ['Governor', data.os?.governor || 'N/A'],
+                            ['Volumio', data.os?.version || 'N/A'],
+                            ['Uptime', data.os?.uptime || 'N/A']
+                        ]) + buildOverview(data), true) +
+                        card('Network', '<div class="meta"><div class="meta-item"><span class="label">Interface</span><span class="value">' + formatValue(data.network?.iface) + '</span></div><div class="meta-item"><span class="label">IP</span><span class="value">' + formatValue(data.network?.ip) + '</span></div><div class="meta-item"><span class="label">MAC</span><span class="value">' + formatValue(data.network?.mac) + '</span></div><div class="meta-item"><span class="label">Type</span><span class="value">' + formatValue(data.network?.type) + '</span></div><div class="meta-item"><span class="label">Speed</span><span class="value">' + formatValue(data.network?.speed) + '</span></div></div>') +
+                        card('CPU', '<div class="meta"><div class="meta-item"><span class="label">Model</span><span class="value">' + formatValue(data.cpu?.modelName || data.cpu?.brand || data.cpu?.model) + '</span></div><div class="meta-item"><span class="label">Brand</span><span class="value">' + formatValue(data.cpu?.brand) + '</span></div><div class="meta-item"><span class="label">BogoMIPS</span><span class="value">' + formatValue(data.cpu?.bogomips) + '</span></div><div class="meta-item"><span class="label">Family</span><span class="value">' + formatValue(data.cpu?.family) + '</span></div><div class="meta-item"><span class="label">Speed</span><span class="value">' + formatValue(data.cpu?.speed) + 'GHz</span></div><div class="meta-item"><span class="label">Cores</span><span class="value">' + formatValue(data.cpu?.cores) + '</span></div><div class="meta-item"><span class="label">Physical cores</span><span class="value">' + formatValue(data.cpu?.physicalCores) + '</span></div></div>') +
+                        card('Audio', '<div class="meta"><div class="meta-item"><span class="label">Output</span><span class="value">' + formatValue(data.audio?.configuredHw) + '</span></div><div class="meta-item"><span class="label">Mixer</span><span class="value">' + formatValue(data.audio?.mixerType) + '</span></div><div class="meta-item"><span class="label">Channels</span><span class="value">' + formatValue(data.audio?.channels) + '</span></div><div class="meta-item"><span class="label">Sample rate</span><span class="value">' + formatValue(data.audio?.sampleRate) + '</span></div></div>') +
+                        card('Board', '<div class="meta"><div class="meta-item"><span class="label">Manufacturer</span><span class="value">' + formatValue(data.board?.manufacturer) + '</span></div><div class="meta-item"><span class="label">Model</span><span class="value">' + formatValue(data.board?.model) + '</span></div><div class="meta-item"><span class="label">Firmware</span><span class="value">' + formatValue(data.board?.firmware) + '</span></div><div class="meta-item"><span class="label">Version</span><span class="value">' + formatValue(data.board?.version) + '</span></div></div>') +
+                        card('Software', '<div class="meta"><div class="meta-item"><span class="label">MPD</span><span class="value">' + formatValue(data.software?.mpdVersion) + '</span></div><div class="meta-item"><span class="label">Bluetooth</span><span class="value">' + formatValue(data.software?.bluetooth) + '</span></div><div class="meta-item"><span class="label">AirPlay</span><span class="value">' + formatValue(data.software?.airplay) + '</span></div><div class="meta-item"><span class="label">UPnP</span><span class="value">' + formatValue(data.software?.upnp) + '</span></div></div>') +
+                    '</div>';
+                }
+
+                updateCard('.grid .card:nth-child(1) .metric-row', buildMetricRow([
+                    ['Host', data.os?.hostname || 'N/A'],
+                    ['Kernel', data.os?.kernel || 'N/A'],
+                    ['Governor', data.os?.governor || 'N/A'],
+                    ['Volumio', data.os?.version || 'N/A'],
+                    ['Uptime', data.os?.uptime || 'N/A']
+                ]));
+                updateCard('.grid .card:nth-child(1) .kpi-row', buildOverview(data));
+            } catch (error) {
+                content.innerHTML = '<section class="card"><h2 class="title">Unable to load data</h2><div class="meta"><div class="meta-item"><span class="label">Error</span><span class="value">' + error.message + '</span></div></div></section>';
+            }
+        }
+
+        async function loadQuickData() {
+            try {
+                const response = await fetch('/api/quick');
+                const data = await response.json();
+                updateCard('.grid .card:nth-child(1) .kpi-row', buildOverview(data));
+                if (data.os?.uptime) {
+                    updateMetricValue('Uptime', data.os.uptime);
+                }
+            } catch (error) {
+                // Ignore transient refresh errors to keep the page responsive.
+            }
+        }
+
+        document.getElementById('refreshBtn').addEventListener('click', loadFullData);
+        loadFullData();
+    </script>
+</body>
+</html>`;
+};
+
+Systeminfo.prototype.collectQuickSystemInfo = async function () {
+    const self = this;
+
+    const [currentLoad, memData, storageInfo] = await Promise.all([
+        si.currentLoad(),
+        si.mem(),
+        self.getStorageInfo()
+    ]);
+
+    const cpuTemp = await self.getCpuTemperature();
+
+    return {
+        os: {
+            uptime: self.formatUptime(os.uptime())
+        },
+        cpu: {
+            avgLoad: (currentLoad.avgLoad * 100).toFixed(0),
+            temperature: cpuTemp
+        },
+        memory: {
+            total: self.formatBytes(memData.total),
+            free: self.formatBytes(memData.free),
+            used: self.formatBytes(memData.used),
+            totalBytes: memData.total,
+            usedBytes: memData.used,
+            freeBytes: memData.free
+        },
+        storage: storageInfo
+    };
+};
+
+Systeminfo.prototype.collectSystemInfoData = async function () {
+    const self = this;
+
+    let [
+        allData,
+        audioConfig,
+        sysVersion,
+        firmwareInfo,
+        storageInfo,
+        mpdVersion,
+        bogoMips,
+        boardInfo,
+        upnp,
+        cpuModelName
+    ] = await Promise.all([
+        si.getAllData(),
+        new Promise((resolve) => {
+            fs.readFile('/data/configuration/audio_interface/alsa_controller/config.json', 'utf8', (err, config) => {
+                if (err) {
+                    self.logger.info('Error reading audio config:', err);
+                    resolve({});
+                } else {
+                    try {
+                        resolve(JSON.parse(config));
+                    } catch (e) {
+                        self.logger.info('Error parsing audio config:', e);
+                        resolve({});
+                    }
+                }
+            });
+        }),
+        self.commandRouter.executeOnPlugin('system_controller', 'system', 'getSystemVersion', ''),
+        self.getFirmwareInfo(),
+        self.getStorageInfo(),
+        new Promise((resolve) => {
+            exec('mpd -V', (error, stdout) => {
+                resolve(error ? 'N/A' : stdout.trim().split('\n')[0]);
+            });
+        }),
+        self.getBogoMIPS(),
+        self.getBoardInfo(),
+        self.getUpnpRendererVersion(),
+        self.getCpuModelName()
+    ]);
+
+    const outputDevice = audioConfig.outputdevice?.value;
+    const hwAudioInfo = outputDevice ? await self.getHwAudioInfo(outputDevice) : { channels: 'N/A', samplerates: 'N/A' };
+
+    let networkInfo = { iface: 'N/A', ip4: 'N/A', mac: 'N/A', type: 'N/A' };
+    try {
+        networkInfo = await si.networkInterfaces('default');
+    } catch (e) {
+        self.logger.warn('Failed to get network info via systeminformation:', e.message);
+    }
+
+    let cpuTemp = await self.getCpuTemperature();
+
+    const iface = networkInfo.iface || 'eth0';
+    const networkSpeed = iface.startsWith('w')
+        ? (await new Promise((resolve) => exec(`/usr/bin/sudo /sbin/iwconfig ${iface} | grep 'Bit Rate' | awk '{print $2,$3}' | tr -d 'Rate:' | xargs`, (e, d) => resolve(d?.replace(/=/g, '').trim()))) || 'N/A')
+        : (await new Promise((resolve) => exec(`/usr/bin/sudo /sbin/ethtool ${iface} | grep -i speed | tr -d 'Speed:' | xargs`, (e, d) => resolve(d?.replace(/\n/g, '') === '1000Mb/s' ? '1Gb/s' : d?.trim()))) || 'N/A');
+
+    const fallbackBoard = {
+        manufacturer: (boardInfo && boardInfo.manufacturer) || allData.system?.manufacturer || allData.bios?.vendor || 'Unknown',
+        model: (boardInfo && boardInfo.model) || allData.system?.model || allData.bios?.version || 'Unknown System',
+        firmware: firmwareInfo || 'N/A',
+        version: allData.system?.version || 'N/A'
+    };
+
+    boardInfo = { ...fallbackBoard, ...boardInfo };
+    boardInfo.firmware = firmwareInfo || boardInfo.firmware || 'N/A';
+
+    return {
+        os: {
+            version: sysVersion.systemversion,
+            hostname: allData.os.hostname,
+            kernel: allData.os.kernel,
+            governor: allData.cpu.governor,
+            uptime: self.formatUptime(allData.time.uptime)
+        },
+        software: {
+            mpdVersion: mpdVersion,
+            bluetooth: await self.getBluetoothVersion() || 'Not detected',
+            airplay: await self.getAirPlayVersion() || 'Not detected',
+            upnp: upnp || 'Not detected'
+        },
+        network: {
+            iface: networkInfo.iface,
+            ip: networkInfo.ip4,
+            mac: networkInfo.mac,
+            type: networkInfo.type,
+            speed: networkSpeed
+        },
+        audio: {
+            configuredHw: audioConfig.outputdevicename?.value || 'N/A',
+            mixerType: audioConfig.mixer_type?.value || 'N/A',
+            channels: hwAudioInfo.channels,
+            sampleRate: hwAudioInfo.samplerates
+        },
+        board: boardInfo,
+        cpu: {
+            brand: allData.cpu.brand,
+            modelName: cpuModelName,
+            speed: allData.cpu.speed,
+            family: allData.cpu.family,
+            model: allData.cpu.model,
+            cores: allData.cpu.cores,
+            physicalCores: allData.cpu.physicalCores,
+            bogomips: bogoMips,
+            avgLoad: (allData.currentLoad.avgLoad * 100).toFixed(0),
+            temperature: cpuTemp
+        },
+        memory: {
+            total: self.formatBytes(allData.mem.total),
+            free: self.formatBytes(allData.mem.free),
+            used: self.formatBytes(allData.mem.used)
+        },
+        storage: storageInfo
+    };
+};
+
 Systeminfo.prototype.getsysteminfo = async function (data) {
     const self = this;
     const defer = libQ.defer();
 
     try {
-        const [
-            allData,
-            audioConfig,
-            sysVersion,
-            firmwareInfo,
-            storageInfo,
-            mpdVersion,
-            bogoMips,
-            boardInfo,
-            upnp,
-            cpuModelName
-        ] = await Promise.all([
-            si.getAllData(),
-            new Promise((resolve) => {
-                fs.readFile('/data/configuration/audio_interface/alsa_controller/config.json', 'utf8', (err, config) => {
-                    if (err) {
-                        self.logger.info('Error reading audio config:', err);
-                        resolve({});
-                    } else {
-                        try {
-                            resolve(JSON.parse(config));
-                        } catch (e) {
-                            self.logger.info('Error parsing audio config:', e);
-                            resolve({});
-                        }
-                    }
-                });
-            }),
-            self.commandRouter.executeOnPlugin('system_controller', 'system', 'getSystemVersion', ''),
-            self.getFirmwareInfo(),
-            self.getStorageInfo(),
-            new Promise((resolve) => {
-                exec('mpd -V', (error, stdout) => {
-                    resolve(error ? 'N/A' : stdout.trim().split('\n')[0]);
-                });
-            }),
-            self.getBogoMIPS(),
-            self.getBoardInfo(),
-            self.getUpnpRendererVersion(),
-            self.getCpuModelName()
-        ]);
-        /*
-                // Conditionally fetch U-Boot only for non-Raspberry-family boards
-                let ubootValue = 'Not detected';
-                try {
-                    const isRaspberry = ((boardInfo && ((boardInfo.manufacturer || '').toString().toLowerCase().includes('raspberry')))
-                        || ((boardInfo && (boardInfo.model || '').toString().toLowerCase().includes('raspberry'))));
-        
-                    if (isRaspberry) {
-                        self.logger.info('Board detected as Raspberry-family; skipping U-Boot detection');
-                        ubootValue = 'Not applicable';
-                    } else {
-                        ubootValue = await self.getUbootVersion();
-                        self.logger.info('U-Boot value' + ubootValue);
-        
-                    }
-                } catch (e) {
-                    self.logger.warn('U-Boot conditional detection failed:', e.message);
-                    ubootValue = 'Not available';
-                }
-        */
-        const outputDevice = audioConfig.outputdevice?.value;
-        const hwAudioInfo = outputDevice ? await self.getHwAudioInfo(outputDevice) : { channels: 'N/A', samplerates: 'N/A' };
-
-        // Board info already obtained from getBoardInfo()
-        let networkInfo = { iface: 'N/A', ip4: 'N/A', mac: 'N/A', type: 'N/A' };
-        try {
-            networkInfo = await si.networkInterfaces('default');
-        } catch (e) {
-            self.logger.warn('Failed to get network info via systeminformation:', e.message);
-        }
-
-        let cpuTemp = 'N/A';
-        try {
-            const tempResult = await si.cpuTemperature();
-            cpuTemp = tempResult.main ? `${tempResult.main.toFixed(0)}°C` : 'N/A';
-        } catch (e) {
-            self.logger.warn('Failed to get CPU temperature:', e.message);
-        }
-
-        // Assign the fetched firmware information to the boardInfo object
-        boardInfo.firmware = firmwareInfo;
-
-        // Final data object
-        const finalData = {
-            os: {
-                version: sysVersion.systemversion,
-                hostname: allData.os.hostname,
-                kernel: allData.os.kernel,
-                governor: allData.cpu.governor,
-                uptime: self.formatUptime(allData.time.uptime)
-            },
-            software: {
-                mpdVersion: mpdVersion,
-                bluetooth: await self.getBluetoothVersion() || 'Not detected',
-                airplay: await self.getAirPlayVersion() || 'Not detected',
-                upnp: upnp || 'Not detected'
-            },
-            network: {
-                iface: networkInfo.iface,
-                ip: networkInfo.ip4,
-                mac: networkInfo.mac,
-                type: networkInfo.type,
-                speed: networkInfo.iface === 'wlan0' ? (await new Promise((resolve) => exec("/usr/bin/sudo /sbin/iwconfig wlan0 | grep 'Bit Rate' | awk '{print $2,$3}' | tr -d 'Rate:' | xargs", (e, d) => resolve(d?.replace(/=/g, '').trim()))) || 'N/A') : (await new Promise((resolve) => exec("/usr/bin/sudo /sbin/ethtool eth0 | grep -i speed | tr -d 'Speed:' | xargs", (e, d) => resolve(d?.replace('\n', '') === '1000Mb/s' ? '1Gb/s' : d?.trim()))) || 'N/A')
-            },
-            audio: {
-                configuredHw: audioConfig.outputdevicename?.value || 'N/A',
-                mixerType: audioConfig.mixer_type?.value || 'N/A',
-                channels: hwAudioInfo.channels,
-                sampleRate: hwAudioInfo.samplerates
-            },
-            board: boardInfo,
-            // U-Boot information (if available)
-            boardUboot: {
-                uboot: typeof ubootValue !== 'undefined' ? ubootValue : 'Not detected'
-            },
-            cpu: {
-                brand: allData.cpu.brand,
-                modelName: cpuModelName,
-                speed: allData.cpu.speed,
-                family: allData.cpu.family,
-                model: allData.cpu.model,
-                cores: allData.cpu.cores,
-                physicalCores: allData.cpu.physicalCores,
-                bogomips: bogoMips,
-                avgLoad: (allData.currentLoad.avgLoad * 100).toFixed(0),
-                temperature: cpuTemp
-            },
-            memory: {
-                total: (allData.mem.total / 1024).toFixed(0) + ' Ko',
-                free: (allData.mem.free / 1024).toFixed(0) + ' Ko',
-                used: (allData.mem.used / 1024).toFixed(0) + ' Ko'
-            },
-            storage: storageInfo
-        };
+        const finalData = await self.collectSystemInfoData();
 
         // Construct HTML message with conditional checks
         let combinedMessages = '';

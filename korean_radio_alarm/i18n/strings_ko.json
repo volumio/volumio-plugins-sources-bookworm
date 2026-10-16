@@ -1,0 +1,51 @@
+{
+  "PAGE": {
+    "LABEL": "Korean Radio Alarm"
+  },
+  "SECTION": {
+    "ALARM": "알림 시계",
+    "ALARM_SLOT_1": "알림 1",
+    "ALARM_SLOT_2": "알림 2",
+    "ALARM_SLOT_3": "알림 3",
+    "ALARM_SLOT": "알림"
+  },
+  "BUTTON": {
+    "SAVE": "저장",
+    "ADD_ALARM": "알람 추가",
+    "DELETE_ALARM": "알람 삭제"
+  },
+  "ALARM": {
+    "TITLE": "Korean Radio Alarm",
+    "ADD_SUCCESS": "알람이 추가되었습니다",
+    "DELETE_MISSING_SLOT": "슬롯 정보가 없습니다",
+    "DELETE_SUCCESS": "알람이 삭제되었습니다",
+    "ENABLED": "알람 사용",
+    "ACTION": "동작",
+    "ACTION_PLAY": "켜기",
+    "ACTION_STOP": "끄기",
+    "HOUR": "시",
+    "MINUTE": "분",
+    "STATION": "방송국",
+    "VOLUME": "재생 볼륨",
+    "SAVE_SUCCESS": "알람 설정이 저장되고 다시 적용되었습니다",
+    "SAVE_ERROR": "알람 설정 저장에 실패했습니다",
+    "NO_STATION": "선택한 방송국이 유효하지 않습니다",
+    "NO_MPD": "MPD 플러그인을 찾을 수 없습니다",
+    "NO_URI": "재생 URL을 확인할 수 없습니다",
+    "BAD_VOLUME": "유효하지 않은 볼륨 값",
+    "NOT_CONFIGURED": "설정된 방송국이 없습니다"
+  },
+  "WEEKDAY": {
+    "MONDAY": "월",
+    "TUESDAY": "화",
+    "WEDNESDAY": "수",
+    "THURSDAY": "목",
+    "FRIDAY": "금",
+    "SATURDAY": "토",
+    "SUNDAY": "일"
+  },
+  "BROWSE": {
+    "ROOT": "한국 라디오",
+    "GROUPS": "라디오 그룹"
+  }
+}

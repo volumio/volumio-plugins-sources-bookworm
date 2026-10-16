@@ -1,0 +1,18 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createLoginAccount = void 0;
+/**
+ * UI設定画面のRadikoアカウント情報からログインアカウントを構築する。
+ * どちらか一方でも未設定/空文字の場合はプレミアム未使用としてnullを返す。
+ * @param radikoUser 設定画面で入力されたRadikoアカウントのメールアドレス。
+ * @param radikoPass 設定画面で入力されたRadikoアカウントのパスワード。
+ * @returns 両方とも有効な値であれば{@link LoginAccount}、そうでなければnull。
+ */
+function createLoginAccount(radikoUser, radikoPass) {
+    if (radikoUser !== undefined && radikoUser !== '' && radikoPass !== undefined && radikoPass !== '') {
+        return { mail: radikoUser, pass: radikoPass };
+    }
+    return null;
+}
+exports.createLoginAccount = createLoginAccount;
+//# sourceMappingURL=auth.js.map

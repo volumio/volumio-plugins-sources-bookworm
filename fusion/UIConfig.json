@@ -625,6 +625,36 @@
       "label": "Purecamillagui",
       "icon": "fa-wrench",
       "content": []
+    },
+    {
+      "id": "configureVeryAdvSet",
+      "element": "section",
+      "label": "Very Advanced Settings. Use with caution and only if needed!",
+      "icon": "fa-wrench",
+      "onSave": {
+        "type": "plugin",
+        "endpoint": "audio_interface/fusiondsp",
+        "method": "configureVeryAdvSet"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.APPLY",
+        "data": [
+          "chunksize"
+        ]
+      },
+      "content": [
+        {
+          "id": "chunksize",
+          "element": "select",
+          "doc": "TRANSLATE.CHUNKSIZE_DOC",
+          "label": "TRANSLATE.CHUNKSIZE",
+          "value": {
+            "value": 4800,
+            "label": 4800
+          },
+          "options": []
+        }
+      ]
     }
   ]
 }

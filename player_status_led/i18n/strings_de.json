@@ -1,0 +1,24 @@
+{
+  "PLUGIN_CONFIGURATION": "Konfiguration der Player Status LED",
+  "PLUGIN_SECTION_TITLE": "Einstellungen der Player Status LED",
+  "SAVE": "Speichern",
+  "SUCCESS_TITLE": "Einstellungen gespeichert",
+  "SUCCESS_MESSAGE": "Die Einstellungen wurden erfolgreich gespeichert",
+
+  "GPIO_PIN_DOC": "Geben Sie die GPIO-Nummer ein, an die die LED angeschlossen ist",
+  "GPIO_PIN_LBL": "GPIO-Nummer",
+  "ACTIVE_STATE_DOC": "Wählen Sie 0, wenn die LED bei einem niedrigen GPIO-Pegel leuchtet, oder 1 bei einem hohen GPIO-Pegel",
+  "ACTIVE_STATE_LBL": "GPIO-Aktivierungspegel",
+  "BLINK_PERIOD_DOC": "Geben Sie die Blinkperiode in Millisekunden ein (Dauer eines vollständigen Ein-/Aus-Zyklus)",
+  "BLINK_PERIOD_LBL": "Blinkperiode",
+
+  "ERROR_OUT_OF_RANGE_TITLE": " Wert außerhalb des gültigen Bereichs",
+  "ERROR_OUT_OF_RANGE_MESSAGE": "Geben Sie eine Zahl zwischen ",
+  "ERROR_TITLE": "Fehler der Player Status LED",
+  "ERROR_MESSAGE": "Die Einstellungen konnten nicht angewendet werden",
+
+  "ERROR_NOT_FOUND_TITLE": " nicht gefunden",
+
+  "ERROR_BLINKING_TITLE": "LED blinkt",
+  "ERROR_BLINKING_MESSAGE": "Einstellungen können nicht geändert werden, während die LED blinkt. Setzen Sie die Wiedergabe fort oder stoppen Sie sie und versuchen Sie es erneut."
+}

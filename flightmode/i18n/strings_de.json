@@ -1,0 +1,89 @@
+{
+  "PAGE": {
+    "LABEL": "Flugmodus"
+  },
+  "SECTION": {
+    "STATUS": "Status",
+    "RADIOS": "Funkmodule",
+    "CONTROL": "Flugmodus",
+    "PERSIST": "WLAN über einen Neustart hinweg aus lassen"
+  },
+  "STATUS": {
+    "LABEL": "Status",
+    "OFF": "Funk an",
+    "ON": "Flugmodus an",
+    "WIFI_OFF": "WLAN aus",
+    "BT_OFF": "Bluetooth aus",
+    "HARD": "Der Hardware-Flugzeugschalter ist an",
+    "SENTINEL": "WLAN-Wiederherstellungsdatei gefunden"
+  },
+  "RADIOS": {
+    "LABEL": "Funkmodule",
+    "LINE": "{name} ({type}): {soft}, {hard}",
+    "NONE": "Keine WLAN- oder Bluetooth-Funkmodule gefunden",
+    "WLAN": "WLAN",
+    "BLUETOOTH": "Bluetooth"
+  },
+  "SOFT": {
+    "BLOCKED": "softwareseitig gesperrt",
+    "UNBLOCKED": "softwareseitig nicht gesperrt"
+  },
+  "HARD": {
+    "BLOCKED": "hardwareseitig gesperrt",
+    "UNBLOCKED": "hardwareseitig nicht gesperrt"
+  },
+  "RECOVERY": {
+    "LABEL": "Netzwerk",
+    "ETH": "Ein Kabelnetzwerk ist verbunden. Dieses Gerät bleibt über das Kabel erreichbar.",
+    "NO_ETH": "Kein Kabelnetzwerk. WLAN geht jetzt aus und kommt nach einem Neustart wieder. Bluetooth bleibt über den Neustart hinweg aus, wenn Sie es aus lassen.",
+    "NO_ETH_PERSIST": "Kein Kabelnetz. WLAN bleibt über einen Neustart hinweg aus, bis Sie WLAN hier einschalten oder den Flugmodus ausschalten. Wenn die Oberfläche weg ist: Netzwerkkabel, oder eine leere Datei namens wifi auf einem USB-Stick oder in /boot.",
+    "SENTINEL": "WLAN-Wiederherstellungsdatei gefunden. WLAN bleibt an, bis diese Datei von /boot oder dem USB-Datenträger entfernt wird."
+  },
+  "HARDBLOCK": {
+    "NOTE": "Ein Hardware-Flugzeugschalter hat ein Funkmodul ausgeschaltet. Das lässt sich per Software nicht aufheben."
+  },
+  "BUTTON": {
+    "ENABLE": "Flugmodus einschalten",
+    "DISABLE": "Flugmodus ausschalten",
+    "WIFI_DISABLE": "WLAN ausschalten",
+    "WIFI_ENABLE": "WLAN einschalten",
+    "BT_DISABLE": "Bluetooth ausschalten",
+    "BT_ENABLE": "Bluetooth einschalten",
+    "PERSIST_UNLOCK": "WLAN über Neustart hinweg aus lassen"
+  },
+  "CONFIRM": {
+    "ENABLE_TITLE": "Flugmodus einschalten?",
+    "ENABLE_ETH": "WLAN und Bluetooth werden ausgeschaltet und bleiben über einen Neustart hinweg aus. Dieses Gerät bleibt über das Kabel erreichbar.",
+    "ENABLE_NO_ETH": "WLAN und Bluetooth gehen jetzt aus. Ein Neustart schaltet WLAN wieder ein. Bluetooth bleibt über den Neustart hinweg aus, wenn Sie es aus lassen.",
+    "WIFI_TITLE": "WLAN ausschalten?",
+    "WIFI_ETH": "WLAN wird ausgeschaltet und bleibt über einen Neustart hinweg aus. Dieses Gerät bleibt über das Kabel erreichbar.",
+    "WIFI_NO_ETH": "WLAN geht jetzt aus. Ein Neustart schaltet WLAN wieder ein.",
+    "ENABLE_NO_ETH_PERSIST": "WLAN und Bluetooth gehen aus und bleiben über einen Neustart hinweg aus, bis Sie den Flugmodus ausschalten oder WLAN hier einschalten.",
+    "WIFI_NO_ETH_PERSIST": "WLAN geht aus und bleibt über einen Neustart hinweg aus, bis Sie WLAN hier einschalten oder den Flugmodus ausschalten."
+  },
+  "TOAST": {
+    "ENABLED": "WLAN und Bluetooth sind aus",
+    "DISABLED": "WLAN und Bluetooth sind an",
+    "WIFI_OFF": "WLAN ist aus",
+    "WIFI_ON": "WLAN ist an",
+    "BT_OFF": "Bluetooth ist aus",
+    "BT_ON": "Bluetooth ist an",
+    "HARD_DENIED": "Ein Hardware-Schalter sperrt ein Funkmodul. Das lässt sich nicht übersteuern.",
+    "FAILED": "Funkzustand konnte nicht angewendet werden",
+    "PERSIST_ON": "WLAN bleibt über einen Neustart hinweg aus",
+    "PERSIST_BAD": "Der Code stimmt nicht. Versuchen Sie es mit dem neuen Code.",
+    "PERSIST_SENTINEL": "Eine WLAN-Wiederherstellungsdatei ist vorhanden. Entfernen Sie sie, bevor Sie dauerhaft aus einschalten."
+  },
+  "PERSIST": {
+    "TOKEN": "Diesen Code eingeben",
+    "TOKEN_DOC": "Geben Sie den Code genau ein. Er steht auf dieser Seite, damit Sie bestätigen, dass Sie sie lesen können.",
+    "CHALLENGE": "Code",
+    "STATUS": "Dauerhaft",
+    "NOTE_ACTIVE": "WLAN bleibt über einen Neustart hinweg aus, bis Sie WLAN hier einschalten oder den Flugmodus ausschalten.",
+    "NOTE_SENTINEL": "Eine WLAN-Wiederherstellungsdatei ist vorhanden. Dauerhaft aus ist nicht möglich, bis diese Datei von /boot oder dem USB-Datenträger entfernt wird. Mehr steht in der README dieses Plugins.",
+    "WARN_LABEL": "Warnung",
+    "NOTE_CHALLENGE": "Kein Netzwerkkabel. Nach einem Neustart ist dieses Gerät über WLAN nicht erreichbar. Nutzen Sie das nur, wenn das Gerät einen Bildschirm hat oder Sie einen anderen Rückweg kennen.",
+    "RECOVER_LABEL": "Wiederherstellung",
+    "NOTE_RECOVER": "Diese Seite vor dem Neustart (WLAN einschalten oder Flugmodus ausschalten), ein Netzwerkkabel, oder eine leere Datei namens wifi auf einem USB-Stick oder in /boot. Mehr steht in der README dieses Plugins."
+  }
+}

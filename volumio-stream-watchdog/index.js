@@ -47,6 +47,18 @@ var MIN_STREAM_INTERVAL = 15;   // floor for streamCheckInterval, seconds
 var FAIL_THRESHOLD      = 2;    // probe failures required to confirm a failure
 var USER_STOP_WINDOW_MS = 2000; // a stop within this window of volumioStop() is the user's
 
+// R1 — light recovery (see docs/roadmap.md R1). A probe that passes while
+// SUSPECT clears the alarm, but it says nothing about whether audio actually
+// resumed: the station can be reachable again while MPD has already given up
+// and cleared the queue. After decaying back to WATCHING the plugin therefore
+// confirms the player really is in `play`, and reissues the stream if it is not.
+var RECOVERY_GRACE_MS    = 3000;  // wait before declaring "not playing" — Volumio's own retry may win
+var RECOVERY_VERIFY_MS   = 8000;  // wait before judging whether a reissue took hold
+var MAX_LIGHT_RECOVERIES = 3;     // consecutive light recoveries before escalating to FALLBACK
+
+// reason label for restream_recovery_total (see docs/roadmap.md R1 § Metrics).
+var RECOVERY_REASON_DEAD = 'stopped_after_probe_pass';
+
 // Phase 4 — fallback playback (see docs/development-plan.md §4).
 var FALLBACK_STEP_MS  = 500;                   // gap between fire-and-forget playback commands
 var LOCAL_LIBRARY_URI = 'music-library/INTERNAL'; // browsed when no Offline playlist exists
@@ -54,6 +66,11 @@ var LOCAL_LIBRARY_URI = 'music-library/INTERNAL'; // browsed when no Offline pla
 // MPD browse-item types that represent a browseable directory (see the
 // Volumio mpd plugin's lsInfo — folders inside INTERNAL are 'internal-folder').
 var FOLDER_TYPES = ['folder', 'internal-folder', 'remdisk', 'album', 'artist'];
+
+// Phase 8 — shuffle of the fallback playlist. The queue only exists a
+// moment after the play command, which is fire-and-forget, so the random
+// flag is applied on a short delay — setting it earlier is a no-op.
+var SHUFFLE_APPLY_MS = 1500;
 
 // Phase 5 — auto-restore (see docs/development-plan.md §5).
 var RESTORE_CONFIRM_MS   = 5000; // gap before the confirming restore probe
@@ -89,8 +106,18 @@ function StreamWatchdog(context) {
   self.lastStateSig   = null;  // dedup signature for verbose pushState logging
   self.userStopFlag   = false; // true briefly after the user invokes volumioStop
   self.userStopTimer  = null;  // clears userStopFlag after USER_STOP_WINDOW_MS
+  self.userStopAt     = 0;     // epoch ms of the last user-initiated stop (R1 veto)
+  self.recoveryTimer  = null;  // pending "did playback resume?" check (R1)
+  self.lightRecoveryCount = 0; // consecutive light recoveries issued (R1)
+  self.selfRestart    = false; // true while our own reissue sequence is running (R1)
+  self.restreamRecoveryTotal = 0; // R1 metric — light recoveries issued this run
+  self.streamService  = null;  // service of the watched stream, for reissuing it
+  self.streamTitle    = null;  // title of the watched stream, for reissuing it
   self._origVolumioStop = null; // saved original commandRouter.volumioStop
   self.fallbackActive = false; // true once fallback playback has been triggered
+  self.randomForced   = false; // true while *we* are the reason random is on
+  self.shuffleTimer   = null;  // pending _scheduleShuffle, so onStop can cancel it
+  self.randomWasOn    = null;  // the user's random setting before we touched it
   self.savedState     = null;  // snapshot of the lost stream (for auto-restore)
   self.restoreTimer        = null; // restore-probe interval handle
   self.restoreConfirmTimer = null; // one-shot confirming-probe handle
@@ -111,6 +138,33 @@ StreamWatchdog.prototype.onVolumioStart = function () {
   return libQ.resolve();
 };
 
+/**
+ * Wraps a timer callback so that an exception cannot escape into Volumio's
+ * process. A throw inside setTimeout/setInterval has no caller left to catch
+ * it, so it lands on Volumio's global uncaughtException handler
+ * (`/volumio/index.js`). Measured on Volumio 4.119: that handler prints
+ * "FATAL ERROR", sets VOLUMIO_SYSTEM_STATUS=error, writes a crash report, and
+ * calls process.exit only when EXIT_ON_EXCEPTION is set — which it is not on
+ * a stock image. So the player usually survives, but it survives flagged as
+ * broken, with a crash report filed and this plugin silently dead while still
+ * enabled. Catching it here keeps the failure inside the plugin, named and
+ * greppable. Every entry point reached from a timer goes through this wrapper.
+ * (Submission checklist item 12.)
+ */
+StreamWatchdog.prototype._guarded = function (label, fn) {
+  var self = this;
+  return function () {
+    try {
+      return fn.apply(this, arguments);
+    } catch (e) {
+      try {
+        self.logger.error(LOG + label + ' threw: ' +
+          ((e && e.stack) ? e.stack : e));
+      } catch (ignored) { /* a broken logger must not crash us either */ }
+    }
+  };
+};
+
 StreamWatchdog.prototype.onStart = function () {
   var self  = this;
   var defer = libQ.defer();
@@ -122,12 +176,27 @@ StreamWatchdog.prototype.onStart = function () {
   self._resolveCache = {};
 
   // Hold off on all logic until MPD and the network have settled.
+  // Not wrapped in _guarded: activation needs its own catch, because a plugin
+  // that is half-activated (ready, but with no socket or no stop hook) is worse
+  // than one that never woke up — it would read every stop as a failure.
   self.startupTimer = setTimeout(function () {
     self.startupTimer = null;
-    self.ready = true;
-    self.logger.info(LOG + 'Startup delay elapsed — state watcher active');
-    self._connectSocket();
-    self._installStopHook();
+    try {
+      self.ready = true;
+      self.logger.info(LOG + 'Startup delay elapsed — state watcher active');
+      self._connectSocket();
+      self._installStopHook();
+    } catch (e) {
+      self.ready = false;
+      try {
+        self._disconnectSocket();
+        self._removeStopHook();
+      } catch (ignored) { /* best effort */ }
+      try {
+        self.logger.error(LOG + 'Activation failed — the watchdog stays ' +
+          'inactive rather than half-armed: ' + ((e && e.stack) ? e.stack : e));
+      } catch (ignored) { /* nothing left to do */ }
+    }
   }, STARTUP_DELAY_MS);
 
   self.logger.info(LOG + 'Waiting ' + (STARTUP_DELAY_MS / 1000) +
@@ -151,8 +220,12 @@ StreamWatchdog.prototype.onStop = function () {
     clearTimeout(self.userStopTimer);
     self.userStopTimer = null;
   }
+  self._cancelRecoveryCheck();
   self._stopProbeTimer();
   self._stopRestoreTimer();
+  // Stopping the plugin mid-fallback must not leave the user's library
+  // shuffled with no one left to turn it off.
+  self._clearShuffle();
   self._removeStopHook();
   self._disconnectSocket();
 
@@ -160,6 +233,8 @@ StreamWatchdog.prototype.onStop = function () {
   self.state          = STATE.IDLE;
   self.streamUri      = null;
   self.userStopFlag   = false;
+  self.selfRestart    = false;
+  self.lightRecoveryCount = 0;
   self.fallbackActive = false;
   self.savedState     = null;
   self._resolveCache  = {};
@@ -267,6 +342,10 @@ StreamWatchdog.prototype._removeStopHook = function () {
 StreamWatchdog.prototype._markUserStop = function () {
   var self = this;
   self.userStopFlag = true;
+  // The flag itself lives only USER_STOP_WINDOW_MS, which is shorter than the
+  // R1 grace period — keep a timestamp too, so the recovery check can still
+  // tell that a human was responsible.
+  self.userStopAt   = Date.now();
   if (self.userStopTimer) clearTimeout(self.userStopTimer);
   self.userStopTimer = setTimeout(function () {
     self.userStopFlag = false;
@@ -327,6 +406,7 @@ StreamWatchdog.prototype._onPushState = function (state) {
       // A network stream started playing → begin watching it.
       if (status === 'play' && isStream) {
         self.streamUri = state.uri || null;
+        self._rememberStream(state);
         self._setState(STATE.WATCHING);
       }
       break;
@@ -338,13 +418,21 @@ StreamWatchdog.prototype._onPushState = function (state) {
           self.streamUri = state.uri;
           self.logger.info(LOG + 'Watched stream URI updated: ' + self.streamUri);
         }
+        self._rememberStream(state);
+        // Audio is confirmed flowing — any light-recovery streak is over.
+        self.lightRecoveryCount = 0;
       } else if (status === 'play' && !isStream) {
         // User switched to a local, non-streaming source → plugin goes dormant.
         self.logger.info(LOG + 'Playback switched to a local source');
         self.streamUri = null;
         self._setState(STATE.IDLE);
       } else if (status === 'stop') {
-        if (self.userStopFlag) {
+        if (self.selfRestart) {
+          // Our own reissue goes through volumioStop when replaceAndPlay is
+          // unavailable, which trips our own hook. Ignore that stop, or the
+          // light recovery would read as a user stop and kill the watch.
+          self.logger.verbose(LOG + 'Stop is our own reissue — ignoring');
+        } else if (self.userStopFlag) {
           // The user just pressed Stop — deliberate, not a failure.
           self.logger.info(LOG + 'Stop was user-initiated — returning to IDLE');
           self.streamUri = null;
@@ -365,9 +453,18 @@ StreamWatchdog.prototype._onPushState = function (state) {
         // Stream came back on its own → false alarm.
         self.logger.info(LOG + 'Stream resumed — false alarm');
         if (state.uri) self.streamUri = state.uri;
+        self._rememberStream(state);
+        self.lightRecoveryCount = 0;
         self._setState(STATE.WATCHING);
       } else if (status === 'play' && !isStream) {
         self.logger.info(LOG + 'Playback switched to a local source');
+        self.streamUri = null;
+        self._setState(STATE.IDLE);
+      } else if (status === 'stop' && self.userStopFlag && !self.selfRestart) {
+        // A deliberate stop while SUSPECT used to be swallowed here, leaving
+        // the plugin to decay back to WATCHING on the next passing probe. With
+        // R1's recovery armed that would restart a stream the user just killed.
+        self.logger.info(LOG + 'Stop was user-initiated — returning to IDLE');
         self.streamUri = null;
         self._setState(STATE.IDLE);
       }
@@ -407,6 +504,11 @@ StreamWatchdog.prototype._setState = function (next) {
   self.state = next;
 
   if (next === STATE.WATCHING) self.probeFailCount = 0;
+  // A pending R1 recovery check only makes sense while WATCHING.
+  if (next !== STATE.WATCHING) self._cancelRecoveryCheck();
+  // Leaving for IDLE (user stopped, or switched to a local source) or landing
+  // in FALLBACK both end the light-recovery streak.
+  if (next === STATE.IDLE || next === STATE.FALLBACK) self.lightRecoveryCount = 0;
   if (!wasProbing && willProbe) self._startProbeTimer();
   if (wasProbing && !willProbe) self._stopProbeTimer();
 
@@ -414,6 +516,7 @@ StreamWatchdog.prototype._setState = function (next) {
   // stops the restore probe.
   if (wasFallback && next !== STATE.FALLBACK) {
     self._stopRestoreTimer();
+    self._clearShuffle();
     self.fallbackActive = false;
     self.savedState     = null;
   }
@@ -433,7 +536,10 @@ StreamWatchdog.prototype._startProbeTimer = function () {
   if (interval < MIN_STREAM_INTERVAL) interval = MIN_STREAM_INTERVAL;
 
   self.logger.info(LOG + 'Stream probe scheduled every ' + interval + 's');
-  self.probeTimer = setInterval(function () { self._runProbe(); }, interval * 1000);
+  self.probeTimer = setInterval(
+    self._guarded('Stream probe', function () { self._runProbe(); }),
+    interval * 1000
+  );
 
   // Probe once immediately so a failure is caught without waiting a full cycle.
   self._runProbe();
@@ -451,7 +557,7 @@ StreamWatchdog.prototype._stopProbeTimer = function () {
  * Runs one probe cycle against the watched stream URI and drives the Layer 2
  * side of the state machine:
  *   - pass in WATCHING  → clear any failure count
- *   - pass in SUSPECT   → false alarm, back to WATCHING
+ *   - pass in SUSPECT   → back to WATCHING, then confirm playback resumed (R1)
  *   - fail in WATCHING  → first signal, move to SUSPECT
  *   - fail in SUSPECT   → once FAIL_THRESHOLD is reached, confirm → FALLBACK
  */
@@ -467,8 +573,12 @@ StreamWatchdog.prototype._runProbe = function () {
       var hadFailures = self.probeFailCount > 0;
       self.probeFailCount = 0;
       if (self.state === STATE.SUSPECT) {
+        // The station answers again — but that is Layer 2 talking about the
+        // server, not about our speakers. Confirm playback actually resumed
+        // before trusting it (docs/roadmap.md R1).
         self.logger.info(LOG + 'Probe confirms the stream is reachable — false alarm');
         self._setState(STATE.WATCHING);
+        self._scheduleRecoveryCheck(RECOVERY_GRACE_MS);
       } else if (hadFailures) {
         self.logger.info(LOG + 'Stream probe recovered');
       }
@@ -761,6 +871,93 @@ StreamWatchdog.prototype._enterFallback = function () {
 };
 
 /**
+ * Whether the fallback playlist should be shuffled. Defaults to true so that
+ * an existing install, whose stored config predates this setting, still gets
+ * the behaviour without the user having to open the settings page.
+ */
+StreamWatchdog.prototype._shuffleEnabled = function () {
+  var v = this._cfg('shuffleOffline');
+  if (v === undefined || v === null) return true;
+  return (v === true || v === 'true');
+};
+
+/**
+ * Turns shuffle on once the fallback queue is actually populated.
+ *
+ * The playback commands are fire-and-forget: `playPlaylist` returns long
+ * before the queue exists, and setting random on an empty queue does nothing.
+ * Hence the delay.
+ */
+StreamWatchdog.prototype._scheduleShuffle = function () {
+  var self = this;
+  if (!self._shuffleEnabled()) return;
+  if (typeof self.commandRouter.volumioRandom !== 'function') {
+    self.logger.warn(LOG + 'volumioRandom unavailable on this Volumio build ' +
+      '\u2014 the offline playlist will play in order');
+    return;
+  }
+
+  // Two schedules can overlap — a settings save landing right after the
+  // fallback started, for instance. Keep the latest one only.
+  if (self.shuffleTimer) clearTimeout(self.shuffleTimer);
+
+  self.shuffleTimer = setTimeout(function () {
+    self.shuffleTimer = null;
+    if (!self.ready || self.state !== STATE.FALLBACK) return;
+
+    // Remember what the user had, so restoring the stream restores their
+    // setting too \u2014 not ours.
+    self.randomWasOn = null;
+    try {
+      var sm = self.commandRouter.stateMachine;
+      var st = (sm && typeof sm.getState === 'function') ? sm.getState() : null;
+      if (st && typeof st.random !== 'undefined') self.randomWasOn = !!st.random;
+    } catch (e) {
+      self.logger.warn(LOG + 'could not read the current random setting: ' + e);
+    }
+
+    try {
+      self.commandRouter.volumioRandom(true);
+      self.randomForced = true;
+      self.logger.info(LOG + 'Offline playlist shuffled (random was ' +
+        (self.randomWasOn === null ? 'unknown' : self.randomWasOn) + ')');
+    } catch (e) {
+      self.logger.error(LOG + 'volumioRandom(true) failed: ' + e);
+    }
+  }, SHUFFLE_APPLY_MS);
+};
+
+/**
+ * Puts random back the way it was. A no-op unless we are the ones who turned
+ * it on \u2014 someone who listens shuffled by choice keeps their setting.
+ * When the previous value could not be read, we default to off, because that
+ * is the state the plugin found on every machine we have seen.
+ */
+StreamWatchdog.prototype._clearShuffle = function () {
+  var self = this;
+
+  // Cancel a shuffle that was scheduled but has not landed yet. Without this
+  // it fires 1.5s after we already decided to stop shuffling — and, worse,
+  // survives onStop.
+  if (self.shuffleTimer) {
+    clearTimeout(self.shuffleTimer);
+    self.shuffleTimer = null;
+  }
+
+  if (!self.randomForced) return;
+  var back = (self.randomWasOn === true);
+  self.randomForced = false;
+  self.randomWasOn  = null;
+  if (typeof self.commandRouter.volumioRandom !== 'function') return;
+  try {
+    self.commandRouter.volumioRandom(back);
+    self.logger.info(LOG + 'Shuffle restored to ' + back);
+  } catch (e) {
+    self.logger.error(LOG + 'volumioRandom(' + back + ') failed: ' + e);
+  }
+};
+
+/**
  * Plays the configured Volumio playlist. If no playlist by that name exists,
  * falls back to scanning the local music library.
  */
@@ -786,6 +983,7 @@ StreamWatchdog.prototype._playOfflinePlaylist = function () {
       self.logger.error(LOG + 'playPlaylist failed: ' + e);
       return self._playLocalFolder();
     }
+    self._scheduleShuffle();
     return libQ.resolve();
   }
 
@@ -828,6 +1026,7 @@ StreamWatchdog.prototype._playLocalFolder = function () {
       } catch (e) {
         self.logger.error(LOG + 'volumioPlay failed: ' + e);
       }
+      self._scheduleShuffle();
     }, FALLBACK_STEP_MS);
   }).fail(function (err) {
     self.logger.error(LOG + 'Local library scan failed: ' + err);
@@ -885,6 +1084,124 @@ StreamWatchdog.prototype._collectTracks = function (uri) {
 };
 
 // =============================================================================
+// R1 — light recovery: SUSPECT decayed to WATCHING, but is audio actually back?
+//
+// A passing probe proves the station is reachable; it proves nothing about our
+// own playback. The 2026-08-29 incident sat in WATCHING for eight hours,
+// probing a healthy server, while MPD had long since stopped and cleared the
+// queue. This path reissues the watched stream instead of assuming a human
+// pressed Stop. It is deliberately lighter than FALLBACK: no snapshot, no
+// offline playlist, no FALLBACK state — just a nudge, capped so that a station
+// which will not stay playing still escalates.
+// =============================================================================
+
+/** Records what is needed to reissue the stream later. */
+StreamWatchdog.prototype._rememberStream = function (state) {
+  var self = this;
+  if (!state) return;
+  if (state.service) self.streamService = state.service;
+  if (state.title)   self.streamTitle   = state.title;
+};
+
+/** Arms the "did playback resume?" check, replacing any pending one. */
+StreamWatchdog.prototype._scheduleRecoveryCheck = function (delay) {
+  var self = this;
+  self._cancelRecoveryCheck();
+  self.recoveryTimer = setTimeout(self._guarded('Recovery check', function () {
+    self.recoveryTimer = null;
+    self._verifyPlaybackResumed();
+  }), delay);
+  if (self.recoveryTimer.unref) self.recoveryTimer.unref();
+};
+
+StreamWatchdog.prototype._cancelRecoveryCheck = function () {
+  var self = this;
+  if (self.recoveryTimer) {
+    clearTimeout(self.recoveryTimer);
+    self.recoveryTimer = null;
+  }
+};
+
+/**
+ * Runs after the grace period. If the player is in `play`, Volumio's own retry
+ * won the race and there is nothing to do. Otherwise the stream is reachable
+ * but silent — reissue it.
+ */
+StreamWatchdog.prototype._verifyPlaybackResumed = function () {
+  var self = this;
+
+  self.selfRestart = false; // our own reissue sequence, if any, is over by now
+
+  if (!self.ready) return;
+  if (self.state !== STATE.WATCHING) return; // moved on; no longer our call
+  if (!self.streamUri) return;               // switched to a local source
+
+  // A deliberate stop must never be answered with a restart. The flag itself
+  // has usually expired by now (USER_STOP_WINDOW_MS < the grace period), so
+  // the timestamp is what actually carries the veto here.
+  var sinceUserStop = Date.now() - self.userStopAt;
+  if (self.userStopFlag ||
+      (self.userStopAt && sinceUserStop < USER_STOP_WINDOW_MS + RECOVERY_VERIFY_MS)) {
+    self.logger.info(LOG + 'Playback is stopped, but the user asked for it — no recovery');
+    return;
+  }
+
+  var state = null;
+  try { state = self.commandRouter.volumioGetState(); }
+  catch (e) {
+    self.logger.error(LOG + 'volumioGetState failed during recovery check: ' + e);
+    return;
+  }
+  if (!state) return;
+
+  if (state.status === 'play') {
+    self.logger.verbose(LOG + 'Playback confirmed active after the probe passed');
+    self.lightRecoveryCount = 0;
+    return;
+  }
+
+  self.logger.warn(LOG + 'Stream is reachable but playback is ' + state.status +
+    ' — the queue died under us');
+  self._lightRecovery(RECOVERY_REASON_DEAD);
+};
+
+/**
+ * Reissues the watched stream, or escalates to FALLBACK once the cap is hit.
+ * A station that needs more than MAX_LIGHT_RECOVERIES nudges is a real
+ * failure, not a blip, and plan B should take over.
+ */
+StreamWatchdog.prototype._lightRecovery = function (reason) {
+  var self = this;
+
+  if (self.lightRecoveryCount >= MAX_LIGHT_RECOVERIES) {
+    self.logger.error(LOG + 'Light recovery failed ' + self.lightRecoveryCount +
+      ' times — escalating to FALLBACK');
+    self._setState(STATE.FALLBACK);
+    return;
+  }
+
+  self.lightRecoveryCount++;
+  self.restreamRecoveryTotal++;
+  // Metric line — see docs/roadmap.md R1 § Metrics. Kept on one stable,
+  // greppable line so the collector can count it without parsing prose.
+  self.logger.info(LOG + 'restream_recovery_total reason=' + reason +
+    ' count=' + self.restreamRecoveryTotal);
+  self.logger.info(LOG + 'Light recovery ' + self.lightRecoveryCount + '/' +
+    MAX_LIGHT_RECOVERIES + ' — reissuing ' + self.streamUri);
+
+  // The degraded path calls volumioStop, which trips our own user-stop hook.
+  self.selfRestart = true;
+  self._playStreamItem({
+    uri:     self.streamUri,
+    service: self.streamService || 'webradio',
+    title:   self.streamTitle || undefined
+  });
+
+  // Judge the result, and escalate on the next round if it did not take.
+  self._scheduleRecoveryCheck(RECOVERY_VERIFY_MS);
+};
+
+// =============================================================================
 // Phase 5 — Auto-restore
 // =============================================================================
 
@@ -897,9 +1214,10 @@ StreamWatchdog.prototype._startRestoreTimer = function () {
 
   self.logger.info(LOG + 'Restore probe scheduled every ' + interval + 's');
   // No immediate probe — the stream just failed; wait a full interval.
-  self.restoreTimer = setInterval(function () {
-    self._runRestoreProbe();
-  }, interval * 1000);
+  self.restoreTimer = setInterval(
+    self._guarded('Restore probe', function () { self._runRestoreProbe(); }),
+    interval * 1000
+  );
 };
 
 StreamWatchdog.prototype._stopRestoreTimer = function () {
@@ -935,10 +1253,11 @@ StreamWatchdog.prototype._runRestoreProbe = function () {
     self.logger.info(LOG + 'Restore probe passed — confirming in ' +
       (RESTORE_CONFIRM_MS / 1000) + 's');
     if (self.restoreConfirmTimer) clearTimeout(self.restoreConfirmTimer);
-    self.restoreConfirmTimer = setTimeout(function () {
-      self.restoreConfirmTimer = null;
-      self._confirmRestore();
-    }, RESTORE_CONFIRM_MS);
+    self.restoreConfirmTimer = setTimeout(
+      self._guarded('Restore confirmation', function () {
+        self.restoreConfirmTimer = null;
+        self._confirmRestore();
+      }), RESTORE_CONFIRM_MS);
   });
 };
 
@@ -975,11 +1294,24 @@ StreamWatchdog.prototype._restoreStream = function () {
     return; // stay in FALLBACK; a manual resume moves us back to WATCHING
   }
 
+  // Antes de repor a fila, nao depois: o proximo item nao deve nascer
+  // debaixo de um random que era da playlist de emergencia.
+  self._clearShuffle();
+
   self.logger.info(LOG + 'Restoring original stream: ' + saved.uri);
   self.commandRouter.pushToastMessage('success', 'Stream Watchdog',
     'Stream restored — resuming.');
 
-  var item = { uri: saved.uri, service: saved.service, title: saved.title };
+  self._playStreamItem({ uri: saved.uri, service: saved.service, title: saved.title });
+};
+
+/**
+ * Issues one stream item, preferring replaceAndPlay and degrading to the
+ * stop/clear/add/play chain on builds that lack it (see development-plan §13).
+ * Shared by FALLBACK auto-restore and by the R1 light recovery.
+ */
+StreamWatchdog.prototype._playStreamItem = function (item) {
+  var self = this;
 
   if (typeof self.commandRouter.replaceAndPlay === 'function') {
     try {
@@ -1051,6 +1383,7 @@ StreamWatchdog.prototype.getUIConfig = function () {
     content[1].value = self._cfg('streamCheckInterval');
     content[2].value = self._cfg('restoreCheckInterval');
     content[3].value = self._cfg('autoRestore');
+    content[4].value = self._shuffleEnabled();
     defer.resolve(uiconf);
   }).fail(function (e) {
     self.logger.error(LOG + 'getUIConfig failed: ' + e);
@@ -1091,6 +1424,9 @@ StreamWatchdog.prototype.savePluginConfig = function (data) {
   var autoRestore = (data.autoRestore !== undefined)
     ? (data.autoRestore === true || data.autoRestore === 'true')
     : !!self._cfg('autoRestore');
+  var shuffleOffline = (data.shuffleOffline !== undefined)
+    ? (data.shuffleOffline === true || data.shuffleOffline === 'true')
+    : self._shuffleEnabled();
 
   // Volumio cannot refresh an open settings modal, so the toast has to be
   // the feedback — name exactly which value was raised.
@@ -1108,11 +1444,17 @@ StreamWatchdog.prototype.savePluginConfig = function (data) {
   self.config.set('streamCheckInterval', streamInterval);
   self.config.set('restoreCheckInterval', restoreInterval);
   self.config.set('autoRestore', autoRestore);
+  self.config.set('shuffleOffline', shuffleOffline);
   self.config.save();
 
   self.logger.info(LOG + 'savePluginConfig — playlist="' + playlist +
     '" streamCheck=' + streamInterval + 's restoreCheck=' + restoreInterval +
-    's autoRestore=' + autoRestore);
+    's autoRestore=' + autoRestore + ' shuffle=' + shuffleOffline);
+
+  // O shuffle e obedecido na hora: desligar a chave com a playlist de
+  // emergencia tocando desembaralha ja, sem esperar a proxima queda.
+  if (!shuffleOffline) self._clearShuffle();
+  else if (self.state === STATE.FALLBACK && !self.randomForced) self._scheduleShuffle();
 
   // Apply the new intervals to the timer that is running right now.
   if (self.state === STATE.WATCHING || self.state === STATE.SUSPECT) {

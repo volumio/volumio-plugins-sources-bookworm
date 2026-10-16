@@ -141,10 +141,10 @@
           "show_fm_region",
           "fm_region",
           "fm_scan_offset",
+          "fm_deemphasis_choice",
           "fm_lower_freq",
           "fm_upper_freq",
-          "fm_channel_spacing",
-          "fm_deemphasis"
+          "fm_channel_spacing"
         ]
       },
       "content": [
@@ -192,6 +192,26 @@
             {"value": "0", "label": "TRANSLATE.FM_SCAN_OFFSET_0"},
             {"value": "50", "label": "TRANSLATE.FM_SCAN_OFFSET_50"},
             {"value": "100", "label": "TRANSLATE.FM_SCAN_OFFSET_100"}
+          ],
+          "visibleIf": {
+            "field": "show_fm_region",
+            "value": true
+          }
+        },
+        {
+          "id": "fm_deemphasis_choice",
+          "element": "select",
+          "label": "TRANSLATE.FM_DEEMPHASIS",
+          "doc": "TRANSLATE.FM_DEEMPHASIS_DOC",
+          "value": {
+            "value": "region",
+            "label": "TRANSLATE.FM_DEEMPHASIS_REGION"
+          },
+          "options": [
+            {"value": "region", "label": "TRANSLATE.FM_DEEMPHASIS_REGION"},
+            {"value": "50", "label": "TRANSLATE.FM_DEEMPHASIS_50"},
+            {"value": "75", "label": "TRANSLATE.FM_DEEMPHASIS_75"},
+            {"value": "off", "label": "TRANSLATE.FM_DEEMPHASIS_OFF"}
           ],
           "visibleIf": {
             "field": "show_fm_region",
@@ -256,17 +276,6 @@
             "field": "show_fm_region",
             "value": true
           }
-        },
-        {
-          "id": "fm_deemphasis",
-          "element": "switch",
-          "label": "TRANSLATE.FM_DEEMPHASIS",
-          "value": false,
-          "doc": "TRANSLATE.FM_DEEMPHASIS_DOC",
-          "visibleIf": {
-            "field": "show_fm_region",
-            "value": true
-          }
         }
       ]
     },
@@ -284,10 +293,12 @@
         "label": "TRANSLATE.SAVE_FM_SETTINGS",
         "data": [
           "fm_enabled",
+          "fm_gain_auto",
           "fm_gain",
-          "fm_oversampling",
           "fm_sample_rate",
-          "scan_sensitivity"
+          "fm_level",
+          "scan_sensitivity",
+          "fm_scan_depth"
         ]
       },
       "content": [
@@ -299,14 +310,25 @@
           "doc": "TRANSLATE.ENABLE_FM_DOC"
         },
         {
+          "id": "fm_gain_auto",
+          "element": "switch",
+          "label": "TRANSLATE.FM_GAIN_AUTO",
+          "doc": "TRANSLATE.FM_GAIN_AUTO_DOC",
+          "value": true,
+          "visibleIf": {
+            "field": "fm_enabled",
+            "value": true
+          }
+        },
+        {
           "id": "fm_gain",
           "element": "input",
           "label": "TRANSLATE.FM_GAIN",
           "value": 50,
           "doc": "TRANSLATE.FM_GAIN_DOC",
           "visibleIf": {
-            "field": "fm_enabled",
-            "value": true
+            "field": "fm_gain_auto",
+            "value": false
           }
         },
         {
@@ -346,11 +368,24 @@
           }
         },
         {
-          "id": "fm_oversampling",
-          "element": "switch",
-          "label": "TRANSLATE.FM_OVERSAMPLING",
-          "value": false,
-          "doc": "TRANSLATE.FM_OVERSAMPLING_DOC",
+          "id": "fm_scan_depth",
+          "element": "select",
+          "label": "TRANSLATE.FM_SCAN_DEPTH",
+          "value": {
+            "value": "fast",
+            "label": ""
+          },
+          "options": [
+            {
+              "value": "fast",
+              "label": "TRANSLATE.FM_SCAN_FAST"
+            },
+            {
+              "value": "detailed",
+              "label": "TRANSLATE.FM_SCAN_DETAILED"
+            }
+          ],
+          "doc": "TRANSLATE.FM_SCAN_DEPTH_DOC",
           "visibleIf": {
             "field": "fm_enabled",
             "value": true
@@ -370,6 +405,35 @@
             {"value": "200k", "label": "TRANSLATE.FM_SAMPLE_RATE_200K"},
             {"value": "240k", "label": "TRANSLATE.FM_SAMPLE_RATE_240K"},
             {"value": "300k", "label": "TRANSLATE.FM_SAMPLE_RATE_300K"}
+          ],
+          "visibleIf": {
+            "field": "fm_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "fm_level",
+          "element": "select",
+          "label": "TRANSLATE.FM_LEVEL",
+          "doc": "TRANSLATE.FM_LEVEL_DOC",
+          "value": {
+            "value": 0,
+            "label": "0 dB"
+          },
+          "options": [
+            {"value": 0, "label": "0 dB"},
+            {"value": -1, "label": "-1 dB"},
+            {"value": -2, "label": "-2 dB"},
+            {"value": -3, "label": "-3 dB"},
+            {"value": -4, "label": "-4 dB"},
+            {"value": -5, "label": "-5 dB"},
+            {"value": -6, "label": "-6 dB"},
+            {"value": -7, "label": "-7 dB"},
+            {"value": -8, "label": "-8 dB"},
+            {"value": -9, "label": "-9 dB"},
+            {"value": -10, "label": "-10 dB"},
+            {"value": -11, "label": "-11 dB"},
+            {"value": -12, "label": "-12 dB"}
           ],
           "visibleIf": {
             "field": "fm_enabled",
@@ -407,8 +471,10 @@
         "label": "TRANSLATE.SAVE_DAB_SETTINGS",
         "data": [
           "dab_enabled",
+          "dab_gain_auto",
           "dab_gain",
-          "dab_ppm"
+          "dab_ppm",
+          "dab_level"
         ]
       },
       "content": [
@@ -420,14 +486,25 @@
           "doc": "TRANSLATE.ENABLE_DAB_DOC"
         },
         {
+          "id": "dab_gain_auto",
+          "element": "switch",
+          "label": "TRANSLATE.DAB_GAIN_AUTO",
+          "doc": "TRANSLATE.DAB_GAIN_AUTO_DOC",
+          "value": true,
+          "visibleIf": {
+            "field": "dab_enabled",
+            "value": true
+          }
+        },
+        {
           "id": "dab_gain",
           "element": "input",
           "label": "TRANSLATE.DAB_GAIN",
           "value": 80,
           "doc": "TRANSLATE.DAB_GAIN_DOC",
           "visibleIf": {
-            "field": "dab_enabled",
-            "value": true
+            "field": "dab_gain_auto",
+            "value": false
           }
         },
         {
@@ -436,6 +513,35 @@
           "label": "TRANSLATE.DAB_PPM",
           "value": 0,
           "doc": "TRANSLATE.DAB_PPM_DOC",
+          "visibleIf": {
+            "field": "dab_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "dab_level",
+          "element": "select",
+          "label": "TRANSLATE.DAB_LEVEL",
+          "doc": "TRANSLATE.DAB_LEVEL_DOC",
+          "value": {
+            "value": 0,
+            "label": "0 dB"
+          },
+          "options": [
+            {"value": 0, "label": "0 dB"},
+            {"value": -1, "label": "-1 dB"},
+            {"value": -2, "label": "-2 dB"},
+            {"value": -3, "label": "-3 dB"},
+            {"value": -4, "label": "-4 dB"},
+            {"value": -5, "label": "-5 dB"},
+            {"value": -6, "label": "-6 dB"},
+            {"value": -7, "label": "-7 dB"},
+            {"value": -8, "label": "-8 dB"},
+            {"value": -9, "label": "-9 dB"},
+            {"value": -10, "label": "-10 dB"},
+            {"value": -11, "label": "-11 dB"},
+            {"value": -12, "label": "-12 dB"}
+          ],
           "visibleIf": {
             "field": "dab_enabled",
             "value": true
@@ -459,6 +565,56 @@
       ]
     },
     {
+      "id": "song_recognition",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_RECOGNITION",
+      "icon": "fa-music",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/rtlsdr_radio",
+        "method": "saveRecognitionSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE_RECOGNITION",
+        "data": [
+          "recognise_on",
+          "recognise_key",
+          "recognise_when"
+        ]
+      },
+      "content": [
+        {
+          "id": "recognise_on",
+          "element": "switch",
+          "label": "TRANSLATE.RECOGNISE_ON",
+          "value": true,
+          "doc": "TRANSLATE.RECOGNISE_ON_DOC"
+        },
+        {
+          "id": "recognise_key",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.RECOGNISE_KEY",
+          "doc": "TRANSLATE.RECOGNISE_KEY_DOC",
+          "value": ""
+        },
+        {
+          "id": "recognise_when",
+          "element": "select",
+          "label": "TRANSLATE.RECOGNISE_WHEN",
+          "doc": "TRANSLATE.RECOGNISE_WHEN_DOC",
+          "value": {
+            "value": "missing",
+            "label": "TRANSLATE.RECOGNISE_WHEN_MISSING"
+          },
+          "options": [
+            {"value": "missing", "label": "TRANSLATE.RECOGNISE_WHEN_MISSING"},
+            {"value": "always", "label": "TRANSLATE.RECOGNISE_WHEN_ALWAYS"}
+          ]
+        }
+      ]
+    },
+    {
       "id": "artwork_settings",
       "element": "section",
       "label": "TRANSLATE.SECTION_ARTWORK",
@@ -476,6 +632,7 @@
           "artwork_threshold",
           "artwork_persistence",
           "artwork_ttl",
+          "artwork_hold",
           "artwork_debug_logging"
         ]
       },
@@ -556,6 +713,28 @@
             { "value": "30", "label": "TRANSLATE.ARTWORK_TTL_30MIN" }
           ],
           "doc": "TRANSLATE.ARTWORK_TTL_DOC",
+          "visibleIf": {
+            "field": "show_artwork_settings",
+            "value": true
+          }
+        },
+        {
+          "id": "artwork_hold",
+          "element": "select",
+          "label": "TRANSLATE.ARTWORK_HOLD",
+          "value": {
+            "value": "2",
+            "label": "2 seconds (recommended)"
+          },
+          "options": [
+            { "value": "0", "label": "TRANSLATE.ARTWORK_HOLD_OFF" },
+            { "value": "1", "label": "TRANSLATE.ARTWORK_HOLD_1S" },
+            { "value": "2", "label": "TRANSLATE.ARTWORK_HOLD_2S" },
+            { "value": "3", "label": "TRANSLATE.ARTWORK_HOLD_3S" },
+            { "value": "5", "label": "TRANSLATE.ARTWORK_HOLD_5S" },
+            { "value": "10", "label": "TRANSLATE.ARTWORK_HOLD_10S" }
+          ],
+          "doc": "TRANSLATE.ARTWORK_HOLD_DOC",
           "visibleIf": {
             "field": "show_artwork_settings",
             "value": true

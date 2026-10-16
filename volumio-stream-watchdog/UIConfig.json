@@ -19,7 +19,8 @@
           "offlinePlaylistName",
           "streamCheckInterval",
           "restoreCheckInterval",
-          "autoRestore"
+          "autoRestore",
+          "shuffleOffline"
         ]
       },
       "content": [
@@ -62,6 +63,13 @@
           "doc": "",
           "label": "TRANSLATE.STREAM_WATCHDOG.AUTO_RESTORE",
           "description": "TRANSLATE.STREAM_WATCHDOG.AUTO_RESTORE_DESC"
+        },
+        {
+          "id": "shuffleOffline",
+          "element": "switch",
+          "doc": "",
+          "label": "TRANSLATE.STREAM_WATCHDOG.SHUFFLE_OFFLINE",
+          "description": "TRANSLATE.STREAM_WATCHDOG.SHUFFLE_OFFLINE_DESC"
         }
       ]
     }

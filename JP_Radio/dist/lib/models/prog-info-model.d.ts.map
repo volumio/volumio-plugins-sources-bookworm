@@ -1,0 +1,1 @@
+{"version":3,"file":"prog-info-model.d.ts","sourceRoot":"","sources":["../../../src/lib/models/prog-info-model.ts"],"names":[],"mappings":"AAAA;;;GAGG;AACH,MAAM,WAAW,YAAY;IAC3B,OAAO,EAAE,MAAM,CAAC;IAChB,IAAI,EAAE,MAAM,CAAC;IACb,KAAK,EAAE,MAAM,CAAC;IACd,IAAI,EAAE,MAAM,CAAC;IACb,KAAK,EAAE,MAAM,CAAC;IACd,MAAM,EAAE,MAAM,CAAC;IACf,QAAQ,EAAE,MAAM,CAAC;IACjB,GAAG,EAAE,MAAM,CAAC;CACb"}

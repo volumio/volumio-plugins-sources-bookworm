@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Source mark for Spotify Soloist Connect. Same language as
+       rtlsdr_radio/assets/radio.svg: white line art, 512, inset. -->
+  <g transform="translate(256 256) scale(0.72) translate(-256 -256)">
+    <circle cx="256" cy="256" r="196" fill="none" stroke="#FFFFFF" stroke-width="16"/>
+    <path d="M154 214 C 228 158, 284 158, 358 214"
+          fill="none" stroke="#FFFFFF" stroke-width="26" stroke-linecap="round"/>
+    <path d="M176 268 C 232 226, 280 226, 336 268"
+          fill="none" stroke="#FFFFFF" stroke-width="26" stroke-linecap="round"/>
+    <path d="M200 322 C 236 294, 276 294, 312 322"
+          fill="none" stroke="#FFFFFF" stroke-width="26" stroke-linecap="round"/>
+  </g>
+</svg>

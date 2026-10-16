@@ -115,8 +115,10 @@
   "ADD_REPLACE_DOC": "Choose if local setting is aadded to current or replace it",
   "MAX-EQ-REACHED": "Max number of EQ reached! Last coefficient won't be used !",
   "CANT_REMOVE_LAST_PEQ": "Can't remove last PEQ!",
-  "CROSSFEED_DOC": "Choose the crossfeed profil ",
-  "CROSSFEED": "Use CrossFeed",
+  "CROSSFEED_DOC": "Choose the crossfeed effect you want for your headphones. If you choose speakers, a croostalk effect is applied.",
+  "CROSSFEED": "Headphone CrossFeed / Speakers Recursive Ambiophonic Crosstalk Elimination",
+  "CROSSTALK_STRENGTH": "Crosstalk strength",
+  "CROSSTALK_STRENGTH_DOC": "Set the intensity of crosstalk effect. 0=off, 100=full effect",
   "L_ATTENUATION": "Left attenuation",
   "DOC_LATT": "Attenuation must be at least equal to the max value in dB of the correction",
   "R_ATTENUATION": "Right attenuation",
@@ -231,5 +233,7 @@
   "CANCEL": "Cancel",
   "PRESET_DELETED": "Preset deleted successfully",
   "PRESET_RENAMED": "Preset renamed to \"{0}\"",
-  "RENAME_PRESET_EMPTY": "Please enter a new name for the preset"
+  "RENAME_PRESET_EMPTY": "Please enter a new name for the preset",
+  "CHUNKSIZE": "Camilla Dsp Chunksize",
+  "CHUNKSIZE_DOC": "Chunksize for audio processing. Default is AUTO. Lower values may reduce latency but increase CPU usage. Higher values may reduce CPU usage but increase latency. Choose a value that balances performance and responsiveness for your system."
 }

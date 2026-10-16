@@ -62,7 +62,7 @@
       },
       "saveButton": {
         "label": "TRANSLATE.SAVE",
-        "data": ["playerType", "theme", "showPlayerControls", "showRemainingTime", "albumArtMaxSpace", "albumArtAnimated", "showTrackPanel", "useCustomLayout", "vizType", "spectrumOptions", "peppyMeterFolder", "peppyMeterModel", "peppySpectrumFolder", "peppySpectrumModel"]
+        "data": ["playerType", "theme", "showPlayerControls", "hideTrackTimes", "showRemainingTime", "albumArtMaxSpace", "albumArtAnimated", "showTrackPanel", "useCustomLayout", "vizType", "spectrumOptions", "peppyMeterFolder", "peppyMeterModel", "peppySpectrumFolder", "peppySpectrumModel", "fanartTvApiKey", "displayFanartBackground", "fanartBackgroundGrayscale"]
       },
       "content": [
         {
@@ -103,7 +103,6 @@
             { "value": "cassette", "label": "TRANSLATE.PLAYER_TYPE_CASSETTE" },
             { "value": "reelToReel", "label": "TRANSLATE.PLAYER_TYPE_REEL_TO_REEL" },
             { "value": "radio", "label": "TRANSLATE.PLAYER_TYPE_RADIO" },
-            { "value": "globe", "label": "TRANSLATE.PLAYER_TYPE_GLOBE" },
             { "value": "matchSource", "label": "TRANSLATE.PLAYER_TYPE_MATCH_SOURCE" },
             { "value": "random", "label": "TRANSLATE.PLAYER_TYPE_RANDOM" },
             { "value": "none", "label": "TRANSLATE.PLAYER_TYPE_NONE" }
@@ -124,11 +123,22 @@
           "value": false
         },
         {
+          "id": "hideTrackTimes",
+          "element": "switch",
+          "label": "TRANSLATE.HIDE_TRACK_TIMES",
+          "doc": "TRANSLATE.HIDE_TRACK_TIMES_DESC",
+          "value": false
+        },
+        {
           "id": "showRemainingTime",
           "element": "switch",
           "label": "TRANSLATE.SHOW_REMAINING_TIME",
           "doc": "TRANSLATE.SHOW_REMAINING_TIME_DESC",
-          "value": false
+          "value": false,
+          "visibleIf": {
+            "field": "hideTrackTimes",
+            "value": false
+          }
         },
         {
           "id": "albumArtMaxSpace",
@@ -240,6 +250,32 @@
           "visibleIf": {
             "field": "vizType",
             "value": "peppySpectrum"
+          }
+        },
+        {
+          "id": "fanartTvApiKey",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.FANART_TV_API_KEY",
+          "doc": "TRANSLATE.FANART_TV_API_KEY_DESC",
+          "value": ""
+        },
+        {
+          "id": "displayFanartBackground",
+          "element": "switch",
+          "label": "TRANSLATE.DISPLAY_FANART_BACKGROUND",
+          "doc": "TRANSLATE.DISPLAY_FANART_BACKGROUND_DESC",
+          "value": false
+        },
+        {
+          "id": "fanartBackgroundGrayscale",
+          "element": "switch",
+          "label": "TRANSLATE.FANART_BACKGROUND_GRAYSCALE",
+          "doc": "TRANSLATE.FANART_BACKGROUND_GRAYSCALE_DESC",
+          "value": false,
+          "visibleIf": {
+            "field": "displayFanartBackground",
+            "value": true
           }
         }
       ]
@@ -502,6 +538,7 @@
             { "value": "analogClock", "label": "TRANSLATE.IDLE_SCREEN_ANALOG_CLOCK" },
             { "value": "digitalClock", "label": "TRANSLATE.IDLE_SCREEN_DIGITAL_CLOCK" },
             { "value": "flipClock", "label": "TRANSLATE.IDLE_SCREEN_FLIP_CLOCK" },
+            { "value": "ledMatrixClock", "label": "TRANSLATE.IDLE_SCREEN_LED_MATRIX_CLOCK" },
             { "value": "weatherCurrent", "label": "TRANSLATE.IDLE_SCREEN_WEATHER_CURRENT" },
             { "value": "weatherHourly", "label": "TRANSLATE.IDLE_SCREEN_WEATHER_HOURLY" },
             { "value": "weatherDaily", "label": "TRANSLATE.IDLE_SCREEN_WEATHER_DAILY" },
@@ -544,7 +581,7 @@
       },
       "saveButton": {
         "label": "TRANSLATE.SAVE",
-        "data": ["use24Hour", "wallpaperShowSeconds", "showWeatherInClock", "analogClockShowDate"]
+        "data": ["use24Hour", "wallpaperShowSeconds", "showWeatherInClock", "analogClockShowDate", "clockBackgroundColor", "clockFrameColor", "clockFaceColor", "clockFontColor"]
       },
       "content": [
         {
@@ -578,6 +615,38 @@
           "label": "TRANSLATE.ANALOG_CLOCK_SHOW_DATE",
           "doc": "TRANSLATE.ANALOG_CLOCK_SHOW_DATE_DESC",
           "value": true
+        },
+        {
+          "id": "clockBackgroundColor",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.CLOCK_BACKGROUND_COLOR",
+          "doc": "TRANSLATE.CLOCK_BACKGROUND_COLOR_DESC",
+          "value": ""
+        },
+        {
+          "id": "clockFrameColor",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.CLOCK_FRAME_COLOR",
+          "doc": "TRANSLATE.CLOCK_FRAME_COLOR_DESC",
+          "value": ""
+        },
+        {
+          "id": "clockFaceColor",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.CLOCK_FACE_COLOR",
+          "doc": "TRANSLATE.CLOCK_FACE_COLOR_DESC",
+          "value": ""
+        },
+        {
+          "id": "clockFontColor",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.CLOCK_FONT_COLOR",
+          "doc": "TRANSLATE.CLOCK_FONT_COLOR_DESC",
+          "value": ""
         }
       ]
     },

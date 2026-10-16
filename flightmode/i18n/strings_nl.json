@@ -1,0 +1,89 @@
+{
+  "PAGE": {
+    "LABEL": "Vliegtuigmodus"
+  },
+  "SECTION": {
+    "STATUS": "Status",
+    "RADIOS": "Radio’s",
+    "CONTROL": "Vliegtuigmodus",
+    "PERSIST": "Wifi na herstart uit laten"
+  },
+  "STATUS": {
+    "LABEL": "Status",
+    "OFF": "Radio’s aan",
+    "ON": "Vliegtuigmodus aan",
+    "WIFI_OFF": "Wifi uit",
+    "BT_OFF": "Bluetooth uit",
+    "HARD": "De hardware-vliegtuigschakelaar staat aan",
+    "SENTINEL": "Wifi-herstelsbestand gevonden"
+  },
+  "RADIOS": {
+    "LABEL": "Radio’s",
+    "LINE": "{name} ({type}): {soft}, {hard}",
+    "NONE": "Geen wifi- of bluetoothradio’s gevonden",
+    "WLAN": "Wifi",
+    "BLUETOOTH": "Bluetooth"
+  },
+  "SOFT": {
+    "BLOCKED": "softwarematig geblokkeerd",
+    "UNBLOCKED": "niet softwarematig geblokkeerd"
+  },
+  "HARD": {
+    "BLOCKED": "hardwarematig geblokkeerd",
+    "UNBLOCKED": "niet hardwarematig geblokkeerd"
+  },
+  "RECOVERY": {
+    "LABEL": "Netwerk",
+    "ETH": "Er is een bekabeld netwerk verbonden. Dit apparaat blijft via de kabel bereikbaar.",
+    "NO_ETH": "Geen bekabeld netwerk. Wifi gaat nu uit en komt terug na een herstart. Bluetooth blijft na herstart uit als u het uit laat.",
+    "NO_ETH_PERSIST": "Geen bekabeld netwerk. Wifi blijft na herstart uit tot u wifi hier inschakelt of de vliegtuigmodus uitschakelt. Als de interface weg is: een netwerkkabel, of een leeg bestand genaamd wifi op een USB-stick of in /boot.",
+    "SENTINEL": "Wifi-herstelsbestand gevonden. Wifi blijft aan tot dat bestand van /boot of het USB-volume is verwijderd."
+  },
+  "HARDBLOCK": {
+    "NOTE": "Een hardware-vliegtuigschakelaar heeft een radio uitgeschakeld. Dat kan niet via software ongedaan worden gemaakt."
+  },
+  "BUTTON": {
+    "ENABLE": "Vliegtuigmodus inschakelen",
+    "DISABLE": "Vliegtuigmodus uitschakelen",
+    "WIFI_DISABLE": "Wifi uitschakelen",
+    "WIFI_ENABLE": "Wifi inschakelen",
+    "BT_DISABLE": "Bluetooth uitschakelen",
+    "BT_ENABLE": "Bluetooth inschakelen",
+    "PERSIST_UNLOCK": "Wifi na herstart uit laten"
+  },
+  "CONFIRM": {
+    "ENABLE_TITLE": "Vliegtuigmodus inschakelen?",
+    "ENABLE_ETH": "Wifi en bluetooth gaan uit en blijven uit na een herstart. Dit apparaat blijft via de kabel bereikbaar.",
+    "ENABLE_NO_ETH": "Wifi en bluetooth gaan nu uit. Een herstart zet wifi weer aan. Bluetooth blijft na herstart uit als u het uit laat.",
+    "WIFI_TITLE": "Wifi uitschakelen?",
+    "WIFI_ETH": "Wifi gaat uit en blijft uit na een herstart. Dit apparaat blijft via de kabel bereikbaar.",
+    "WIFI_NO_ETH": "Wifi gaat nu uit. Een herstart zet wifi weer aan.",
+    "ENABLE_NO_ETH_PERSIST": "Wifi en bluetooth gaan uit en blijven na herstart uit tot u de vliegtuigmodus uitschakelt of wifi hier inschakelt.",
+    "WIFI_NO_ETH_PERSIST": "Wifi gaat uit en blijft na herstart uit tot u wifi hier inschakelt of de vliegtuigmodus uitschakelt."
+  },
+  "TOAST": {
+    "ENABLED": "Wifi en bluetooth zijn uit",
+    "DISABLED": "Wifi en bluetooth zijn aan",
+    "WIFI_OFF": "Wifi is uit",
+    "WIFI_ON": "Wifi is aan",
+    "BT_OFF": "Bluetooth is uit",
+    "BT_ON": "Bluetooth is aan",
+    "HARD_DENIED": "Een hardwareschakelaar blokkeert een radio. Dat kan niet worden overschreven.",
+    "FAILED": "Radiostatus kon niet worden toegepast",
+    "PERSIST_ON": "Wifi blijft na herstart uit",
+    "PERSIST_BAD": "De code komt niet overeen. Probeer het met de nieuwe code.",
+    "PERSIST_SENTINEL": "Er is een wifi-herstelsbestand. Verwijder het voordat u blijvend uit inschakelt."
+  },
+  "PERSIST": {
+    "TOKEN": "Typ deze code",
+    "TOKEN_DOC": "Typ de code precies. Hij staat op deze pagina zodat u bevestigt dat u die kunt lezen.",
+    "CHALLENGE": "Code",
+    "STATUS": "Blijvend",
+    "NOTE_ACTIVE": "Wifi blijft na herstart uit tot u wifi hier inschakelt of de vliegtuigmodus uitschakelt.",
+    "NOTE_SENTINEL": "Er is een wifi-herstelsbestand. Blijvend uit kan niet tot dat bestand van /boot of het USB-volume is verwijderd. Meer in de README van deze plugin.",
+    "WARN_LABEL": "Waarschuwing",
+    "NOTE_CHALLENGE": "Geen netwerkkabel. Na een herstart is dit apparaat niet bereikbaar via wifi. Gebruik dit alleen als het toestel een scherm heeft of u een andere weg terug hebt.",
+    "RECOVER_LABEL": "Herstel",
+    "NOTE_RECOVER": "Deze pagina vóór herstart (wifi inschakelen of vliegtuigmodus uitschakelen), een netwerkkabel, of een leeg bestand genaamd wifi op een USB-stick of in /boot. Meer in de README van deze plugin."
+  }
+}

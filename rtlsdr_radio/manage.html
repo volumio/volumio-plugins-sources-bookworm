@@ -233,6 +233,219 @@
       color: #e74c3c;
     }
     
+    /* The station's logo at the front of its row; a press opens the logo dialog */
+    .station-logo {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      padding: 0;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      background: #1e1e1e;
+      color: #666;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-size: 18px;
+    }
+    
+    .station-logo:hover,
+    .station-logo:focus {
+      border-color: #54c688;
+      outline: none;
+    }
+    
+    .station-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    
+    .station-logo.missing {
+      border-style: dashed;
+      opacity: 0.55;
+    }
+    
+    .stat-card.stat-filter {
+      cursor: pointer;
+    }
+    
+    .stat-card.stat-filter:hover,
+    .stat-card.stat-filter.active {
+      border-color: #54c688;
+    }
+    
+    .stat-card.stat-filter.active .stat-label {
+      color: #54c688;
+    }
+    
+    .modal.logo-modal {
+      max-width: 680px;
+    }
+    
+    .logo-section {
+      border-top: 1px solid #404040;
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+    
+    .logo-section h3 {
+      font-size: 14px;
+      font-weight: 500;
+      margin: 0 0 10px 0;
+      color: #ccc;
+    }
+    
+    .logo-now {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .logo-frame {
+      width: 120px;
+      height: 120px;
+      flex-shrink: 0;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      color: #555;
+      font-size: 40px;
+      /* a chequered ground, so that what is see-through in a picture shows as such */
+      background-color: #2a2a2a;
+      background-image: linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%),
+        linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 8px 8px;
+    }
+    
+    .logo-frame img,
+    .logo-frame canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    
+    .logo-source {
+      color: #999;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    
+    .logo-rules {
+      color: #ccc;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+    
+    .logo-upload {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    
+    .logo-upload-side {
+      flex: 1;
+      min-width: 200px;
+      font-size: 13px;
+      color: #999;
+    }
+    
+    .logo-upload-side label {
+      display: block;
+      margin: 4px 0;
+      color: #ccc;
+      cursor: pointer;
+    }
+    
+    .logo-message {
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.4;
+      min-height: 18px;
+    }
+    
+    .logo-message.error {
+      color: #e74c3c;
+    }
+    
+    .logo-message.warning {
+      color: #f39c12;
+    }
+    
+    .logo-search {
+      width: 100%;
+      padding: 8px 10px;
+      background: #1e1e1e;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    
+    .logo-grid-title {
+      font-size: 12px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 10px 0 6px 0;
+    }
+    
+    .logo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+      gap: 8px;
+      max-height: 232px;
+      overflow-y: auto;
+    }
+    
+    .logo-choice {
+      background: #1e1e1e;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      padding: 6px;
+      cursor: pointer;
+      color: #ccc;
+      font-size: 11px;
+      text-align: center;
+      line-height: 1.3;
+    }
+    
+    .logo-choice:hover,
+    .logo-choice:focus {
+      border-color: #54c688;
+      outline: none;
+    }
+    
+    .logo-choice img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 4px auto;
+    }
+    
+    .logo-choice span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .logo-empty {
+      color: #777;
+      font-size: 13px;
+      padding: 6px 0;
+      grid-column: 1 / -1;
+    }
+    
     .signal-indicator {
       display: flex;
       align-items: center;
@@ -310,8 +523,13 @@
       border-color: #54b948;
     }
     
-    .frequency-input {
-      width: 80px;
+    .frequency-display {
+      font-family: 'Courier New', monospace;
+      color: #999;
+    }
+    
+    /* An FM station's frequency: pressed, it opens the tune dialog */
+    .frequency-button {
       padding: 4px 8px;
       background: #1c1c1c;
       border: 1px solid #404040;
@@ -319,21 +537,171 @@
       color: #e0e0e0;
       font-size: 12px;
       font-family: 'Courier New', monospace;
-      text-align: center;
+      cursor: pointer;
     }
     
-    .frequency-input:focus {
+    .frequency-button:hover,
+    .frequency-button:focus {
       outline: none;
       border-color: #54b948;
     }
     
-    .frequency-input.error {
-      border-color: #e74c3c;
+    .frequency-button .fa {
+      margin-left: 6px;
+      color: #999;
     }
     
-    .frequency-display {
+    .modal.tune-modal {
+      max-width: 560px;
+    }
+    
+    .tune-dial {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 16px 0 8px;
+    }
+    
+    .tune-dial .btn {
+      padding: 10px 16px;
+    }
+    
+    .tune-now {
+      text-align: center;
+      min-width: 190px;
+    }
+    
+    .tune-frequency {
+      width: 110px;
+      padding: 6px 8px;
+      background: #1c1c1c;
+      border: 1px solid #404040;
+      border-radius: 3px;
+      color: #e0e0e0;
+      font-size: 22px;
       font-family: 'Courier New', monospace;
+      text-align: center;
+    }
+    
+    .tune-frequency:focus {
+      outline: none;
+      border-color: #54b948;
+    }
+    
+    .tune-unit {
       color: #999;
+      margin-left: 4px;
+    }
+    
+    .tune-level {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #999;
+      min-height: 16px;
+    }
+    
+    .tune-level .dots,
+    .tune-table .dots {
+      letter-spacing: 2px;
+      color: #54b948;
+      margin-right: 6px;
+    }
+    
+    .tune-listed {
+      text-align: center;
+      font-size: 12px;
+      color: #999;
+    }
+    
+    .tune-actions {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 12px 0;
+    }
+    
+    .tune-note {
+      font-size: 13px;
+      color: #e0e0e0;
+      min-height: 18px;
+    }
+    
+    .tune-note.error {
+      color: #e74c3c;
+    }
+    
+    .tune-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    
+    .tune-table th {
+      text-align: left;
+      color: #999;
+      font-weight: normal;
+      padding: 4px 6px;
+      border-bottom: 1px solid #404040;
+    }
+    
+    .tune-table td {
+      padding: 5px 6px;
+      border-bottom: 1px solid #333;
+      vertical-align: top;
+    }
+    
+    .tune-table tr.tune-row {
+      cursor: pointer;
+    }
+    
+    .tune-table tr.tune-row:hover td,
+    .tune-table tr.tune-row:focus td {
+      background: #333;
+      outline: none;
+    }
+    
+    .tune-table tr.at td {
+      background: #2f3a2d;
+    }
+    
+    .tune-table tr.nothing td {
+      color: #777;
+    }
+    
+    .tune-table .frequency {
+      font-family: 'Courier New', monospace;
+      white-space: nowrap;
+    }
+    
+    .tune-table .mark {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 0 6px;
+      border-radius: 8px;
+      font-size: 11px;
+      background: #404040;
+      color: #e0e0e0;
+    }
+    
+    .tune-table .mark.best {
+      background: #54b948;
+      color: #111;
+    }
+    
+    .tune-table .held {
+      display: block;
+      color: #999;
+    }
+    
+    .modal-footer.tune-footer {
+      justify-content: space-between;
+    }
+    
+    .tune-footer .right {
+      display: flex;
+      gap: 8px;
     }
     
     .station-actions {
@@ -667,56 +1035,32 @@
       line-height: 1.5;
     }
     
-    .freq-comparison {
+    .confirm-choices label {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-      margin: 20px 0;
-      padding: 15px;
-      background: #1c1c1c;
-      border-radius: 4px;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(128, 128, 128, 0.35);
+      border-radius: 6px;
+      cursor: pointer;
+      line-height: 1.4;
     }
     
-    .freq-old, .freq-new {
-      text-align: center;
+    .confirm-choices input {
+      margin-top: 3px;
+      flex: none;
     }
     
-    .freq-old label, .freq-new label {
+    .confirm-choices .choice-name {
       display: block;
-      font-size: 11px;
-      color: #999;
-      text-transform: uppercase;
-      margin-bottom: 5px;
+      font-weight: 600;
     }
     
-    .freq-old span, .freq-new span {
+    .confirm-choices .choice-doc {
       display: block;
-      font-size: 20px;
-      font-weight: 500;
-      font-family: 'Courier New', monospace;
-    }
-    
-    .freq-old span {
-      color: #e74c3c;
-    }
-    
-    .freq-new span {
-      color: #54b948;
-    }
-    
-    .freq-arrow {
-      color: #666;
-      font-size: 20px;
-    }
-    
-    .warning-text {
-      background: #404040;
-      padding: 12px;
-      border-radius: 4px;
-      border-left: 3px solid #f39c12;
-      font-size: 13px;
-      line-height: 1.5;
+      font-size: 0.9em;
+      opacity: 0.8;
     }
     
     .modal-header.info {
@@ -925,15 +1269,6 @@
         width: 95%;
       }
       
-      .freq-comparison {
-        flex-direction: column;
-        gap: 10px;
-      }
-      
-      .freq-arrow {
-        transform: rotate(90deg);
-      }
-      
       #maintenance-tab [style*="grid-template-columns"] {
         grid-template-columns: 1fr !important;
       }
@@ -1043,6 +1378,36 @@
       .csv-operation-grid {
         grid-template-columns: 1fr;
       }
+    }
+    
+    .recog-input {
+      padding: 8px 12px;
+      background: #1c1c1c;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      color: #e0e0e0;
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+      width: 100%;
+      max-width: 420px;
+    }
+    
+    .recog-input:focus {
+      outline: none;
+      border-color: #54b948;
+    }
+
+    .recog-key-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 420px;
+    }
+
+    .recog-key-row .recog-input {
+      flex: 1;
+      min-width: 0;
+      max-width: none;
     }
     
     .restore-label {
@@ -1513,6 +1878,10 @@
           <div class="stat-label"><i class="fa fa-eye-slash"></i> <span id="stat-hidden-label-fm">Hidden</span></div>
           <div class="stat-value" id="fm-hidden">0</div>
         </div>
+        <div class="stat-card stat-filter" id="fm-nologo-card" data-logo-filter="fm" role="button" tabindex="0">
+          <div class="stat-label"><i class="fa fa-picture-o"></i> <span id="stat-nologo-label-fm">No logo</span></div>
+          <div class="stat-value" id="fm-nologo">0</div>
+        </div>
       </div>
       
       <div class="tab-header">
@@ -1555,6 +1924,10 @@
           <div class="stat-label"><i class="fa fa-eye-slash"></i> <span id="stat-hidden-label-dab">Hidden</span></div>
           <div class="stat-value" id="dab-hidden">0</div>
         </div>
+        <div class="stat-card stat-filter" id="dab-nologo-card" data-logo-filter="dab" role="button" tabindex="0">
+          <div class="stat-label"><i class="fa fa-picture-o"></i> <span id="stat-nologo-label-dab">No logo</span></div>
+          <div class="stat-value" id="dab-nologo">0</div>
+        </div>
       </div>
       
       <div class="tab-header">
@@ -1596,7 +1969,90 @@
     </div>
     
     <div id="maintenance-tab" class="tab-content">
+      <!-- Plugin Update Section -->
       <div class="tab-header">
+        <div class="flex-1">
+          <h2 class="maintenance-header" id="update-section-title">Plugin Update</h2>
+        </div>
+      </div>
+      
+      <div class="backup-section">
+        <p style="font-size: 14px; margin-bottom: 12px;" id="update-installed"></p>
+        <div class="backup-form-row">
+          <label class="restore-label" id="update-channel-label" for="update-channel">Update channel:</label>
+          <select id="update-channel" class="restore-select" onchange="setUpdateChannel(this.value)">
+            <option value="stable" id="update-channel-stable">Stable (plugin store)</option>
+            <option value="beta" id="update-channel-beta">Beta (plugin store)</option>
+            <option value="preview" id="update-channel-preview">Preview (GitHub)</option>
+          </select>
+        </div>
+        <p style="color: #888; font-size: 13px; margin-bottom: 12px;" id="update-channel-desc"></p>
+        <p style="font-size: 14px; margin-bottom: 6px;" id="update-status"></p>
+        <p style="color: #888; font-size: 13px; margin-bottom: 12px;" id="update-detail"></p>
+        <div id="update-notes-box" style="display: none; margin-bottom: 15px;">
+          <div class="csv-section-header" id="update-notes-title">What is new</div>
+          <pre id="update-notes" style="white-space: pre-wrap; font-family: inherit; font-size: 13px; color: #bbb; max-height: 220px; overflow-y: auto; margin: 0;"></pre>
+        </div>
+        <div class="tab-header tab-header-no-margin">
+          <button class="btn btn-secondary" id="btn-update-check" onclick="checkUpdate()">
+            <i class="fa fa-refresh"></i>
+            <span id="btn-update-check-text">Check Now</span>
+          </button>
+          <button class="btn btn-primary" id="btn-update-install" onclick="installUpdate()" style="display: none;">
+            <i class="fa fa-download"></i>
+            <span id="btn-update-install-text">Install</span>
+          </button>
+          <button class="btn btn-secondary" id="btn-update-rollback" onclick="rollbackUpdate()" style="display: none;">
+            <i class="fa fa-undo"></i>
+            <span id="btn-update-rollback-text">Go Back</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Song Recognition Section -->
+      <div class="tab-header" style="margin-top: 30px;">
+        <div class="flex-1">
+          <h2 class="maintenance-header" id="recog-title">Song Recognition</h2>
+        </div>
+      </div>
+      
+      <div class="backup-section">
+        <p style="color: #888; font-size: 13px; margin-bottom: 12px;" id="recog-doc"></p>
+        <p style="font-size: 14px; margin-bottom: 6px;" id="recog-status"></p>
+        <p style="color: #888; font-size: 13px; margin-bottom: 12px;" id="recog-detail"></p>
+        <div class="backup-form-row">
+          <label>
+            <input type="checkbox" id="recog-on" onchange="switchRecognition(this.checked)">
+            <span id="recog-on-text">Song recognition on</span>
+          </label>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label class="restore-label" id="recog-key-label" for="recog-key">AudD API token:</label>
+          <div class="recog-key-row">
+            <input type="password" id="recog-key" class="recog-input" autocomplete="off" spellcheck="false" oninput="recognitionKeyTyped()">
+            <button type="button" class="btn btn-secondary" id="btn-recog-eye" onclick="toggleRecognitionKey()" title="Show the token"><i class="fa fa-eye"></i></button>
+          </div>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label class="restore-label" id="recog-when-label" for="recog-when">Ask:</label>
+          <select id="recog-when" class="restore-select">
+            <option value="missing" id="recog-when-missing"></option>
+            <option value="always" id="recog-when-always"></option>
+          </select>
+        </div>
+        <div class="tab-header tab-header-no-margin">
+          <button class="btn btn-primary" id="btn-recog-save" onclick="saveRecognition()">
+            <i class="fa fa-floppy-o"></i>
+            <span id="btn-recog-save-text">Save</span>
+          </button>
+          <button class="btn btn-secondary" id="btn-recog-clear" onclick="clearRecognition()" style="display: none;">
+            <i class="fa fa-times"></i>
+            <span id="btn-recog-clear-text">Remove token</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="tab-header" style="margin-top: 30px;">
         <div class="flex-1">
           <h2 class="maintenance-header" id="maintenance-title">Backup & Restore</h2>
         </div>
@@ -1799,6 +2255,63 @@
       
       <div id="csv-validation-results">
         <div id="csv-validation-content"></div>
+      </div>
+    </div>
+    
+    <!-- Station Logos Section -->
+    <div class="tab-header" style="margin-top: 30px;">
+      <div class="flex-1">
+        <h2 class="maintenance-header" id="logos-section-title">Station Logos</h2>
+      </div>
+    </div>
+    
+    <div class="backup-section">
+      <p style="color: #888; font-size: 13px; margin-bottom: 15px;" id="logos-desc">Station logos come from the broadcasters and are fetched in the background whenever there is an internet connection.</p>
+      <p style="font-size: 14px; margin-bottom: 6px;" id="logos-counts"></p>
+      <p style="color: #888; font-size: 13px; margin-bottom: 15px;" id="logos-state"></p>
+      <div class="tab-header tab-header-no-margin">
+        <button class="btn btn-primary" id="btn-logos-refresh" onclick="refreshLogos()">
+          <i class="fa fa-refresh"></i>
+          <span id="btn-logos-refresh-text">Refresh Station Logos</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Dongle Report Section -->
+    <div class="tab-header" style="margin-top: 30px;">
+      <div class="flex-1">
+        <h2 class="maintenance-header" id="report-section-title">Dongle Report</h2>
+      </div>
+    </div>
+    
+    <div class="backup-section">
+      <p style="color: #888; font-size: 13px; margin-bottom: 15px;" id="report-desc"></p>
+      <p style="font-size: 14px; margin-bottom: 12px;">
+        <label for="report-recordings" style="cursor: pointer;">
+          <input type="checkbox" id="report-recordings" checked>
+          <span id="report-recordings-label">Include short recordings of what the dongle delivers</span>
+        </label>
+      </p>
+      <p style="font-size: 14px; margin-bottom: 6px;" id="report-status"></p>
+      <p style="color: #888; font-size: 13px; margin-bottom: 12px;" id="report-detail"></p>
+      <pre id="report-summary" style="display: none; white-space: pre; font-size: 12px; color: #bbb; max-height: 320px; overflow: auto; margin: 0 0 15px 0;"></pre>
+      <div class="tab-header tab-header-no-margin">
+        <button class="btn btn-primary" id="btn-report-start" onclick="startReport()">
+          <i class="fa fa-stethoscope"></i>
+          <span id="btn-report-start-text">Make Report</span>
+        </button>
+        <button class="btn btn-secondary" id="btn-report-cancel" onclick="cancelReport()" style="display: none;">
+          <i class="fa fa-times"></i>
+          <span id="btn-report-cancel-text">Cancel</span>
+        </button>
+        <button class="btn btn-primary" id="btn-report-download" onclick="downloadReport()" style="display: none;">
+          <i class="fa fa-download"></i>
+          <span id="btn-report-download-text">Download Report</span>
+        </button>
+        <button class="btn btn-secondary" id="btn-report-summary" onclick="toggleReportSummary()" style="display: none;">
+          <i class="fa fa-file-text-o"></i>
+          <span id="btn-report-summary-text">Show Summary</span>
+        </button>
       </div>
     </div>
   </div>
@@ -2110,37 +2623,37 @@
     <span id="toast-message"></span>
   </div>
   
-  <div class="modal-overlay" id="freq-modal">
-    <div class="modal">
-      <div class="modal-header warning">
-        <i class="fa fa-exclamation-triangle"></i>
-        <h2 id="freq-modal-title">Warning: Change Frequency?</h2>
+  <!-- Tune dialog: an FM station's frequency -->
+  <div class="modal-overlay" id="tune-modal">
+    <div class="modal tune-modal" role="dialog" aria-labelledby="tune-title">
+      <div class="modal-header info">
+        <i class="fa fa-sliders"></i>
+        <h2 id="tune-title">Tune</h2>
       </div>
       <div class="modal-body">
-        <p id="freq-modal-msg">You are about to change the frequency for "Station Name"</p>
-        <div class="freq-comparison">
-          <div class="freq-old">
-            <label id="freq-old-label">From:</label>
-            <span id="freq-old-value">98.7 MHz</span>
+        <p id="tune-intro"></p>
+        <div class="tune-dial">
+          <button class="btn btn-secondary" id="tune-down"><i class="fa fa-chevron-left"></i></button>
+          <div class="tune-now">
+            <input type="number" class="tune-frequency" id="tune-frequency" step="0.1"><span class="tune-unit">MHz</span>
+            <div class="tune-level" id="tune-level"></div>
           </div>
-          <div class="freq-arrow">
-            <i class="fa fa-arrow-right"></i>
-          </div>
-          <div class="freq-new">
-            <label id="freq-new-label">To:</label>
-            <span id="freq-new-value">98.8 MHz</span>
-          </div>
+          <button class="btn btn-secondary" id="tune-up"><i class="fa fa-chevron-right"></i></button>
         </div>
-        <p class="warning-text" id="freq-modal-details">This will affect playback. Make sure the new frequency is correct.</p>
+        <div class="tune-listed" id="tune-listed"></div>
+        <div class="tune-actions">
+          <button class="btn btn-secondary" id="tune-listen"><i class="fa fa-volume-up"></i> <span id="tune-listen-text">Listen</span></button>
+          <button class="btn btn-primary" id="tune-find"><i class="fa fa-search"></i> <span id="tune-find-text">Find best</span></button>
+        </div>
+        <p class="tune-note" id="tune-note"></p>
+        <div id="tune-found"></div>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" id="freq-cancel">
-          <span id="btn-cancel-text">Cancel</span>
-        </button>
-        <button class="btn btn-danger" id="freq-confirm">
-          <i class="fa fa-check"></i>
-          <span id="freq-confirm-text">Change Frequency</span>
-        </button>
+      <div class="modal-footer tune-footer">
+        <button class="btn btn-danger" id="tune-delete"><i class="fa fa-trash"></i> <span id="tune-delete-text">Delete station</span></button>
+        <div class="right">
+          <button class="btn btn-secondary" id="tune-cancel"><span id="tune-cancel-text">Cancel</span></button>
+          <button class="btn btn-primary" id="tune-keep"><i class="fa fa-check"></i> <span id="tune-keep-text">Keep</span></button>
+        </div>
       </div>
     </div>
   </div>
@@ -2154,6 +2667,7 @@
       </div>
       <div class="modal-body">
         <p id="confirm-modal-message">Are you sure?</p>
+        <div class="confirm-choices" id="confirm-modal-choices" style="display: none;"></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" id="confirm-cancel">
@@ -2161,6 +2675,68 @@
         </button>
         <button class="btn btn-primary" id="confirm-ok">
           <span id="confirm-ok-text">Confirm</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Station Logo Modal -->
+  <div class="modal-overlay" id="logo-modal">
+    <div class="modal logo-modal">
+      <div class="modal-header">
+        <i class="fa fa-picture-o"></i>
+        <h2 id="logo-modal-title">Logo</h2>
+      </div>
+      <div class="modal-body">
+        <div class="logo-now">
+          <div class="logo-frame" id="logo-now-frame"></div>
+          <div>
+            <div class="logo-grid-title" id="logo-now-label">Shown now</div>
+            <div class="logo-source" id="logo-now-source"></div>
+            <button class="btn btn-secondary" id="logo-automatic" style="margin-top: 10px;">
+              <i class="fa fa-undo"></i>
+              <span id="logo-automatic-text">Back to automatic</span>
+            </button>
+          </div>
+        </div>
+        
+        <div class="logo-section">
+          <h3 id="logo-upload-title">Your own picture</h3>
+          <div class="logo-rules" id="logo-rules">PNG, JPEG or SVG. Square, 600 x 600 pixels is ideal. Up to 2 MB.</div>
+          <div class="logo-upload">
+            <div class="logo-frame" id="logo-preview-frame"><i class="fa fa-picture-o"></i></div>
+            <div class="logo-upload-side">
+              <input type="file" id="logo-file" accept="image/png,image/jpeg,image/svg+xml,.png,.jpg,.jpeg,.svg" style="display: none;">
+              <button class="btn btn-secondary" id="logo-file-btn">
+                <i class="fa fa-folder-open"></i>
+                <span id="logo-file-text">Choose a picture</span>
+              </button>
+              <div id="logo-fit-options" style="display: none; margin-top: 8px;">
+                <label><input type="radio" name="logo-fit" value="fit" checked> <span id="logo-fit-text">Fit (whole picture)</span></label>
+                <label><input type="radio" name="logo-fit" value="fill"> <span id="logo-fill-text">Fill (cropped to the centre)</span></label>
+              </div>
+              <div class="logo-message" id="logo-dimensions"></div>
+              <div class="logo-message" id="logo-message"></div>
+              <button class="btn btn-primary" id="logo-use" disabled style="margin-top: 8px;">
+                <i class="fa fa-check"></i>
+                <span id="logo-use-text">Use this picture</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="logo-section">
+          <h3 id="logo-search-title">Choose a logo</h3>
+          <input type="text" class="logo-search" id="logo-search" placeholder="Search by station name">
+          <div class="logo-grid-title" id="logo-listed-title">From the broadcasters</div>
+          <div class="logo-grid" id="logo-listed"></div>
+          <div class="logo-grid-title" id="logo-kept-title">On this player</div>
+          <div class="logo-grid" id="logo-kept"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="logo-close">
+          <span id="logo-close-text">Close</span>
         </button>
       </div>
     </div>
@@ -2193,9 +2769,12 @@
   <script>
     let fmStations = [];
     let dabStations = [];
+    // The logo each station is shown with, as the player tells it, and whether a list
+    // shows only the stations without one
+    let stationLogos = { fm: {}, dab: {} };
+    let logoFilter = { fm: false, dab: false };
     let hasChanges = false;
     let i18n = {};
-    let pendingFreqChange = null;
     let scanningInterval = null;
     let scanStartTime = null;
     let currentSignal = null;
@@ -2211,7 +2790,9 @@
     }
     
     // Generic confirmation modal
-    function showConfirmModal(title, message, type = 'warning') {
+    // choices: [{ value, name, doc, chosen }] to choose one of in the dialog; the promise
+    // then gives the value chosen instead of true
+    function showConfirmModal(title, message, type = 'warning', choices = null) {
       return new Promise((resolve) => {
         const modal = document.getElementById('confirm-modal');
         const header = document.getElementById('confirm-modal-header');
@@ -2233,6 +2814,29 @@
         // Set content
         document.getElementById('confirm-modal-title').textContent = title;
         document.getElementById('confirm-modal-message').textContent = message;
+        const choiceBox = document.getElementById('confirm-modal-choices');
+        choiceBox.textContent = '';
+        choiceBox.style.display = choices ? '' : 'none';
+        (choices || []).forEach((choice) => {
+          const label = document.createElement('label');
+          const input = document.createElement('input');
+          input.type = 'radio';
+          input.name = 'confirm-choice';
+          input.value = choice.value;
+          input.checked = !!choice.chosen;
+          const text = document.createElement('span');
+          const name = document.createElement('span');
+          name.className = 'choice-name';
+          name.textContent = choice.name;
+          const doc = document.createElement('span');
+          doc.className = 'choice-doc';
+          doc.textContent = choice.doc;
+          text.appendChild(name);
+          text.appendChild(doc);
+          label.appendChild(input);
+          label.appendChild(text);
+          choiceBox.appendChild(label);
+        });
         document.getElementById('confirm-cancel-text').textContent = t('BTN_CANCEL');
         document.getElementById('confirm-ok-text').textContent = t('BTN_CONFIRM');
         
@@ -2241,9 +2845,10 @@
         
         // Set up event handlers
         const handleOk = () => {
+          const chosen = choices ? choiceBox.querySelector('input:checked') : null;
           modal.classList.remove('show');
           cleanup();
-          resolve(true);
+          resolve(choices ? (chosen ? chosen.value : choices[0].value) : true);
         };
         
         const handleCancel = () => {
@@ -2321,6 +2926,12 @@
           
           const data = await response.json();
           
+          if (data.deviceState === expectedState && data.scan && typeof data.scan.percent === 'number') {
+            // How far the scan has come
+            const info = type === 'fm' ? t('MODAL_SCANNING_WAIT_FM') : t('MODAL_SCANNING_WAIT_DAB');
+            document.getElementById('scanning-info').textContent = info + ' ' + data.scan.percent + '%';
+          }
+          
           if (data.deviceState !== expectedState) {
             // Scan complete
             hideScanningModal();
@@ -2378,6 +2989,21 @@
       document.getElementById('stat-total-label-dab').textContent = t('STAT_TOTAL');
       document.getElementById('stat-favorites-label-dab').textContent = t('STAT_FAVORITES');
       document.getElementById('stat-hidden-label-dab').textContent = t('STAT_HIDDEN');
+      document.getElementById('stat-nologo-label-fm').textContent = t('STAT_NO_LOGO');
+      document.getElementById('stat-nologo-label-dab').textContent = t('STAT_NO_LOGO');
+      document.getElementById('logo-now-label').textContent = t('LOGO_CURRENT');
+      document.getElementById('logo-automatic-text').textContent = t('LOGO_AUTOMATIC');
+      document.getElementById('logo-upload-title').textContent = t('LOGO_UPLOAD_TITLE');
+      document.getElementById('logo-rules').textContent = t('LOGO_RULES');
+      document.getElementById('logo-file-text').textContent = t('LOGO_CHOOSE_FILE');
+      document.getElementById('logo-fit-text').textContent = t('LOGO_FIT');
+      document.getElementById('logo-fill-text').textContent = t('LOGO_FILL');
+      document.getElementById('logo-use-text').textContent = t('LOGO_USE');
+      document.getElementById('logo-search-title').textContent = t('LOGO_SEARCH_TITLE');
+      document.getElementById('logo-search').placeholder = t('LOGO_SEARCH_PLACEHOLDER');
+      document.getElementById('logo-listed-title').textContent = t('LOGO_LISTED');
+      document.getElementById('logo-kept-title').textContent = t('LOGO_KEPT');
+      document.getElementById('logo-close-text').textContent = t('LOGO_CLOSE');
       document.getElementById('btn-clear-fm').textContent = t('BTN_CLEAR_ALL_FM');
       document.getElementById('btn-rescan-fm').textContent = t('BTN_RESCAN_FM');
       document.getElementById('btn-clear-dab').textContent = t('BTN_CLEAR_ALL_DAB');
@@ -2385,7 +3011,6 @@
       document.getElementById('btn-empty-recycle').textContent = t('BTN_EMPTY_RECYCLE');
       document.getElementById('btn-save-text').textContent = t('BTN_SAVE');
       document.getElementById('btn-save-text-inline').textContent = t('BTN_SAVE');
-      document.getElementById('btn-cancel-text').textContent = t('BTN_CANCEL');
       document.getElementById('recycle-notice-text').textContent = t('RECYCLE_NOTICE');
       document.getElementById('fm-search').placeholder = t('SEARCH_FM');
       document.getElementById('dab-search').placeholder = t('SEARCH_DAB');
@@ -2421,6 +3046,32 @@
       
       // CSV Import/Export translations
       document.getElementById('csv-section-title').textContent = t('CSV_IMPORT_EXPORT');
+      document.getElementById('update-section-title').textContent = t('UPDATE_TITLE');
+      document.getElementById('update-channel-label').textContent = t('UPDATE_CHANNEL');
+      document.getElementById('update-channel-stable').textContent = t('UPDATE_CHANNEL_STABLE');
+      document.getElementById('update-channel-beta').textContent = t('UPDATE_CHANNEL_BETA');
+      document.getElementById('update-channel-preview').textContent = t('UPDATE_CHANNEL_PREVIEW');
+      document.getElementById('update-notes-title').textContent = t('UPDATE_NOTES');
+      document.getElementById('recog-title').textContent = t('RECOG_TITLE');
+      document.getElementById('recog-doc').textContent = t('RECOGNISE_ON_DOC');
+      document.getElementById('recog-on-text').textContent = t('RECOG_ON_LABEL');
+      document.getElementById('recog-key-label').textContent = t('RECOG_KEY_LABEL');
+      showRecognitionEye(document.getElementById('recog-key').type === 'text');
+      document.getElementById('recog-when-label').textContent = t('RECOG_WHEN_LABEL');
+      document.getElementById('recog-when-missing').textContent = t('RECOGNISE_WHEN_MISSING');
+      document.getElementById('recog-when-always').textContent = t('RECOGNISE_WHEN_ALWAYS');
+      document.getElementById('btn-recog-save-text').textContent = t('RECOG_SAVE');
+      document.getElementById('btn-recog-clear-text').textContent = t('RECOG_CLEAR');
+      document.getElementById('btn-update-check-text').textContent = t('UPDATE_CHECK');
+      document.getElementById('logos-section-title').textContent = t('LOGOS_TITLE');
+      document.getElementById('logos-desc').textContent = t('LOGOS_DESC');
+      document.getElementById('btn-logos-refresh-text').textContent = t('LOGOS_REFRESH');
+      document.getElementById('report-section-title').textContent = t('REPORT_TITLE');
+      document.getElementById('report-desc').textContent = t('REPORT_DESC');
+      document.getElementById('report-recordings-label').textContent = t('REPORT_RECORDINGS');
+      document.getElementById('btn-report-start-text').textContent = t('REPORT_START');
+      document.getElementById('btn-report-cancel-text').textContent = t('REPORT_CANCEL');
+      document.getElementById('btn-report-summary-text').textContent = t('REPORT_SUMMARY');
       document.getElementById('csv-export-header').textContent = t('CSV_EXPORT_TITLE');
       document.getElementById('csv-export-desc').textContent = t('CSV_EXPORT_DESC');
       document.getElementById('btn-export-fm').textContent = t('CSV_EXPORT_FM');
@@ -2587,6 +3238,7 @@
         renderRecycleBin();
         updateStats();
         updateRecycleCount();
+        loadLogos();
         
         hasChanges = false;
         updateSaveStatus(t('STATUS_NO_CHANGES'), false);
@@ -2604,6 +3256,9 @@
       const searchTerm = searchEl.value.toLowerCase();
       
       let filtered = stations.filter(s => !s.deleted);
+      if (logoFilter[type]) {
+        filtered = filtered.filter(s => !logoOf(type, s).url);
+      }
       if (searchTerm) {
         filtered = filtered.filter(s => {
           const name = s.customName || s.name || '';
@@ -2623,21 +3278,22 @@
         const realIdx = stations.indexOf(station);
         const displayName = station.customName || station.name || t('STATION_NAME_UNKNOWN');
         
-        let icon = '';
-        if (station.favorite) {
-          icon = '<i class="fa fa-star station-icon favorite"></i>';
-        } else if (station.hidden) {
-          icon = '<i class="fa fa-eye-slash station-icon hidden-icon"></i>';
-        } else {
-          icon = '<i class="fa fa-circle-o station-icon"></i>';
-        }
+        // The station's logo; pressed, it opens the logo dialog. Not a button of the
+        // row's own kind (data-type): those mark the row as changed.
+        const logo = logoOf(type, station);
+        let icon = '<div class="station-logo' + (logo.url ? '' : ' missing') + '" role="button" tabindex="0" title="' + escapeHtml(t('LOGO_CHANGE')) +
+          '" data-logo-type="' + type + '" data-index="' + realIdx + '">' +
+          (logo.url ? '<img src="' + escapeHtml(logo.url) + '" alt="" loading="lazy">' : '<i class="fa fa-picture-o"></i>') + '</div>';
         
         const favoriteClass = station.favorite ? 'active favorite' : '';
         const hiddenClass = station.hidden ? 'active hidden' : '';
         
         let frequencyHtml = '';
         if (type === 'fm') {
-          frequencyHtml = '<input type="number" class="frequency-input" value="' + station.frequency + '" min="76.0" max="108.0" step="0.1" data-type="fm" data-index="' + realIdx + '" data-original="' + station.frequency + '" title="' + t('LABEL_FREQUENCY') + '">';
+          // Pressed, it opens the tune dialog. Not a button of the row's own kind
+          // (data-type): those mark the row as changed.
+          frequencyHtml = '<button type="button" class="frequency-button" data-tune-index="' + realIdx + '" title="' + escapeHtml(t('TUNE_OPEN')) + '">' +
+            escapeHtml(String(station.frequency)) + ' MHz<i class="fa fa-sliders"></i></button>';
         } else {
           frequencyHtml = '<span class="frequency-display">' + (station.channelName || '') + '</span>';
         }
@@ -2759,6 +3415,17 @@
     
     // Attach event listeners
     function attachEventListeners(type) {
+      document.querySelectorAll(`.station-logo[data-logo-type="${type}"]`).forEach(logo => {
+        const open = () => openLogoModal(type, parseInt(logo.dataset.index));
+        logo.addEventListener('click', open);
+        logo.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            open();
+          }
+        });
+      });
+      
       document.querySelectorAll(`input.station-name-input[data-type="${type}"]`).forEach(input => {
         input.addEventListener('input', (e) => {
           const idx = parseInt(e.target.dataset.index);
@@ -2768,37 +3435,13 @@
         });
       });
       
-      document.querySelectorAll(`input.frequency-input[data-type="${type}"]`).forEach(input => {
-        input.addEventListener('blur', (e) => {
-          const idx = parseInt(e.target.dataset.index);
-          const newFreq = parseFloat(e.target.value);
-          const oldFreq = parseFloat(e.target.dataset.original);
-          
-          if (newFreq === oldFreq) return;
-          
-          if (newFreq < 76.0 || newFreq > 108.0 || isNaN(newFreq)) {
-            showToast(t('WARN_FREQ_INVALID'), 'error');
-            e.target.value = oldFreq;
-            e.target.classList.add('error');
-            setTimeout(() => e.target.classList.remove('error'), 2000);
-            return;
-          }
-          
-          const stations = fmStations;
-          const station = stations[idx];
-          
-          pendingFreqChange = {
-            type: type,
-            index: idx,
-            oldFreq: oldFreq,
-            newFreq: newFreq,
-            stationName: station.customName || station.name,
-            inputEl: e.target
-          };
-          
-          showFrequencyWarning();
+      if (type === 'fm') {
+        document.querySelectorAll('button.frequency-button').forEach(button => {
+          button.addEventListener('click', (e) => {
+            openTune(parseInt(e.currentTarget.dataset.tuneIndex));
+          });
         });
-      });
+      }
       
       document.querySelectorAll(`button[data-type="${type}"]`).forEach(btn => {
         btn.addEventListener('click', async (e) => {
@@ -2867,49 +3510,377 @@
       });
     }
     
-    // Frequency change warning modal
-    function showFrequencyWarning() {
-      if (!pendingFreqChange) return;
-      
-      const modal = document.getElementById('freq-modal');
-      document.getElementById('freq-modal-title').textContent = t('WARN_FREQ_CHANGE_TITLE');
-      document.getElementById('freq-modal-msg').textContent = t('WARN_FREQ_CHANGE_MSG', pendingFreqChange.stationName);
-      document.getElementById('freq-old-label').textContent = t('WARN_FREQ_CHANGE_FROM');
-      document.getElementById('freq-new-label').textContent = t('WARN_FREQ_CHANGE_TO');
-      document.getElementById('freq-old-value').textContent = pendingFreqChange.oldFreq + ' MHz';
-      document.getElementById('freq-new-value').textContent = pendingFreqChange.newFreq + ' MHz';
-      document.getElementById('freq-modal-details').textContent = t('WARN_FREQ_CHANGE_DETAILS', pendingFreqChange.newFreq);
-      document.getElementById('freq-confirm-text').textContent = t('WARN_FREQ_CHANGE_BTN');
-      
-      modal.classList.add('show');
+    // ---- The tune dialog: an FM station's frequency, tried out before it is kept ----
+    
+    let tune = null;        // the dialog while it is open
+    let tunePoll = null;
+    
+    // A frequency as the station list writes it
+    function tuneFormat(value) {
+      const units = Math.round(parseFloat(value) * 100);
+      return (units / 100).toFixed(units % 10 !== 0 ? 2 : 1);
     }
     
-    document.getElementById('freq-cancel').addEventListener('click', () => {
-      if (pendingFreqChange) {
-        pendingFreqChange.inputEl.value = pendingFreqChange.oldFreq;
-        pendingFreqChange = null;
-      }
-      document.getElementById('freq-modal').classList.remove('show');
-    });
+    function tuneDots(level) {
+      const n = Math.max(0, Math.min(5, level || 0));
+      return '●'.repeat(n) + '◦'.repeat(5 - n);
+    }
     
-    document.getElementById('freq-confirm').addEventListener('click', () => {
-      if (pendingFreqChange) {
-        const stations = pendingFreqChange.type === 'fm' ? fmStations : dabStations;
-        stations[pendingFreqChange.index].frequency = pendingFreqChange.newFreq;
-        pendingFreqChange.inputEl.dataset.original = pendingFreqChange.newFreq;
-        
-        const duplicate = stations.find((s, i) => 
-          i !== pendingFreqChange.index && s.frequency === pendingFreqChange.newFreq && !s.deleted
-        );
-        if (duplicate) {
-          showToast(t('WARN_FREQ_DUPLICATE', pendingFreqChange.newFreq), 'warning');
-        }
-        
-        markChanged();
-        showToast(t('TOAST_FREQUENCY_CHANGED', pendingFreqChange.newFreq));
-        pendingFreqChange = null;
+    function tuneName() {
+      return tune.station.customName || tune.station.name || ('FM ' + tune.listed);
+    }
+    
+    async function tunePost(route, body) {
+      const response = await fetch('/api/tune/' + route, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body || {})
+      });
+      let data = {};
+      try {
+        data = await response.json();
+      } catch (e) {
+        // no answer to read
       }
-      document.getElementById('freq-modal').classList.remove('show');
+      return { ok: response.ok, status: response.status, data: data };
+    }
+    
+    async function openTune(idx) {
+      const station = fmStations[idx];
+      if (!station || tune) return;
+      const listed = tuneFormat(station.frequency);
+      tune = { index: idx, station: station, listed: listed, at: listed, heard: null, found: null, note: null, failed: false,
+        asked: false, busy: false, band: { start: 87.5, end: 108, step_khz: 100 } };
+      
+      document.getElementById('tune-title').textContent = t('TUNE_TITLE', tuneName());
+      document.getElementById('tune-intro').textContent = t('TUNE_INTRO');
+      document.getElementById('tune-down').title = t('TUNE_STEP_DOWN');
+      document.getElementById('tune-up').title = t('TUNE_STEP_UP');
+      document.getElementById('tune-listen-text').textContent = t('TUNE_LISTEN');
+      document.getElementById('tune-find-text').textContent = t('TUNE_FIND');
+      document.getElementById('tune-delete-text').textContent = t('TUNE_DELETE');
+      document.getElementById('tune-cancel-text').textContent = t('BTN_CANCEL');
+      document.getElementById('tune-level').textContent = '';
+      tuneRender();
+      document.getElementById('tune-modal').classList.add('show');
+      
+      try {
+        const own = await (await fetch('/api/tune')).json();
+        if (tune && own.band) {
+          tune.band = own.band;
+          tuneRender();
+        }
+      } catch (e) {
+        // the usual band does
+      }
+      if (tune) {
+        tunePoll = setInterval(tuneLevel, 1000);
+        tuneLevel();
+      }
+    }
+    
+    function tuneRender() {
+      if (!tune) return;
+      const field = document.getElementById('tune-frequency');
+      field.value = tune.at;
+      field.step = tune.band.step_khz / 1000;
+      field.min = tune.band.start;
+      field.max = 108;
+      document.getElementById('tune-listed').textContent = tune.at === tune.listed ? '' : t('TUNE_LISTED', tune.listed);
+      document.getElementById('tune-keep-text').textContent = t('TUNE_KEEP', tune.at);
+      const note = document.getElementById('tune-note');
+      note.textContent = tune.note || '';
+      note.classList.toggle('error', !!tune.failed);
+      ['tune-down', 'tune-up', 'tune-listen', 'tune-find', 'tune-keep', 'tune-delete'].forEach((id) => {
+        document.getElementById(id).disabled = tune.busy;
+      });
+      
+      const box = document.getElementById('tune-found');
+      if (!tune.found) {
+        box.innerHTML = '';
+        return;
+      }
+      const says = {
+        'stereo': 'TUNE_SAYS_STATION', 'mono': 'TUNE_SAYS_MONO', 'beside': 'TUNE_SAYS_BESIDE', 'spill': 'TUNE_SAYS_SPILL',
+        'neighbour': 'TUNE_SAYS_NEIGHBOUR', 'no pilot': 'TUNE_SAYS_NOTHING', 'off channel': 'TUNE_SAYS_OFF',
+        'made in the tuner': 'TUNE_SAYS_TUNER', 'not there again': 'TUNE_SAYS_NOTHING', 'mirror': 'TUNE_SAYS_MIRROR',
+        'unread': 'TUNE_SAYS_UNREAD'
+      };
+      box.innerHTML = '<table class="tune-table"><thead><tr><th>' + escapeHtml(t('LABEL_FREQUENCY')) + '</th><th>' +
+        escapeHtml(t('TUNE_COL_SAYS')) + '</th><th>' + escapeHtml(t('TUNE_COL_RECEPTION')) + '</th></tr></thead><tbody>' +
+        tune.found.channels.map((channel) => {
+          const station = channel.says === 'stereo' || channel.says === 'mono';
+          const marks = (channel.best ? '<span class="mark best">' + escapeHtml(t('TUNE_BEST')) + '</span>' : '') +
+            (channel.frequency === tune.listed ? '<span class="mark">' + escapeHtml(t('TUNE_IN_LIST')) + '</span>' : '');
+          const held = channel.held ? '<span class="held">' + escapeHtml(t('TUNE_HELD', channel.held)) + '</span>' : '';
+          const reception = channel.reading === null ? '' :
+            (station ? '<span class="dots">' + tuneDots(channel.level) + '</span>' : '') + escapeHtml(channel.reading.toFixed(1)) + ' dB';
+          return '<tr class="tune-row' + (channel.frequency === tune.at ? ' at' : '') + (station ? '' : ' nothing') +
+            '" tabindex="0" data-frequency="' + channel.frequency + '" title="' + escapeHtml(t('TUNE_ROW_LISTEN', channel.frequency)) + '">' +
+            '<td class="frequency">' + channel.frequency + marks + '</td>' +
+            '<td>' + escapeHtml(t(says[channel.says] || 'TUNE_SAYS_NOTHING')) + held + '</td>' +
+            '<td>' + reception + '</td></tr>';
+        }).join('') + '</tbody></table>';
+      box.querySelectorAll('tr.tune-row').forEach((row) => {
+        row.addEventListener('click', () => tuneListen(row.dataset.frequency));
+        row.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            tuneListen(row.dataset.frequency);
+          }
+        });
+      });
+    }
+    
+    // Play a frequency at once: a step, a frequency typed in, a row of the table
+    async function tuneListen(frequency) {
+      if (!tune || tune.busy) return;
+      const mhz = parseFloat(frequency);
+      if (!isFinite(mhz) || mhz < tune.band.start || mhz > 108) {
+        tune.note = t('TUNE_OUT_OF_BAND', tune.band.start, Math.max(tune.band.end, 108));
+        tune.failed = true;
+        tuneRender();
+        return;
+      }
+      const at = tuneFormat(mhz);
+      tune.at = at;
+      tune.heard = at;
+      tune.note = null;
+      tune.failed = false;
+      tuneRender();
+      document.getElementById('tune-level').textContent = t('TUNE_STARTING');
+      let failure = null;
+      try {
+        const answer = await tunePost('listen', { frequency: at });
+        if (!answer.ok) {
+          failure = answer.data.error || String(answer.status);
+        }
+      } catch (e) {
+        failure = e.message;
+      }
+      if (failure && tune && tune.at === at) {
+        tune.heard = null;
+        tune.note = t('TUNE_FAILED', at, failure);
+        tune.failed = true;
+        tuneRender();
+      }
+    }
+    
+    function tuneStep(steps) {
+      if (!tune) return;
+      const khz = Math.round(parseFloat(tune.at) * 1000) + steps * tune.band.step_khz;
+      if (khz < Math.round(tune.band.start * 1000) || khz > Math.round(Math.max(tune.band.end, 108) * 1000)) return;
+      tuneListen(khz / 1000);
+    }
+    
+    // The reception of what is being listened to, as the player reads it. Asking is also
+    // how the page tells the plugin that the dialog is still open.
+    async function tuneLevel() {
+      if (!tune) return;
+      let own;
+      try {
+        own = await (await fetch('/api/tune')).json();
+      } catch (e) {
+        return;
+      }
+      if (!tune) return;
+      if (own.band) {
+        tune.band = own.band;
+      }
+      const level = document.getElementById('tune-level');
+      const signal = own.signal;
+      const mine = own.frequency === tune.at && tune.heard === tune.at;
+      if (!mine || !/^playing_fm/.test(own.deviceState || '')) {
+        level.textContent = tune.heard === tune.at && mine ? t('TUNE_STARTING') : t('TUNE_NOT_PLAYING');
+      } else if (!signal || signal.type !== 'fm' || Math.abs(parseFloat(signal.frequency) - parseFloat(tune.at)) > 0.005 || signal.db === null) {
+        level.textContent = t('TUNE_STARTING');
+      } else if (!signal.now) {
+        level.textContent = t('TUNE_LEVEL_NONE') + ' (' + signal.db.toFixed(1) + ' dB)';
+      } else {
+        // the level of the latest reading, not the one the player holds for a while
+        level.innerHTML = '<span class="dots">' + tuneDots(signal.now) + '</span>' +
+          escapeHtml(t('TUNE_LEVEL', signal.now, signal.db.toFixed(1)) + (signal.mono ? ' \u00b7 ' + t('TUNE_NO_PILOT') : ''));
+      }
+    }
+    
+    // What a scan would say of the channels around the frequency the dialog is on
+    async function tuneFind() {
+      if (!tune || tune.busy) return;
+      if (!tune.asked) {
+        let playing = false;
+        try {
+          playing = /^playing_/.test((await (await fetch('/api/status')).json()).deviceState || '');
+        } catch (e) {
+          // not known: not asked
+        }
+        if (!tune) return;
+        if (playing) {
+          const go = await showConfirmModal(t('TUNE_FIND_ASK_TITLE'), t('TUNE_FIND_ASK'), 'info');
+          if (!go || !tune) return;
+        }
+        tune.asked = true;
+      }
+      const around = tune.at;
+      tune.busy = true;
+      tune.heard = null;
+      tune.note = t('TUNE_FINDING', around);
+      tune.failed = false;
+      tuneRender();
+      let failure = null;
+      try {
+        const answer = await tunePost('survey', { frequency: around, station: tune.listed });
+        if (!answer.ok) {
+          failure = answer.data.error || String(answer.status);
+        } else if (tune) {
+          tune.found = answer.data;
+          tune.note = answer.data.best === null ? t('TUNE_NO_BEST', around) :
+            answer.data.best === tune.listed ? t('TUNE_BEST_HERE', answer.data.best) : t('TUNE_BEST_IS', answer.data.best);
+        }
+      } catch (e) {
+        failure = e.message;
+      }
+      if (!tune) return;
+      if (failure) {
+        tune.note = t('TUNE_FIND_FAILED', failure);
+        tune.failed = true;
+      }
+      tune.busy = false;
+      tuneRender();
+    }
+    
+    // The list as the player has it now, after a station was given a frequency there
+    async function tuneMirror(answer, from, to) {
+      const station = tune.station;
+      if (answer.deleted) {
+        station.deleted = true;
+      } else {
+        if (answer.removed) {
+          for (let i = fmStations.length - 1; i >= 0; i--) {
+            if (fmStations[i] !== station && parseFloat(fmStations[i].frequency) === parseFloat(to)) {
+              fmStations.splice(i, 1);
+            }
+          }
+        }
+        ['frequency', 'name', 'quality', 'level', 'mono', 'last_seen'].forEach((field) => {
+          if (answer.station && answer.station[field] !== undefined) {
+            station[field] = answer.station[field];
+          }
+        });
+      }
+      await loadLogos();
+    }
+    
+    function tuneRefresh() {
+      renderStations('fm', fmStations);
+      renderRecycleBin();
+      updateStats();
+      updateRecycleCount();
+    }
+    
+    // keep: where another station holds the frequency, which of the two stays
+    async function tuneKeep(keep) {
+      if (!tune || tune.busy) return;
+      const from = tune.listed;
+      const to = tune.at;
+      if (from === to) {
+        await tuneClose();
+        return;
+      }
+      tune.busy = true;
+      tuneRender();
+      let failure = null;
+      try {
+        const answer = await tunePost('keep', { from: from, to: to, keep: keep });
+        if (answer.status === 409 && answer.data.conflict) {
+          tune.busy = false;
+          tuneRender();
+          const other = answer.data.conflict.name;
+          const which = await showConfirmModal(t('TUNE_CONFLICT_TITLE', to), t('TUNE_CONFLICT', other, to), 'warning', [
+            { value: 'this', name: t('TUNE_KEEP_ONE', tuneName()), doc: t('TUNE_KEEP_THIS_DOC', to, other), chosen: true },
+            { value: 'other', name: t('TUNE_KEEP_ONE', other), doc: t('TUNE_KEEP_OTHER_DOC', tuneName()) }
+          ]);
+          if (which && tune) {
+            await tuneKeep(which);
+          }
+          return;
+        }
+        if (answer.status === 404) {
+          // A station the player does not have yet: changed here, and saved with the list
+          tune.station.frequency = to;
+          markRowDirty('fm', tune.index);
+        } else if (!answer.ok) {
+          failure = answer.data.error || String(answer.status);
+        } else {
+          await tuneMirror(answer.data, from, to);
+        }
+      } catch (e) {
+        failure = e.message;
+      }
+      if (!tune) return;
+      if (failure) {
+        tune.busy = false;
+        tune.note = t('TUNE_KEEP_FAILED', failure);
+        tune.failed = true;
+        tuneRender();
+        return;
+      }
+      await tuneClose();
+      tuneRefresh();
+      showToast(t('TOAST_FREQUENCY_CHANGED', to));
+    }
+    
+    async function tuneDelete() {
+      if (!tune || tune.busy) return;
+      if (!confirm(t('CONFIRM_DELETE_ONE'))) return;
+      const idx = tune.index;
+      fmStations[idx].deleted = true;
+      markRowDirty('fm', idx);
+      await tuneClose();
+      tuneRefresh();
+    }
+    
+    // The dialog closes: what it played stops, and the player goes back to what it was on
+    async function tuneClose() {
+      if (!tune) return;
+      tune = null;
+      clearInterval(tunePoll);
+      tunePoll = null;
+      document.getElementById('tune-modal').classList.remove('show');
+      try {
+        await tunePost('end');
+      } catch (e) {
+        // the player is as the dialog left it
+      }
+    }
+    
+    document.getElementById('tune-down').addEventListener('click', () => tuneStep(-1));
+    document.getElementById('tune-up').addEventListener('click', () => tuneStep(1));
+    document.getElementById('tune-listen').addEventListener('click', () => tuneListen(document.getElementById('tune-frequency').value));
+    document.getElementById('tune-frequency').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        tuneListen(e.target.value);
+      }
+    });
+    document.getElementById('tune-find').addEventListener('click', tuneFind);
+    document.getElementById('tune-keep').addEventListener('click', () => tuneKeep());
+    document.getElementById('tune-cancel').addEventListener('click', tuneClose);
+    document.getElementById('tune-delete').addEventListener('click', tuneDelete);
+    document.getElementById('tune-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'tune-modal' && tune && !tune.busy) {
+        tuneClose();
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && tune && !tune.busy && !document.getElementById('confirm-modal').classList.contains('show')) {
+        tuneClose();
+      }
+    });
+    // The page is left with the dialog open: the player is put back all the same
+    window.addEventListener('pagehide', () => {
+      if (tune) {
+        navigator.sendBeacon('/api/tune/end');
+      }
     });
     
     // Update statistics
@@ -2924,7 +3895,371 @@
       document.getElementById('dab-total').textContent = dabFiltered.length;
       document.getElementById('dab-favorites').textContent = dabFiltered.filter(s => s.favorite).length;
       document.getElementById('dab-hidden').textContent = dabFiltered.filter(s => s.hidden).length;
+      document.getElementById('fm-nologo').textContent = fmFiltered.filter(s => !logoOf('fm', s).url).length;
+      document.getElementById('dab-nologo').textContent = dabFiltered.filter(s => !logoOf('dab', s).url).length;
     }
+    
+    // ---- Station logos ----
+    
+    // What the player knows a station by: an FM station by its frequency, a DAB station
+    // by its channel and its exact name
+    function stationId(type, station) {
+      return type === 'fm' ? { type: 'fm', frequency: String(station.frequency) } :
+        { type: 'dab', channel: station.channel, exactName: station.exactName };
+    }
+    
+    function logoOf(type, station) {
+      const key = type === 'fm' ? String(station.frequency) : station.channel + '|' + station.exactName;
+      return stationLogos[type][key] || { url: null, from: null, ref: null };
+    }
+    
+    function setLogoOf(type, station, logo) {
+      const key = type === 'fm' ? String(station.frequency) : station.channel + '|' + station.exactName;
+      stationLogos[type][key] = logo;
+    }
+    
+    async function loadLogos() {
+      try {
+        const response = await fetch('/api/logos/stations');
+        if (!response.ok) {
+          return;
+        }
+        stationLogos = await response.json();
+        renderStations('fm', fmStations);
+        renderStations('dab', dabStations);
+        updateStats();
+      } catch (error) {
+        // The lists work without the logos
+      }
+    }
+    
+    // The "No logo" cards: a press shows only the stations without one
+    document.querySelectorAll('[data-logo-filter]').forEach(card => {
+      const toggle = () => {
+        const type = card.dataset.logoFilter;
+        logoFilter[type] = !logoFilter[type];
+        card.classList.toggle('active', logoFilter[type]);
+        renderStations(type, type === 'fm' ? fmStations : dabStations);
+      };
+      card.addEventListener('click', toggle);
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggle();
+        }
+      });
+    });
+    
+    // The logo dialog: the station it is open for, and the picture made ready to send
+    let logoTarget = null;
+    let logoReady = null;
+    let logoPicture = null;
+    let logoSearchTimer = null;
+    const LOGO_SIDE = 600;       // what a picture is brought to before it is sent
+    const LOGO_LEAST = 128;      // below this a picture cannot look sharp, and is not taken
+    const LOGO_BETTER = 300;     // below this it is taken with a warning
+    
+    function logoSourceText(logo) {
+      if (logo.from === 'user') return t('LOGO_FROM_USER');
+      if (logo.from === 'broadcaster') return t('LOGO_FROM_BROADCASTER');
+      if (logo.from === 'pi') return t('LOGO_FROM_PI');
+      if (logo.from === 'name') return t('LOGO_FROM_NAME', logo.ref || '');
+      if (logo.from === 'group') return t('LOGO_FROM_GROUP', logo.ref || '');
+      return t('LOGO_FROM_NONE');
+    }
+    
+    function showLogoNow() {
+      const logo = logoOf(logoTarget.type, logoTarget.station);
+      const frame = document.getElementById('logo-now-frame');
+      frame.innerHTML = logo.url ? '<img src="' + escapeHtml(logo.url) + '" alt="">' : '<i class="fa fa-picture-o"></i>';
+      document.getElementById('logo-now-source').textContent = logoSourceText(logo);
+      document.getElementById('logo-automatic').style.display = logo.from === 'user' ? '' : 'none';
+    }
+    
+    function logoMessage(text, kind) {
+      const el = document.getElementById('logo-message');
+      el.textContent = text || '';
+      el.className = 'logo-message' + (kind ? ' ' + kind : '');
+    }
+    
+    function resetLogoUpload() {
+      logoReady = null;
+      logoPicture = null;
+      document.getElementById('logo-file').value = '';
+      document.getElementById('logo-preview-frame').innerHTML = '<i class="fa fa-picture-o"></i>';
+      document.getElementById('logo-fit-options').style.display = 'none';
+      document.getElementById('logo-dimensions').textContent = '';
+      document.getElementById('logo-use').disabled = true;
+      logoMessage('');
+    }
+    
+    function openLogoModal(type, idx) {
+      const stations = type === 'fm' ? fmStations : dabStations;
+      const station = stations[idx];
+      if (!station) {
+        return;
+      }
+      logoTarget = { type: type, station: station };
+      const name = station.customName || station.name || t('STATION_NAME_UNKNOWN');
+      document.getElementById('logo-modal-title').textContent = t('LOGO_TITLE', name);
+      showLogoNow();
+      resetLogoUpload();
+      // The search starts with the station's own name, unless that is only its frequency
+      const search = document.getElementById('logo-search');
+      search.value = /^FM \d/.test(name) ? '' : name;
+      searchLogos();
+      document.getElementById('logo-modal').classList.add('show');
+    }
+    
+    function closeLogoModal() {
+      document.getElementById('logo-modal').classList.remove('show');
+      logoTarget = null;
+      resetLogoUpload();
+    }
+    
+    // The player's answer to a logo that was set or given back
+    function logoChanged(logo, toast) {
+      setLogoOf(logoTarget.type, logoTarget.station, logo);
+      showLogoNow();
+      resetLogoUpload();
+      // What is kept on the player has changed with it
+      searchLogos();
+      renderStations(logoTarget.type, logoTarget.type === 'fm' ? fmStations : dabStations);
+      updateStats();
+      showToast(toast, 'success');
+    }
+    
+    // Why the player, or this page, does not take a picture: in the user's words
+    function logoRefusal(problem) {
+      const megabytes = (bytes) => String(Math.round((bytes || 0) / 1024 / 1024 * 10) / 10);
+      switch (problem && problem.error) {
+        case 'too-small': return t('LOGO_ERR_TOO_SMALL', problem.width, problem.height);
+        case 'too-many': return t('LOGO_ERR_TOO_MANY', problem.width, problem.height);
+        case 'too-large': return t('LOGO_ERR_TOO_LARGE', megabytes(problem.limit));
+        case 'unsafe': return t('LOGO_ERR_UNSAFE');
+        case 'not-a-picture': return t('LOGO_ERR_NOT_PICTURE');
+        case 'not-fetched': return t('LOGO_ERR_NOT_FETCHED');
+        default: return t('LOGO_ERR_FAILED', (problem && (problem.message || problem.error)) || '');
+      }
+    }
+    
+    // Draw the chosen picture into the square it will be shown in, and keep the result
+    // as the PNG to send
+    function drawLogo() {
+      if (!logoPicture) {
+        return;
+      }
+      const fill = document.querySelector('input[name="logo-fit"]:checked').value === 'fill';
+      const canvas = document.createElement('canvas');
+      canvas.width = LOGO_SIDE;
+      canvas.height = LOGO_SIDE;
+      const w = logoPicture.naturalWidth;
+      const h = logoPicture.naturalHeight;
+      const scale = fill ? Math.max(LOGO_SIDE / w, LOGO_SIDE / h) : Math.min(LOGO_SIDE / w, LOGO_SIDE / h);
+      const drawn = { w: w * scale, h: h * scale };
+      const context = canvas.getContext('2d');
+      context.imageSmoothingQuality = 'high';
+      context.drawImage(logoPicture, (LOGO_SIDE - drawn.w) / 2, (LOGO_SIDE - drawn.h) / 2, drawn.w, drawn.h);
+      const frame = document.getElementById('logo-preview-frame');
+      frame.innerHTML = '';
+      frame.appendChild(canvas);
+      document.getElementById('logo-use').disabled = true;
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          logoMessage(t('LOGO_ERR_NOT_PICTURE'), 'error');
+          return;
+        }
+        logoReady = { blob: blob, name: logoReady && logoReady.name ? logoReady.name : 'logo.png' };
+        document.getElementById('logo-use').disabled = false;
+      }, 'image/png');
+    }
+    
+    // A file has been chosen: shown as it will look, brought to size, or refused with the reason
+    function logoFileChosen(file) {
+      resetLogoUpload();
+      if (!file) {
+        return;
+      }
+      const frame = document.getElementById('logo-preview-frame');
+      const isSvg = file.type === 'image/svg+xml' || /\.svg$/i.test(file.name);
+      
+      if (isSvg) {
+        // A drawing is kept as it is: it has no pixels to count
+        const reader = new FileReader();
+        reader.onload = () => {
+          const text = String(reader.result || '');
+          if (!/<svg[\s>]/i.test(text)) {
+            logoMessage(t('LOGO_ERR_NOT_PICTURE'), 'error');
+            return;
+          }
+          if (/<\s*(script|foreignObject|iframe|embed|object)\b/i.test(text) || /<[^>]*\son[a-z]+\s*=/i.test(text) || /javascript\s*:/i.test(text)) {
+            logoMessage(t('LOGO_ERR_UNSAFE'), 'error');
+            return;
+          }
+          const shown = document.createElement('img');
+          shown.alt = '';
+          shown.onerror = () => {
+            frame.innerHTML = '<i class="fa fa-picture-o"></i>';
+            document.getElementById('logo-use').disabled = true;
+            logoMessage(t('LOGO_ERR_NOT_PICTURE'), 'error');
+          };
+          shown.src = URL.createObjectURL(file);
+          frame.innerHTML = '';
+          frame.appendChild(shown);
+          logoReady = { blob: file, name: file.name };
+          document.getElementById('logo-dimensions').textContent = t('LOGO_SVG_NOTE');
+          document.getElementById('logo-use').disabled = false;
+        };
+        reader.onerror = () => logoMessage(t('LOGO_ERR_NOT_PICTURE'), 'error');
+        reader.readAsText(file);
+        return;
+      }
+      
+      const picture = new Image();
+      picture.onload = () => {
+        const w = picture.naturalWidth;
+        const h = picture.naturalHeight;
+        document.getElementById('logo-dimensions').textContent = t('LOGO_DIMENSIONS', w, h);
+        if (Math.min(w, h) < LOGO_LEAST) {
+          logoMessage(t('LOGO_ERR_TOO_SMALL', w, h), 'error');
+          return;
+        }
+        if (Math.min(w, h) < LOGO_BETTER) {
+          logoMessage(t('LOGO_WARN_SMALL'), 'warning');
+        }
+        logoPicture = picture;
+        logoReady = { blob: null, name: file.name.replace(/\.[^.]*$/, '') + '.png' };
+        // Only a picture that is not square has a choice between fitting and filling
+        document.getElementById('logo-fit-options').style.display = w === h ? 'none' : 'block';
+        drawLogo();
+      };
+      picture.onerror = () => logoMessage(t('LOGO_ERR_NOT_PICTURE'), 'error');
+      picture.src = URL.createObjectURL(file);
+    }
+    
+    async function sendLogo() {
+      if (!logoTarget || !logoReady || !logoReady.blob) {
+        return;
+      }
+      const form = new FormData();
+      const id = stationId(logoTarget.type, logoTarget.station);
+      Object.keys(id).forEach(key => form.append(key, id[key]));
+      form.append('file', logoReady.blob, logoReady.name);
+      document.getElementById('logo-use').disabled = true;
+      try {
+        const response = await fetch('/api/logos/upload', { method: 'POST', body: form });
+        const answer = await response.json();
+        if (!response.ok) {
+          logoMessage(logoRefusal(answer), 'error');
+          return;
+        }
+        logoChanged(answer.logo, t('LOGO_SET'));
+      } catch (error) {
+        logoMessage(t('LOGO_ERR_FAILED', error.message), 'error');
+      }
+    }
+    
+    async function chooseLogo(body) {
+      if (!logoTarget) {
+        return;
+      }
+      body.station = stationId(logoTarget.type, logoTarget.station);
+      try {
+        const response = await fetch('/api/logos/choose', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const answer = await response.json();
+        if (!response.ok) {
+          logoMessage(logoRefusal(answer), 'error');
+          return;
+        }
+        logoChanged(answer.logo, t('LOGO_SET'));
+      } catch (error) {
+        logoMessage(t('LOGO_ERR_FAILED', error.message), 'error');
+      }
+    }
+    
+    async function clearLogo() {
+      if (!logoTarget) {
+        return;
+      }
+      try {
+        const response = await fetch('/api/logos/clear', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ station: stationId(logoTarget.type, logoTarget.station) }) });
+        const answer = await response.json();
+        if (!response.ok) {
+          logoMessage(logoRefusal(answer), 'error');
+          return;
+        }
+        logoChanged(answer.logo, t('LOGO_CLEARED'));
+      } catch (error) {
+        logoMessage(t('LOGO_ERR_FAILED', error.message), 'error');
+      }
+    }
+    
+    // One picture to choose, with the name it goes by. A picture that does not load
+    // (the browser has no way to the broadcaster) leaves the name to choose by.
+    function logoChoice(name, src, onChoose) {
+      const choice = document.createElement('button');
+      choice.className = 'logo-choice';
+      choice.title = name;
+      const picture = document.createElement('img');
+      picture.alt = '';
+      picture.loading = 'lazy';
+      picture.onerror = () => picture.remove();
+      picture.src = src;
+      const label = document.createElement('span');
+      label.textContent = name;
+      choice.appendChild(picture);
+      choice.appendChild(label);
+      choice.addEventListener('click', onChoose);
+      return choice;
+    }
+    
+    function fillLogoGrid(id, entries, make) {
+      const grid = document.getElementById(id);
+      grid.innerHTML = '';
+      if (entries.length === 0) {
+        grid.innerHTML = '<div class="logo-empty">' + escapeHtml(t('LOGO_NOTHING_FOUND')) + '</div>';
+        return;
+      }
+      entries.forEach(entry => grid.appendChild(make(entry)));
+    }
+    
+    async function searchLogos() {
+      const query = document.getElementById('logo-search').value.trim();
+      try {
+        const response = await fetch('/api/logos/library?limit=60&q=' + encodeURIComponent(query));
+        if (!response.ok) {
+          return;
+        }
+        const library = await response.json();
+        // Asked for something else in the meantime
+        if (query !== document.getElementById('logo-search').value.trim()) {
+          return;
+        }
+        fillLogoGrid('logo-listed', library.listed, (entry) =>
+          logoChoice(entry.name, entry.small, () => chooseLogo({ source: 'list', url: entry.url })));
+        fillLogoGrid('logo-kept', library.kept, (entry) =>
+          logoChoice(entry.name, entry.url, () => chooseLogo({ source: 'kept', file: entry.file, name: entry.name })));
+      } catch (error) {
+        // The dialog works without the library: a picture can still be uploaded
+      }
+    }
+    
+    document.getElementById('logo-file-btn').addEventListener('click', () => document.getElementById('logo-file').click());
+    document.getElementById('logo-file').addEventListener('change', (e) => logoFileChosen(e.target.files[0]));
+    document.querySelectorAll('input[name="logo-fit"]').forEach(option => option.addEventListener('change', drawLogo));
+    document.getElementById('logo-use').addEventListener('click', sendLogo);
+    document.getElementById('logo-automatic').addEventListener('click', clearLogo);
+    document.getElementById('logo-close').addEventListener('click', closeLogoModal);
+    document.getElementById('logo-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'logo-modal') {
+        closeLogoModal();
+      }
+    });
+    document.getElementById('logo-search').addEventListener('input', () => {
+      clearTimeout(logoSearchTimer);
+      logoSearchTimer = setTimeout(searchLogos, 250);
+    });
     
     // Update recycle count
     function updateRecycleCount() {
@@ -3163,19 +4498,29 @@
     
     // Rescan FM stations
     document.getElementById('rescan-fm-btn').addEventListener('click', async () => {
-      const confirmed = await showConfirmModal(
+      // Which kind of scan: the one last used is offered first
+      let depth = 'fast';
+      try {
+        depth = (await (await fetch('/api/status')).json()).fmScanDepth === 'detailed' ? 'detailed' : 'fast';
+      } catch (ignored) { /* the fast one is offered */ }
+      const chosen = await showConfirmModal(
         t('CONFIRM_RESCAN_FM_TITLE'),
         t('CONFIRM_RESCAN_FM'),
-        'info'
+        'info',
+        [
+          { value: 'fast', name: t('FM_SCAN_FAST_NAME'), doc: t('FM_SCAN_FAST_DOC'), chosen: depth === 'fast' },
+          { value: 'detailed', name: t('FM_SCAN_DETAILED_NAME'), doc: t('FM_SCAN_DETAILED_DOC'), chosen: depth === 'detailed' }
+        ]
       );
-      if (!confirmed) return;
+      if (!chosen) return;
       
       try {
         showScanningModal('fm');
         
         const response = await fetch('/api/stations/scan-fm', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ depth: chosen })
         });
         
         if (!response.ok) throw new Error('Rescan failed');
@@ -3863,6 +5208,439 @@
       return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
     }
     
+    // Plugin update: what is installed, what the chosen channel offers, and how an
+    // update under way is doing
+    let updatePollTimer = null;
+    let updateWatching = false;   // an update is under way, as far as this page knows
+    let updateView = null;
+    
+    function megabytes(bytes) {
+      return ((bytes || 0) / 1048576).toFixed(1);
+    }
+    
+    function updateFailure(error) {
+      const known = { checksum: 'CHECKSUM', size: 'CHECKSUM', network: 'NETWORK', keep: 'KEEP', apply: 'APPLY', 'no-digest': 'NO_DIGEST' };
+      return t('UPDATE_FAILED', t('UPDATE_ERR_' + (known[error && error.code] || 'FAILED')));
+    }
+    
+    function updateJobText(job) {
+      switch (job.state) {
+        case 'downloading':
+          return t('UPDATE_STATE_DOWNLOADING', megabytes(job.progress && job.progress.done), megabytes(job.progress && job.progress.total));
+        case 'verifying': return t('UPDATE_STATE_VERIFYING');
+        case 'backing-up': return t('UPDATE_STATE_BACKING_UP');
+        case 'keeping': return t('UPDATE_STATE_KEEPING');
+        case 'restarting': return t('UPDATE_STATE_RESTARTING');
+        case 'failed': return updateFailure(job.error);
+        default: return t('UPDATE_STATE_APPLYING');
+      }
+    }
+    
+    function showUpdate(view) {
+      updateView = view;
+      const job = view.job;
+      const working = !!job && job.state !== 'failed';
+      
+      document.getElementById('update-installed').textContent = t('UPDATE_INSTALLED', view.current);
+      // The choice is the user's; it applies while the player is in plugin test mode
+      document.getElementById('update-channel').value = view.chosen || view.channel;
+      document.getElementById('update-channel').disabled = working || !view.testMode;
+      document.getElementById('update-channel-desc').textContent = t('UPDATE_CHANNEL_' + view.channel.toUpperCase() + '_DESC');
+      
+      let status = '';
+      if (job) {
+        status = updateJobText(job);
+      } else if (updateWatching && view.last && view.last.phase === 'done') {
+        // The backend has come back after an update this page watched
+        status = view.last.ok ? t('UPDATE_DONE', view.current) : t('UPDATE_NOT_TAKEN', view.current);
+      } else if (view.available) {
+        status = t('UPDATE_AVAILABLE', view.offer.version);
+      } else if (view.checkedAt) {
+        status = t('UPDATE_UP_TO_DATE');
+      }
+      document.getElementById('update-status').textContent = status;
+      
+      const details = [];
+      const problems = view.problems || {};
+      if (problems.store === 'store-login') {
+        details.push(t('UPDATE_STORE_LOGIN'));
+      } else if (problems.store) {
+        details.push(t('UPDATE_STORE_UNREACHABLE'));
+      }
+      if (!view.testMode) {
+        details.push(t('UPDATE_BETA_NEEDS_TEST_MODE'));
+      }
+      if (problems.github) {
+        details.push(t('UPDATE_GITHUB_UNREACHABLE'));
+      }
+      if (view.checkedAt) {
+        details.push(t('UPDATE_LAST_CHECKED', new Date(view.checkedAt).toLocaleString()));
+      }
+      document.getElementById('update-detail').textContent = details.join(' ');
+      
+      const notes = !working && view.available && view.offer.notes ? view.offer.notes : '';
+      document.getElementById('update-notes').textContent = notes;
+      document.getElementById('update-notes-box').style.display = notes ? '' : 'none';
+      
+      document.getElementById('btn-update-check').disabled = working;
+      const install = document.getElementById('btn-update-install');
+      install.style.display = view.available && !working ? '' : 'none';
+      if (view.available) {
+        document.getElementById('btn-update-install-text').textContent = t('UPDATE_INSTALL', view.offer.version);
+      }
+      const back = document.getElementById('btn-update-rollback');
+      back.style.display = view.previous && !working ? '' : 'none';
+      if (view.previous) {
+        document.getElementById('btn-update-rollback-text').textContent = t('UPDATE_ROLLBACK', view.previous.version);
+      }
+      
+      clearTimeout(updatePollTimer);
+      if (working) {
+        updateWatching = true;
+        updatePollTimer = setTimeout(loadUpdate, 1500);
+      } else if (!job && updateWatching && view.last && view.last.phase === 'done') {
+        updateWatching = false;
+      }
+    }
+    
+    // ---- Song recognition: the same setting as on the settings page, with its state ----
+    
+    let recogKeyStandIn = false;   // the field holds dots standing for the token that is set, not the token
+
+    function showRecognition(view) {
+      const key = document.getElementById('recog-key');
+      recogKeyStandIn = view.key.set;
+      key.type = 'password';
+      key.value = view.key.set ? '•'.repeat(view.key.length || 8) : '';
+      key.placeholder = t('RECOG_KEY_PLACEHOLDER');
+      showRecognitionEye(false);
+      document.getElementById('recog-when').value = view.when;
+      document.getElementById('recog-on').checked = view.on;
+      document.getElementById('btn-recog-clear').style.display = view.key.set ? '' : 'none';
+      let status;
+      if (!view.key.set) {
+        status = t('RECOG_OFF');
+      } else if (view.keyFailed) {
+        status = t('RECOG_REFUSED');
+      } else if (!view.on) {
+        status = t('RECOG_OFF_SWITCHED');
+      } else {
+        status = t('RECOG_ON', t(view.when === 'always' ? 'RECOGNISE_WHEN_ALWAYS' : 'RECOGNISE_WHEN_MISSING'));
+      }
+      document.getElementById('recog-status').textContent = status;
+      const details = [];
+      if (view.lastSong) {
+        details.push(t('RECOG_LAST', view.lastSong.artist, view.lastSong.title, new Date(view.lastSong.at).toLocaleTimeString()));
+      } else if (view.key.set) {
+        details.push(t('RECOG_NONE_YET'));
+      }
+      if (view.asked) {
+        details.push(t('RECOG_ASKED', view.asked));
+      }
+      document.getElementById('recog-detail').textContent = details.join(' ');
+    }
+    
+    async function loadRecognition() {
+      try {
+        const response = await fetch('/api/recognition');
+        showRecognition(await response.json());
+      } catch (e) {
+        // the plugin is not answering; the next visit to the tab asks again
+      }
+    }
+    
+    async function postRecognition(body) {
+      try {
+        const response = await fetch('/api/recognition', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const view = await response.json();
+        if (!response.ok) {
+          showToast(view.error || t('TOAST_SAVE_FAILED', response.status), 'error');
+          return false;
+        }
+        showRecognition(view);
+        return true;
+      } catch (e) {
+        showToast(t('TOAST_SAVE_FAILED', e.message), 'error');
+        return false;
+      }
+    }
+    
+    async function saveRecognition() {
+      const key = document.getElementById('recog-key').value.trim();
+      const body = { when: document.getElementById('recog-when').value };
+      if (key && !recogKeyStandIn) {
+        body.key = key;   // an empty field, or the dots standing for the token, keep the token that is set
+      }
+      if (await postRecognition(body)) {
+        showToast(t('RECOG_SAVED'));
+      }
+    }
+    
+    async function clearRecognition() {
+      if (await postRecognition({ key: '' })) {
+        showToast(t('RECOG_CLEARED'));
+      }
+    }
+
+    // The switch: off keeps the token
+    async function switchRecognition(on) {
+      if (await postRecognition({ on: on })) {
+        showToast(t(on ? 'RECOG_SWITCHED_ON' : 'RECOG_SWITCHED_OFF'));
+      } else {
+        loadRecognition();
+      }
+    }
+
+    function showRecognitionEye(open) {
+      const eye = document.getElementById('btn-recog-eye');
+      eye.querySelector('i').className = open ? 'fa fa-eye-slash' : 'fa fa-eye';
+      eye.title = t(open ? 'RECOG_HIDE_KEY' : 'RECOG_SHOW_KEY');
+    }
+
+    // The eye: the token in clear. The token that is set is fetched when the eye is
+    // first opened, and not before
+    async function toggleRecognitionKey() {
+      const key = document.getElementById('recog-key');
+      if (key.type !== 'password') {
+        key.type = 'password';
+        showRecognitionEye(false);
+        return;
+      }
+      if (recogKeyStandIn) {
+        try {
+          const response = await fetch('/api/recognition/key');
+          const got = await response.json();
+          key.value = got.key || '';
+          recogKeyStandIn = false;
+        } catch (e) {
+          showToast(e.message, 'error');
+          return;
+        }
+      }
+      key.type = 'text';
+      showRecognitionEye(true);
+    }
+
+    // Typed over: the field holds what the user wrote, not the dots
+    function recognitionKeyTyped() {
+      recogKeyStandIn = false;
+    }
+    
+    async function loadUpdate() {
+      try {
+        const response = await fetch('/api/update');
+        showUpdate(await response.json());
+      } catch (e) {
+        // While the plugin is being replaced and the backend restarts, nobody answers
+        if (updateWatching) {
+          document.getElementById('update-status').textContent = t('UPDATE_STATE_RESTARTING');
+          clearTimeout(updatePollTimer);
+          updatePollTimer = setTimeout(loadUpdate, 3000);
+        }
+      }
+    }
+    
+    async function postUpdate(path, body) {
+      try {
+        const response = await fetch(path, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body || {})
+        });
+        const view = await response.json();
+        if (view.current) {
+          showUpdate(view);
+        }
+        if (!response.ok && view.error) {
+          showToast(updateFailure(view.error), 'error');
+        }
+      } catch (e) {
+        showToast(updateFailure(null), 'error');
+      }
+    }
+    
+    function checkUpdate() {
+      return postUpdate('/api/update/check');
+    }
+    
+    function setUpdateChannel(channel) {
+      return postUpdate('/api/update/channel', { channel: channel });
+    }
+    
+    async function installUpdate() {
+      if (!updateView || !updateView.available) {
+        return;
+      }
+      if (await showConfirmModal(t('UPDATE_INSTALL', updateView.offer.version), t('UPDATE_CONFIRM'), 'warning')) {
+        updateWatching = true;
+        await postUpdate('/api/update/install');
+      }
+    }
+    
+    async function rollbackUpdate() {
+      if (!updateView || !updateView.previous) {
+        return;
+      }
+      if (await showConfirmModal(t('UPDATE_ROLLBACK', updateView.previous.version), t('UPDATE_CONFIRM'), 'warning')) {
+        updateWatching = true;
+        await postUpdate('/api/update/rollback');
+      }
+    }
+    
+    // Station logos: how things stand, and the refresh the user can ask for
+    let logosPollTimer = null;
+    
+    function showLogosStatus(status) {
+      document.getElementById('logos-counts').textContent =
+        t('LOGOS_COUNTS', status.own + status.group, status.stations, status.group, status.none);
+      let state = t('LOGOS_STATE_IDLE');
+      if (status.state === 'fetching') {
+        state = t('LOGOS_STATE_FETCHING', status.queued);
+      } else if (status.state === 'waiting') {
+        state = t('LOGOS_STATE_WAITING', status.queued);
+      }
+      document.getElementById('logos-state').textContent = state;
+      
+      // While there is work under way, look again
+      clearTimeout(logosPollTimer);
+      if (status.state !== 'idle') {
+        logosPollTimer = setTimeout(loadLogosStatus, status.state === 'fetching' ? 2000 : 10000);
+      }
+    }
+    
+    // ===== Dongle report =====
+    // A report on the dongle that is plugged in: started here, made by the plugin in
+    // the background, and asked after until it is done.
+    let reportPollTimer = null;
+    
+    function reportFailure(error) {
+      const code = error && error.code ? error.code : 'failed';
+      const text = t('REPORT_ERR_' + code);
+      return text === 'REPORT_ERR_' + code ? t('REPORT_ERR_failed', error && error.message ? error.message : code) : text;
+    }
+    
+    function showReport(view) {
+      const running = view.phase === 'running';
+      const done = view.phase === 'done' && view.summary;
+      let status = '';
+      let detail = '';
+      if (running) {
+        status = t('REPORT_RUNNING', Math.max(view.step, 1), view.of);
+        detail = view.at ? t('REPORT_STEP_' + view.at) : '';
+      } else if (done) {
+        const s = view.summary;
+        status = t('REPORT_DONE', s.device || '-', s.tuner || '-', s.gainSteps, s.stations === null ? '-' : s.stations, s.recordings);
+        detail = s.problems && s.problems.length ? t('REPORT_PROBLEMS', s.problems.join('; ')) : '';
+      } else if (view.phase === 'failed') {
+        status = t('REPORT_FAILED', reportFailure(view.error));
+      } else if (view.phase === 'cancelled') {
+        status = t('REPORT_CANCELLED');
+      }
+      document.getElementById('report-status').textContent = status;
+      document.getElementById('report-detail').textContent = detail;
+      document.getElementById('btn-report-start').style.display = running ? 'none' : '';
+      document.getElementById('report-recordings').disabled = running;
+      document.getElementById('btn-report-cancel').style.display = running ? '' : 'none';
+      document.getElementById('btn-report-download').style.display = done && view.zip ? '' : 'none';
+      document.getElementById('btn-report-summary').style.display = done ? '' : 'none';
+      if (done && view.zip) {
+        document.getElementById('btn-report-download-text').textContent = t('REPORT_DOWNLOAD', (view.zip.bytes / 1048576).toFixed(1) + ' MB');
+      }
+      if (!done) {
+        document.getElementById('report-summary').style.display = 'none';
+      }
+      clearTimeout(reportPollTimer);
+      if (running) {
+        reportPollTimer = setTimeout(loadReport, 1500);
+      }
+    }
+    
+    async function loadReport() {
+      try {
+        const response = await fetch('/api/dongle-report');
+        showReport(await response.json());
+      } catch (e) {
+        // The plugin is not answering: ask again while the tab is in use
+        clearTimeout(reportPollTimer);
+        reportPollTimer = setTimeout(loadReport, 3000);
+      }
+    }
+    
+    async function postReport(path, body) {
+      try {
+        const response = await fetch(path, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body || {})
+        });
+        const view = await response.json();
+        if (view.phase) {
+          showReport(view);
+        }
+        if (!response.ok && view.error) {
+          showToast(t('REPORT_FAILED', reportFailure(view.error)), 'error');
+        }
+      } catch (e) {
+        showToast(t('REPORT_FAILED', reportFailure(null)), 'error');
+      }
+    }
+    
+    async function startReport() {
+      if (await showConfirmModal(t('REPORT_TITLE'), t('REPORT_CONFIRM'), 'warning')) {
+        await postReport('/api/dongle-report/start', { recordings: document.getElementById('report-recordings').checked });
+      }
+    }
+    
+    function cancelReport() {
+      return postReport('/api/dongle-report/cancel');
+    }
+    
+    function downloadReport() {
+      window.location.href = '/api/dongle-report/download';
+    }
+    
+    async function toggleReportSummary() {
+      const box = document.getElementById('report-summary');
+      if (box.style.display !== 'none') {
+        box.style.display = 'none';
+        return;
+      }
+      try {
+        const response = await fetch('/api/dongle-report/summary');
+        if (response.ok) {
+          box.textContent = await response.text();
+          box.style.display = '';
+        }
+      } catch (e) {
+        // nothing to show
+      }
+    }
+    
+    async function loadLogosStatus() {
+      try {
+        const response = await fetch('/api/logos/status');
+        showLogosStatus(await response.json());
+      } catch (e) {
+        // The plugin is not answering; the next visit to the tab asks again
+      }
+    }
+    
+    async function refreshLogos() {
+      try {
+        const response = await fetch('/api/logos/refresh', { method: 'POST' });
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+        showLogosStatus(await response.json());
+      } catch (e) {
+        showToast(t('LOGOS_REFRESH_FAILED'), 'error');
+      }
+    }
+    
     // Initialize maintenance tab when clicked
     document.addEventListener('DOMContentLoaded', function() {
       const maintenanceTab = document.querySelector('[data-tab="maintenance"]');
@@ -3870,6 +5648,10 @@
         maintenanceTab.addEventListener('click', function() {
           initMaintenanceTab();
         }, { once: true });
+        maintenanceTab.addEventListener('click', loadLogosStatus);
+        maintenanceTab.addEventListener('click', loadUpdate);
+        maintenanceTab.addEventListener('click', loadRecognition);
+        maintenanceTab.addEventListener('click', loadReport);
       }
       
       // Initialize blocklist tab when clicked

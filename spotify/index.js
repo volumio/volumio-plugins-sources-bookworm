@@ -27,6 +27,12 @@ var loggedInUserId;
 var userCountry;
 var seekTimer;
 var restartTimeout;
+var playbackStartWatchdog;
+var playbackStartTimeout = 10000;
+var playbackStartConfirmed = false;
+var deviceAuthInProgress = false;
+var deviceAuthModal;
+var deviceAuthCancelled = false;
 var wsConnectionStatus = 'started';
 
 // State management
@@ -110,11 +116,14 @@ ControllerSpotify.prototype.getUIConfig = function () {
         __dirname + '/i18n/strings_en.json',
         __dirname + '/UIConfig.json')
         .then(function (uiconf) {
-            var credentials_type = self.config.get('credentials_type', 'zeroconf');
-            if (self.loggedInUserId !== undefined && credentials_type === 'spotify_token') {
-                uiconf.sections[1].content[0].hidden = true;
-                uiconf.sections[1].content[1].hidden = false;
-            }
+            // Keyed off the refresh token, not credentials_type: that key selects how the
+            // daemon authenticates for playback and says nothing about the browsing login.
+            self.applyAccountSectionState(uiconf);
+            // The performer's redirect takes the whole page with it, so a flow started
+            // before the trip has no modal on screen when the browser lands back here.
+            // This is the first thing the settings page asks for, so it is where it
+            // reappears.
+            self.reopenAuthModal();
             var bitrateNumber = self.config.get('bitrate_number', 320);
             uiconf.sections[2].content[0].value.value = bitrateNumber
             uiconf.sections[2].content[0].value.label = self.getLabelForSelect(uiconf.sections[2].content[0].options, bitrateNumber);
@@ -254,6 +263,7 @@ ControllerSpotify.prototype.parseEventState = function (event) {
     // and updates the state accordingly
     switch (event.type) {
         case 'metadata':
+            playbackStartConfirmed = true;
             self.state.title = event.data.name;
             self.state.duration = self.parseDuration(event.data.duration);
             self.state.uri = event.data.uri;
@@ -264,10 +274,12 @@ ControllerSpotify.prototype.parseEventState = function (event) {
             pushStateforEvent = false;
             break;
         case 'will_play':
+            playbackStartConfirmed = true;
             //impro: use this event to free up audio device when starting volatile?
             pushStateforEvent = false;
             break;
         case 'playing':
+            playbackStartConfirmed = true;
             self.state.status = 'play';
             self.identifyPlaybackMode(event.data);
             setTimeout(()=>{
@@ -623,9 +635,690 @@ ControllerSpotify.prototype.clearAddPlayTrack = function (track) {
     self.commandRouter.pushConsoleMessage('[' + Date.now() + '] ' + 'ControllerSpotify::clearAddPlayTrack');
     self.resetSpotifyState();
 
-    return self.sendSpotifyLocalApiCommandWithPayload('/player/play', { uri: track.uri });
+    return self.hasActiveDaemonSession().then((hasSession) => {
+        if (!hasSession) {
+            // go-librespot answers /player/play with 200 even with no session and then never
+            // plays, leaving Volumio to run its queue and progress bar against silence.
+            // Refuse the play instead of faking it, and say why.
+            self.commandRouter.pushToastMessage('error', self.getI18n('SPOTIFY'), self.getI18n('NO_ACTIVE_SESSION'));
+            self.abortPlayback('go-librespot has no active session');
+            return;
+        }
+
+        // go-librespot takes seconds to resolve and buffer the track: publish what we already
+        // know now, or the UI sits on a blank stopped player until the 'playing' event lands.
+        // Pushed via servicePushState rather than pushState() to avoid starting our own seek
+        // timer on top of the one the state machine already runs for a playing service.
+        self.state.status = 'play';
+        self.state.title = track.name || track.title || '';
+        self.state.artist = track.artist || '';
+        self.state.album = track.album || '';
+        self.state.albumart = track.albumart || '/albumart';
+        self.state.uri = track.uri;
+        self.state.duration = track.duration || 0;
+        self.commandRouter.servicePushState(self.state, 'spop');
+        self.armPlaybackStartWatchdog();
+
+        self.logger.info('Sending Spotify command with payload to local API: /player/play');
+        return superagent.post(spotifyLocalApiEndpointBase + '/player/play')
+            .accept('application/json')
+            .send({ uri: track.uri })
+            .then((results) => {})
+            .catch((error) => {
+                // the optimistic 'play' above must not stick if the daemon never starts playing
+                self.logger.error('Failed to send command to Spotify local API: /player/play: ' + error);
+                self.state.status = 'stop';
+                self.commandRouter.servicePushState(self.state, 'spop');
+            });
+    });
 };
 
+// go-librespot 0.9.1 publishes the in-flight device flow on /auth/code, answering 204
+// once the user approves or the code expires. Before that endpoint existed the prompt had
+// to be scraped out of the daemon's log.
+ControllerSpotify.prototype.getDaemonPairingPrompt = function () {
+    var self = this;
+
+    return superagent.get(spotifyLocalApiEndpointBase + '/auth/code')
+        .accept('application/json')
+        .timeout({ response: 2000, deadline: 3000 })
+        .then((results) => {
+            if (!results || results.status !== 200 || !results.body || !results.body.url) {
+                return undefined;
+            }
+            return { url: results.body.url, code: results.body.code, expiresAt: results.body.expires_at };
+        })
+        .catch((error) => {
+            self.logger.error('Failed to read Spotify device auth code: ' + error);
+            return undefined;
+        });
+};
+
+// Waiting on /status here would hang: device_auth blocks inside withAppPlayer until the
+// user answers, so no session is installed yet and the API forwarder has nothing to hand
+// requests to (daemon/app.go). /auth/code keeps answering throughout, so the flow ending
+// is what we watch for — it drops to 204 on approval and on expiry alike, and only then
+// can /status tell the two apart.
+ControllerSpotify.prototype.waitForPairingOutcome = function (timeoutMs) {
+    var self = this;
+    var defer = libQ.defer();
+    var deadline = Date.now() + (timeoutMs || 300000);
+
+    var poll = function () {
+        if (deviceAuthCancelled) {
+            return defer.resolve(false);
+        }
+        self.getDaemonPairingPrompt().then(function (prompt) {
+            if (!prompt) {
+                return self.hasActiveDaemonSession().then(function (hasSession) {
+                    defer.resolve(hasSession);
+                });
+            }
+            if (Date.now() >= deadline) {
+                self.logger.error('Spotify pairing was not completed before the code expired');
+                return defer.resolve(false);
+            }
+            setTimeout(poll, 3000);
+        });
+    };
+    poll();
+
+    return defer.promise;
+};
+
+// /status answers 204 "No active session" when go-librespot has nobody logged in and no
+// Connect client attached. Commands are accepted and silently dropped in that state, so
+// playback has to be gated on it rather than discovered 10 seconds later.
+ControllerSpotify.prototype.hasActiveDaemonSession = function () {
+    var self = this;
+
+    return superagent.get(spotifyLocalApiEndpointBase + '/status')
+        .accept('application/json')
+        .timeout({ response: 1500, deadline: 2500 })
+        .then((results) => results && results.status === 200)
+        .catch((error) => {
+            self.logger.error('Failed to read Spotify local API status: ' + error);
+            return false;
+        });
+};
+
+
+// go-librespot answers /player/play with 200 even when it has no active session and
+// never starts playing. Nothing reports that back — no event, no rejected promise — so
+// the optimistic 'play' state has to be bounded or it sticks forever with a progress bar
+// running against silence. Any playback event from the daemon clears the watchdog.
+ControllerSpotify.prototype.armPlaybackStartWatchdog = function () {
+    var self = this;
+
+    playbackStartConfirmed = false;
+    clearTimeout(playbackStartWatchdog);
+    playbackStartWatchdog = setTimeout(() => {
+        playbackStartWatchdog = undefined;
+        if (self.state.status !== 'play' || playbackStartConfirmed) {
+            return;
+        }
+        self.abortPlayback('playback did not start within ' + playbackStartTimeout + 'ms');
+    }, playbackStartTimeout);
+};
+
+// Giving up on a track cannot be signalled by pushing a 'stop' state: syncState reads a
+// service stop while the machine is playing as "track finished" and advances the queue
+// (statemachine.js), which walks the whole playlist a track at a time. volumioStop() is no
+// help either — it only stops the timer when currentStatus is already 'play', and it isn't
+// yet while clearAddPlayTrack runs. So stop the machine's clock directly, the way this
+// plugin already drives setVolatile/setConsumeUpdateService.
+ControllerSpotify.prototype.abortPlayback = function (reason) {
+    var self = this;
+
+    self.logger.error('Aborting Spotify playback: ' + reason);
+    clearTimeout(playbackStartWatchdog);
+    playbackStartWatchdog = undefined;
+
+    var stateMachine = self.commandRouter.stateMachine;
+    if (stateMachine) {
+        stateMachine.stopPlaybackTimer();
+        stateMachine.currentSeek = 0;
+    }
+
+    self.state.status = 'stop';
+    self.state.seek = 0;
+    self.commandRouter.servicePushState(self.state, 'spop');
+};
+
+// The prompt only appears once the daemon has restarted into device_auth mode and reached
+// Spotify, so poll for it rather than guess a delay.
+ControllerSpotify.prototype.awaitPairingPrompt = function (timeoutMs) {
+    var self = this;
+    var defer = libQ.defer();
+    var deadline = Date.now() + (timeoutMs || 60000);
+
+    var poll = function () {
+        if (deviceAuthCancelled) {
+            return defer.resolve(undefined);
+        }
+        self.getDaemonPairingPrompt().then(function (prompt) {
+            if (prompt) {
+                return defer.resolve(prompt);
+            }
+            if (Date.now() >= deadline) {
+                self.logger.error('go-librespot did not emit a pairing prompt');
+                return defer.resolve(undefined);
+            }
+            setTimeout(poll, 2000);
+        });
+    };
+    poll();
+
+    return defer.promise;
+};
+
+// One authorization, two credentials. Browsing runs on the Web API refresh token the
+// OAuth performer mints; playback runs on the session go-librespot gets from the device
+// flow. Neither implies the other, but the user asked for one thing, so one button walks
+// both, in one modal.
+//
+// Both addresses are opened by the backend rather than by the core `oauth` action, and
+// that is the whole point: `oauth` navigates this page to the performer and back, which
+// would take the modal with it and leave step two with no user gesture to open a tab
+// from. Broadcast instead, and the reader's page never moves — Nova opens the first
+// address in a tab while the click is still warm, then reuses that same tab for the
+// second, which needs no fresh gesture because the window is already ours.
+//
+// The performer's redirect_uri points at this device's /api/v1/oauth, which stores the
+// token and merely bounces whoever opened it (rest_api/system.js), so the login landing
+// in another tab still reaches us — waitForBrowsingLogin watches for the token itself.
+ControllerSpotify.prototype.startAuthorization = function (data) {
+    var self = this;
+    var defer = libQ.defer();
+
+    if (deviceAuthInProgress) {
+        self.logger.info('Spotify authorization already running, re-opening its modal');
+        self.reopenAuthModal();
+        defer.resolve('');
+        return defer.promise;
+    }
+
+    deviceAuthInProgress = true;
+    deviceAuthCancelled = false;
+    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.getI18n('PAIRING_CONTACTING'), undefined, 10);
+
+    // cancelAuthorization has already closed the modal and said why, and the polls it
+    // interrupted unwind through here a moment later — silently, or they would overwrite
+    // that with a failure the user did not cause.
+    var release = function (message) {
+        deviceAuthInProgress = false;
+        if (!deviceAuthCancelled) {
+            self.pushAuthModal(self.getI18n('PAIRING_TITLE'), message, undefined, 100);
+        }
+        defer.resolve('');
+    };
+
+    self.authorizeBrowsing(data)
+        .then(function (outcome) {
+            if (!outcome.signedIn) {
+                return release(self.getI18n(outcome.reason));
+            }
+
+            return self.authorizePlayback().then(function (playback) {
+                // release() before the refresh, not after: refreshUiConfig goes through
+                // getUIConfig, which re-opens the modal of a flow still marked as running.
+                release(self.getI18n(playback.authorized ? 'PAIRING_SUCCESSFUL' : playback.reason));
+                return self.refreshUiConfig();
+            });
+        })
+        .fail(function (e) {
+            self.logger.error('Failed authorizing Spotify: ' + e);
+            release(self.getI18n('PAIRING_FAILED'));
+        });
+
+    return defer.promise;
+};
+
+// Nothing about this flow is quick — a login the user performs elsewhere, then a daemon
+// restart and a code they approve elsewhere again — so it has to be abandonable. The modal
+// closes here rather than when the interrupted poll unwinds, because the click that got us
+// here deserves an answer now.
+//
+// credentials_type goes back to zeroconf without restarting the daemon: the running one
+// keeps the code it already minted, so a user who changes their mind again can still
+// approve it, while the next restart comes up in the state a device should idle in rather
+// than minting a code nobody asked for.
+ControllerSpotify.prototype.cancelAuthorization = function () {
+    var self = this;
+
+    if (!deviceAuthInProgress) {
+        self.logger.info('No Spotify authorization to cancel');
+        self.commandRouter.broadcastMessage('closeAllModals', '');
+        return libQ.resolve('');
+    }
+
+    self.logger.info('Spotify authorization cancelled by the user');
+    deviceAuthCancelled = true;
+    deviceAuthInProgress = false;
+    self.config.set('credentials_type', 'zeroconf');
+    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.getI18n('AUTHORIZE_CANCELLED'), undefined, 100);
+
+    return libQ.resolve('');
+};
+
+// Step one. Already signed in is the common case on a re-run — say so and move on rather
+// than make the user log in again to reach step two.
+ControllerSpotify.prototype.authorizeBrowsing = function (data) {
+    var self = this;
+
+    if (self.config.get('refresh_token', '') !== '') {
+        self.logger.info('Spotify browsing login already done');
+        return libQ.resolve({ signedIn: true });
+    }
+
+    var performerUrl = self.buildPerformerUrl(data);
+    if (!performerUrl) {
+        return libQ.resolve({ signedIn: false, reason: 'PAIRING_FAILED' });
+    }
+
+    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildSignInMessage(undefined), undefined, 25);
+
+    // Broadcast before shortening, not after. A popup blocker only yields to a gesture
+    // that is still warm — a few seconds — and the shortener is a cloud round trip that
+    // has been seen to take most of that budget or fail outright. The long address is
+    // perfectly good for a machine to open, so the tab goes first and legibility catches
+    // up. A kiosk ignores this on the Nova side and reads the QR instead.
+    self.commandRouter.broadcastMessage('openUrl', performerUrl);
+
+    // Not chained into the returned promise: the wait below must start now, and a
+    // shortener that never answers must not hold the whole flow up.
+    self.shortenUrl(performerUrl).then(function (short) {
+        if (!deviceAuthInProgress || deviceAuthCancelled) {
+            return;
+        }
+        self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildSignInMessage(short),
+            (short && short.url) || performerUrl, 25);
+    });
+
+    return self.waitForBrowsingLogin(300000).then(function (signedIn) {
+        return signedIn ? { signedIn: true } : { signedIn: false, reason: 'SIGN_IN_TIMEOUT' };
+    });
+};
+
+// The address only earns a place on screen once it is short enough to be read off one and
+// typed into a phone. Unshortened it is six hundred characters of redirect_uri and scopes:
+// nobody transcribes that, and it buries the rest of the dialog. Without it the sentence
+// points at the tab that opened instead — and Nova puts the same address on a button, or
+// on a QR code when the screen is a touchscreen.
+//
+// Text, not a link. An anchor was tried and it works in a desktop browser and nowhere else:
+// a touchscreen has no tab strip to come back from and the app's WebView has no second tab
+// at all, so on both it is a dead end. Which of the three is reading cannot be told from
+// here — the modal is one broadcast, `ng-bind-html` compiles no expressions, and neither
+// concept-ui nor Manifest puts a kiosk or WebView marker where a plugin's body could reach
+// it — and a link that is right for one reader and a trap for the other two is worse than
+// an address all three can read, with the QR code under it for those who cannot type it.
+ControllerSpotify.prototype.buildSignInMessage = function (short) {
+    var self = this;
+
+    if (!short) {
+        return self.getI18n('STEP_ONE_OPENING');
+    }
+
+    return self.joinModalLines([self.getI18n('STEP_ONE_TODO'), '', short.url]) +
+        self.modalQr(short.qr);
+};
+
+// concept-ui and Manifest bind the custom dialog's body with `ng-bind-html` through
+// ngSanitize, so `<br>` and `<img>` survive there — and Nova, which flattens markup, turns
+// `<br>` back into the newline it stands for and drops the image (BackendModal stripHtml).
+// One message serves both.
+ControllerSpotify.prototype.joinModalLines = function (lines) {
+    return lines.join('<br>');
+};
+
+// The code, for the readers who cannot type the address in: on a touchscreen there is no
+// keyboard worth the name, so it gets scanned with a phone instead. It cannot be shown to
+// only those readers, for the same reason the address is not a link — one broadcast, no
+// marker to key on — so a desktop browser sees it too, small and under the address, where
+// it reads as the alternative it is. Nova needs none of this: it drops the tag and draws
+// its own from `qrUrl`, panel only.
+//
+// No inline style: ngSanitize strips the attribute. The shortener's codes come on white
+// already, so width and height are all that is needed.
+ControllerSpotify.prototype.modalQr = function (qr) {
+    if (!qr) {
+        return '';
+    }
+
+    return '<br><br><img src="' + qr + '" width="160" height="160" alt="QR">';
+};
+
+// The performer url carries a redirect_uri and thirteen scopes — several hundred
+// characters nobody can read off a screen, let alone retype on a phone. The UI shortens it
+// through the same service for its kiosk QR code (plugin.component.js
+// shortenUrlAndGetQrCode); if that service is unreachable the long url still works, so a
+// failure only costs legibility.
+ControllerSpotify.prototype.shortenUrl = function (url) {
+    var self = this;
+
+    var defer = libQ.defer();
+
+    // Resolves {url, qr}, or undefined when it cannot shorten: the caller shows no address
+    // at all in that case, and handing back the original would put the very thing this
+    // exists to avoid on screen. Retried once — off the critical path now, so a second
+    // attempt costs nothing but a second.
+    var attempt = function (retriesLeft) {
+        superagent.post('https://volm.io/shorten')
+            .send({ url: url })
+            .accept('application/json')
+            .timeout({ response: 5000, deadline: 8000 })
+            .then(function (results) {
+                var body = (results && results.body) || {};
+                if (body.shortenedURL) {
+                    // qrCodeURL rides along in the same answer, so the code costs nothing
+                    // beyond this round trip.
+                    return defer.resolve({ url: body.shortenedURL, qr: body.qrCodeURL });
+                }
+                self.logger.error('The Spotify login url shortener answered without a url');
+                defer.resolve(undefined);
+            })
+            .catch(function (error) {
+                self.logger.error('Failed to shorten the Spotify login url: ' + error);
+                if (retriesLeft > 0) {
+                    return attempt(retriesLeft - 1);
+                }
+                defer.resolve(undefined);
+            });
+    };
+    attempt(1);
+
+    return defer.promise;
+};
+
+// Step two, the daemon's own session. Restarting the daemon is what mints a pairing code,
+// so doing it unconditionally invalidates a code the user may already be approving — and
+// wipes a working session if playback is authorized. Check both before touching anything.
+ControllerSpotify.prototype.authorizePlayback = function () {
+    var self = this;
+
+    // The daemon restart and the code mint take the better part of ten seconds. Without
+    // this the modal would sit on step one's link the whole time — done, but still asking
+    // to be acted on — so it says where it actually is before the wait starts.
+    self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(undefined), undefined, 50);
+
+    return self.getDaemonPairingPrompt()
+        .then(function (pending) {
+            if (pending) {
+                self.logger.info('Reusing the Spotify pairing code already awaiting approval');
+                return pending;
+            }
+
+            return self.hasActiveDaemonSession().then(function (hasSession) {
+                if (hasSession) {
+                    self.logger.info('Spotify playback is already authorized');
+                    return { alreadyAuthorized: true };
+                }
+
+                self.config.set('credentials_type', 'device_auth');
+                self.deleteCredentialsFile();
+
+                return self.initializeLibrespotDaemon().then(function () {
+                    return self.awaitPairingPrompt(60000);
+                });
+            });
+        })
+        .then(function (prompt) {
+            if (prompt && prompt.alreadyAuthorized) {
+                return { authorized: true };
+            }
+
+            if (!prompt) {
+                // The daemon came back up but never produced a code, or the user walked
+                // away from the flow while it was doing so.
+                return { authorized: false, reason: deviceAuthCancelled ? 'AUTHORIZE_CANCELLED' : 'PAIRING_NO_CODE' };
+            }
+
+            self.logger.info('Spotify pairing code issued, awaiting approval');
+            self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(prompt), prompt.url, 75);
+
+            // The pairing address is short already; this call is only for its code image,
+            // so it lands late rather than holding the code back.
+            self.shortenUrl(prompt.url).then(function (short) {
+                if (!deviceAuthInProgress || deviceAuthCancelled || !short || !short.qr) {
+                    return;
+                }
+                var withQr = Object.assign({}, prompt, { qr: short.qr });
+                self.pushAuthModal(self.getI18n('PAIRING_TITLE'), self.buildAuthMessage(withQr), prompt.url, 75);
+            });
+
+
+            // Step one navigates itself, through the core `oauth` action; step two has no
+            // such action because the device flow has no redirect leg — the daemon polls,
+            // the browser is not the channel — and the code does not exist until seconds
+            // after the click, far too late for a popup to be allowed. So the backend asks
+            // for the navigation instead. Nova answers this and goes; a kiosk is excluded
+            // there on purpose (spotify.com does not redirect home and a panel has no way
+            // back), which is what the modal's own button is for. concept-ui has no
+            // handler, so it keeps the link the message carries.
+            self.commandRouter.broadcastMessage('openUrl', prompt.url);
+
+            return self.waitForPairingOutcome(300000).then(function (authorized) {
+                return authorized ? { authorized: true } : { authorized: false, reason: 'PAIRING_NOT_APPROVED' };
+            });
+        });
+};
+
+// The performer needs a redirect_uri this device answers on, which is the same URL the UI
+// would have built client-side. plugin_url is only where the opening browser is sent
+// afterwards — the token reaches us either way — so it points at the device's own UI.
+ControllerSpotify.prototype.buildPerformerUrl = function (data) {
+    var self = this;
+
+    if (!data || !data.performerUrl || !data.plugin) {
+        self.logger.error('Cannot build the Spotify OAuth url: the button carries no performer data');
+        return undefined;
+    }
+
+    var device = self.commandRouter.executeOnPlugin('system_controller', 'volumiodiscovery', 'getThisDevice');
+    if (!device || !device.host) {
+        self.logger.error('Cannot build the Spotify OAuth url: this device has no reachable host');
+        return undefined;
+    }
+
+    var redirectUri = new URL(device.host + '/api/v1/oauth');
+    redirectUri.searchParams.set('plugin', data.plugin);
+    // Where the browser is sent once the token is stored. The device host alone drops the
+    // reader on Now Playing, with the dialog they left behind on another page — and the
+    // dialog only comes back when the page asks for the plugin's UIConfig, which the index
+    // never does. `/plugin/<category>-<name>` is the one address every UI answers: it is
+    // Volumio2-UI's own plugin route, which concept-ui and Manifest still serve, and Nova
+    // claims it too and redirects it to its own settings page (src/routes.ts).
+    redirectUri.searchParams.set('plugin_url',
+        device.host + '/plugin/' + data.plugin.replace('/', '-'));
+
+    var performerUrl = new URL(data.performerUrl);
+    performerUrl.searchParams.set('redirect_uri', redirectUri.href);
+    (data.scopes || []).forEach(function (scope) {
+        performerUrl.searchParams.append('scope', scope);
+    });
+
+    return performerUrl.href;
+};
+
+// The performer's callback lands on /api/v1/oauth and ends up in oauthLogin, which writes
+// the refresh token. Nothing signals that back into this flow, so the token itself is the
+// signal.
+ControllerSpotify.prototype.waitForBrowsingLogin = function (timeoutMs) {
+    var self = this;
+    var defer = libQ.defer();
+    var deadline = Date.now() + (timeoutMs || 300000);
+
+    var poll = function () {
+        if (deviceAuthCancelled) {
+            return defer.resolve(false);
+        }
+        if (self.config.get('refresh_token', '') !== '') {
+            return defer.resolve(true);
+        }
+        if (Date.now() >= deadline) {
+            self.logger.error('Spotify browsing login was not completed in time');
+            return defer.resolve(false);
+        }
+        // Half a second, not two: this is a local config read, and the gap between the
+        // token landing and the modal admitting it is dead time the user spends looking at
+        // a step they have already finished.
+        setTimeout(poll, 500);
+    };
+    poll();
+
+    return defer.promise;
+};
+
+// Nova renders the message as plain text with whitespace-pre-line, so newlines are the
+// only formatting available: its modal contract is {title, message, buttons, progress,
+// advancedLog} and markup is flattened. An embedded QR image cannot survive that, which is
+// why each step is a bare link and the pairing code is repeated only as a fallback.
+// Whichever step is not running shows its outcome instead, so the modal always says where
+// in the pair the user is.
+ControllerSpotify.prototype.buildAuthMessage = function (prompt) {
+    var self = this;
+    var lines = [];
+    var signedInAs = self.config.get('logged_user_id', '');
+
+    // Named or not at all: "Signed in as" with nothing after it claims a step that has not
+    // happened.
+    if (signedInAs !== '') {
+        lines.push(self.getI18n('STEP_ONE_DONE') + ' ' + signedInAs, '');
+    }
+
+    if (!prompt) {
+        // No code to show yet: either the daemon already has a session, or we are still
+        // waiting on it. Naming step two without a link to act on would just read as a
+        // dead instruction, so it stays off the modal until there is one.
+        lines.push(self.getPlaybackAuthorization().authorized ?
+            self.getI18n('STEP_TWO_DONE') : self.getI18n('PAIRING_CONTACTING'));
+        return self.joinModalLines(lines);
+    }
+
+    lines.push(self.getI18n('STEP_TWO_TODO'), '', prompt.url, '',
+        self.getI18n('PAIRING_CODE_IF_ASKED') + ' ' + prompt.code);
+
+    // Only when it reads as a time still ahead of us: expires_at has been seen absent, and
+    // a seconds-epoch value would render as a 1970 clock time rather than fail visibly.
+    var expiry = new Date(prompt.expiresAt);
+    if (expiry.getTime() > Date.now()) {
+        lines.push(self.getI18n('PAIRING_EXPIRES') + ' ' +
+            ('0' + expiry.getHours()).slice(-2) + ':' + ('0' + expiry.getMinutes()).slice(-2));
+    }
+
+    // authorizePlayback shortens the pairing address for this image and pushes the modal a
+    // second time to carry it, and until now nothing here read it: the code reached Nova,
+    // which draws its own from `qrUrl`, and no other UI ever saw one. Withheld only where
+    // the modal offers a button instead, the same way step one withholds it — there the
+    // reader can press, and a code to scan with a second device is noise.
+    if (self.stepTwoCanNavigate()) {
+        return self.joinModalLines(lines);
+    }
+
+    return self.joinModalLines(lines) + self.modalQr(prompt.qr);
+};
+
+// The dialog this flow lives in, replaced a step at a time.
+//
+// Neither modal concept-ui and Manifest offer does both halves of what this needs. Their
+// progress dialog updates in place but renders the body through `{{ }}` and keeps its
+// footer empty until `modalDone` — no buttons for the minutes this flow waits, and any
+// markup printed at the reader. Their custom dialog binds HTML and shows its buttons at
+// once, but cannot be updated: `openModal` always pushes a new instance.
+//
+// So: the custom one, replaced. On the Angular UIs that replacement leaves the previous
+// dialog behind — their modalService registers each instance's removal against the index
+// it had when it was pushed and splices there when the instance's `closed` promise
+// resolves, so a close and an open in the same tick make the splice drop the *live* dialog
+// from the register and keep the closed one. The orphan stays on screen under the next.
+//
+// Known and accepted: the only way to avoid it from here is to wait out the close
+// animation before opening, and the blink that costs on every step, on every UI, was
+// judged worse than the stack. Nova is unaffected either way — it replaces in one
+// assignment and never stacks.
+
+ControllerSpotify.prototype.pushAuthModal = function (title, message, address, progress) {
+    var self = this;
+    var buttons = [];
+    // A full bar is what "finished" means here, so it also decides which way out to offer.
+    var done = progress === 100;
+
+    // A button carries the address only where pressing it cannot strand the reader — see
+    // stepTwoCanNavigate. Everywhere else the address stays text in the message: concept-ui
+    // and Manifest answer a button's `url` with `$window.open(url, "_self")`, replacing the
+    // page they are on, and a touchscreen never comes back. Nova ignores this button and
+    // makes its own out of `qrUrl` below, so it is not offered the same thing twice.
+    if (address && self.stepTwoCanNavigate()) {
+        buttons.push({ name: self.getI18n('OPEN_APPROVAL_PAGE'), class: 'btn btn-warning', url: address });
+    }
+
+    // Cancel while it runs, Close once it has stopped — never both, so there is exactly
+    // one way out at any moment.
+    if (done) {
+        buttons.push({ name: self.getI18n('CLOSE'), class: 'btn btn-info', emit: '', payload: '' });
+    } else {
+        buttons.push({
+            name: self.getI18n('CANCEL'),
+            class: 'btn btn-info',
+            emit: 'callMethod',
+            payload: { endpoint: 'music_service/spop', method: 'cancelAuthorization', data: '' }
+        });
+    }
+
+    // progressNumber without `progress: true`: Nova draws the bar from the number alone,
+    // while concept-ui and Manifest key their button-hiding progress dialog off the
+    // boolean — which is exactly the dialog this flow must not be.
+    var record = {
+        progressNumber: progress,
+        title: title,
+        message: message,
+        size: 'lg',
+        buttons: buttons
+    };
+    if (address) {
+        // Nova-only, and the QR's source there. Unknown keys are ignored by every other UI.
+        record.qrUrl = address;
+    }
+
+    deviceAuthModal = done ? undefined : record;
+    self.showAuthModal(record);
+};
+
+ControllerSpotify.prototype.showAuthModal = function (record) {
+    var self = this;
+
+    self.commandRouter.broadcastMessage('closeAllModals', '');
+    self.commandRouter.broadcastMessage('openModal', record);
+};
+
+// A reloaded browser loses the modal but not the work behind it, and the button comes
+// back clickable: show what is already running rather than start a second one.
+ControllerSpotify.prototype.reopenAuthModal = function () {
+    var self = this;
+
+    if (!deviceAuthModal) {
+        return;
+    }
+
+    self.showAuthModal(deviceAuthModal);
+    self.commandRouter.broadcastMessage('modalProgress', deviceAuthModal);
+};
+
+// The account section is rendered from getUIConfig, so a change the user did not navigate
+// to — just authorized, or just revoked — has to push a fresh one, or the button keeps
+// offering the step that is already done.
+ControllerSpotify.prototype.refreshUiConfig = function () {
+    var self = this;
+
+    return self.getUIConfig()
+        .then(function (conf) {
+            self.commandRouter.broadcastMessage('pushUiConfig', conf);
+        })
+        .fail(function (e) {
+            self.logger.error('Failed to refresh the Spotify UI config: ' + e);
+        });
+};
 
 ControllerSpotify.prototype.startSocketStateListener = function () {
     var self = this;
@@ -761,19 +1454,28 @@ ControllerSpotify.prototype.createConfigFile = function () {
         .replace('${audio_buffer_time}', audioBufferTime)
         .replace('${audio_period_count}', audioPeriodCount);
 
-    var credentials_type = self.config.get('credentials_type', 'zeroconf');
-    var logged_user_id = self.config.get('logged_user_id', '');
-    var access_token = self.config.get('access_token', '');
-
-    if (credentials_type === 'spotify_token' && logged_user_id !== '' && access_token !== '') {
+    // Never hand the daemon our OAuth access token: Spotify's login5 rejects credentials
+    // derived from a token minted under a non-desktop client id, so `type: spotify_token`
+    // now fails authentication and the daemon exits on a loop
+    // (github.com/devgianlu/go-librespot issues/364). The account login is still what
+    // browsing runs on, it just no longer feeds the playback session.
+    //
+    // device_auth is the replacement: the daemon runs the OAuth device flow under the
+    // desktop client id, which login5 does accept, and the user pairs with a short code
+    // instead of having to reach for the Spotify app. It needs a daemon that supports it,
+    // so it stays opt-in until the plugin ships a build that does.
+    //
+    // Otherwise zeroconf, persisting the blob from the first Connect handshake so the
+    // session survives restarts with no client attached, which is what /player/play needs
+    // for playback started from the Volumio UI.
+    if (self.config.get('credentials_type', 'zeroconf') === 'device_auth') {
         conf += 'credentials: ' + os.EOL;
-        conf += '  type: spotify_token' + os.EOL;
-        conf += '  spotify_token:' + os.EOL;
-        conf += '    username: "' + logged_user_id + '"' + os.EOL;
-        conf += '    access_token: "' + access_token + '"';
+        conf += '  type: device_auth' + os.EOL;
     } else {
         conf += 'credentials: ' + os.EOL;
         conf += '  type: zeroconf' + os.EOL;
+        conf += '  zeroconf:' + os.EOL;
+        conf += '    persist_credentials: true' + os.EOL;
     }
 
 
@@ -791,20 +1493,198 @@ ControllerSpotify.prototype.createConfigFile = function () {
     return defer.promise;
 };
 
-ControllerSpotify.prototype.isOauthLoginAlreadyConfiguredOnDaemon = function () {
+// Browsing and playback are two credentials but one decision, so the section carries one
+// button: Authorize until both are in place, Remove authorization after. A half-done state
+// still offers Authorize — startAuthorization skips whichever step is already done.
+ControllerSpotify.prototype.applyAccountSectionState = function (uiconf) {
+    var self = this;
+
+    var signedIn = self.loggedInUserId !== undefined && self.config.get('refresh_token', '') !== '';
+    var playback = self.getPlaybackAuthorization();
+    var authorized = signedIn && playback.authorized;
+
+    var authorizeButton = self.findUiElement(uiconf, 1, 'authorize');
+    authorizeButton.hidden = authorized;
+    self.applyManifestOauthAction(authorizeButton);
+
+    var revokeButton = self.findUiElement(uiconf, 1, 'deauthorize');
+    revokeButton.hidden = !authorized;
+    if (authorized) {
+        revokeButton.description = self.getI18n('AUTHORIZE_DONE') + ' ' + playback.username;
+    }
+
+    return uiconf;
+};
+
+// Looked up by id rather than by position: content indexes shift whenever a control is
+// added, and a wrong index quietly hides the wrong button.
+ControllerSpotify.prototype.findUiElement = function (uiconf, section, id) {
+    var content = uiconf.sections[section].content;
+
+    for (var i = 0; i < content.length; i++) {
+        if (content[i].id === id) {
+            return content[i];
+        }
+    }
+
+    this.logger.error('No UI element with id ' + id + ' in section ' + section);
+
+    return {};
+};
+
+// Step one, handed to the UI — on Manifest only.
+//
+// `onClick.type: 'oauth'` is a UI-native action, and the UI is the only party that knows
+// what kind of screen it is on. A browser or the app's WebView navigates the window to the
+// performer and comes back through its redirect; a touchscreen, which has no address bar to
+// come back from, instead asks the device for a LAN-reachable address (/api/host), shortens
+// it and draws a QR to scan with a phone. That choice cannot be made from here: one
+// broadcast reaches every reader at once, and getUiConfig hands a plugin `{}` with no
+// socket, no user agent and no UI name (volumio3-backend websocket/index.js:345), so this
+// side never learns who is asking.
+//
+// Scoped to the UI it was measured on. concept-ui carries the same handler and Nova its own,
+// but each of the three shows the flow differently, and the emit path in UIConfig.json is
+// what they were tested with.
+//
+// Step two is unaffected and still runs here: oauthLogin picks the flow up when the token
+// lands.
+ControllerSpotify.prototype.applyManifestOauthAction = function (authorizeButton) {
+    var self = this;
+
+    if (self.getActiveUiName() !== 'manifest' || !authorizeButton.onClick) {
+        return;
+    }
+
+    // Read off the emit payload rather than written out a second time: UIConfig.json stays
+    // the one place the performer, the plugin id and the scopes are declared.
+    var call = (authorizeButton.onClick.data || {}).data || {};
+
+    authorizeButton.onClick = {
+        type: 'oauth',
+        performerUrl: call.performerUrl,
+        plugin: call.plugin,
+        scopes: call.scopes
+    };
+};
+
+// Whether pressing step two's address is safe here — a decision about the device, which is
+// all this side can know about a modal that reaches every reader at once.
+//
+// It needs both halves. The UI must be the one whose button behaviour was measured: Manifest
+// replaces the page with the address and comes back through getUIConfig, which reopens this
+// modal; Nova has its own button and concept-ui was not tested with one. And the device must
+// have no screen of its own, because a reader on a touchscreen has nothing to come back
+// with, and nothing here can tell that reader from the phone on the same network.
+//
+// Manifest is also the UI with the least to press otherwise: it ignores the `openUrl`
+// broadcast step two sends for Nova — the name occurs once in its bundle, as a UIConfig
+// action, with no socket listener — so without this there is only an address to read.
+ControllerSpotify.prototype.stepTwoCanNavigate = function () {
+    var self = this;
+
+    return self.getActiveUiName() === 'manifest' && !self.hasKioskScreen();
+};
+
+// Whether this device can put a browser on a screen of its own — a Motivo or Primo
+// touchscreen, an HDMI panel. The unit that drives it ships only in images built for a local
+// display: present on a Motivo, absent on a headless build (measured on both). Enablement is
+// deliberately not consulted — a panel switched off leaves the file behind, and reading that
+// as "no panel here" is the one direction with a cost.
+ControllerSpotify.prototype.hasKioskScreen = function () {
+    return fs.existsSync('/lib/systemd/system/volumio-kiosk.service');
+};
+
+// Which UI this device serves, resolved from the two files the http server resolves it from
+// itself (volumio3-backend http/index.js:62-85): the picker's choice first, then the first
+// installed UI, then the same 'classic' fallback it falls back to. Read from disk rather
+// than taken from VOLUMIO_ACTIVE_UI_NAME, which is set in the http process and not in ours.
+ControllerSpotify.prototype.getActiveUiName = function () {
     var self = this;
 
     try {
-        var credentialsFile = fs.readFileSync(credentialsPath, {encoding: 'utf8'}).toString();
+        var active = fs.readJsonSync('/data/active_volumio_ui');
+        if (active && active.uiName && active.uiPath && fs.existsSync(active.uiPath)) {
+            return active.uiName;
+        }
+    } catch (e) {}
+
+    try {
+        var installed = fs.readJsonSync('/volumio/volumioUisList.json');
+        for (var i = 0; i < installed.length; i++) {
+            if (fs.existsSync(installed[i].uiPath)) {
+                return installed[i].uiName;
+            }
+        }
     } catch (e) {
-        self.logger.error('Failed to read credentials file: ' + e);
+        self.logger.error('Cannot tell which Volumio UI is active: ' + e);
     }
 
-    if (credentialsFile && credentialsFile.length > 0) {
-        return true;
-    } else {
-        return false;
+    return 'classic';
+};
+
+// Playback authorization lives in the daemon's state file, which is the same thing the
+// daemon itself reads on startup, so it survives reboots and does not need the daemon to
+// be up to answer. Checking the file merely exists is not enough: go-librespot writes it
+// with an empty credentials block as soon as it runs once.
+ControllerSpotify.prototype.getPlaybackAuthorization = function () {
+    var self = this;
+
+    try {
+        var state = JSON.parse(fs.readFileSync(credentialsPath, { encoding: 'utf8' }).toString());
+        var credentials = state && state.credentials;
+        if (credentials && credentials.username && credentials.data) {
+            return { authorized: true, username: credentials.username };
+        }
+    } catch (e) {
+        self.logger.info('No usable go-librespot credentials yet: ' + e);
     }
+
+    return { authorized: false };
+};
+
+// The mirror of startAuthorization: one button undid one button, so both credentials go.
+// Back to zeroconf rather than leaving device_auth armed, otherwise the restart below
+// immediately mints a pairing code nobody asked for. The daemon restart takes seconds, so
+// this gets the same busy modal — the button is unreachable until the new state is on
+// screen.
+ControllerSpotify.prototype.revokeAuthorization = function () {
+    var self = this;
+    var defer = libQ.defer();
+
+    if (deviceAuthInProgress) {
+        self.logger.info('Spotify authorization change already running, re-opening its modal');
+        self.reopenAuthModal();
+        defer.resolve('');
+        return defer.promise;
+    }
+
+    deviceAuthInProgress = true;
+    self.logger.info('Revoking Spotify authorization');
+    self.pushAuthModal(self.getI18n('REMOVE_AUTHORIZATION'), self.getI18n('PLAYBACK_REVOKING'), undefined, 25);
+
+    var release = function (message) {
+        deviceAuthInProgress = false;
+        self.pushAuthModal(self.getI18n('REMOVE_AUTHORIZATION'), message, undefined, 100);
+        defer.resolve('');
+    };
+
+    self.resetSpotifyCredentials();
+    self.removeToBrowseSources();
+    self.config.set('credentials_type', 'zeroconf');
+    self.deleteCredentialsFile();
+
+    self.initializeLibrespotDaemon()
+        .then(function () {
+            release(self.getI18n('PLAYBACK_REVOKED'));
+            return self.refreshUiConfig();
+        })
+        .fail(function (e) {
+            self.logger.error('Failed revoking Spotify authorization: ' + e);
+            release(self.getI18n('PLAYBACK_REVOKE_FAILED'));
+        });
+
+    return defer.promise;
 };
 
 ControllerSpotify.prototype.saveGoLibrespotSettings = function (data, avoidBroadcastUiConfig) {
@@ -900,6 +1780,7 @@ ControllerSpotify.prototype.spotifyClientCredentialsGrant = function () {
 
 ControllerSpotify.prototype.oauthLogin = function (data) {
     var self=this;
+    var defer = libQ.defer();
 
     self.logger.info('Executing Spotify Oauth Login');
 
@@ -907,22 +1788,51 @@ ControllerSpotify.prototype.oauthLogin = function (data) {
         self.logger.info('Saving Spotify Refresh Token');
         self.config.set('refresh_token', data.refresh_token);
 
+        // Browsing only needs the Web API client and the browse sources. It must not set
+        // credentials_type or restart the daemon: playback authorization is a separate
+        // credential (see createConfigFile), and bouncing the daemon here would drop a live
+        // session or invalidate a pairing code the user is in the middle of approving.
         self.spotifyApiConnect().then(function () {
-            self.config.set('credentials_type', 'spotify_token');
-            self.initializeLibrespotDaemon();
             self.initializeSpotifyBrowsingFacility();
+            self.resumeAuthorizationAfterOauth();
             var config = self.getUIConfig();
             config.then(function(conf) {
                 self.commandRouter.broadcastMessage('pushUiConfig', conf);
-                self.commandRouter.broadcastMessage('closeAllModals', '');
                 defer.resolve(conf)
+            }).fail(function (e) {
+                self.logger.error('Failed to build Spotify UI config after OAUTH Login: ' + e);
+                defer.reject(e);
             });
         }).fail(function (e) {
             self.logger.error('Failed to perform Spotify API connection after OAUTH Login: ' + e);
+            defer.reject(e);
         });
     } else {
         self.logger.error('Could not receive oauth data');
+        defer.reject(new Error('Could not receive oauth data'));
     }
+
+    return defer.promise;
+};
+
+// The UI-native sign-in ends at this callback rather than inside startAuthorization, so
+// nothing has been told to go on to step two. Start it here: the token was saved just above,
+// so authorizeBrowsing waves step one through and the daemon pairing opens a modal of its
+// own — which the settings page, landing back from the performer's redirect, reopens through
+// getUIConfig. A flow already running keeps its own; that is the emit path on the other UIs,
+// where startAuthorization is what called us in.
+//
+// Not chained into the caller's promise: the browser is sitting on the REST callback that
+// resolves with oauthLogin, and this flow takes as long as the user takes.
+ControllerSpotify.prototype.resumeAuthorizationAfterOauth = function () {
+    var self = this;
+
+    if (deviceAuthInProgress || self.getActiveUiName() !== 'manifest') {
+        return;
+    }
+
+    self.logger.info('Spotify browsing login came back from the UI oauth action, starting device authorization');
+    self.startAuthorization({});
 };
 
 ControllerSpotify.prototype.externalOauthLogin = function (data) {
@@ -932,10 +1842,16 @@ ControllerSpotify.prototype.externalOauthLogin = function (data) {
     if (data && data.refresh_token) {
         self.logger.info('Saving Spotify Refresh Token');
         self.config.set('refresh_token', data.refresh_token);
-        self.spopDaemonConnect();
-        setTimeout(()=>{
+        // Same work as oauthLogin minus the UI broadcasts: streaming-services pushes those
+        // itself. Resolves even on failure because that caller attaches no .fail and would
+        // otherwise leave its modal hanging.
+        self.spotifyApiConnect().then(function () {
+            self.initializeSpotifyBrowsingFacility();
             defer.resolve('');
-        },150);
+        }).fail(function (e) {
+            self.logger.error('Failed to perform Spotify API connection after external OAUTH Login: ' + e);
+            defer.resolve('');
+        });
     } else {
         self.logger.error('Could not receive oauth data');
         defer.resolve('');
@@ -983,7 +1899,6 @@ ControllerSpotify.prototype.resetSpotifyCredentials = function () {
     self.config.set('logged_user_id', '');
     self.config.set('access_token', '');
     self.config.set('refresh_token', '');
-    self.config.set('credentials_type', 'zeroconf');
 
     if (self.spotifyApi) {
         self.spotifyApi.resetCredentials();
@@ -1598,7 +2513,6 @@ ControllerSpotify.prototype.getMyArtists = function () {
             }
         ).catch((err) => {
             this.logger.error('An error occurred while listing Spotify my artists ' + err);
-            this.handleBrowsingError(err);
             defer.reject('');
         });
     });
@@ -2915,6 +3829,9 @@ ControllerSpotify.prototype.getSpotifyVolume = function () {
                 currentSpotifyVolume = results.body.value;
             }
         })
+        .catch((error) => {
+            self.logger.error('Failed to get Spotify volume from local API: ' + error);
+        });
 };
 
 ControllerSpotify.prototype.prefetch = function (track) {

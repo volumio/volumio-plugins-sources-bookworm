@@ -12,5 +12,6 @@
 "ip4":{"type": "string","value": ""},
 "mac":{"type": "string","value": ""},
 "mpdversion":{"type": "string","value": ""},
-"board":{"type": "string","value": ""}
+"board":{"type": "string","value": ""},
+"address":{"type": "string","value": "127.0.0.1"}
  }

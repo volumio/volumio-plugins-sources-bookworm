@@ -1,0 +1,89 @@
+{
+  "PAGE": {
+    "LABEL": "Režim letadlo"
+  },
+  "SECTION": {
+    "STATUS": "Stav",
+    "RADIOS": "Rádia",
+    "CONTROL": "Režim letadlo",
+    "PERSIST": "Nechat Wi-Fi vypnuté po restartu"
+  },
+  "STATUS": {
+    "LABEL": "Stav",
+    "OFF": "Rádia zapnutá",
+    "ON": "Režim letadlo zapnutý",
+    "WIFI_OFF": "Wi-Fi vypnuté",
+    "BT_OFF": "Bluetooth vypnutý",
+    "HARD": "Hardwarový přepínač režimu letadlo je zapnutý",
+    "SENTINEL": "Nalezen soubor pro obnovení Wi-Fi"
+  },
+  "RADIOS": {
+    "LABEL": "Rádia",
+    "LINE": "{name} ({type}): {soft}, {hard}",
+    "NONE": "Nebyla nalezena žádná rádia Wi-Fi ani Bluetooth",
+    "WLAN": "Wi-Fi",
+    "BLUETOOTH": "Bluetooth"
+  },
+  "SOFT": {
+    "BLOCKED": "blokováno softwarem",
+    "UNBLOCKED": "neblokováno softwarem"
+  },
+  "HARD": {
+    "BLOCKED": "blokováno hardwarem",
+    "UNBLOCKED": "neblokováno hardwarem"
+  },
+  "RECOVERY": {
+    "LABEL": "Síť",
+    "ETH": "Je připojena kabelová síť. Toto zařízení zůstane dostupné přes kabel.",
+    "NO_ETH": "Žádná kabelová síť. Wi-Fi se teď vypne a po restartu se vrátí. Bluetooth zůstane po restartu vypnuté, pokud ho necháte vypnuté.",
+    "NO_ETH_PERSIST": "Žádná kabelová síť. Wi-Fi zůstane po restartu vypnuté, dokud ho zde nezapnete nebo nevypnete režim letadlo. Pokud ztratíte rozhraní: síťový kabel, nebo prázdný soubor s názvem wifi na USB disku nebo v /boot.",
+    "SENTINEL": "Nalezen soubor pro obnovení Wi-Fi. Wi-Fi zůstane zapnuté, dokud se tento soubor neodstraní z /boot nebo z USB svazku."
+  },
+  "HARDBLOCK": {
+    "NOTE": "Hardwarový přepínač režimu letadlo vypnul rádio. To nelze zrušit softwarem."
+  },
+  "BUTTON": {
+    "ENABLE": "Zapnout režim letadlo",
+    "DISABLE": "Vypnout režim letadlo",
+    "WIFI_DISABLE": "Vypnout Wi-Fi",
+    "WIFI_ENABLE": "Zapnout Wi-Fi",
+    "BT_DISABLE": "Vypnout Bluetooth",
+    "BT_ENABLE": "Zapnout Bluetooth",
+    "PERSIST_UNLOCK": "Nechat Wi-Fi vypnuté po restartu"
+  },
+  "CONFIRM": {
+    "ENABLE_TITLE": "Zapnout režim letadlo?",
+    "ENABLE_ETH": "Wi-Fi a Bluetooth se vypnou a zůstanou vypnuté i po restartu. Toto zařízení zůstane dostupné přes kabel.",
+    "ENABLE_NO_ETH": "Wi-Fi a Bluetooth se teď vypnou. Restart zapne Wi-Fi. Bluetooth zůstane po restartu vypnuté, pokud ho necháte vypnuté.",
+    "WIFI_TITLE": "Vypnout Wi-Fi?",
+    "WIFI_ETH": "Wi-Fi se vypne a zůstane vypnuté i po restartu. Toto zařízení zůstane dostupné přes kabel.",
+    "WIFI_NO_ETH": "Wi-Fi se teď vypne. Restart ho zapne.",
+    "ENABLE_NO_ETH_PERSIST": "Wi-Fi a Bluetooth se vypnou a zůstanou po restartu vypnuté, dokud nevypnete režim letadlo nebo nezapnete Wi-Fi na této stránce.",
+    "WIFI_NO_ETH_PERSIST": "Wi-Fi se vypne a zůstane po restartu vypnuté, dokud ho zde nezapnete nebo nevypnete režim letadlo."
+  },
+  "TOAST": {
+    "ENABLED": "Wi-Fi a Bluetooth jsou vypnuté",
+    "DISABLED": "Wi-Fi a Bluetooth jsou zapnuté",
+    "WIFI_OFF": "Wi-Fi je vypnuté",
+    "WIFI_ON": "Wi-Fi je zapnuté",
+    "BT_OFF": "Bluetooth je vypnutý",
+    "BT_ON": "Bluetooth je zapnutý",
+    "HARD_DENIED": "Hardwarový přepínač blokuje rádio. To nelze přepsat.",
+    "FAILED": "Stav rádií se nepodařilo použít",
+    "PERSIST_ON": "Wi-Fi zůstane po restartu vypnuté",
+    "PERSIST_BAD": "Kód nesouhlasí. Zkuste to znovu s novým kódem.",
+    "PERSIST_SENTINEL": "Je přítomen soubor pro obnovení Wi-Fi. Odstraňte ho před zapnutím trvalého vypnutí."
+  },
+  "PERSIST": {
+    "TOKEN": "Zadejte tento kód",
+    "TOKEN_DOC": "Zadejte kód přesně. Je na této stránce, abyste potvrdili, že ji můžete číst.",
+    "CHALLENGE": "Kód",
+    "STATUS": "Trvale",
+    "NOTE_ACTIVE": "Wi-Fi zůstane po restartu vypnuté, dokud ho zde nezapnete nebo nevypnete režim letadlo.",
+    "NOTE_SENTINEL": "Je přítomen soubor pro obnovení Wi-Fi. Trvalé vypnutí nelze zapnout, dokud se soubor neodstraní z /boot nebo z USB svazku. Více v README tohoto pluginu.",
+    "WARN_LABEL": "Varování",
+    "NOTE_CHALLENGE": "Žádný síťový kabel. Po restartu toto zařízení nebude dostupné přes Wi-Fi. Používejte to jen tehdy, když má jednotka obrazovku nebo znáte jinou cestu zpět.",
+    "RECOVER_LABEL": "Obnova",
+    "NOTE_RECOVER": "Tato stránka před restartem (zapnout Wi-Fi nebo vypnout režim letadlo), síťový kabel, nebo prázdný soubor s názvem wifi na USB disku nebo v /boot. Více v README tohoto pluginu."
+  }
+}

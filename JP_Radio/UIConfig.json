@@ -1,0 +1,319 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_CONFIGURATION",
+    "description": "TRANSLATE.PAGE_DESCRIPTION"
+  },
+  "sections": [
+    {
+      "id": "network",
+      "element": "section",
+      "label": "TRANSLATE.SERVICE_PORT_LABEL",
+      "icon": "fa-user",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/jp_radio",
+        "method": "saveNetworkSetting"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "servicePort",
+          "networkDelay"
+        ]
+      },
+      "content": [
+        {
+          "id": "servicePort",
+          "type": "number",
+          "element": "input",
+          "label": "TRANSLATE.SERVICE_PORT_LABEL",
+          "attributes": [
+            {
+              "min": 1024,
+              "max": 65535
+            }
+          ],
+          "value": 0,
+          "description": "TRANSLATE.SERVICE_PORT_DESC"
+        },
+        {
+          "id": "networkDelay",
+          "type": "number",
+          "element": "input",
+          "label": "TRANSLATE.NETWORK_DELAY_LABEL",
+          "attributes": [
+            {
+              "min": 0,
+              "max": 300
+            }
+          ],
+          "value": 20,
+          "description": "TRANSLATE.NETWORK_DELAY_DESC"
+        }
+      ]
+    },
+    {
+      "id": "radiko_account",
+      "element": "section",
+      "label": "TRANSLATE.RADIKO_ACCOUNT_LABEL",
+      "icon": "fa-user",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/jp_radio",
+        "method": "saveRadikoAccount"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "radikoUser",
+          "radikoPass"
+        ]
+      },
+      "content": [
+        {
+          "id": "radikoUser",
+          "type": "text",
+          "element": "input",
+          "description": "TRANSLATE.RADIKO_ACCOUNT_USER_DESC",
+          "label": "TRANSLATE.RADIKO_ACCOUNT_USER_LABEL",
+          "value": ""
+        },
+        {
+          "id": "radikoPass",
+          "type": "password",
+          "element": "input",
+          "description": "TRANSLATE.RADIKO_ACCOUNT_PASS_DESC",
+          "label": "TRANSLATE.RADIKO_ACCOUNT_PASS_LABEL",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "browse_mode",
+      "element": "section",
+      "label": "TRANSLATE.BROWSE_MODE_LABEL",
+      "description": "TRANSLATE.BROWSE_MODE_DESC",
+      "icon": "fa-list-ol",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/jp_radio",
+        "method": "saveBrowseModeSetting"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "browseMode1",
+          "browseMode2"
+        ]
+      },
+      "content": [
+        {
+          "id": "browseMode1",
+          "element": "select",
+          "label": "TRANSLATE.BROWSE_MODE_LIVE_LABEL",
+          "doc": "TRANSLATE.BROWSE_MODE_LIVE_DOC",
+          "value": {
+            "value": "type1",
+            "label": "TRANSLATE.BROWSE_MODE_TYPE1"
+          },
+          "options": [
+            {
+              "value": "type1",
+              "label": "TRANSLATE.BROWSE_MODE_TYPE1"
+            },
+            {
+              "value": "type2",
+              "label": "TRANSLATE.BROWSE_MODE_TYPE2"
+            }
+          ]
+        },
+        {
+          "id": "browseMode2",
+          "element": "select",
+          "label": "TRANSLATE.BROWSE_MODE_TIMEFREE_LABEL",
+          "doc": "TRANSLATE.BROWSE_MODE_TIMEFREE_DOC",
+          "value": {
+            "value": "type1",
+            "label": "TRANSLATE.BROWSE_MODE_TYPE1"
+          },
+          "options": [
+            {
+              "value": "type1",
+              "label": "TRANSLATE.BROWSE_MODE_TYPE1"
+            },
+            {
+              "value": "type2",
+              "label": "TRANSLATE.BROWSE_MODE_TYPE2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "time_free_playback",
+      "element": "section",
+      "label": "TRANSLATE.TEMPO_LABEL",
+      "description": "TRANSLATE.TEMPO_DESC",
+      "icon": "fa-forward",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/jp_radio",
+        "method": "saveTempoSetting"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "tempo"
+        ]
+      },
+      "content": [
+        {
+          "id": "tempo",
+          "element": "select",
+          "label": "TRANSLATE.TEMPO_LABEL",
+          "doc": "TRANSLATE.TEMPO_DOC",
+          "value": {
+            "value": "1.0",
+            "label": "1.0x"
+          },
+          "options": [
+            { "value": "0.5", "label": "0.5x" },
+            { "value": "0.75", "label": "0.75x" },
+            { "value": "1.0", "label": "1.0x" },
+            { "value": "1.25", "label": "1.25x" },
+            { "value": "1.5", "label": "1.5x" },
+            { "value": "2.0", "label": "2.0x" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "albumart",
+      "element": "section",
+      "label": "TRANSLATE.ALBUMART_LABEL",
+      "description": "TRANSLATE.ALBUMART_DESC",
+      "icon": "fa-file-image-o",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/jp_radio",
+        "method": "saveAlbumartSetting"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "albumartType"
+        ]
+      },
+      "content": [
+        {
+          "id": "albumartType",
+          "element": "select",
+          "label": "TRANSLATE.ALBUMART_LABEL",
+          "doc": "TRANSLATE.ALBUMART_DOC",
+          "value": {
+            "value": "type3",
+            "label": "TRANSLATE.ALBUMART_TYPE3"
+          },
+          "options": [
+            { "value": "type1", "label": "TRANSLATE.ALBUMART_TYPE1" },
+            { "value": "type2", "label": "TRANSLATE.ALBUMART_TYPE2" },
+            { "value": "type3", "label": "TRANSLATE.ALBUMART_TYPE3" }
+          ]
+        },
+        {
+          "id": "stationLogoCache",
+          "element": "button",
+          "label": "TRANSLATE.STATION_LOGO_LABEL",
+          "doc": "TRANSLATE.STATION_LOGO_DOC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/jp_radio",
+              "method": "clearStationLogoCache",
+              "data": ""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "timetable_display",
+      "element": "section",
+      "label": "TRANSLATE.TIMETABLE_DISPLAY_LABEL",
+      "description": "TRANSLATE.TIMETABLE_DISPLAY_DESC",
+      "icon": "fa-calendar",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/jp_radio",
+        "method": "saveTimetableDisplaySetting"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "programPeriodFrom",
+          "programPeriodTo",
+          "timeFormat"
+        ]
+      },
+      "content": [
+        {
+          "id": "programPeriodFrom",
+          "type": "number",
+          "element": "input",
+          "label": "TRANSLATE.PROGRAM_PERIOD_FROM_LABEL",
+          "doc": "TRANSLATE.PROGRAM_PERIOD_FROM_DOC",
+          "attributes": [
+            { "min": 0, "max": 30 }
+          ],
+          "value": 7
+        },
+        {
+          "id": "programPeriodTo",
+          "type": "number",
+          "element": "input",
+          "label": "TRANSLATE.PROGRAM_PERIOD_TO_LABEL",
+          "doc": "TRANSLATE.PROGRAM_PERIOD_TO_DOC",
+          "attributes": [
+            { "min": 0, "max": 6 }
+          ],
+          "value": 0
+        },
+        {
+          "id": "timeFormat",
+          "element": "select",
+          "label": "TRANSLATE.TIME_FORMAT_LABEL",
+          "doc": "TRANSLATE.TIME_FORMAT_DOC",
+          "value": {
+            "value": "yyyy/MM/dd HH:mm-HH:mm",
+            "label": "TRANSLATE.TIME_FORMAT_TYPE1"
+          },
+          "options": [
+            { "value": "yyyy/MM/dd HH:mm-HH:mm", "label": "TRANSLATE.TIME_FORMAT_TYPE1" },
+            { "value": "MM/dd HH:mm-HH:mm", "label": "TRANSLATE.TIME_FORMAT_TYPE2" },
+            { "value": "M月d日(E) HH:mm-HH:mm", "label": "TRANSLATE.TIME_FORMAT_TYPE3" },
+            { "value": "M/d HH:mm-HH:mm", "label": "TRANSLATE.TIME_FORMAT_TYPE4" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "radiko_areas",
+      "element": "section",
+      "hidden": true,
+      "label": "TRANSLATE.RADIKO_AREAS_LABEL",
+      "description": "TRANSLATE.RADIKO_AREAS_DESC",
+      "icon": "fa-globe",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/jp_radio",
+        "method": "saveRadikoAreasSetting"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": []
+      },
+      "content": []
+    }
+  ]
+}

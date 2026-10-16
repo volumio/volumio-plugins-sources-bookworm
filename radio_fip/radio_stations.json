@@ -1,0 +1,93 @@
+[
+    {
+        "id": "national",
+        "title": "FIP National",
+        "stream": "https://icecast.radiofrance.fr/fip-hifi.aac?id=radiofrance",
+        "metadataId": 7,
+        "logo": "fip-national.png"
+    },
+    {
+        "id": "rock",
+        "title": "FIP Rock",
+        "stream": "https://icecast.radiofrance.fr/fiprock-hifi.aac?id=radiofrance",
+        "metadataId": 64,
+        "logo": "fip-rock.png"
+    },
+    {
+        "id": "jazz",
+        "title": "FIP Jazz",
+        "stream": "https://icecast.radiofrance.fr/fipjazz-hifi.aac?id=radiofrance",
+        "metadataId": 65,
+        "logo": "fip-jazz.png"
+    },
+    {
+        "id": "groove",
+        "title": "FIP Groove",
+        "stream": "https://icecast.radiofrance.fr/fipgroove-hifi.aac?id=radiofrance",
+        "metadataId": 66,
+        "logo": "fip-groove.png"
+    },
+    {
+        "id": "world",
+        "title": "FIP Monde",
+        "stream": "https://icecast.radiofrance.fr/fipworld-hifi.aac?id=radiofrance",
+        "metadataId": 69,
+        "logo": "fip-world.png"
+    },
+    {
+        "id": "nouveautes",
+        "title": "FIP Nouveautés",
+        "stream": "https://icecast.radiofrance.fr/fipnouveautes-hifi.aac?id=radiofrance",
+        "metadataId": 70,
+        "logo": "fip-nouveautes.png"
+    },
+    {
+        "id": "reggae",
+        "title": "FIP Reggae",
+        "stream": "https://icecast.radiofrance.fr/fipreggae-hifi.aac?id=radiofrance",
+        "metadataId": 71,
+        "logo": "fip-reggae.png"
+    },
+    {
+        "id": "electro",
+        "title": "FIP Electro",
+        "stream": "https://icecast.radiofrance.fr/fipelectro-hifi.aac?id=radiofrance",
+        "metadataId": 74,
+        "logo": "fip-electro.png"
+    },
+    {
+        "id": "metal",
+        "title": "FIP Metal",
+        "stream": "https://icecast.radiofrance.fr/fipmetal-hifi.aac?id=radiofrance",
+        "metadataId": 77,
+        "logo": "fip-metal.png"
+    },
+    {
+        "id": "pop",
+        "title": "FIP Pop",
+        "stream": "https://icecast.radiofrance.fr/fippop-hifi.aac?id=radiofrance",
+        "metadataId": 78,
+        "logo": "fip-pop.png"
+    },
+    {
+        "id": "hiphop",
+        "title": "FIP Hip-Hop",
+        "stream": "https://icecast.radiofrance.fr/fiphiphop-hifi.aac?id=radiofrance",
+        "metadataId": 95,
+        "logo": "fip-hiphop.png"
+    },
+    {
+        "id": "sacrefrancais",
+        "title": "FIP Sacré français !",
+        "stream": "https://icecast.radiofrance.fr/fipsacrefrancais-hifi.aac?id=radiofrance",
+        "metadataId": 96,
+        "logo": "fip-sacrefrancais.png"
+    },
+    {
+        "id": "cultes",
+        "title": "FIP Cultes",
+        "stream": "https://icecast.radiofrance.fr/fipcultes-hifi.aac?id=radiofrance",
+        "metadataId": 709,
+        "logo": "fip-cultes.png"
+    }
+]

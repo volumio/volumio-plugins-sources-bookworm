@@ -1,0 +1,89 @@
+{
+  "PAGE": {
+    "LABEL": "Modo avión"
+  },
+  "SECTION": {
+    "STATUS": "Estado",
+    "RADIOS": "Radios",
+    "CONTROL": "Modo avión",
+    "PERSIST": "Mantener el Wi-Fi apagado tras el reinicio"
+  },
+  "STATUS": {
+    "LABEL": "Estado",
+    "OFF": "Radios encendidas",
+    "ON": "Modo avión activado",
+    "WIFI_OFF": "Wi-Fi apagado",
+    "BT_OFF": "Bluetooth apagado",
+    "HARD": "El interruptor de avión por hardware está activado",
+    "SENTINEL": "Archivo de recuperación Wi-Fi encontrado"
+  },
+  "RADIOS": {
+    "LABEL": "Radios",
+    "LINE": "{name} ({type}): {soft}, {hard}",
+    "NONE": "No se han encontrado radios Wi-Fi o Bluetooth",
+    "WLAN": "Wi-Fi",
+    "BLUETOOTH": "Bluetooth"
+  },
+  "SOFT": {
+    "BLOCKED": "bloqueada por software",
+    "UNBLOCKED": "no bloqueada por software"
+  },
+  "HARD": {
+    "BLOCKED": "bloqueada por hardware",
+    "UNBLOCKED": "no bloqueada por hardware"
+  },
+  "RECOVERY": {
+    "LABEL": "Red",
+    "ETH": "Hay una red por cable conectada. Este dispositivo sigue siendo accesible por el cable.",
+    "NO_ETH": "No hay red por cable. El Wi-Fi se apaga ahora y vuelve tras el reinicio. El Bluetooth sigue apagado tras el reinicio si lo deja apagado.",
+    "NO_ETH_PERSIST": "No hay red por cable. El Wi-Fi seguirá apagado tras el reinicio hasta que lo encienda o desactive el modo avión en esta página. Si pierde la interfaz: un cable de red, o un archivo vacío llamado wifi en una memoria USB o en /boot.",
+    "SENTINEL": "Archivo de recuperación Wi-Fi encontrado. El Wi-Fi seguirá encendido hasta que se elimine ese archivo de /boot o del volumen USB."
+  },
+  "HARDBLOCK": {
+    "NOTE": "Un interruptor de avión por hardware ha apagado una radio. No se puede desbloquear por software."
+  },
+  "BUTTON": {
+    "ENABLE": "Activar modo avión",
+    "DISABLE": "Desactivar modo avión",
+    "WIFI_DISABLE": "Desactivar Wi-Fi",
+    "WIFI_ENABLE": "Activar Wi-Fi",
+    "BT_DISABLE": "Desactivar Bluetooth",
+    "BT_ENABLE": "Activar Bluetooth",
+    "PERSIST_UNLOCK": "Mantener el Wi-Fi apagado tras el reinicio"
+  },
+  "CONFIRM": {
+    "ENABLE_TITLE": "¿Activar el modo avión?",
+    "ENABLE_ETH": "Wi-Fi y Bluetooth se apagarán y seguirán apagados tras el reinicio. Este dispositivo seguirá siendo accesible por el cable.",
+    "ENABLE_NO_ETH": "Wi-Fi y Bluetooth se apagan ahora. Un reinicio enciende el Wi-Fi. El Bluetooth sigue apagado tras el reinicio si lo deja apagado.",
+    "WIFI_TITLE": "¿Apagar el Wi-Fi?",
+    "WIFI_ETH": "El Wi-Fi se apagará y seguirá apagado tras el reinicio. Este dispositivo seguirá siendo accesible por el cable.",
+    "WIFI_NO_ETH": "El Wi-Fi se apaga ahora. Un reinicio lo enciende.",
+    "ENABLE_NO_ETH_PERSIST": "Wi-Fi y Bluetooth se apagan y siguen apagados tras el reinicio hasta que desactive el modo avión o encienda el Wi-Fi en esta página.",
+    "WIFI_NO_ETH_PERSIST": "El Wi-Fi se apaga y sigue apagado tras el reinicio hasta que lo encienda o desactive el modo avión en esta página."
+  },
+  "TOAST": {
+    "ENABLED": "Wi-Fi y Bluetooth están apagados",
+    "DISABLED": "Wi-Fi y Bluetooth están encendidos",
+    "WIFI_OFF": "El Wi-Fi está apagado",
+    "WIFI_ON": "El Wi-Fi está encendido",
+    "BT_OFF": "El Bluetooth está apagado",
+    "BT_ON": "El Bluetooth está encendido",
+    "HARD_DENIED": "Un interruptor de hardware está bloqueando una radio. No se puede anular.",
+    "FAILED": "No se pudo aplicar el estado de las radios",
+    "PERSIST_ON": "El Wi-Fi seguirá apagado tras el reinicio",
+    "PERSIST_BAD": "El código no coincide. Pruebe de nuevo con el código nuevo.",
+    "PERSIST_SENTINEL": "Hay un archivo de recuperación Wi-Fi. Elimínelo antes de activar la persistencia."
+  },
+  "PERSIST": {
+    "TOKEN": "Escriba este código",
+    "TOKEN_DOC": "Escriba el código exactamente. Se muestra en esta página para confirmar que puede leerla.",
+    "CHALLENGE": "Código",
+    "STATUS": "Persistencia",
+    "NOTE_ACTIVE": "El Wi-Fi seguirá apagado tras el reinicio hasta que lo encienda o desactive el modo avión en esta página.",
+    "NOTE_SENTINEL": "Hay un archivo de recuperación Wi-Fi. No se puede activar la persistencia hasta que se elimine de /boot o del volumen USB. Más detalle en el README de este plugin.",
+    "WARN_LABEL": "Aviso",
+    "NOTE_CHALLENGE": "No hay cable de red. Tras el reinicio este dispositivo no será accesible por Wi-Fi. Úselo solo si el equipo tiene pantalla o tiene otra forma de volver.",
+    "RECOVER_LABEL": "Recuperación",
+    "NOTE_RECOVER": "Esta página antes de reiniciar (activar Wi-Fi o desactivar el modo avión), un cable de red, o un archivo vacío llamado wifi en una memoria USB o en /boot. Más detalle en el README de este plugin."
+  }
+}

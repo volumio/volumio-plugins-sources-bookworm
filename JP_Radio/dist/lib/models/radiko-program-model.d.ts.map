@@ -1,0 +1,1 @@
+{"version":3,"file":"radiko-program-model.d.ts","sourceRoot":"","sources":["../../../src/lib/models/radiko-program-model.ts"],"names":[],"mappings":"AAAA;;GAEG;AACH,MAAM,WAAW,iBAAiB;IAEhC,OAAO,EAAE,MAAM,CAAC;IAEhB,EAAE,EAAE,MAAM,CAAC;IAEX,EAAE,EAAE,MAAM,CAAC;IAEX,EAAE,EAAE,MAAM,CAAC;IAEX,KAAK,EAAE,MAAM,CAAC;IAEd,GAAG,EAAE,MAAM,CAAC;IAEZ,GAAG,EAAE,MAAM,CAAC;CACb"}

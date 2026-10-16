@@ -1,6 +1,6 @@
 {
   "name": "audio_keepalive",
-  "version": "1.1.1",
+  "version": "2.0.1",
   "description": "Maintains continuous audio output to prevent HDMI/SPDIF/USB signal loss during idle",
   "main": "index.js",
   "scripts": {
@@ -15,8 +15,8 @@
     "os": [
       "bookworm"
     ],
-    "details": "Feeds silence to the audio output during idle to prevent HDMI receivers, SPDIF decoders, and USB DACs from losing signal lock",
-    "changelog": "v1.1.1: HDMI/iec958 chain initialization bug fixes and improvements.",
+    "details": "Keeps a continuous inaudible noise mix on the output so HDMI receivers, SPDIF decoders, and USB DACs do not drop lock when idle",
+    "changelog": "v2.0.0: Continuous mix daemon. Virtual PCM forwards music; daemon always owns the output and mixes inaudible Gaussian noise. No switching, no volume control.",
     "architectures": [
       "amd64",
       "armhf"

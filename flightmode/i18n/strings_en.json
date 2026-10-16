@@ -1,0 +1,89 @@
+{
+  "PAGE": {
+    "LABEL": "Flight Mode"
+  },
+  "SECTION": {
+    "STATUS": "Status",
+    "RADIOS": "Radios",
+    "PERSIST": "Keep WiFi off across reboot",
+    "CONTROL": "Flight mode"
+  },
+  "STATUS": {
+    "LABEL": "Status",
+    "OFF": "Radios on",
+    "ON": "Flight mode on",
+    "WIFI_OFF": "WiFi off",
+    "BT_OFF": "Bluetooth off",
+    "HARD": "Hardware airplane switch is on",
+    "SENTINEL": "WiFi recovery file found"
+  },
+  "RADIOS": {
+    "LABEL": "Radios",
+    "LINE": "{name} ({type}): {soft}, {hard}",
+    "NONE": "No WiFi or Bluetooth radios found",
+    "WLAN": "WiFi",
+    "BLUETOOTH": "Bluetooth"
+  },
+  "SOFT": {
+    "BLOCKED": "software blocked",
+    "UNBLOCKED": "not software blocked"
+  },
+  "HARD": {
+    "BLOCKED": "hardware blocked",
+    "UNBLOCKED": "not hardware blocked"
+  },
+  "RECOVERY": {
+    "LABEL": "Network",
+    "ETH": "A wired network is connected. You can still reach this device over the cable.",
+    "NO_ETH": "No wired network. WiFi turns off now and comes back after reboot. Bluetooth stays off across reboot if you leave it off.",
+    "NO_ETH_PERSIST": "No wired network. WiFi will stay off across reboot until you enable WiFi or disable flight mode on this page. If you lose the UI: a network cable, or an empty file named wifi on a USB stick or in /boot.",
+    "SENTINEL": "WiFi recovery file found. WiFi will stay on until that file is removed from /boot or the USB volume."
+  },
+  "PERSIST": {
+    "TOKEN": "Type this code",
+    "TOKEN_DOC": "Type the code exactly. It is shown on this page so you confirm you can read it.",
+    "CHALLENGE": "Code",
+    "STATUS": "Persist",
+    "WARN_LABEL": "Warning",
+    "RECOVER_LABEL": "Recovery",
+    "NOTE_CHALLENGE": "No network cable. After reboot this device will not be reachable over WiFi. Use this only if the unit has a screen or you have another way back in.",
+    "NOTE_RECOVER": "This page before reboot (Enable WiFi or Disable flight mode), a network cable, or an empty file named wifi on a USB stick or in /boot. More detail is in this plugin's README.",
+    "NOTE_ACTIVE": "WiFi will stay off across reboot until you enable WiFi or disable flight mode on this page.",
+    "NOTE_SENTINEL": "A wifi recovery file is present. Persist cannot be enabled until that file is removed from /boot or the USB volume. More detail is in this plugin's README."
+  },
+  "HARDBLOCK": {
+    "NOTE": "A hardware airplane switch has turned a radio off. That cannot be cleared in software."
+  },
+  "BUTTON": {
+    "ENABLE": "Enable flight mode",
+    "DISABLE": "Disable flight mode",
+    "WIFI_DISABLE": "Disable WiFi",
+    "WIFI_ENABLE": "Enable WiFi",
+    "BT_DISABLE": "Disable Bluetooth",
+    "BT_ENABLE": "Enable Bluetooth",
+    "PERSIST_UNLOCK": "Keep WiFi off across reboot"
+  },
+  "CONFIRM": {
+    "ENABLE_TITLE": "Turn on flight mode?",
+    "ENABLE_ETH": "WiFi and Bluetooth will turn off and stay off across reboot. You can still reach this device over the cable.",
+    "ENABLE_NO_ETH": "WiFi and Bluetooth will turn off now. A reboot turns WiFi back on. Bluetooth stays off across reboot if you leave it off.",
+    "ENABLE_NO_ETH_PERSIST": "WiFi and Bluetooth will turn off and stay off across reboot until you disable flight mode or enable WiFi on this page.",
+    "WIFI_TITLE": "Turn off WiFi?",
+    "WIFI_ETH": "WiFi will turn off and stay off across reboot. You can still reach this device over the cable.",
+    "WIFI_NO_ETH": "WiFi will turn off now. A reboot turns WiFi back on.",
+    "WIFI_NO_ETH_PERSIST": "WiFi will turn off and stay off across reboot until you enable WiFi or disable flight mode on this page."
+  },
+  "TOAST": {
+    "ENABLED": "WiFi and Bluetooth are off",
+    "DISABLED": "WiFi and Bluetooth are on",
+    "WIFI_OFF": "WiFi is off",
+    "WIFI_ON": "WiFi is on",
+    "BT_OFF": "Bluetooth is off",
+    "BT_ON": "Bluetooth is on",
+    "HARD_DENIED": "A hardware switch is blocking a radio. This cannot override it.",
+    "FAILED": "Could not apply radio state",
+    "PERSIST_ON": "WiFi will stay off across reboot",
+    "PERSIST_BAD": "The code did not match. Try again with the new code.",
+    "PERSIST_SENTINEL": "A wifi recovery file is present. Remove it before enabling persist."
+  }
+}

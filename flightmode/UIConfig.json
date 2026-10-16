@@ -1,0 +1,203 @@
+{
+  "page": {
+    "label": "TRANSLATE.PAGE.LABEL"
+  },
+  "sections": [
+    {
+      "id": "section_status",
+      "element": "section",
+      "label": "TRANSLATE.SECTION.STATUS",
+      "icon": "fa-plane",
+      "content": [
+        {
+          "id": "status_text",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.STATUS.LABEL",
+          "value": ""
+        },
+        {
+          "id": "radios_text",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.RADIOS.LABEL",
+          "value": ""
+        },
+        {
+          "id": "recovery_text",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.RECOVERY.LABEL",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "section_radios",
+      "element": "section",
+      "label": "TRANSLATE.SECTION.RADIOS",
+      "icon": "fa-wifi",
+      "content": [
+        {
+          "id": "disable_wifi",
+          "element": "button",
+          "label": "TRANSLATE.BUTTON.WIFI_DISABLE",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "askForConfirm": {
+              "title": "TRANSLATE.CONFIRM.WIFI_TITLE",
+              "message": "TRANSLATE.CONFIRM.WIFI_NO_ETH"
+            },
+            "data": {
+              "endpoint": "system_controller/flightmode",
+              "method": "disableWifi",
+              "data": ""
+            }
+          }
+        },
+        {
+          "id": "enable_wifi",
+          "element": "button",
+          "label": "TRANSLATE.BUTTON.WIFI_ENABLE",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_controller/flightmode",
+              "method": "enableWifi",
+              "data": ""
+            }
+          }
+        },
+        {
+          "id": "disable_bluetooth",
+          "element": "button",
+          "label": "TRANSLATE.BUTTON.BT_DISABLE",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_controller/flightmode",
+              "method": "disableBluetooth",
+              "data": ""
+            }
+          }
+        },
+        {
+          "id": "enable_bluetooth",
+          "element": "button",
+          "label": "TRANSLATE.BUTTON.BT_ENABLE",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_controller/flightmode",
+              "method": "enableBluetooth",
+              "data": ""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_persist",
+      "element": "section",
+      "label": "TRANSLATE.SECTION.PERSIST",
+      "icon": "fa-lock",
+      "hidden": true,
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/flightmode",
+        "method": "unlockWifiPersist"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.BUTTON.PERSIST_UNLOCK",
+        "data": [
+          "persist_challenge"
+        ]
+      },
+      "content": [
+        {
+          "id": "persist_note",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PERSIST.WARN_LABEL",
+          "value": "",
+          "hidden": true
+        },
+        {
+          "id": "persist_recover",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PERSIST.RECOVER_LABEL",
+          "value": "",
+          "hidden": true
+        },
+        {
+          "id": "persist_token",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PERSIST.TOKEN",
+          "doc": "TRANSLATE.PERSIST.TOKEN_DOC",
+          "value": ""
+        },
+        {
+          "id": "persist_challenge",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PERSIST.CHALLENGE",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "section_control",
+      "element": "section",
+      "label": "TRANSLATE.SECTION.CONTROL",
+      "icon": "fa-power-off",
+      "content": [
+        {
+          "id": "enable_flightmode",
+          "element": "button",
+          "label": "TRANSLATE.BUTTON.ENABLE",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "askForConfirm": {
+              "title": "TRANSLATE.CONFIRM.ENABLE_TITLE",
+              "message": "TRANSLATE.CONFIRM.ENABLE_NO_ETH"
+            },
+            "data": {
+              "endpoint": "system_controller/flightmode",
+              "method": "enableFlightMode",
+              "data": ""
+            }
+          }
+        },
+        {
+          "id": "disable_flightmode",
+          "element": "button",
+          "label": "TRANSLATE.BUTTON.DISABLE",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_controller/flightmode",
+              "method": "disableFlightMode",
+              "data": ""
+            }
+          }
+        },
+        {
+          "id": "hardblock_note",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.STATUS.LABEL",
+          "value": "TRANSLATE.HARDBLOCK.NOTE",
+          "hidden": true
+        }
+      ]
+    }
+  ]
+}

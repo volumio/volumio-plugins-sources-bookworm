@@ -14,5 +14,9 @@
   "autoRestore": {
     "type": "boolean",
     "value": true
+  },
+  "shuffleOffline": {
+    "type": "boolean",
+    "value": true
   }
 }

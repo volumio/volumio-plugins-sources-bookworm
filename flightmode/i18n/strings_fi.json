@@ -1,0 +1,89 @@
+{
+  "PAGE": {
+    "LABEL": "Lentokonetila"
+  },
+  "SECTION": {
+    "STATUS": "Tila",
+    "RADIOS": "Radiot",
+    "CONTROL": "Lentokonetila",
+    "PERSIST": "Pidä Wi-Fi pois päältä uudelleenkäynnistyksen jälkeen"
+  },
+  "STATUS": {
+    "LABEL": "Tila",
+    "OFF": "Radiot päällä",
+    "ON": "Lentokonetila päällä",
+    "WIFI_OFF": "Wi-Fi pois päältä",
+    "BT_OFF": "Bluetooth pois päältä",
+    "HARD": "Laitteiston lentokonekytkin on päällä",
+    "SENTINEL": "Wi-Fi-palautustiedosto löytyi"
+  },
+  "RADIOS": {
+    "LABEL": "Radiot",
+    "LINE": "{name} ({type}): {soft}, {hard}",
+    "NONE": "Wi-Fi- tai Bluetooth-radioita ei löytynyt",
+    "WLAN": "Wi-Fi",
+    "BLUETOOTH": "Bluetooth"
+  },
+  "SOFT": {
+    "BLOCKED": "estetty ohjelmistolla",
+    "UNBLOCKED": "ei estetty ohjelmistolla"
+  },
+  "HARD": {
+    "BLOCKED": "estetty laitteistolla",
+    "UNBLOCKED": "ei estetty laitteistolla"
+  },
+  "RECOVERY": {
+    "LABEL": "Verkko",
+    "ETH": "Langallinen verkko on kytketty. Tämä laite on edelleen tavoitettavissa kaapelin kautta.",
+    "NO_ETH": "Ei langallista verkkoa. Wi-Fi sammuu nyt ja palaa uudelleenkäynnistyksen jälkeen. Bluetooth pysyy pois päältä uudelleenkäynnistyksen jälkeen, jos jätät sen pois päältä.",
+    "NO_ETH_PERSIST": "Ei langallista verkkoa. Wi-Fi pysyy pois päältä uudelleenkäynnistyksen jälkeen, kunnes kytket sen päälle tai poistat lentokonetilan käytöstä tällä sivulla. Jos käyttöliittymä katoaa: verkkokaapeli tai tyhjä tiedosto nimeltä wifi USB-tikulla tai /boot-osiossa.",
+    "SENTINEL": "Wi-Fi-palautustiedosto löytyi. Wi-Fi pysyy päällä, kunnes tiedosto poistetaan /boot-osiosta tai USB-taltiolta."
+  },
+  "HARDBLOCK": {
+    "NOTE": "Laitteiston lentokonekytkin on sammuttanut radion. Sitä ei voi poistaa ohjelmistolla."
+  },
+  "BUTTON": {
+    "ENABLE": "Ota lentokonetila käyttöön",
+    "DISABLE": "Poista lentokonetila käytöstä",
+    "WIFI_DISABLE": "Poista Wi-Fi käytöstä",
+    "WIFI_ENABLE": "Ota Wi-Fi käyttöön",
+    "BT_DISABLE": "Poista Bluetooth käytöstä",
+    "BT_ENABLE": "Ota Bluetooth käyttöön",
+    "PERSIST_UNLOCK": "Pidä Wi-Fi pois päältä uudelleenkäynnistyksen jälkeen"
+  },
+  "CONFIRM": {
+    "ENABLE_TITLE": "Otetaanko lentokonetila käyttöön?",
+    "ENABLE_ETH": "Wi-Fi ja Bluetooth sammutetaan, ja ne pysyvät pois päältä uudelleenkäynnistyksen jälkeen. Tämä laite on edelleen tavoitettavissa kaapelin kautta.",
+    "ENABLE_NO_ETH": "Wi-Fi ja Bluetooth sammutetaan nyt. Uudelleenkäynnistys kytkee Wi-Fin päälle. Bluetooth pysyy pois päältä uudelleenkäynnistyksen jälkeen, jos jätät sen pois päältä.",
+    "WIFI_TITLE": "Sammutetaanko Wi-Fi?",
+    "WIFI_ETH": "Wi-Fi sammutetaan, ja se pysyy pois päältä uudelleenkäynnistyksen jälkeen. Tämä laite on edelleen tavoitettavissa kaapelin kautta.",
+    "WIFI_NO_ETH": "Wi-Fi sammutetaan nyt. Uudelleenkäynnistys kytkee sen päälle.",
+    "ENABLE_NO_ETH_PERSIST": "Wi-Fi ja Bluetooth sammutetaan ja ne pysyvät pois päältä uudelleenkäynnistyksen jälkeen, kunnes poistat lentokonetilan käytöstä tai kytket Wi-Fin päälle tällä sivulla.",
+    "WIFI_NO_ETH_PERSIST": "Wi-Fi sammutetaan ja se pysyy pois päältä uudelleenkäynnistyksen jälkeen, kunnes kytket sen päälle tai poistat lentokonetilan käytöstä tällä sivulla."
+  },
+  "TOAST": {
+    "ENABLED": "Wi-Fi ja Bluetooth ovat pois päältä",
+    "DISABLED": "Wi-Fi ja Bluetooth ovat päällä",
+    "WIFI_OFF": "Wi-Fi on pois päältä",
+    "WIFI_ON": "Wi-Fi on päällä",
+    "BT_OFF": "Bluetooth on pois päältä",
+    "BT_ON": "Bluetooth on päällä",
+    "HARD_DENIED": "Laitteistokytkin estää radion. Sitä ei voi ohittaa.",
+    "FAILED": "Radiotilaa ei voitu ottaa käyttöön",
+    "PERSIST_ON": "Wi-Fi pysyy pois päältä uudelleenkäynnistyksen jälkeen",
+    "PERSIST_BAD": "Koodi ei täsmää. Yritä uudelleen uudella koodilla.",
+    "PERSIST_SENTINEL": "Wi-Fi-palautustiedosto on olemassa. Poista se ennen pysyvän sammutuksen käyttöönottoa."
+  },
+  "PERSIST": {
+    "TOKEN": "Kirjoita tämä koodi",
+    "TOKEN_DOC": "Kirjoita koodi tarkasti. Se näkyy tällä sivulla, jotta vahvistat että voit lukea sen.",
+    "CHALLENGE": "Koodi",
+    "STATUS": "Pysyvä",
+    "NOTE_ACTIVE": "Wi-Fi pysyy pois päältä uudelleenkäynnistyksen jälkeen, kunnes kytket sen päälle tai poistat lentokonetilan käytöstä tällä sivulla.",
+    "NOTE_SENTINEL": "Wi-Fi-palautustiedosto on olemassa. Pysyvää sammutusta ei voi ottaa käyttöön ennen kuin tiedosto poistetaan /boot-osiosta tai USB-taltiolta. Lisää tämän lisäosan README-tiedostossa.",
+    "WARN_LABEL": "Varoitus",
+    "NOTE_CHALLENGE": "Ei verkkokaapelia. Uudelleenkäynnistyksen jälkeen tähän laitteeseen ei saa yhteyttä Wi-Fillä. Käytä tätä vain, jos laitteessa on näyttö tai tiedät toisen paluutien.",
+    "RECOVER_LABEL": "Palautus",
+    "NOTE_RECOVER": "Tämä sivu ennen uudelleenkäynnistystä (kytke Wi-Fi päälle tai poista lentokonetila käytöstä), verkkokaapeli, tai tyhjä tiedosto nimeltä wifi USB-tikulla tai /boot-osiossa. Lisää tämän lisäosan README-tiedostossa."
+  }
+}

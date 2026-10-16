@@ -1,6 +1,6 @@
 {
   "name": "rtlsdr_radio",
-  "version": "1.3.9",
+  "version": "1.4.12",
   "description": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
   "main": "index.js",
   "scripts": {
@@ -24,16 +24,16 @@
     "has_configuration": true,
     "has_alsa_contribution": true,
     "details": "Receive FM and DAB/DAB+ radio using RTL-SDR USB tuners.",
-    "changelog": "v1.3.9 - FM Regional Standards with automatic channel spacing"
+    "changelog": "v1.4.12 - FM Oversampling removed (it cost reception), song recognition asks less on talk, the FM Sample Rate choices say what the rate does"
   },
   "engines": {
     "node": ">=20",
     "volumio": ">=4"
   },
   "dependencies": {
-    "fs-extra": "*",
-    "kew": "*",
-    "v-conf": "*",
+    "fs-extra": "^11.3.3",
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.3",
     "express": "^4.18.2",
     "body-parser": "^1.20.2",
     "multer": "^2.0.2",

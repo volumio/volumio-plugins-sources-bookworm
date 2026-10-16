@@ -3,7 +3,7 @@
   "SETTINGS_TITLE": "Audio Keepalive Instellingen",
   "SETTINGS_DESC": "Houd het audio-uitvoerapparaat actief om onderhandelingsvertragingen, klikken en plofjes op HDMI-, SPDIF- en USB-DAC-uitgangen te voorkomen.",
   "KEEPALIVE_ENABLED": "Audioapparaat actief houden",
-  "KEEPALIVE_ENABLED_DESC": "Houdt het ALSA-uitvoerapparaat permanent open. Voorkomt dat HDMI/SPDIF-receivers en USB-DAC's het signaal verliezen tijdens inactiviteit, waardoor de vertraging bij het hervatten van het afspelen wordt geëlimineerd.",
+  "KEEPALIVE_ENABLED_DESC": "Schrijft onhoorbare ruis continu naar de uitgang. Muziek wordt automatisch mee gemengd. Geen extra volumeregeling. Werkt met HDMI, SPDIF en USB-DAC's.",
   "SETTINGS_SAVED": "Audio Keepalive instellingen toegepast",
   "SAVE": "Opslaan"
 }

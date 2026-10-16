@@ -1,0 +1,90 @@
+{
+  "api_key": {
+    "type": "string",
+    "value": ""
+  },
+  "device_name": {
+    "type": "string",
+    "value": "Volumio"
+  },
+  "initial_volume": {
+    "type": "number",
+    "value": 50
+  },
+  "align_volume": {
+    "type": "boolean",
+    "value": false
+  },
+  "cache_size_mb": {
+    "type": "number",
+    "value": 1024
+  },
+  "cache_location": {
+    "type": "string",
+    "value": "disk"
+  },
+  "buffer_ms": {
+    "type": "number",
+    "value": 500
+  },
+  "seek_coalesce_ms": {
+    "type": "number",
+    "value": 200
+  },
+  "inactive_hold_ms": {
+    "type": "number",
+    "value": 2000
+  },
+  "quality_retry_ms": {
+    "type": "number",
+    "value": 300
+  },
+  "quality_retry_max": {
+    "type": "number",
+    "value": 2
+  },
+  "queue_fetch_ms": {
+    "type": "number",
+    "value": 2500
+  },
+  "output_trim_db": {
+    "type": "number",
+    "value": 0
+  },
+  "loudness_normalization": {
+    "type": "boolean",
+    "value": true
+  },
+  "crossfade": {
+    "type": "boolean",
+    "value": false
+  },
+  "crossfade_ms": {
+    "type": "number",
+    "value": 2000
+  },
+  "retain_api_key": {
+    "type": "boolean",
+    "value": true
+  },
+  "verbose_logging": {
+    "type": "boolean",
+    "value": false
+  },
+  "queue_playback": {
+    "type": "boolean",
+    "value": false
+  },
+  "queue_remote_playback": {
+    "type": "boolean",
+    "value": false
+  },
+  "auto_update_binary": {
+    "type": "boolean",
+    "value": false
+  },
+  "peppy_metering": {
+    "type": "boolean",
+    "value": false
+  }
+}

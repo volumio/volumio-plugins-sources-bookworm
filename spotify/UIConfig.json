@@ -22,46 +22,53 @@
     {
       "id": "section_account",
       "element": "section",
-      "label": "TRANSLATE.SPOTIFY_BROWSING",
+      "label": "TRANSLATE.SPOTIFY_ACCOUNT",
       "hidden": false,
       "content": [
         {
-          "id": "oauth",
+          "id": "authorize",
           "element": "button",
           "label": "TRANSLATE.AUTHORIZE",
-          "description": "TRANSLATE.AUTHORIZE_PERSONAL_CONTENT",
-          "onClick": {
-            "type": "oauth",
-            "performerUrl": "https://oauth-performer.prod.vlmapi.io/spotify",
-            "plugin": "music_service/spop",
-            "scopes": [
-              "user-modify-playback-state",
-              "user-read-playback-state",
-              "user-read-currently-playing",
-              "user-top-read",
-              "user-read-recently-played",
-              "user-read-private",
-              "user-read-email",
-              "user-library-read",
-              "playlist-read-private",
-              "playlist-read-collaborative",
-              "app-remote-control",
-              "streaming",
-              "user-follow-read"
-            ]
-          }
-        },
-        {
-          "id": "logout",
-          "element": "button",
-          "label": "TRANSLATE.LOGOUT",
-          "description": "TRANSLATE.LOGOUT",
+          "description": "TRANSLATE.AUTHORIZE_TODO",
           "onClick": {
             "type": "emit",
             "message": "callMethod",
             "data": {
               "endpoint": "music_service/spop",
-              "method": "logout",
+              "method": "startAuthorization",
+              "data": {
+                "performerUrl": "https://oauth-performer.prod.vlmapi.io/spotify",
+                "plugin": "music_service/spop",
+                "scopes": [
+                  "user-modify-playback-state",
+                  "user-read-playback-state",
+                  "user-read-currently-playing",
+                  "user-top-read",
+                  "user-read-recently-played",
+                  "user-read-private",
+                  "user-read-email",
+                  "user-library-read",
+                  "playlist-read-private",
+                  "playlist-read-collaborative",
+                  "app-remote-control",
+                  "streaming",
+                  "user-follow-read"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": "deauthorize",
+          "element": "button",
+          "label": "TRANSLATE.REMOVE_AUTHORIZATION",
+          "description": "TRANSLATE.AUTHORIZE_DONE",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/spop",
+              "method": "revokeAuthorization",
               "data": ""
             }
           },

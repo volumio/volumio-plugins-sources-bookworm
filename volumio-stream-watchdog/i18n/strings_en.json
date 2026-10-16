@@ -10,6 +10,8 @@
     "RESTORE_CHECK_INTERVAL_DESC": "How often to probe the stream URL while in fallback mode. Minimum: 30",
     "AUTO_RESTORE": "Auto-Restore",
     "AUTO_RESTORE_DESC": "Automatically resume the original stream when it comes back",
+    "SHUFFLE_OFFLINE": "Shuffle Offline Playlist",
+    "SHUFFLE_OFFLINE_DESC": "Play the offline playlist in random order. Outages are usually short, so without this the same first tracks play every time and the rest of the playlist is never heard.",
     "SAVE": "Save Settings"
   }
 }

@@ -1,0 +1,89 @@
+{
+  "PAGE": {
+    "LABEL": "Tryb samolotowy"
+  },
+  "SECTION": {
+    "STATUS": "Stan",
+    "RADIOS": "Radia",
+    "CONTROL": "Tryb samolotowy",
+    "PERSIST": "Pozostaw Wi-Fi wyłączone po restarcie"
+  },
+  "STATUS": {
+    "LABEL": "Stan",
+    "OFF": "Radia włączone",
+    "ON": "Tryb samolotowy włączony",
+    "WIFI_OFF": "Wi-Fi wyłączone",
+    "BT_OFF": "Bluetooth wyłączony",
+    "HARD": "Sprzętowy przełącznik trybu samolotowego jest włączony",
+    "SENTINEL": "Znaleziono plik odzyskiwania Wi-Fi"
+  },
+  "RADIOS": {
+    "LABEL": "Radia",
+    "LINE": "{name} ({type}): {soft}, {hard}",
+    "NONE": "Nie znaleziono radia Wi-Fi ani Bluetooth",
+    "WLAN": "Wi-Fi",
+    "BLUETOOTH": "Bluetooth"
+  },
+  "SOFT": {
+    "BLOCKED": "zablokowane programowo",
+    "UNBLOCKED": "niezablokowane programowo"
+  },
+  "HARD": {
+    "BLOCKED": "zablokowane sprzętowo",
+    "UNBLOCKED": "niezablokowane sprzętowo"
+  },
+  "RECOVERY": {
+    "LABEL": "Sieć",
+    "ETH": "Podłączona jest sieć przewodowa. To urządzenie pozostaje dostępne przez kabel.",
+    "NO_ETH": "Brak sieci przewodowej. Wi-Fi wyłączy się teraz i wróci po restarcie. Bluetooth pozostanie wyłączony po restarcie, jeśli go zostawisz wyłączonego.",
+    "NO_ETH_PERSIST": "Brak sieci przewodowej. Wi-Fi pozostanie wyłączone po restarcie, aż włączysz je tutaj lub wyłączysz tryb samolotowy. Jeśli stracisz interfejs: kabel sieciowy albo pusty plik o nazwie wifi na pendrive lub w /boot.",
+    "SENTINEL": "Znaleziono plik odzyskiwania Wi-Fi. Wi-Fi pozostanie włączone, aż ten plik zostanie usunięty z /boot lub z nośnika USB."
+  },
+  "HARDBLOCK": {
+    "NOTE": "Sprzętowy przełącznik trybu samolotowego wyłączył radio. Tego nie da się odblokować programowo."
+  },
+  "BUTTON": {
+    "ENABLE": "Włącz tryb samolotowy",
+    "DISABLE": "Wyłącz tryb samolotowy",
+    "WIFI_DISABLE": "Wyłącz Wi-Fi",
+    "WIFI_ENABLE": "Włącz Wi-Fi",
+    "BT_DISABLE": "Wyłącz Bluetooth",
+    "BT_ENABLE": "Włącz Bluetooth",
+    "PERSIST_UNLOCK": "Pozostaw Wi-Fi wyłączone po restarcie"
+  },
+  "CONFIRM": {
+    "ENABLE_TITLE": "Włączyć tryb samolotowy?",
+    "ENABLE_ETH": "Wi-Fi i Bluetooth zostaną wyłączone i pozostaną wyłączone po restarcie. To urządzenie pozostanie dostępne przez kabel.",
+    "ENABLE_NO_ETH": "Wi-Fi i Bluetooth wyłączą się teraz. Restart włączy Wi-Fi. Bluetooth pozostanie wyłączony po restarcie, jeśli go zostawisz wyłączonego.",
+    "WIFI_TITLE": "Wyłączyć Wi-Fi?",
+    "WIFI_ETH": "Wi-Fi zostanie wyłączone i pozostanie wyłączone po restarcie. To urządzenie pozostanie dostępne przez kabel.",
+    "WIFI_NO_ETH": "Wi-Fi wyłączy się teraz. Restart je włączy.",
+    "ENABLE_NO_ETH_PERSIST": "Wi-Fi i Bluetooth wyłączą się i pozostaną wyłączone po restarcie, aż wyłączysz tryb samolotowy lub włączysz Wi-Fi tutaj.",
+    "WIFI_NO_ETH_PERSIST": "Wi-Fi wyłączy się i pozostanie wyłączone po restarcie, aż włączysz je tutaj lub wyłączysz tryb samolotowy."
+  },
+  "TOAST": {
+    "ENABLED": "Wi-Fi i Bluetooth są wyłączone",
+    "DISABLED": "Wi-Fi i Bluetooth są włączone",
+    "WIFI_OFF": "Wi-Fi jest wyłączone",
+    "WIFI_ON": "Wi-Fi jest włączone",
+    "BT_OFF": "Bluetooth jest wyłączony",
+    "BT_ON": "Bluetooth jest włączony",
+    "HARD_DENIED": "Przełącznik sprzętowy blokuje radio. Nie można tego nadpisać.",
+    "FAILED": "Nie udało się zastosować stanu radiów",
+    "PERSIST_ON": "Wi-Fi pozostanie wyłączone po restarcie",
+    "PERSIST_BAD": "Kod się nie zgadza. Spróbuj ponownie z nowym kodem.",
+    "PERSIST_SENTINEL": "Jest plik odzyskiwania Wi-Fi. Usuń go przed włączeniem trwałego wyłączenia."
+  },
+  "PERSIST": {
+    "TOKEN": "Wpisz ten kod",
+    "TOKEN_DOC": "Wpisz kod dokładnie. Jest na tej stronie, żeby potwierdzić, że możesz ją przeczytać.",
+    "CHALLENGE": "Kod",
+    "STATUS": "Trwale",
+    "NOTE_ACTIVE": "Wi-Fi pozostanie wyłączone po restarcie, aż włączysz je tutaj lub wyłączysz tryb samolotowy.",
+    "NOTE_SENTINEL": "Jest plik odzyskiwania Wi-Fi. Trwałego wyłączenia nie można włączyć, dopóki plik nie zostanie usunięty z /boot lub z nośnika USB. Więcej w pliku README tej wtyczki.",
+    "WARN_LABEL": "Ostrzeżenie",
+    "NOTE_CHALLENGE": "Brak kabla sieciowego. Po restarcie to urządzenie nie będzie dostępne przez Wi-Fi. Używaj tego tylko, gdy urządzenie ma ekran albo znasz inną drogę powrotu.",
+    "RECOVER_LABEL": "Odzyskiwanie",
+    "NOTE_RECOVER": "Ta strona przed restartem (włącz Wi-Fi lub wyłącz tryb samolotowy), kabel sieciowy, albo pusty plik o nazwie wifi na pendrive lub w /boot. Więcej w pliku README tej wtyczki."
+  }
+}

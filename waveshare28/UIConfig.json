@@ -1,0 +1,381 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_NAME"
+  },
+  "sections": [
+    {
+      "id": "section_status",
+      "element": "section",
+      "label": "TRANSLATE.STATUS",
+      "icon": "fa-info-circle",
+      "content": [
+        {
+          "id": "board_family",
+          "element": "input",
+          "label": "TRANSLATE.BOARD",
+          "doc": "TRANSLATE.BOARD_DOC",
+          "value": ""
+        },
+        {
+          "id": "board_model",
+          "element": "input",
+          "label": "TRANSLATE.MODEL",
+          "doc": "TRANSLATE.MODEL_DOC",
+          "value": ""
+        },
+        {
+          "id": "panel_live",
+          "element": "input",
+          "label": "TRANSLATE.PANEL_LIVE",
+          "doc": "TRANSLATE.PANEL_LIVE_DOC",
+          "value": ""
+        },
+        {
+          "id": "kms3a",
+          "element": "input",
+          "label": "TRANSLATE.KMS3A",
+          "doc": "TRANSLATE.KMS3A_DOC",
+          "value": "n/a"
+        }
+      ]
+    },
+    {
+      "id": "section_settings",
+      "element": "section",
+      "label": "TRANSLATE.SETTINGS",
+      "icon": "fa-cogs",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/waveshare28",
+        "method": "saveSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "rotation",
+          "speed",
+          "backend",
+          "console",
+          "hdmi"
+        ]
+      },
+      "content": [
+        {
+          "id": "rotation",
+          "element": "select",
+          "label": "TRANSLATE.ROTATION",
+          "doc": "TRANSLATE.ROTATION_DOC",
+          "value": {
+            "value": 0,
+            "label": "0"
+          },
+          "options": [
+            { "value": 0, "label": "0" },
+            { "value": 90, "label": "90" },
+            { "value": 180, "label": "180" },
+            { "value": 270, "label": "270" }
+          ]
+        },
+        {
+          "id": "speed",
+          "element": "input",
+          "label": "TRANSLATE.SPEED",
+          "doc": "TRANSLATE.SPEED_DOC",
+          "value": "32000000"
+        },
+        {
+          "id": "backend",
+          "element": "select",
+          "label": "TRANSLATE.BACKEND",
+          "doc": "TRANSLATE.BACKEND_DOC",
+          "value": {
+            "value": "spi",
+            "label": "TRANSLATE.BACKEND_SPI"
+          },
+          "options": [
+            { "value": "spi", "label": "TRANSLATE.BACKEND_SPI" },
+            { "value": "framebuffer", "label": "TRANSLATE.BACKEND_FRAMEBUFFER" }
+          ]
+        },
+        {
+          "id": "console",
+          "element": "select",
+          "label": "TRANSLATE.CONSOLE",
+          "doc": "TRANSLATE.CONSOLE_DOC",
+          "value": {
+            "value": "release",
+            "label": "TRANSLATE.CONSOLE_RELEASE"
+          },
+          "options": [
+            { "value": "release", "label": "TRANSLATE.CONSOLE_RELEASE" },
+            { "value": "share", "label": "TRANSLATE.CONSOLE_SHARE" }
+          ],
+          "visibleIf": {
+            "field": "backend",
+            "value": "framebuffer"
+          }
+        },
+        {
+          "id": "hdmi",
+          "element": "switch",
+          "label": "TRANSLATE.HDMI",
+          "doc": "TRANSLATE.HDMI_DOC",
+          "value": false,
+          "visibleIf": {
+            "field": "backend",
+            "value": "framebuffer"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_ui",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_UI",
+      "icon": "fa-paint-brush",
+      "description": "TRANSLATE.SECTION_UI_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/waveshare28",
+        "method": "saveSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "theme",
+          "status_text_portrait",
+          "status_text_landscape",
+          "bar_gap_portrait",
+          "bar_gap_landscape",
+          "strip_portrait",
+          "strip_landscape"
+        ]
+      },
+      "content": [
+        {
+          "id": "theme",
+          "element": "select",
+          "label": "TRANSLATE.THEME",
+          "doc": "TRANSLATE.THEME_DOC",
+          "value": {
+            "value": "ink",
+            "label": "TRANSLATE.THEME_INK"
+          },
+          "options": [
+            { "value": "ink", "label": "TRANSLATE.THEME_INK" },
+            { "value": "dusk", "label": "TRANSLATE.THEME_DUSK" },
+            { "value": "studio", "label": "TRANSLATE.THEME_STUDIO" },
+            { "value": "night", "label": "TRANSLATE.THEME_NIGHT" }
+          ]
+        },
+        {
+          "id": "status_text_portrait",
+          "element": "select",
+          "label": "TRANSLATE.STATUS_TEXT_PORTRAIT",
+          "doc": "TRANSLATE.STATUS_TEXT_DOC",
+          "value": {
+            "value": "normal",
+            "label": "TRANSLATE.STATUS_TEXT_NORMAL"
+          },
+          "options": [
+            { "value": "normal", "label": "TRANSLATE.STATUS_TEXT_NORMAL" },
+            { "value": "large", "label": "TRANSLATE.STATUS_TEXT_LARGE" }
+          ]
+        },
+        {
+          "id": "status_text_landscape",
+          "element": "select",
+          "label": "TRANSLATE.STATUS_TEXT_LANDSCAPE",
+          "doc": "TRANSLATE.STATUS_TEXT_DOC",
+          "value": {
+            "value": "normal",
+            "label": "TRANSLATE.STATUS_TEXT_NORMAL"
+          },
+          "options": [
+            { "value": "normal", "label": "TRANSLATE.STATUS_TEXT_NORMAL" },
+            { "value": "large", "label": "TRANSLATE.STATUS_TEXT_LARGE" }
+          ]
+        },
+        {
+          "id": "bar_gap_portrait",
+          "element": "select",
+          "label": "TRANSLATE.BAR_GAP_PORTRAIT",
+          "doc": "TRANSLATE.BAR_GAP_DOC",
+          "value": {
+            "value": "default",
+            "label": "TRANSLATE.BAR_GAP_DEFAULT"
+          },
+          "options": [
+            { "value": "tight", "label": "TRANSLATE.BAR_GAP_TIGHT" },
+            { "value": "default", "label": "TRANSLATE.BAR_GAP_DEFAULT" },
+            { "value": "roomy", "label": "TRANSLATE.BAR_GAP_ROOMY" }
+          ]
+        },
+        {
+          "id": "bar_gap_landscape",
+          "element": "select",
+          "label": "TRANSLATE.BAR_GAP_LANDSCAPE",
+          "doc": "TRANSLATE.BAR_GAP_DOC",
+          "value": {
+            "value": "default",
+            "label": "TRANSLATE.BAR_GAP_DEFAULT"
+          },
+          "options": [
+            { "value": "tight", "label": "TRANSLATE.BAR_GAP_TIGHT" },
+            { "value": "default", "label": "TRANSLATE.BAR_GAP_DEFAULT" },
+            { "value": "roomy", "label": "TRANSLATE.BAR_GAP_ROOMY" }
+          ]
+        },
+        {
+          "id": "strip_portrait",
+          "element": "select",
+          "label": "TRANSLATE.STRIP_PORTRAIT",
+          "doc": "TRANSLATE.STRIP_DOC",
+          "value": {
+            "value": "progress",
+            "label": "TRANSLATE.STRIP_PROGRESS"
+          },
+          "options": [
+            { "value": "progress", "label": "TRANSLATE.STRIP_PROGRESS" },
+            { "value": "stream", "label": "TRANSLATE.STRIP_STREAM" },
+            { "value": "off", "label": "TRANSLATE.STRIP_OFF" }
+          ]
+        },
+        {
+          "id": "strip_landscape",
+          "element": "select",
+          "label": "TRANSLATE.STRIP_LANDSCAPE",
+          "doc": "TRANSLATE.STRIP_DOC",
+          "value": {
+            "value": "progress",
+            "label": "TRANSLATE.STRIP_PROGRESS"
+          },
+          "options": [
+            { "value": "progress", "label": "TRANSLATE.STRIP_PROGRESS" },
+            { "value": "stream", "label": "TRANSLATE.STRIP_STREAM" },
+            { "value": "off", "label": "TRANSLATE.STRIP_OFF" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section_actions",
+      "element": "section",
+      "label": "TRANSLATE.ACTIONS",
+      "icon": "fa-wrench",
+      "content": [
+        {
+          "id": "verify",
+          "element": "button",
+          "label": "TRANSLATE.VERIFY",
+          "doc": "TRANSLATE.VERIFY_DOC",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "system_controller/waveshare28",
+            "method": "runVerify"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_backup_create",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_BACKUP_CREATE",
+      "icon": "fa-save",
+      "description": "TRANSLATE.SECTION_BACKUP_CREATE_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/waveshare28",
+        "method": "createSettingsBackup"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.BACKUP_CREATE",
+        "data": [
+          "backup_name"
+        ]
+      },
+      "content": [
+        {
+          "id": "backup_name",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.BACKUP_NAME",
+          "doc": "TRANSLATE.BACKUP_NAME_DOC",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "section_backup_restore",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_BACKUP_RESTORE",
+      "icon": "fa-undo",
+      "description": "TRANSLATE.SECTION_BACKUP_RESTORE_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/waveshare28",
+        "method": "restoreSettingsBackup"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.BACKUP_RESTORE",
+        "data": [
+          "selected_backup"
+        ]
+      },
+      "content": [
+        {
+          "id": "selected_backup",
+          "element": "select",
+          "label": "TRANSLATE.BACKUP_SELECTED",
+          "doc": "TRANSLATE.BACKUP_SELECTED_DOC",
+          "value": {
+            "value": "",
+            "label": "TRANSLATE.BACKUP_NONE_YET"
+          },
+          "options": [
+            {
+              "value": "",
+              "label": "TRANSLATE.BACKUP_NONE_YET"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section_backup_delete",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_BACKUP_DELETE",
+      "icon": "fa-trash",
+      "description": "TRANSLATE.SECTION_BACKUP_DELETE_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/waveshare28",
+        "method": "deleteSettingsBackup"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.BACKUP_DELETE",
+        "data": [
+          "selected_backup_delete"
+        ]
+      },
+      "content": [
+        {
+          "id": "selected_backup_delete",
+          "element": "select",
+          "label": "TRANSLATE.BACKUP_SELECTED",
+          "doc": "TRANSLATE.BACKUP_SELECTED_DOC",
+          "value": {
+            "value": "",
+            "label": "TRANSLATE.BACKUP_NONE_YET"
+          },
+          "options": [
+            {
+              "value": "",
+              "label": "TRANSLATE.BACKUP_NONE_YET"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

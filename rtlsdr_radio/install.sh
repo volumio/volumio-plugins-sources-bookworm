@@ -1,6 +1,19 @@
 #!/bin/bash
 echo "Installing FM/DAB Radio plugin dependencies"
 
+# The station logos are kept outside the plugin's folder, which an update replaces, and
+# are reached through a link in it. The link is made here, first of all, so that a
+# screen asking for a logo while the rest of the installation runs is not answered with
+# the player's default picture, which it would then keep.
+PLUGIN_DIR="$(cd "$(dirname "$0")" && pwd)"
+mkdir -p /data/rtlsdr_radio_logos
+ln -sfn /data/rtlsdr_radio_logos "$PLUGIN_DIR/logos"
+chown volumio:volumio /data/rtlsdr_radio_logos 2>/dev/null
+chown -h volumio:volumio "$PLUGIN_DIR/logos" 2>/dev/null
+# The same for the pictures a DAB station sends, which the decoder writes to /tmp/dab
+ln -sfn /tmp/dab "$PLUGIN_DIR/slides"
+chown -h volumio:volumio "$PLUGIN_DIR/slides" 2>/dev/null
+
 # Get Volumio architecture - direct match to bin/ folder
 ARCH=$(cat /etc/os-release | grep ^VOLUMIO_ARCH | tr -d 'VOLUMIO_ARCH="')
 
@@ -186,9 +199,6 @@ rm -f /lib/udev/rules.d/rtl-sdr.rules 2>/dev/null
 rm -f /lib/udev/rules.d/60-libfn-rtlsdr0.rules 2>/dev/null
 rm -f /etc/udev/rules.d/60-libfn-rtlsdr0.rules 2>/dev/null
 
-# Clean up any orphaned dependencies
-apt-get autoremove -y 2>/dev/null
-
 echo "Cleanup complete"
 
 # =============================================================================
@@ -202,7 +212,7 @@ apt-get update
 
 # Install zip utilities for backup/restore functionality
 echo "Installing zip utilities for backup/restore..."
-if ! command -v zip &> /dev/null || ! command -v unzip &> /dev/null; then
+if ! command -v zip > /dev/null 2>&1 || ! command -v unzip > /dev/null 2>&1; then
   apt-get install -y zip unzip
   echo "Zip utilities installed"
 else
@@ -211,11 +221,11 @@ fi
 
 # Install runtime dependencies for DAB (no build tools)
 echo "Installing DAB runtime dependencies..."
-apt-get install -y libfftw3-single3 libsamplerate0 libfaad2
+apt-get install -y libfftw3-single3 libsamplerate0 libfaad2 libsndfile1
 
 # Install sox for RDS audio resampling
 echo "Installing sox for RDS audio processing..."
-if ! command -v sox &> /dev/null; then
+if ! command -v sox > /dev/null 2>&1; then
   apt-get install -y sox
   echo "Sox installed"
 else
@@ -298,6 +308,11 @@ echo "Installing RDS decoder binary..."
 cp "$BIN_SOURCE/fn-redsea" /usr/local/bin/
 chmod +x /usr/local/bin/fn-redsea
 
+# Copy the tool that measures the gain the dongle should be set to
+echo "Installing gain measurement tool..."
+cp "$BIN_SOURCE/fn-rtl-gain" /usr/local/bin/
+chmod +x /usr/local/bin/fn-rtl-gain
+
 # Verify installation
 if [ ! -f /usr/local/bin/fn-dab ]; then
   echo "ERROR: fn-dab installation failed"
@@ -329,31 +344,11 @@ fi
 
 echo "RTL-SDR binaries verified"
 
-# Create sudoers entry for process control
-echo "Creating sudoers entry for rtlsdr_radio..."
-cat > /etc/sudoers.d/volumio-user-rtlsdr-radio << EOF
-# rtlsdr_radio plugin - process control
-volumio ALL=(ALL) NOPASSWD: /usr/bin/pkill
-EOF
-
-chmod 0440 /etc/sudoers.d/volumio-user-rtlsdr-radio
-visudo -c -f /etc/sudoers.d/volumio-user-rtlsdr-radio
-if [ $? -ne 0 ]; then
-  echo "ERROR: Invalid sudoers syntax"
+# Earlier versions gave the plugin a sudoers entry for pkill. The plugin now stops its
+# own processes by their ids and needs no such right.
+if [ -f /etc/sudoers.d/volumio-user-rtlsdr-radio ]; then
   rm -f /etc/sudoers.d/volumio-user-rtlsdr-radio
-  exit 1
-fi
-
-echo "Sudoers configuration complete"
-
-# Load ALSA loopback module
-echo "Loading ALSA loopback module..."
-modprobe snd-aloop
-
-# Make ALSA loopback persistent
-if ! grep -q "snd-aloop" /etc/modules; then
-  echo "snd-aloop" >> /etc/modules
-  echo "Made snd-aloop module persistent"
+  echo "Removed the sudoers entry of an earlier version"
 fi
 
 # Create stations database directory
@@ -369,7 +364,7 @@ echo ""
 echo "=========================================="
 echo "FM/DAB Radio plugin installation complete"
 echo "=========================================="
-echo "Version: 1.3.9"
+echo "Version: 1.4.12"
 echo "Architecture: $ARCH"
 echo ""
 echo "Installed packages:"

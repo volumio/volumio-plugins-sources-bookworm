@@ -1,0 +1,18 @@
+{
+  "ledOutput": {
+    "type": "text",
+    "value": "pwr"
+  },
+  "gpioPin": {
+    "type": "number",
+    "value": 21
+  },
+  "blinkPeriodMs": {
+    "type": "number",
+    "value": 70
+  },
+  "blinkCycles": {
+    "type": "number",
+    "value": 3
+  }
+}

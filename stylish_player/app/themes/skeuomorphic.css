@@ -1095,9 +1095,59 @@ ol li {
   pointer-events: none;
 }
 
-/* Allow children to use cqi units relative to the dialog width */
+/* Allow children to use cqi units relative to the dialog width. */
 .dialog {
   container-type: inline-size;
+}
+
+/* Make the scrollable body a positioning context so absolutely-positioned
+   children — notably the BrowseDialog's `.alphabet-scroller` — anchor to
+   the dialog body area only (not the whole viewport, and not the dialog
+   including its header / footer bars). */
+.dialog-body {
+  position: relative;
+}
+
+/* ── BrowseDialog body layout ──
+   The BrowseDialog puts a `.browse-body` shell inside `.dialog-body`.
+   The shell itself does NOT scroll — it hosts an inner
+   `.browse-body__scroll` viewport that scrolls the results, plus a
+   `.alphabet-scroller` sibling that stays absolutely pinned to the
+   right edge (independent of the scroll viewport, so it never scrolls
+   with the results and never overlaps the header/footer bars).
+
+   `.dialog-body` is a flex item of `.dialog` with `flex: 1 1 auto`, so
+   percentage heights on descendants don't resolve unless we make the
+   body itself a flex column and let its children flex to fill. */
+.browse-dialog .dialog-body {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.browse-body {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.browse-body__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+}
+
+/* When the alphabet scroller is present, reserve horizontal space on the
+   right so grid tiles and list rows don't slide underneath the letters.
+   The scroller sits at `right: 28px` (past the scrollbar) with a 34px
+   width — give ~68px of clearance so nothing overlaps. */
+.browse-body:has(.alphabet-scroller) .browse-body__scroll {
+  padding-right: 68px;
 }
 
 @keyframes dialogBackdropFadeIn {
@@ -3852,8 +3902,9 @@ h2 {
   .responsive-album {
     font-size: clamp(0.8rem, 2.415cqw, 2.25rem) !important;
   }
+  /* 50% smaller than the other track-info fields at this breakpoint */
   .responsive-stream-info {
-    font-size: clamp(0.8rem, 2.415cqw, 2.25rem) !important;
+    font-size: clamp(0.4rem, 1.2075cqw, 1.125rem) !important;
   }
   .cq-track-info {
     gap: clamp(2px, 1cqh, 12px) !important;
@@ -5663,8 +5714,9 @@ h2 {
   color: rgba(255, 255, 255, 0.5);
   opacity: 1;
 }
-.dialog-toolbar .browse-search__input:focus {
+.dialog-toolbar .browse-search__input:focus, .dialog-toolbar .browse-search__input:focus-visible {
   border-color: var(--color-primary);
+  outline: none;
 }
 .dialog-toolbar .browse-search__icon {
   color: var(--text-light);
@@ -5950,12 +6002,18 @@ h2 {
 .lcd-days {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
+  /* The skeuomorphic display font renders wider than the sans-serif
+     fonts other themes use, so the day labels crowd each other quickly.
+     Keep a slightly smaller max font-size and a bit more letter-spacing
+     so the letters read as separate words at every size. */
   gap: 0.8cqw;
   margin-bottom: 0.8cqw;
   font-family: var(--font-display);
-  font-size: clamp(0.6rem, 1.2cqw, 2rem);
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  font-weight: 700;
+  font-size: clamp(0.7rem, 2.2cqw, 2.5rem);
+  letter-spacing: 0.08em;
+  line-height: 1;
   color: var(--color-gray-300, #c4c4c4);
 }
 .lcd-days span {
@@ -6094,6 +6152,68 @@ h2 {
 }
 
 /* ── Responsive sizing — handled via container-query units (cqw) above ── */
+/* ─────────────────────────────────────────────────────────────────────────
+   Tablet / desktop: make the digital clock as large as possible.
+   Approach: the wrapper fills the full viewport (and is the size-container
+   for all the cqw-based digit dimensions). The frame keeps its natural
+   fit-content size and is auto-centered (the wrapper is a centering flex
+   container). We then apply a uniform CSS transform: scale() computed
+   from container-query length math so the frame visually fills whichever
+   viewport axis is constraining — without overflowing the other.
+
+   Natural frame width estimates (in cqi, derived from .lcd-digit width
+   plus colons, gaps, paddings, and bezel; conservatively rounded up so
+   the scale never overflows even on themes with wider digits like Casio):
+     • HH:MM         only  ≈  68cqi   (4 digits + 1 colon)
+     • HH:MM + AM/PM       ≈  75cqi
+     • HH:MM:SS      only  ≈ 108cqi   (6 digits + 2 colons)
+     • HH:MM:SS + AM/PM    ≈ 115cqi
+   Natural height ≈ 42cqi (digits + day-row + date row).
+   Each layout targets ~92cqi fill (leaves ~4cqi safety margin per side).
+   The min() picks the smaller of the horizontal / vertical scale so the
+   frame stays fully visible.
+   ───────────────────────────────────────────────────────────────────────── */
+@media (min-width: 769px) {
+  .digital-clock-wrapper {
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  /* Default (HH:MM:SS + AM/PM) — widest layout */
+  .digital-clock-frame {
+    transform: scale(min(92cqi / 115cqi, 85cqb / 42cqi)) !important;
+    transform-origin: center center !important;
+    will-change: transform;
+  }
+  /* HH:MM:SS only (24-hour with seconds) */
+  .digital-clock-wrapper--no-ampm .digital-clock-frame {
+    transform: scale(min(92cqi / 108cqi, 85cqb / 42cqi)) !important;
+  }
+  /* HH:MM + AM/PM */
+  .digital-clock-wrapper--no-seconds .digital-clock-frame {
+    transform: scale(min(92cqi / 75cqi, 85cqb / 42cqi)) !important;
+  }
+  /* HH:MM only (24-hour without seconds) — narrowest */
+  .digital-clock-wrapper--no-seconds.digital-clock-wrapper--no-ampm .digital-clock-frame {
+    transform: scale(min(92cqi / 68cqi, 85cqb / 42cqi)) !important;
+  }
+  /* Center the digit row inside the frame so it never appears left-aligned
+     even if the frame ever grows wider than its content. `.lcd-days` is
+     excluded so the seven day letters keep spreading across the LCD
+     panel width via the base rule's `space-between`. */
+  .lcd-time,
+  .lcd-digits,
+  .lcd-info {
+    justify-content: center !important;
+  }
+}
 /* ── Skeuomorphic Analog Clock ─────────────────────────────────────────── */
 /* Bezel — raised metallic ring */
 .clock-bezel {

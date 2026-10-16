@@ -1,0 +1,577 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_NAME"
+  },
+  "sections": [
+    {
+      "id": "soloist_spotify",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_SPOTIFY",
+      "icon": "fa-spotify",
+      "description": "TRANSLATE.SECTION_SPOTIFY_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/soloist_connect",
+        "method": "saveSoloistSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE_RESTART",
+        "data": [
+          "api_key",
+          "retain_api_key",
+          "device_name"
+        ]
+      },
+      "content": [
+        {
+          "id": "api_key",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.API_KEY",
+          "doc": "TRANSLATE.API_KEY_DOC",
+          "value": ""
+        },
+        {
+          "id": "retain_api_key",
+          "element": "switch",
+          "label": "TRANSLATE.RETAIN_API_KEY",
+          "doc": "TRANSLATE.RETAIN_API_KEY_DOC",
+          "value": true
+        },
+        {
+          "id": "device_name",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.DEVICE_NAME",
+          "doc": "TRANSLATE.DEVICE_NAME_DOC",
+          "value": "Volumio"
+        }
+      ]
+    },
+    {
+      "id": "soloist_queue",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_QUEUE",
+      "icon": "fa-list",
+      "description": "TRANSLATE.SECTION_QUEUE_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/soloist_connect",
+        "method": "saveSoloistSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "queue_playback",
+          "queue_remote_playback"
+        ]
+      },
+      "content": [
+        {
+          "id": "queue_playback",
+          "element": "switch",
+          "label": "TRANSLATE.QUEUE_PLAYBACK",
+          "doc": "TRANSLATE.QUEUE_PLAYBACK_DOC",
+          "value": false
+        },
+        {
+          "id": "queue_remote_playback",
+          "element": "switch",
+          "label": "TRANSLATE.QUEUE_REMOTE_PLAYBACK",
+          "doc": "TRANSLATE.QUEUE_REMOTE_PLAYBACK_DOC",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": "soloist_convert",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_CONVERT",
+      "icon": "fa-exchange",
+      "description": "TRANSLATE.SECTION_CONVERT_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/soloist_connect",
+        "method": "convertPlaylist"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.CONVERT_PLAYLIST",
+        "data": [
+          "convert_playlist",
+          "convert_overwrite",
+          "convert_name"
+        ]
+      },
+      "content": [
+        {
+          "id": "convert_playlist",
+          "element": "select",
+          "label": "TRANSLATE.CONVERT_PLAYLIST_SELECT",
+          "doc": "TRANSLATE.CONVERT_PLAYLIST_SELECT_DOC",
+          "value": {
+            "value": "",
+            "label": "TRANSLATE.CONVERT_PLAYLIST_NONE"
+          },
+          "options": [
+            {
+              "value": "",
+              "label": "TRANSLATE.CONVERT_PLAYLIST_NONE"
+            }
+          ]
+        },
+        {
+          "id": "convert_overwrite",
+          "element": "switch",
+          "label": "TRANSLATE.CONVERT_OVERWRITE",
+          "doc": "TRANSLATE.CONVERT_OVERWRITE_DOC",
+          "value": false
+        },
+        {
+          "id": "convert_name",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.CONVERT_NAME",
+          "doc": "TRANSLATE.CONVERT_NAME_DOC",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "soloist_sound",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_SOUND",
+      "icon": "fa-volume-up",
+      "description": "TRANSLATE.SECTION_SOUND_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/soloist_connect",
+        "method": "saveSoloistSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE_RESTART",
+        "data": [
+          "initial_volume",
+          "align_volume",
+          "output_trim_db",
+          "loudness_normalization",
+          "crossfade",
+          "crossfade_ms",
+          "buffer_ms"
+        ]
+      },
+      "content": [
+        {
+          "id": "initial_volume",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.INITIAL_VOLUME",
+          "doc": "TRANSLATE.INITIAL_VOLUME_DOC",
+          "value": 50,
+          "attributes": [
+            {
+              "min": 0
+            },
+            {
+              "max": 100
+            }
+          ]
+        },
+        {
+          "id": "align_volume",
+          "element": "switch",
+          "label": "TRANSLATE.ALIGN_VOLUME",
+          "doc": "TRANSLATE.ALIGN_VOLUME_DOC",
+          "value": false
+        },
+        {
+          "id": "output_trim_db",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.OUTPUT_TRIM_DB",
+          "doc": "TRANSLATE.OUTPUT_TRIM_DB_DOC",
+          "value": 0,
+          "attributes": [
+            {
+              "min": -12
+            },
+            {
+              "max": 12
+            }
+          ]
+        },
+        {
+          "id": "loudness_normalization",
+          "element": "switch",
+          "label": "TRANSLATE.LOUDNESS_NORMALIZATION",
+          "doc": "TRANSLATE.LOUDNESS_NORMALIZATION_DOC",
+          "value": true
+        },
+        {
+          "id": "crossfade",
+          "element": "switch",
+          "label": "TRANSLATE.CROSSFADE",
+          "doc": "TRANSLATE.CROSSFADE_DOC",
+          "value": false
+        },
+        {
+          "id": "crossfade_ms",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.CROSSFADE_MS",
+          "doc": "TRANSLATE.CROSSFADE_MS_DOC",
+          "value": 2000,
+          "attributes": [
+            {
+              "min": 1000
+            },
+            {
+              "max": 12000
+            }
+          ]
+        },
+        {
+          "id": "buffer_ms",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.BUFFER_MS",
+          "doc": "TRANSLATE.BUFFER_MS_DOC",
+          "value": 500,
+          "attributes": [
+            {
+              "min": 100
+            },
+            {
+              "max": 2000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "soloist_cache",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_CACHE",
+      "icon": "fa-hdd-o",
+      "description": "TRANSLATE.SECTION_CACHE_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/soloist_connect",
+        "method": "saveSoloistSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE_RESTART",
+        "data": [
+          "cache_location",
+          "cache_size_mb"
+        ]
+      },
+      "content": [
+        {
+          "id": "cache_location",
+          "element": "select",
+          "label": "TRANSLATE.CACHE_LOCATION",
+          "doc": "TRANSLATE.CACHE_LOCATION_DOC",
+          "value": {
+            "value": "disk",
+            "label": "TRANSLATE.CACHE_LOCATION_DISK"
+          },
+          "options": [
+            {
+              "value": "disk",
+              "label": "TRANSLATE.CACHE_LOCATION_DISK"
+            },
+            {
+              "value": "ram",
+              "label": "TRANSLATE.CACHE_LOCATION_RAM"
+            }
+          ]
+        },
+        {
+          "id": "cache_size_mb",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.CACHE_SIZE",
+          "doc": "TRANSLATE.CACHE_SIZE_DOC",
+          "value": 1024,
+          "attributes": [
+            {
+              "min": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "soloist_timing",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_TIMING",
+      "icon": "fa-sliders",
+      "description": "TRANSLATE.SECTION_TIMING_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/soloist_connect",
+        "method": "saveSoloistSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "seek_coalesce_ms",
+          "inactive_hold_ms",
+          "quality_retry_ms",
+          "quality_retry_max",
+          "queue_fetch_ms"
+        ]
+      },
+      "content": [
+        {
+          "id": "seek_coalesce_ms",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.SEEK_COALESCE_MS",
+          "doc": "TRANSLATE.SEEK_COALESCE_MS_DOC",
+          "value": 200,
+          "attributes": [
+            {
+              "min": 0
+            },
+            {
+              "max": 2000
+            }
+          ]
+        },
+        {
+          "id": "inactive_hold_ms",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.INACTIVE_HOLD_MS",
+          "doc": "TRANSLATE.INACTIVE_HOLD_MS_DOC",
+          "value": 2000,
+          "attributes": [
+            {
+              "min": 0
+            },
+            {
+              "max": 10000
+            }
+          ]
+        },
+        {
+          "id": "quality_retry_ms",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.QUALITY_RETRY_MS",
+          "doc": "TRANSLATE.QUALITY_RETRY_MS_DOC",
+          "value": 300,
+          "attributes": [
+            {
+              "min": 0
+            },
+            {
+              "max": 2000
+            }
+          ]
+        },
+        {
+          "id": "quality_retry_max",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.QUALITY_RETRY_MAX",
+          "doc": "TRANSLATE.QUALITY_RETRY_MAX_DOC",
+          "value": 2,
+          "attributes": [
+            {
+              "min": 0
+            },
+            {
+              "max": 10
+            }
+          ]
+        },
+        {
+          "id": "queue_fetch_ms",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.QUEUE_FETCH_MS",
+          "doc": "TRANSLATE.QUEUE_FETCH_MS_DOC",
+          "value": 2500,
+          "attributes": [
+            {
+              "min": 0
+            },
+            {
+              "max": 10000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "soloist_diagnostics",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_DIAGNOSTICS",
+      "icon": "fa-bug",
+      "description": "TRANSLATE.SECTION_DIAGNOSTICS_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/soloist_connect",
+        "method": "saveSoloistSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE_RESTART",
+        "data": [
+          "verbose_logging"
+        ]
+      },
+      "content": [
+        {
+          "id": "verbose_logging",
+          "element": "switch",
+          "label": "TRANSLATE.VERBOSE",
+          "doc": "TRANSLATE.VERBOSE_DOC",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": "soloist_backup_create",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_BACKUP_CREATE",
+      "icon": "fa-save",
+      "description": "TRANSLATE.SECTION_BACKUP_CREATE_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/soloist_connect",
+        "method": "createSettingsBackup"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.BACKUP_CREATE",
+        "data": [
+          "backup_name"
+        ]
+      },
+      "content": [
+        {
+          "id": "backup_name",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.BACKUP_NAME",
+          "doc": "TRANSLATE.BACKUP_NAME_DOC",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "soloist_backup_restore",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_BACKUP_RESTORE",
+      "icon": "fa-undo",
+      "description": "TRANSLATE.SECTION_BACKUP_RESTORE_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/soloist_connect",
+        "method": "restoreSettingsBackup"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.BACKUP_RESTORE",
+        "data": [
+          "selected_backup"
+        ]
+      },
+      "content": [
+        {
+          "id": "selected_backup",
+          "element": "select",
+          "label": "TRANSLATE.BACKUP_SELECTED",
+          "doc": "TRANSLATE.BACKUP_SELECTED_DOC",
+          "value": {
+            "value": "",
+            "label": "TRANSLATE.BACKUP_NONE_YET"
+          },
+          "options": [
+            {
+              "value": "",
+              "label": "TRANSLATE.BACKUP_NONE_YET"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "soloist_backup_delete",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_BACKUP_DELETE",
+      "icon": "fa-trash",
+      "description": "TRANSLATE.SECTION_BACKUP_DELETE_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/soloist_connect",
+        "method": "deleteSettingsBackup"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.BACKUP_DELETE",
+        "data": [
+          "selected_backup_delete"
+        ]
+      },
+      "content": [
+        {
+          "id": "selected_backup_delete",
+          "element": "select",
+          "label": "TRANSLATE.BACKUP_SELECTED",
+          "doc": "TRANSLATE.BACKUP_SELECTED_DOC",
+          "value": {
+            "value": "",
+            "label": "TRANSLATE.BACKUP_NONE_YET"
+          },
+          "options": [
+            {
+              "value": "",
+              "label": "TRANSLATE.BACKUP_NONE_YET"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "soloist_update",
+      "element": "section",
+      "label": "TRANSLATE.UPDATE_SECTION",
+      "icon": "fa-refresh",
+      "description": "TRANSLATE.UPDATE_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/soloist_connect",
+        "method": "saveSoloistSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "auto_update_binary"
+        ]
+      },
+      "content": [
+        {
+          "id": "auto_update_binary",
+          "element": "switch",
+          "label": "TRANSLATE.AUTO_UPDATE_BINARY",
+          "doc": "TRANSLATE.AUTO_UPDATE_BINARY_DOC",
+          "value": false
+        },
+        {
+          "id": "update_binary",
+          "element": "button",
+          "label": "TRANSLATE.UPDATE_BUTTON",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/soloist_connect",
+              "method": "updateSoloistBinary",
+              "data": {}
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
