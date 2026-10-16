@@ -1,0 +1,3 @@
+# Add your custom config.txt options to this file, which will be preserved during updates
+dtoverlay=gpio-ir,gpio_pin=17
+dtoverlay=pwm-ir-tx,gpio_pin=18
