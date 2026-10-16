@@ -1,0 +1,10 @@
+ {
+"url": {
+      "type": "string",
+      "value": ""
+  },
+  "api_key": {
+    "type": "string",
+    "value": ""
+  }
+}
