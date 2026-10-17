@@ -41,9 +41,45 @@ function NfcMusic(context) {
  * ---------------------------------------------------------
  * Laadt de tags.json file in het geheugen
  */
+NfcMusic.prototype.getTagsDir = function () {
+    // /data/configuration/system_hardware/nfc_music - blijft staan bij een
+    // plugin-update of herinstallatie (de pluginmap zelf wordt dan vervangen).
+    const configFile = this.commandRouter.pluginManager.getConfigurationFile(this.context, 'config.json');
+    return path.dirname(configFile);
+};
+
+NfcMusic.prototype.getTagsFile = function () {
+    return path.join(this.getTagsDir(), 'tags.json');
+};
+
+/*
+ * Eenmalige migratie: tags.json uit de oude locatie (pluginmap/config)
+ * overzetten naar de configuratiemap.
+ */
+NfcMusic.prototype.migrateTagsFile = function () {
+    const oldFile = path.join(__dirname, 'config', 'tags.json');
+    const newFile = this.getTagsFile();
+
+    try {
+        if (!fs.existsSync(newFile) && fs.existsSync(oldFile)) {
+            fs.mkdirSync(path.dirname(newFile), { recursive: true });
+            fs.copyFileSync(oldFile, newFile);
+            this.logger.info(`NFC Music: tags.json gemigreerd naar ${newFile}`);
+        }
+    } catch (e) {
+        this.logger.error(`NFC Music: migratie tags.json mislukt: ${e}`);
+    }
+};
+
 NfcMusic.prototype.loadTags = function () {
 
-    const tagsFile = path.join(__dirname, 'config', 'tags.json');
+    const tagsFile = this.getTagsFile();
+
+    if (!fs.existsSync(tagsFile)) {
+        this.logger.info('NFC Music: nog geen tags.json, start met lege lijst');
+        this.tags = {};
+        return;
+    }
 
     try {
         this.logger.info(`NFC Music: tags laden uit ${tagsFile}`);
@@ -68,8 +104,8 @@ NfcMusic.prototype.loadTags = function () {
  */
 NfcMusic.prototype.saveTags = function () {
 
-    const dir = path.join(__dirname, 'config');
-    const file = path.join(dir, 'tags.json');
+    const dir = this.getTagsDir();
+    const file = this.getTagsFile();
     const tmp = path.join(dir, 'tags.json.tmp');
 
     try {
@@ -79,6 +115,8 @@ NfcMusic.prototype.saveTags = function () {
             this.logger.error('Invalid tags structure, not saving');
             return;
         }
+
+        fs.mkdirSync(dir, { recursive: true });
 
         // 1. serialize
         const json = JSON.stringify(this.tags, null, 2);
@@ -142,22 +180,13 @@ NfcMusic.prototype.refreshUI = function () {
 NfcMusic.prototype.onStart = function () {
 
     this.logger.info('NFC Music: plugin starten');
-this.logger.info("🔥 NFC onStart CALLED - PID: " + process.pid); //tmp logging
+
     // =========================================================
     // 1. TAG STORAGE INITIALISATIE (persisted state)
     // =========================================================
 
-    const tagsFile = path.join(__dirname, 'config', 'tags.json');
-
-    this.logger.info(
-        `NFC Music: tags laden uit ${tagsFile}`
-    );
-
+    this.migrateTagsFile();
     this.loadTags();
-
-    this.logger.info(
-        `NFC Music: ${Object.keys(this.tags).length} tag(s) geladen`
-    );
 
 
     // =========================================================
