@@ -1,0 +1,24 @@
+{
+  "04A1B2C3D4E5F6": {
+    "name": "Example album",
+    "actions": [
+      {
+        "action": "play",
+        "type": "album",
+        "source": "local",
+        "data": { "artist": "Artist", "album": "Album name" }
+      }
+    ]
+  },
+  "04A1B2C3D4E5F7": {
+    "name": "Example track",
+    "actions": [
+      {
+        "action": "play",
+        "type": "track",
+        "source": "local",
+        "data": { "artist": "Artist", "title": "Song title" }
+      }
+    ]
+  }
+}

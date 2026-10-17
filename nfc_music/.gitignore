@@ -1,3 +1,12 @@
+# Built on the Volumio device (pcsclite is a native module)
 node_modules/
-config/spotify.json
+*.zip
+
+# User data and secrets - never commit
+config/tags.json*
+config/spotify.json*
+
+# Logs / temp
 *.log
+*.tmp
+*.bak
