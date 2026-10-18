@@ -62,7 +62,7 @@
       },
       "saveButton": {
         "label": "TRANSLATE.SAVE",
-        "data": ["playerType", "theme", "showPlayerControls", "hideTrackTimes", "showRemainingTime", "albumArtMaxSpace", "albumArtAnimated", "showTrackPanel", "useCustomLayout", "vizType", "spectrumOptions", "peppyMeterFolder", "peppyMeterModel", "peppySpectrumFolder", "peppySpectrumModel", "fanartTvApiKey", "displayFanartBackground", "fanartBackgroundGrayscale"]
+        "data": ["playerType", "theme", "showPlayerControls", "hideTrackTimes", "showRemainingTime", "albumArtMaxSpace", "albumArtAnimated", "showTrackPanel", "useCustomLayout", "vizType", "spectrumOptions", "fanartTvApiKey", "displayFanartBackground", "fanartBackgroundGrayscale", "fanartBackgroundOpacity"]
       },
       "content": [
         {
@@ -205,54 +205,6 @@
           }
         },
         {
-          "id": "peppyMeterFolder",
-          "element": "select",
-          "label": "TRANSLATE.PEPPY_METER_FOLDER",
-          "doc": "TRANSLATE.PEPPY_METER_FOLDER_DESC",
-          "value": { "value": "", "label": "" },
-          "options": [],
-          "visibleIf": {
-            "field": "vizType",
-            "value": "peppyMeter"
-          }
-        },
-        {
-          "id": "peppyMeterModel",
-          "element": "select",
-          "label": "TRANSLATE.PEPPY_METER_MODEL",
-          "doc": "TRANSLATE.PEPPY_METER_MODEL_DESC",
-          "value": { "value": "random", "label": "Random" },
-          "options": [{ "value": "random", "label": "Random" }],
-          "visibleIf": {
-            "field": "vizType",
-            "value": "peppyMeter"
-          }
-        },
-        {
-          "id": "peppySpectrumFolder",
-          "element": "select",
-          "label": "TRANSLATE.PEPPY_SPECTRUM_FOLDER",
-          "doc": "TRANSLATE.PEPPY_SPECTRUM_FOLDER_DESC",
-          "value": { "value": "", "label": "" },
-          "options": [],
-          "visibleIf": {
-            "field": "vizType",
-            "value": "peppySpectrum"
-          }
-        },
-        {
-          "id": "peppySpectrumModel",
-          "element": "select",
-          "label": "TRANSLATE.PEPPY_SPECTRUM_MODEL",
-          "doc": "TRANSLATE.PEPPY_SPECTRUM_MODEL_DESC",
-          "value": { "value": "random", "label": "Random" },
-          "options": [{ "value": "random", "label": "Random" }],
-          "visibleIf": {
-            "field": "vizType",
-            "value": "peppySpectrum"
-          }
-        },
-        {
           "id": "fanartTvApiKey",
           "type": "text",
           "element": "input",
@@ -277,6 +229,89 @@
             "field": "displayFanartBackground",
             "value": true
           }
+        },
+        {
+          "id": "fanartBackgroundOpacity",
+          "type": "number",
+          "element": "input",
+          "label": "TRANSLATE.FANART_BACKGROUND_OPACITY",
+          "doc": "TRANSLATE.FANART_BACKGROUND_OPACITY_DESC",
+          "value": 100,
+          "visibleIf": {
+            "field": "displayFanartBackground",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_peppy",
+      "element": "section",
+      "label": "TRANSLATE.PEPPY",
+      "icon": "fa-dashboard",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "user_interface/stylish_player",
+        "method": "configSavePeppy"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["peppyMeterFolder", "peppyMeterModel", "peppyNeedleSensitivity", "peppySmoothness", "peppySpectrumFolder", "peppySpectrumModel"]
+      },
+      "content": [
+        {
+          "id": "peppyMeterFolder",
+          "element": "select",
+          "label": "TRANSLATE.PEPPY_METER_FOLDER",
+          "doc": "TRANSLATE.PEPPY_METER_FOLDER_DESC",
+          "value": { "value": "", "label": "" },
+          "options": []
+        },
+        {
+          "id": "peppyMeterModel",
+          "element": "select",
+          "label": "TRANSLATE.PEPPY_METER_MODEL",
+          "doc": "TRANSLATE.PEPPY_METER_MODEL_DESC",
+          "value": { "value": "random", "label": "Random" },
+          "options": [{ "value": "random", "label": "Random" }]
+        },
+        {
+          "id": "peppyNeedleSensitivity",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.PEPPY_NEEDLE_SENSITIVITY",
+          "doc": "TRANSLATE.PEPPY_NEEDLE_SENSITIVITY_DESC",
+          "value": 0.5,
+          "min": 0.1,
+          "max": 5,
+          "step": 0.1
+        },
+        {
+          "id": "peppySmoothness",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.PEPPY_SMOOTHNESS",
+          "doc": "TRANSLATE.PEPPY_SMOOTHNESS_DESC",
+          "value": 6,
+          "min": 1,
+          "max": 30,
+          "step": 1
+        },
+        {
+          "id": "peppySpectrumFolder",
+          "element": "select",
+          "label": "TRANSLATE.PEPPY_SPECTRUM_FOLDER",
+          "doc": "TRANSLATE.PEPPY_SPECTRUM_FOLDER_DESC",
+          "value": { "value": "", "label": "" },
+          "options": []
+        },
+        {
+          "id": "peppySpectrumModel",
+          "element": "select",
+          "label": "TRANSLATE.PEPPY_SPECTRUM_MODEL",
+          "doc": "TRANSLATE.PEPPY_SPECTRUM_MODEL_DESC",
+          "value": { "value": "random", "label": "Random" },
+          "options": [{ "value": "random", "label": "Random" }]
         }
       ]
     },
@@ -778,4 +813,3 @@
     }
   ]
 }
-

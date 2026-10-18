@@ -71,6 +71,10 @@
     "type": "boolean",
     "value": false
   },
+  "fanartBackgroundOpacity": {
+    "type": "number",
+    "value": 100
+  },
   "wallpaperUrl": {
     "type": "string",
     "value": ""
@@ -122,6 +126,14 @@
   "peppyMeterModel": {
     "type": "string",
     "value": "random"
+  },
+  "peppyNeedleSensitivity": {
+    "type": "number",
+    "value": 0.5
+  },
+  "peppySmoothness": {
+    "type": "number",
+    "value": 6
   },
   "peppySpectrumFolder": {
     "type": "string",

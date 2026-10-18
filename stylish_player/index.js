@@ -98,6 +98,10 @@ ControllerStylishPlayer.prototype._migrateConfig = function () {
     { key: 'iconBtnColor',  defaultVal: '' },
     // v2.x: added useCustomLayout
     { key: 'useCustomLayout', defaultVal: false },
+    // v2.x: added fanartBackgroundOpacity
+    { key: 'fanartBackgroundOpacity', defaultVal: 100 },
+    { key: 'peppyNeedleSensitivity', defaultVal: 0.5 },
+    { key: 'peppySmoothness', defaultVal: 6 },
   ];
   for (var i = 0; i < migrations.length; i++) {
     var m = migrations[i];
@@ -1257,6 +1261,8 @@ ControllerStylishPlayer.prototype._buildConfigData = function () {
     spectrumOptions: self.config.get("spectrumOptions", ""),
     peppyMeterFolder: self.config.get("peppyMeterFolder", ""),
     peppyMeterModel: self.config.get("peppyMeterModel", "random"),
+    peppyNeedleSensitivity: self.config.get("peppyNeedleSensitivity", 0.5),
+    peppySmoothness: self.config.get("peppySmoothness", 6),
     peppySpectrumFolder: self.config.get("peppySpectrumFolder", ""),
     peppySpectrumModel: self.config.get("peppySpectrumModel", "random"),
     backgroundColor: self.config.get("backgroundColor", ""),
@@ -1287,6 +1293,7 @@ ControllerStylishPlayer.prototype._buildConfigData = function () {
     fanartTvApiKey: self.config.get("fanartTvApiKey", ""),
     displayFanartBackground: self.config.get("displayFanartBackground", false),
     fanartBackgroundGrayscale: self.config.get("fanartBackgroundGrayscale", false),
+    fanartBackgroundOpacity: self.config.get("fanartBackgroundOpacity", 100),
     wallpaperUrl: self.config.get("wallpaperUrl", ""),
     wallpaperShowTime: self.config.get("wallpaperShowTime", true),
     wallpaperShowSeconds: self.config.get("wallpaperShowSeconds", false),
@@ -1405,9 +1412,12 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       field('section_player_config', 'fanartTvApiKey').value    = self.config.get("fanartTvApiKey", "");
       field('section_player_config', 'displayFanartBackground').value = self.config.get("displayFanartBackground", false);
       field('section_player_config', 'fanartBackgroundGrayscale').value = self.config.get("fanartBackgroundGrayscale", false);
+      field('section_player_config', 'fanartBackgroundOpacity').value = self.config.get("fanartBackgroundOpacity", 100);
 
       // Dynamically populate peppy meter folder options from disk
-      var peppyMeterFolderField = field('section_player_config', 'peppyMeterFolder');
+      field('section_peppy', 'peppyNeedleSensitivity').value = self.config.get("peppyNeedleSensitivity", 0.5);
+      field('section_peppy', 'peppySmoothness').value = self.config.get("peppySmoothness", 6);
+      var peppyMeterFolderField = field('section_peppy', 'peppyMeterFolder');
       var peppyMeterDir = path.join(PEPPY_DATA_PATH, "peppy_meter");
       try {
         var peppyMeterEntries = fs.readdirSync(peppyMeterDir, { withFileTypes: true });
@@ -1423,7 +1433,7 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       if (matchPeppyFolder) peppyMeterFolderField.value = matchPeppyFolder;
 
       // Dynamically populate peppy meter model options from meters.txt
-      var peppyMeterModelField = field('section_player_config', 'peppyMeterModel');
+      var peppyMeterModelField = field('section_peppy', 'peppyMeterModel');
       var peppyMeterModel = self.config.get("peppyMeterModel", "random");
       if (peppyMeterFolder) {
         var metersPath = path.join(PEPPY_DATA_PATH, "peppy_meter", peppyMeterFolder, "meters.txt");
@@ -1439,7 +1449,7 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       if (matchPeppyModel) peppyMeterModelField.value = matchPeppyModel;
 
       // Dynamically populate peppy spectrum folder options from disk
-      var peppySpectrumFolderField = field('section_player_config', 'peppySpectrumFolder');
+      var peppySpectrumFolderField = field('section_peppy', 'peppySpectrumFolder');
       var peppySpectrumDir = path.join(PEPPY_DATA_PATH, "peppy_spectrum");
       try {
         var spectrumEntries = fs.readdirSync(peppySpectrumDir, { withFileTypes: true });
@@ -1455,7 +1465,7 @@ ControllerStylishPlayer.prototype.getUIConfig = function () {
       if (matchSpectrumFolder) peppySpectrumFolderField.value = matchSpectrumFolder;
 
       // Dynamically populate peppy spectrum model options from spectrum.txt
-      var peppySpectrumModelField = field('section_player_config', 'peppySpectrumModel');
+      var peppySpectrumModelField = field('section_peppy', 'peppySpectrumModel');
       var peppySpectrumModel = self.config.get("peppySpectrumModel", "random");
       if (peppySpectrumFolder) {
         var spectrumTxtPath = path.join(PEPPY_DATA_PATH, "peppy_spectrum", peppySpectrumFolder, "spectrum.txt");
@@ -1686,6 +1696,7 @@ ControllerStylishPlayer.prototype.configSavePlayerConfig = function (data) {
   var fanartTvApiKey = (data["fanartTvApiKey"] || "").toString().trim();
   var displayFanartBackground = data["displayFanartBackground"] === true;
   var fanartBackgroundGrayscale = data["fanartBackgroundGrayscale"] === true;
+  var fanartBackgroundOpacity = Math.min(100, Math.max(0, parseInt(data["fanartBackgroundOpacity"], 10) || 0));
 
   // Validate JSON if a value is provided
   if (spectrumOptions) {
@@ -1712,23 +1723,44 @@ ControllerStylishPlayer.prototype.configSavePlayerConfig = function (data) {
   self.config.set("fanartTvApiKey", fanartTvApiKey);
   self.config.set("displayFanartBackground", displayFanartBackground);
   self.config.set("fanartBackgroundGrayscale", fanartBackgroundGrayscale);
+  self.config.set("fanartBackgroundOpacity", fanartBackgroundOpacity);
 
-  if (vizType === "peppyMeter") {
-    var peppyMeterFolder = data["peppyMeterFolder"] ? (typeof data["peppyMeterFolder"] === 'object' ? data["peppyMeterFolder"].value : data["peppyMeterFolder"]) : "";
-    var peppyMeterModel = data["peppyMeterModel"] ? (typeof data["peppyMeterModel"] === 'object' ? data["peppyMeterModel"].value : data["peppyMeterModel"]) : "random";
-    self.config.set("peppyMeterFolder", peppyMeterFolder);
-    self.config.set("peppyMeterModel", peppyMeterModel);
-  }
-
-  if (vizType === "peppySpectrum") {
-    var peppySpectrumFolder = data["peppySpectrumFolder"] ? (typeof data["peppySpectrumFolder"] === 'object' ? data["peppySpectrumFolder"].value : data["peppySpectrumFolder"]) : "";
-    var peppySpectrumModel = data["peppySpectrumModel"] ? (typeof data["peppySpectrumModel"] === 'object' ? data["peppySpectrumModel"].value : data["peppySpectrumModel"]) : "random";
-    self.config.set("peppySpectrumFolder", peppySpectrumFolder);
-    self.config.set("peppySpectrumModel", peppySpectrumModel);
-  }
+  // Older clients still submit pack selections with player configuration.
+  self._savePeppySelections(data);
 
   self.commandRouter.pushToastMessage("success", "Stylish Player", "Player configuration saved.");
 
+  self.broadcastConfig();
+};
+
+ControllerStylishPlayer.prototype._savePeppySelections = function (data) {
+  var self = this;
+  ["peppyMeterFolder", "peppyMeterModel", "peppySpectrumFolder", "peppySpectrumModel"].forEach(function (key) {
+    if (!Object.prototype.hasOwnProperty.call(data, key)) return;
+    var value = data[key];
+    self.config.set(key, value && typeof value === "object" ? value.value : value);
+  });
+};
+
+ControllerStylishPlayer.prototype.configSavePeppy = function (data) {
+  var self = this;
+  var sensitivity = data.peppyNeedleSensitivity === undefined
+    ? self.config.get("peppyNeedleSensitivity", 0.5) : data.peppyNeedleSensitivity;
+  var smoothness = data.peppySmoothness === undefined
+    ? self.config.get("peppySmoothness", 6) : data.peppySmoothness;
+  var isNumeric = function (value) {
+    return (typeof value === "number" || (typeof value === "string" && value.trim() !== "")) && Number.isFinite(Number(value));
+  };
+  if (!isNumeric(sensitivity) || Number(sensitivity) < 0.1 || Number(sensitivity) > 5 ||
+      !isNumeric(smoothness) || !Number.isInteger(Number(smoothness)) || Number(smoothness) < 1 || Number(smoothness) > 30) {
+    self.commandRouter.pushToastMessage("error", "Stylish Player", self.getI18n("PEPPY_INVALID_SETTINGS"));
+    return;
+  }
+
+  self._savePeppySelections(data);
+  self.config.set("peppyNeedleSensitivity", Number(sensitivity));
+  self.config.set("peppySmoothness", Number(smoothness));
+  self.commandRouter.pushToastMessage("success", "Stylish Player", self.getI18n("PEPPY_SETTINGS_SAVED"));
   self.broadcastConfig();
 };
 
