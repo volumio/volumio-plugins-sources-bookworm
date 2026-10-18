@@ -5,7 +5,7 @@ Receive FM and DAB/DAB+ radio in Volumio 4 with an RTL-SDR USB dongle. Stations 
 ## What you need
 
 - Volumio 4 (Bookworm) on a Raspberry Pi, another ARM board or an x86-64 computer
-- An RTL-SDR USB dongle (RTL2832U with an R820T, R820T2 or R828D tuner)
+- An RTL-SDR USB dongle (RTL2832U with an R820T, R820T2, R828D or E4000 tuner)
 - An antenna for FM and/or DAB Band III
 
 ## Installing
@@ -23,7 +23,7 @@ Everything is described in the wiki: https://github.com/foonerd/rtlsdr-radio/wik
 | | |
 | --- | --- |
 | First steps | [Installation](https://github.com/foonerd/rtlsdr-radio/wiki/Installation), [Getting Started](https://github.com/foonerd/rtlsdr-radio/wiki/Getting-Started) |
-| Hardware | [Dongles](https://github.com/foonerd/rtlsdr-radio/wiki/Dongles), [Antennas](https://github.com/foonerd/rtlsdr-radio/wiki/Antennas), [Antenna Design Guide](https://github.com/foonerd/rtlsdr-radio/wiki/Antenna-Design-Guide) |
+| Hardware | [Dongles](https://github.com/foonerd/rtlsdr-radio/wiki/Dongles), [Dongle Report](https://github.com/foonerd/rtlsdr-radio/wiki/Dongle-Report), [Antennas](https://github.com/foonerd/rtlsdr-radio/wiki/Antennas), [Antenna Design Guide](https://github.com/foonerd/rtlsdr-radio/wiki/Antenna-Design-Guide) |
 | Using it | [Scanning](https://github.com/foonerd/rtlsdr-radio/wiki/Scanning), [Station Manager](https://github.com/foonerd/rtlsdr-radio/wiki/Station-Manager), [Settings Reference](https://github.com/foonerd/rtlsdr-radio/wiki/Settings-Reference) |
 | When something does not work | [Troubleshooting](https://github.com/foonerd/rtlsdr-radio/wiki/Troubleshooting), [FAQ](https://github.com/foonerd/rtlsdr-radio/wiki/FAQ) |
 | Reference | [Station Manager API](https://github.com/foonerd/rtlsdr-radio/wiki/Station-Manager-API), [Test Setup](https://github.com/foonerd/rtlsdr-radio/wiki/Test-Setup), [Changelog](https://github.com/foonerd/rtlsdr-radio/wiki/Changelog) |

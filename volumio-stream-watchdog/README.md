@@ -28,6 +28,16 @@ IDLE ──► WATCHING ──► SUSPECT ──► FALLBACK
 - **SUSPECT** — Unexpected stop detected or first probe failure. Waits one more cycle.
 - **FALLBACK** — Failure confirmed. Local playlist plays. Restoration probes run on `restoreCheckInterval`.
 
+A probe that passes while in SUSPECT clears the alarm, but it only proves the
+*station* is reachable — it says nothing about whether your speakers came back.
+So on the way back to WATCHING the plugin waits a few seconds (long enough for
+Volumio's own retry to win, in which case it does nothing) and then checks the
+player really is in `play`. If the stream is reachable but playback is dead,
+it reissues the stream in place — no snapshot, no offline playlist, no
+FALLBACK. If three consecutive nudges fail to stick, the station is treated as
+genuinely broken and the full fallback takes over. A stop you asked for is
+never answered with a restart.
+
 ### What happens on failure
 
 1. Current stream URI and queue are snapshotted
@@ -35,6 +45,14 @@ IDLE ──► WATCHING ──► SUSPECT ──► FALLBACK
 3. Volumio stops and clears the queue
 4. A Volumio playlist named `"Offline"` (configurable) starts playing
 5. If no such playlist exists, the plugin scans `music-library/INTERNAL` as a fallback
+
+### What happens when the stream is reachable but silent
+
+1. A probe passes while in SUSPECT, so the plugin returns to WATCHING
+2. After a short grace period it confirms the player is actually in `play`
+3. If it is not, the watched stream is reissued — logged as
+   `restream_recovery_total reason=stopped_after_probe_pass`
+4. After three consecutive failed attempts, the plugin escalates to FALLBACK
 
 ### What happens on restore
 
@@ -54,29 +72,42 @@ In the Volumio UI, browse to your local music, add tracks to the queue, then sav
 
 ## Installation
 
-### From the Volumio Plugin Store (once published)
+### From the Volumio Plugin Store
 
-Navigate to **Plugins → Miscellanea** and search for "Stream Watchdog".
+Stream Watchdog currently lives in Volumio's **beta** channel, so it is not
+visible in the store by default. Enable **Plugins test mode** first:
+
+1. Open `http://<your-volumio-address>/dev` in a browser.
+2. Switch **Plugins test mode** on.
+3. Back in the Volumio UI, go to **Plugins → Search Plugins** and search for
+   "Stream Watchdog".
+
+A MyVolumio account is required to browse the plugin store; the free tier is
+enough. Once the Volumio team promotes the plugin to the stable channel, test
+mode will no longer be needed.
 
 ### Manual install (development)
+
+On a Volumio 4 (bookworm) device, install the plugin through Volumio's own
+plugin manager rather than dropping files into `/data/plugins` by hand — that
+is what registers the plugin, runs `npm install` and makes uninstall work.
 
 ```bash
 # SSH into your Volumio device
 ssh volumio@volumio.local
 
-# Clone the repo into the plugins directory
-cd /data/plugins/system_controller
-git clone https://github.com/josemathias/volumio-stream-watchdog volumio-stream-watchdog
+# Get the plugin sources
+git clone https://github.com/volumio/volumio-plugins-sources-bookworm.git --depth=1
+cd volumio-plugins-sources-bookworm/volumio-stream-watchdog
 
-# Install dependencies
-cd volumio-stream-watchdog
-npm install
-
-# Restart Volumio
-sudo systemctl restart volumio
+# Let Volumio install it
+volumio plugin install
 ```
 
-Then navigate to **Plugins → Installed Plugins** and enable **Stream Watchdog**.
+`volumio plugin install` warns that the plugin is not store-verified and asks
+for confirmation, then installs dependencies and offers to enable the plugin.
+Remove it again from **Plugins → Installed Plugins → Uninstall**, which runs
+`uninstall.sh` and clears the plugin's configuration.
 
 ## Configuration
 
@@ -88,6 +119,7 @@ Open the plugin settings page in Volumio (**Plugins → Installed → Stream Wat
 | Stream Check Interval (seconds) | `30` | How often to probe the stream URL while watching (minimum: 15) |
 | Restore Check Interval (seconds) | `60` | How often to probe while in fallback mode (minimum: 30) |
 | Auto-Restore | `on` | Automatically resume the original stream when it returns |
+| Shuffle Offline Playlist | `on` | Play the offline playlist in random order. Outages are usually short, so in order the same first tracks play every time |
 
 ## Logs
 

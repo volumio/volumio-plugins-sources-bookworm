@@ -1,6 +1,6 @@
 {
   "name": "volumio-stream-watchdog",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Automatically switches to a local playlist when your stream fails, and resumes when it returns.",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   },
   "author": "josemathias",
   "license": "MIT",
-  "repository": "https://github.com/josemathias/volumio-plugins-sources-bookworm",
+  "repository": "https://github.com/volumio/volumio-plugins-sources-bookworm/tree/master/volumio-stream-watchdog",
   "volumio_info": {
     "prettyName": "Stream Watchdog",
     "icon": "fa-wifi",
@@ -25,7 +25,7 @@
     "has_alsa_contribution": false,
     "boot_priority": 100,
     "details": "Monitors your web radio or streaming source and automatically switches to a curated local Volumio playlist when the stream fails. Uses Volumio's own player state events and direct HTTP stream probing — not a generic TCP ping — so it catches failures that network checks miss. Resumes the original stream automatically when connectivity is restored.",
-    "changelog": "1.0.0 — Initial release"
+    "changelog": "1.2.0 — Recovers playback when the stream is reachable again but the player stayed stopped; 1.1.1 — Shuffle is cancelled and undone when the plugin stops; 1.1.0 — Shuffle the offline playlist (on by default); 1.0.0 — Initial release"
   },
   "engines": {
     "node": ">=20",

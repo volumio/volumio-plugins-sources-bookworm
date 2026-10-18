@@ -2109,6 +2109,9 @@ FusionDsp.prototype.addeq = function (data) {
     self.logger.info(logPrefix + ' Max eq reached!')
     return
   }
+  var mergedeq = (self.config.get('mergedeq') || '').toString();
+  mergedeq += 'Eq' + n + '|Peaking|L+R|1000,0,1|';
+  self.config.set('mergedeq', mergedeq);
   self.config.set('nbreq', n)
   self.config.set('effect', true)
   self.logger.info(logPrefix + ' nbre eq ' + n)

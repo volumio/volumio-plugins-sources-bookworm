@@ -409,6 +409,42 @@ Logos.prototype.clearUser = function(station) {
   return this.describe(station);
 };
 
+// A station of the list has been given another frequency: its logos go with it, the one
+// the user chose and the one found for it. What the new frequency held gives way to
+// them, and stays where the station brings none.
+Logos.prototype.retuned = function(from, to) {
+  var self = this;
+  var was = self.keyOf(from);
+  var is = self.keyOf(to);
+  if (!was || !is || was === is) {
+    return;
+  }
+  var moved = false;
+  [['user', 'user-'], ['logos', '']].forEach(function(kind) {
+    var held = self.index[kind[0]][was];
+    if (!held) {
+      return;
+    }
+    delete self.index[kind[0]][was];
+    var file = self._file(held);
+    if (file) {
+      var named = kind[1] + is + path.extname(file);
+      var taken = self.index[kind[0]][is];
+      if (taken && taken.file && taken.file !== named) {
+        fs.removeSync(path.join(self.dir, taken.file));
+      }
+      fs.moveSync(path.join(self.dir, file), path.join(self.dir, named), { overwrite: true });
+      held.file = named;
+      self.index[kind[0]][is] = held;
+    }
+    moved = true;
+  });
+  if (moved) {
+    self._save();
+    self.onLogo();
+  }
+};
+
 // The user's own logos as a backup carries them: { '<key>': { extension, from, ref,
 // data } }, data being the picture in base64. Only what the user chose: everything else
 // the store keeps can be fetched again.

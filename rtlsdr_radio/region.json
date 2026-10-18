@@ -27,7 +27,7 @@
       "band_start": 88.0,
       "band_end": 108.0,
       "spacing_khz": 200,
-      "deemphasis_us": 50
+      "deemphasis_us": 75
     },
     "australia": {
       "name_key": "FM_REGION_AUSTRALIA",

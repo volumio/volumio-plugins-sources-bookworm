@@ -9,6 +9,11 @@ pkill -f fn-rtl-gain
 pkill -f fn-dab
 pkill -f fn-dab-scanner
 pkill -f fn-redsea
+pkill -f fn-rtl_test
+pkill -f fn-rtl_sdr
+
+# A dongle report left on the player
+rm -rf /data/rtlsdr_radio_report
 
 # Remove sudoers entry
 if [ -f /etc/sudoers.d/volumio-user-rtlsdr-radio ]; then
