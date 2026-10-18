@@ -1,25 +1,40 @@
-#!/bin/bash
-# NFC Music - remove what install.sh added.
+#!/bin/sh
+# NFC Music - undo exactly what install.sh did (state in install-state).
+# Volumio runs this script as root with /bin/sh, so it must stay POSIX sh.
 
-MARKER_DIR="/data/INTERNAL/nfc_music"
-MARKER="$MARKER_DIR/installed-packages"
+STATE_DIR="/data/configuration/system_hardware/nfc_music"
+STATE_FILE="$STATE_DIR/install-state"
 BLACKLIST_FILE="/etc/modprobe.d/nfc_music-blacklist.conf"
 
-if [ -f "$BLACKLIST_FILE" ] && grep -q "NFC Music plugin" "$BLACKLIST_FILE"; then
+SUDO=""
+[ "$(id -u)" -ne 0 ] && SUDO="sudo"
+
+INSTALLED_BY_PLUGIN=""
+SOCKET_WAS_ENABLED=""
+BLACKLIST_CREATED=""
+if [ -f "$STATE_FILE" ]; then
+    . "$STATE_FILE"
+fi
+
+if [ "$BLACKLIST_CREATED" = "yes" ] && [ -f "$BLACKLIST_FILE" ]; then
     echo "Removing kernel driver blacklist"
-    sudo rm -f "$BLACKLIST_FILE"
+    $SUDO rm -f "$BLACKLIST_FILE"
 fi
 
-if [ -s "$MARKER" ]; then
-    echo "Removing packages installed by NFC Music: $(tr '\n' ' ' < "$MARKER")"
-    # shellcheck disable=SC2046
-    sudo apt-get -y purge --auto-remove $(cat "$MARKER")
+if [ "$SOCKET_WAS_ENABLED" = "no" ]; then
+    echo "Restoring pcscd.socket to disabled"
+    $SUDO systemctl disable --now pcscd.socket >/dev/null 2>&1 || true
 fi
 
-rm -rf "$MARKER_DIR" 2>/dev/null || sudo rm -rf "$MARKER_DIR"
+if [ -n "$INSTALLED_BY_PLUGIN" ]; then
+    echo "Removing packages installed by NFC Music: $INSTALLED_BY_PLUGIN"
+    $SUDO apt-get -y purge --auto-remove $INSTALLED_BY_PLUGIN
+fi
 
-# Note: the user's tags in /data/configuration/system_hardware/nfc_music are
-# kept on purpose, so reinstalling the plugin restores them.
+# Only remove our own state file. Volumio itself deletes the rest of
+# /data/configuration/system_hardware/nfc_music (including tags.json)
+# after this script, as it does for every plugin.
+$SUDO rm -f "$STATE_FILE"
 
 echo "Done"
 echo "pluginuninstallend"

@@ -55,6 +55,11 @@ NfcMusic.prototype.getTagsFile = function () {
 /*
  * Eenmalige migratie: tags.json uit de oude locatie (pluginmap/config)
  * overzetten naar de configuratiemap.
+ *
+ * Werkt alleen bij `volumio plugin refresh` (kopieert over de bestaande map heen).
+ * Bij een update via de store/zip vervangt Volumio de pluginmap vóór onStart,
+ * dan is het oude bestand al weg. Geen probleem: geen enkele store-versie heeft
+ * de oude locatie gebruikt; dit is alleen voor bestaande ontwikkel-installaties.
  */
 NfcMusic.prototype.migrateTagsFile = function () {
     const oldFile = path.join(__dirname, 'config', 'tags.json');

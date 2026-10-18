@@ -8,8 +8,10 @@ Volumio 4 (Bookworm) plugin that plays music when you hold an NFC tag against a 
 
 ## Installation
 Install from the Volumio plugin store (category *System Hardware*).
-`install.sh` installs `pcscd` and `libccid` and blacklists the kernel `pn533` NFC drivers,
-which otherwise claim the ACR122U. Unplug and replug the reader after installing.
+`install.sh` installs `pcscd` and `libccid` (only when missing), enables `pcscd.socket` and blacklists
+the kernel `pn533` NFC drivers, which otherwise claim the ACR122U. Unplug and replug the reader after
+installing. `uninstall.sh` undoes exactly these changes, using the state recorded in
+`/data/configuration/system_hardware/nfc_music/install-state`.
 
 ## Usage
 1. Open *Settings → Plugins → NFC Music*.
@@ -28,7 +30,9 @@ Matching ignores case, accents and punctuation.
 
 ## Where data is stored
 Tags are stored in `/data/configuration/system_hardware/nfc_music/tags.json`
-(format: see `config/tags.example.json`). The file is kept when the plugin is updated or uninstalled.
+(format: see `config/tags.example.json`). The file is kept when the plugin is **updated**.
+When the plugin is **uninstalled**, Volumio removes this folder (as for every plugin), so copy
+`tags.json` first if you want to keep your tags.
 
 ## Troubleshooting
 ```bash
