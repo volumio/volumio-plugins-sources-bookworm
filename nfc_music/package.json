@@ -1,0 +1,35 @@
+{
+	"name": "nfc_music",
+	"version": "2.0.0",
+	"description": "Play music on Volumio by scanning NFC tags with a PC/SC reader (e.g. ACR122U).",
+	"main": "index.js",
+	"scripts": {
+		"test": "node --check index.js && for f in lib/*.js; do node --check \"$f\"; done"
+	},
+	"author": "LinkeLoutje",
+	"license": "MIT",
+	"repository": "https://github.com/LinkeLoutje/volumio-plugins-sources-bookworm",
+	"volumio_info": {
+		"prettyName": "NFC Music",
+		"icon": "fa-tags",
+		"plugin_type": "system_hardware",
+		"architectures": [
+			"amd64",
+			"armhf"
+		],
+		"os": [
+			"bookworm"
+		],
+		"details": "Link NFC tags to albums, tracks or playlists from your music library. Hold a tag against the reader and Volumio starts playing. Tags are configured on the plugin settings page: scan a tag, give it a name and choose what it should play. Supports PC/SC readers such as the ACR122U; the required pcscd service is installed automatically.",
+		"changelog": "Tags are now stored in /data/configuration and survive plugin updates; install.sh installs pcscd."
+	},
+	"engines": {
+		"node": ">=20.5.1 <21",
+		"volumio": ">=4.119.0 <5"
+	},
+	"dependencies": {
+		"axios": "^1.19.0",
+		"kew": "^0.7.0",
+		"pcsclite": "^1.0.1"
+	}
+}

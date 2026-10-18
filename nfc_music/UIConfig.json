@@ -1,0 +1,61 @@
+{
+  "page": {
+    "label": "NFC Music"
+  },
+  "sections": [
+    {
+      "id": "section_last_scanned",
+      "element": "section",
+      "label": "Laatst gescande tag",
+      "icon": "fa-wifi",
+      "description": "Houd een tag tegen de lezer en klik daarna hieronder op 'Bewerk deze tag'.",
+      "content": []
+    },
+    {
+      "id": "section_pick_existing",
+      "element": "section",
+      "label": "Bestaande tag kiezen",
+      "icon": "fa-list",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/nfc_music",
+        "method": "selectTagToEdit"
+      },
+      "saveButton": {
+        "label": "Bewerk",
+        "data": [
+          "existingTagUid"
+        ]
+      },
+      "content": []
+    },
+    {
+      "id": "section_edit_tag",
+      "element": "section",
+      "label": "Tag bewerken",
+      "icon": "fa-pencil",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/nfc_music",
+        "method": "saveTag"
+      },
+      "saveButton": {
+        "label": "Opslaan",
+        "data": [
+          "name",
+          "actionType",
+          "track_uri",
+          "track_titel",
+          "track_artist",
+          "track_album",
+          "album_artist",
+          "album_naam",
+          "playlist_naam",
+          "spotify_album_uri",
+          "spotify_playlist_uri"
+        ]
+      },
+      "content": []
+    }
+  ]
+}

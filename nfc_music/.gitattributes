@@ -1,0 +1,6 @@
+# Volumio runs on Linux: always store text files with LF line endings.
+* text=auto eol=lf
+*.sh text eol=lf
+*.png binary
+*.jpg binary
+*.zip binary
