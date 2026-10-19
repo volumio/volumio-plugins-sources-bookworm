@@ -6,13 +6,13 @@
  * Two jobs. The interface itself: static files under ui/, registered with Volumio as a third-party
  * interface on start (Settings → System → User Interface layout design), taken out again on stop.
  * And the place the interface keeps its settings: the theme (dark, light, system), the ambient
- * display and the pins — a set of static files has nowhere to keep anything, so a choice made in
+ * display, the pins and the sources shown in the menu — a set of static files has nowhere to keep anything, so a choice made in
  * one browser never reached another, and a display the player drives on HDMI could not be told
  * anything at all. The plugin answers a screen that asks and pushes every accepted change to all.
  *
  * Contract (the interface's side: core/store/companion.ts):
  *   callMethod user_interface/artwork_one getSettings {}             -> pushArtworkSettings to the caller
- *   callMethod user_interface/artwork_one setSettings {theme?, ambient?, pins?}
+ *   callMethod user_interface/artwork_one setSettings {theme?, ambient?, pins?, menu?, menuOrder?}
  *                                                                    -> pushArtworkSettings to everyone
  * A key is absent until someone chooses it. A partial payload never clears the other keys.
  * (The interface also asks the old endpoint miscellanea/artwork_companion, for a script install
@@ -283,7 +283,43 @@ ArtworkOne.prototype.snapshot = function () {
   if (ambient) { out.ambient = ambient; }
   var pins = this.readPins();
   if (pins) { out.pins = pins; }
+  var menu = this.readMenu();
+  if (menu) { out.menu = menu; }
+  var order = this.readMenuOrder();
+  if (order) { out.menuOrder = order; }
   return out;
+};
+
+// the menu: the library's sources shown in the rail or not, by uri ({ randomizer: true, favourites: false });
+// a source nobody chose keeps the interface's default
+ArtworkOne.prototype.readMenu = function () {
+  var raw = this.config.get('menu');
+  if (!raw) { return null; }
+  try { return this.cleanMenu(typeof raw === 'string' ? JSON.parse(raw) : raw); } catch (e) { return null; }
+};
+
+// the menu's order: the sources' uris as the menu shows them (a source not listed follows, in Volumio's order)
+ArtworkOne.prototype.readMenuOrder = function () {
+  var raw = this.config.get('menuOrder');
+  if (!raw) { return null; }
+  try { return this.cleanMenuOrder(typeof raw === 'string' ? JSON.parse(raw) : raw); } catch (e) { return null; }
+};
+
+ArtworkOne.prototype.cleanMenuOrder = function (list) {
+  if (!Array.isArray(list)) { return null; }
+  var out = [];
+  list.forEach(function (uri) { if (typeof uri === 'string' && uri && uri.length <= 200 && out.indexOf(uri) < 0 && out.length < 60) { out.push(uri); } });
+  return out.length ? out : null;
+};
+
+ArtworkOne.prototype.cleanMenu = function (m) {
+  if (!m || typeof m !== 'object' || Array.isArray(m)) { return null; }
+  var out = {}, n = 0;
+  Object.keys(m).forEach(function (uri) {
+    if (!uri || uri.length > 200 || typeof m[uri] !== 'boolean' || n >= 60) { return; }
+    out[uri] = m[uri]; n++;
+  });
+  return n ? out : null;
 };
 
 // the pins: quick access on Home, up to 24, each only what a tile needs
@@ -356,6 +392,17 @@ ArtworkOne.prototype.setSettings = function (data) {
       if (patch) { this.config.set('ambient', JSON.stringify(Object.assign({}, this.readAmbient() || {}, patch))); changed = true; }
       else { this.logger.warn('[artwork_one] refused ambient ' + JSON.stringify(d.ambient)); }
     }
+  }
+  if (d.menu !== undefined) {
+    // a choice merges into the others: one switch changes one source
+    var menu = this.cleanMenu(d.menu);
+    if (menu) { this.config.set('menu', JSON.stringify(Object.assign({}, this.readMenu() || {}, menu))); changed = true; }
+    else { this.logger.warn('[artwork_one] refused menu'); }
+  }
+  if (d.menuOrder !== undefined) {
+    var order = this.cleanMenuOrder(d.menuOrder);
+    if (order) { this.config.set('menuOrder', JSON.stringify(order)); changed = true; }
+    else { this.logger.warn('[artwork_one] refused menu order'); }
   }
   if (d.pins !== undefined) {
     var pins = this.cleanPins(d.pins);

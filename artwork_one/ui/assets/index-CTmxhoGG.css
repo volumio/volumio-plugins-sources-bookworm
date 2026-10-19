@@ -3,6 +3,9 @@
    The selectors keep the theme's names (body#artwork, the same classes) so the design's rules
    port one to one; there is no Bootstrap and no inherited theme underneath any more. */
 :root {
+  /* the theme draws its own dark and light: a browser's forced dark mode (Opera's, Chrome's "dark web pages") leaves it alone
+     instead of inverting the white controls into dark ones */
+  color-scheme: dark;
   /* the system bars a screen draws under (iPhone notch, Android status and navigation bars): what the browser reports.
      Volumio's Android app is the exception: its WebView reports the phone's bars although the app draws them itself
      above and below it, so there the theme leaves no room for them (core/insets.ts sets the class). */
@@ -543,6 +546,10 @@
 :root.aw-android-app {
   --sa-t: 0px;
   --sa-b: 0px;
+}
+
+html.aw-is-light {
+  color-scheme: only light;
 }
 
 /* ---- type ---- */
@@ -1130,6 +1137,36 @@ body#artwork #main-menu .rail__scan-icon {
   height: 23px;
   justify-self: center;
 }
+
+/* a plugin's source in the menu (Appearance → Menu): its logo as a mask in the glyphs' ink (SourceGlyph trims its margin),
+   fitted into the glyph's own box — a material glyph draws in about 20 of its 24 px */
+body#artwork .aw-src-mark {
+  display: block;
+  flex: none;
+  justify-self: center;
+  width: clamp(20px, 1.6vw, 23px);
+  height: clamp(20px, 1.6vw, 23px);
+  background: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  transform: scale(0.84);
+}
+body#artwork .aw-src-mark.is-untrimmed {
+  transform: scale(1.5);
+} /* the logo's own margin, until it is trimmed */
+body#artwork .aw-mm__item .aw-src-mark {
+  width: 23px;
+  height: 23px;
+  color: var(--ink-3);
+}
+
+body#artwork .aw-mm__item.active .aw-src-mark {
+  color: var(--ink);
+}
 /* The shared controls: the seek bar, the transport, the volume strip, the glyph buttons. */
 /* ---- seek bar (mockup 2a 2b 2e): one markup, three sizes ---- */
 .artwork-seek {
@@ -1453,6 +1490,11 @@ body#artwork #main-menu .rail__scan-icon {
   align-items: center;
   gap: 6px;
   min-width: 0;
+  align-self: stretch;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 #footer-content .mini-center {
   display: flex;
@@ -3154,7 +3196,7 @@ body#artwork #np.np--empty .np-empty__dur {
     flex: none;
   }
 }
-/* Now Playing's text size, a screen's own choice (Appearance → This screen): the meta column scaled, the cover untouched */
+/* Now Playing's text size on the player's own display (Appearance → Text size on the display): the meta column scaled, the cover untouched */
 html[data-aw-text=s] body#artwork #np .np-title {
   font-size: calc(var(--np-title) * 0.85);
 }
@@ -3201,7 +3243,7 @@ html[data-aw-text=l] body#artwork #np .np-format, html[data-aw-text=xl] body#art
   font-size: 13px;
 }
 
-/* the volume control hidden (Appearance → This screen): whoever sets it on the amplifier */
+/* the volume control hidden on the player's own display (Appearance → Hide the volume on the display): whoever sets it on the amplifier */
 html.aw-no-volume body#artwork .np-volume, html.aw-no-volume body#artwork .mini-volume {
   display: none !important;
 }
@@ -12562,6 +12604,50 @@ body#artwork #pluginWrapper .aw-drive__more {
 body#artwork #pluginWrapper .aw-drive__more:hover {
   color: var(--ink);
 }
+
+/* Appearance → Menu: the sources' rows dragged into the menu's order by the whole row (core/rowDrag); the grip says so.
+   The row reaches 12px past the card's text column on both sides, so the lifted row's fill has room around its text. */
+body#artwork #pluginWrapper .aw-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 -12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  position: relative;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  transition: transform 0.18s ease;
+}
+body#artwork #pluginWrapper .aw-menu-row .aw-sc-row__text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+body#artwork #pluginWrapper .aw-menu-row .aw-sc-row__control {
+  flex: none;
+}
+body#artwork #pluginWrapper .aw-menu-row.is-dragging {
+  cursor: grabbing;
+  transition: none;
+  z-index: 2;
+  border-radius: 11px;
+  background: var(--fill-10);
+  box-shadow: 0 18px 40px -18px var(--shadow-strong);
+  border-bottom-color: transparent;
+}
+
+body#artwork #pluginWrapper .aw-menu-row__grip {
+  flex: none;
+  margin-left: -4px;
+  font-size: 20px;
+  color: var(--ink-dim);
+}
+
+body#artwork #pluginWrapper .aw-menu-rows.is-reordering .aw-menu-row {
+  pointer-events: none;
+}
 /* ============================================================
    MyVolumio (the frame's pages under the theme's dress). Bootstrap-era markup: the frame's
    base rules the theme builds on come first — scoped with :where() so they keep the frame's
@@ -18442,6 +18528,7 @@ body#artwork #footer-content .track-info-rates .track-info-sleep::before {
    Light: blur at .34, saturate 1.1 under a .72→.85→.94 paper veil, so a bright sleeve cannot
    glow on paper. */
 body#artwork .aw-amb {
+  --amb-ts: 1; /* the display's text size (Appearance → Text size on the display), the clocks aside */
   --amb-pad: clamp(48px, 7vw, 140px);
   --amb-gap: clamp(40px, 5.4vw, 104px);
   --amb-cover: 52vh;
@@ -18481,6 +18568,18 @@ body#artwork .aw-amb {
   --amb-pill-line: rgba(20, 22, 26, .12);
   --amb-track: rgba(20, 22, 26, .14);
   --amb-cover-shadow: 0 4.2vh 8.8vh -3.5vh rgba(24, 20, 14, .5);
+}
+
+html[data-aw-text=s] body#artwork .aw-amb {
+  --amb-ts: .88;
+}
+
+html[data-aw-text=l] body#artwork .aw-amb {
+  --amb-ts: 1.25;
+}
+
+html[data-aw-text=xl] body#artwork .aw-amb {
+  --amb-ts: 1.5;
 }
 
 @keyframes aw-amb-in {
@@ -18562,14 +18661,14 @@ body#artwork .aw-amb__text {
 }
 
 body#artwork .aw-amb__tag {
-  font-size: clamp(11px, 1.3vh, 14px);
+  font-size: calc(clamp(11px, 1.3vh, 14px) * var(--amb-ts));
   letter-spacing: 0.16em;
   color: var(--amb-ink-3);
   margin-bottom: clamp(12px, 1.8vh, 20px);
 }
 
 body#artwork .aw-amb__title {
-  font-size: clamp(28px, 5.5vh + 1.5vw, 92px);
+  font-size: calc(clamp(28px, 5.5vh + 1.5vw, 92px) * var(--amb-ts));
   font-weight: 800;
   letter-spacing: -0.032em;
   line-height: 1.02;
@@ -18578,14 +18677,14 @@ body#artwork .aw-amb__title {
 }
 
 body#artwork .aw-amb__artist {
-  font-size: clamp(20px, 3.9vh, 40px);
+  font-size: calc(clamp(20px, 3.9vh, 40px) * var(--amb-ts));
   font-weight: 600;
   letter-spacing: -0.01em;
   margin-top: 2vh;
   overflow-wrap: anywhere;
 } /* two lines at most (ClampedText) */
 body#artwork .aw-amb__album {
-  font-size: clamp(15px, 2.5vh, 24px);
+  font-size: calc(clamp(15px, 2.5vh, 24px) * var(--amb-ts));
   color: var(--amb-ink-2);
   margin-top: 1.1vh;
   overflow-wrap: anywhere;
@@ -18608,13 +18707,13 @@ body#artwork .aw-amb__pill {
   border: 1px solid var(--amb-pill-line);
 }
 body#artwork .aw-amb__pill-num {
-  font-size: clamp(12px, 1.6vh, 17px);
+  font-size: calc(clamp(12px, 1.6vh, 17px) * var(--amb-ts));
   font-weight: 700;
   letter-spacing: 0.04em;
   color: var(--amb-ink-2);
 }
 body#artwork .aw-amb__pill-unit {
-  font-size: clamp(10px, 1.2vh, 13px);
+  font-size: calc(clamp(10px, 1.2vh, 13px) * var(--amb-ts));
   letter-spacing: 0.14em;
   color: var(--amb-ink-3);
 }
@@ -18646,7 +18745,7 @@ body#artwork .aw-amb__bp {
   gap: 8px;
 }
 body#artwork .aw-amb__bp .mono {
-  font-size: clamp(11px, 1.3vh, 14px);
+  font-size: calc(clamp(11px, 1.3vh, 14px) * var(--amb-ts));
   letter-spacing: 0.14em;
   color: var(--amb-ink);
 }
@@ -18662,7 +18761,7 @@ body#artwork .aw-amb__time {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: clamp(11px, 1.5vh, 16px);
+  font-size: calc(clamp(11px, 1.5vh, 16px) * var(--amb-ts));
   letter-spacing: 0.1em;
   color: var(--amb-ink-2);
 }
@@ -18689,7 +18788,7 @@ body#artwork .aw-amb__time--block {
 }
 body#artwork .aw-amb__line {
   display: none;
-  font-size: clamp(11px, 1.3vh, 14px);
+  font-size: calc(clamp(11px, 1.3vh, 14px) * var(--amb-ts));
   letter-spacing: 0.14em;
   color: var(--amb-ink-2);
   margin-top: clamp(16px, 3vh, 24px);
@@ -18716,7 +18815,7 @@ body#artwork .aw-amb__ampm {
 }
 
 body#artwork .aw-amb__name {
-  font-size: clamp(11px, 1.3vh, 14px);
+  font-size: calc(clamp(11px, 1.3vh, 14px) * var(--amb-ts));
   letter-spacing: 0.16em;
   color: var(--amb-ink-3);
 }
@@ -18746,7 +18845,7 @@ body#artwork .aw-amb__clock--idle {
 }
 
 body#artwork .aw-amb__idle .aw-amb__name {
-  font-size: clamp(12px, 1.4vh, 15px);
+  font-size: calc(clamp(12px, 1.4vh, 15px) * var(--amb-ts));
   letter-spacing: 0.18em;
   color: var(--ink-dim);
 }
@@ -18814,19 +18913,19 @@ body#artwork .aw-amb--cover .aw-amb__text {
   min-width: 0;
 }
 body#artwork .aw-amb--cover .aw-amb__title {
-  font-size: clamp(24px, 5.6vh, 64px);
+  font-size: calc(clamp(24px, 5.6vh, 64px) * var(--amb-ts));
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.05;
 }
 body#artwork .aw-amb--cover .aw-amb__artist {
-  font-size: clamp(16px, 3vh, 34px);
+  font-size: calc(clamp(16px, 3vh, 34px) * var(--amb-ts));
   font-weight: 700;
   color: var(--amb-ink-2);
   margin-top: 1.6vh;
 }
 body#artwork .aw-amb--cover .aw-amb__album {
-  font-size: clamp(13px, 2.4vh, 26px);
+  font-size: calc(clamp(13px, 2.4vh, 26px) * var(--amb-ts));
   color: var(--amb-ink-3);
   margin-top: 0.8vh;
 }
@@ -18847,12 +18946,12 @@ body#artwork .aw-amb--cover .aw-amb__next {
   border-top: 1px solid var(--amb-pill-line);
 }
 body#artwork .aw-amb--cover .aw-amb__next-eyebrow {
-  font-size: clamp(10px, 1.5vh, 15px);
+  font-size: calc(clamp(10px, 1.5vh, 15px) * var(--amb-ts));
   letter-spacing: 0.16em;
   color: var(--amb-ink-3);
 }
 body#artwork .aw-amb--cover .aw-amb__next-title {
-  font-size: clamp(14px, 2.2vh, 24px);
+  font-size: calc(clamp(14px, 2.2vh, 24px) * var(--amb-ts));
   color: var(--amb-ink);
   margin-top: 1vh;
   white-space: nowrap;
@@ -18863,13 +18962,13 @@ body#artwork .aw-amb--cover .aw-amb__name--corner {
   left: var(--amb-x);
   bottom: auto;
   top: clamp(20px, 5.6vh, 60px);
-  font-size: clamp(11px, 1.5vh, 15px);
+  font-size: calc(clamp(11px, 1.5vh, 15px) * var(--amb-ts));
   letter-spacing: 0.2em;
 }
 body#artwork .aw-amb--cover .aw-amb__clock {
   top: clamp(16px, 4.8vh, 52px);
   right: var(--amb-x);
-  font-size: clamp(20px, 3vh, 34px);
+  font-size: calc(clamp(20px, 3vh, 34px) * var(--amb-ts));
   letter-spacing: 0.02em;
 }
 body#artwork .aw-amb--cover .aw-amb__ampm {
@@ -18896,7 +18995,7 @@ body#artwork .aw-amb--cover .aw-amb__times {
   top: calc(var(--amb-top) + var(--amb-cover) + 4.9vh + 6px + 1.4vh);
   display: flex;
   justify-content: space-between;
-  font-size: clamp(11px, 1.7vh, 17px);
+  font-size: calc(clamp(11px, 1.7vh, 17px) * var(--amb-ts));
   letter-spacing: 0.06em;
   color: var(--amb-ink-2);
 }
@@ -18979,12 +19078,12 @@ body#artwork .aw-amb--clock .aw-amb__text {
   gap: 0.8vh;
 }
 body#artwork .aw-amb--clock .aw-amb__title {
-  font-size: clamp(22px, 4.7vh, 48px);
+  font-size: calc(clamp(22px, 4.7vh, 48px) * var(--amb-ts));
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 body#artwork .aw-amb--clock .aw-amb__artist {
-  font-size: clamp(15px, 2.8vh, 28px);
+  font-size: calc(clamp(15px, 2.8vh, 28px) * var(--amb-ts));
   font-weight: 400;
   color: var(--amb-ink-2);
   margin-top: 0;
@@ -19033,10 +19132,10 @@ body#artwork .aw-amb--bleed .aw-amb__cover, body#artwork .aw-amb--bleed .aw-amb_
   display: none;
 }
 body#artwork .aw-amb--bleed .aw-amb__title {
-  font-size: clamp(30px, 8.7vh, 100px);
+  font-size: calc(clamp(30px, 8.7vh, 100px) * var(--amb-ts));
 }
 body#artwork .aw-amb--bleed .aw-amb__artist {
-  font-size: clamp(18px, 3.7vh, 40px);
+  font-size: calc(clamp(18px, 3.7vh, 40px) * var(--amb-ts));
   margin-top: 1.6vh;
 }
 body#artwork .aw-amb--bleed .aw-amb__line {
@@ -19084,7 +19183,7 @@ body#artwork .aw-amb--bleed .aw-amb__times {
   right: var(--amb-x);
   bottom: clamp(16px, 3.6vh, 40px);
   justify-content: space-between;
-  font-size: clamp(11px, 1.7vh, 17px);
+  font-size: calc(clamp(11px, 1.7vh, 17px) * var(--amb-ts));
   letter-spacing: 0.06em;
   color: #fff;
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
@@ -19138,11 +19237,11 @@ body#artwork .aw-amb__sleep {
   border: 1px solid var(--amb-pill-line);
 }
 body#artwork .aw-amb__sleep .material-symbols-rounded {
-  font-size: clamp(17px, 2.2vh, 22px);
+  font-size: calc(clamp(17px, 2.2vh, 22px) * var(--amb-ts));
   color: var(--amb-ink-3);
 }
 body#artwork .aw-amb__sleep .mono {
-  font-size: clamp(11px, 1.3vh, 14px);
+  font-size: calc(clamp(11px, 1.3vh, 14px) * var(--amb-ts));
   letter-spacing: 0.14em;
   color: var(--amb-ink);
 }
@@ -19358,7 +19457,12 @@ body#artwork .aw-amb.is-night .aw-amb__sleep {
   }
   body#artwork #np .np-zone {
     flex: 1;
-    text-align: center;
+    min-width: 0;
+    text-align: right;
+    padding-right: calc(8px - 0.18em); /* beside the minimise chevron (less the letter spacing after the last letter) */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 10px;
     letter-spacing: 0.18em;
     color: var(--ink-25);
