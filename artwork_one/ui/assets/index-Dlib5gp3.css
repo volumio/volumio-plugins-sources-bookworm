@@ -16796,9 +16796,10 @@ body#artwork .outputs__menu {
   left: auto;
   width: min(350px, 100vw - 24px);
   max-height: calc(100vh - 91px); /* what Volumio's own frame left the sheet with */
-  padding: 20px 20px calc(20px + var(--sa-b));
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
   border-radius: 18px;
   background: var(--panel-deep);
   -webkit-backdrop-filter: blur(34px) saturate(1.1);
@@ -16809,6 +16810,17 @@ body#artwork .outputs__menu {
   opacity: 1;
   transform: none;
   animation: aw-outputs-in 0.22s ease-out;
+}
+body#artwork {
+  /* the content scrolls inside the sheet: the handle (the close button on wide screens) stays put */
+}
+body#artwork .outputs__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 20px 20px calc(20px + var(--sa-b));
 }
 body#artwork .outputs__grab {
   position: absolute;
@@ -17069,11 +17081,15 @@ body#artwork .device.disabled {
     max-height: 72vh;
     border-radius: 20px 20px 0 0;
     border-bottom: 0;
-    padding-top: 26px;
     animation: aw-outputs-up 0.22s ease-out;
     will-change: transform;
   }
+  body#artwork .outputs__body {
+    padding-top: 0;
+  }
   body#artwork .outputs__grab {
+    position: relative;
+    flex: none;
     top: 0;
     left: 0;
     right: 0;
@@ -17373,7 +17389,6 @@ body#artwork .aw-vol__knob {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
-/* Play in this browser while it plays here: the level before the switch, the row across the card */
 /* the card's second line (the track, a hint) takes two lines before it shortens */
 body#artwork .outputs__menu .aw-vcard .device__meta__song, body#artwork .outputs__menu .aw-local__hint, body#artwork .outputs__menu .aw-dsp__row .aw-local__hint {
   display: -webkit-box;
@@ -17387,16 +17402,35 @@ body#artwork .outputs__menu .aw-vcard .device__meta__song, body#artwork .outputs
   color: var(--ink-muted);
 }
 
+/* Play in this browser while it plays here: the switch top-right and the level under it, so the name keeps
+   its line on a narrow phone; the icon and the texts from the top; the row across the card */
 body#artwork .outputs__menu .aw-local.has-volume {
-  grid-template-columns: 44px minmax(0, 1fr) auto auto;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  grid-template-areas: "icon info switch" "icon info level" "row row row";
+  row-gap: 2px;
 }
-body#artwork .outputs__menu .aw-local.has-volume .device__title__text {
-  white-space: normal;
-  line-height: 1.25;
+body#artwork .outputs__menu .aw-local.has-volume .aw-local__icon {
+  grid-area: icon;
+  align-self: start;
 }
-body#artwork .outputs__menu .aw-local.has-volume { /* the name wraps beside the level, as in the mockup */ }
+body#artwork .outputs__menu .aw-local.has-volume .device__info {
+  grid-area: info;
+  align-self: start;
+  padding-top: 1px;
+}
+body#artwork .outputs__menu .aw-local.has-volume .aw-switch, body#artwork .outputs__menu .aw-local.has-volume .aw-local__busy {
+  grid-area: switch;
+  justify-self: end;
+  align-self: end;
+}
+body#artwork .outputs__menu .aw-local.has-volume .aw-vol__level {
+  grid-area: level;
+  justify-self: end;
+  margin-right: -4px;
+}
 body#artwork .outputs__menu .aw-local.has-volume .aw-vol__row {
-  grid-column: 1/-1;
+  grid-area: row;
+  margin-top: 10px;
 }
 
 /* the sheet's cards as the volume handoff (v2, final) draws them: 16px corners, 14px in (12 on the left) */
