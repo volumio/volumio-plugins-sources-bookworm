@@ -3,15 +3,11 @@
     "SETTINGS_LABEL": "Stream Watchdog Settings",
     "SECTION_SETTINGS": "Settings",
     "OFFLINE_PLAYLIST_NAME": "Offline Playlist Name",
-    "OFFLINE_PLAYLIST_NAME_DESC": "Name of the Volumio playlist to play when your stream fails. Create it in Browse → Playlists before any failure occurs.",
-    "STREAM_CHECK_INTERVAL": "Stream Check Interval (seconds)",
-    "STREAM_CHECK_INTERVAL_DESC": "How often to probe the stream URL while watching. Minimum: 15",
+    "OFFLINE_PLAYLIST_NAME_DESC": "Name of the Volumio playlist to play, always shuffled, when your stream fails. Create it in Browse → Playlists before any failure occurs. Without it, the whole local library is played.",
     "RESTORE_CHECK_INTERVAL": "Restore Check Interval (seconds)",
-    "RESTORE_CHECK_INTERVAL_DESC": "How often to probe the stream URL while in fallback mode. Minimum: 30",
+    "RESTORE_CHECK_INTERVAL_DESC": "While the offline playlist plays, how often to check whether the stream is back. Doubles after each try that fails, up to 10 minutes. Minimum: 30",
     "AUTO_RESTORE": "Auto-Restore",
     "AUTO_RESTORE_DESC": "Automatically resume the original stream when it comes back",
-    "SHUFFLE_OFFLINE": "Shuffle Offline Playlist",
-    "SHUFFLE_OFFLINE_DESC": "Play the offline playlist in random order. Outages are usually short, so without this the same first tracks play every time and the rest of the playlist is never heard.",
     "SAVE": "Save Settings"
   }
 }
