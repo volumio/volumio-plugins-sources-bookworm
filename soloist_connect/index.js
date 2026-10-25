@@ -90,6 +90,10 @@ const SEEK_COALESCE_DEFAULT_MS = 200;
 const SEEK_COALESCE_MAX_MS = 2000;
 const INACTIVE_HOLD_DEFAULT_MS = 2000;
 const INACTIVE_HOLD_MAX_MS = 10000;
+// A handover can report playing before is_active. The refusal is replayed
+// only from device_changed, and only inside this window. Past it, activation
+// is a new selection and must not claim.
+const CLAIM_DEFER_MS = 2000;
 const QUEUE_FETCH_DEFAULT_MS = 2500;
 const QUEUE_FETCH_MAX_MS = 10000;
 // How close to the end of a queue-mode row a buffering event has to be for it
@@ -176,6 +180,7 @@ function SoloistConnect(context) {
   this.qualityGrowthTimer = null;
   this.qualityGrowthCount = 0;
   this.pendingYieldAt = 0; // yield in progress; leftover play must not reclaim
+  this.claimDeferredAt = 0; // refused play waiting for device_changed; 0 means none
   this.takeoverInFlight = false;
   this.lastStateRefreshAt = 0; // throttle for unsolicited get_state requests
   this.seekCommandTimer = null;
@@ -1756,6 +1761,7 @@ SoloistConnect.prototype.handleEvent = function (msg) {
 
     case 'device_changed':
       this.updateActive(msg);
+      if (msg.is_active === true) this.claimDeferredPlay(msg);
       break;
 
     case 'position_sync':
@@ -1783,21 +1789,46 @@ SoloistConnect.prototype.handleEvent = function (msg) {
   }
 };
 
+// device_changed carries is_active and no playback status. Replay a refused
+// play from that edge only. playback_state and auth_state already ran
+// updateActive; their own handlers decide status. A paused or idle status,
+// queue mode, and an aged refusal drop the memory.
+SoloistConnect.prototype.claimDeferredPlay = function (msg) {
+  if (!this.claimDeferredAt) return;
+  if (this.queueMode || Date.now() - this.claimDeferredAt > CLAIM_DEFER_MS) {
+    this.claimDeferredAt = 0;
+    return;
+  }
+  const status = msg && msg.status;
+  if (status && status !== 'playing' && status !== 'buffering') {
+    this.claimDeferredAt = 0;
+    return;
+  }
+  this.logger.info('SoloistConnect: claiming deferred play: is_active=true');
+  this.setStatus('playing');
+};
+
 SoloistConnect.prototype.setStatus = function (soloistStatus) {
   const mapped = this.mapStatus(soloistStatus);
+  if (soloistStatus !== 'playing' && soloistStatus !== 'buffering') {
+    this.claimDeferredAt = 0;
+  }
   if (mapped === 'play' && this.state.status !== 'play') {
     if (this.pendingYieldAt && Date.now() - this.pendingYieldAt < 1500 &&
         !this.isCurrentService()) {
+      this.claimDeferredAt = 0;
       this.state.status = 'pause';
       this.syncSeekTimer();
       return;
     }
     if (!this.queueMode && !this.deviceActive && !this.isCurrentService()) {
       this.logger.info('SoloistConnect: not claiming: playing while is_active=false');
+      this.claimDeferredAt = Date.now();
       this.state.status = 'pause';
       this.syncSeekTimer();
       return;
     }
+    this.claimDeferredAt = 0;
     this.pendingYieldAt = 0;
     this.lastPlayTransitionAt = Date.now();
     // The ALSA stream only exists once playback starts. At WebSocket connect
