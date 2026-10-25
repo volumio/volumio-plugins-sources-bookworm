@@ -1,0 +1,958 @@
+{
+    "page": {
+        "label": "TRANSLATE.LCD1602.PLUGIN_CONFIGURATION"
+    },
+    "sections": [
+        {
+            "id": "section_bus",
+            "element": "section",
+            "label": "TRANSLATE.LCD1602.SECTION_BUS",
+            "icon": "fa-plug",
+            "description": "TRANSLATE.LCD1602.SECTION_BUS_DOC",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/lcd1602_vumeter",
+                "method": "saveBus"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.LCD1602.SAVE",
+                "data": [
+                    "i2c_mode",
+                    "sda_pin",
+                    "scl_pin",
+                    "panel_type",
+                    "panel_address",
+                    "pcf_pinmap",
+                    "contrast",
+                    "rgb_address"
+                ]
+            },
+            "content": [
+                {
+                    "id": "i2c_mode",
+                    "element": "select",
+                    "label": "TRANSLATE.LCD1602.I2C_MODE",
+                    "doc": "TRANSLATE.LCD1602.I2C_MODE_DOC",
+                    "value": {
+                        "value": "hardware",
+                        "label": "TRANSLATE.LCD1602.I2C_HARDWARE"
+                    },
+                    "options": [
+                        {
+                            "value": "hardware",
+                            "label": "TRANSLATE.LCD1602.I2C_HARDWARE"
+                        },
+                        {
+                            "value": "hardware0",
+                            "label": "TRANSLATE.LCD1602.I2C_HARDWARE0"
+                        },
+                        {
+                            "value": "software",
+                            "label": "TRANSLATE.LCD1602.I2C_SOFTWARE"
+                        }
+                    ]
+                },
+                {
+                    "id": "sda_pin",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.LCD1602.SDA_PIN",
+                    "doc": "TRANSLATE.LCD1602.SDA_PIN_DOC",
+                    "value": 23,
+                    "attributes": [
+                        {
+                            "min": 0
+                        },
+                        {
+                            "max": 27
+                        },
+                        {
+                            "step": 1
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "i2c_mode",
+                        "value": "software"
+                    }
+                },
+                {
+                    "id": "scl_pin",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.LCD1602.SCL_PIN",
+                    "doc": "TRANSLATE.LCD1602.SCL_PIN_DOC",
+                    "value": 24,
+                    "attributes": [
+                        {
+                            "min": 0
+                        },
+                        {
+                            "max": 27
+                        },
+                        {
+                            "step": 1
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "i2c_mode",
+                        "value": "software"
+                    }
+                },
+                {
+                    "id": "panel_type",
+                    "element": "select",
+                    "label": "TRANSLATE.LCD1602.PANEL_TYPE",
+                    "doc": "TRANSLATE.LCD1602.PANEL_TYPE_DOC",
+                    "value": {
+                        "value": "auto",
+                        "label": "TRANSLATE.LCD1602.AUTO"
+                    },
+                    "options": [
+                        {
+                            "value": "auto",
+                            "label": "TRANSLATE.LCD1602.AUTO"
+                        },
+                        {
+                            "value": "aip31068",
+                            "label": "TRANSLATE.LCD1602.PANEL_AIP31068"
+                        },
+                        {
+                            "value": "st7032",
+                            "label": "TRANSLATE.LCD1602.PANEL_ST7032"
+                        },
+                        {
+                            "value": "us2066",
+                            "label": "TRANSLATE.LCD1602.PANEL_US2066"
+                        },
+                        {
+                            "value": "hd44780",
+                            "label": "TRANSLATE.LCD1602.PANEL_HD44780"
+                        },
+                        {
+                            "value": "ws0010",
+                            "label": "TRANSLATE.LCD1602.PANEL_WS0010"
+                        }
+                    ]
+                },
+                {
+                    "id": "panel_address",
+                    "element": "select",
+                    "label": "TRANSLATE.LCD1602.PANEL_ADDRESS",
+                    "doc": "TRANSLATE.LCD1602.PANEL_ADDRESS_DOC",
+                    "value": {
+                        "value": "auto",
+                        "label": "TRANSLATE.LCD1602.AUTO"
+                    },
+                    "options": [
+                        {
+                            "value": "auto",
+                            "label": "TRANSLATE.LCD1602.AUTO"
+                        },
+                        {
+                            "value": "0x3E",
+                            "label": "0x3E"
+                        },
+                        {
+                            "value": "0x3C",
+                            "label": "0x3C"
+                        },
+                        {
+                            "value": "0x3D",
+                            "label": "0x3D"
+                        },
+                        {
+                            "value": "0x27",
+                            "label": "0x27"
+                        },
+                        {
+                            "value": "0x3F",
+                            "label": "0x3F"
+                        },
+                        {
+                            "value": "0x20",
+                            "label": "0x20"
+                        },
+                        {
+                            "value": "0x21",
+                            "label": "0x21"
+                        },
+                        {
+                            "value": "0x22",
+                            "label": "0x22"
+                        },
+                        {
+                            "value": "0x23",
+                            "label": "0x23"
+                        },
+                        {
+                            "value": "0x24",
+                            "label": "0x24"
+                        },
+                        {
+                            "value": "0x25",
+                            "label": "0x25"
+                        },
+                        {
+                            "value": "0x26",
+                            "label": "0x26"
+                        },
+                        {
+                            "value": "0x38",
+                            "label": "0x38"
+                        },
+                        {
+                            "value": "0x39",
+                            "label": "0x39"
+                        },
+                        {
+                            "value": "0x3A",
+                            "label": "0x3A"
+                        },
+                        {
+                            "value": "0x3B",
+                            "label": "0x3B"
+                        }
+                    ]
+                },
+                {
+                    "id": "pcf_pinmap",
+                    "element": "select",
+                    "label": "TRANSLATE.LCD1602.PCF_PINMAP",
+                    "doc": "TRANSLATE.LCD1602.PCF_PINMAP_DOC",
+                    "value": {
+                        "value": "standard",
+                        "label": "TRANSLATE.LCD1602.PINMAP_STANDARD"
+                    },
+                    "options": [
+                        {
+                            "value": "standard",
+                            "label": "TRANSLATE.LCD1602.PINMAP_STANDARD"
+                        },
+                        {
+                            "value": "alternate",
+                            "label": "TRANSLATE.LCD1602.PINMAP_ALTERNATE"
+                        }
+                    ]
+                },
+                {
+                    "id": "contrast",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.LCD1602.CONTRAST",
+                    "doc": "TRANSLATE.LCD1602.CONTRAST_DOC",
+                    "value": 40,
+                    "attributes": [
+                        {
+                            "min": 0
+                        },
+                        {
+                            "max": 63
+                        },
+                        {
+                            "step": 1
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "panel_type",
+                        "value": "st7032"
+                    }
+                },
+                {
+                    "id": "rgb_address",
+                    "element": "select",
+                    "label": "TRANSLATE.LCD1602.RGB_ADDRESS",
+                    "doc": "TRANSLATE.LCD1602.RGB_ADDRESS_DOC",
+                    "value": {
+                        "value": "auto",
+                        "label": "TRANSLATE.LCD1602.AUTO"
+                    },
+                    "options": [
+                        {
+                            "value": "auto",
+                            "label": "TRANSLATE.LCD1602.AUTO"
+                        },
+                        {
+                            "value": "none",
+                            "label": "TRANSLATE.LCD1602.RGB_NONE"
+                        },
+                        {
+                            "value": "0x60",
+                            "label": "0x60 (PCA9633: Waveshare, DFRobot v1)"
+                        },
+                        {
+                            "value": "0x62",
+                            "label": "0x62 (PCA9633: Grove v4)"
+                        },
+                        {
+                            "value": "0x2D",
+                            "label": "0x2D (SGM31323: DFRobot v2.1)"
+                        },
+                        {
+                            "value": "0x6B",
+                            "label": "0x6B (DFRobot v2)"
+                        },
+                        {
+                            "value": "0x30",
+                            "label": "0x30 (Grove v5)"
+                        }
+                    ]
+                },
+                {
+                    "id": "detect",
+                    "element": "button",
+                    "label": "TRANSLATE.LCD1602.DETECT",
+                    "doc": "TRANSLATE.LCD1602.DETECT_DOC",
+                    "onClick": {
+                        "type": "controller",
+                        "endpoint": "system_hardware/lcd1602_vumeter",
+                        "method": "detectDisplay",
+                        "data": []
+                    }
+                },
+                {
+                    "id": "test",
+                    "element": "button",
+                    "label": "TRANSLATE.LCD1602.TEST",
+                    "doc": "TRANSLATE.LCD1602.TEST_DOC",
+                    "onClick": {
+                        "type": "controller",
+                        "endpoint": "system_hardware/lcd1602_vumeter",
+                        "method": "testDisplay",
+                        "data": []
+                    }
+                }
+            ]
+        },
+        {
+            "id": "section_meter",
+            "element": "section",
+            "label": "TRANSLATE.LCD1602.SECTION_METER",
+            "icon": "fa-bar-chart",
+            "description": "TRANSLATE.LCD1602.SECTION_METER_DOC",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/lcd1602_vumeter",
+                "method": "saveMeter"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.LCD1602.SAVE",
+                "data": [
+                    "gain_db",
+                    "meter_source",
+                    "range_db",
+                    "bar_style",
+                    "peak_hold",
+                    "peak_hold_ms",
+                    "labels",
+                    "fps"
+                ]
+            },
+            "content": [
+                {
+                    "id": "gain_db",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.LCD1602.GAIN",
+                    "doc": "TRANSLATE.LCD1602.GAIN_DOC",
+                    "value": 0,
+                    "attributes": [
+                        {
+                            "min": -12
+                        },
+                        {
+                            "max": 12
+                        },
+                        {
+                            "step": 0.5
+                        }
+                    ]
+                },
+                {
+                    "id": "meter_source",
+                    "element": "select",
+                    "label": "TRANSLATE.LCD1602.SOURCE",
+                    "doc": "TRANSLATE.LCD1602.SOURCE_DOC",
+                    "value": {
+                        "value": "rms",
+                        "label": "TRANSLATE.LCD1602.SOURCE_RMS"
+                    },
+                    "options": [
+                        {
+                            "value": "rms",
+                            "label": "TRANSLATE.LCD1602.SOURCE_RMS"
+                        },
+                        {
+                            "value": "peak",
+                            "label": "TRANSLATE.LCD1602.SOURCE_PEAK"
+                        }
+                    ]
+                },
+                {
+                    "id": "range_db",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.LCD1602.RANGE",
+                    "doc": "TRANSLATE.LCD1602.RANGE_DOC",
+                    "value": 40,
+                    "attributes": [
+                        {
+                            "min": 20
+                        },
+                        {
+                            "max": 60
+                        },
+                        {
+                            "step": 1
+                        }
+                    ]
+                },
+                {
+                    "id": "bar_style",
+                    "element": "select",
+                    "label": "TRANSLATE.LCD1602.BAR_STYLE",
+                    "doc": "TRANSLATE.LCD1602.BAR_STYLE_DOC",
+                    "value": {
+                        "value": "blocks",
+                        "label": "TRANSLATE.LCD1602.STYLE_BLOCKS"
+                    },
+                    "options": [
+                        {
+                            "value": "blocks",
+                            "label": "TRANSLATE.LCD1602.STYLE_BLOCKS"
+                        },
+                        {
+                            "value": "lines",
+                            "label": "TRANSLATE.LCD1602.STYLE_LINES"
+                        },
+                        {
+                            "value": "segments",
+                            "label": "TRANSLATE.LCD1602.STYLE_SEGMENTS"
+                        },
+                        {
+                            "value": "needle",
+                            "label": "TRANSLATE.LCD1602.STYLE_NEEDLE"
+                        }
+                    ]
+                },
+                {
+                    "id": "peak_hold",
+                    "element": "switch",
+                    "label": "TRANSLATE.LCD1602.PEAK_HOLD",
+                    "doc": "TRANSLATE.LCD1602.PEAK_HOLD_DOC",
+                    "value": true
+                },
+                {
+                    "id": "peak_hold_ms",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.LCD1602.PEAK_HOLD_MS",
+                    "doc": "TRANSLATE.LCD1602.PEAK_HOLD_MS_DOC",
+                    "value": 1000,
+                    "attributes": [
+                        {
+                            "min": 100
+                        },
+                        {
+                            "max": 5000
+                        },
+                        {
+                            "step": 100
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "peak_hold",
+                        "value": true
+                    }
+                },
+                {
+                    "id": "labels",
+                    "element": "switch",
+                    "label": "TRANSLATE.LCD1602.LABELS",
+                    "doc": "TRANSLATE.LCD1602.LABELS_DOC",
+                    "value": true
+                },
+                {
+                    "id": "fps",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.LCD1602.FPS",
+                    "doc": "TRANSLATE.LCD1602.FPS_DOC",
+                    "value": 20,
+                    "attributes": [
+                        {
+                            "min": 5
+                        },
+                        {
+                            "max": 30
+                        },
+                        {
+                            "step": 1
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "section_idle",
+            "element": "section",
+            "label": "TRANSLATE.LCD1602.SECTION_IDLE",
+            "icon": "fa-clock-o",
+            "description": "TRANSLATE.LCD1602.SECTION_IDLE_DOC",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/lcd1602_vumeter",
+                "method": "saveIdle"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.LCD1602.SAVE",
+                "data": [
+                    "idle_layout",
+                    "idle_row1",
+                    "idle_row2",
+                    "idle_text",
+                    "clock_format",
+                    "date_format",
+                    "backlight_idle_off_s"
+                ]
+            },
+            "content": [
+                {
+                    "id": "idle_layout",
+                    "element": "select",
+                    "label": "TRANSLATE.LCD1602.IDLE_LAYOUT",
+                    "doc": "TRANSLATE.LCD1602.IDLE_LAYOUT_DOC",
+                    "value": {
+                        "value": "rows",
+                        "label": "TRANSLATE.LCD1602.LAYOUT_ROWS"
+                    },
+                    "options": [
+                        {
+                            "value": "rows",
+                            "label": "TRANSLATE.LCD1602.LAYOUT_ROWS"
+                        },
+                        {
+                            "value": "big_clock",
+                            "label": "TRANSLATE.LCD1602.LAYOUT_BIG_CLOCK"
+                        }
+                    ]
+                },
+                {
+                    "id": "idle_row1",
+                    "element": "select",
+                    "label": "TRANSLATE.LCD1602.IDLE_ROW1",
+                    "value": {
+                        "value": "clock",
+                        "label": "TRANSLATE.LCD1602.ROW_CLOCK"
+                    },
+                    "options": [
+                        {
+                            "value": "text",
+                            "label": "TRANSLATE.LCD1602.ROW_TEXT"
+                        },
+                        {
+                            "value": "clock",
+                            "label": "TRANSLATE.LCD1602.ROW_CLOCK"
+                        },
+                        {
+                            "value": "date",
+                            "label": "TRANSLATE.LCD1602.ROW_DATE"
+                        },
+                        {
+                            "value": "blank",
+                            "label": "TRANSLATE.LCD1602.ROW_BLANK"
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "idle_layout",
+                        "value": "rows"
+                    }
+                },
+                {
+                    "id": "idle_row2",
+                    "element": "select",
+                    "label": "TRANSLATE.LCD1602.IDLE_ROW2",
+                    "value": {
+                        "value": "date",
+                        "label": "TRANSLATE.LCD1602.ROW_DATE"
+                    },
+                    "options": [
+                        {
+                            "value": "text",
+                            "label": "TRANSLATE.LCD1602.ROW_TEXT"
+                        },
+                        {
+                            "value": "clock",
+                            "label": "TRANSLATE.LCD1602.ROW_CLOCK"
+                        },
+                        {
+                            "value": "date",
+                            "label": "TRANSLATE.LCD1602.ROW_DATE"
+                        },
+                        {
+                            "value": "blank",
+                            "label": "TRANSLATE.LCD1602.ROW_BLANK"
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "idle_layout",
+                        "value": "rows"
+                    }
+                },
+                {
+                    "id": "idle_text",
+                    "element": "input",
+                    "type": "text",
+                    "label": "TRANSLATE.LCD1602.IDLE_TEXT",
+                    "doc": "TRANSLATE.LCD1602.IDLE_TEXT_DOC",
+                    "value": "Volumio|",
+                    "attributes": [
+                        {
+                            "maxlength": 33
+                        },
+                        {
+                            "placeholder": "Volumio|"
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "idle_layout",
+                        "value": "rows"
+                    }
+                },
+                {
+                    "id": "clock_format",
+                    "element": "select",
+                    "label": "TRANSLATE.LCD1602.CLOCK_FORMAT",
+                    "doc": "TRANSLATE.LCD1602.CLOCK_FORMAT_DOC",
+                    "value": {
+                        "value": "%H:%M",
+                        "label": "20:45"
+                    },
+                    "options": [
+                        {
+                            "value": "%H:%M",
+                            "label": "20:45"
+                        },
+                        {
+                            "value": "%H:%M:%S",
+                            "label": "20:45:07"
+                        },
+                        {
+                            "value": "%I:%M %p",
+                            "label": "08:45 PM"
+                        },
+                        {
+                            "value": "%l:%M %p",
+                            "label": "8:45 PM"
+                        },
+                        {
+                            "value": "%I:%M:%S %p",
+                            "label": "08:45:07 PM"
+                        }
+                    ]
+                },
+                {
+                    "id": "date_format",
+                    "element": "select",
+                    "label": "TRANSLATE.LCD1602.DATE_FORMAT",
+                    "doc": "TRANSLATE.LCD1602.DATE_FORMAT_DOC",
+                    "value": {
+                        "value": "%a %d %b",
+                        "label": "Tue 13 Oct"
+                    },
+                    "options": [
+                        {
+                            "value": "%a %d %b",
+                            "label": "Tue 13 Oct"
+                        },
+                        {
+                            "value": "%A %d %B",
+                            "label": "Tuesday 13 October"
+                        },
+                        {
+                            "value": "%a %d %b %Y",
+                            "label": "Tue 13 Oct 2026"
+                        },
+                        {
+                            "value": "%d.%m.%Y",
+                            "label": "13.10.2026"
+                        },
+                        {
+                            "value": "%d/%m/%Y",
+                            "label": "13/10/2026"
+                        },
+                        {
+                            "value": "%m/%d/%Y",
+                            "label": "10/13/2026"
+                        },
+                        {
+                            "value": "%Y-%m-%d",
+                            "label": "2026-10-13"
+                        },
+                        {
+                            "value": "%a %d.%m.",
+                            "label": "Tue 13.10."
+                        },
+                        {
+                            "value": "%A",
+                            "label": "Tuesday"
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "idle_layout",
+                        "value": "rows"
+                    }
+                },
+                {
+                    "id": "backlight_idle_off_s",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.LCD1602.IDLE_OFF",
+                    "doc": "TRANSLATE.LCD1602.IDLE_OFF_DOC",
+                    "value": 0,
+                    "attributes": [
+                        {
+                            "min": 0
+                        },
+                        {
+                            "max": 86400
+                        },
+                        {
+                            "step": 10
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "section_messages",
+            "element": "section",
+            "label": "TRANSLATE.LCD1602.SECTION_MESSAGES",
+            "icon": "fa-comment-o",
+            "description": "TRANSLATE.LCD1602.SECTION_MESSAGES_DOC",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/lcd1602_vumeter",
+                "method": "saveMessages"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.LCD1602.SAVE",
+                "data": [
+                    "show_lifecycle",
+                    "text_boot",
+                    "text_ready",
+                    "text_pause",
+                    "text_shutdown",
+                    "text_reboot"
+                ]
+            },
+            "content": [
+                {
+                    "id": "show_lifecycle",
+                    "element": "switch",
+                    "label": "TRANSLATE.LCD1602.SHOW_LIFECYCLE",
+                    "doc": "TRANSLATE.LCD1602.SHOW_LIFECYCLE_DOC",
+                    "value": true
+                },
+                {
+                    "id": "text_boot",
+                    "element": "input",
+                    "type": "text",
+                    "label": "TRANSLATE.LCD1602.TEXT_BOOT",
+                    "value": "Volumio|booting...",
+                    "attributes": [
+                        {
+                            "maxlength": 33
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "show_lifecycle",
+                        "value": true
+                    }
+                },
+                {
+                    "id": "text_ready",
+                    "element": "input",
+                    "type": "text",
+                    "label": "TRANSLATE.LCD1602.TEXT_READY",
+                    "value": "Volumio|ready",
+                    "attributes": [
+                        {
+                            "maxlength": 33
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "show_lifecycle",
+                        "value": true
+                    }
+                },
+                {
+                    "id": "text_pause",
+                    "element": "input",
+                    "type": "text",
+                    "label": "TRANSLATE.LCD1602.TEXT_PAUSE",
+                    "value": "Paused|waiting on music",
+                    "attributes": [
+                        {
+                            "maxlength": 33
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "show_lifecycle",
+                        "value": true
+                    }
+                },
+                {
+                    "id": "text_shutdown",
+                    "element": "input",
+                    "type": "text",
+                    "label": "TRANSLATE.LCD1602.TEXT_SHUTDOWN",
+                    "value": "Volumio|shutting down",
+                    "attributes": [
+                        {
+                            "maxlength": 33
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "show_lifecycle",
+                        "value": true
+                    }
+                },
+                {
+                    "id": "text_reboot",
+                    "element": "input",
+                    "type": "text",
+                    "label": "TRANSLATE.LCD1602.TEXT_REBOOT",
+                    "value": "Volumio|restarting",
+                    "attributes": [
+                        {
+                            "maxlength": 33
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "show_lifecycle",
+                        "value": true
+                    }
+                }
+            ]
+        },
+        {
+            "id": "section_rgb",
+            "element": "section",
+            "label": "TRANSLATE.LCD1602.SECTION_RGB",
+            "icon": "fa-lightbulb-o",
+            "description": "TRANSLATE.LCD1602.SECTION_RGB_DOC",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/lcd1602_vumeter",
+                "method": "saveRgb"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.LCD1602.SAVE",
+                "data": [
+                    "rgb_mode",
+                    "rgb_play",
+                    "rgb_pause",
+                    "rgb_idle",
+                    "rgb_brightness"
+                ]
+            },
+            "content": [
+                {
+                    "id": "rgb_mode",
+                    "element": "select",
+                    "label": "TRANSLATE.LCD1602.RGB_MODE",
+                    "doc": "TRANSLATE.LCD1602.RGB_MODE_DOC",
+                    "value": {
+                        "value": "fixed",
+                        "label": "TRANSLATE.LCD1602.RGB_FIXED"
+                    },
+                    "options": [
+                        {
+                            "value": "fixed",
+                            "label": "TRANSLATE.LCD1602.RGB_FIXED"
+                        },
+                        {
+                            "value": "level",
+                            "label": "TRANSLATE.LCD1602.RGB_LEVEL"
+                        },
+                        {
+                            "value": "off",
+                            "label": "TRANSLATE.LCD1602.RGB_OFF"
+                        }
+                    ]
+                },
+                {
+                    "id": "rgb_play",
+                    "element": "input",
+                    "type": "text",
+                    "label": "TRANSLATE.LCD1602.RGB_PLAY",
+                    "doc": "TRANSLATE.LCD1602.RGB_HEX_DOC",
+                    "value": "FFFFFF",
+                    "attributes": [
+                        {
+                            "maxlength": 7
+                        },
+                        {
+                            "placeholder": "FFFFFF"
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "rgb_mode",
+                        "value": "fixed"
+                    }
+                },
+                {
+                    "id": "rgb_pause",
+                    "element": "input",
+                    "type": "text",
+                    "label": "TRANSLATE.LCD1602.RGB_PAUSE",
+                    "doc": "TRANSLATE.LCD1602.RGB_HEX_DOC",
+                    "value": "FFA000",
+                    "attributes": [
+                        {
+                            "maxlength": 7
+                        },
+                        {
+                            "placeholder": "FFA000"
+                        }
+                    ]
+                },
+                {
+                    "id": "rgb_idle",
+                    "element": "input",
+                    "type": "text",
+                    "label": "TRANSLATE.LCD1602.RGB_IDLE",
+                    "doc": "TRANSLATE.LCD1602.RGB_HEX_DOC",
+                    "value": "28283C",
+                    "attributes": [
+                        {
+                            "maxlength": 7
+                        },
+                        {
+                            "placeholder": "28283C"
+                        }
+                    ]
+                },
+                {
+                    "id": "rgb_brightness",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.LCD1602.RGB_BRIGHTNESS",
+                    "doc": "TRANSLATE.LCD1602.RGB_BRIGHTNESS_DOC",
+                    "value": 100,
+                    "attributes": [
+                        {
+                            "min": 0
+                        },
+                        {
+                            "max": 100
+                        },
+                        {
+                            "step": 5
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

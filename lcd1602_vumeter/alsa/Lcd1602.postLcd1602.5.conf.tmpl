@@ -1,0 +1,16 @@
+#------ LCD1602 VU meter section -------
+
+# The tap. Every source's stream passes through it byte for byte, in the
+# format the player and the output agreed, so PCM, DoP and native DSD stay
+# bit-perfect; on the way it is measured, and the peak and RMS of each
+# channel go into a ring under /dev/shm for the display.
+pcm.Lcd1602 {
+  type vutap
+  slave.pcm "postLcd1602"
+  ring "lcd1602"
+}
+
+pcm_type.vutap {
+  lib /data/plugins/system_hardware/lcd1602_vumeter/alsa-lib/libvutap.so
+}
+#------ End of LCD1602 VU meter section ------
