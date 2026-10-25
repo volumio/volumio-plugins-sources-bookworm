@@ -1,0 +1,16 @@
+#------ Just OLED section -------
+
+# The tap. Every source's stream passes through it byte for byte, in the
+# format the player and the output agreed, so PCM, DoP and native DSD stay
+# bit-perfect; on the way it is measured, and the peak, RMS and spectrum of
+# each channel go into a ring under /dev/shm for the display.
+pcm.JustOled {
+  type justoledtap
+  slave.pcm "postJustOled"
+  ring "justoled"
+}
+
+pcm_type.justoledtap {
+  lib /data/plugins/system_hardware/just_oled/alsa-lib/libjustoledtap.so
+}
+#------ End of Just OLED section ------
