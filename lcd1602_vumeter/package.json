@@ -1,0 +1,34 @@
+{
+    "name": "lcd1602_vumeter",
+    "version": "0.1.0",
+    "description": "Stereo VU bars, the player's state and a standby clock on a 16x2 character LCD over I2C",
+    "main": "index.js",
+    "author": "foonerd",
+    "license": "MIT",
+    "repository": "https://github.com/foonerd/lcd1602-vumeter",
+    "volumio_info": {
+        "prettyName": "LCD1602 VU Meter",
+        "icon": "fa-bar-chart",
+        "plugin_type": "system_hardware",
+        "has_alsa_contribution": true,
+        "os": [
+            "bookworm"
+        ],
+        "architectures": [
+            "armhf",
+            "amd64"
+        ],
+        "details": "Two VU bars on a 16x2 character LCD (Waveshare LCD1602 I2C and RGB, Grove and DFRobot RGB LCDs, PCF8574 backpacks, ST7032 and US2066 modules). An audio tap in the ALSA chain measures every source without touching the sound. The display shows the player's state, a standby clock and date, and the system's boot, restart and shutdown.",
+        "changelog": "0.1.0 First release: the tap, the display daemon, the settings page."
+    },
+    "engines": {
+        "node": ">=20",
+        "volumio": ">=4"
+    },
+    "dependencies": {
+        "fs-extra": "^11.2.0",
+        "kew": "^0.7.0",
+        "socket.io-client": "^1.7.4",
+        "v-conf": "^1.4.3"
+    }
+}

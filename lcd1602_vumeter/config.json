@@ -1,0 +1,142 @@
+{
+    "i2c_mode": {
+        "type": "string",
+        "value": "hardware"
+    },
+    "i2c_bus": {
+        "type": "number",
+        "value": 1
+    },
+    "sda_pin": {
+        "type": "number",
+        "value": 23
+    },
+    "scl_pin": {
+        "type": "number",
+        "value": 24
+    },
+    "panel_type": {
+        "type": "string",
+        "value": "auto"
+    },
+    "panel_address": {
+        "type": "string",
+        "value": "auto"
+    },
+    "pcf_pinmap": {
+        "type": "string",
+        "value": "standard"
+    },
+    "contrast": {
+        "type": "number",
+        "value": 40
+    },
+    "rgb_address": {
+        "type": "string",
+        "value": "auto"
+    },
+    "gain_db": {
+        "type": "number",
+        "value": 0
+    },
+    "meter_source": {
+        "type": "string",
+        "value": "rms"
+    },
+    "range_db": {
+        "type": "number",
+        "value": 40
+    },
+    "bar_style": {
+        "type": "string",
+        "value": "blocks"
+    },
+    "peak_hold": {
+        "type": "boolean",
+        "value": true
+    },
+    "peak_hold_ms": {
+        "type": "number",
+        "value": 1000
+    },
+    "labels": {
+        "type": "boolean",
+        "value": true
+    },
+    "fps": {
+        "type": "number",
+        "value": 20
+    },
+    "idle_layout": {
+        "type": "string",
+        "value": "rows"
+    },
+    "idle_row1": {
+        "type": "string",
+        "value": "clock"
+    },
+    "idle_row2": {
+        "type": "string",
+        "value": "date"
+    },
+    "idle_text": {
+        "type": "string",
+        "value": "Volumio|"
+    },
+    "clock_format": {
+        "type": "string",
+        "value": "%H:%M"
+    },
+    "date_format": {
+        "type": "string",
+        "value": "%a %d %b"
+    },
+    "backlight_idle_off_s": {
+        "type": "number",
+        "value": 0
+    },
+    "rgb_mode": {
+        "type": "string",
+        "value": "fixed"
+    },
+    "rgb_play": {
+        "type": "string",
+        "value": "FFFFFF"
+    },
+    "rgb_pause": {
+        "type": "string",
+        "value": "FFA000"
+    },
+    "rgb_idle": {
+        "type": "string",
+        "value": "28283C"
+    },
+    "rgb_brightness": {
+        "type": "number",
+        "value": 100
+    },
+    "show_lifecycle": {
+        "type": "boolean",
+        "value": true
+    },
+    "text_boot": {
+        "type": "string",
+        "value": "Volumio|booting..."
+    },
+    "text_ready": {
+        "type": "string",
+        "value": "Volumio|ready"
+    },
+    "text_pause": {
+        "type": "string",
+        "value": "Paused|waiting on music"
+    },
+    "text_shutdown": {
+        "type": "string",
+        "value": "Volumio|shutting down"
+    },
+    "text_reboot": {
+        "type": "string",
+        "value": "Volumio|restarting"
+    }
+}

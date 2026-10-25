@@ -1,0 +1,22 @@
+[Unit]
+Description=LCD1602 VU meter display
+Documentation=https://github.com/foonerd/lcd1602-vumeter/wiki
+After=local-fs.target
+Before=volumio.service
+
+[Service]
+Type=simple
+User=volumio
+Group=volumio
+SupplementaryGroups=i2c
+RuntimeDirectory=lcd1602-vumeter
+RuntimeDirectoryMode=0755
+ExecStart=/data/plugins/system_hardware/lcd1602_vumeter/scripts/run.sh
+Restart=on-failure
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=5
+Nice=-2
+
+[Install]
+WantedBy=multi-user.target
