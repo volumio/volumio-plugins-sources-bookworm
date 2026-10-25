@@ -1,0 +1,22 @@
+[Unit]
+Description=Just OLED display
+Documentation=https://github.com/foonerd/just_oled/wiki
+After=local-fs.target
+Before=volumio.service
+
+[Service]
+Type=simple
+User=volumio
+Group=volumio
+SupplementaryGroups=i2c spi gpio
+RuntimeDirectory=just-oled
+RuntimeDirectoryMode=0755
+ExecStart=/data/plugins/system_hardware/just_oled/scripts/run.sh
+Restart=on-failure
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=5
+Nice=-2
+
+[Install]
+WantedBy=multi-user.target

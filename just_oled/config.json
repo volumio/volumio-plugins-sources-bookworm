@@ -1,0 +1,150 @@
+{
+    "connection": {
+        "type": "string",
+        "value": "i2c"
+    },
+    "panel": {
+        "type": "string",
+        "value": "ssd1306_128x64"
+    },
+    "i2c_bus": {
+        "type": "number",
+        "value": 1
+    },
+    "i2c_sda": {
+        "type": "number",
+        "value": 2
+    },
+    "i2c_scl": {
+        "type": "number",
+        "value": 3
+    },
+    "i2c_address": {
+        "type": "string",
+        "value": "auto"
+    },
+    "i2c_speed": {
+        "type": "string",
+        "value": "100"
+    },
+    "spi_bus": {
+        "type": "number",
+        "value": 0
+    },
+    "spi_cs": {
+        "type": "number",
+        "value": 0
+    },
+    "gpio_dc": {
+        "type": "number",
+        "value": 24
+    },
+    "gpio_reset": {
+        "type": "number",
+        "value": 25
+    },
+    "rotate": {
+        "type": "string",
+        "value": "0"
+    },
+    "face": {
+        "type": "string",
+        "value": "spectrum"
+    },
+    "track_text": {
+        "type": "string",
+        "value": "compact"
+    },
+    "time_display": {
+        "type": "string",
+        "value": "elapsed_total"
+    },
+    "show_format": {
+        "type": "boolean",
+        "value": true
+    },
+    "peaks": {
+        "type": "boolean",
+        "value": true
+    },
+    "meter_gain": {
+        "type": "number",
+        "value": 0
+    },
+    "meter_wide": {
+        "type": "boolean",
+        "value": false
+    },
+    "theme": {
+        "type": "string",
+        "value": "classic"
+    },
+    "colour_title": {
+        "type": "string",
+        "value": "#ffffff"
+    },
+    "colour_detail": {
+        "type": "string",
+        "value": "#a0a0aa"
+    },
+    "colour_bar_low": {
+        "type": "string",
+        "value": "#00c878"
+    },
+    "colour_bar_high": {
+        "type": "string",
+        "value": "#ffb400"
+    },
+    "colour_peak": {
+        "type": "string",
+        "value": "#ff503c"
+    },
+    "colour_progress": {
+        "type": "string",
+        "value": "#0096aa"
+    },
+    "idle_screen": {
+        "type": "string",
+        "value": "clock"
+    },
+    "idle_timeout": {
+        "type": "number",
+        "value": 30
+    },
+    "clock_format": {
+        "type": "string",
+        "value": "%H:%M"
+    },
+    "date_format": {
+        "type": "string",
+        "value": "%a %d %b"
+    },
+    "show_ip": {
+        "type": "boolean",
+        "value": true
+    },
+    "show_lifecycle": {
+        "type": "boolean",
+        "value": true
+    },
+    "text_boot": {
+        "type": "string",
+        "value": "Volumio|booting..."
+    },
+    "text_ready": {
+        "type": "string",
+        "value": "Volumio|ready"
+    },
+    "text_pause": {
+        "type": "string",
+        "value": "Paused|waiting on music"
+    },
+    "text_shutdown": {
+        "type": "string",
+        "value": "Volumio|shutting down"
+    },
+    "text_reboot": {
+        "type": "string",
+        "value": "Volumio|restarting"
+    }
+}

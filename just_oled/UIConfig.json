@@ -1,0 +1,861 @@
+{
+    "page": {
+        "label": "TRANSLATE.JUSTOLED.PLUGIN_CONFIGURATION"
+    },
+    "sections": [
+        {
+            "id": "section_face",
+            "element": "section",
+            "label": "TRANSLATE.JUSTOLED.SECTION_FACE",
+            "icon": "fa-music",
+            "description": "TRANSLATE.JUSTOLED.SECTION_FACE_DOC",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/just_oled",
+                "method": "saveFace"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.JUSTOLED.SAVE",
+                "data": [
+                    "face",
+                    "track_text",
+                    "time_display",
+                    "show_format",
+                    "peaks",
+                    "meter_gain",
+                    "meter_wide",
+                    "theme",
+                    "colour_title",
+                    "colour_detail",
+                    "colour_bar_low",
+                    "colour_bar_high",
+                    "colour_peak",
+                    "colour_progress"
+                ]
+            },
+            "content": [
+                {
+                    "id": "face",
+                    "element": "select",
+                    "label": "TRANSLATE.JUSTOLED.FACE",
+                    "doc": "TRANSLATE.JUSTOLED.FACE_DOC",
+                    "value": {
+                        "value": "spectrum",
+                        "label": "TRANSLATE.JUSTOLED.FACE_SPECTRUM"
+                    },
+                    "options": [
+                        {
+                            "value": "spectrum",
+                            "label": "TRANSLATE.JUSTOLED.FACE_SPECTRUM"
+                        },
+                        {
+                            "value": "spectrum_stereo",
+                            "label": "TRANSLATE.JUSTOLED.FACE_SPECTRUM_STEREO"
+                        },
+                        {
+                            "value": "spectrum_vu",
+                            "label": "TRANSLATE.JUSTOLED.FACE_SPECTRUM_VU"
+                        },
+                        {
+                            "value": "vu",
+                            "label": "TRANSLATE.JUSTOLED.FACE_VU"
+                        },
+                        {
+                            "value": "text",
+                            "label": "TRANSLATE.JUSTOLED.FACE_TEXT"
+                        },
+                        {
+                            "value": "meter",
+                            "label": "TRANSLATE.JUSTOLED.FACE_METER"
+                        }
+                    ]
+                },
+                {
+                    "id": "track_text",
+                    "element": "select",
+                    "label": "TRANSLATE.JUSTOLED.TRACK_TEXT",
+                    "doc": "TRANSLATE.JUSTOLED.TRACK_TEXT_DOC",
+                    "value": {
+                        "value": "compact",
+                        "label": "TRANSLATE.JUSTOLED.TRACK_TEXT_COMPACT"
+                    },
+                    "options": [
+                        {
+                            "value": "compact",
+                            "label": "TRANSLATE.JUSTOLED.TRACK_TEXT_COMPACT"
+                        },
+                        {
+                            "value": "full",
+                            "label": "TRANSLATE.JUSTOLED.TRACK_TEXT_FULL"
+                        },
+                        {
+                            "value": "title",
+                            "label": "TRANSLATE.JUSTOLED.TRACK_TEXT_TITLE"
+                        }
+                    ]
+                },
+                {
+                    "id": "time_display",
+                    "element": "select",
+                    "label": "TRANSLATE.JUSTOLED.TIME_DISPLAY",
+                    "doc": "TRANSLATE.JUSTOLED.TIME_DISPLAY_DOC",
+                    "value": {
+                        "value": "elapsed_total",
+                        "label": "TRANSLATE.JUSTOLED.TIME_ELAPSED_TOTAL"
+                    },
+                    "options": [
+                        {
+                            "value": "elapsed_total",
+                            "label": "TRANSLATE.JUSTOLED.TIME_ELAPSED_TOTAL"
+                        },
+                        {
+                            "value": "elapsed",
+                            "label": "TRANSLATE.JUSTOLED.TIME_ELAPSED"
+                        },
+                        {
+                            "value": "remaining",
+                            "label": "TRANSLATE.JUSTOLED.TIME_REMAINING"
+                        },
+                        {
+                            "value": "off",
+                            "label": "TRANSLATE.JUSTOLED.TIME_OFF"
+                        }
+                    ]
+                },
+                {
+                    "id": "show_format",
+                    "element": "switch",
+                    "label": "TRANSLATE.JUSTOLED.SHOW_FORMAT",
+                    "doc": "TRANSLATE.JUSTOLED.SHOW_FORMAT_DOC",
+                    "value": true
+                },
+                {
+                    "id": "peaks",
+                    "element": "switch",
+                    "label": "TRANSLATE.JUSTOLED.PEAKS",
+                    "doc": "TRANSLATE.JUSTOLED.PEAKS_DOC",
+                    "value": true
+                },
+                {
+                    "id": "meter_gain",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.JUSTOLED.METER_GAIN",
+                    "doc": "TRANSLATE.JUSTOLED.METER_GAIN_DOC",
+                    "value": 0,
+                    "attributes": [
+                        {
+                            "min": -12
+                        },
+                        {
+                            "max": 12
+                        },
+                        {
+                            "step": 1
+                        }
+                    ]
+                },
+                {
+                    "id": "meter_wide",
+                    "element": "switch",
+                    "label": "TRANSLATE.JUSTOLED.METER_WIDE",
+                    "doc": "TRANSLATE.JUSTOLED.METER_WIDE_DOC",
+                    "value": false
+                },
+                {
+                    "id": "theme",
+                    "element": "select",
+                    "label": "TRANSLATE.JUSTOLED.THEME",
+                    "doc": "TRANSLATE.JUSTOLED.THEME_DOC",
+                    "value": {
+                        "value": "classic",
+                        "label": "TRANSLATE.JUSTOLED.THEME_CLASSIC"
+                    },
+                    "options": [
+                        {
+                            "value": "classic",
+                            "label": "TRANSLATE.JUSTOLED.THEME_CLASSIC"
+                        },
+                        {
+                            "value": "amber",
+                            "label": "TRANSLATE.JUSTOLED.THEME_AMBER"
+                        },
+                        {
+                            "value": "ice",
+                            "label": "TRANSLATE.JUSTOLED.THEME_ICE"
+                        },
+                        {
+                            "value": "fire",
+                            "label": "TRANSLATE.JUSTOLED.THEME_FIRE"
+                        },
+                        {
+                            "value": "white",
+                            "label": "TRANSLATE.JUSTOLED.THEME_WHITE"
+                        },
+                        {
+                            "value": "custom",
+                            "label": "TRANSLATE.JUSTOLED.THEME_CUSTOM"
+                        }
+                    ]
+                },
+                {
+                    "id": "colour_title",
+                    "element": "input",
+                    "type": "color",
+                    "label": "TRANSLATE.JUSTOLED.COLOUR_TITLE",
+                    "doc": "TRANSLATE.JUSTOLED.COLOUR_DOC",
+                    "value": "#ffffff",
+                    "visibleIf": {
+                        "field": "theme",
+                        "value": "custom"
+                    }
+                },
+                {
+                    "id": "colour_detail",
+                    "element": "input",
+                    "type": "color",
+                    "label": "TRANSLATE.JUSTOLED.COLOUR_DETAIL",
+                    "doc": "TRANSLATE.JUSTOLED.COLOUR_DOC",
+                    "value": "#a0a0aa",
+                    "visibleIf": {
+                        "field": "theme",
+                        "value": "custom"
+                    }
+                },
+                {
+                    "id": "colour_bar_low",
+                    "element": "input",
+                    "type": "color",
+                    "label": "TRANSLATE.JUSTOLED.COLOUR_BAR_LOW",
+                    "doc": "TRANSLATE.JUSTOLED.COLOUR_DOC",
+                    "value": "#00c878",
+                    "visibleIf": {
+                        "field": "theme",
+                        "value": "custom"
+                    }
+                },
+                {
+                    "id": "colour_bar_high",
+                    "element": "input",
+                    "type": "color",
+                    "label": "TRANSLATE.JUSTOLED.COLOUR_BAR_HIGH",
+                    "doc": "TRANSLATE.JUSTOLED.COLOUR_DOC",
+                    "value": "#ffb400",
+                    "visibleIf": {
+                        "field": "theme",
+                        "value": "custom"
+                    }
+                },
+                {
+                    "id": "colour_peak",
+                    "element": "input",
+                    "type": "color",
+                    "label": "TRANSLATE.JUSTOLED.COLOUR_PEAK",
+                    "doc": "TRANSLATE.JUSTOLED.COLOUR_DOC",
+                    "value": "#ff503c",
+                    "visibleIf": {
+                        "field": "theme",
+                        "value": "custom"
+                    }
+                },
+                {
+                    "id": "colour_progress",
+                    "element": "input",
+                    "type": "color",
+                    "label": "TRANSLATE.JUSTOLED.COLOUR_PROGRESS",
+                    "doc": "TRANSLATE.JUSTOLED.COLOUR_DOC",
+                    "value": "#0096aa",
+                    "visibleIf": {
+                        "field": "theme",
+                        "value": "custom"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "section_standby",
+            "element": "section",
+            "label": "TRANSLATE.JUSTOLED.SECTION_STANDBY",
+            "icon": "fa-clock-o",
+            "description": "TRANSLATE.JUSTOLED.SECTION_STANDBY_DOC",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/just_oled",
+                "method": "saveStandby"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.JUSTOLED.SAVE",
+                "data": [
+                    "idle_screen",
+                    "idle_timeout",
+                    "clock_format",
+                    "date_format",
+                    "show_ip"
+                ]
+            },
+            "content": [
+                {
+                    "id": "idle_screen",
+                    "element": "select",
+                    "label": "TRANSLATE.JUSTOLED.IDLE_SCREEN",
+                    "doc": "TRANSLATE.JUSTOLED.IDLE_SCREEN_DOC",
+                    "value": {
+                        "value": "clock",
+                        "label": "TRANSLATE.JUSTOLED.IDLE_CLOCK"
+                    },
+                    "options": [
+                        {
+                            "value": "clock",
+                            "label": "TRANSLATE.JUSTOLED.IDLE_CLOCK"
+                        },
+                        {
+                            "value": "blank",
+                            "label": "TRANSLATE.JUSTOLED.IDLE_BLANK"
+                        }
+                    ]
+                },
+                {
+                    "id": "idle_timeout",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.JUSTOLED.IDLE_TIMEOUT",
+                    "doc": "TRANSLATE.JUSTOLED.IDLE_TIMEOUT_DOC",
+                    "value": 30,
+                    "attributes": [
+                        {
+                            "min": 0
+                        },
+                        {
+                            "max": 1440
+                        },
+                        {
+                            "step": 1
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "idle_screen",
+                        "value": "clock"
+                    }
+                },
+                {
+                    "id": "clock_format",
+                    "element": "select",
+                    "label": "TRANSLATE.JUSTOLED.CLOCK_FORMAT",
+                    "doc": "TRANSLATE.JUSTOLED.CLOCK_FORMAT_DOC",
+                    "value": {
+                        "value": "%H:%M",
+                        "label": "20:45"
+                    },
+                    "options": [
+                        {
+                            "value": "%H:%M",
+                            "label": "20:45"
+                        },
+                        {
+                            "value": "%H:%M:%S",
+                            "label": "20:45:07"
+                        },
+                        {
+                            "value": "%I:%M %p",
+                            "label": "08:45 pm"
+                        },
+                        {
+                            "value": "%l:%M %p",
+                            "label": "8:45 pm"
+                        },
+                        {
+                            "value": "%I:%M:%S %p",
+                            "label": "08:45:07 pm"
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "idle_screen",
+                        "value": "clock"
+                    }
+                },
+                {
+                    "id": "date_format",
+                    "element": "select",
+                    "label": "TRANSLATE.JUSTOLED.DATE_FORMAT",
+                    "doc": "TRANSLATE.JUSTOLED.DATE_FORMAT_DOC",
+                    "value": {
+                        "value": "%a %d %b",
+                        "label": "Tue 13 Oct"
+                    },
+                    "options": [
+                        {
+                            "value": "%a %d %b",
+                            "label": "Tue 13 Oct"
+                        },
+                        {
+                            "value": "%A %d %B",
+                            "label": "Tuesday 13 October"
+                        },
+                        {
+                            "value": "%a %d %b %Y",
+                            "label": "Tue 13 Oct 2026"
+                        },
+                        {
+                            "value": "%d.%m.%Y",
+                            "label": "13.10.2026"
+                        },
+                        {
+                            "value": "%d/%m/%Y",
+                            "label": "13/10/2026"
+                        },
+                        {
+                            "value": "%m/%d/%Y",
+                            "label": "10/13/2026"
+                        },
+                        {
+                            "value": "%Y-%m-%d",
+                            "label": "2026-10-13"
+                        },
+                        {
+                            "value": "%a %d.%m.",
+                            "label": "Tue 13.10."
+                        },
+                        {
+                            "value": "%A",
+                            "label": "Tuesday"
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "idle_screen",
+                        "value": "clock"
+                    }
+                },
+                {
+                    "id": "show_ip",
+                    "element": "switch",
+                    "label": "TRANSLATE.JUSTOLED.SHOW_IP",
+                    "doc": "TRANSLATE.JUSTOLED.SHOW_IP_DOC",
+                    "value": true,
+                    "visibleIf": {
+                        "field": "idle_screen",
+                        "value": "clock"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "section_connection",
+            "element": "section",
+            "label": "TRANSLATE.JUSTOLED.SECTION_CONNECTION",
+            "icon": "fa-plug",
+            "description": "TRANSLATE.JUSTOLED.SECTION_CONNECTION_DOC",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/just_oled",
+                "method": "saveConnection"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.JUSTOLED.SAVE",
+                "data": [
+                    "connection",
+                    "panel",
+                    "i2c_bus",
+                    "i2c_sda",
+                    "i2c_scl",
+                    "i2c_address",
+                    "i2c_speed",
+                    "spi_bus",
+                    "spi_cs",
+                    "gpio_dc",
+                    "gpio_reset",
+                    "rotate"
+                ]
+            },
+            "content": [
+                {
+                    "id": "connection",
+                    "element": "select",
+                    "label": "TRANSLATE.JUSTOLED.CONNECTION",
+                    "doc": "TRANSLATE.JUSTOLED.CONNECTION_DOC",
+                    "value": {
+                        "value": "i2c",
+                        "label": "TRANSLATE.JUSTOLED.CONNECTION_I2C"
+                    },
+                    "options": [
+                        {
+                            "value": "i2c",
+                            "label": "TRANSLATE.JUSTOLED.CONNECTION_I2C"
+                        },
+                        {
+                            "value": "i2c_custom",
+                            "label": "TRANSLATE.JUSTOLED.CONNECTION_I2C_CUSTOM"
+                        },
+                        {
+                            "value": "spi",
+                            "label": "TRANSLATE.JUSTOLED.CONNECTION_SPI"
+                        },
+                        {
+                            "value": "spi_waveshare",
+                            "label": "TRANSLATE.JUSTOLED.CONNECTION_SPI_WAVESHARE"
+                        },
+                        {
+                            "value": "spi_custom",
+                            "label": "TRANSLATE.JUSTOLED.CONNECTION_SPI_CUSTOM"
+                        }
+                    ]
+                },
+                {
+                    "id": "panel",
+                    "element": "select",
+                    "label": "TRANSLATE.JUSTOLED.PANEL",
+                    "doc": "TRANSLATE.JUSTOLED.PANEL_DOC",
+                    "value": {
+                        "value": "ssd1306_128x64",
+                        "label": "SSD1306 128x64"
+                    },
+                    "options": []
+                },
+                {
+                    "id": "i2c_bus",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.JUSTOLED.I2C_BUS",
+                    "doc": "TRANSLATE.JUSTOLED.I2C_BUS_DOC",
+                    "value": 1,
+                    "attributes": [
+                        {
+                            "min": 0
+                        },
+                        {
+                            "max": 99
+                        },
+                        {
+                            "step": 1
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "connection",
+                        "value": "i2c_custom"
+                    }
+                },
+                {
+                    "id": "i2c_sda",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.JUSTOLED.I2C_SDA",
+                    "doc": "TRANSLATE.JUSTOLED.I2C_PINS_DOC",
+                    "value": 2,
+                    "attributes": [
+                        {
+                            "min": 0
+                        },
+                        {
+                            "max": 27
+                        },
+                        {
+                            "step": 1
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "connection",
+                        "value": "i2c_custom"
+                    }
+                },
+                {
+                    "id": "i2c_scl",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.JUSTOLED.I2C_SCL",
+                    "doc": "TRANSLATE.JUSTOLED.I2C_PINS_DOC",
+                    "value": 3,
+                    "attributes": [
+                        {
+                            "min": 0
+                        },
+                        {
+                            "max": 27
+                        },
+                        {
+                            "step": 1
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "connection",
+                        "value": "i2c_custom"
+                    }
+                },
+                {
+                    "id": "i2c_address",
+                    "element": "select",
+                    "label": "TRANSLATE.JUSTOLED.I2C_ADDRESS",
+                    "doc": "TRANSLATE.JUSTOLED.I2C_ADDRESS_DOC",
+                    "value": {
+                        "value": "auto",
+                        "label": "TRANSLATE.JUSTOLED.AUTO"
+                    },
+                    "options": [
+                        {
+                            "value": "auto",
+                            "label": "TRANSLATE.JUSTOLED.AUTO"
+                        },
+                        {
+                            "value": "0x3C",
+                            "label": "0x3C"
+                        },
+                        {
+                            "value": "0x3D",
+                            "label": "0x3D"
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "connection",
+                        "value": "i2c_custom"
+                    }
+                },
+                {
+                    "id": "i2c_speed",
+                    "element": "select",
+                    "label": "TRANSLATE.JUSTOLED.I2C_SPEED",
+                    "doc": "TRANSLATE.JUSTOLED.I2C_SPEED_DOC",
+                    "value": {
+                        "value": "100",
+                        "label": "TRANSLATE.JUSTOLED.I2C_SPEED_100"
+                    },
+                    "options": [
+                        {
+                            "value": "100",
+                            "label": "TRANSLATE.JUSTOLED.I2C_SPEED_100"
+                        },
+                        {
+                            "value": "400",
+                            "label": "TRANSLATE.JUSTOLED.I2C_SPEED_400"
+                        },
+                        {
+                            "value": "1000",
+                            "label": "TRANSLATE.JUSTOLED.I2C_SPEED_1000"
+                        }
+                    ]
+                },
+                {
+                    "id": "spi_bus",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.JUSTOLED.SPI_BUS",
+                    "doc": "TRANSLATE.JUSTOLED.SPI_BUS_DOC",
+                    "value": 0,
+                    "attributes": [
+                        {
+                            "min": 0
+                        },
+                        {
+                            "max": 9
+                        },
+                        {
+                            "step": 1
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "connection",
+                        "value": "spi_custom"
+                    }
+                },
+                {
+                    "id": "spi_cs",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.JUSTOLED.SPI_CS",
+                    "doc": "TRANSLATE.JUSTOLED.SPI_CS_DOC",
+                    "value": 0,
+                    "attributes": [
+                        {
+                            "min": 0
+                        },
+                        {
+                            "max": 2
+                        },
+                        {
+                            "step": 1
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "connection",
+                        "value": "spi_custom"
+                    }
+                },
+                {
+                    "id": "gpio_dc",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.JUSTOLED.GPIO_DC",
+                    "doc": "TRANSLATE.JUSTOLED.GPIO_DC_DOC",
+                    "value": 24,
+                    "attributes": [
+                        {
+                            "min": 0
+                        },
+                        {
+                            "max": 27
+                        },
+                        {
+                            "step": 1
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "connection",
+                        "value": "spi_custom"
+                    }
+                },
+                {
+                    "id": "gpio_reset",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.JUSTOLED.GPIO_RESET",
+                    "doc": "TRANSLATE.JUSTOLED.GPIO_RESET_DOC",
+                    "value": 25,
+                    "attributes": [
+                        {
+                            "min": 0
+                        },
+                        {
+                            "max": 27
+                        },
+                        {
+                            "step": 1
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "connection",
+                        "value": "spi_custom"
+                    }
+                },
+                {
+                    "id": "rotate",
+                    "element": "select",
+                    "label": "TRANSLATE.JUSTOLED.ROTATE",
+                    "doc": "TRANSLATE.JUSTOLED.ROTATE_DOC",
+                    "value": {
+                        "value": "0",
+                        "label": "TRANSLATE.JUSTOLED.ROTATE_0"
+                    },
+                    "options": [
+                        {
+                            "value": "0",
+                            "label": "TRANSLATE.JUSTOLED.ROTATE_0"
+                        },
+                        {
+                            "value": "180",
+                            "label": "TRANSLATE.JUSTOLED.ROTATE_180"
+                        }
+                    ]
+                },
+                {
+                    "id": "detect",
+                    "element": "button",
+                    "label": "TRANSLATE.JUSTOLED.DETECT",
+                    "doc": "TRANSLATE.JUSTOLED.DETECT_DOC",
+                    "onClick": {
+                        "type": "plugin",
+                        "endpoint": "system_hardware/just_oled",
+                        "method": "detectDisplay",
+                        "data": []
+                    }
+                },
+                {
+                    "id": "test",
+                    "element": "button",
+                    "label": "TRANSLATE.JUSTOLED.TEST",
+                    "doc": "TRANSLATE.JUSTOLED.TEST_DOC",
+                    "onClick": {
+                        "type": "plugin",
+                        "endpoint": "system_hardware/just_oled",
+                        "method": "testDisplay",
+                        "data": []
+                    }
+                }
+            ]
+        },
+        {
+            "id": "section_messages",
+            "element": "section",
+            "label": "TRANSLATE.JUSTOLED.SECTION_MESSAGES",
+            "icon": "fa-comment-o",
+            "description": "TRANSLATE.JUSTOLED.SECTION_MESSAGES_DOC",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/just_oled",
+                "method": "saveMessages"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.JUSTOLED.SAVE",
+                "data": [
+                    "show_lifecycle",
+                    "text_boot",
+                    "text_ready",
+                    "text_pause",
+                    "text_shutdown",
+                    "text_reboot"
+                ]
+            },
+            "content": [
+                {
+                    "id": "show_lifecycle",
+                    "element": "switch",
+                    "label": "TRANSLATE.JUSTOLED.SHOW_LIFECYCLE",
+                    "doc": "TRANSLATE.JUSTOLED.SHOW_LIFECYCLE_DOC",
+                    "value": true
+                },
+                {
+                    "id": "text_boot",
+                    "element": "input",
+                    "type": "text",
+                    "label": "TRANSLATE.JUSTOLED.TEXT_BOOT",
+                    "doc": "TRANSLATE.JUSTOLED.TEXT_LINES_DOC",
+                    "value": "Volumio|booting...",
+                    "visibleIf": {
+                        "field": "show_lifecycle",
+                        "value": true
+                    }
+                },
+                {
+                    "id": "text_ready",
+                    "element": "input",
+                    "type": "text",
+                    "label": "TRANSLATE.JUSTOLED.TEXT_READY",
+                    "doc": "TRANSLATE.JUSTOLED.TEXT_LINES_DOC",
+                    "value": "Volumio|ready",
+                    "visibleIf": {
+                        "field": "show_lifecycle",
+                        "value": true
+                    }
+                },
+                {
+                    "id": "text_pause",
+                    "element": "input",
+                    "type": "text",
+                    "label": "TRANSLATE.JUSTOLED.TEXT_PAUSE",
+                    "doc": "TRANSLATE.JUSTOLED.TEXT_LINES_DOC",
+                    "value": "Paused|waiting on music"
+                },
+                {
+                    "id": "text_shutdown",
+                    "element": "input",
+                    "type": "text",
+                    "label": "TRANSLATE.JUSTOLED.TEXT_SHUTDOWN",
+                    "doc": "TRANSLATE.JUSTOLED.TEXT_LINES_DOC",
+                    "value": "Volumio|shutting down",
+                    "visibleIf": {
+                        "field": "show_lifecycle",
+                        "value": true
+                    }
+                },
+                {
+                    "id": "text_reboot",
+                    "element": "input",
+                    "type": "text",
+                    "label": "TRANSLATE.JUSTOLED.TEXT_REBOOT",
+                    "doc": "TRANSLATE.JUSTOLED.TEXT_LINES_DOC",
+                    "value": "Volumio|restarting",
+                    "visibleIf": {
+                        "field": "show_lifecycle",
+                        "value": true
+                    }
+                }
+            ]
+        }
+    ]
+}
