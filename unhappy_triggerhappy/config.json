@@ -1,0 +1,70 @@
+{
+  "happy_forever": {
+    "type": "boolean",
+    "value": false
+  },
+  "more_happy": {
+    "type": "boolean",
+    "value": false
+  },
+  "key_mute": {
+    "type": "string",
+    "value": "/usr/local/bin/volumio volume toggle"
+  },
+  "key_volumeup": {
+    "type": "string",
+    "value": "/usr/local/bin/volumio volume plus"
+  },
+  "key_volumedown": {
+    "type": "string",
+    "value": "/usr/local/bin/volumio volume minus"
+  },
+  "key_stop": {
+    "type": "string",
+    "value": "/usr/local/bin/volumio stop"
+  },
+  "key_play": {
+    "type": "string",
+    "value": "/usr/local/bin/volumio play"
+  },
+  "key_playpause": {
+    "type": "string",
+    "value": "/usr/local/bin/volumio toggle"
+  },
+  "key_nextsong": {
+    "type": "string",
+    "value": "/usr/local/bin/volumio next"
+  },
+  "key_previoussong": {
+    "type": "string",
+    "value": "/usr/local/bin/volumio previous"
+  },
+  "listener_enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "listener_devices": {
+    "type": "string",
+    "value": "[]"
+  },
+  "long_ms": {
+    "type": "number",
+    "value": 400
+  },
+  "double_ms": {
+    "type": "number",
+    "value": 300
+  },
+  "debounce_ms": {
+    "type": "number",
+    "value": 30
+  },
+  "listener_bindings": {
+    "type": "string",
+    "value": "[]"
+  },
+  "captured_key": {
+    "type": "string",
+    "value": ""
+  }
+}

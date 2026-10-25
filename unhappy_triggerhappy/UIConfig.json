@@ -1,0 +1,323 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_NAME"
+  },
+  "sections": [
+    {
+      "id": "section_now",
+      "element": "section",
+      "label": "TRANSLATE.NOW_SECTION",
+      "icon": "fa-smile-o",
+      "content": [
+        {
+          "id": "happy_now",
+          "element": "button",
+          "label": "TRANSLATE.HAPPY_NOW",
+          "doc": "TRANSLATE.HAPPY_NOW_DOC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_controller/unhappy_triggerhappy",
+              "method": "restartNow",
+              "data": ""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_forever",
+      "element": "section",
+      "label": "TRANSLATE.FOREVER_SECTION",
+      "icon": "fa-refresh",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/unhappy_triggerhappy",
+        "method": "saveForever"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "happy_forever"
+        ]
+      },
+      "content": [
+        {
+          "id": "happy_forever",
+          "element": "switch",
+          "label": "TRANSLATE.HAPPY_FOREVER",
+          "doc": "TRANSLATE.HAPPY_FOREVER_DOC",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": "section_more",
+      "element": "section",
+      "label": "TRANSLATE.MORE_SECTION",
+      "icon": "fa-keyboard-o",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/unhappy_triggerhappy",
+        "method": "saveBindings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "more_happy",
+          "key_mute",
+          "key_volumeup",
+          "key_volumedown",
+          "key_stop",
+          "key_play",
+          "key_playpause",
+          "key_nextsong",
+          "key_previoussong"
+        ]
+      },
+      "content": [
+        {
+          "id": "more_happy",
+          "element": "switch",
+          "label": "TRANSLATE.HAPPY_MORE",
+          "doc": "TRANSLATE.HAPPY_MORE_DOC",
+          "value": false
+        },
+        {
+          "id": "key_mute",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.KEY_MUTE",
+          "doc": "TRANSLATE.BINDING_DOC",
+          "value": "/usr/local/bin/volumio volume toggle",
+          "visibleIf": {
+            "field": "more_happy",
+            "value": true
+          }
+        },
+        {
+          "id": "key_volumeup",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.KEY_VOLUMEUP",
+          "doc": "TRANSLATE.BINDING_DOC",
+          "value": "/usr/local/bin/volumio volume plus",
+          "visibleIf": {
+            "field": "more_happy",
+            "value": true
+          }
+        },
+        {
+          "id": "key_volumedown",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.KEY_VOLUMEDOWN",
+          "doc": "TRANSLATE.BINDING_DOC",
+          "value": "/usr/local/bin/volumio volume minus",
+          "visibleIf": {
+            "field": "more_happy",
+            "value": true
+          }
+        },
+        {
+          "id": "key_stop",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.KEY_STOP",
+          "doc": "TRANSLATE.BINDING_DOC",
+          "value": "/usr/local/bin/volumio stop",
+          "visibleIf": {
+            "field": "more_happy",
+            "value": true
+          }
+        },
+        {
+          "id": "key_play",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.KEY_PLAY",
+          "doc": "TRANSLATE.BINDING_DOC",
+          "value": "/usr/local/bin/volumio play",
+          "visibleIf": {
+            "field": "more_happy",
+            "value": true
+          }
+        },
+        {
+          "id": "key_playpause",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.KEY_PLAYPAUSE",
+          "doc": "TRANSLATE.BINDING_DOC",
+          "value": "/usr/local/bin/volumio toggle",
+          "visibleIf": {
+            "field": "more_happy",
+            "value": true
+          }
+        },
+        {
+          "id": "key_nextsong",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.KEY_NEXTSONG",
+          "doc": "TRANSLATE.BINDING_DOC",
+          "value": "/usr/local/bin/volumio next",
+          "visibleIf": {
+            "field": "more_happy",
+            "value": true
+          }
+        },
+        {
+          "id": "key_previoussong",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.KEY_PREVIOUSSONG",
+          "doc": "TRANSLATE.BINDING_DOC",
+          "value": "/usr/local/bin/volumio previous",
+          "visibleIf": {
+            "field": "more_happy",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_listener",
+      "element": "section",
+      "label": "TRANSLATE.LISTENER_SECTION",
+      "icon": "fa-gamepad",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/unhappy_triggerhappy",
+        "method": "saveListener"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "listener_enabled",
+          "long_ms",
+          "double_ms",
+          "debounce_ms"
+        ]
+      },
+      "content": [
+        {
+          "id": "listener_status",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.LISTENER_STATUS",
+          "doc": "TRANSLATE.LISTENER_STATUS_DOC",
+          "value": ""
+        },
+        {
+          "id": "listener_enabled",
+          "element": "switch",
+          "label": "TRANSLATE.LISTENER_ENABLED",
+          "doc": "TRANSLATE.LISTENER_ENABLED_DOC",
+          "value": false
+        },
+        {
+          "id": "long_ms",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.LONG_MS",
+          "doc": "TRANSLATE.LONG_MS_DOC",
+          "value": 400,
+          "visibleIf": {
+            "field": "listener_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "double_ms",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.DOUBLE_MS",
+          "doc": "TRANSLATE.DOUBLE_MS_DOC",
+          "value": 300,
+          "visibleIf": {
+            "field": "listener_enabled",
+            "value": true
+          }
+        },
+        {
+          "id": "debounce_ms",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.DEBOUNCE_MS",
+          "doc": "TRANSLATE.DEBOUNCE_MS_DOC",
+          "value": 30,
+          "visibleIf": {
+            "field": "listener_enabled",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_bindings",
+      "element": "section",
+      "label": "TRANSLATE.BINDINGS_SECTION",
+      "icon": "fa-list",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/unhappy_triggerhappy",
+        "method": "saveListenerBindings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "new_key",
+          "new_press",
+          "new_command"
+        ]
+      },
+      "content": [
+        {
+          "id": "capture_key",
+          "element": "button",
+          "label": "TRANSLATE.CAPTURE_KEY",
+          "doc": "TRANSLATE.CAPTURE_KEY_DOC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_controller/unhappy_triggerhappy",
+              "method": "captureKey",
+              "data": ""
+            }
+          }
+        },
+        {
+          "id": "new_key",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.NEW_KEY",
+          "doc": "TRANSLATE.NEW_KEY_DOC",
+          "value": ""
+        },
+        {
+          "id": "new_press",
+          "element": "select",
+          "label": "TRANSLATE.NEW_PRESS",
+          "doc": "TRANSLATE.ROW_PRESS_DOC",
+          "value": { "value": "short", "label": "short" },
+          "options": [
+            { "value": "short", "label": "short" },
+            { "value": "long", "label": "long" },
+            { "value": "double", "label": "double" }
+          ]
+        },
+        {
+          "id": "new_command",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.NEW_COMMAND",
+          "doc": "TRANSLATE.ROW_COMMAND_DOC",
+          "value": ""
+        }
+      ]
+    }
+  ]
+}

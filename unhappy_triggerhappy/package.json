@@ -1,0 +1,35 @@
+{
+  "name": "unhappy_triggerhappy",
+  "version": "1.2.0",
+  "description": "Restarts triggerhappy after Volumio is ready, and writes a separate triggers map",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test ../test/ready-loop.test.js ../test/stock-map.test.js ../test/control.test.js"
+  },
+  "author": "Just a Nerd",
+  "license": "MIT",
+  "volumio_info": {
+    "prettyName": "Unhappy TriggerHappy",
+    "icon": "fa-smile-o",
+    "plugin_type": "system_controller",
+    "os": [
+      "bookworm"
+    ],
+    "details": "Restarts triggerhappy once Volumio reports ready, or immediately. The binding editor writes this plugin's own triggers file and does not replace the stock audio.conf.",
+    "changelog": "1.2.0: Bindings of your own for a remote taken over: add, edit, and remove rows with a short, long, or double press each, and a capture button that reads the next key pressed.",
+    "architectures": [
+      "amd64",
+      "armhf"
+    ]
+  },
+  "dependencies": {
+    "fs-extra": "^0.28.0",
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.2"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "repository": "https://github.com/foonerd/unhappy"
+}
