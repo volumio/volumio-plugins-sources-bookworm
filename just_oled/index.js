@@ -32,8 +32,8 @@ var id = 'just_oled: ';
 
 // The keys each settings section saves, and how each is read from the form.
 var SELECTS = ['connection', 'panel', 'i2c_address', 'i2c_speed', 'rotate', 'face', 'track_text', 'time_display', 'theme', 'idle_screen', 'clock_format', 'date_format'];
-var NUMBERS = ['i2c_bus', 'i2c_sda', 'i2c_scl', 'spi_bus', 'spi_cs', 'gpio_dc', 'gpio_reset', 'meter_gain', 'idle_timeout'];
-var SWITCHES = ['show_lifecycle', 'show_format', 'peaks', 'meter_wide', 'show_ip'];
+var NUMBERS = ['i2c_bus', 'i2c_sda', 'i2c_scl', 'spi_bus', 'spi_cs', 'gpio_dc', 'gpio_reset', 'meter_gain', 'pause_timeout', 'idle_timeout'];
+var SWITCHES = ['show_lifecycle', 'show_format', 'peaks', 'meter_wide', 'pause_standby', 'show_ip'];
 
 module.exports = JustOled;
 
@@ -386,7 +386,7 @@ JustOled.prototype.saveFace = function (data) {
 };
 
 JustOled.prototype.saveStandby = function (data) {
-    return this.saveSection(data, ['idle_screen', 'idle_timeout', 'clock_format', 'date_format', 'show_ip']);
+    return this.saveSection(data, ['pause_standby', 'pause_timeout', 'idle_screen', 'idle_timeout', 'clock_format', 'date_format', 'show_ip']);
 };
 
 JustOled.prototype.saveMessages = function (data) {
