@@ -1,9 +1,9 @@
 {
     "name": "just_oled",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "description": "Spectrum, VU, now playing and a clock on any I2C or SPI OLED, with the player's boot and shutdown",
     "main": "index.js",
-    "author": "foonerd",
+    "author": "Just a Nerd",
     "license": "MIT",
     "repository": "https://github.com/foonerd/just_oled",
     "volumio_info": {
@@ -19,7 +19,7 @@
             "amd64"
         ],
         "details": "One plugin for the small OLED screens: SSD1306, SSD1309, SSD1315, SSD1305, SH1106, SH1107, SSD1327, SSD1322, SH1122, CH1120, and the colour SSD1331 and SSD1351, over I2C or SPI. An audio tap in the ALSA chain measures every source without touching the sound; the display shows a spectrum, VU bars, the track, a clock and date, and says when the player boots, restarts and shuts down.",
-        "changelog": "0.1.5 The settings page in German, French, Italian, Dutch, Spanish, Polish, Japanese and Chinese."
+        "changelog": "0.1.6 The plugin's author is Just a Nerd in the store listing."
     },
     "engines": {
         "node": ">=20",
