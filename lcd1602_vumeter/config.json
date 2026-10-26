@@ -95,6 +95,14 @@
         "type": "number",
         "value": 0
     },
+    "pause_standby": {
+        "type": "boolean",
+        "value": true
+    },
+    "pause_timeout": {
+        "type": "number",
+        "value": 0
+    },
     "rgb_mode": {
         "type": "string",
         "value": "fixed"

@@ -30,8 +30,8 @@ var id = 'lcd1602_vumeter: ';
 
 // The keys each settings section saves, and how each is read from the form.
 var SELECTS = ['i2c_mode', 'panel_type', 'panel_address', 'pcf_pinmap', 'rgb_address', 'meter_source', 'bar_style', 'idle_layout', 'idle_row1', 'idle_row2', 'clock_format', 'date_format', 'rgb_mode'];
-var NUMBERS = ['sda_pin', 'scl_pin', 'contrast', 'gain_db', 'range_db', 'peak_hold_ms', 'fps', 'backlight_idle_off_s', 'rgb_brightness', 'i2c_bus'];
-var SWITCHES = ['peak_hold', 'labels', 'show_lifecycle'];
+var NUMBERS = ['sda_pin', 'scl_pin', 'contrast', 'gain_db', 'range_db', 'peak_hold_ms', 'fps', 'pause_timeout', 'backlight_idle_off_s', 'rgb_brightness', 'i2c_bus'];
+var SWITCHES = ['peak_hold', 'labels', 'show_lifecycle', 'pause_standby'];
 var COLORS = ['rgb_play', 'rgb_pause', 'rgb_idle'];
 
 module.exports = Lcd1602;
@@ -361,7 +361,7 @@ Lcd1602.prototype.saveMeter = function (data) {
 };
 
 Lcd1602.prototype.saveIdle = function (data) {
-    return this.saveSection(data, ['idle_layout', 'idle_row1', 'idle_row2', 'idle_text', 'clock_format', 'date_format', 'backlight_idle_off_s']);
+    return this.saveSection(data, ['pause_standby', 'pause_timeout', 'idle_layout', 'idle_row1', 'idle_row2', 'idle_text', 'clock_format', 'date_format', 'backlight_idle_off_s']);
 };
 
 Lcd1602.prototype.saveMessages = function (data) {
