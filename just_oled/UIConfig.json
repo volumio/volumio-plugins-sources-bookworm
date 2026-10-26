@@ -286,6 +286,8 @@
             "saveButton": {
                 "label": "TRANSLATE.JUSTOLED.SAVE",
                 "data": [
+                    "pause_standby",
+                    "pause_timeout",
                     "idle_screen",
                     "idle_timeout",
                     "clock_format",
@@ -294,6 +296,36 @@
                 ]
             },
             "content": [
+                {
+                    "id": "pause_standby",
+                    "element": "switch",
+                    "label": "TRANSLATE.JUSTOLED.PAUSE_STANDBY",
+                    "doc": "TRANSLATE.JUSTOLED.PAUSE_STANDBY_DOC",
+                    "value": true
+                },
+                {
+                    "id": "pause_timeout",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.JUSTOLED.PAUSE_TIMEOUT",
+                    "doc": "TRANSLATE.JUSTOLED.PAUSE_TIMEOUT_DOC",
+                    "value": 0,
+                    "attributes": [
+                        {
+                            "min": 0
+                        },
+                        {
+                            "max": 3600
+                        },
+                        {
+                            "step": 1
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "pause_standby",
+                        "value": true
+                    }
+                },
                 {
                     "id": "idle_screen",
                     "element": "select",

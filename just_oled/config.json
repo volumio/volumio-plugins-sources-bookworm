@@ -107,6 +107,14 @@
         "type": "string",
         "value": "clock"
     },
+    "pause_standby": {
+        "type": "boolean",
+        "value": true
+    },
+    "pause_timeout": {
+        "type": "number",
+        "value": 0
+    },
     "idle_timeout": {
         "type": "number",
         "value": 30
