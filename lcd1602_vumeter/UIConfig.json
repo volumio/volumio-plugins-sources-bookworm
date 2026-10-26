@@ -506,6 +506,8 @@
             "saveButton": {
                 "label": "TRANSLATE.LCD1602.SAVE",
                 "data": [
+                    "pause_standby",
+                    "pause_timeout",
                     "idle_layout",
                     "idle_row1",
                     "idle_row2",
@@ -516,6 +518,36 @@
                 ]
             },
             "content": [
+                {
+                    "id": "pause_standby",
+                    "element": "switch",
+                    "label": "TRANSLATE.LCD1602.PAUSE_STANDBY",
+                    "doc": "TRANSLATE.LCD1602.PAUSE_STANDBY_DOC",
+                    "value": true
+                },
+                {
+                    "id": "pause_timeout",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.LCD1602.PAUSE_TIMEOUT",
+                    "doc": "TRANSLATE.LCD1602.PAUSE_TIMEOUT_DOC",
+                    "value": 0,
+                    "attributes": [
+                        {
+                            "min": 0
+                        },
+                        {
+                            "max": 3600
+                        },
+                        {
+                            "step": 1
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "pause_standby",
+                        "value": true
+                    }
+                },
                 {
                     "id": "idle_layout",
                     "element": "select",
