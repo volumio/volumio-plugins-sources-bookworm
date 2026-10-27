@@ -1,12 +1,12 @@
 {
   "name": "soloist_connect",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "Spotify Connect on Volumio 4 via Spotify Soloist, playing through pcm.volumio (ALSA, no Pulse)",
   "main": "index.js",
   "scripts": {
     "test": "node test/queue-mode.test.js"
   },
-  "author": "Wheaten, Just a Nerd",
+  "author": "Just a Nerd",
   "license": "MIT",
   "repository": "https://github.com/foonerd/alsa_soloist_connect",
   "volumio_info": {
@@ -20,7 +20,7 @@
       "bookworm"
     ],
     "details": "Stable. Turns Volumio 4 into a Spotify Connect device using Spotify Soloist. Audio goes through pcm.volumio via an in-tree Pulse shim (0.2.9), with no PulseAudio or PipeWire. Requires your own Soloist API key from the Spotify for Developers dashboard. Unofficial and not affiliated with Spotify AB. The Soloist binary is downloaded from Spotify at install time and is not bundled. This repository is the cutting-edge line; an accepted build is published to the store separately.",
-    "changelog": "0.9.1: Claim a Connect handover when playing arrives before is_active from device_changed within 2s."
+    "changelog": "0.9.2: The Spotify Queue page is no longer pushed to every connected client after it is opened. It is a plain read, complete when opened; a change shows on the next open. A REST browse of soloist_connect now has no side effects."
   },
   "engines": {
     "node": ">=20",

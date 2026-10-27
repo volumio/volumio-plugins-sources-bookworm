@@ -1028,8 +1028,10 @@ async function main() {
     check('queue playback on sync does not remove', browseRemoves.length === 0);
   }
 
-  // 36. an open tile is refreshed from Spotify events; a closed one is not
+  // 36. the Spotify Queue page is a plain read: complete at open, never pushed
   {
+    const isGetQueue = (l) => l === 'cmd {"command":"get_queue","limit":0}';
+
     const closed = newPlugin();
     browsePushes.length = 0;
     logs.length = 0;
@@ -1039,9 +1041,9 @@ async function main() {
       upcoming: [{ item: rolledItem, source: 'context' }],
     });
     await new Promise((r) => setTimeout(r, 80));
-    check('closed tile does not get_queue on queue_changed',
-      !logs.some((l) => l.indexOf('get_queue') !== -1), logs.join(' | '));
-    check('closed tile does not push browse', browsePushes.length === 0);
+    check('queue_changed with no browse pending asks no get_queue',
+      !logs.some(isGetQueue), logs.join(' | '));
+    check('queue_changed pushes no browse page', browsePushes.length === 0);
 
     const p = newPlugin();
     p.ws = { readyState: 1 };
@@ -1050,15 +1052,16 @@ async function main() {
     browsePushes.length = 0;
     logs.length = 0;
     const pending = p.handleBrowseUri('soloist_connect');
+    check('open asks get_queue once', logs.filter(isGetQueue).length === 1,
+      logs.join(' | '));
     p.handleEvent({
       type: 'queue_changed',
       previous: [],
       upcoming: [{ item: rolledItem, source: 'queue' }],
     });
-    await pending;
-    check('open reply pushes the tile',
-      browsePushes.length >= 1 && browsePushes[0].emit === 'pushBrowseLibrary');
-    const opened = browsePushes[browsePushes.length - 1].payload;
+    const opened = await pending;
+    check('open reply is returned to the caller, not pushed',
+      browsePushes.length === 0 && opened && opened.navigation !== undefined);
     check('open reply keeps play next',
       opened.navigation.lists.some((l) => l.title === 'Play next'));
     check('open reply keeps now playing',
@@ -1067,25 +1070,36 @@ async function main() {
     logs.length = 0;
     browsePushes.length = 0;
     p.handleEvent({ type: 'track_changed', item: rolledItem });
-    check('track_changed paints now playing',
-      browsePushes.length >= 1 &&
-      browsePushes[0].payload.navigation.lists[0].items[0].uri === ROLLED,
-      JSON.stringify(browsePushes[0] && browsePushes[0].payload.navigation.lists[0]));
+    p.handleEvent({
+      type: 'queue_changed',
+      previous: [],
+      upcoming: [{ item: rolledItem, source: 'queue' }],
+    });
     await new Promise((r) => setTimeout(r, 80));
-    check('open tile asks get_queue after a change',
-      logs.some((l) => l === 'cmd {"command":"get_queue","limit":0}'),
+    check('events after an open push no browse page', browsePushes.length === 0,
+      JSON.stringify(browsePushes[0] || null));
+    check('events after an open ask no get_queue', !logs.some(isGetQueue),
       logs.join(' | '));
 
+    logs.length = 0;
+    const again = p.handleBrowseUri('soloist_connect');
+    check('re-open asks get_queue again', logs.filter(isGetQueue).length === 1,
+      logs.join(' | '));
+    p.handleEvent({ type: 'queue_changed', previous: [], upcoming: [] });
+    await again;
+    check('re-open pushes nothing either', browsePushes.length === 0);
+
     const off = newPlugin({ queue_playback: false });
-    off.browseWatching = true;
     off.ws = { readyState: 1 };
     browsePushes.length = 0;
     logs.length = 0;
+    const hiddenPage = await off.handleBrowseUri('soloist_connect');
     off.handleEvent({ type: 'track_changed', item: item });
     await new Promise((r) => setTimeout(r, 80));
-    check('queue playback off does not refresh browse',
+    check('queue playback off: empty page, no get_queue, no push',
+      hiddenPage.navigation.lists.length === 0 &&
       browsePushes.length === 0 &&
-      !logs.some((l) => l.indexOf('get_queue') !== -1));
+      !logs.some(isGetQueue));
   }
 
   // 37. search is present and empty
