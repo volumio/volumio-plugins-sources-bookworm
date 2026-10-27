@@ -1,0 +1,25 @@
+[Unit]
+Description=MPD output relay to Icecast (mpdoutput plugin)
+Documentation=https://github.com/foonerd/mpd-output
+After=network-online.target mpd.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=volumio
+Group=volumio
+RuntimeDirectory=mpd-output
+RuntimeDirectoryMode=0755
+ExecStart=/usr/bin/node /data/plugins/audio_interface/mpdoutput/relay/relay.js /data/configuration/audio_interface/mpdoutput/relay.json --status /run/mpd-output/status.json --control /run/mpd-output/control.sock
+Restart=always
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=5
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/run/mpd-output
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
