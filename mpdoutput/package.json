@@ -1,35 +1,35 @@
 {
   "name": "mpdoutput",
-  "version": "2.0.5",
-  "description": "Mpd http and Icecast server output plugin for Volumio",
+  "version": "3.0.0",
+  "description": "MPD HTTP and Icecast streaming output for Volumio",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/check.js",
+    "test:backup": "node test/backup.test.js"
   },
-  "author": "Balbuze",
+  "author": "Balbuze, Just a Nerd",
   "license": "ISC",
   "volumio_info": {
-    "prettyName": "Mpd http & Icecast output",
-    "icon": "fa-music",
+    "prettyName": "MPD HTTP & Icecast output",
+    "icon": "fa-rss",
     "plugin_type": "audio_interface",
     "os": [
       "bookworm"
     ],
-    "details": "Http and Icecast server output for mpd in Volumio",
-    "changelog": "misc fixes",
+    "details": "HTTP stream from the player and Icecast publishing through a relay that survives server reboots and network cuts. The stream title is what the player shows.",
+    "changelog": "3.0.0 - Icecast via resilient relay (no more frozen playback), settings through Volumio's MPD config, on-screen title in the stream, new owner.",
     "architectures": [
       "amd64",
       "armhf"
     ]
   },
   "dependencies": {
-    "fs-extra": "^0.28.0",
     "kew": "^0.7.0",
     "v-conf": "^1.4.2"
   },
   "engines": {
-    "volumio": ">=0",
-    "node": ">=14.15.4"
+    "volumio": ">=4",
+    "node": ">=20"
   },
-  "repository": "https://github.com/volumio/volumio-plugins-sources-bookworm"
+  "repository": "https://github.com/foonerd/mpd-output"
 }
