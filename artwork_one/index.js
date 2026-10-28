@@ -365,6 +365,7 @@ ArtworkOne.prototype.cleanAmbient = function (a) {
   if (typeof a.hideVolume === 'boolean') { out.hideVolume = a.hideVolume; }
   if (typeof a.keysWake === 'boolean') { out.keysWake = a.keysWake; }   // a remote that types (Flirc) may leave the ambient screen up
   if (typeof a.transparency === 'boolean') { out.transparency = a.transparency; }   // the display's frosted glass, or solid surfaces
+  if (typeof a.queueNo === 'boolean') { out.queueNo = a.queueNo; }   // the place in the queue (#21) after the album on the ambient screen
   return Object.keys(out).length ? out : null;
 };
 

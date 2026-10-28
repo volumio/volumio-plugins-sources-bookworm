@@ -1,6 +1,6 @@
 {
   "name": "artwork_one",
-  "version": "3.2.6",
+  "version": "3.2.9",
   "description": "Artwork One: a cover-led interface for Volumio. The cover of what plays fills the screen; every control floats above it.",
   "main": "index.js",
   "author": "Michal Tamas",
@@ -19,7 +19,7 @@
       "bookworm"
     ],
     "details": "A cover-led interface for Volumio: the cover of what plays fills the screen, softly blurred, and every control floats above it on frosted glass. Three faces of Now Playing (cover, info, lyrics), an ambient display for the player's own screen, a labelled rail, Zones, and every Volumio source and setting as before. After enabling, pick Artwork One under Settings → System → User Interface layout design (or press Switch on this page).",
-    "changelog": "3.2.6: choose which library sources the menu shows and drag them into order (Appearance › Menu), for example Randomizer or Tidal; searching a Music Library folder searches the whole library, as Manifest does; the display text size applies to the ambient screen too; the whole mini player opens Now Playing; a browser's forced dark mode no longer inverts the controls; format icons for the Now Playing plugin; phone settings show the output and the network."
+    "changelog": "3.2.9: phones on their side — Now Playing with the cover beside the text and every control on one screen, a one-row mini player, a denser rail, room for the notch; a larger cover on a tablet upright; Zones columns that fit a narrower window; bit-perfect on the phone; a switch for the place in the queue on the ambient screen; lyrics asked again when LRCLIB could not be reached; nothing playing once Qobuz or Roon stop with an empty queue; Settings open their first section when the menu comes late. 3.2.8: Play in this browser keeps its name on one line beside the volume; the handle of the Zones & outputs sheet stays put while its content scrolls. 3.2.7: volume on the phone — − and + beside the slider in Zones & outputs (Volumio's own volume steps for this device), the level with a tap to mute, a slider that never jumps on a tap; browser volume while it plays; FIXED without a mixer. 3.2.6: choose which library sources the menu shows and drag them into order (Appearance › Menu), for example Randomizer or Tidal; searching a Music Library folder searches the whole library, as Manifest does; the display text size applies to the ambient screen too; the whole mini player opens Now Playing; a browser's forced dark mode no longer inverts the controls; format icons for the Now Playing plugin; phone settings show the output and the network."
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -11,6 +11,8 @@
      above and below it, so there the theme leaves no room for them (core/insets.ts sets the class). */
   --sa-t: env(safe-area-inset-top, 0px);
   --sa-b: env(safe-area-inset-bottom, 0px);
+  --sa-l: env(safe-area-inset-left, 0px);
+  --sa-r: env(safe-area-inset-right, 0px);
   /* ground & ink (spec §3.1) */
   --ground:#0a0c0e;
   --ground-deep:#080a0c;
@@ -546,6 +548,8 @@
 :root.aw-android-app {
   --sa-t: 0px;
   --sa-b: 0px;
+  --sa-l: 0px;
+  --sa-r: 0px;
 }
 
 html.aw-is-light {
@@ -1956,6 +1960,10 @@ body#artwork .aw-mm__item.active .aw-src-mark {
   color: var(--ink-3);
   text-transform: uppercase;
 }
+#np .np-bp {
+  display: none;
+}
+#np { /* the phone's (phone.scss): the top bar's badge stands for it elsewhere */ }
 #np .np-signalpath {
   margin-top: 26px;
   display: flex;
@@ -2909,9 +2917,9 @@ body#artwork #np.np--cramped .np-seg {
   }
   body#artwork #np #np-cover {
     height: auto;
-    width: min(100%, 36vh);
+    width: min(100%, max(36vh, 100vh - 560px));
     max-width: none;
-  }
+  } /* a tablet upright: what the text and the bar leave */
   body#artwork #np #np-meta {
     padding-top: 0;
   }
@@ -2922,31 +2930,7 @@ body#artwork #np.np--cramped .np-seg {
     display: none;
   }
 }
-@media (max-height: 520px) and (orientation: landscape) {
-  body#artwork #np {
-    height: auto;
-    min-height: 100%;
-    overflow: visible;
-  }
-  body#artwork #np #np-hero {
-    flex: none;
-    container-type: normal;
-  } /* size containment collapsed it to 0 here: the page scrolls, the hero is as tall as its text */
-  body#artwork #np #np-cover {
-    height: auto;
-    width: min(46vh, 40%);
-  }
-  body#artwork #np #np-footer {
-    padding-top: 18px;
-  }
-  body#artwork #np .np-seg {
-    display: none;
-  } /* no headroom for the switch in a short window: Cover only */
-  /* below this the title tracks the window's height, not its width — it keeps shrinking as the window gets shorter still */
-  body#artwork #np .np-title {
-    font-size: clamp(20px, 6.5vh, 48px);
-  }
-}
+/* a short landscape window (a phone on its side): landscape.scss */
 /* Now Playing opens as a sheet sliding up from the mini player and slides back down on the chevron */
 @keyframes aw-np-in {
   from {
@@ -3254,17 +3238,6 @@ html[data-aw-text=l] body#artwork #np #np-meta, html[data-aw-text=xl] body#artwo
   scrollbar-width: none;
 }
 
-@media (max-height: 520px) and (orientation: landscape) {
-  html[data-aw-text=s] body#artwork #np .np-title {
-    font-size: clamp(17px, 5.5vh, 41px);
-  }
-  html[data-aw-text=l] body#artwork #np .np-title {
-    font-size: clamp(25px, 8.1vh, 60px);
-  }
-  html[data-aw-text=xl] body#artwork #np .np-title {
-    font-size: clamp(31px, 10vh, 74px);
-  }
-}
 html[data-aw-text=l] body#artwork #np #np-meta::-webkit-scrollbar, html[data-aw-text=xl] body#artwork #np #np-meta::-webkit-scrollbar {
   display: none;
 }
@@ -7942,6 +7915,23 @@ body#artwork .aw-zones .aw-zone__group {
 }
 body#artwork .aw-zones .aw-zone__group option {
   color: var(--on-ink);
+}
+
+/* a narrower window (a tablet upright, a phone on its side): the columns share the width instead of overflowing it */
+@media (max-width: 1100px) and (min-width: 701px), (max-width: 1100px) and (orientation: landscape) {
+  body#artwork .aw-zones .aw-zones__cols, body#artwork .aw-zones .aw-zone {
+    grid-template-columns: 44px minmax(110px, 1fr) minmax(0, 1.3fr) minmax(120px, 170px) auto;
+    gap: 16px;
+  }
+}
+@media (max-width: 760px) and (orientation: landscape) {
+  /* a phone on its side: the track gives way to the name and the volume */
+  body#artwork .aw-zones .aw-zones__cols, body#artwork .aw-zones .aw-zone {
+    grid-template-columns: 44px minmax(0, 1fr) minmax(120px, 170px) auto;
+  }
+  body#artwork .aw-zones .aw-zones__cols > :nth-child(3), body#artwork .aw-zones .aw-zone__np {
+    display: none;
+  }
 }
 /* The settings shell (grid 216 · 1fr · 340), the nav, the side column, the landing, the search, the theme card. */
 /* the settings head is the phone's: the desktop shell has its nav */
@@ -16773,7 +16763,8 @@ body#artwork .iframe-page-title .fa .material-symbols-rounded {
   font-size: 24px;
   line-height: 24px;
   margin-left: -1.7px;
-}/* Zones & outputs sheet: a panel on the right on wide screens, a bottom sheet on phones. */
+}
+/* Zones & outputs sheet: a panel on the right on wide screens, a bottom sheet on phones. */
 body#artwork #sideMenu {
   position: relative;
   z-index: 401;
@@ -16795,9 +16786,10 @@ body#artwork .outputs__menu {
   left: auto;
   width: min(350px, 100vw - 24px);
   max-height: calc(100vh - 91px); /* what Volumio's own frame left the sheet with */
-  padding: 20px 20px calc(20px + var(--sa-b));
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
   border-radius: 18px;
   background: var(--panel-deep);
   -webkit-backdrop-filter: blur(34px) saturate(1.1);
@@ -16808,6 +16800,17 @@ body#artwork .outputs__menu {
   opacity: 1;
   transform: none;
   animation: aw-outputs-in 0.22s ease-out;
+}
+body#artwork {
+  /* the content scrolls inside the sheet: the handle (the close button on wide screens) stays put */
+}
+body#artwork .outputs__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 20px 20px calc(20px + var(--sa-b));
 }
 body#artwork .outputs__grab {
   position: absolute;
@@ -17068,11 +17071,15 @@ body#artwork .device.disabled {
     max-height: 72vh;
     border-radius: 20px 20px 0 0;
     border-bottom: 0;
-    padding-top: 26px;
     animation: aw-outputs-up 0.22s ease-out;
     will-change: transform;
   }
+  body#artwork .outputs__body {
+    padding-top: 0;
+  }
   body#artwork .outputs__grab {
+    position: relative;
+    flex: none;
     top: 0;
     left: 0;
     right: 0;
@@ -17182,19 +17189,20 @@ body#artwork .outputs__menu .aw-dsp__row .aw-local__hint {
 }
 
 body#artwork .outputs__menu .aw-dsp__page {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  border: 1px solid var(--fill-12);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--fill-14);
   background: transparent;
-  color: var(--ink-3);
+  color: var(--ink-2);
   display: grid;
   place-items: center;
   padding: 0;
   cursor: pointer;
 }
 body#artwork .outputs__menu .aw-dsp__page .material-symbols-rounded {
-  font-size: 19px;
+  font-size: 22px;
+  color: var(--ink-2);
 }
 body#artwork .outputs__menu .aw-dsp__page:hover {
   background: var(--fill-08);
@@ -17205,8 +17213,221 @@ body#artwork .outputs__menu .aw-dsp__page:focus-visible {
   outline-offset: 2px;
 }
 
-body#artwork .outputs__menu .aw-dsp__preset {
+body#artwork .outputs__menu .aw-dsp__preset.ui-select-container.ui-select-bootstrap {
   margin-top: 10px;
+  height: 52px;
+  border-radius: 14px;
+  border: 1px solid var(--fill-13);
+}
+body#artwork .outputs__menu .aw-dsp__preset.ui-select-container.ui-select-bootstrap select {
+  height: 50px;
+  line-height: 50px;
+  padding: 0 44px 0 14px;
+  font-size: 15px;
+}
+
+/* a zone card with a volume (handoff mobile-volume v2): the head (cover, name and track, the level), then
+   − · slider · + under it. The level is a 44px pill, a tap mutes; FIXED stands in for it without a mixer. */
+body#artwork .outputs__menu .aw-vcard {
+  flex-direction: column;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  gap: 12px;
+}
+
+body#artwork .outputs__menu .aw-vcard__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+body#artwork .outputs__menu .aw-vcard__head .device__thumb {
+  margin-right: 0;
+}
+
+body#artwork .outputs__menu .device__group__item.aw-vcard {
+  display: flex;
+}
+
+body#artwork .aw-vol__level {
+  flex: none;
+  height: 44px;
+  min-width: 56px;
+  padding: 0 4px 0 8px;
+  border: 0;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--ink-1);
+}
+body#artwork .aw-vol__level .material-symbols-rounded {
+  font-size: 18px;
+  color: var(--ink-1);
+}
+body#artwork .aw-vol__level .aw-vol__num {
+  min-width: 24px;
+  text-align: right;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-1);
+}
+body#artwork .aw-vol__level.is-muted .aw-vol__num {
+  color: var(--ink-dim);
+}
+body#artwork .aw-vol__level:hover {
+  background: var(--fill-06);
+}
+body#artwork .aw-vol__level:focus-visible {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 2px;
+}
+
+body#artwork .aw-vol__fixed {
+  flex: none;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--ink-muted);
+}
+
+body#artwork .aw-vol__row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 -2px;
+}
+
+body#artwork .aw-vol__step {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  background: var(--fill-06);
+  border: 0;
+  color: var(--ink-1);
+}
+body#artwork .aw-vol__step .material-symbols-rounded {
+  font-size: 24px;
+  color: var(--ink-1);
+}
+body#artwork .aw-vol__step:hover {
+  background: var(--fill-09);
+}
+body#artwork .aw-vol__step:active {
+  background: var(--fill-12);
+}
+body#artwork .aw-vol__step:focus-visible {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 2px;
+}
+
+body#artwork .aw-vol__slider {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  touch-action: none;
+  cursor: grab;
+  outline: none;
+  border-radius: 12px;
+}
+body#artwork .aw-vol__slider:active {
+  cursor: grabbing;
+}
+body#artwork .aw-vol__slider:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--ink-1);
+}
+
+body#artwork .aw-vol__track {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--fill-14);
+}
+
+body#artwork .aw-vol__fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 3px;
+  background: var(--ink-1);
+}
+
+body#artwork .aw-vol__knob {
+  position: absolute;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* the card's second line (the track, a hint) takes two lines before it shortens */
+body#artwork .outputs__menu .aw-vcard .device__meta__song, body#artwork .outputs__menu .aw-local__hint, body#artwork .outputs__menu .aw-dsp__row .aw-local__hint {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: normal;
+  text-wrap: pretty;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--ink-muted);
+}
+
+/* Play in this browser while it plays here: the switch top-right and the level under it, so the name keeps
+   its line on a narrow phone; the icon and the texts from the top; the row across the card */
+body#artwork .outputs__menu .aw-local.has-volume {
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  grid-template-areas: "icon info switch" "icon info level" "row row row";
+  row-gap: 2px;
+}
+body#artwork .outputs__menu .aw-local.has-volume .aw-local__icon {
+  grid-area: icon;
+  align-self: start;
+}
+body#artwork .outputs__menu .aw-local.has-volume .device__info {
+  grid-area: info;
+  align-self: start;
+  padding-top: 1px;
+}
+body#artwork .outputs__menu .aw-local.has-volume .aw-switch, body#artwork .outputs__menu .aw-local.has-volume .aw-local__busy {
+  grid-area: switch;
+  justify-self: end;
+  align-self: end;
+}
+body#artwork .outputs__menu .aw-local.has-volume .aw-vol__level {
+  grid-area: level;
+  justify-self: end;
+  margin-right: -4px;
+}
+body#artwork .outputs__menu .aw-local.has-volume .aw-vol__row {
+  grid-area: row;
+  margin-top: 10px;
+}
+
+/* the sheet's cards as the volume handoff (v2, final) draws them: 16px corners, 14px in (12 on the left) */
+body#artwork .outputs__menu .outputs__device {
+  padding: 14px 14px 14px 12px;
+  border-radius: 16px;
+  border-color: var(--fill-13);
 }
 /* Phone menu sheet (mockup "Mobile — Menu"): 308px sheet 14px from the edges over a dimmed screen. */
 body#artwork .aw-mm {
@@ -19553,6 +19774,20 @@ body#artwork .aw-amb.is-night .aw-amb__sleep {
     gap: 9px;
     justify-content: center;
   }
+  body#artwork #np .np-bp {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  body#artwork #np .np-bp .np-dot {
+    width: 6px;
+    height: 6px;
+  }
+  body#artwork #np .np-bp .mono {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--ok);
+  }
   body#artwork #np .np-chip {
     height: 30px;
     padding: 0 11px;
@@ -20927,6 +21162,345 @@ body#artwork .aw-amb.is-night .aw-amb__sleep {
   } /* the theme shows the pill with a heavier selector */
   body#artwork .aw-state-myvolumio-plans .box .aw-plans {
     margin-top: 12px;
+  }
+}
+/* A phone on its side (a window no taller than 520px, wider than tall): the rail and the pages as on a
+   wide screen, but everything fits the height. The rail is denser and scrolls rather than cutting its
+   last entries; the mini player is one row; Now Playing puts the cover beside the text with the seek
+   bar and the transport under the text, all on one screen — the page never scrolls its controls away.
+   The notch and the home indicator (viewport-fit=cover) pad the rail, the bar and the pages. */
+@media (max-height: 520px) and (orientation: landscape) {
+  :root {
+    --rail-item: 36px;
+    --rail-w: calc(var(--rail-w-closed) + var(--sa-l));
+    --mini-h: calc(60px + var(--sa-b));
+    --pad-screen: max(16px, calc(var(--sa-r) + 8px));
+    --pad-top: 12px;
+  }
+  html.aw-rail-open {
+    --rail-w: calc(var(--rail-w-open) + var(--sa-l));
+  }
+  :root {
+    --t-h1: clamp(24px, 7.5vh, 32px);
+    --t-h1-lg: clamp(26px, 8vh, 34px);
+    --t-h1-xl: clamp(28px, 9vh, 38px);
+  }
+  /* --- the pages: a lower head, smaller titles, the Home hero a row instead of a poster --- */
+  body#artwork .aw-head {
+    --head-pad: 14px;
+    padding-bottom: 8px;
+  }
+  body#artwork .aw-head .aw-search {
+    width: clamp(150px, 26vw, 240px);
+  } /* the tabs and the search keep one row */
+  body#artwork .aw-head .aw-search .aw-search-label {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  body#artwork .aw-browse-title {
+    font-size: clamp(26px, 8vh, 34px);
+  }
+  body#artwork #artwork-home .home-hero {
+    margin-top: 12px;
+    gap: 20px;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+  body#artwork #artwork-home .home-hero-cover img {
+    width: clamp(88px, 30vh, 140px);
+    height: clamp(88px, 30vh, 140px);
+  }
+  body#artwork #artwork-home .home-hero-title {
+    margin-top: 8px;
+  }
+  body#artwork #artwork-home .home-hero-actions {
+    margin-top: 12px;
+  }
+  body#artwork #artwork-home .home-resume {
+    height: 40px;
+  }
+  body#artwork #artwork-home .home-shelf {
+    margin-top: 24px;
+  }
+  /* --- the rail: tighter, scrolls when it is still too tall --- */
+  body#artwork #main-menu {
+    padding: 8px 0 calc(8px + var(--sa-b)) var(--sa-l);
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  body#artwork #main-menu::-webkit-scrollbar {
+    display: none;
+  }
+  body#artwork #main-menu .brand-row {
+    margin-bottom: 6px;
+  }
+  body#artwork #main-menu .brand {
+    width: 30px;
+    height: 30px;
+  }
+  body#artwork #main-menu .main-menu-list, body#artwork #main-menu .main-menu-bottom {
+    gap: 2px;
+  }
+  body#artwork #main-menu .main-menu-list {
+    flex: none;
+  }
+  body#artwork #main-menu .main-menu-bottom {
+    padding-top: 8px;
+  }
+  body#artwork #main-menu a {
+    border-radius: 11px;
+  }
+  body#artwork #main-menu a .material-symbols-rounded {
+    font-size: 21px;
+  }
+  html.aw-rail-open body#artwork #main-menu {
+    padding-left: calc((var(--rail-w-closed) - var(--rail-item)) / 2 + var(--sa-l));
+  }
+  /* --- the mini player: one row, the seek bar left to Now Playing --- */
+  body#artwork #footer-content {
+    padding: 0 max(12px, var(--sa-r) + 4px) var(--sa-b) 14px;
+  }
+  body#artwork #footer-content .mini-center {
+    gap: 0;
+  }
+  body#artwork #footer-content .mini-seek {
+    display: none;
+  }
+  body#artwork #footer-content .mini-transport .player-action-shuffle, body#artwork #footer-content .mini-transport .repeat-button {
+    display: none;
+  }
+  body#artwork #footer-content { /* on Now Playing and in the queue: room for the track */ }
+  body#artwork #footer-content .mini-transport .playPause {
+    width: 42px;
+    height: 42px;
+  }
+  body#artwork #footer-content .mini-transport .playPause .material-symbols-rounded {
+    font-size: 26px;
+  }
+  body#artwork #footer-content .mini-transport .btn-link .material-symbols-rounded {
+    font-size: 26px;
+  }
+  body#artwork #footer-content #trackInfo-compact {
+    grid-template-columns: 42px minmax(0, 1fr);
+    column-gap: 12px;
+  }
+  body#artwork #footer-content .trackInfo-album-art-wrapper, body#artwork #footer-content img.album-art {
+    width: 42px;
+    height: 42px;
+    border-radius: 5px;
+  }
+  body#artwork #footer-content #trackInfo-title {
+    font-size: 14px;
+  }
+  body#artwork #footer-content .tb-pill {
+    height: 36px;
+    padding: 0 11px;
+  }
+  /* --- Now Playing: the cover the screen's height on the left; the bar, the text, the seek bar and the
+     transport on the right. #np is the size container, so the cover is a square of its whole height. --- */
+  body#artwork #np {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    container-type: size;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    column-gap: clamp(16px, 3.4vw, 36px);
+    padding: 12px var(--pad-screen) calc(10px + var(--sa-b)) clamp(16px, 2.4vw, 28px);
+  }
+  body#artwork #np #np-topbar {
+    grid-column: 2;
+    grid-row: 1;
+    min-height: 36px;
+    gap: 10px;
+  }
+  body#artwork #np #np-topbar .np-chevron {
+    width: 36px;
+    height: 36px;
+  }
+  body#artwork #np #np-topbar .np-zone {
+    max-width: none;
+  }
+  body#artwork #np #np-topbar .np-topbar-left {
+    flex: 1 1 auto;
+  }
+  body#artwork #np #np-topbar #np-badge-slot {
+    flex: none;
+  }
+  body#artwork #np #np-topbar .np-zone {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+  body#artwork #np #np-topbar .np-badge {
+    flex: none;
+    white-space: nowrap;
+    height: 30px;
+    padding: 0 11px;
+    gap: 8px;
+    font-size: 10px;
+  }
+  body#artwork #np #np-hero {
+    display: contents;
+  }
+  body#artwork #np #np-cover {
+    grid-column: 1;
+    grid-row: 1/-1;
+    align-self: center;
+    width: min(100cqh, 44cqw);
+    height: min(100cqh, 44cqw);
+  }
+  body#artwork #np #np-meta {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: center;
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+    padding: 4px 48px 0 0;
+  }
+  /* the heart at the text's top right; no face switch, eyebrow or signal path here */
+  body#artwork #np .np-tabrow {
+    position: absolute;
+    top: 4px;
+    right: 0;
+    min-height: 0;
+    margin: 0;
+  }
+  body#artwork #np .np-heart {
+    width: 38px;
+    height: 38px;
+  }
+  body#artwork #np .np-heart .material-symbols-rounded {
+    font-size: 21px;
+  }
+  body#artwork #np .np-seg, body#artwork #np .np-eyebrow, body#artwork #np .np-signalpath {
+    display: none;
+  }
+  body#artwork #np .np-title {
+    font-size: clamp(18px, 7.4vh, 36px);
+    line-height: 1.05;
+  }
+  body#artwork #np:not(.np--info) #np-meta:not(.np-meta--lyrics) .np-artist {
+    font-size: clamp(14px, 4.2vh, 19px);
+    margin-top: 6px;
+  }
+  body#artwork #np:not(.np--info) #np-meta:not(.np-meta--lyrics) .np-album {
+    font-size: clamp(12px, 3.6vh, 15px);
+    margin-top: 3px;
+  }
+  body#artwork #np:not(.np--info) #np-meta:not(.np-meta--lyrics) .np-quality {
+    margin-top: 3px;
+  }
+  body#artwork #np:not(.np--info) #np-meta:not(.np-meta--lyrics) .np-external {
+    margin-top: 8px;
+    padding: 8px 12px;
+  }
+  body#artwork #np .np-chip {
+    height: 24px;
+    padding: 0 9px;
+  }
+  body#artwork #np #np-footer {
+    grid-column: 2;
+    grid-row: 3;
+    margin-top: 0;
+    padding-top: 6px;
+    container-type: inline-size;
+  }
+  body#artwork #np #np-seek .artwork-seek {
+    grid-template-columns: 38px minmax(0, 1fr) 38px;
+    column-gap: 10px;
+  }
+  body#artwork #np #np-seek .seek-time {
+    font-size: 11px;
+  }
+  body#artwork #np #np-footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 4px;
+  }
+  body#artwork #np #np-upnext, body#artwork #np .np-volume, body#artwork #np .tb-pill__name {
+    display: none;
+  }
+  body#artwork #np #np-transport #playerButtons {
+    gap: clamp(12px, 2.6vw, 24px);
+  }
+  body#artwork #np #np-transport .btn-link .material-symbols-rounded {
+    font-size: 30px;
+  }
+  body#artwork #np #np-transport .player-action-shuffle .material-symbols-rounded, body#artwork #np #np-transport .repeat-button .material-symbols-rounded {
+    font-size: 22px;
+  }
+  body#artwork #np #np-transport .playPause {
+    width: clamp(44px, 15vh, 56px);
+    height: clamp(44px, 15vh, 56px);
+  }
+  body#artwork #np #np-transport .playPause .material-symbols-rounded {
+    font-size: 28px;
+  }
+  body#artwork #np #np-footer-right {
+    gap: 8px;
+  }
+  /* too narrow beside the cover for shuffle and repeat as well as the zone and the queue: those two are in the queue */
+  @container (max-width: 440px) {
+    body#artwork #np #np-transport .player-action-shuffle, body#artwork #np #np-transport .repeat-button {
+      display: none;
+    }
+  }
+  /* --- the notch: the sheets, the menu and the queue page keep clear of it --- */
+  body#artwork .outputs__menu {
+    right: max(12px, var(--sa-r));
+  }
+  body#artwork .aw-queue {
+    left: max(12px, var(--sa-l));
+    right: max(12px, var(--sa-r));
+    top: 10px;
+    bottom: max(10px, var(--sa-b));
+  } /* over the mini player: the height is short enough */
+  body#artwork .aw-mm__sheet {
+    left: max(14px, var(--sa-l));
+    top: 10px;
+    bottom: 10px;
+  }
+  body#artwork #playQueue {
+    padding-right: var(--sa-r);
+  }
+  body#artwork #np .tb-pill {
+    height: 38px;
+    padding: 0 11px;
+  }
+  /* larger text on the display: the title tracks the height here too */
+  html[data-aw-text=s] body#artwork #np .np-title {
+    font-size: clamp(16px, 6.3vh, 31px);
+  }
+  html[data-aw-text=l] body#artwork #np .np-title {
+    font-size: clamp(22px, 9.2vh, 45px);
+  }
+  html[data-aw-text=xl] body#artwork #np .np-title {
+    font-size: clamp(26px, 11.4vh, 56px);
+  }
+}
+/* very low (a phone app with its own bar on top): the album line and the chip step aside for the title */
+@media (max-height: 300px) and (orientation: landscape) {
+  body#artwork #np #np-meta .np-quality, body#artwork #np #np-meta .np-album {
+    display: none;
+  }
+  body#artwork #np #np-transport .player-action-shuffle, body#artwork #np #np-transport .repeat-button {
+    display: none;
+  }
+  /* the queue sheet: the list keeps the room — no actions row (shuffle, repeat, save and clear stay on the queue page) and no footer */
+  body#artwork .aw-queue .aw-queue__chips, body#artwork .aw-queue .aw-queue__foot {
+    display: none;
+  }
+  body#artwork .aw-queue .aw-queue__head {
+    padding-top: 14px;
+  }
+  body#artwork .aw-queue .aw-queue__sechead {
+    margin-top: 10px;
   }
 }/* Transparency off (core/transparency.ts sets data-aw-solid on the root): no surface blurs what is under it.
    The bars, panels and menus draw nearly solid instead, the page head darkens the top with a plain gradient,
