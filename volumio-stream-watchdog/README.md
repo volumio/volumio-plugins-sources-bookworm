@@ -116,7 +116,7 @@ sudo journalctl -fu volumio | grep StreamWatchdog
 
 ## Development
 
-Full implementation plan, state machine design, marketplace submission checklist, and phased implementation guide are in [`docs/development-plan.md`](docs/development-plan.md).
+The original (1.x) implementation plan and the marketplace submission checklist are in [`docs/development-plan.md`](docs/development-plan.md); the 2.0 design is described in `CLAUDE.md`.
 
 ### Tests
 
