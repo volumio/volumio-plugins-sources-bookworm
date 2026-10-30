@@ -1,64 +1,43 @@
 # volumio-stream-watchdog
 
-A Volumio 4 plugin that detects genuine streaming failure — not just network loss — and automatically switches to a curated local playlist. When your stream comes back, the plugin resumes it automatically.
+A Volumio 4 plugin that keeps your web radio playing. If the stream stops, it reissues it; if that does not help, it switches to a curated local playlist, always shuffled; and when the stream comes back, it resumes it automatically.
 
 ## How it works
 
-Most "offline fallback" approaches probe a generic host like `8.8.8.8` via TCP. That misses a large class of real failures: your router is up, DNS works fine, but the radio station server is down or your ISP is dropping streaming traffic selectively. The correct signal is Volumio's own player state.
+Most "offline fallback" approaches probe a generic host like `8.8.8.8`. That misses the failures that matter: the router is up, DNS works, but the station's server restarted, or it answers while sending no audio, or Volumio's queue died after an error and nothing is playing at all. The only reliable signal is what the player is actually doing.
 
-This plugin uses two detection layers that must both agree before any action is taken:
-
-**Layer 1 — State Watcher (reactive):** Subscribes to Volumio's internal `pushState` socket.io events. When the player was streaming (`stream: true`) and transitions to `stop` without a user-initiated command, it marks a candidate failure.
-
-**Layer 2 — Stream Probe (proactive):** On a configurable interval, makes an HTTP HEAD request directly to the stream URL. Only when both layers confirm failure does the plugin act.
-
-This combination eliminates false positives from brief network hiccups, user-initiated stops, and library scans.
-
-### State machine
+So the plugin runs one small loop. Every 5 seconds it looks at the player and asks a single question — *should the radio be playing, and is it?* — and takes one step:
 
 ```
-IDLE ──► WATCHING ──► SUSPECT ──► FALLBACK
-           ▲                          │
-           └──────────────────────────┘
-                  (stream restored)
+nothing to watch ── a stream starts playing ──► WATCHING
+WATCHING ── stopped ──► wait one tick ──► reissue the stream (twice) ──► FALLBACK
+FALLBACK ── offline playlist plays, shuffled
+         ── every Restore Check Interval: does the stream answer? ──► play it
+         ── stream playing again ──► WATCHING
+         ── nothing playing ──► play the offline playlist again
 ```
 
-- **IDLE** — No stream playing. Plugin is dormant.
-- **WATCHING** — Stream is active. Probes run on `streamCheckInterval`.
-- **SUSPECT** — Unexpected stop detected or first probe failure. Waits one more cycle.
-- **FALLBACK** — Failure confirmed. Local playlist plays. Restoration probes run on `restoreCheckInterval`.
+Nothing ever waits for an event to confirm that a step worked: the next tick checks. If a restore lands on a station that answers but dies a second later — which is exactly what happens in the minute after many stations restart — the plugin is back on the offline playlist ten seconds later and tries again at the next interval. There is no state in which it can sit doing nothing while the room is silent.
 
-A probe that passes while in SUSPECT clears the alarm, but it only proves the
-*station* is reachable — it says nothing about whether your speakers came back.
-So on the way back to WATCHING the plugin waits a few seconds (long enough for
-Volumio's own retry to win, in which case it does nothing) and then checks the
-player really is in `play`. If the stream is reachable but playback is dead,
-it reissues the stream in place — no snapshot, no offline playlist, no
-FALLBACK. If three consecutive nudges fail to stick, the station is treated as
-genuinely broken and the full fallback takes over. A stop you asked for is
-never answered with a restart.
+**Your Stop is respected.** Pressing Stop (in the UI, the app, or anything that calls Volumio's stop) tells the plugin to stop looking after the stream. Switching to local music, Spotify or any non-stream source does the same. Pausing is left alone.
+
+**The offline playlist is always shuffled — the first track too.** Outages are usually short; played in order, the same few tracks would open every outage.
 
 ### What happens on failure
 
-1. Current stream URI and queue are snapshotted
-2. A warning toast appears: *"Stream lost — switching to local music."*
-3. Volumio stops and clears the queue
-4. A Volumio playlist named `"Offline"` (configurable) starts playing
-5. If no such playlist exists, the plugin scans `music-library/INTERNAL` as a fallback
-
-### What happens when the stream is reachable but silent
-
-1. A probe passes while in SUSPECT, so the plugin returns to WATCHING
-2. After a short grace period it confirms the player is actually in `play`
-3. If it is not, the watched stream is reissued — logged as
-   `restream_recovery_total reason=stopped_after_probe_pass`
-4. After three consecutive failed attempts, the plugin escalates to FALLBACK
+1. The stream is reissued up to twice, a few seconds apart — often that is all it takes
+2. If it still is not playing, a warning toast appears: *"Stream lost — switching to local music."*
+3. The playlist named `"Offline"` (configurable) is shuffled and played; without one, the local library under `music-library/INTERNAL` is used
 
 ### What happens on restore
 
-1. Restoration probe succeeds twice in a row
-2. A success toast appears: *"Stream restored — resuming."*
-3. The original stream resumes automatically (if auto-restore is enabled)
+1. While the playlist plays, the plugin checks the stream every Restore Check Interval
+2. When the stream answers, it is played; once it is actually playing, a success toast appears: *"Stream is back — resumed."*
+3. If it dies right away, the offline playlist comes back and the plugin tries again later. Each try that dies doubles the wait before the next one (30 s → 1 → 2 → 4 → 8 → 10 min at most), so a station that answers but sends no audio for hours does not cut the music every half minute. A check where the stream does not answer at all costs nothing audible and does not count. The wait goes back to the interval as soon as the radio holds
+
+### What the plugin does not do
+
+It does not start playback after a reboot — use the AutoStart plugin for that. Once the radio is playing, the watchdog takes over.
 
 ## Requirements
 
@@ -115,11 +94,9 @@ Open the plugin settings page in Volumio (**Plugins → Installed → Stream Wat
 
 | Setting | Default | Description |
 |---|---|---|
-| Offline Playlist Name | `Offline` | Name of the Volumio playlist to play when stream fails |
-| Stream Check Interval (seconds) | `30` | How often to probe the stream URL while watching (minimum: 15) |
-| Restore Check Interval (seconds) | `60` | How often to probe while in fallback mode (minimum: 30) |
+| Offline Playlist Name | `Offline` | Volumio playlist to play, shuffled, when the stream fails |
+| Restore Check Interval (seconds) | `60` | While the offline playlist plays, how often to check whether the stream is back (minimum: 30). Doubles after each try that dies, up to 10 min |
 | Auto-Restore | `on` | Automatically resume the original stream when it returns |
-| Shuffle Offline Playlist | `on` | Play the offline playlist in random order. Outages are usually short, so in order the same first tracks play every time |
 
 ## Logs
 
@@ -131,14 +108,15 @@ sudo journalctl -fu volumio | grep StreamWatchdog
 
 ## Architecture notes
 
+- `lib/decide.js` holds the whole policy as one pure function; `index.js` is the Volumio shell around it
 - No external npm dependencies — `http`/`https` probing uses Node.js built-ins
-- `socket.io-client` is referenced from Volumio's own `node_modules` to avoid version conflicts
+- The plugin never calls Volumio's stop itself; it switches sources with `replaceAndPlay`, which is how it can tell your Stop from its own actions
 - The plugin does not write to `/volumio` or `/myvolumio`
-- All timers and socket connections are cleanly torn down on `onStop`
+- One timer (the tick); torn down on `onStop`
 
 ## Development
 
-Full implementation plan, state machine design, marketplace submission checklist, and phased implementation guide are in [`docs/development-plan.md`](docs/development-plan.md).
+The original (1.x) implementation plan and the marketplace submission checklist are in [`docs/development-plan.md`](docs/development-plan.md); the 2.0 design is described in `CLAUDE.md`.
 
 ### Tests
 
@@ -146,8 +124,8 @@ The test suite uses Node's built-in runner (`node:test`) — no test dependencie
 
 ```bash
 npm install        # installs kew + v-conf
-npm run test:l0    # unit tests (state machine, config)
-npm run test:l1    # integration tests (HTTP stream probe)
+npm run test:l0    # unit tests (the policy table, the shell, the offline playlist)
+npm run test:l1    # integration tests (the whole loop, the HTTP probe)
 npm test           # both
 ```
 
