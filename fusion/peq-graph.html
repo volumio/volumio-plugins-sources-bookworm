@@ -198,7 +198,6 @@
 
     .header-btn {
       display: inline-flex;
-      flex-shrink: 0;
       align-items: center;
       justify-content: center;
       min-height: 36px;
@@ -209,7 +208,6 @@
       color: var(--content-primary);
       font: 500 12px/1 var(--font-sans);
       letter-spacing: 0.01em;
-      white-space: nowrap;
       cursor: pointer;
       transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
       touch-action: manipulation;
@@ -780,7 +778,7 @@
         return {
           bg: style.getPropertyValue('--bg-primary').trim(),
           grid: style.getPropertyValue('--border-default').trim(),
-          gridSoft: light ? 'rgba(18, 23, 23, 0.16)' : style.getPropertyValue('--border-subtle').trim(),
+          gridSoft: style.getPropertyValue('--border-subtle').trim(),
           text: style.getPropertyValue('--content-primary').trim(),
           secondary: style.getPropertyValue('--content-secondary').trim(),
           axis: style.getPropertyValue('--content-tertiary').trim(),

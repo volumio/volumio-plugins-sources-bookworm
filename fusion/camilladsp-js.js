@@ -1,6 +1,6 @@
 "use strict";
 
-const { execSync } = require("child_process");
+const { execFile } = require("child_process");
 const { spawn } = require("child_process");
 const fs = require("fs");
 
@@ -100,14 +100,20 @@ let CamillaDsp = function (logger) {
             // In case of error, cleanup the FIFO before starting, so it won't be
             // kept in wait state and stall the whole pipeline
             if (code > 0) {
-                try {
-                    execSync("/bin/dd if=/tmp/fusiondspfifo of=/dev/null bs=32k iflag=nonblock");
-                } catch (e) {
-                    // pass
-                }
+                execFile("/bin/dd", [
+                    "if=/tmp/fusiondspfifo",
+                    "of=/dev/null",
+                    "bs=32k",
+                    "iflag=nonblock"
+                ], function(error) {
+                    if (error) {
+                        logger.debug(`Could not flush CamillaDSP FIFO before respawn: ${error.message}`);
+                    }
+                    processSpawn();
+                });
+            } else {
+                processSpawn();
             }
-
-            processSpawn();
 
         }, timeout);
 
@@ -131,6 +137,9 @@ let CamillaDsp = function (logger) {
     let processSpawn = function() {
 
         let args;
+
+        if (run === false)
+            return false;
 
         if (camilla !== null)
             return false;
@@ -293,6 +302,39 @@ let CamillaDsp = function (logger) {
     };
 
     /**
+     * Ask CamillaDSP to reload its configuration using its documented SIGHUP
+     * handler, without requiring the optional websocket listener.
+     */
+    this.reload = function() {
+
+        return new Promise(function(resolve, reject) {
+
+            if (run === false || camilla === null || camilla.exitCode !== null || camilla.signalCode !== null) {
+                reject(new Error("CamillaDSP is not running; cannot reload configuration"));
+                return;
+            }
+
+            try {
+
+                if (camilla.kill("SIGHUP") === false) {
+                    reject(new Error("Could not send SIGHUP to CamillaDSP"));
+                    return;
+                }
+
+                logger.info("CamillaDSP configuration reload requested with SIGHUP");
+                resolve();
+
+            } catch (e) {
+
+                reject(e);
+
+            }
+
+        });
+
+    };
+
+    /**
      * Public function to terminate the camilladsp process and stop
      * it from respawning
      */
@@ -309,4 +351,3 @@ let CamillaDsp = function (logger) {
 };
 
 module.exports = { CamillaDsp };
-

@@ -1,5 +1,5 @@
 /*--------------------
-// FusionDsp plugin for volumio 4. By balbuze September 2026
+// FusionDsp plugin for volumio 4. By balbuze October 2026
 Camilladsp v4.1.3
 contribution : Nerd, Paolo Sabatino, squadgazzz
 Multi Dsp features
@@ -11,8 +11,8 @@ Based on CamillaDsp
 
 const io = require('socket.io-client');
 const fs = require('fs-extra');
-const exec = require('child_process').exec;
-const execSync = require('child_process').execSync;
+const execFile = require('child_process').execFile;
+const spawn = require('child_process').spawn;
 const libQ = require('kew');
 const net = require('net');
 const path = require('path');
@@ -30,6 +30,7 @@ const hrtffilterpath = "/data/plugins/audio_interface/fusiondsp/hrtf-filters/";
 const toolspath = "INTERNAL/FusionDsp/tools/";
 const presetFolder = "/data/INTERNAL/FusionDsp/presets/";
 const eq15range = [25, 40, 63, 100, 160, 250, 400, 630, 1000, 1600, 2500, 4000, 6300, 10000, 16000]//freq for graphic eq
+const defaultEq15Gains = eq15range.map(() => 0).join(',');
 const baseQ = 1.4
 //const coefQ = [baseQ + 0.5, baseQ + 0.5, baseQ + 0.5, baseQ + 0.5, baseQ + 0.5, baseQ + 0.40, baseQ + 0.40, baseQ + 0.28, baseQ + 0.28, baseQ + 0.38, baseQ + 0.38, baseQ + 0.38, baseQ + 0.49, baseQ + 0.49, baseQ + 0.49]//Q for graphic EQ
 //const coefQ = [1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85, 1.85]
@@ -42,16 +43,118 @@ const coefQ = [
 const eq3range = [185, 1300, 5500]// freq for Eq3
 const coefQ3 = [0.82, 0.4, 0.82]//Q for graphic EQ3
 const eq3type = ["Lowshelf2", "Peaking", "Highshelf2"] //Filter type for EQ3
+const getEq15FilterType = (index) => {
+  if (index === 0) return 'Lowshelf2';
+  if (index === eq15range.length - 1) return 'Highshelf2';
+  return 'Peaking';
+};
+const buildEq15Filters = (gains, scope, mutes, bypassed) => {
+  const gainValues = Array.isArray(gains) ? gains : String(gains).split(',');
+  return gainValues.map((gain, index) => {
+    const eqval = (bypassed || mutes[index] === '1') ? 0 : gain;
+    return `Eq${index}|${getEq15FilterType(index)}|${scope}|${eq15range[index]},${eqval},${coefQ[index]}|`;
+  }).join('');
+};
 const sv = 34300 // sound velocity cm/s
 const logPrefix = "FusionDsp - "
 const fileStreamParams = "/tmp/fusiondsp_stream_params.log";
 const peqGraphPort = 10015;
+const startupDelayMs = 9000;
 
-// Debounce for config file write + Reload (to coalesce rapid UI/config changes)
-let configReloadDebounceTimeout = null;
 const configReloadDebounceMs = 250;
+const camillaReloadTimeoutMs = 10000;
+const maxPeqRequestBodyBytes = 32 * 1024;
 
 const { computePeakCombinedGain } = require('./biquad-utils');
+
+function runFile(command, args, options) {
+  return new Promise((resolve, reject) => {
+    execFile(command, args, options || {}, (error, stdout, stderr) => {
+      if (error) {
+        error.stderr = stderr;
+        reject(error);
+        return;
+      }
+      resolve({ stdout, stderr });
+    });
+  });
+}
+
+function waitForStartupDelay(plugin, delayMs) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      plugin._startupDelayTimer = null;
+      plugin._resolveStartupDelay = null;
+      resolve(true);
+    }, delayMs);
+    plugin._startupDelayTimer = timer;
+    plugin._resolveStartupDelay = () => {
+      clearTimeout(timer);
+      plugin._startupDelayTimer = null;
+      plugin._resolveStartupDelay = null;
+      resolve(false);
+    };
+  });
+}
+
+function isSameOriginRequest(req, configuredAddress, port) {
+  const requestOrigin = req.headers.origin;
+  try {
+    const requestUrl = new URL(`http://${req.headers.host}`);
+    const configuredHost = new URL(`http://${configuredAddress}`).hostname.toLowerCase();
+    const requestHost = requestUrl.hostname.toLowerCase();
+    const isTrustedHost = requestHost === configuredHost ||
+      requestHost === 'localhost' ||
+      requestHost === '127.0.0.1' ||
+      requestHost === '[::1]';
+    if (!isTrustedHost || Number(requestUrl.port || 80) !== port ||
+      requestUrl.username !== '' || requestUrl.password !== '') {
+      return false;
+    }
+
+    if (!requestOrigin) return req.method !== 'POST';
+
+    const originUrl = new URL(requestOrigin);
+    return originUrl.protocol === 'http:' &&
+      originUrl.origin === requestUrl.origin &&
+      originUrl.username === '' &&
+      originUrl.password === '';
+  } catch (error) {
+    return false;
+  }
+}
+
+function readPeqRequestBody(req, res, callback) {
+  const contentLength = Number(req.headers['content-length']);
+  if (Number.isFinite(contentLength) && contentLength > maxPeqRequestBodyBytes) {
+    res.writeHead(413, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Request body too large' }));
+    req.resume();
+    return;
+  }
+
+  let bodyBytes = 0;
+  let tooLarge = false;
+  const chunks = [];
+  req.on('data', (chunk) => {
+    bodyBytes += chunk.length;
+    if (bodyBytes > maxPeqRequestBodyBytes) {
+      tooLarge = true;
+      chunks.length = 0;
+      if (!res.headersSent) {
+        res.writeHead(413, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Request body too large' }));
+      }
+      return;
+    }
+    if (!tooLarge) chunks.push(chunk);
+  });
+  req.on('end', () => {
+    if (!tooLarge && !res.writableEnded) {
+      callback(Buffer.concat(chunks).toString('utf8'));
+    }
+  });
+}
 
 // Define the Parameq class
 module.exports = FusionDsp;
@@ -78,110 +181,172 @@ FusionDsp.prototype.onVolumioStart = function () {
 FusionDsp.prototype.onStart = function () {
   const self = this;
 
-  let defer = libQ.defer();
-  self.socket = io.connect('http://localhost:3000');
+  if (self._startupPromise) {
+    return libQ.resolve(self._startupPromise);
+  }
+  try {
+    self._isStopping = false;
+    self.isStopping = false;
+    self.socket = io.connect('http://localhost:3000');
 
+    if (!self.checkCamillaBinary()) {
+      const error = new Error(logPrefix + " CamillaDSP binary check failed. Plugin startup aborted.");
+      self.logger.error(logPrefix + error.message);
+      self.socket.disconnect();
+      self.socket = null;
+      return libQ.reject(error);
+    }
+    self.config.set('testclipping', false);
 
-  if (!self.checkCamillaBinary()) {
-    const error = new Error(logPrefix + " CamillaDSP binary check failed. Plugin startup aborted.");
-    self.logger.error(logPrefix + error.message);
+    self.commandRouter.loadI18nStrings();
+    self.commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'updateALSAConfigFile');
 
-    defer.reject(error);
-    return defer.promise;
+    // if mixer set to none, do not show loudness settings
+    var mixt = this.getAdditionalConf('audio_interface', 'alsa_controller', 'mixer_type');
+
+    self.logger.info(logPrefix + ' mixtype--------------------- ' + mixt)
+    if (mixt == 'None') {
+      self.config.set('loudness', false)
+      self.config.set('showloudness', false)
+
+    } else {
+      self.config.set('showloudness', true)
+    }
+  } catch (error) {
+    if (self.socket) {
+      self.socket.disconnect();
+      self.socket = null;
+    }
+    return libQ.reject(error);
   }
 
-  self.commandRouter.loadI18nStrings();
-  self.commandRouter.executeOnPlugin('audio_interface', 'alsa_controller', 'updateALSAConfigFile');
+  const startupPromise = (async function () {
+    try {
+      if (!(await waitForStartupDelay(self, startupDelayMs)) || self._isStopping) {
+        return;
+      }
 
-  // if mixer set to none, do not show loudness settings
-  var mixt = this.getAdditionalConf('audio_interface', 'alsa_controller', 'mixer_type');
+      await self.loadalsastuff();
+      if (self._isStopping) return;
 
-  self.logger.info(logPrefix + ' mixtype--------------------- ' + mixt)
-  if (mixt == 'None') {
-    self.config.set('loudness', false)
-    self.config.set('showloudness', false)
+      await self._doCreateCamilladspfile(null, true);
+      if (self._isStopping) return;
 
-  } else {
-    self.config.set('showloudness', true)
-  }
+      self.camillaProcess = new CamillaDsp(self.logger);
+      self.camillaProcess.start();
 
-  // Single 2s timeout with defined order: setup ALSA, write config, start CamillaDSP, then init rest
-  setTimeout(function () {
-    // 1. Setup ALSA stuff (FIFO, log files)
-    self.loadalsastuff();
+      await self.hwinfo();
+      if (self._isStopping) return;
 
-    // 2. Write config file BEFORE starting CamillaDSP so it starts with current config
-    self._doCreateCamilladspfile(null);
+      await self.purecamillagui();
+      if (self._isStopping) return;
 
-    // 3. Start CamillaDSP process (reads the config we just wrote)
-    self.camillaProcess = new CamillaDsp(self.logger);
-    self.camillaProcess.start();
+      self.getIP();
+      if (['PEQ', 'EQ15', '2XEQ15'].includes(self.config.get('selectedsp'))) {
+        self.startPeqGraphServer();
+      }
+      self.volumioState();
+      self.reportFusionEnabled();
+      self.checksamplerate();
 
-    // 4. Initialize everything else
-    self.hwinfo();
-    self.purecamillagui();
-    self.getIP();
-    if ((self.config.get('selectedsp') === 'PEQ') || (self.config.get('selectedsp') === 'EQ15') || (self.config.get('selectedsp') === '2XEQ15')) {
-      self.startPeqGraphServer();
+      if (self.config.get('loudness')) {
+        self.sendvolumelevel();
+      }
+    } catch (error) {
+      self.logger.error(logPrefix + ' Startup failed: ' + error.message);
+      if (self.camillaProcess) {
+        self.camillaProcess.stop();
+        self.camillaProcess = null;
+      }
+      self.stopPeqGraphServer();
+      try {
+        await runFile('/usr/bin/sudo', ['/bin/systemctl', 'stop', 'fusiondsp.service'], {
+          uid: 1000,
+          gid: 1000
+        });
+      } catch (stopError) {
+        self.logger.error(logPrefix + ' Failed to stop FusionDsp service after startup error: ' + stopError.message);
+      }
+      if (self.socket) {
+        self.socket.off();
+        self.socket.disconnect();
+        self.socket = null;
+      }
+      throw error;
     }
-    self.volumioState();
-    self.reportFusionEnabled();
-    self.checksamplerate();
+  })();
+  self._startupPromise = startupPromise;
 
-    // 5. Send volume level if loudness is enabled
-    if (self.config.get('loudness')) {
-      self.sendvolumelevel();
+  return libQ.resolve(startupPromise.finally(() => {
+    if (self._startupPromise === startupPromise) {
+      self._startupPromise = null;
     }
-  }, 9000);
-
-  defer.resolve();
-  return defer.promise;
+  }));
 };
 
 FusionDsp.prototype.onStop = function () {
   const self = this;
-  let defer = libQ.defer();
-  self.socket.emit('pause');
-  // Stop WebSocket monitoring and clear intervals
-  if (this.stopClippedSamplesMonitor) {
-    this.logger.info(logPrefix + ' Stopping clipped samples monitor');
-    this.stopClippedSamplesMonitor();
-  }
 
-  if (self.socket && self._volumioStateHandler) {
-    self.socket.off('pushState', self._volumioStateHandler);
-    self._volumioStateHandler = null;
-  }
-  self._lastVolumioState = null;
-
-  // Disconnect socket
-  if (self.socket) {
-    self.socket.off();
-  }
-
-  // Stop CamillaDsp process
-  self.logger.info(logPrefix + ' Stopping FusionDsp service');
-  if (self.camillaProcess) {
-    self.camillaProcess.stop();
-    self.camillaProcess = null;
-  }
-
-  self.stopPeqGraphServer();
-
-  // Stop the FusionDsp system service
-  exec("/usr/bin/sudo /bin/systemctl stop fusiondsp.service", {
-    uid: 1000,
-    gid: 1000
-  }, function (error, stdout, stderr) {
-    if (error) {
-      self.logger.info(logPrefix + ' Error in stopping FusionDsp service: ' + error);
-    } else {
-      self.reportFusionDisabled();
+  return libQ.resolve((async function () {
+    self._isStopping = true;
+    if (self._configReloadDebounceTimeout) {
+      clearTimeout(self._configReloadDebounceTimeout);
+      self._configReloadDebounceTimeout = null;
+      const error = new Error('Plugin stopped before the pending CamillaDSP reload completed');
+      (self._configReloadWaiters || []).forEach((waiter) => waiter.reject(error));
+      self._configReloadWaiters = [];
     }
-  });
+    if (self._resolveStartupDelay) {
+      self._resolveStartupDelay();
+    }
 
-  defer.resolve();
-  return defer.promise;
+    if (self._startupPromise) {
+      try {
+        await self._startupPromise;
+      } catch (error) {
+        self.logger.error(logPrefix + ' Startup did not complete before shutdown: ' + error.message);
+      }
+    }
+
+    if (self.socket) {
+      self.socket.emit('pause');
+    }
+    // Stop WebSocket monitoring and clear intervals
+    if (self.stopClippedSamplesMonitor) {
+      self.logger.info(logPrefix + ' Stopping clipped samples monitor');
+      self.stopClippedSamplesMonitor();
+    }
+
+    if (self.socket && self._volumioStateHandler) {
+      self.socket.off('pushState', self._volumioStateHandler);
+      self._volumioStateHandler = null;
+    }
+    self._lastVolumioState = null;
+
+    if (self.socket) {
+      self.socket.off();
+      self.socket.disconnect();
+      self.socket = null;
+    }
+
+    self.logger.info(logPrefix + ' Stopping FusionDsp service');
+    if (self.camillaProcess) {
+      self.camillaProcess.stop();
+      self.camillaProcess = null;
+    }
+
+    self.stopPeqGraphServer();
+
+    try {
+      await runFile('/usr/bin/sudo', ['/bin/systemctl', 'stop', 'fusiondsp.service'], {
+        uid: 1000,
+        gid: 1000
+      });
+      self.reportFusionDisabled();
+    } catch (error) {
+      self.logger.error(logPrefix + ' Error in stopping FusionDsp service: ' + error.message);
+    }
+  })());
 };
 
 FusionDsp.prototype.checkCamillaBinary = function () {
@@ -237,50 +402,74 @@ FusionDsp.prototype.getI18nFile = function (langCode) {
 
 FusionDsp.prototype.loadalsastuff = function () {
   const self = this;
-  var defer = libQ.defer();
-  try {
-    execSync(`/bin/touch ${fileStreamParams} && /bin/chmod 666 ${fileStreamParams} && /bin/touch /tmp/camilladsp.log && /bin/chmod 666 /tmp/camilladsp.log && /usr/bin/mkfifo -m 646 /tmp/fusiondspfifo`, {
-      uid: 1000,
-      gid: 1000
-    });
-    defer.resolve();
-  } catch (err) {
-    self.logger.error(logPrefix + ' ----failed to create fusiondspfifo :' + err);
-    defer.reject(err);
-  }
-  return defer.promise;
+  return (async function () {
+    try {
+      await fs.ensureFile(fileStreamParams);
+      await fs.chmod(fileStreamParams, 0o666);
+      await fs.ensureFile('/tmp/camilladsp.log');
+      await fs.chmod('/tmp/camilladsp.log', 0o666);
+      const fifoPath = '/tmp/fusiondspfifo';
+      let fifoStats;
+
+      try {
+        fifoStats = await fs.lstat(fifoPath);
+      } catch (err) {
+        if (err.code !== 'ENOENT') throw err;
+
+        try {
+          await runFile('/usr/bin/mkfifo', ['-m', '646', fifoPath], {
+            uid: 1000,
+            gid: 1000
+          });
+        } catch (createError) {
+          // Another plugin process may have created it between lstat and mkfifo.
+          try {
+            fifoStats = await fs.lstat(fifoPath);
+          } catch {
+            throw createError;
+          }
+          if (!fifoStats.isFIFO()) throw createError;
+        }
+        if (!fifoStats) {
+          fifoStats = await fs.lstat(fifoPath);
+        }
+      }
+
+      if (!fifoStats.isFIFO()) {
+        throw new Error(fifoPath + ' exists but is not a FIFO');
+      }
+      await fs.chmod(fifoPath, 0o646);
+    } catch (err) {
+      self.logger.error(logPrefix + ' ----failed to create fusiondspfifo :' + err);
+      throw err;
+    }
+  })();
 };
 //------------------Hw detection--------------------
 
 //here we detect hw info
 FusionDsp.prototype.hwinfo = function () {
   const self = this;
-  let defer = libQ.defer();
 
-  let output_device = this.getAdditionalConf('audio_interface', 'alsa_controller', 'outputdevice');
-  let nchannels;
-  let formats;
-  let hwinfo;
-  let samplerates;
-  try {
-    execSync('/data/plugins/audio_interface/fusiondsp/hw_params ' + 'volumioHw' + ' >/data/configuration/audio_interface/fusiondsp/hwinfo.json ', {
-      uid: 1000,
-      gid: 1000
-    });
-    hwinfo = fs.readFileSync('/data/configuration/audio_interface/fusiondsp/hwinfo.json');
+  return runFile('/data/plugins/audio_interface/fusiondsp/hw_params', ['volumioHw'], {
+    uid: 1000,
+    gid: 1000,
+    encoding: 'utf8'
+  }).then(async function (result) {
+    const hwinfo = result.stdout;
+    await fs.writeFile('/data/configuration/audio_interface/fusiondsp/hwinfo.json', hwinfo, 'utf8');
     try {
       const hwinfoJSON = JSON.parse(hwinfo);
-      samplerates = hwinfoJSON.samplerates.value;
-      self.logger.info(logPrefix + ' AAAAAAAAAAAAAA-> ' + samplerates + ' <-AAAAAAAAAAAAA');
+      const samplerates = hwinfoJSON.samplerates.value;
+      self.logger.info(logPrefix + ' Detected hardware sample rates: ' + samplerates);
       self.config.set('probesmplerate', samplerates);
     } catch (err) {
       self.logger.error(logPrefix + ' Error reading hwinfo.json, detection failed :', err);
     }
-    defer.resolve();
-  } catch (err) {
+  }).catch((err) => {
     self.logger.error(logPrefix + ' ----Hw detection failed :' + err);
-    defer.reject(err);
-  }
+    throw err;
+  });
 };
 
 FusionDsp.prototype.stopClippedSamplesMonitor = function () {
@@ -626,25 +815,8 @@ function addPeqButtons(self, uiconf, ncontent) {
     doc: self.commandRouter.getI18nString('SHOW_PEQ_CURVE_DOC'),
     onClick: { type: 'openUrl', url: `http://${IPaddress}:10015` }
 
-    // visibleIf: { field: 'showeq', value: true }
   };
-  /*    }
-  const showPeqCurveButton = {
-    id: 'showpeqcurve',
-    element: 'button',
-    label: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
-    doc: self.commandRouter.getI18nString('SHOW_PEQ_CURVE_DOC'),
-    onClick: {
-      type: 'plugin',
-      endpoint: 'audio_interface/fusiondsp',
-      method: 'showPeqGraph',
-      data: []
-    }
 
-
-    //  visibleIf: { field: 'showeq', value: true }
-  };
-*/
   buttons.push({
     id: 'resetpeq',
     element: 'button',
@@ -694,17 +866,7 @@ function configureEq15Section(self, uiconf, selectedsp) {
       tooltip: 'show',
       muted: mutedBands[idx] === '1'
     }));
-    /*
-        uiconf.sections[1].content.push({
-          id: 'showpeqcurve',
-          element: 'button',
-          label: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
-          doc: self.commandRouter.getI18nString('SHOW_PEQ_CURVE_DOC'),
-          onClick: { type: 'openUrl', url: `http://${IPaddress}:10015` }
-    
-          // visibleIf: { field: 'showeq', value: true }
-        });
-        */
+
     uiconf.sections[1].content.push({
       id: eq,
       element: 'equalizer',
@@ -725,21 +887,6 @@ function configureEq15Section(self, uiconf, selectedsp) {
     onClick: { type: 'plugin', endpoint: 'audio_interface/fusiondsp', method: 'reseteq', data: [] },
     visibleIf: { field: 'showeq', value: true }
   });
-  /*
-    uiconf.sections[1].content.push({
-      id: 'showpeqcurve',
-      element: 'button',
-      label: self.commandRouter.getI18nString('SHOW_PEQ_CURVE'),
-      doc: self.commandRouter.getI18nString('SHOW_PEQ_CURVE_DOC'),
-      onClick: {
-        type: 'plugin',
-        endpoint: 'audio_interface/fusiondsp',
-        method: 'showPeqGraph',
-        data: []
-      },
-      visibleIf: { field: 'showeq', value: true }
-    });
-    */
 }
 
 function configureEq3Section(self, uiconf) {
@@ -1293,7 +1440,9 @@ FusionDsp.prototype.choosedsp = function (data) {
 
   } else if (selectedsp === 'purecgui') {
     self.logger.info(logPrefix + ' Launching CamillaDsp GUI')
-    self.purecamillagui()
+    self.purecamillagui().catch((error) => {
+      self.commandRouter.pushToastMessage('error', 'Failed to start CamillaDSP GUI: ' + error.message);
+    });
   }
 
   if (selectedsp == 'PEQ' || selectedsp == 'EQ15' || selectedsp == '2XEQ15') {
@@ -1334,19 +1483,15 @@ FusionDsp.prototype.getIP = function () {
 
 FusionDsp.prototype.purecamillagui = function () {
   const self = this;
-  let defer = libQ.defer();
-
-  try {
-    exec("/usr/bin/sudo /bin/systemctl start fusiondsp.service", {
-      uid: 1000,
-      gid: 1000
-    });
+  return runFile('/usr/bin/sudo', ['/bin/systemctl', 'start', 'fusiondsp.service'], {
+    uid: 1000,
+    gid: 1000
+  }).then(() => {
     self.commandRouter.pushConsoleMessage('FusionDsp loaded');
-    defer.resolve();
-  } catch (err) {
-    self.logger.info(logPrefix + ' failed to load Camilla Gui' + err);
-  }
-
+  }).catch((err) => {
+    self.logger.error(logPrefix + ' failed to load Camilla Gui: ' + err.message);
+    throw err;
+  });
 };
 
 FusionDsp.prototype.configureVeryAdvSet = function (data) {
@@ -1356,7 +1501,7 @@ FusionDsp.prototype.configureVeryAdvSet = function (data) {
   var chunksize;
   if (chunksizeC == 'AUTO') {
     if (selectedsp !== 'convfir') {
-      chunksize = 256;
+      chunksize = 1024;
     }
     else {
       chunksize = 4800;
@@ -1382,6 +1527,21 @@ FusionDsp.prototype.startPeqGraphServer = function () {
   if (self.peqGraphServer) return;
 
   self.peqGraphServer = http.createServer(function (req, res) {
+    if (!isSameOriginRequest(req, self.config.get('address'), peqGraphPort)) {
+      res.writeHead(403, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Cross-origin requests are not allowed' }));
+      return;
+    }
+
+    if (req.method === 'POST' && req.url.startsWith('/api/peq')) {
+      const contentType = (req.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
+      if (contentType !== 'application/json') {
+        res.writeHead(415, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Content-Type must be application/json' }));
+        return;
+      }
+    }
+
     if (req.method === 'GET' && req.url === '/') {
       fs.readFile(path.join(__dirname, 'peq-graph.html'), function (err, data) {
         if (err) {
@@ -1392,14 +1552,6 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.end(data);
       });
-    } else if (req.method === 'OPTIONS' && (req.url === '/api/peq' || req.url === '/api/peq/reset' || req.url === '/api/peq/save' || req.url === '/api/peq/add' || req.url === '/api/peq/remove' || req.url === '/api/peq/mute' || req.url === '/api/peq/bypass')) {
-      res.writeHead(204, {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
-      });
-      res.end();
-
     } else if (req.method === 'GET' && req.url === '/api/peq') {
       var sampleRate = self.pushstateSamplerate || 44100;
       var mergedeq = self.config.get('mergedeq') || '';
@@ -1458,18 +1610,14 @@ FusionDsp.prototype.startPeqGraphServer = function () {
       };
 
       res.writeHead(200, {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'application/json'
       });
       res.end(JSON.stringify(result));
 
     } else if (req.method === 'POST' && req.url === '/api/peq') {
-      var body = '';
-      req.on('data', function (chunk) { body += chunk; });
-      req.on('end', function () {
+      readPeqRequestBody(req, res, function (body) {
         var corsHeaders = {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
+          'Content-Type': 'application/json'
         };
 
         var mode = self.config.get('selectedsp');
@@ -1488,9 +1636,11 @@ FusionDsp.prototype.startPeqGraphServer = function () {
           return;
         }
 
-        if (!payload.filters || !Array.isArray(payload.filters) || payload.filters.length === 0) {
+        if (!payload || typeof payload !== 'object' || Array.isArray(payload) ||
+          !Array.isArray(payload.filters) || payload.filters.length === 0 ||
+          payload.filters.length > tnbreq) {
           res.writeHead(400, corsHeaders);
-          res.end(JSON.stringify({ error: 'Missing or empty filters array' }));
+          res.end(JSON.stringify({ error: 'Invalid filters array' }));
           return;
         }
 
@@ -1511,6 +1661,11 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         // Validate and patch each requested filter
         for (var fi = 0; fi < payload.filters.length; fi++) {
           var upd = payload.filters[fi];
+          if (!upd || typeof upd !== 'object' || Array.isArray(upd)) {
+            res.writeHead(400, corsHeaders);
+            res.end(JSON.stringify({ error: 'Invalid filter update' }));
+            return;
+          }
           var idx = upd.index;
           var newParams = upd.params;
 
@@ -1718,8 +1873,7 @@ FusionDsp.prototype.startPeqGraphServer = function () {
 
     } else if (req.method === 'POST' && req.url === '/api/peq/reset') {
       var corsHeaders = {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'application/json'
       };
 
       if (self.config.get('selectedsp') !== 'PEQ') {
@@ -1746,8 +1900,7 @@ FusionDsp.prototype.startPeqGraphServer = function () {
 
     } else if (req.method === 'POST' && req.url === '/api/peq/save') {
       var corsHeaders = {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'application/json'
       };
 
       if (self.config.get('selectedsp') !== 'PEQ') {
@@ -1763,12 +1916,9 @@ FusionDsp.prototype.startPeqGraphServer = function () {
       res.end(JSON.stringify({ ok: true }));
 
     } else if (req.method === 'POST' && req.url === '/api/peq/add') {
-      var body = '';
-      req.on('data', function (chunk) { body += chunk; });
-      req.on('end', function () {
+      readPeqRequestBody(req, res, function (body) {
         var corsHeaders = {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
+          'Content-Type': 'application/json'
         };
 
         if (self.config.get('selectedsp') !== 'PEQ') {
@@ -1787,11 +1937,18 @@ FusionDsp.prototype.startPeqGraphServer = function () {
         var scope = 'L+R';
         try {
           var payload = JSON.parse(body);
+          if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+            res.writeHead(400, corsHeaders);
+            res.end(JSON.stringify({ error: 'Invalid request body' }));
+            return;
+          }
           if (payload.scope && ['L+R', 'L', 'R'].indexOf(payload.scope) !== -1) {
             scope = payload.scope;
           }
         } catch (e) {
-          // ignore parse errors, use defaults
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Invalid JSON' }));
+          return;
         }
 
         var mergedeq = (self.config.get('mergedeq') || '').toString();
@@ -1829,12 +1986,9 @@ FusionDsp.prototype.startPeqGraphServer = function () {
       });
 
     } else if (req.method === 'POST' && req.url === '/api/peq/remove') {
-      var body = '';
-      req.on('data', function (chunk) { body += chunk; });
-      req.on('end', function () {
+      readPeqRequestBody(req, res, function (body) {
         var corsHeaders = {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
+          'Content-Type': 'application/json'
         };
 
         var mode = self.config.get('selectedsp');
@@ -1860,10 +2014,16 @@ FusionDsp.prototype.startPeqGraphServer = function () {
           return;
         }
 
-        var removeIndex = payload.index;
-        if (removeIndex === undefined || removeIndex === null) {
+        if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
           res.writeHead(400, corsHeaders);
-          res.end(JSON.stringify({ error: 'Missing index' }));
+          res.end(JSON.stringify({ error: 'Invalid request body' }));
+          return;
+        }
+
+        var removeIndex = payload.index;
+        if (!Number.isSafeInteger(removeIndex)) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Invalid index' }));
           return;
         }
 
@@ -1931,12 +2091,9 @@ FusionDsp.prototype.startPeqGraphServer = function () {
       });
 
     } else if (req.method === 'POST' && req.url === '/api/peq/mute') {
-      var body = '';
-      req.on('data', function (chunk) { body += chunk; });
-      req.on('end', function () {
+      readPeqRequestBody(req, res, function (body) {
         var corsHeaders = {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
+          'Content-Type': 'application/json'
         };
 
         var mode = self.config.get('selectedsp');
@@ -1955,8 +2112,19 @@ FusionDsp.prototype.startPeqGraphServer = function () {
           return;
         }
 
+        if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Invalid request body' }));
+          return;
+        }
+
         var bandIndex = payload.bandIndex;
         var scope = payload.scope || 'L';
+        if (!Number.isSafeInteger(bandIndex) || !['L', 'R'].includes(scope)) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Invalid band index or scope' }));
+          return;
+        }
 
         if (mode === 'PEQ') {
           // PEQ: mute by position (find position from Eq number)
@@ -2032,8 +2200,7 @@ FusionDsp.prototype.startPeqGraphServer = function () {
 
     } else if (req.method === 'POST' && req.url === '/api/peq/bypass') {
       var corsHeaders = {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'application/json'
       };
 
       var mode = self.config.get('selectedsp');
@@ -2103,15 +2270,44 @@ FusionDsp.prototype.stopPeqGraphServer = function () {
 
 FusionDsp.prototype.addeq = function (data) {
   const self = this;
-  var n = self.config.get('nbreq')
-  n = n + 1;
-  if (n > tnbreq) {
+  var n = self.config.get('nbreq');
+  if (n >= tnbreq) {
     self.logger.info(logPrefix + ' Max eq reached!')
     return
   }
-  var mergedeq = (self.config.get('mergedeq') || '').toString();
-  mergedeq += 'Eq' + n + '|Peaking|L+R|1000,0,1|';
-  self.config.set('mergedeq', mergedeq);
+
+  if (self.config.get('selectedsp') === 'PEQ') {
+    var mergedeq = (self.config.get('mergedeq') || '').toString();
+    var parts = mergedeq.split('|');
+    var maxIndex = -1;
+    var slotCount = 0;
+
+    for (var i = 0; i + 3 < parts.length; i += 4) {
+      slotCount++;
+      var match = parts[i].match(/\d+/);
+      if (match) {
+        maxIndex = Math.max(maxIndex, parseInt(match[0], 10));
+      }
+    }
+
+    if (mergedeq && !mergedeq.endsWith('|')) {
+      mergedeq += '|';
+    }
+
+    while (slotCount < n) {
+      maxIndex++;
+      mergedeq += 'Eq' + maxIndex + '|None|L+R|0,0,0|';
+      slotCount++;
+    }
+
+    mergedeq += 'Eq' + (maxIndex + 1) + '|Peaking|L+R|1000,0,1|';
+    self.config.set('mergedeq', mergedeq);
+
+    var peqmutes = (self.config.get('peqmute') || '').toString();
+    self.config.set('peqmute', peqmutes ? peqmutes + ',0' : '0');
+  }
+
+  n = n + 1;
   self.config.set('nbreq', n)
   self.config.set('effect', true)
   self.logger.info(logPrefix + ' nbre eq ' + n)
@@ -2177,8 +2373,14 @@ FusionDsp.prototype.reseteq = function () {
   const selectedsp = self.config.get("selectedsp");
 
   const defaultEQ15 = "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0";
-  const defaultMergedEQ15 = "Eq0|Peaking|L+R|25,0,1.85|Eq1|Peaking|L+R|40,0,1.85|Eq2|Peaking|L+R|63,0,1.85|Eq3|Peaking|L+R|100,0,1.85|Eq4|Peaking|L+R|160,0,1.85|Eq5|Peaking|L+R|250,0,1.85|Eq6|Peaking|L+R|400,0,1.85|Eq7|Peaking|L+R|630,0,1.85|Eq8|Peaking|L+R|1000,0,1.85|Eq9|Peaking|L+R|1600,0,1.85|Eq10|Peaking|L+R|2500,0,1.85|Eq11|Peaking|L+R|4000,0,1.85|Eq12|Peaking|L+R|6300,0,1.85|Eq13|Peaking|L+R|10000,0,1.85|Eq14|Peaking|L+R|16000,0,1.85";
-  const defaultMerged2XEQ15 = "Eq0|Peaking|L|25,0,1.85|Eq1|Peaking|L|40,0,1.85|Eq2|Peaking|L|63,0,1.85|Eq3|Peaking|L|100,0,1.85|Eq4|Peaking|L|160,0,1.85|Eq5|Peaking|L|250,0,1.85|Eq6|Peaking|L|400,0,1.85|Eq7|Peaking|L|630,0,1.85|Eq8|Peaking|L|1000,0,1.85|Eq9|Peaking|L|1600,0,1.85|Eq10|Peaking|L|2500,0,1.85|Eq11|Peaking|L|4000,0,1.85|Eq12|Peaking|L|6300,0,1.85|Eq13|Peaking|L|10000,0,1.85|Eq14|Peaking|L|16000,0,1.85|undefinedEq0|Peaking|R|25,0,1.85|Eq1|Peaking|R|40,0,1.85|Eq2|Peaking|R|63,0,1.85|Eq3|Peaking|R|100,0,1.85|Eq4|Peaking|R|160,0,1.85|Eq5|Peaking|R|250,0,1.85|Eq6|Peaking|R|400,0,1.85|Eq7|Peaking|R|630,0,1.85|Eq8|Peaking|R|1000,0,1.85|Eq9|Peaking|R|1600,0,1.85|Eq10|Peaking|R|2500,0,1.85|Eq11|Peaking|R|4000,0,1.85|Eq12|Peaking|R|6300,0,1.85|Eq13|Peaking|R|10000,0,1.85|Eq14|Peaking|R|16000,0,1.85";
+  const defaultMergedEQ15 = eq15range.map((frequency, index) =>
+    `Eq${index}|${getEq15FilterType(index)}|L+R|${frequency},0,1.85|`
+  ).join('');
+  const defaultMerged2XEQ15 = ['L', 'R'].map((scope) =>
+    eq15range.map((frequency, index) =>
+      `Eq${index}|${getEq15FilterType(index)}|${scope}|${frequency},0,1.85|`
+    ).join('')
+  ).join('');
 
   self.config.set('eqbypass', false);
 
@@ -2282,30 +2484,19 @@ FusionDsp.prototype.rebuildGraphicEqMergedeq = function () {
     self.config.set('savedmergedgeqx3', test);
 
   } else if (selectedsp === 'EQ15') {
-    const geq15 = self.config.get('geq15').split(',');
+    const geq15 = (self.config.get('geq15') || defaultEq15Gains).split(',');
     const mutes = (self.config.get('geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
-    for (let o = 0; o < geq15.length; o++) {
-      let eqval = (eqbypass || mutes[o] === '1') ? 0 : geq15[o];
-      test += ('Eq' + o + '|Peaking|L+R|' + eq15range[o] + ',' + eqval + ',' + coefQ[o] + '|');
-    }
+    test = buildEq15Filters(geq15, 'L+R', mutes, eqbypass);
     self.config.set('mergedeq', test);
     self.config.set('savedmergedgeq15', test);
 
   } else if (selectedsp === '2XEQ15') {
-    const geq15 = self.config.get('geq15').split(',');
-    const x2geq15 = self.config.get('x2geq15').split(',');
+    const geq15 = (self.config.get('geq15') || defaultEq15Gains).split(',');
+    const x2geq15 = (self.config.get('x2geq15') || defaultEq15Gains).split(',');
     const lmutes = (self.config.get('geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
     const rmutes = (self.config.get('x2geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
-    let ltest = '';
-    let rtest = '';
-    for (let o = 0; o < geq15.length; o++) {
-      let eqval = (eqbypass || lmutes[o] === '1') ? 0 : geq15[o];
-      ltest += ('Eq' + o + '|Peaking|L|' + eq15range[o] + ',' + eqval + ',' + coefQ[o] + '|');
-    }
-    for (let v = 0; v < x2geq15.length; v++) {
-      let eqval = (eqbypass || rmutes[v] === '1') ? 0 : x2geq15[v];
-      rtest += ('Eq' + v + '|Peaking|R|' + eq15range[v] + ',' + eqval + ',' + coefQ[v] + '|');
-    }
+    const ltest = buildEq15Filters(geq15, 'L', lmutes, eqbypass);
+    const rtest = buildEq15Filters(x2geq15, 'R', rmutes, eqbypass);
     test = ltest + rtest;
     self.config.set('mergedeq', test);
     self.config.set('savedmergedeqx2geq15', test);
@@ -2454,85 +2645,224 @@ FusionDsp.prototype.getAdditionalConf = function (type, controller, data) {
   return self.commandRouter.executeOnPlugin(type, controller, 'getConfigParam', data);
 }
 // Plugin methods -----------------------------------------------------------------------------
-//------------Here we define a function to send a command to CamillaDsp through websocket---------------------
+//------------Here we define a function to reload the CamillaDSP configuration---------------------
 FusionDsp.prototype.sendCommandToCamilla = function (callback) {
   const self = this;
+  if (self.camillaProcess && typeof self.camillaProcess.reload === 'function') {
+    const reloadPromise = self.camillaProcess.reload();
+    if (callback) {
+      return reloadPromise.then((result) => {
+        callback(null);
+        return result;
+      }, (error) => {
+        callback(error);
+        throw error;
+      });
+    }
+    return reloadPromise;
+  }
+
   const commands = {
     reload: '"Reload"'
   };
 
-  return new Promise((resolve) => {
+  if (self._camillaReloadPromise) {
+    if (callback) {
+      self._camillaReloadPromise.then((result) => {
+        try {
+          callback(null, result);
+        } catch (callbackError) {
+          self.logger.error(logPrefix + ' Reload callback failed: ' + callbackError.message);
+        }
+      }, (error) => {
+        try {
+          callback(error);
+        } catch (callbackError) {
+          self.logger.error(logPrefix + ' Reload callback failed: ' + callbackError.message);
+        }
+      });
+    }
+    return self._camillaReloadPromise;
+  }
+
+  const reloadPromise = new Promise((resolve, reject) => {
     let finished = false;
+    let connection = this.reloadConnection;
+    let timeout;
+    let retryTimeout;
+    let connectionAttempts = 0;
+    let lastConnectionError = null;
 
     const finish = (error) => {
       if (finished) return;
       finished = true;
+      clearTimeout(timeout);
+      clearTimeout(retryTimeout);
 
       if (callback) {
-        callback(error || null);
+        try {
+          callback(error || null);
+        } catch (callbackError) {
+          self.logger.error(logPrefix + ' Reload callback failed: ' + callbackError.message);
+          reject(callbackError);
+          return;
+        }
       }
 
       if (error) {
-        self.logger.warn(logPrefix + ' CamillaDSP reload failed; continuing without rejecting the Promise to avoid an unhandled rejection: ' + (error && error.message ? error.message : String(error)));
+        if (lastConnectionError && error.message.includes('timed out')) {
+          error.message += ` (${connectionAttempts} connection attempts; last error: ${lastConnectionError.message})`;
+        }
+        self.logger.error(logPrefix + ' CamillaDSP reload failed: ' + (error && error.message ? error.message : String(error)));
+        reject(error);
+        return;
       }
 
       resolve();
     };
 
-    if (this.reloadConnection) {
-      if (this.reloadConnection.readyState === WebSocket.OPEN) {
-        this.reloadConnection.send(commands.reload);
-        this.reloadConnection.onmessage = (event) => {
-          self.logger.info(logPrefix + ' Reload response: ' + Buffer.from(event.data).toString());
-          finish();
-        };
-        this.reloadConnection.onerror = (error) => {
-          self.logger.error(logPrefix + ` Reload WebSocket error: ${error}`);
-          self.reloadConnection = null;
+    const clearCurrentConnection = (targetConnection) => {
+      if (self.reloadConnection === targetConnection) {
+        self.reloadConnection = null;
+      }
+    };
+
+    const toError = (event) => {
+      const cause = event && event.error ? event.error : event;
+      if (cause instanceof Error) return cause;
+      const error = new Error((cause && cause.message) || 'CamillaDSP WebSocket connection failed');
+      if (cause && cause.code) error.code = cause.code;
+      return error;
+    };
+
+    const connect = () => {
+      if (finished) return;
+
+      try {
+        connectionAttempts++;
+        connection = new WebSocket(url);
+        self.reloadConnection = connection;
+      } catch (cause) {
+        const error = toError(cause);
+        lastConnectionError = error;
+        if (error.code === 'ECONNREFUSED') {
+          retryTimeout = setTimeout(connect, 250);
+        } else {
           finish(error);
-        };
+        }
         return;
       }
 
-      try {
-        this.reloadConnection.close();
-      } catch (e) {
-        // ignore close errors
-      }
-      this.reloadConnection = null;
-    }
-
-    this.reloadConnection = new WebSocket(url);
-    setupReloadConnection(this.reloadConnection);
-
-    function setupReloadConnection(connection) {
+      const attemptConnection = connection;
       let reloadIssued = false;
+      let retryScheduled = false;
+      let connectionError = null;
 
-      connection.onopen = () => {
+      attemptConnection.onopen = () => {
         reloadIssued = true;
-        connection.send(commands.reload);
-        self.logger.debug(logPrefix + ' Reload command sent to CamillaDSP');
+        try {
+          attemptConnection.send(commands.reload);
+          self.logger.debug(logPrefix + ' Reload command sent to CamillaDSP');
+        } catch (cause) {
+          clearCurrentConnection(attemptConnection);
+          finish(toError(cause));
+        }
       };
 
-      connection.onerror = (error) => {
-        self.logger.error(logPrefix + ` Reload WebSocket error: ${error}`);
-        self.reloadConnection = null;
+      attemptConnection.onerror = (event) => {
+        const error = toError(event);
+        lastConnectionError = error;
+        connectionError = error;
+        if (!reloadIssued && error.code === 'ECONNREFUSED' && !retryScheduled) {
+          retryScheduled = true;
+          clearCurrentConnection(attemptConnection);
+          try {
+            attemptConnection.close();
+          } catch (closeError) {
+            self.logger.debug(logPrefix + ' Could not close failed reload connection: ' + closeError.message);
+          }
+          retryTimeout = setTimeout(connect, 250);
+          return;
+        }
+        clearCurrentConnection(attemptConnection);
         finish(error);
       };
 
-      connection.onmessage = (event) => {
+      attemptConnection.onmessage = (event) => {
         self.logger.debug(logPrefix + ' Reload response: ' + Buffer.from(event.data).toString());
         finish();
       };
 
-      connection.onclose = () => {
-        self.reloadConnection = null;
-        if (!reloadIssued) {
-          finish();
-        }
+      attemptConnection.onclose = () => {
+        clearCurrentConnection(attemptConnection);
+        if (retryScheduled || finished) return;
+        finish(connectionError || new Error(reloadIssued
+          ? 'CamillaDSP reload connection closed before replying'
+          : 'CamillaDSP reload connection closed before opening'));
       };
+    };
+
+    timeout = setTimeout(() => {
+      const error = new Error(`CamillaDSP reload timed out after ${camillaReloadTimeoutMs} ms`);
+      clearCurrentConnection(connection);
+      if (connection && connection.readyState !== WebSocket.CLOSED) {
+        try {
+          connection.close();
+        } catch (closeError) {
+          self.logger.warn(logPrefix + ' Could not close timed-out reload connection: ' + closeError.message);
+        }
+      }
+      finish(error);
+    }, camillaReloadTimeoutMs);
+
+    const sendReload = () => {
+      try {
+        connection.send(commands.reload);
+        self.logger.debug(logPrefix + ' Reload command sent to CamillaDSP');
+      } catch (error) {
+        clearCurrentConnection(connection);
+        finish(error);
+      }
+    };
+
+    if (connection && connection.readyState === WebSocket.OPEN) {
+      connection.onmessage = (event) => {
+        self.logger.info(logPrefix + ' Reload response: ' + Buffer.from(event.data).toString());
+        finish();
+      };
+      connection.onerror = (error) => {
+        const normalizedError = toError(error);
+        self.logger.error(logPrefix + ' Reload WebSocket error: ' + normalizedError.message);
+        clearCurrentConnection(connection);
+        finish(normalizedError);
+      };
+      connection.onclose = () => {
+        clearCurrentConnection(connection);
+        finish(new Error('CamillaDSP reload connection closed before replying'));
+      };
+      sendReload();
+      return;
+    }
+
+    if (connection) {
+      try {
+        connection.close();
+      } catch (error) {
+        self.logger.warn(logPrefix + ' Could not close stale reload connection: ' + error.message);
+      }
+      this.reloadConnection = null;
+    }
+
+    connect();
+  });
+
+  const pendingReloadPromise = reloadPromise.finally(() => {
+    if (self._camillaReloadPromise === pendingReloadPromise) {
+      self._camillaReloadPromise = null;
     }
   });
+  self._camillaReloadPromise = pendingReloadPromise;
+  return pendingReloadPromise;
 };
 
 FusionDsp.prototype.resetClippedSamples = function () {
@@ -2806,8 +3136,6 @@ FusionDsp.prototype.testclipping = function () {
   let filelength = self.config.get('filter_size');
   let track = '/data/plugins/audio_interface/fusiondsp/testclipping/testclipping.wav';
 
-  const cmd = '/usr/bin/aplay -c2 --device=volumio ' + track;
-
   const setState = function () {
     return new Promise((resolve, reject) => {
       self.socket.emit('pause');
@@ -2826,7 +3154,7 @@ FusionDsp.prototype.testclipping = function () {
 
 
       try {
-      
+
         new Promise((delayResolve) => setTimeout(delayResolve, 4000))
           .then(() => self._doCreateCamilladspfile(null))
           .then(() => resolve())
@@ -2855,23 +3183,26 @@ FusionDsp.prototype.testclipping = function () {
     return new Promise((resolve, reject) => {
       self.logger.info(logPrefix + ' Waiting 2s before starting clipping test tone via aplay on device=volumio');
       setTimeout(() => {
-        try {
-          exec(cmd, (error, stdout, stderr) => {
-            if (error) {
-              self.logger.error(logPrefix + ' Error executing aplay: ' + error.message);
-              return;
-            }
-            if (stderr) {
-              self.logger.warn(logPrefix + ' aplay stderr: ' + stderr);
-            }
-            self.logger.info(logPrefix + ' aplay stdout: ' + stdout);
-          });
-          self.logger.info(logPrefix + ' aplay is playing test file');
-          resolve();
-        } catch (error) {
+        const player = spawn('/usr/bin/aplay', ['-c2', '--device=volumio', track]);
+        player.stdout.on('data', (output) => {
+          self.logger.info(logPrefix + ' aplay stdout: ' + output.toString());
+        });
+        player.stderr.on('data', (output) => {
+          self.logger.warn(logPrefix + ' aplay stderr: ' + output.toString());
+        });
+        player.once('error', (error) => {
           self.logger.error(logPrefix + ' Error in clipping detection: ' + error.message);
           reject(error);
-        }
+        });
+        player.once('spawn', () => {
+          self.logger.info(logPrefix + ' aplay is playing test file');
+          resolve();
+        });
+        player.once('close', (code, signal) => {
+          if (code !== 0) {
+            self.logger.error(logPrefix + ` aplay exited with code ${code}, signal ${signal}`);
+          }
+        });
       }, 2000);
     });
   };
@@ -2990,7 +3321,7 @@ FusionDsp.prototype.dfiltertype = function (data) {
 
   const fileExtensions = {
     pcm: { format: 'F32_LE', sizeDivisor: 4 },
-    txt: { format: 'TEXT', sizeCommand: '/bin/cat', sizeDivisor: 1 },
+    txt: { format: 'TEXT', lineCount: true, sizeDivisor: 1 },
     raw: { format: 'F32_LE', sizeDivisor: 4 },
     dbl: { format: 'F64_LE', sizeDivisor: 8 },
     wav: { convtype: "Wav" },
@@ -3005,17 +3336,17 @@ FusionDsp.prototype.dfiltertype = function (data) {
 
     if (extensionData.sizeDivisor) {
       try {
-        filelength = execSync(`/usr/bin/stat -c%s ${filterfolder}${filtername}`, 'utf8').slice(0, -1) / extensionData.sizeDivisor;
+        const filterPath = path.join(filterfolder, filtername);
+        const stat = fs.statSync(filterPath);
+        if (extensionData.lineCount) {
+          const contents = fs.readFileSync(filterPath, 'utf8');
+          filelength = (contents.match(/\n/g) || []).length;
+        } else {
+          filelength = stat.size / extensionData.sizeDivisor;
+        }
         self.config.set('filter_size', filelength);
       } catch (err) {
-        self.logger.error(`${logPrefix} An error occurs while reading file`);
-      }
-    } else if (extensionData.sizeCommand) {
-      try {
-        filelength = execSync(`${extensionData.sizeCommand} ${filterfolder}${filtername} | wc -l`).slice(0, -1);
-        self.config.set('filter_size', filelength);
-      } catch (err) {
-        self.logger.error(`${logPrefix} An error occurs while reading file`);
+        self.logger.error(`${logPrefix} An error occurs while reading file: ${err.message}`);
       }
     }
   } else {
@@ -3213,7 +3544,7 @@ FusionDsp.prototype.getCamillaFiltersConfig = function (selectedsp, chunksize, h
     composeout += '    format: S32_LE' + '\n';
 
   } else if (testclipping == false) {
-  //  self.logger.info(logPrefix + ' Clipping test mode disabled, output will be sent to postDsp in camilla');
+    //  self.logger.info(logPrefix + ' Clipping test mode disabled, output will be sent to postDsp in camilla');
 
     var composeout = ''
     composeout += '  playback:' + '\n';
@@ -3549,8 +3880,7 @@ FusionDsp.prototype.getCamillaFiltersConfig = function (selectedsp, chunksize, h
 
       typer = typec//self.config.get(typec);
       if (eqa == undefined) {
-        self.logger.error(logPrefix + ' Error in eqv! Cannot split values!')
-        return;
+        throw new Error(logPrefix + ' Error in eqv! Cannot split values for Eq' + o);
       }
       eqv = eqa.split(',');
       var coef;
@@ -4484,11 +4814,15 @@ FusionDsp.prototype.getCamillaPureGuiConfig = function (chunksize, samplerate) {
  * Internal function that does the actual config build, write, and optional callback/reload.
  * Called directly when callback is provided (immediate), or via debounce when no callback.
  */
-FusionDsp.prototype._doCreateCamilladspfile = function (callback) {
+FusionDsp.prototype._doCreateCamilladspfile = function (callback, writeOnly) {
   const self = this;
   var hcurrentsamplerate = 44100;
   let selectedsp = self.config.get('selectedsp')
   let chunksize = self.config.get('chunksize') || 4800;
+
+  if (selectedsp === 'EQ15' || selectedsp === '2XEQ15') {
+    self.rebuildGraphicEqMergedeq();
+  }
 
   let strCamillaConf;
 
@@ -4522,6 +4856,10 @@ FusionDsp.prototype._doCreateCamilladspfile = function (callback) {
       return Promise.resolve(strCamillaConf);
     }
 
+    if (writeOnly) {
+      return Promise.resolve(strCamillaConf);
+    }
+
     return self.sendCommandToCamilla().then(() => strCamillaConf);
 
   } catch (err) {
@@ -4538,21 +4876,41 @@ FusionDsp.prototype._doCreateCamilladspfile = function (callback) {
  */
 FusionDsp.prototype.createCamilladspfile = function (callback) {
   const self = this;
-  let defer = libQ.defer();
+  const reportError = (error) => {
+    self.logger.error(logPrefix + ' Failed to create or reload CamillaDSP configuration: ' + error.message);
+  };
 
   if (callback) {
     // Callback path (e.g. restart): run immediately, no debounce
-    self._doCreateCamilladspfile(callback);
-  } else {
-    // No callback (Reload path): debounce to coalesce rapid config changes
-    if (configReloadDebounceTimeout) clearTimeout(configReloadDebounceTimeout);
-    configReloadDebounceTimeout = setTimeout(function () {
-      configReloadDebounceTimeout = null;
-      self._doCreateCamilladspfile(null);
-    }, configReloadDebounceMs);
+    const immediate = self._doCreateCamilladspfile(callback);
+    immediate.catch(reportError);
+    return immediate;
   }
 
-  return defer.promise;
+  const completion = new Promise((resolve, reject) => {
+    if (!self._configReloadWaiters) {
+      self._configReloadWaiters = [];
+    }
+    self._configReloadWaiters.push({ resolve, reject });
+
+    if (self._configReloadDebounceTimeout) {
+      clearTimeout(self._configReloadDebounceTimeout);
+    }
+    self._configReloadDebounceTimeout = setTimeout(function () {
+      self._configReloadDebounceTimeout = null;
+      const waiters = self._configReloadWaiters || [];
+      self._configReloadWaiters = [];
+
+      self._doCreateCamilladspfile(null).then((result) => {
+        waiters.forEach((waiter) => waiter.resolve(result));
+      }, (error) => {
+        waiters.forEach((waiter) => waiter.reject(error));
+      });
+    }, configReloadDebounceMs);
+  });
+
+  completion.catch(reportError);
+  return completion;
 };
 
 //----------------------here we save eqs config.json
@@ -4776,12 +5134,7 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
 
     const eqbypass = self.config.get('eqbypass');
     const geq15mute = (self.config.get('geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
-    eqr = geq15
-    //self.logger.info(logPrefix + ' setting EQ15 values ' + eqr)
-    for (let o in eqr) {
-      let eqval = (eqbypass || geq15mute[o] === '1') ? 0 : geq15[o];
-      test += ('Eq' + o + '|Peaking|L+R|' + eq15range[o] + ',' + eqval + ',' + coefQ[o] + '|');
-    }
+    test = buildEq15Filters(geq15, 'L+R', geq15mute, eqbypass);
     self.config.set('savedmergedgeq15', test)
     self.config.set('savedgeq15', self.config.get('geq15'))
 
@@ -4794,14 +5147,8 @@ FusionDsp.prototype.saveparameq = function (data, obj) {
     const eqbypass = self.config.get('eqbypass');
     const geq15mute = (self.config.get('geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
     const x2geq15mute = (self.config.get('x2geq15mute') || '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0').split(',');
-    for (let o in geq15) {
-      var eqval = (eqbypass || geq15mute[o] === '1') ? 0 : geq15[o];
-      ltest += ('Eq' + o + '|Peaking|L|' + eq15range[o] + ',' + eqval + ',' + coefQ[o] + '|');
-    }
-    for (let v in x2geq15) {
-      var eqval = (eqbypass || x2geq15mute[v] === '1') ? 0 : x2geq15[v];
-      rtest += ('Eq' + v + '|Peaking|R|' + eq15range[v] + ',' + eqval + ',' + coefQ[v] + '|');
-    }
+    ltest = buildEq15Filters(geq15, 'L', geq15mute, eqbypass);
+    rtest = buildEq15Filters(x2geq15, 'R', x2geq15mute, eqbypass);
     test = ltest + rtest
     self.config.set('savedmergedeqx2geq15', test)
     self.config.set('savedx2geq15l', self.config.get('geq15'))
@@ -5356,162 +5703,122 @@ FusionDsp.prototype.renamepreset = function (data) {
 
 FusionDsp.prototype.usethispreset = function (data) {
   const self = this;
-  let defer = libQ.defer();
-
-  let test = ''
-  let geq15, x2geq15
+  let test = '';
+  let geq15, x2geq15;
   let preset = (data['usethispreset'].value);
 
-  let selectedsp = self.config.get('selectedsp')
-  let usedpreset = presetFolder + selectedsp + "/" + preset
+  const selectedsp = self.config.get('selectedsp');
+  const usedpreset = presetFolder + selectedsp + "/" + preset;
 
-  function readValueFromJsonFile(filePath, key, callback) {
-    fs.readFile(filePath, 'utf8', (err, data) => {
-      if (err) {
-        return callback(err);
-      }
-      let jsonData;
-      try {
-        jsonData = JSON.parse(data);
-      } catch (parseError) {
-        return callback(parseError);
-      }
-      callback(null, jsonData[key]);
-    });
-  }
-  self.logger.info(logPrefix + " Value for usedpreset: ", usedpreset);
+  self.logger.info(logPrefix + " Value for usedpreset: " + usedpreset);
 
-  let presetforkey = "parameters";
-
-  readValueFromJsonFile(usedpreset, presetforkey, (err, value) => {
-    if (err) {
-      self.logger.error(logPrefix + " Error reading JSON file:", err);
-    }// else {
-    try {
-      self.logger.error(logPrefix + " Value reading JSON file:", value);
-
-      const eqrx = value.geq15;
-      const x2eqrx = value.x2geq15;
-      const state4presetx = value.state4preset;
-
-      if (selectedsp == 'EQ15') {
-
-        geq15 = eqrx.split(',')
-        self.logger.info(logPrefix + ' geq15 ' + geq15)
-
-        let o = 1
-        var eqr = geq15
-        for (o in eqr) {
-          let eqval = geq15[o]
-          test += ('Eq' + o + '|Peaking|L+R|' + eq15range[o] + ',' + eqval + ',' + coefQ[o] + '|');
-        }
-        self.config.set('mergedeq', test);
-        self.config.set("nbreq", 15);
-
-      } else if (selectedsp == '2XEQ15') {
-        geq15 = eqrx.split(',')
-        x2geq15 = x2eqrx.split(',')
-
-        self.logger.info(logPrefix + ' geq15 ' + geq15)
-        let ltest, rtest
-        let o = 1
-        var eqr = geq15
-        for (let o in geq15) {
-          var eqval = geq15[o]
-          ltest += ('Eq' + o + '|Peaking|L|' + eq15range[o] + ',' + eqval + ',' + coefQ[o] + '|');
-        }
-        for (let o in x2geq15) {
-          var eqval = x2geq15[o]
-          rtest += ('Eq' + o + '|Peaking|R|' + eq15range[o] + ',' + eqval + ',' + coefQ[o] + '|');
-        }
-        test = ltest + rtest
-
-        self.config.set('mergedeq', test);
-        self.config.set("nbreq", 30);
-
-      }
-
-      if ((selectedsp == 'EQ15') || (selectedsp == '2XEQ15')) {
-        self.config.set('geq15', eqrx)
-        self.config.set('x2geq15', x2eqrx);
-        // Reset mute state when loading a preset
-        const defaultMute15 = '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0';
-        self.config.set('geq15mute', defaultMute15);
-        self.config.set('x2geq15mute', defaultMute15);
-
-      } else if (selectedsp == 'PEQ') {
-        var nbreqc = value.spreset;
-        self.config.set("nbreq", nbreqc);
-        self.config.set('mergedeq', value.mergedeq);
-
-      } else if (selectedsp == 'convfir') {
-        self.config.set("usethispreset", preset);
-        self.config.set("leftfilter", value.leftfilter);
-        self.config.set("rightfilter", value.rightfilter);
-        self.config.set('leftfilterlabel', value.leftfilterlabel);
-        const filterFormat = (value.filter_format === undefined || value.filter_format === 'undefined') ? self.config.get('filter_format') : value.filter_format;
-        self.config.set('filter_format', filterFormat);
-        self.config.set('mergedeq', value.savedmergedeqfir ?? value.mergedeq);
-        self.config.set("attenuationl", value.attenuationl);
-        self.config.set("attenuationr", value.attenuationr);
-      }
-
-      let state4preset = state4presetx;
-
-      self.logger.info(logPrefix + ' value state4preset ' + state4preset)
-
-      const state4crossfeed = state4preset[0];
-      if (Array.isArray(state4crossfeed)) {
-        const crosstalkstrength = state4crossfeed[1] ?? self.config.get('crosstalkstrength') ?? 0;
-        const normalizedCrossfeed = [state4crossfeed[0], Number(crosstalkstrength) || 0];
-        self.config.set('crossfeed', normalizedCrossfeed);
-        self.config.set('crosstalkstrength', normalizedCrossfeed[1]);
-      } else {
-        self.config.set('crossfeed', state4crossfeed);
-      }
-      self.config.set('monooutput', state4preset[1])
-      self.config.set('loudness', state4preset[2])
-      self.config.set('loudnessthreshold', state4preset[3])
-      self.config.set('leftlevel', state4preset[4])
-      self.config.set('rightlevel', state4preset[5])
-      self.config.set('delay', state4preset[6])
-      self.config.set('delayscope', state4preset[7])
-      self.config.set('autoatt', state4preset[8])
-      self.config.set('muteleft', state4preset[9]);
-      self.config.set('muteright', state4preset[10]);
-
-      if (selectedsp + state4preset[11] == undefined) {
-        self.config.set('ldistance', 0);
-      } else {
-        self.config.set('ldistance', state4preset[11]);
-      }
-      if (selectedsp + state4preset[12] == undefined) {
-        self.config.set('rdistance', 0);
-      } else {
-        self.config.set('rdistance', state4preset[12]);
-      }
-      self.config.set('permutchannel', state4preset[13]);
-      self.config.set('loudnessstrength', state4preset[14] ?? 0)
-
-      self.config.set(selectedsp + "preset", preset);
-      self.commandRouter.pushToastMessage('info', preset.replace(".json", "").replace(/^\./, "") + self.commandRouter.getI18nString('PRESET_LOADED_USED'))
-
-    } catch (e) {
-      self.logger.error(logPrefix + ' failed processing JSON value: ' + e);
+  return fs.readFile(usedpreset, 'utf8').then((data) => {
+    const jsonData = JSON.parse(data);
+    const value = jsonData.parameters;
+    if (!value || typeof value !== 'object') {
+      throw new Error('Preset is missing its parameters object');
     }
-  });
+    if (!Array.isArray(value.state4preset)) {
+      throw new Error('Preset is missing its state settings');
+    }
 
-  setTimeout(function () {
+    self.logger.info(logPrefix + " Value reading JSON file: " + JSON.stringify(value));
+    const eqrx = value.geq15;
+    const x2eqrx = value.x2geq15;
+    const state4preset = value.state4preset;
+
+    if (selectedsp == 'EQ15') {
+      geq15 = eqrx.split(',');
+      self.logger.info(logPrefix + ' geq15 ' + geq15);
+
+      test = buildEq15Filters(geq15, 'L+R', [], false);
+      self.config.set('mergedeq', test);
+      self.config.set("nbreq", 15);
+
+    } else if (selectedsp == '2XEQ15') {
+      geq15 = eqrx.split(',');
+      x2geq15 = x2eqrx.split(',');
+
+      self.logger.info(logPrefix + ' geq15 ' + geq15);
+      const ltest = buildEq15Filters(geq15, 'L', [], false);
+      const rtest = buildEq15Filters(x2geq15, 'R', [], false);
+      test = ltest + rtest;
+
+      self.config.set('mergedeq', test);
+      self.config.set("nbreq", 30);
+
+    }
+
+    if ((selectedsp == 'EQ15') || (selectedsp == '2XEQ15')) {
+      self.config.set('geq15', eqrx);
+      self.config.set('x2geq15', x2eqrx);
+      // Reset mute state when loading a preset
+      const defaultMute15 = '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0';
+      self.config.set('geq15mute', defaultMute15);
+      self.config.set('x2geq15mute', defaultMute15);
+
+    } else if (selectedsp == 'PEQ') {
+      var nbreqc = value.spreset;
+      self.config.set("nbreq", nbreqc);
+      self.config.set('mergedeq', value.mergedeq);
+
+    } else if (selectedsp == 'convfir') {
+      self.config.set("usethispreset", preset);
+      self.config.set("leftfilter", value.leftfilter);
+      self.config.set("rightfilter", value.rightfilter);
+      self.config.set('leftfilterlabel', value.leftfilterlabel);
+      const filterFormat = (value.filter_format === undefined || value.filter_format === 'undefined') ? self.config.get('filter_format') : value.filter_format;
+      self.config.set('filter_format', filterFormat);
+      self.config.set('mergedeq', value.savedmergedeqfir ?? value.mergedeq);
+      self.config.set("attenuationl", value.attenuationl);
+      self.config.set("attenuationr", value.attenuationr);
+    }
+
+    self.logger.info(logPrefix + ' value state4preset ' + state4preset);
+
+    const state4crossfeed = state4preset[0];
+    if (Array.isArray(state4crossfeed)) {
+      const crosstalkstrength = state4crossfeed[1] ?? self.config.get('crosstalkstrength') ?? 0;
+      const normalizedCrossfeed = [state4crossfeed[0], Number(crosstalkstrength) || 0];
+      self.config.set('crossfeed', normalizedCrossfeed);
+      self.config.set('crosstalkstrength', normalizedCrossfeed[1]);
+    } else {
+      self.config.set('crossfeed', state4crossfeed);
+    }
+    self.config.set('monooutput', state4preset[1]);
+    self.config.set('loudness', state4preset[2]);
+    self.config.set('loudnessthreshold', state4preset[3]);
+    self.config.set('leftlevel', state4preset[4]);
+    self.config.set('rightlevel', state4preset[5]);
+    self.config.set('delay', state4preset[6]);
+    self.config.set('delayscope', state4preset[7]);
+    self.config.set('autoatt', state4preset[8]);
+    self.config.set('muteleft', state4preset[9]);
+    self.config.set('muteright', state4preset[10]);
+
+    self.config.set('ldistance', state4preset[11] ?? 0);
+    self.config.set('rdistance', state4preset[12] ?? 0);
+    self.config.set('permutchannel', state4preset[13]);
+    self.config.set('loudnessstrength', state4preset[14] ?? 0);
+
+    self.config.set(selectedsp + "preset", preset);
+    self.config.set('effect', true);
+
     self.refreshUI();
-    self.createCamilladspfile()
-  }, 500);
-  return defer.promise;
+    return self.createCamilladspfile().then((result) => {
+      self.commandRouter.pushToastMessage('info', preset.replace(".json", "").replace(/^\./, "") + self.commandRouter.getI18nString('PRESET_LOADED_USED'));
+      return result;
+    });
+  }).catch((err) => {
+    self.logger.error(logPrefix + ' failed loading preset ' + usedpreset + ': ' + err);
+    self.commandRouter.pushToastMessage('error', 'Failed to load preset: ' + err.message);
+    throw err;
+  });
 };
 
 FusionDsp.prototype.importeq = function (data) {
   const self = this;
   const path = 'https://raw.githubusercontent.com/jaakkopasanen/AutoEq/master/results';
-  const defer = libQ.defer();
   const nameh = data['importeq'].label;
   const name = nameh.split('  ').slice(1).toString();
   const namepath = data['importeq'].value;
@@ -5523,23 +5830,18 @@ FusionDsp.prototype.importeq = function (data) {
   const toDownload = `${path}${namepath}/${encodeURIComponent(name)}${suffix}`;
   self.logger.info(logPrefix + ' wget \'' + toDownload);
 
-  try {
-    execSync(`/usr/bin/wget '${toDownload}' -O /tmp/EQfile.txt`, {
-      uid: 1000,
-      gid: 1000
-    });
-    defer.resolve();
-  } catch (err) {
+  return runFile('/usr/bin/wget', ['-O', '/tmp/EQfile.txt', toDownload], {
+    uid: 1000,
+    gid: 1000
+  }).then(() => {
+    self.config.set('eqfrom', 'autoeq');
+    self.config.set('importeq', nameh);
+    return self.convertimportedeq();
+  }, (err) => {
     self.logger.error(logPrefix + ' failed to download Eq' + err);
     self.commandRouter.pushToastMessage('error', 'Failed to download EQ: ' + err);
-  }
-
-  self.config.set('eqfrom', 'autoeq');
-  self.config.set('importeq', nameh);
-
-  self.convertimportedeq();
-  return defer.promise;
-
+    throw err;
+  });
 };
 
 FusionDsp.prototype.importlocal = function (data) {
@@ -5823,27 +6125,21 @@ FusionDsp.prototype.convertimportedeq = function () {
 
 FusionDsp.prototype.updatelist = function (data) {
   const self = this;
-  let path = 'https://raw.githubusercontent.com/jaakkopasanen/AutoEq//master/results/';
-  let name = 'README.md';
-  let defer = libQ.defer();
-  var destpath = ' \'/data/plugins/audio_interface/fusiondsp';
-  // self.config.set('importeq', namepath)
-  var toDownload = (path + '/' + name + '\'');
-  self.logger.info(logPrefix + ' wget \'' + toDownload)
-  try {
-    execSync("/usr/bin/wget \'" + toDownload + " -O" + destpath + "/downloadedlist.txt\'", {
-      uid: 1000,
-      gid: 1000
-    });
+  const downloadUrl = 'https://raw.githubusercontent.com/jaakkopasanen/AutoEq/master/results/README.md';
+  const listPath = '/data/plugins/audio_interface/fusiondsp/downloadedlist.txt';
+  self.logger.info(logPrefix + ' Downloading updated AutoEq list');
+  return runFile('/usr/bin/wget', ['-O', listPath, downloadUrl], {
+    uid: 1000,
+    gid: 1000
+  }).then(() => {
     self.commandRouter.pushToastMessage('info', self.commandRouter.getI18nString('LIST_SUCCESS_UPDATED'))
+    self.preporcessingfile();
     self.refreshUI();
-    defer.resolve();
-  } catch (err) {
+  }).catch((err) => {
     self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('LIST_FAIL_UPDATE'))
     self.logger.error(logPrefix + ' failed to  download file ' + err);
-  }
-  self.preporcessingfile();
-  return defer.promise;
+    throw err;
+  });
 }
 
 FusionDsp.prototype.preporcessingfile = function () {
@@ -5928,7 +6224,6 @@ FusionDsp.prototype.resampling = function (data) {
 //here we save value for converted file
 FusionDsp.prototype.fileconvert = function (data) {
   const self = this;
-  let defer = libQ.defer();
   if (data['filetoconvert'].value.includes(' ')) {
     self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('WARN_SPACE_INFILTER'));
     self.logger.error(logPrefix + " File name can't contains a space!")
@@ -5943,170 +6238,146 @@ FusionDsp.prototype.fileconvert = function (data) {
   self.config.set('tc', data['tc'].value);
   self.config.set('drcconfig', data['drcconfig'].value);
   self.config.set('drc_sample_rate', data['drc_sample_rate'].value);
-  self.config.set('outputfilename', data['outputfilename']);
-  self.convert()
-  return defer.promise;
+  self.config.set('outputfilename', data['outputfilename'].value || data['outputfilename']);
+  return self.convert();
 };
 
 //here we convert file using sox and generate filter with DRC-FIR
-FusionDsp.prototype.convert = function (data) {
+FusionDsp.prototype.convert = async function (data) {
   const self = this;
-  //let defer = libQ.defer();
-  let drcconfig = self.config.get('drcconfig');
-  let infile = self.config.get('filetoconvert');
-  let sr;
-  if (infile != 'choose a file') {
+  const drcconfig = self.config.get('drcconfig');
+  const infile = self.config.get('filetoconvert');
+  const outSampleRate = Number(self.config.get('drc_sample_rate'));
+  const tc = self.config.get('tc');
 
-    let outfile = self.config.get('outputfilename').replace(/ /g, '-');
-    if ((outfile == '') || (outfile == 'Empty=name-of-file-to-convert')) {
-      outfile = infile.replace(/ /g, '-').replace('.wav', '');
-    };
-    let targetcurve = '\ /usr/share/drc/config/'
-    let outsample = self.config.get('drc_sample_rate');
-    let tc = self.config.get('tc');
-    if (tc != 'choose a file') {
-      let tcsimplified = tc.replace('.txt', '');
-      let ftargetcurve
-      let curve
-      if ((outsample == 44100) || (outsample == 48000) || (outsample == 88200) || (outsample == 96000)) {
-        if (outsample == 44100) {
-          ftargetcurve = '44.1\\ kHz/';
-          curve = '44.1'
-          sr = '44100';
-        } else if (outsample == 48000) {
-          ftargetcurve = '48.0\\ kHz/';
-          curve = '48.0';
-          sr = '48000';
-        } else if (outsample == 88200) {
-          ftargetcurve = '88.2\\ kHz/';
-          curve = '88.2';
-          sr = '88200';
-        } else if (outsample == 96000) {
-          ftargetcurve = '96.0\\ kHz/';
-          curve = '96.0';
-          sr = '96000';
-        };
-
-        let destfile = (filterfolder + outfile + "-" + drcconfig + "-" + tcsimplified + "-" + sr + ".pcm");
-        self.commandRouter.loadI18nStrings();
-        try {
-          let cmdsox = ("/usr/bin/sox " + filtersource + infile + " -t f32 /tmp/tempofilter.pcm rate -v -s " + outsample);
-          execSync(cmdsox);
-          self.logger.info(logPrefix + cmdsox);
-        } catch (e) {
-          self.logger.error(logPrefix + ' input file does not exist ' + e);
-          self.commandRouter.pushToastMessage('error', ' Sox failed to convert file' + e);
-        };
-        try {
-          let title = self.commandRouter.getI18nString('FILTER_GENE_TITLE') + destfile;
-          let mess = self.commandRouter.getI18nString('FILTER_GENE_MESS');
-          let modalData = {
-            title: title,
-            message: mess,
-            size: 'lg'
-          };
-          self.commandRouter.broadcastMessage("openModal", modalData);
-
-          //here we compose cmde for drc
-          //  let composedcmde = ("/usr/bin/drc --BCInFile=/tmp/tempofilter.pcm --PSNormType=E --PSNormFactor=1 --PTType=N --PSPointsFile=" + tccurvepath + tc + " --PSOutFile=" + destfile + targetcurve + ftargetcurve + drcconfig + "-" + curve + ".drc");
-          let composedcmde = ("/usr/bin/drc --BCInFile=/tmp/tempofilter.pcm --PTType=N --PSPointsFile=" + tccurvepath + tc + " --PSOutFile=" + destfile + targetcurve + ftargetcurve + drcconfig + "-" + curve + ".drc");
-          //and execute it...
-          execSync(composedcmde, {
-            uid: 1000,
-            gid: 1000
-          });
-          self.logger.info(logPrefix + composedcmde);
-          self.commandRouter.pushToastMessage('success', 'Filter ' + destfile + ' generated, Refresh the page to see it');
-          self.refreshUI()
-          // return self.commandRouter.reloadUi();
-        } catch (e) {
-          self.logger.error(logPrefix + ' drc failed to create filter ' + e);
-          self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('FILTER_GENE_FAIL') + e);
-        };
-      } else {
-        self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('FILTER_GENE_FAIL_RATE'));
-      };
-    } else {
-      self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('FILTER_GENE_FAIL_TC'));
-    };
-  } else {
+  if (!infile || infile === 'choose a file') {
     self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('FILTER_GENE_FAIL_FILE'));
+    return;
+  }
+  if (!tc || tc === 'choose a file') {
+    self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('FILTER_GENE_FAIL_TC'));
+    return;
+  }
+
+  const sampleRateConfig = {
+    44100: { curve: '44.1', directory: '44.1 kHz' },
+    48000: { curve: '48.0', directory: '48.0 kHz' },
+    88200: { curve: '88.2', directory: '88.2 kHz' },
+    96000: { curve: '96.0', directory: '96.0 kHz' }
+  }[outSampleRate];
+  if (!sampleRateConfig) {
+    self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('FILTER_GENE_FAIL_RATE'));
+    return;
+  }
+
+  const safePath = (root, filename) => {
+    if (typeof filename !== 'string' || !filename || path.basename(filename) !== filename || filename === '.' || filename === '..') {
+      throw new Error('Invalid filename');
+    }
+    return path.join(root, filename);
   };
+
+  try {
+    const inputPath = safePath(filtersource, infile);
+    const targetCurvePath = safePath(tccurvepath, tc);
+    const configuredOutput = self.config.get('outputfilename');
+    let outputName = (configuredOutput || '').replace(/ /g, '-');
+    if (!outputName || outputName === 'Empty=name-of-file-to-convert') {
+      outputName = infile.replace(/ /g, '-').replace(/\.wav$/i, '');
+    }
+    const targetCurveName = tc.replace(/\.txt$/i, '');
+    const outputPath = safePath(filterfolder, `${outputName}-${drcconfig}-${targetCurveName}-${outSampleRate}.pcm`);
+    const drcConfigPath = safePath(path.join('/usr/share/drc/config', sampleRateConfig.directory),
+      `${drcconfig}-${sampleRateConfig.curve}.drc`);
+
+    self.commandRouter.loadI18nStrings();
+    await runFile('/usr/bin/sox', [
+      inputPath, '-t', 'f32', '/tmp/tempofilter.pcm', 'rate', '-v', '-s', String(outSampleRate)
+    ]);
+
+    const modalData = {
+      title: self.commandRouter.getI18nString('FILTER_GENE_TITLE') + outputPath,
+      message: self.commandRouter.getI18nString('FILTER_GENE_MESS'),
+      size: 'lg'
+    };
+    self.commandRouter.broadcastMessage('openModal', modalData);
+
+    await runFile('/usr/bin/drc', [
+      '--BCInFile=/tmp/tempofilter.pcm',
+      '--PTType=N',
+      '--PLMaxGain=1.0',
+      `--PSPointsFile=${targetCurvePath}`,
+      `--PSOutFile=${outputPath}`,
+      drcConfigPath
+    ], {
+      uid: 1000,
+      gid: 1000
+    });
+    self.commandRouter.pushToastMessage('success', 'Filter ' + outputPath + ' generated, Refresh the page to see it');
+    self.refreshUI();
+  } catch (error) {
+    self.logger.error(logPrefix + ' Filter conversion failed: ' + error.message);
+    self.commandRouter.pushToastMessage('error', self.commandRouter.getI18nString('FILTER_GENE_FAIL') + error.message);
+  }
 };
 
 //--------------Tools Section----------------
 
 //here we download and install tools
-FusionDsp.prototype.installtools = function (data) {
+FusionDsp.prototype.installtools = async function (data) {
   const self = this;
-  return new Promise(function (resolve, reject) {
+  const archivePath = '/tmp/tools.tar.xz';
+  const toolsDirectory = path.resolve('/data', toolspath);
+  const downloadUrl = 'https://github.com/balbuze/volumio-plugins/raw/alsa_modular/plugins/audio_interface/FusionDsp/tools/tools.tar.xz';
+  const modalData = {
+    title: self.commandRouter.getI18nString('TOOLS_INSTALL_TITLE'),
+    message: self.commandRouter.getI18nString('TOOLS_INSTALL_WAIT'),
+    size: 'lg'
+  };
+  self.commandRouter.broadcastMessage('openModal', modalData);
+
+  try {
+    await runFile('/usr/bin/wget', ['-O', archivePath, downloadUrl]);
+    await runFile('/bin/tar', ['-xf', archivePath, '-C', toolsDirectory]);
+    self.config.set('toolsfiletoplay', self.commandRouter.getI18nString('TOOLS_CHOOSE_FILE'));
+    self.config.set('toolsinstalled', true);
+    self.refreshUI();
+    setTimeout(function () {
+      self.commandRouter.executeOnPlugin('music_service', 'mpd', 'updateMpdDB');
+      self.logger.info(logPrefix + ' Updating database for tools');
+    }, 1500);
+  } catch (err) {
+    self.logger.error(logPrefix + ' An error occurred while downloading or installing tools: ' + err.message);
+    self.commandRouter.pushToastMessage('error', 'An error occurred while downloading or installing tools');
+    throw err;
+  } finally {
     try {
-      // Show modal to inform the user about the installation
-      let modalData = {
-        title: self.commandRouter.getI18nString('TOOLS_INSTALL_TITLE'),
-        message: self.commandRouter.getI18nString('TOOLS_INSTALL_WAIT'),
-        size: 'lg'
-      };
-      self.commandRouter.broadcastMessage("openModal", modalData);
-
-      // Download and install tools
-      execSync('/usr/bin/wget -P /tmp https://github.com/balbuze/volumio-plugins/raw/alsa_modular/plugins/audio_interface/FusionDsp/tools/tools.tar.xz');
-      execSync(`tar -xf /tmp/tools.tar.xz -C /data/${toolspath}`);
-      execSync('/bin/rm /tmp/tools.tar.xz*');
-
-      // Update configuration
-      self.config.set('toolsfiletoplay', self.commandRouter.getI18nString('TOOLS_CHOOSE_FILE'));
-      self.config.set('toolsinstalled', true);
-
-      // Refresh UI and emit update after a delay
-      self.refreshUI();
-      setTimeout(function () {
-        //  self.socket.emit('updateDb');
-        self.commandRouter.executeOnPlugin('music_service', 'mpd', 'updateMpdDB');
-
-        self.logger.info(logPrefix + ' Updapting dB for tools ');
-
-      }, 1500);
-
-      // Close the modal and resolve the promise
-      self.commandRouter.broadcastMessage("closeModal");
-      resolve();
-    } catch (err) {
-      // Log the error and notify the user
-      self.logger.error(logPrefix + ' An error occurred while downloading or installing tools: ' + err.message);
-      self.commandRouter.pushToastMessage('error', 'An error occurred while downloading or installing tools');
-
-      // Close the modal and reject the promise
-      self.commandRouter.broadcastMessage("closeModal");
-      reject(err);
+      await fs.remove(archivePath);
+    } catch (cleanupError) {
+      self.logger.warn(logPrefix + ' Could not remove temporary tools archive: ' + cleanupError.message);
     }
-  });
+    self.commandRouter.broadcastMessage('closeModal');
+  }
 };
 
 //here we remove tools
-FusionDsp.prototype.removetools = function (data) {
+FusionDsp.prototype.removetools = async function (data) {
   const self = this;
 
   self.commandRouter.pushToastMessage('info', self.commandRouter.getI18nString('TOOLS_REMOVE'));
-  return new Promise(function (resolve, reject) {
-
-    try {
-
-      let cp6 = execSync('/bin/rm /data/' + toolspath + "/*");
-    } catch (err) {
-      self.logger.error(logPrefix + ' An error occurs while removing tools');
-      self.commandRouter.pushToastMessage('error', 'An error occurs while removing tools');
-    }
-    resolve();
-
+  const toolsDirectory = path.resolve('/data', toolspath);
+  try {
+    const entries = await fs.readdir(toolsDirectory);
+    await Promise.all(entries.map((entry) => fs.remove(path.join(toolsDirectory, entry))));
     self.config.set('toolsinstalled', false);
     self.config.set('toolsfiletoplay', self.commandRouter.getI18nString('TOOLS_NO_FILE'));
     self.refreshUI();
-    //self.socket.emit('updateDb');
     self.commandRouter.executeOnPlugin('music_service', 'mpd', 'updateMpdDB');
-
-
-  });
+  } catch (err) {
+    self.logger.error(logPrefix + ' An error occurs while removing tools: ' + err.message);
+    self.commandRouter.pushToastMessage('error', 'An error occurs while removing tools');
+    throw err;
+  }
 };
 //------ actions tools------------
 
