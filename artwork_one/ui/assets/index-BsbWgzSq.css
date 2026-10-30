@@ -3040,19 +3040,21 @@ body#artwork #np.np--empty .np-empty__intro {
   align-items: flex-start;
 }
 body#artwork #np.np--empty .np-empty__icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 18px;
-  display: grid;
-  place-items: center;
+  width: clamp(96px, 11vw, 136px);
+  aspect-ratio: 1;
+  border-radius: 16px;
+  overflow: hidden;
   background: var(--fill-10);
   border: 1px solid var(--fill-13);
-  margin-bottom: 22px;
+  margin-bottom: 24px;
 }
-body#artwork #np.np--empty .np-empty__icon .material-symbols-rounded {
-  font-size: 30px;
-  color: var(--ink-2);
+body#artwork #np.np--empty .np-empty__icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
+body#artwork #np.np--empty { /* Volumio's own cover: nothing playing */ }
 body#artwork #np.np--empty .np-empty__title {
   margin: 0;
   font-family: var(--font-ui);
@@ -4001,6 +4003,17 @@ body#artwork #artwork-home .home-pin__menu .dropdown-menu {
 
 .main__list .album__tracks:last-child {
   padding-bottom: 12px;
+}
+
+/* a long list drawn a window at a time (VirtualItems): the list's ends carry that padding, so a row's height is the same wherever the window is */
+body#artwork .main__list.aw-virtual {
+  padding-block: 12px;
+}
+body#artwork .main__list.aw-virtual > .album__tracks:first-child {
+  padding-top: 0;
+}
+body#artwork .main__list.aw-virtual > .album__tracks:last-child {
+  padding-bottom: 0;
 }
 
 .music-card__wrapper {
@@ -19058,9 +19071,22 @@ body#artwork .aw-amb__idle {
   gap: clamp(20px, 5.4vh, 40px);
 }
 
-body#artwork .aw-amb__clock--idle {
+body#artwork .aw-amb__idle-cover {
+  width: clamp(120px, 26vh, 300px);
+  height: clamp(120px, 26vh, 300px);
+  border-radius: clamp(10px, 1.4vh, 16px);
+  object-fit: cover;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+} /* Volumio's own cover */
+/* the same in every layout: the layouts place the playing clock (absolute, in a corner or above the track), not this one */
+body#artwork .aw-amb .aw-amb__idle .aw-amb__clock--idle {
   position: static;
-  font-size: clamp(96px, 25vh, 260px);
+  inset: auto;
+  transform: none;
+  margin: 0;
+  color: var(--amb-ink, #fff);
+  text-shadow: none;
+  font-size: clamp(64px, 12vh, 132px);
   line-height: 0.9;
   letter-spacing: -0.03em;
 }
