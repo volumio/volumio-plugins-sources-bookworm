@@ -1,6 +1,6 @@
 {
     "name": "just_oled",
-    "version": "0.1.6",
+    "version": "0.2.2",
     "description": "Spectrum, VU, now playing and a clock on any I2C or SPI OLED, with the player's boot and shutdown",
     "main": "index.js",
     "author": "Just a Nerd",
@@ -19,7 +19,7 @@
             "amd64"
         ],
         "details": "One plugin for the small OLED screens: SSD1306, SSD1309, SSD1315, SSD1305, SH1106, SH1107, SSD1327, SSD1322, SH1122, CH1120, and the colour SSD1331 and SSD1351, over I2C or SPI. An audio tap in the ALSA chain measures every source without touching the sound; the display shows a spectrum, VU bars, the track, a clock and date, and says when the player boots, restarts and shuts down.",
-        "changelog": "0.1.6 The plugin's author is Just a Nerd in the store listing."
+        "changelog": "0.2.2 The ILI9341 draws the right way round (it was mirrored); verified on a 2.8 inch board. ssd1306_128x32, ssd1306_128x64 and sh1106_128x64 verified over I2C."
     },
     "engines": {
         "node": ">=20",

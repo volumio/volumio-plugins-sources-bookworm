@@ -29,11 +29,19 @@ var ASOUND_FILE = '/etc/asound.conf';
 var ASOUND_MARK = 'Just OLED section';
 var USERCONFIG = '/boot/userconfig.txt';
 var id = 'just_oled: ';
+// How often the daemon is asked who it is, so one started without the
+// plugin (after a crash, an update, a hand restart) gets the player's
+// state rather than waiting for the next change.
+var HEARTBEAT_MS = 15000;
 
-// The keys each settings section saves, and how each is read from the form.
+// How each known key is read from the form. The keys a section saves are
+// UIConfig.json's, read when Save is pressed: Volumio keeps a plugin's
+// code in memory across an update, so a control added by the update is
+// saved by the code of the version before.
 var SELECTS = ['connection', 'panel', 'i2c_address', 'i2c_speed', 'rotate', 'face', 'track_text', 'time_display', 'theme', 'idle_screen', 'clock_format', 'date_format'];
-var NUMBERS = ['i2c_bus', 'i2c_sda', 'i2c_scl', 'spi_bus', 'spi_cs', 'gpio_dc', 'gpio_reset', 'meter_gain', 'pause_timeout', 'idle_timeout'];
+var NUMBERS = ['i2c_bus', 'i2c_sda', 'i2c_scl', 'spi_bus', 'spi_cs', 'gpio_dc', 'gpio_reset', 'gpio_bl', 'meter_gain', 'pause_timeout', 'idle_timeout'];
 var SWITCHES = ['show_lifecycle', 'show_format', 'peaks', 'meter_wide', 'pause_standby', 'show_ip'];
+var UI_CONFIG = path.join(__dirname, 'UIConfig.json');
 
 module.exports = JustOled;
 
@@ -44,6 +52,8 @@ function JustOled(context) {
     this.configManager = context.configManager;
     this.volumioSocket = null;
     this.readyTimer = null;
+    this.heartbeat = null;
+    this.daemonPid = null;
     this.restartAsked = false;
 }
 
@@ -75,6 +85,7 @@ JustOled.prototype.onStart = function () {
         self.tellReady(10);
     });
     self.followPlayer();
+    self.heartbeat = setInterval(function () { self.checkDaemon(); }, HEARTBEAT_MS);
     // Volumio reads a plugin's ALSA contribution from the list it built at
     // start; a plugin installed since then joins the chain after a restart.
     setTimeout(function () { self.checkAlsaChain(); }, 12000);
@@ -86,6 +97,8 @@ JustOled.prototype.onStart = function () {
 JustOled.prototype.onStop = function () {
     var self = this;
     if (self.readyTimer) { clearTimeout(self.readyTimer); self.readyTimer = null; }
+    if (self.heartbeat) { clearInterval(self.heartbeat); self.heartbeat = null; }
+    self.daemonPid = null;
     if (self.volumioSocket) {
         try { self.volumioSocket.off('pushState'); self.volumioSocket.disconnect(); } catch (e) { /* gone already */ }
         self.volumioSocket = null;
@@ -218,6 +231,51 @@ JustOled.prototype.send = function (message, done) {
     client.on('close', function () { finish(null); });
 };
 
+// One line to the daemon and its one-line answer; `done(err, reply)` once.
+JustOled.prototype.ask = function (message, done) {
+    var finished = false;
+    var finish = function (err, reply) { if (!finished) { finished = true; done(err, reply); } };
+    var got = '';
+    var client = net.createConnection(socketPath());
+    client.setTimeout(2000);
+    client.on('connect', function () { client.write(JSON.stringify(message) + '\n'); });
+    client.on('data', function (chunk) {
+        got += chunk.toString();
+        var nl = got.indexOf('\n');
+        if (nl !== -1) {
+            var reply = null;
+            try { reply = JSON.parse(got.slice(0, nl)); } catch (e) { /* not ours */ }
+            client.end();
+            finish(reply ? null : new Error('no answer'), reply);
+        }
+    });
+    client.on('error', function (e) { finish(e); });
+    client.on('timeout', function () { client.destroy(); finish(new Error('timeout')); });
+    client.on('close', function () { finish(new Error('closed')); });
+};
+
+// Whether `pong` comes from a daemon other than the one last seen as `known`.
+function daemonIsNew(pong, known) {
+    return !!pong && pong.kind === 'pong' && typeof pong.pid === 'number' && pong.pid !== known;
+}
+
+// The heartbeat: a daemon not seen before is given the player's state,
+// fetched from Volumio so the position is current; a state replayed from
+// memory would set the clock back to where it was when it arrived. The
+// first sighting counts too: a daemon up later than the ready retries
+// would otherwise wait for the player's next change.
+JustOled.prototype.checkDaemon = function () {
+    var self = this;
+    self.ask({ kind: 'ping' }, function (err, pong) {
+        if (err || !daemonIsNew(pong, self.daemonPid)) {
+            return;
+        }
+        self.logger.info(id + 'daemon pid ' + pong.pid + (self.daemonPid === null ? '' : ', started anew') + '; asking for the player state');
+        self.daemonPid = pong.pid;
+        self.askState();
+    });
+};
+
 // The daemon shows the ready rows once the plugin has started; a daemon
 // still coming up is told again, a few times.
 JustOled.prototype.tellReady = function (tries) {
@@ -232,7 +290,8 @@ JustOled.prototype.tellReady = function (tries) {
 };
 
 // The player's state, as Volumio pushes it, to the daemon: the status and
-// what is playing, for the now-playing page.
+// what is playing, for the now-playing page. A (re)connected link asks
+// for the state, so nothing pushed while it was down is missed.
 JustOled.prototype.followPlayer = function () {
     var self = this;
     self.volumioSocket = io.connect('http://localhost:3000');
@@ -243,15 +302,22 @@ JustOled.prototype.followPlayer = function () {
         self.lastState = stateForDaemon(state);
         self.send(self.lastState);
     });
-    self.volumioSocket.emit('getState', '');
+    self.volumioSocket.on('connect', function () { self.askState(); });
+};
+
+// Volumio's current state, which comes back as a pushState.
+JustOled.prototype.askState = function () {
+    if (this.volumioSocket) {
+        this.volumioSocket.emit('getState', '');
+    }
 };
 
 JustOled.prototype.pushState = function () {
     var self = this;
     if (self.lastState) {
         self.send(self.lastState);
-    } else if (self.volumioSocket) {
-        self.volumioSocket.emit('getState', '');
+    } else {
+        self.askState();
     }
 };
 
@@ -330,7 +396,8 @@ JustOled.prototype.setUIConfig = function () { };
 JustOled.prototype.getConf = function (varName) { return this.config.get(varName); };
 JustOled.prototype.setConf = function (varName, varValue) { this.config.set(varName, varValue); };
 
-// A form value into the store, by the kind of control it came from.
+// A form value into the store, by the kind of control it came from; a
+// key not in the lists is read by its shape.
 JustOled.prototype.take = function (data, key) {
     var self = this;
     if (!(key in data)) {
@@ -344,13 +411,33 @@ JustOled.prototype.take = function (data, key) {
         if (!isNaN(n)) { self.config.set(key, n); }
     } else if (SWITCHES.indexOf(key) !== -1) {
         self.config.set(key, raw === true || raw === 'true');
+    } else if (raw && typeof raw === 'object' && 'value' in raw) {
+        self.config.set(key, String(raw.value));
+    } else if (typeof raw === 'boolean' || typeof raw === 'number') {
+        self.config.set(key, raw);
     } else {
         self.config.set(key, String(raw === undefined || raw === null ? '' : raw));
     }
 };
 
-JustOled.prototype.saveSection = function (data, keys, after) {
+// The keys the section saved by `method` declares in UIConfig.json.
+function sectionKeys(method) {
+    var ui = JSON.parse(fs.readFileSync(UI_CONFIG, 'utf8'));
+    var section = (ui.sections || []).filter(function (s) {
+        return s.onSave && s.onSave.method === method;
+    })[0];
+    return section && section.saveButton && Array.isArray(section.saveButton.data) ? section.saveButton.data : [];
+}
+
+JustOled.prototype.saveSection = function (data, method, after) {
     var self = this;
+    var keys;
+    try {
+        keys = sectionKeys(method);
+    } catch (e) {
+        self.logger.error(id + method + ': ' + UI_CONFIG + ' unreadable: ' + (e && e.message ? e.message : e));
+        keys = [];
+    }
     keys.forEach(function (key) { self.take(data, key); });
     var name = self.commandRouter.getI18nString('JUSTOLED.PLUGIN_NAME');
     var note = after ? after() : null;
@@ -363,7 +450,7 @@ JustOled.prototype.saveSection = function (data, keys, after) {
 // and the drawings read one set of keys whichever way they were chosen.
 JustOled.prototype.saveConnection = function (data) {
     var self = this;
-    return self.saveSection(data, ['connection', 'panel', 'i2c_bus', 'i2c_sda', 'i2c_scl', 'i2c_address', 'i2c_speed', 'spi_bus', 'spi_cs', 'gpio_dc', 'gpio_reset', 'rotate'], function () {
+    return self.saveSection(data, 'saveConnection', function () {
         var connection = self.config.get('connection');
         var fixed = boot.preset(connection);
         Object.keys(fixed).forEach(function (key) {
@@ -382,15 +469,15 @@ JustOled.prototype.saveConnection = function (data) {
 };
 
 JustOled.prototype.saveFace = function (data) {
-    return this.saveSection(data, ['face', 'track_text', 'time_display', 'show_format', 'peaks', 'meter_gain', 'meter_wide', 'theme', 'colour_title', 'colour_detail', 'colour_bar_low', 'colour_bar_high', 'colour_peak', 'colour_progress']);
+    return this.saveSection(data, 'saveFace');
 };
 
 JustOled.prototype.saveStandby = function (data) {
-    return this.saveSection(data, ['pause_standby', 'pause_timeout', 'idle_screen', 'idle_timeout', 'clock_format', 'date_format', 'show_ip']);
+    return this.saveSection(data, 'saveStandby');
 };
 
 JustOled.prototype.saveMessages = function (data) {
-    return this.saveSection(data, ['show_lifecycle', 'text_boot', 'text_ready', 'text_pause', 'text_shutdown', 'text_reboot']);
+    return this.saveSection(data, 'saveMessages');
 };
 
 // The lines for a custom I2C bus or a faster clock into /boot/userconfig.txt,
@@ -553,3 +640,5 @@ JustOled.prototype.getI18nFile = function (langCode) {
 JustOled.parseI2cdetect = parseI2cdetect;
 JustOled.panelOptions = panelOptions;
 JustOled.stateForDaemon = stateForDaemon;
+JustOled.sectionKeys = sectionKeys;
+JustOled.daemonIsNew = daemonIsNew;
