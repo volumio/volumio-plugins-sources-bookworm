@@ -43,6 +43,10 @@
         "type": "number",
         "value": 25
     },
+    "gpio_bl": {
+        "type": "number",
+        "value": 18
+    },
     "rotate": {
         "type": "string",
         "value": "0"

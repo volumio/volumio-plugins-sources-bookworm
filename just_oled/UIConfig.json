@@ -495,6 +495,7 @@
                     "spi_cs",
                     "gpio_dc",
                     "gpio_reset",
+                    "gpio_bl",
                     "rotate"
                 ]
             },
@@ -524,6 +525,10 @@
                         {
                             "value": "spi_waveshare",
                             "label": "TRANSLATE.JUSTOLED.CONNECTION_SPI_WAVESHARE"
+                        },
+                        {
+                            "value": "spi_pirate",
+                            "label": "TRANSLATE.JUSTOLED.CONNECTION_SPI_PIRATE"
                         },
                         {
                             "value": "spi_custom",
@@ -741,7 +746,30 @@
                     "value": 25,
                     "attributes": [
                         {
-                            "min": 0
+                            "min": -1
+                        },
+                        {
+                            "max": 27
+                        },
+                        {
+                            "step": 1
+                        }
+                    ],
+                    "visibleIf": {
+                        "field": "connection",
+                        "value": "spi_custom"
+                    }
+                },
+                {
+                    "id": "gpio_bl",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.JUSTOLED.GPIO_BL",
+                    "doc": "TRANSLATE.JUSTOLED.GPIO_BL_DOC",
+                    "value": 18,
+                    "attributes": [
+                        {
+                            "min": -1
                         },
                         {
                             "max": 27
@@ -770,8 +798,16 @@
                             "label": "TRANSLATE.JUSTOLED.ROTATE_0"
                         },
                         {
+                            "value": "90",
+                            "label": "TRANSLATE.JUSTOLED.ROTATE_90"
+                        },
+                        {
                             "value": "180",
                             "label": "TRANSLATE.JUSTOLED.ROTATE_180"
+                        },
+                        {
+                            "value": "270",
+                            "label": "TRANSLATE.JUSTOLED.ROTATE_270"
                         }
                     ]
                 },

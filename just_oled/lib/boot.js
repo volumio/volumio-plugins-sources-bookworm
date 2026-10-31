@@ -8,13 +8,18 @@ const MARK_BEGIN = '# >>> just_oled';
 const MARK_END = '# <<< just_oled';
 
 // The pins each preset stands for. `custom` leaves the stored values alone.
+// A pin of -1 is a line the board does not bring out; the daemon reads it
+// as not wired. The backlight is only driven on a TFT LCD.
 const PRESETS = {
     i2c: { bus: 'i2c', i2c_bus: 1, i2c_sda: 2, i2c_scl: 3, i2c_address: 'auto' },
     i2c_custom: { bus: 'i2c' },
-    // The luma library's and mpd_oled's defaults.
-    spi: { bus: 'spi', spi_bus: 0, spi_cs: 0, gpio_dc: 24, gpio_reset: 25 },
+    // The luma library's and mpd_oled's defaults; the backlight where
+    // Waveshare's TFT demos put it.
+    spi: { bus: 'spi', spi_bus: 0, spi_cs: 0, gpio_dc: 24, gpio_reset: 25, gpio_bl: 18 },
     // The mapping printed on Waveshare's module pages.
-    spi_waveshare: { bus: 'spi', spi_bus: 0, spi_cs: 0, gpio_dc: 25, gpio_reset: 27 },
+    spi_waveshare: { bus: 'spi', spi_bus: 0, spi_cs: 0, gpio_dc: 25, gpio_reset: 27, gpio_bl: 18 },
+    // Pimoroni's Pirate Audio and Display HAT Mini: CE1, no reset line.
+    spi_pirate: { bus: 'spi', spi_bus: 0, spi_cs: 1, gpio_dc: 9, gpio_reset: -1, gpio_bl: 13 },
     spi_custom: { bus: 'spi' },
 };
 
