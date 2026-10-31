@@ -1,0 +1,1385 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_PAGE_LABEL"
+  },
+  "sections": [
+    {
+      "id": "section_general",
+      "element": "section",
+      "label": "TRANSLATE.GENERAL_SETTINGS",
+      "icon": "fa-cog",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/ai_autopilot",
+        "method": "saveGeneralSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "enabled",
+          "source",
+          "trigger_mode",
+          "keep_ahead_count",
+          "cooldown_sec",
+          "http_api_port",
+          "history_window",
+          "avoid_same_album_window",
+          "avoid_same_artist_window",
+          "feedback_use_skip",
+          "verbose_log"
+        ]
+      },
+      "content": [
+        {
+          "id": "enabled",
+          "element": "switch",
+          "label": "TRANSLATE.ENABLED",
+          "value": true
+        },
+        {
+          "id": "source",
+          "element": "select",
+          "label": "TRANSLATE.SOURCE",
+          "doc": "TRANSLATE.SOURCE_DOC",
+          "value": { "value": "auto", "label": "Auto (any)" },
+          "options": [
+            { "value": "auto",  "label": "Auto (any)" },
+            { "value": "qobuz", "label": "Qobuz" },
+            { "value": "tidal", "label": "TIDAL" },
+            { "value": "mpd",   "label": "Local library (MPD)" }
+          ]
+        },
+        {
+          "id": "trigger_mode",
+          "element": "select",
+          "label": "TRANSLATE.TRIGGER_MODE",
+          "doc": "TRANSLATE.TRIGGER_MODE_DOC",
+          "value": { "value": "keep_ahead", "label": "TRANSLATE.TRIGGER_KEEP_AHEAD" },
+          "options": [
+            { "value": "queue_empty", "label": "TRANSLATE.TRIGGER_QUEUE_EMPTY" },
+            { "value": "keep_ahead", "label": "TRANSLATE.TRIGGER_KEEP_AHEAD" },
+            { "value": "manual", "label": "TRANSLATE.TRIGGER_MANUAL" }
+          ]
+        },
+        {
+          "id": "keep_ahead_count",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.KEEP_AHEAD_COUNT",
+          "doc": "TRANSLATE.KEEP_AHEAD_COUNT_DOC",
+          "value": 3,
+          "attributes": [
+            { "placeholder": "3" },
+            { "min": 1 },
+            { "max": 20 }
+          ]
+        },
+        {
+          "id": "cooldown_sec",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.COOLDOWN_SEC",
+          "doc": "TRANSLATE.COOLDOWN_SEC_DOC",
+          "value": 5,
+          "attributes": [
+            { "placeholder": "5" },
+            { "min": 0 },
+            { "max": 120 }
+          ]
+        },
+        {
+          "id": "history_window",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.HISTORY_WINDOW",
+          "doc": "TRANSLATE.HISTORY_WINDOW_DOC",
+          "value": 20,
+          "attributes": [
+            { "placeholder": "20" },
+            { "min": 1 },
+            { "max": 200 }
+          ]
+        },
+        {
+          "id": "avoid_same_album_window",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.AVOID_ALBUM",
+          "doc": "TRANSLATE.AVOID_ALBUM_DOC",
+          "value": 10,
+          "attributes": [
+            { "placeholder": "10" },
+            { "min": 0 },
+            { "max": 200 }
+          ]
+        },
+        {
+          "id": "avoid_same_artist_window",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.AVOID_ARTIST",
+          "doc": "TRANSLATE.AVOID_ARTIST_DOC",
+          "value": 0,
+          "attributes": [
+            { "placeholder": "0" },
+            { "min": 0 },
+            { "max": 200 }
+          ]
+        },
+        {
+          "id": "http_api_port",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.HTTP_API_PORT",
+          "doc": "TRANSLATE.HTTP_API_PORT_DOC",
+          "value": 8488,
+          "attributes": [
+            { "placeholder": "8488" },
+            { "min": 0 },
+            { "max": 65535 }
+          ]
+        },
+        {
+          "id": "feedback_use_skip",
+          "element": "switch",
+          "label": "TRANSLATE.FEEDBACK_USE_SKIP",
+          "doc": "TRANSLATE.FEEDBACK_USE_SKIP_DOC",
+          "value": false
+        },
+        {
+          "id": "verbose_log",
+          "element": "switch",
+          "label": "TRANSLATE.VERBOSE_LOG",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": "section_recommender",
+      "element": "section",
+      "label": "TRANSLATE.RECOMMENDER_SETTINGS",
+      "icon": "fa-brain",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/ai_autopilot",
+        "method": "saveRecommenderSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "recommender",
+          "llm_provider",
+          "llm_api_key_anthropic",
+          "llm_api_key_openai",
+          "llm_api_key_google",
+          "llm_api_key_groq",
+          "llm_api_key_deepseek",
+          "llm_api_key_xai",
+          "llm_api_key_mistral",
+          "llm_api_key_openrouter",
+          "llm_api_key_perplexity",
+          "llm_api_key_together",
+          "llm_api_key_custom",
+          "llm_model_anthropic",
+          "llm_model_openai",
+          "llm_model_google",
+          "llm_model_groq",
+          "llm_model_deepseek",
+          "llm_model_xai",
+          "llm_model_mistral",
+          "llm_model_openrouter",
+          "llm_model_perplexity",
+          "llm_model_together",
+          "llm_model_ollama",
+          "llm_model_custom",
+          "llm_base_url",
+          "prompt_preset_selected",
+          "prompt_sub_default",
+          "prompt_sub_jazz_curator",
+          "prompt_sub_eclectic_explorer",
+          "prompt_sub_greatest_hits",
+          "prompt_sub_mood_matcher",
+          "prompt_sub_deep_cuts",
+          "prompt_sub_discovery",
+          "prompt_sub_era_faithful",
+          "prompt_sub_genre_faithful",
+          "prompt_sub_mood_shifter",
+          "prompt_sub_rock_curator",
+          "prompt_sub_electronic_curator",
+          "prompt_sub_hiphop_curator",
+          "prompt_sub_classical_curator",
+          "prompt_sub_metal_curator",
+          "prompt_sub_folk_acoustic",
+          "prompt_sub_soul_funk",
+          "prompt_sub_world_music",
+          "prompt_sub_ambient_focus",
+          "prompt_sub_pop_curator",
+          "prompt_sub_country_americana",
+          "prompt_sub_blues_curator",
+          "prompt_sub_rnb_curator",
+          "prompt_sub_cinematic",
+          "prompt_sub_activity_dj",
+          "prompt_sub_sonic_signature",
+          "prompt_sub_lyrical_theme",
+          "hint_preset_selected",
+          "energy_min",
+          "energy_max",
+          "llm_hints",
+          "llm_system_prompt",
+          "lastfm_api_key",
+          "lastfm_user",
+          "spotify_client_id",
+          "spotify_client_secret",
+          "spotify_refresh_token"
+        ]
+      },
+      "content": [
+        {
+          "id": "recommender",
+          "element": "select",
+          "label": "TRANSLATE.RECOMMENDER",
+          "doc": "TRANSLATE.RECOMMENDER_DOC",
+          "value": { "value": "llm", "label": "LLM (Claude/OpenAI)" },
+          "options": [
+            { "value": "llm",     "label": "LLM (Claude/OpenAI)" },
+            { "value": "lastfm",  "label": "Last.fm / ListenBrainz" },
+            { "value": "spotify", "label": "Spotify Recommendations" },
+            { "value": "local",   "label": "Local history model" }
+          ]
+        },
+        {
+          "id": "llm_provider",
+          "element": "select",
+          "label": "TRANSLATE.LLM_PROVIDER",
+          "doc": "TRANSLATE.LLM_PROVIDER_DOC",
+          "value": { "value": "anthropic", "label": "Anthropic (Claude)" },
+          "options": [
+            { "value": "anthropic",   "label": "Anthropic (Claude)" },
+            { "value": "openai",      "label": "OpenAI (GPT)" },
+            { "value": "google",      "label": "Google (Gemini)" },
+            { "value": "groq",        "label": "Groq (fast Llama/Mixtral)" },
+            { "value": "deepseek",    "label": "DeepSeek" },
+            { "value": "xai",         "label": "xAI (Grok)" },
+            { "value": "mistral",     "label": "Mistral" },
+            { "value": "openrouter",  "label": "OpenRouter (multi-model)" },
+            { "value": "perplexity",  "label": "Perplexity" },
+            { "value": "together",    "label": "Together AI" },
+            { "value": "ollama",      "label": "Ollama (local, no key)" },
+            { "value": "custom",      "label": "Custom (OpenAI-compatible)" }
+          ],
+          "visibleIf": { "field": "recommender", "value": "llm" }
+        },
+        {
+          "id": "get_key_anthropic",
+          "element": "button",
+          "label": "TRANSLATE.GET_KEY_ANTHROPIC",
+          "onClick": { "type": "openUrl", "url": "https://console.anthropic.com/settings/keys" },
+          "visibleIf": { "field": "llm_provider", "value": "anthropic" }
+        },
+        {
+          "id": "get_key_openai",
+          "element": "button",
+          "label": "TRANSLATE.GET_KEY_OPENAI",
+          "onClick": { "type": "openUrl", "url": "https://platform.openai.com/api-keys" },
+          "visibleIf": { "field": "llm_provider", "value": "openai" }
+        },
+        {
+          "id": "get_key_google",
+          "element": "button",
+          "label": "TRANSLATE.GET_KEY_GOOGLE",
+          "onClick": { "type": "openUrl", "url": "https://aistudio.google.com/app/apikey" },
+          "visibleIf": { "field": "llm_provider", "value": "google" }
+        },
+        {
+          "id": "get_key_groq",
+          "element": "button",
+          "label": "TRANSLATE.GET_KEY_GROQ",
+          "onClick": { "type": "openUrl", "url": "https://console.groq.com/keys" },
+          "visibleIf": { "field": "llm_provider", "value": "groq" }
+        },
+        {
+          "id": "get_key_deepseek",
+          "element": "button",
+          "label": "TRANSLATE.GET_KEY_DEEPSEEK",
+          "onClick": { "type": "openUrl", "url": "https://platform.deepseek.com/api_keys" },
+          "visibleIf": { "field": "llm_provider", "value": "deepseek" }
+        },
+        {
+          "id": "get_key_xai",
+          "element": "button",
+          "label": "TRANSLATE.GET_KEY_XAI",
+          "onClick": { "type": "openUrl", "url": "https://console.x.ai/" },
+          "visibleIf": { "field": "llm_provider", "value": "xai" }
+        },
+        {
+          "id": "get_key_mistral",
+          "element": "button",
+          "label": "TRANSLATE.GET_KEY_MISTRAL",
+          "onClick": { "type": "openUrl", "url": "https://console.mistral.ai/api-keys/" },
+          "visibleIf": { "field": "llm_provider", "value": "mistral" }
+        },
+        {
+          "id": "get_key_openrouter",
+          "element": "button",
+          "label": "TRANSLATE.GET_KEY_OPENROUTER",
+          "onClick": { "type": "openUrl", "url": "https://openrouter.ai/keys" },
+          "visibleIf": { "field": "llm_provider", "value": "openrouter" }
+        },
+        {
+          "id": "get_key_perplexity",
+          "element": "button",
+          "label": "TRANSLATE.GET_KEY_PERPLEXITY",
+          "onClick": { "type": "openUrl", "url": "https://www.perplexity.ai/settings/api" },
+          "visibleIf": { "field": "llm_provider", "value": "perplexity" }
+        },
+        {
+          "id": "get_key_together",
+          "element": "button",
+          "label": "TRANSLATE.GET_KEY_TOGETHER",
+          "onClick": { "type": "openUrl", "url": "https://api.together.xyz/settings/api-keys" },
+          "visibleIf": { "field": "llm_provider", "value": "together" }
+        },
+        {
+          "id": "llm_api_key_anthropic",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.LLM_API_KEY",
+          "doc": "TRANSLATE.LLM_API_KEY_DOC",
+          "value": "",
+          "visibleIf": { "field": "llm_provider", "value": "anthropic" }
+        },
+        {
+          "id": "llm_api_key_openai",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.LLM_API_KEY",
+          "doc": "TRANSLATE.LLM_API_KEY_DOC",
+          "value": "",
+          "visibleIf": { "field": "llm_provider", "value": "openai" }
+        },
+        {
+          "id": "llm_api_key_google",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.LLM_API_KEY",
+          "doc": "TRANSLATE.LLM_API_KEY_DOC",
+          "value": "",
+          "visibleIf": { "field": "llm_provider", "value": "google" }
+        },
+        {
+          "id": "llm_api_key_groq",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.LLM_API_KEY",
+          "doc": "TRANSLATE.LLM_API_KEY_DOC",
+          "value": "",
+          "visibleIf": { "field": "llm_provider", "value": "groq" }
+        },
+        {
+          "id": "llm_api_key_deepseek",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.LLM_API_KEY",
+          "doc": "TRANSLATE.LLM_API_KEY_DOC",
+          "value": "",
+          "visibleIf": { "field": "llm_provider", "value": "deepseek" }
+        },
+        {
+          "id": "llm_api_key_xai",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.LLM_API_KEY",
+          "doc": "TRANSLATE.LLM_API_KEY_DOC",
+          "value": "",
+          "visibleIf": { "field": "llm_provider", "value": "xai" }
+        },
+        {
+          "id": "llm_api_key_mistral",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.LLM_API_KEY",
+          "doc": "TRANSLATE.LLM_API_KEY_DOC",
+          "value": "",
+          "visibleIf": { "field": "llm_provider", "value": "mistral" }
+        },
+        {
+          "id": "llm_api_key_openrouter",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.LLM_API_KEY",
+          "doc": "TRANSLATE.LLM_API_KEY_DOC",
+          "value": "",
+          "visibleIf": { "field": "llm_provider", "value": "openrouter" }
+        },
+        {
+          "id": "llm_api_key_perplexity",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.LLM_API_KEY",
+          "doc": "TRANSLATE.LLM_API_KEY_DOC",
+          "value": "",
+          "visibleIf": { "field": "llm_provider", "value": "perplexity" }
+        },
+        {
+          "id": "llm_api_key_together",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.LLM_API_KEY",
+          "doc": "TRANSLATE.LLM_API_KEY_DOC",
+          "value": "",
+          "visibleIf": { "field": "llm_provider", "value": "together" }
+        },
+        {
+          "id": "llm_api_key_custom",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.LLM_API_KEY",
+          "doc": "TRANSLATE.LLM_API_KEY_DOC",
+          "value": "",
+          "visibleIf": { "field": "llm_provider", "value": "custom" }
+        },
+        {
+          "id": "llm_model_anthropic",
+          "element": "select",
+          "label": "TRANSLATE.LLM_MODEL",
+          "doc": "TRANSLATE.LLM_MODEL_DOC",
+          "value": { "value": "", "label": "(default)" },
+          "options": [
+            { "value": "",                            "label": "(default) claude-sonnet-4-6" },
+            { "value": "claude-opus-4-6",             "label": "claude-opus-4-6 (best quality)" },
+            { "value": "claude-sonnet-4-6",           "label": "claude-sonnet-4-6 (balanced)" },
+            { "value": "claude-haiku-4-5",            "label": "claude-haiku-4-5 (fast, cheap)" },
+            { "value": "claude-3-5-sonnet-latest",    "label": "claude-3-5-sonnet-latest" },
+            { "value": "claude-3-5-haiku-latest",     "label": "claude-3-5-haiku-latest" }
+          ],
+          "visibleIf": { "field": "llm_provider", "value": "anthropic" }
+        },
+        {
+          "id": "llm_model_openai",
+          "element": "select",
+          "label": "TRANSLATE.LLM_MODEL",
+          "doc": "TRANSLATE.LLM_MODEL_DOC",
+          "value": { "value": "", "label": "(default)" },
+          "options": [
+            { "value": "",                  "label": "(default) gpt-4o-mini" },
+            { "value": "gpt-4o",            "label": "gpt-4o" },
+            { "value": "gpt-4o-mini",       "label": "gpt-4o-mini (fast, cheap)" },
+            { "value": "gpt-4.1",           "label": "gpt-4.1" },
+            { "value": "gpt-4.1-mini",      "label": "gpt-4.1-mini" },
+            { "value": "o3",                "label": "o3 (reasoning)" },
+            { "value": "o3-mini",           "label": "o3-mini" },
+            { "value": "o1",                "label": "o1 (reasoning)" },
+            { "value": "o1-mini",           "label": "o1-mini" }
+          ],
+          "visibleIf": { "field": "llm_provider", "value": "openai" }
+        },
+        {
+          "id": "llm_model_google",
+          "element": "select",
+          "label": "TRANSLATE.LLM_MODEL",
+          "doc": "TRANSLATE.LLM_MODEL_DOC",
+          "value": { "value": "", "label": "(default)" },
+          "options": [
+            { "value": "",                          "label": "(default) gemini-2.0-flash" },
+            { "value": "gemini-2.5-pro",            "label": "gemini-2.5-pro" },
+            { "value": "gemini-2.5-flash",          "label": "gemini-2.5-flash" },
+            { "value": "gemini-2.0-flash",          "label": "gemini-2.0-flash" },
+            { "value": "gemini-2.0-flash-lite",     "label": "gemini-2.0-flash-lite" },
+            { "value": "gemini-1.5-pro",            "label": "gemini-1.5-pro" }
+          ],
+          "visibleIf": { "field": "llm_provider", "value": "google" }
+        },
+        {
+          "id": "llm_model_groq",
+          "element": "select",
+          "label": "TRANSLATE.LLM_MODEL",
+          "doc": "TRANSLATE.LLM_MODEL_DOC",
+          "value": { "value": "", "label": "(default)" },
+          "options": [
+            { "value": "",                               "label": "(default) llama-3.3-70b-versatile" },
+            { "value": "llama-3.3-70b-versatile",        "label": "llama-3.3-70b-versatile" },
+            { "value": "llama-3.1-8b-instant",           "label": "llama-3.1-8b-instant (fastest)" },
+            { "value": "llama-3.2-3b-preview",           "label": "llama-3.2-3b-preview" },
+            { "value": "mixtral-8x7b-32768",             "label": "mixtral-8x7b-32768" },
+            { "value": "gemma2-9b-it",                   "label": "gemma2-9b-it" },
+            { "value": "deepseek-r1-distill-llama-70b",  "label": "deepseek-r1-distill-llama-70b" }
+          ],
+          "visibleIf": { "field": "llm_provider", "value": "groq" }
+        },
+        {
+          "id": "llm_model_deepseek",
+          "element": "select",
+          "label": "TRANSLATE.LLM_MODEL",
+          "doc": "TRANSLATE.LLM_MODEL_DOC",
+          "value": { "value": "", "label": "(default)" },
+          "options": [
+            { "value": "",                   "label": "(default) deepseek-chat" },
+            { "value": "deepseek-chat",      "label": "deepseek-chat (V3)" },
+            { "value": "deepseek-reasoner",  "label": "deepseek-reasoner (R1)" }
+          ],
+          "visibleIf": { "field": "llm_provider", "value": "deepseek" }
+        },
+        {
+          "id": "llm_model_xai",
+          "element": "select",
+          "label": "TRANSLATE.LLM_MODEL",
+          "doc": "TRANSLATE.LLM_MODEL_DOC",
+          "value": { "value": "", "label": "(default)" },
+          "options": [
+            { "value": "",                   "label": "(default) grok-4-fast" },
+            { "value": "grok-4.20",          "label": "grok-4.20 (latest flagship)" },
+            { "value": "grok-4",             "label": "grok-4" },
+            { "value": "grok-4-fast",        "label": "grok-4-fast (cheapest)" },
+            { "value": "grok-4.1-fast",      "label": "grok-4.1-fast" },
+            { "value": "grok-3",             "label": "grok-3" },
+            { "value": "grok-3-mini",        "label": "grok-3-mini" },
+            { "value": "grok-2-1212",        "label": "grok-2-1212" },
+            { "value": "grok-beta",          "label": "grok-beta" }
+          ],
+          "visibleIf": { "field": "llm_provider", "value": "xai" }
+        },
+        {
+          "id": "llm_model_mistral",
+          "element": "select",
+          "label": "TRANSLATE.LLM_MODEL",
+          "doc": "TRANSLATE.LLM_MODEL_DOC",
+          "value": { "value": "", "label": "(default)" },
+          "options": [
+            { "value": "",                       "label": "(default) mistral-large-latest" },
+            { "value": "mistral-large-latest",   "label": "mistral-large-latest" },
+            { "value": "mistral-medium-latest",  "label": "mistral-medium-latest" },
+            { "value": "mistral-small-latest",   "label": "mistral-small-latest (cheap)" },
+            { "value": "pixtral-large-latest",   "label": "pixtral-large-latest" },
+            { "value": "open-mistral-7b",        "label": "open-mistral-7b" }
+          ],
+          "visibleIf": { "field": "llm_provider", "value": "mistral" }
+        },
+        {
+          "id": "llm_model_openrouter",
+          "element": "select",
+          "label": "TRANSLATE.LLM_MODEL",
+          "doc": "TRANSLATE.LLM_MODEL_DOC",
+          "value": { "value": "", "label": "(default)" },
+          "options": [
+            { "value": "",                                "label": "(default) anthropic/claude-sonnet-4.5" },
+            { "value": "anthropic/claude-sonnet-4.5",     "label": "anthropic/claude-sonnet-4.5" },
+            { "value": "anthropic/claude-opus-4.5",       "label": "anthropic/claude-opus-4.5" },
+            { "value": "openai/gpt-4o-mini",              "label": "openai/gpt-4o-mini" },
+            { "value": "openai/gpt-4o",                   "label": "openai/gpt-4o" },
+            { "value": "google/gemini-2.0-flash-exp:free","label": "google/gemini-2.0-flash-exp:free" },
+            { "value": "google/gemini-2.5-pro",           "label": "google/gemini-2.5-pro" },
+            { "value": "meta-llama/llama-3.3-70b-instruct","label":"meta-llama/llama-3.3-70b-instruct" },
+            { "value": "mistralai/mistral-large-2411",    "label": "mistralai/mistral-large-2411" },
+            { "value": "deepseek/deepseek-chat",          "label": "deepseek/deepseek-chat" },
+            { "value": "x-ai/grok-2-1212",                "label": "x-ai/grok-2-1212" }
+          ],
+          "visibleIf": { "field": "llm_provider", "value": "openrouter" }
+        },
+        {
+          "id": "llm_model_perplexity",
+          "element": "select",
+          "label": "TRANSLATE.LLM_MODEL",
+          "doc": "TRANSLATE.LLM_MODEL_DOC",
+          "value": { "value": "", "label": "(default)" },
+          "options": [
+            { "value": "",                   "label": "(default) llama-3.1-sonar-large-128k-online" },
+            { "value": "sonar",              "label": "sonar" },
+            { "value": "sonar-pro",          "label": "sonar-pro" },
+            { "value": "sonar-reasoning",    "label": "sonar-reasoning" },
+            { "value": "sonar-reasoning-pro","label": "sonar-reasoning-pro" }
+          ],
+          "visibleIf": { "field": "llm_provider", "value": "perplexity" }
+        },
+        {
+          "id": "llm_model_together",
+          "element": "select",
+          "label": "TRANSLATE.LLM_MODEL",
+          "doc": "TRANSLATE.LLM_MODEL_DOC",
+          "value": { "value": "", "label": "(default)" },
+          "options": [
+            { "value": "",                                                    "label": "(default) Llama-3.3-70B Turbo" },
+            { "value": "meta-llama/Llama-3.3-70B-Instruct-Turbo",             "label": "meta-llama/Llama-3.3-70B-Instruct-Turbo" },
+            { "value": "meta-llama/Llama-3.1-8B-Instruct-Turbo",              "label": "meta-llama/Llama-3.1-8B-Instruct-Turbo" },
+            { "value": "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",       "label": "Llama-3.1-405B-Instruct-Turbo" },
+            { "value": "mistralai/Mixtral-8x7B-Instruct-v0.1",                "label": "mistralai/Mixtral-8x7B-Instruct" },
+            { "value": "Qwen/Qwen2.5-72B-Instruct-Turbo",                     "label": "Qwen/Qwen2.5-72B-Instruct-Turbo" },
+            { "value": "deepseek-ai/DeepSeek-V3",                             "label": "deepseek-ai/DeepSeek-V3" }
+          ],
+          "visibleIf": { "field": "llm_provider", "value": "together" }
+        },
+        {
+          "id": "llm_model_ollama",
+          "element": "select",
+          "label": "TRANSLATE.LLM_MODEL",
+          "doc": "TRANSLATE.LLM_MODEL_DOC_OLLAMA",
+          "value": { "value": "", "label": "(default)" },
+          "options": [
+            { "value": "",           "label": "(default) llama3.2" },
+            { "value": "llama3.3",   "label": "llama3.3" },
+            { "value": "llama3.2",   "label": "llama3.2" },
+            { "value": "llama3.1",   "label": "llama3.1" },
+            { "value": "qwen2.5",    "label": "qwen2.5" },
+            { "value": "qwen2.5:14b","label": "qwen2.5:14b" },
+            { "value": "gemma2",     "label": "gemma2" },
+            { "value": "phi4",       "label": "phi4" },
+            { "value": "mistral",    "label": "mistral" }
+          ],
+          "visibleIf": { "field": "llm_provider", "value": "ollama" }
+        },
+        {
+          "id": "llm_model_custom",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.LLM_MODEL_CUSTOM",
+          "doc": "TRANSLATE.LLM_MODEL_CUSTOM_DOC",
+          "value": "",
+          "visibleIf": { "field": "recommender", "value": "llm" }
+        },
+        {
+          "id": "llm_base_url",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.LLM_BASE_URL",
+          "doc": "TRANSLATE.LLM_BASE_URL_DOC",
+          "value": "",
+          "visibleIf": { "field": "llm_provider", "value": "custom" }
+        },
+        {
+          "id": "energy_min",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.ENERGY_MIN",
+          "doc": "TRANSLATE.ENERGY_RANGE_DOC",
+          "value": 0,
+          "attributes": [
+            { "placeholder": "0" },
+            { "min": 0 },
+            { "max": 10 },
+            { "step": 1 }
+          ],
+          "visibleIf": { "field": "recommender", "value": "llm" }
+        },
+        {
+          "id": "energy_max",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.ENERGY_MAX",
+          "doc": "TRANSLATE.ENERGY_RANGE_DOC",
+          "value": 10,
+          "attributes": [
+            { "placeholder": "10" },
+            { "min": 0 },
+            { "max": 10 },
+            { "step": 1 }
+          ],
+          "visibleIf": { "field": "recommender", "value": "llm" }
+        },
+        {
+          "id": "hint_preset_selected",
+          "element": "select",
+          "label": "TRANSLATE.HINT_PRESET",
+          "doc": "TRANSLATE.HINT_PRESET_DOC",
+          "value": { "value": "none", "label": "(none)" },
+          "options": [
+            { "value": "none", "label": "(none)" }
+          ],
+          "visibleIf": { "field": "recommender", "value": "llm" }
+        },
+        {
+          "id": "apply_hint_preset",
+          "element": "button",
+          "label": "TRANSLATE.APPLY_HINT_PRESET",
+          "doc": "TRANSLATE.APPLY_HINT_PRESET_DOC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/ai_autopilot",
+              "method": "applyHintPreset",
+              "data": {}
+            }
+          },
+          "visibleIf": { "field": "recommender", "value": "llm" }
+        },
+        {
+          "id": "llm_hints",
+          "element": "input",
+          "type": "textarea",
+          "label": "TRANSLATE.LLM_HINTS",
+          "doc": "TRANSLATE.LLM_HINTS_DOC",
+          "value": "",
+          "attributes": [
+            { "rows": 6 },
+            { "wrap": "soft" }
+          ],
+          "visibleIf": { "field": "recommender", "value": "llm" }
+        },
+        {
+          "id": "prompt_preset_selected",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_PRESET",
+          "doc": "TRANSLATE.PROMPT_PRESET_DOC",
+          "value": { "value": "default", "label": "Default" },
+          "options": [
+            { "value": "default", "label": "Default" }
+          ],
+          "visibleIf": { "field": "recommender", "value": "llm" }
+        },
+        {
+          "id": "prompt_sub_default",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "default" }
+        },
+        {
+          "id": "prompt_sub_jazz_curator",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "jazz_curator" }
+        },
+        {
+          "id": "prompt_sub_eclectic_explorer",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "eclectic_explorer" }
+        },
+        {
+          "id": "prompt_sub_greatest_hits",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "greatest_hits" }
+        },
+        {
+          "id": "prompt_sub_mood_matcher",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "mood_matcher" }
+        },
+        {
+          "id": "prompt_sub_deep_cuts",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "deep_cuts" }
+        },
+        {
+          "id": "prompt_sub_discovery",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "discovery" }
+        },
+        {
+          "id": "prompt_sub_era_faithful",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "era_faithful" }
+        },
+        {
+          "id": "prompt_sub_genre_faithful",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "genre_faithful" }
+        },
+        {
+          "id": "prompt_sub_mood_shifter",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "mood_shifter" }
+        },
+        {
+          "id": "prompt_sub_rock_curator",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "rock_curator" }
+        },
+        {
+          "id": "prompt_sub_electronic_curator",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "electronic_curator" }
+        },
+        {
+          "id": "prompt_sub_hiphop_curator",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "hiphop_curator" }
+        },
+        {
+          "id": "prompt_sub_classical_curator",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "classical_curator" }
+        },
+        {
+          "id": "prompt_sub_metal_curator",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "metal_curator" }
+        },
+        {
+          "id": "prompt_sub_folk_acoustic",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "folk_acoustic" }
+        },
+        {
+          "id": "prompt_sub_soul_funk",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "soul_funk" }
+        },
+        {
+          "id": "prompt_sub_world_music",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "world_music" }
+        },
+        {
+          "id": "prompt_sub_ambient_focus",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "ambient_focus" }
+        },
+        {
+          "id": "prompt_sub_pop_curator",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "pop_curator" }
+        },
+        {
+          "id": "prompt_sub_country_americana",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "country_americana" }
+        },
+        {
+          "id": "prompt_sub_blues_curator",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "blues_curator" }
+        },
+        {
+          "id": "prompt_sub_rnb_curator",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "rnb_curator" }
+        },
+        {
+          "id": "prompt_sub_cinematic",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "cinematic" }
+        },
+        {
+          "id": "prompt_sub_activity_dj",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "activity_dj" }
+        },
+        {
+          "id": "prompt_sub_sonic_signature",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "sonic_signature" }
+        },
+        {
+          "id": "prompt_sub_lyrical_theme",
+          "element": "select",
+          "label": "TRANSLATE.PROMPT_SUB",
+          "doc": "TRANSLATE.PROMPT_SUB_DOC",
+          "value": { "value": "", "label": "(parent default)" },
+          "options": [ { "value": "", "label": "(parent default)" } ],
+          "visibleIf": { "field": "prompt_preset_selected", "value": "lyrical_theme" }
+        },
+        {
+          "id": "apply_prompt_preset",
+          "element": "button",
+          "label": "TRANSLATE.APPLY_PROMPT_PRESET",
+          "doc": "TRANSLATE.APPLY_PROMPT_PRESET_DOC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/ai_autopilot",
+              "method": "applyPromptPreset",
+              "data": {}
+            }
+          },
+          "visibleIf": { "field": "recommender", "value": "llm" }
+        },
+        {
+          "id": "llm_system_prompt",
+          "element": "input",
+          "type": "textarea",
+          "label": "TRANSLATE.LLM_SYSTEM_PROMPT",
+          "doc": "TRANSLATE.LLM_SYSTEM_PROMPT_DOC",
+          "value": "",
+          "attributes": [
+            { "rows": 14 },
+            { "wrap": "soft" }
+          ],
+          "visibleIf": { "field": "recommender", "value": "llm" }
+        },
+        {
+          "id": "open_prompt_browser",
+          "element": "button",
+          "label": "TRANSLATE.OPEN_PROMPT_BROWSER",
+          "doc": "TRANSLATE.OPEN_PROMPT_BROWSER_DOC",
+          "onClick": {
+            "type": "openUrl",
+            "url": "data:text/plain;charset=utf-8,(prompt%20empty)"
+          },
+          "visibleIf": { "field": "recommender", "value": "llm" }
+        },
+        {
+          "id": "open_hints_browser",
+          "element": "button",
+          "label": "TRANSLATE.OPEN_HINTS_BROWSER",
+          "doc": "TRANSLATE.OPEN_HINTS_BROWSER_DOC",
+          "onClick": {
+            "type": "openUrl",
+            "url": "data:text/plain;charset=utf-8,(hints%20empty)"
+          },
+          "visibleIf": { "field": "recommender", "value": "llm" }
+        },
+        {
+          "id": "export_prompt_file",
+          "element": "button",
+          "label": "TRANSLATE.EXPORT_PROMPT_FILE",
+          "doc": "TRANSLATE.EXPORT_PROMPT_FILE_DOC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/ai_autopilot",
+              "method": "exportPromptsToFile",
+              "data": {}
+            }
+          },
+          "visibleIf": { "field": "recommender", "value": "llm" }
+        },
+        {
+          "id": "import_prompt_file",
+          "element": "button",
+          "label": "TRANSLATE.IMPORT_PROMPT_FILE",
+          "doc": "TRANSLATE.IMPORT_PROMPT_FILE_DOC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/ai_autopilot",
+              "method": "importPromptsFromFile",
+              "data": {}
+            }
+          },
+          "visibleIf": { "field": "recommender", "value": "llm" }
+        },
+        {
+          "id": "lastfm_api_key",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.LASTFM_API_KEY",
+          "value": "",
+          "visibleIf": { "field": "recommender", "value": "lastfm" }
+        },
+        {
+          "id": "lastfm_user",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.LASTFM_USER",
+          "value": "",
+          "visibleIf": { "field": "recommender", "value": "lastfm" }
+        },
+        {
+          "id": "spotify_client_id",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.SPOTIFY_CLIENT_ID",
+          "value": "",
+          "visibleIf": { "field": "recommender", "value": "spotify" }
+        },
+        {
+          "id": "spotify_client_secret",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.SPOTIFY_CLIENT_SECRET",
+          "value": "",
+          "visibleIf": { "field": "recommender", "value": "spotify" }
+        },
+        {
+          "id": "spotify_refresh_token",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.SPOTIFY_REFRESH_TOKEN",
+          "doc": "TRANSLATE.SPOTIFY_REFRESH_TOKEN_DOC",
+          "value": "",
+          "visibleIf": { "field": "recommender", "value": "spotify" }
+        }
+      ]
+    },
+    {
+      "id": "section_actions",
+      "element": "section",
+      "label": "TRANSLATE.ACTIONS",
+      "icon": "fa-play-circle",
+      "content": [
+        {
+          "id": "dry_run",
+          "element": "button",
+          "label": "TRANSLATE.DRY_RUN",
+          "doc": "TRANSLATE.DRY_RUN_DOC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/ai_autopilot",
+              "method": "dryRun",
+              "data": {}
+            }
+          }
+        },
+        {
+          "id": "run_now",
+          "element": "button",
+          "label": "TRANSLATE.RUN_NOW",
+          "doc": "TRANSLATE.RUN_NOW_DOC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/ai_autopilot",
+              "method": "triggerManual",
+              "data": {}
+            }
+          }
+        },
+        {
+          "id": "list_sources",
+          "element": "button",
+          "label": "TRANSLATE.LIST_SOURCES",
+          "doc": "TRANSLATE.LIST_SOURCES_DOC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/ai_autopilot",
+              "method": "listSources",
+              "data": {}
+            }
+          }
+        },
+        {
+          "id": "check_update",
+          "element": "button",
+          "label": "TRANSLATE.UPDATE_BUTTON",
+          "doc": "TRANSLATE.UPDATE_BUTTON_DOC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/ai_autopilot",
+              "method": "checkForUpdate",
+              "data": {}
+            }
+          }
+        },
+        {
+          "id": "open_remote",
+          "element": "button",
+          "label": "TRANSLATE.OPEN_REMOTE",
+          "doc": "TRANSLATE.OPEN_REMOTE_DOC",
+          "onClick": {
+            "type": "openUrl",
+            "url": "http://volumio.local:8488/"
+          }
+        },
+        {
+          "id": "open_feedback",
+          "element": "button",
+          "label": "TRANSLATE.OPEN_FEEDBACK",
+          "doc": "TRANSLATE.OPEN_FEEDBACK_DOC",
+          "onClick": {
+            "type": "openUrl",
+            "url": "https://github.com/samadi81/volumio-ai-autopilot/issues/new/choose"
+          }
+        },
+        {
+          "id": "like_current",
+          "element": "button",
+          "label": "TRANSLATE.LIKE_CURRENT",
+          "doc": "TRANSLATE.LIKE_CURRENT_DOC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/ai_autopilot",
+              "method": "likeCurrent",
+              "data": {}
+            }
+          }
+        },
+        {
+          "id": "dislike_current",
+          "element": "button",
+          "label": "TRANSLATE.DISLIKE_CURRENT",
+          "doc": "TRANSLATE.DISLIKE_CURRENT_DOC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/ai_autopilot",
+              "method": "dislikeCurrent",
+              "data": {}
+            }
+          }
+        },
+        {
+          "id": "feedback_status",
+          "element": "button",
+          "label": "TRANSLATE.FEEDBACK_STATUS",
+          "doc": "TRANSLATE.FEEDBACK_STATUS_DOC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/ai_autopilot",
+              "method": "feedbackStatus",
+              "data": {}
+            }
+          }
+        },
+        {
+          "id": "clear_feedback",
+          "element": "button",
+          "label": "TRANSLATE.CLEAR_FEEDBACK",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/ai_autopilot",
+              "method": "clearFeedback",
+              "data": {}
+            }
+          }
+        },
+        {
+          "id": "clear_history",
+          "element": "button",
+          "label": "TRANSLATE.CLEAR_HISTORY",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "music_service/ai_autopilot",
+              "method": "clearHistory",
+              "data": {}
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_qobuz_downloads",
+      "element": "section",
+      "label": "TRANSLATE.QOBUZ_DOWNLOADS",
+      "icon": "fa-download",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/ai_autopilot",
+        "method": "saveDownloadSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "download_enabled",
+          "download_dir",
+          "download_quality",
+          "qobuz_email",
+          "qobuz_password",
+          "qobuz_user_id",
+          "qobuz_auth_token",
+          "qobuz_local_user_json",
+          "prefetch_count",
+          "quiet_mode_enabled"
+        ]
+      },
+      "content": [
+        {
+          "id": "download_enabled",
+          "element": "switch",
+          "label": "TRANSLATE.DOWNLOAD_ENABLED",
+          "doc": "TRANSLATE.DOWNLOAD_ENABLED_DOC",
+          "value": false
+        },
+        {
+          "id": "download_dir",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.DOWNLOAD_DIR",
+          "doc": "TRANSLATE.DOWNLOAD_DIR_DOC",
+          "value": "/mnt/INTERNAL/qobuz-tap"
+        },
+        {
+          "id": "download_quality",
+          "element": "select",
+          "label": "TRANSLATE.DOWNLOAD_QUALITY",
+          "doc": "TRANSLATE.DOWNLOAD_QUALITY_DOC",
+          "value": { "value": 7, "label": "24-bit <=96kHz FLAC" },
+          "options": [
+            { "value": 5, "label": "MP3 320" },
+            { "value": 6, "label": "16-bit / 44.1kHz FLAC" },
+            { "value": 7, "label": "24-bit <=96kHz FLAC" },
+            { "value": 27, "label": "24-bit >=96kHz FLAC" }
+          ]
+        },
+        {
+          "id": "qobuz_email",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.QOBUZ_EMAIL",
+          "doc": "TRANSLATE.QOBUZ_CREDENTIALS_DOC",
+          "value": ""
+        },
+        {
+          "id": "qobuz_password",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.QOBUZ_PASSWORD",
+          "doc": "TRANSLATE.QOBUZ_PASSWORD_DOC",
+          "value": ""
+        },
+        {
+          "id": "qobuz_user_id",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.QOBUZ_USER_ID",
+          "doc": "TRANSLATE.QOBUZ_USER_ID_DOC",
+          "value": ""
+        },
+        {
+          "id": "qobuz_auth_token",
+          "element": "input",
+          "type": "password",
+          "label": "TRANSLATE.QOBUZ_AUTH_TOKEN",
+          "doc": "TRANSLATE.QOBUZ_AUTH_TOKEN_DOC",
+          "value": ""
+        },
+        {
+          "id": "qobuz_local_user_json",
+          "element": "input",
+          "type": "textarea",
+          "label": "TRANSLATE.QOBUZ_LOCAL_USER_JSON",
+          "doc": "TRANSLATE.QOBUZ_LOCAL_USER_JSON_DOC",
+          "value": ""
+        },
+        {
+          "id": "qobuz_browser_auth",
+          "element": "button",
+          "label": "TRANSLATE.QOBUZ_BROWSER_AUTH",
+          "doc": "TRANSLATE.QOBUZ_BROWSER_AUTH_DOC",
+          "onClick": {
+            "type": "openUrl",
+            "url": "http://volumio.local:8488/qobuz-auth/start"
+          }
+        },
+        {
+          "id": "prefetch_count",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.PREFETCH_COUNT",
+          "doc": "TRANSLATE.PREFETCH_COUNT_DOC",
+          "value": 0,
+          "attributes": [
+            { "placeholder": "0" },
+            { "min": 0 },
+            { "max": 20 }
+          ]
+        },
+        {
+          "id": "quiet_mode_enabled",
+          "element": "switch",
+          "label": "TRANSLATE.QUIET_MODE",
+          "doc": "TRANSLATE.QUIET_MODE_DOC",
+          "value": false
+        }
+      ]
+    }
+  ]
+}
