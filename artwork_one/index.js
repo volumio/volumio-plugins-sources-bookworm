@@ -37,6 +37,7 @@ var libQ = core('kew');
 var VConf = core('v-conf');
 var fs = require('fs');
 var path = require('path');
+var execFileSync = require('child_process').execFileSync;
 
 var THEMES = ['dark', 'light', 'system'];
 var DELAYS = [-1, 0, 1, 2, 5, 10];   // -1: always in ambient
@@ -55,8 +56,12 @@ var PATHS = {
   ACTIVE_UI: ROOT + '/data/active_volumio_ui',
   CORE_UI_LIST: ROOT + '/volumio/volumioUisList.json',
   SCRIPT_INSTALL: ROOT + '/data/artwork-ui',   // Artwork One 1.x–3.1 put by the older scripts/install.sh
-  OLD_CONF: ROOT + '/data/configuration/miscellanea/artwork_companion/config.json'
+  OLD_CONF: ROOT + '/data/configuration/miscellanea/artwork_companion/config.json',
+  DOWNLOAD: ROOT + '/tmp/downloaded_plugin.zip',   // where the core puts a plugin it is about to install or update
+  CORE_TEMP: ROOT + '/data/temp'                    // where it unpacks it; removed when the update ends, well or not
 };
+var PLUGIN_NAME = 'artwork_one';
+var UPDATE_POLL = 1000, UPDATE_GIVE_UP = 10 * 60 * 1000;
 
 module.exports = ArtworkOne;
 
@@ -94,19 +99,77 @@ ArtworkOne.prototype.onStart = function () {
   return libQ.resolve();
 };
 
-// Stopped — disabled, uninstalled, or updated (the core stops a plugin before replacing its files
-// and starts it again only with Volumio): the interface leaves Volumio's list, and a player showing
-// it is switched to a core interface first, so nobody is left on a page nothing answers for. That
-// it was the active one is remembered: the next start brings it back.
+// Stopped — disabled or uninstalled: the interface leaves Volumio's list, and a player showing it is
+// switched to a core interface first, so nobody is left on a page nothing answers for. That it was the
+// active one is remembered: the next start brings it back.
+// Stopped for an update (the core stops a plugin before replacing its files, and starts it again only
+// with Volumio): the interface stays where it is — the new files arrive in the same folder — and the
+// plugin starts itself again once the core is done, so it does not sit there "On" but inactive with the
+// player switched to Manifest until the next restart.
 ArtworkOne.prototype.onStop = function () {
   var self = this;
   try {
     var active = self.isActive();
-    if (active) { self.switchToCoreUI(); }
     self.config.set('wasActive', active);
+    if (self.isBeingUpdated()) {
+      self.logger.info('[artwork_one] stopped for an update: the interface stays, the plugin starts again when it is done');
+      self.awaitUpdate(active);
+      return libQ.resolve();
+    }
+    if (active) { self.switchToCoreUI(); }
     self.unregisterUI();
   } catch (e) { self.logger.error('[artwork_one] stop: ' + e); }
   return libQ.resolve();
+};
+
+// the core has downloaded a package and is stopping this plugin: an update of Artwork One (a disable or an
+// uninstall downloads nothing; an install of another plugin stops none). The package's own name decides.
+ArtworkOne.prototype.isBeingUpdated = function () {
+  var exists = false;
+  try { exists = fs.existsSync(this.paths.DOWNLOAD); } catch (e) { exists = false; }
+  return exists && this.packageName(this.paths.DOWNLOAD) === PLUGIN_NAME;
+};
+// the name in a plugin package's package.json, with the unzip the core itself uses ('' when unreadable)
+ArtworkOne.prototype.packageName = function (zip) {
+  var dir = path.join(require('os').tmpdir(), 'artwork-one-peek-' + process.pid);
+  try {
+    fs.mkdirSync(dir, { recursive: true });   // miniunzip will not create it
+    execFileSync('/usr/bin/miniunzip', ['-o', zip, 'package.json', '-d', dir], { timeout: 10000, stdio: 'ignore' });
+    return String(this.readJson(path.join(dir, 'package.json'), {}).name || '');
+  } catch (e) { return ''; }
+  finally { try { fs.rmSync(dir, { recursive: true, force: true }); } catch (e) { /* only a temp folder */ } }
+};
+
+// waits for the core to finish (it removes the download and its temp folder at the end, on success and on
+// failure alike), then starts the plugin through the core — its status reads STARTED again — and reloads
+// the screens that showed Artwork One, so they load the new files. A failed update that left no interface
+// behind switches the player to a core interface, as a stop would have.
+ArtworkOne.prototype.awaitUpdate = function (wasActive) {
+  var self = this, started = Date.now();
+  var busy = function () { try { return fs.existsSync(self.paths.DOWNLOAD) || fs.existsSync(self.paths.CORE_TEMP); } catch (e) { return false; } };
+  var tick = function () {
+    if (busy() && Date.now() - started < UPDATE_GIVE_UP) { self.updateTimer = setTimeout(tick, UPDATE_POLL); return; }
+    self.updateTimer = null;
+    self.afterUpdate(wasActive);
+  };
+  self.updateTimer = setTimeout(tick, UPDATE_POLL);
+};
+ArtworkOne.prototype.afterUpdate = function (wasActive) {
+  var self = this;
+  var hasUi = false;
+  try { hasUi = fs.existsSync(path.join(self.paths.UI_DIR, 'index.html')); } catch (e) { hasUi = false; }
+  if (!hasUi) {
+    self.logger.warn('[artwork_one] the update left no interface behind');
+    try { if (self.isActive()) { self.switchToCoreUI(); } self.unregisterUI(); } catch (e) { self.logger.error('[artwork_one] after the update: ' + e); }
+    return;
+  }
+  libQ.resolve()
+    .then(function () { return self.commandRouter.pluginManager.startPlugin('user_interface', PLUGIN_NAME); })
+    .then(function () {
+      self.logger.info('[artwork_one] updated and started again');
+      if (wasActive && self.isActive()) { self.setActiveUI(UI_NAME); }   // the Appearance switch reloads every screen: the new files load
+    })
+    .fail(function (e) { self.logger.error('[artwork_one] could not start again after the update: ' + e); });
 };
 
 // the player showed Artwork One when the plugin was last stopped (an update, or a disable the user
