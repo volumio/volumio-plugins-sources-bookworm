@@ -1,101 +1,326 @@
 {
-  "version": "0.6.2",
-  "wizard_step": 0,
-  "wizard_complete": false,
-  "applied_date": "",
-  "kernel_version": "",
-  "migration_state": "none",
-  "migration_raw_lines": [],
-  "migration_parsed": {},
-  "migration_validation": [],
-  "hardware": {
-    "model": "",
-    "soc": "",
-    "ram_mb": 0,
-    "detected": false
+  "version": {
+    "type": "string",
+    "value": "1.0.0"
   },
-  "primary_output": "hdmi0",
+  "wizard_step": {
+    "type": "number",
+    "value": 0
+  },
+  "wizard_complete": {
+    "type": "boolean",
+    "value": false
+  },
+  "applied_date": {
+    "type": "string",
+    "value": ""
+  },
+  "kernel_version": {
+    "type": "string",
+    "value": ""
+  },
+  "migration_state": {
+    "type": "string",
+    "value": "none"
+  },
+  "migration_raw_lines": {
+    "type": "string",
+    "value": "[]"
+  },
+  "migration_parsed": {
+    "type": "string",
+    "value": "{}"
+  },
+  "migration_validation": {
+    "type": "string",
+    "value": "[]"
+  },
+  "hardware": {
+    "model": {
+      "type": "string",
+      "value": ""
+    },
+    "soc": {
+      "type": "string",
+      "value": ""
+    },
+    "ram_mb": {
+      "type": "number",
+      "value": 0
+    },
+    "detected": {
+      "type": "boolean",
+      "value": false
+    }
+  },
+  "primary_output": {
+    "type": "string",
+    "value": "hdmi0"
+  },
   "hdmi0": {
-    "enabled": true,
-    "mode": "screen_audio",
-    "display_preset": "auto",
-    "custom_timings": "",
-    "custom_params": "",
-    "rotation": 0,
-    "force_hotplug": false,
-    "ignore_edid": false,
-    "boost": 0
+    "enabled": {
+      "type": "boolean",
+      "value": true
+    },
+    "mode": {
+      "type": "string",
+      "value": "screen_audio"
+    },
+    "display_preset": {
+      "type": "string",
+      "value": "auto"
+    },
+    "custom_timings": {
+      "type": "string",
+      "value": ""
+    },
+    "custom_params": {
+      "type": "string",
+      "value": ""
+    },
+    "rotation": {
+      "type": "number",
+      "value": 0
+    },
+    "force_hotplug": {
+      "type": "boolean",
+      "value": false
+    },
+    "ignore_edid": {
+      "type": "boolean",
+      "value": false
+    },
+    "boost": {
+      "type": "number",
+      "value": 0
+    }
   },
   "hdmi1": {
-    "enabled": false,
-    "mode": "none",
-    "display_preset": "auto",
-    "custom_timings": "",
-    "custom_params": "",
-    "rotation": 0,
-    "force_hotplug": false,
-    "ignore_edid": false,
-    "boost": 0
+    "enabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "mode": {
+      "type": "string",
+      "value": "none"
+    },
+    "display_preset": {
+      "type": "string",
+      "value": "auto"
+    },
+    "custom_timings": {
+      "type": "string",
+      "value": ""
+    },
+    "custom_params": {
+      "type": "string",
+      "value": ""
+    },
+    "rotation": {
+      "type": "number",
+      "value": 0
+    },
+    "force_hotplug": {
+      "type": "boolean",
+      "value": false
+    },
+    "ignore_edid": {
+      "type": "boolean",
+      "value": false
+    },
+    "boost": {
+      "type": "number",
+      "value": 0
+    }
   },
   "dsi0": {
-    "enabled": false,
-    "overlay": "rpi-touch-7inch",
-    "rotation": 0,
-    "custom_params": "",
-    "cmdline_video": true,
-    "cmdline_fbcon": true,
-    "cmdline_plymouth": true
+    "enabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "overlay": {
+      "type": "string",
+      "value": "rpi-touch-7inch"
+    },
+    "rotation": {
+      "type": "number",
+      "value": 0
+    },
+    "custom_params": {
+      "type": "string",
+      "value": ""
+    },
+    "cmdline_video": {
+      "type": "boolean",
+      "value": true
+    },
+    "cmdline_fbcon": {
+      "type": "boolean",
+      "value": true
+    },
+    "cmdline_plymouth": {
+      "type": "boolean",
+      "value": true
+    }
   },
   "dsi1": {
-    "enabled": false,
-    "overlay": "rpi-touch-7inch",
-    "rotation": 0,
-    "custom_params": "",
-    "cmdline_video": true,
-    "cmdline_fbcon": true,
-    "cmdline_plymouth": true
+    "enabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "overlay": {
+      "type": "string",
+      "value": "rpi-touch-7inch"
+    },
+    "rotation": {
+      "type": "number",
+      "value": 0
+    },
+    "custom_params": {
+      "type": "string",
+      "value": ""
+    },
+    "cmdline_video": {
+      "type": "boolean",
+      "value": true
+    },
+    "cmdline_fbcon": {
+      "type": "boolean",
+      "value": true
+    },
+    "cmdline_plymouth": {
+      "type": "boolean",
+      "value": true
+    }
   },
   "dpi": {
-    "enabled": false,
-    "overlay": "",
-    "custom_timing": "",
-    "rotation": 0
+    "enabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "overlay": {
+      "type": "string",
+      "value": ""
+    },
+    "custom_timing": {
+      "type": "string",
+      "value": ""
+    },
+    "rotation": {
+      "type": "number",
+      "value": 0
+    }
   },
   "composite": {
-    "enabled": false,
-    "mode": "pal",
-    "aspect": "4:3"
+    "enabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "mode": {
+      "type": "string",
+      "value": "pal"
+    },
+    "aspect": {
+      "type": "string",
+      "value": "4:3"
+    }
   },
   "custom_overlay": {
-    "enabled": false,
-    "line": ""
+    "enabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "line": {
+      "type": "string",
+      "value": ""
+    }
   },
   "kms": {
-    "enabled": true,
-    "mode": "preset",
-    "cma_option": "default",
-    "cma_custom_mb": 256
+    "enabled": {
+      "type": "boolean",
+      "value": true
+    },
+    "mode": {
+      "type": "string",
+      "value": "preset"
+    },
+    "cma_option": {
+      "type": "string",
+      "value": "auto"
+    },
+    "cma_custom_mb": {
+      "type": "number",
+      "value": 256
+    }
   },
   "cmdline_rotation": {
-    "video": true,
-    "fbcon": true,
-    "plymouth": true
+    "video": {
+      "type": "boolean",
+      "value": true
+    },
+    "fbcon": {
+      "type": "boolean",
+      "value": true
+    },
+    "plymouth": {
+      "type": "boolean",
+      "value": true
+    }
   },
-  "ota_behavior": "notify",
+  "ota_behavior": {
+    "type": "string",
+    "value": "notify"
+  },
   "database": {
-    "remote_url": "https://raw.githubusercontent.com/foonerd/pi_screen_setup/refs/heads/main/display_presets.json",
-    "auto_check": true,
-    "check_interval_hours": 24,
-    "last_check": "",
-    "last_update": "",
-    "active_source": "bundled",
-    "cached_version": "",
-    "bundled_version": "",
-    "hostname_override": ""
+    "remote_url": {
+      "type": "string",
+      "value": "https://raw.githubusercontent.com/foonerd/pi_screen_setup/refs/heads/main/display_presets.json"
+    },
+    "auto_check": {
+      "type": "boolean",
+      "value": true
+    },
+    "check_interval_hours": {
+      "type": "number",
+      "value": 24
+    },
+    "last_check": {
+      "type": "string",
+      "value": ""
+    },
+    "last_update": {
+      "type": "string",
+      "value": ""
+    },
+    "active_source": {
+      "type": "string",
+      "value": "bundled"
+    },
+    "cached_version": {
+      "type": "string",
+      "value": ""
+    },
+    "bundled_version": {
+      "type": "string",
+      "value": ""
+    },
+    "hostname_override": {
+      "type": "string",
+      "value": ""
+    }
   },
   "admin": {
-    "enabled": false,
-    "draft_dirty": false,
-    "draft_version": ""
+    "enabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "draft_dirty": {
+      "type": "boolean",
+      "value": false
+    },
+    "draft_version": {
+      "type": "string",
+      "value": ""
+    }
   }
 }

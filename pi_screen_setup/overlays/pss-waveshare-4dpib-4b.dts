@@ -1,0 +1,82 @@
+// pss-waveshare-4dpib-4b.dtbo — the vendor's file, unchanged. This is dtc's reading of it.
+// vendor name: waveshare-4dpib-4b
+// source: https://www.waveshare.com/w/upload/d/d5/4DPIB_DTBO.zip (waveshare-4dpib-4b.dtbo)
+// page: https://www.waveshare.com/wiki/4inch_DPI_LCD_(B)
+// sha256: e3d05dcb6d43b144fa7a42ea3f7d4b3bf32c5aabae3ff5060cd74a5310a35292
+// fetched: 2026-11-02
+/dts-v1/;
+
+/ {
+	compatible = "brcm,bcm2708";
+
+	fragment@0 {
+		target = <0xffffffff>;
+
+		__overlay__ {
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+
+			ft6236@14 {
+				compatible = "goodix,gt911";
+				reg = <0x14>;
+				interrupt-parent = <0xffffffff>;
+				interrupts = <0x1b 0x02>;
+				touchscreen-size-x = <0x1e0>;
+				touchscreen-size-y = <0x320>;
+				touchscreen-x-mm = <0x33>;
+				touchscreen-y-mm = <0x55>;
+				phandle = <0x01>;
+			};
+		};
+	};
+
+	fragment@1 {
+		target = <0x01>;
+
+		__overlay__ {
+			touchscreen-swapped-x-y;
+		};
+	};
+
+	fragment@2 {
+		target = <0x01>;
+
+		__dormant__ {
+			touchscreen-inverted-x;
+		};
+	};
+
+	fragment@3 {
+		target = <0x01>;
+
+		__overlay__ {
+			touchscreen-inverted-y;
+		};
+	};
+
+	__overrides__ {
+		touchscreen-inverted-x = [00 00 00 00 2b 32 00];
+		touchscreen-inverted-y = [00 00 00 00 2d 33 00];
+		touchscreen-swapped-x-y = [00 00 00 00 2d 31 00];
+	};
+
+	__fixups__ {
+		i2c_gpio = "/fragment@0:target:0";
+		gpio = "/fragment@0/__overlay__/ft6236@14:interrupt-parent:0";
+	};
+
+	__local_fixups__ {
+
+		fragment@1 {
+			target = <0x00>;
+		};
+
+		fragment@2 {
+			target = <0x00>;
+		};
+
+		fragment@3 {
+			target = <0x00>;
+		};
+	};
+};

@@ -1,0 +1,77 @@
+// pss-waveshare-4dpib-3b-4b.dtbo — the vendor's file, unchanged. This is dtc's reading of it.
+// vendor name: waveshare-4dpib-3b-4b
+// source: https://www.waveshare.com/w/upload/d/d5/4DPIB_DTBO.zip (waveshare-4dpib-3b-4b.dtbo)
+// page: https://www.waveshare.com/wiki/4inch_DPI_LCD_(B)
+// sha256: 352f0e4c56e0f1b0c3255fdfd7abd5e904901abc9bf8d82c615a4d42edb8c919
+// fetched: 2026-11-02
+/dts-v1/;
+
+/ {
+	compatible = "brcm,bcm2708";
+
+	fragment@0 {
+		target = <0xffffffff>;
+
+		__overlay__ {
+			pinctrl-names = "default";
+			pinctrl-0 = <0x01>;
+		};
+	};
+
+	fragment@1 {
+		target = <0xffffffff>;
+
+		__overlay__ {
+
+			dpi18_pins {
+				brcm,pins = <0x00 0x01 0x02 0x03 0x04 0x05 0x06 0x07 0x08 0x09 0x0c 0x0d 0x0e 0x0f 0x10 0x11 0x14 0x15 0x16 0x17 0x18 0x19>;
+				brcm,function = <0x06>;
+				brcm,pull = <0x00>;
+				phandle = <0x01>;
+			};
+		};
+	};
+
+	fragment@2 {
+		target-path = "/";
+
+		__overlay__ {
+
+			i2c@0 {
+				compatible = "i2c-gpio";
+				gpios = <0xffffffff 0x0a 0x00 0xffffffff 0x0b 0x00>;
+				i2c-gpio,delay-us = <0x04>;
+				#address-cells = <0x01>;
+				#size-cells = <0x00>;
+			};
+		};
+	};
+
+	fragment@3 {
+		target-path = "/__symbols__";
+
+		__overlay__ {
+			i2c_gpio = "/i2c@0";
+		};
+	};
+
+	__symbols__ {
+		dpi18_pins = "/fragment@1/__overlay__/dpi18_pins";
+		i2c_gpio = "/fragment@3/__overlay__/i2c_gpio";
+	};
+
+	__local_fixups__ {
+
+		fragment@0 {
+
+			__overlay__ {
+				pinctrl-0 = <0x00>;
+			};
+		};
+	};
+
+	__fixups__ {
+		fb = "/fragment@0:target:0";
+		gpio = "/fragment@1:target:0", "/fragment@2/__overlay__/i2c@0:gpios:0", "/fragment@2/__overlay__/i2c@0:gpios:12";
+	};
+};

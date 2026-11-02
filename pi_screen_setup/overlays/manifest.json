@@ -1,0 +1,125 @@
+{
+  "schema": 1,
+  "fetched": "2026-11-02",
+  "overlays": {
+    "vc4-kms-dpi-2inch8": {
+      "file": "pss-vc4-kms-dpi-2inch8",
+      "sha256": "0d4575c83d69ad778e5010bbc6165b90b9242b25b7013e309a8db9e4b6b078d6",
+      "source": "https://files.waveshare.com/wiki/2.8inc-DPI-LCD/28DPI-DTBO.zip",
+      "member": "28DPI-DTBO/vc4-kms-dpi-2inch8.dtbo",
+      "page": "https://www.waveshare.com/wiki/2.8inch_DPI_LCD"
+    },
+    "waveshare-28dpi-3b-4b": {
+      "file": "pss-waveshare-28dpi-3b-4b",
+      "sha256": "968d684fa806926f745ea6ba4d16907435af90b14557ca27cfa888f553ecd2f3",
+      "source": "https://files.waveshare.com/wiki/2.8inc-DPI-LCD/28DPI-DTBO.zip",
+      "member": "28DPI-DTBO/waveshare-28dpi-3b-4b.dtbo",
+      "page": "https://www.waveshare.com/wiki/2.8inch_DPI_LCD"
+    },
+    "waveshare-touch-28dpi": {
+      "file": "pss-waveshare-touch-28dpi",
+      "sha256": "3f3591e498ce424ff04b6a24ff2edeb6535ac8f8f6fc9006ee7981129fa6174a",
+      "source": "https://files.waveshare.com/wiki/2.8inc-DPI-LCD/28DPI-DTBO.zip",
+      "member": "28DPI-DTBO/waveshare-touch-28dpi.dtbo",
+      "page": "https://www.waveshare.com/wiki/2.8inch_DPI_LCD"
+    },
+    "waveshare-35dpi": {
+      "file": "pss-waveshare-35dpi",
+      "sha256": "a54e9bbe51c28c3703f93447c3d56da489c595fc7e5bef8423055b1e4cdbf949",
+      "source": "https://files.waveshare.com/wiki/3.5inch%20DPI%20LCD/3.5DPI-dtbo.zip",
+      "member": "3.5DPI-dtbo/waveshare-35dpi.dtbo",
+      "page": "https://www.waveshare.com/wiki/3.5inch_DPI_LCD"
+    },
+    "waveshare-touch-35dpi": {
+      "file": "pss-waveshare-touch-35dpi",
+      "sha256": "0e0aaea9a7515cc27a3d7b49cc26056ec1859912209182b065fb04f258f3992a",
+      "source": "https://files.waveshare.com/wiki/3.5inch%20DPI%20LCD/3.5DPI-dtbo.zip",
+      "member": "3.5DPI-dtbo/waveshare-touch-35dpi.dtbo",
+      "page": "https://www.waveshare.com/wiki/3.5inch_DPI_LCD"
+    },
+    "waveshare-4dpib-3b-4b": {
+      "file": "pss-waveshare-4dpib-3b-4b",
+      "sha256": "352f0e4c56e0f1b0c3255fdfd7abd5e904901abc9bf8d82c615a4d42edb8c919",
+      "source": "https://www.waveshare.com/w/upload/d/d5/4DPIB_DTBO.zip",
+      "member": "waveshare-4dpib-3b-4b.dtbo",
+      "page": "https://www.waveshare.com/wiki/4inch_DPI_LCD_(B)"
+    },
+    "waveshare-4dpib-3b": {
+      "file": "pss-waveshare-4dpib-3b",
+      "sha256": "c04b13f1633583dd1be4314c1b429815c77b8c8694b74cf3d81d179373c0f86c",
+      "source": "https://www.waveshare.com/w/upload/d/d5/4DPIB_DTBO.zip",
+      "member": "waveshare-4dpib-3b.dtbo",
+      "page": "https://www.waveshare.com/wiki/4inch_DPI_LCD_(B)"
+    },
+    "waveshare-4dpib-4b": {
+      "file": "pss-waveshare-4dpib-4b",
+      "sha256": "e3d05dcb6d43b144fa7a42ea3f7d4b3bf32c5aabae3ff5060cd74a5310a35292",
+      "source": "https://www.waveshare.com/w/upload/d/d5/4DPIB_DTBO.zip",
+      "member": "waveshare-4dpib-4b.dtbo",
+      "page": "https://www.waveshare.com/wiki/4inch_DPI_LCD_(B)"
+    },
+    "vc4-kms-DPI-4inch": {
+      "file": "pss-vc4-kms-dpi-4inch",
+      "sha256": "a029d0eed4a348af8ba9d8d987531b178f62b3b3d3b2a99b3f0ebaf3cd49a2ab",
+      "source": "https://files.waveshare.com/upload/8/8a/4DPIC-DTBO.zip",
+      "member": "4DPIC-DTBO/vc4-kms-DPI-4inch.dtbo",
+      "page": "https://www.waveshare.com/wiki/4inch_DPI_LCD_(C)"
+    },
+    "waveshare-4dpic-3b-4b": {
+      "file": "pss-waveshare-4dpic-3b-4b",
+      "sha256": "e0a77a44cb818863ae366ae6b26efcea8cc8b059e89cd812f55f2b43a3c2cfc3",
+      "source": "https://files.waveshare.com/upload/8/8a/4DPIC-DTBO.zip",
+      "member": "4DPIC-DTBO/waveshare-4dpic-3b-4b.dtbo",
+      "page": "https://www.waveshare.com/wiki/4inch_DPI_LCD_(C)"
+    },
+    "waveshare-4dpi": {
+      "file": "pss-waveshare-4dpi",
+      "sha256": "8512d9f4e149c5f5aff28f5c4c3f22b98992f6aab86abc0f3edcfd870d640a11",
+      "source": "https://files.waveshare.com/upload/8/8a/4DPIC-DTBO.zip",
+      "member": "4DPIC-DTBO/waveshare-4dpi.dtbo",
+      "page": "https://www.waveshare.com/wiki/4inch_DPI_LCD_(C)"
+    },
+    "waveshare-touch-4dpi": {
+      "file": "pss-waveshare-touch-4dpi",
+      "sha256": "41be31600d2555ce29951f54951d94bdf207acc8d641f5b318dca0557ee6bfa9",
+      "source": "https://files.waveshare.com/upload/8/8a/4DPIC-DTBO.zip",
+      "member": "4DPIC-DTBO/waveshare-touch-4dpi.dtbo",
+      "page": "https://www.waveshare.com/wiki/4inch_DPI_LCD_(C)"
+    },
+    "vc4-kms-DPI-5inch": {
+      "file": "pss-vc4-kms-dpi-5inch",
+      "sha256": "a782cd92dbb6b88d4f26f7a15a281428cf2aba888888bcbb513b786a9ba18754",
+      "source": "https://files.waveshare.com/wiki/5inch%20DPI%20LCD/5DPI-DTBO.zip",
+      "member": "5DPI-DTBO/vc4-kms-DPI-5inch.dtbo",
+      "page": "https://www.waveshare.com/wiki/5inch_DPI_LCD"
+    },
+    "waveshare-5dpi": {
+      "file": "pss-waveshare-5dpi",
+      "sha256": "a2a7c04be29c413db5fd411659078517920b5d37e49f52b166ea07a6f5f03ee4",
+      "source": "https://files.waveshare.com/wiki/5inch%20DPI%20LCD/5DPI-DTBO.zip",
+      "member": "5DPI-DTBO/waveshare-5dpi.dtbo",
+      "page": "https://www.waveshare.com/wiki/5inch_DPI_LCD"
+    },
+    "vc4-kms-DPI-7inch": {
+      "file": "pss-vc4-kms-dpi-7inch",
+      "sha256": "010520efff148cc7f68c8cea95bdc09f7137e3ce32fe6be5f5976ede3b984c2b",
+      "source": "https://files.waveshare.com/wiki/7inch-DSI-LCD-(with-cam)/7DPI-DTBO.zip",
+      "member": "7DPI-DTBO/vc4-kms-DPI-7inch.dtbo",
+      "page": "https://www.waveshare.com/wiki/7inch_DPI_LCD"
+    },
+    "waveshare-7dpi": {
+      "file": "pss-waveshare-7dpi",
+      "sha256": "e5e93d9bed3b657496c8b7a349e20c28780378a9800d9e4c398bfc07d9a61b4c",
+      "source": "https://files.waveshare.com/wiki/7inch-DSI-LCD-(with-cam)/7DPI-DTBO.zip",
+      "member": "7DPI-DTBO/waveshare-7dpi.dtbo",
+      "page": "https://www.waveshare.com/wiki/7inch_DPI_LCD"
+    },
+    "Waveshare_35DSI": {
+      "file": "pss-waveshare-35dsi",
+      "sha256": "ae09deaccceb80ced72519977fedc6d7becbd548a3043538c147ad40633b4611",
+      "source": "https://files.waveshare.com/wiki/common/Waveshare_35DSI.dtbo",
+      "member": null,
+      "page": "https://www.waveshare.com/wiki/3.5inch_DSI_LCD_(E)"
+    }
+  }
+}

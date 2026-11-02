@@ -1,168 +1,82 @@
 #!/bin/bash
+# Pi Screen Setup installer. Volumio's plugin manager runs it as root with sh; its
+# output is shown in the install dialog and a non-zero exit fails the install.
+# What it puts outside the plugin folder, uninstall.sh takes back.
 
-# pi_screen_setup install script
-# Exit on error
-set -e
+echo "Installing Pi Screen Setup"
 
-# Cleanup function on error
-cleanup() {
-    if [ $? -ne 0 ]; then
-        echo "Installation failed, cleaning up..."
-    fi
+PLUGIN_DIR="/data/plugins/system_hardware/pi_screen_setup"
+HELPER_SRC="$PLUGIN_DIR/scripts/pi-screen-setup-root.sh"
+HELPER="/usr/local/bin/pi-screen-setup-root"
+SUDOERS="/etc/sudoers.d/volumio-user-pi_screen_setup"
+DATA_DIR="/data/INTERNAL/pi_screen_setup"
+
+refuse() {
+  echo ""
+  echo "$@"
+  rm -rf "$PLUGIN_DIR"
+  exit 1
 }
-trap cleanup EXIT
 
-# Get plugin directory info from package.json
-PLUGIN_DIR="$(cd "$(dirname "$0")" && pwd)"
-PLUGIN_TYPE=$(grep -oP '"plugin_type"\s*:\s*"\K[^"]+' "${PLUGIN_DIR}/package.json")
-PLUGIN_NAME=$(grep -oP '"name"\s*:\s*"\K[^"]+' "${PLUGIN_DIR}/package.json")
+MODEL=$(tr -d '\000' < /proc/device-tree/model 2>/dev/null || echo "unknown")
+echo "Board: $MODEL"
+case "$MODEL" in
+  *"Raspberry Pi"*) ;;
+  *) echo "WARNING: this does not look like a Raspberry Pi; the plugin configures Raspberry Pi boot files" ;;
+esac
+[ -d /boot ] && [ -f /boot/config.txt ] || refuse "ERROR: /boot/config.txt not found"
 
-echo "Installing ${PLUGIN_NAME}..."
-
-# Check if running on Raspberry Pi
-if [ ! -f /proc/device-tree/model ]; then
-    echo "Warning: Cannot detect device model. This plugin is designed for Raspberry Pi."
+# =============================================================================
+# The root helper: a root-owned copy, so the volumio user runs exactly these
+# verbs and nothing else, and sudo for it alone. Replaces the cp/chmod/rm grants
+# of releases before 1.0.
+# =============================================================================
+[ -f "$HELPER_SRC" ] || refuse "ERROR: the plugin's root helper is missing"
+install -o root -g root -m 755 "$HELPER_SRC" "$HELPER"
+cat > "$SUDOERS" << 'SUDO'
+# pi_screen_setup plugin: the boot files it manages, through its root helper only
+volumio ALL=(ALL) NOPASSWD: /usr/local/bin/pi-screen-setup-root *
+SUDO
+chmod 0440 "$SUDOERS"
+if ! visudo -c -f "$SUDOERS" >/dev/null 2>&1; then
+  rm -f "$SUDOERS" "$HELPER"
+  refuse "ERROR: the sudoers entry did not validate"
 fi
 
-MODEL=$(cat /proc/device-tree/model 2>/dev/null || echo "Unknown")
-echo "Detected: ${MODEL}"
-
-# Verify it's a Pi
-if [[ ! "${MODEL}" =~ "Raspberry Pi" ]]; then
-    echo "Warning: This does not appear to be a Raspberry Pi."
-    echo "The plugin may not function correctly."
+# =============================================================================
+# Backups, restore points, the presets the user authored or fetched, and the record of
+# what was stripped from Volumio's files live on the Internal Storage share, outside the plugin folder (which an update
+# replaces and an uninstall removes), so they survive both.
+# =============================================================================
+mkdir -p "$DATA_DIR/backups/factory" "$DATA_DIR/backups/restore_points" "$DATA_DIR/strip" "$DATA_DIR/presets_cache"
+OLD_BACKUPS="$PLUGIN_DIR/backups"
+if [ -d "$OLD_BACKUPS" ] && [ ! -f "$DATA_DIR/backups/factory/config.txt" ]; then
+  cp -a "$OLD_BACKUPS/." "$DATA_DIR/backups/" 2>/dev/null || true
 fi
 
-# Setup sudoers for volumio user to write to specific /boot files
-# Note: File must be named volumio-user-* to come AFTER volumio-user alphabetically
-SUDOERS_FILE="/etc/sudoers.d/volumio-user-pi_screen_setup"
-echo "Creating sudoers entry for pi_screen_setup..."
-cat > "${SUDOERS_FILE}" << 'EOF'
-# pi_screen_setup plugin - allow volumio user to manage specific boot config files
-volumio ALL=(ALL) NOPASSWD: /bin/cp * /boot/videoconfig.txt
-volumio ALL=(ALL) NOPASSWD: /bin/cp * /boot/config.txt
-volumio ALL=(ALL) NOPASSWD: /bin/cp * /boot/cmdline.txt
-volumio ALL=(ALL) NOPASSWD: /bin/cp * /boot/volumioconfig.txt
-volumio ALL=(ALL) NOPASSWD: /bin/cp * /boot/userconfig.txt
-volumio ALL=(ALL) NOPASSWD: /bin/chmod 644 /boot/videoconfig.txt
-volumio ALL=(ALL) NOPASSWD: /bin/chmod 644 /boot/config.txt
-volumio ALL=(ALL) NOPASSWD: /bin/chmod 644 /boot/cmdline.txt
-volumio ALL=(ALL) NOPASSWD: /bin/chmod 644 /boot/volumioconfig.txt
-volumio ALL=(ALL) NOPASSWD: /bin/chmod 644 /boot/userconfig.txt
-volumio ALL=(ALL) NOPASSWD: /bin/rm /boot/videoconfig.txt
-volumio ALL=(ALL) NOPASSWD: /bin/rm -f /boot/videoconfig.txt
-EOF
-chmod 0440 "${SUDOERS_FILE}"
-# Validate sudoers syntax
-visudo -c -f "${SUDOERS_FILE}"
-if [ $? -ne 0 ]; then
-    echo "ERROR: Invalid sudoers syntax"
-    rm -f "${SUDOERS_FILE}"
-    exit 1
+# The boot files as found the first time the plugin is installed on this system.
+if [ ! -f "$DATA_DIR/backups/factory/config.txt" ]; then
+  for f in config.txt cmdline.txt volumioconfig.txt userconfig.txt; do
+    [ -f "/boot/$f" ] && cp "/boot/$f" "$DATA_DIR/backups/factory/$f"
+  done
+  date -Iseconds > "$DATA_DIR/backups/factory/backup_date.txt"
+  echo "Boot files saved as found"
 fi
-echo "Sudoers configuration complete."
+chown -R volumio:volumio "$DATA_DIR"
 
-# Create data directory for backups
-DATA_DIR="/data/plugins/${PLUGIN_TYPE}/${PLUGIN_NAME}"
-BACKUP_DIR="${DATA_DIR}/backups"
-FACTORY_DIR="${BACKUP_DIR}/factory"
-RESTORE_POINTS_DIR="${BACKUP_DIR}/restore_points"
-
-echo "Creating data directories..."
-mkdir -p "${BACKUP_DIR}"
-mkdir -p "${FACTORY_DIR}"
-mkdir -p "${RESTORE_POINTS_DIR}"
-chown -R volumio:volumio "${DATA_DIR}"
-chmod 755 "${DATA_DIR}"
-chmod 755 "${BACKUP_DIR}"
-chmod 755 "${FACTORY_DIR}"
-chmod 755 "${RESTORE_POINTS_DIR}"
-
-# Verify boot partition access
-if [ ! -d "/boot" ]; then
-    echo "Error: /boot directory not accessible"
-    exit 1
+# Display settings already in Volumio's files: the plugin offers to take them over.
+if grep -qE "^dtoverlay=vc4-(f?)kms|^dtoverlay=.*(dsi|dpi|hyperpixel|vga666)|^hdmi_|^config_hdmi_boost|^max_framebuffer_|^sdtv_|^framebuffer_|^enable_tvout|^display_auto_detect|^display_default_lcd" /boot/volumioconfig.txt /boot/userconfig.txt 2>/dev/null; then
+  echo "Existing display settings found in the boot files; the plugin will offer to take them over"
 fi
 
-if [ ! -f "/boot/config.txt" ]; then
-    echo "Error: /boot/config.txt not found"
-    exit 1
+# A placeholder, so an include line left from an earlier install points at a file.
+if [ ! -f /boot/videoconfig.txt ]; then
+  printf '# Pi Screen Setup - configuration pending\n# Run the plugin in Volumio to configure the display\n' > /boot/videoconfig.txt
+  chmod 644 /boot/videoconfig.txt
 fi
 
-echo "Boot partition verified."
+chmod +x "$PLUGIN_DIR"/scripts/*.sh 2>/dev/null || true
+chown -R volumio:volumio "$PLUGIN_DIR"
 
-# Create factory backups (only on first install - do not overwrite existing)
-echo "Checking factory backups..."
-FACTORY_CREATED=0
-
-if [ ! -f "${FACTORY_DIR}/config.txt" ]; then
-    echo "Creating factory backup of config.txt..."
-    cp /boot/config.txt "${FACTORY_DIR}/config.txt"
-    FACTORY_CREATED=1
-fi
-
-if [ ! -f "${FACTORY_DIR}/cmdline.txt" ] && [ -f "/boot/cmdline.txt" ]; then
-    echo "Creating factory backup of cmdline.txt..."
-    cp /boot/cmdline.txt "${FACTORY_DIR}/cmdline.txt"
-    FACTORY_CREATED=1
-fi
-
-if [ ! -f "${FACTORY_DIR}/volumioconfig.txt" ] && [ -f "/boot/volumioconfig.txt" ]; then
-    echo "Creating factory backup of volumioconfig.txt..."
-    cp /boot/volumioconfig.txt "${FACTORY_DIR}/volumioconfig.txt"
-    FACTORY_CREATED=1
-fi
-
-if [ ! -f "${FACTORY_DIR}/userconfig.txt" ] && [ -f "/boot/userconfig.txt" ]; then
-    echo "Creating factory backup of userconfig.txt..."
-    cp /boot/userconfig.txt "${FACTORY_DIR}/userconfig.txt"
-    FACTORY_CREATED=1
-fi
-
-if [ ${FACTORY_CREATED} -eq 1 ]; then
-    # Record when factory backup was created
-    date -Iseconds > "${FACTORY_DIR}/backup_date.txt"
-    chown -R volumio:volumio "${FACTORY_DIR}"
-    echo "Factory backups created."
-else
-    echo "Factory backups already exist - preserving original state."
-fi
-
-# Check for existing display configuration that might need migration
-echo "Checking for existing display configuration..."
-MIGRATION_NEEDED=0
-
-# Note: display_*rotate settings belong to Touch Display plugin - do not detect those
-if [ -f "/boot/volumioconfig.txt" ]; then
-    if grep -qE "^dtoverlay=vc4-(f?)kms|^hdmi_|^sdtv_|^framebuffer_|^enable_tvout|^display_auto_detect|^display_default_lcd" /boot/volumioconfig.txt 2>/dev/null; then
-        echo "Found display settings in volumioconfig.txt"
-        MIGRATION_NEEDED=1
-    fi
-fi
-
-if [ -f "/boot/userconfig.txt" ]; then
-    if grep -qE "^dtoverlay=vc4-(f?)kms|^hdmi_|^sdtv_|^framebuffer_|^enable_tvout|^display_auto_detect|^display_default_lcd" /boot/userconfig.txt 2>/dev/null; then
-        echo "Found display settings in userconfig.txt"
-        MIGRATION_NEEDED=1
-    fi
-fi
-
-if [ ${MIGRATION_NEEDED} -eq 1 ]; then
-    echo ""
-    echo "NOTE: Existing display configuration detected."
-    echo "The plugin will offer to migrate these settings on first use."
-    echo ""
-fi
-
-# Create initial empty videoconfig.txt if it doesn't exist
-# This prevents errors if config.txt already has include line
-if [ ! -f "/boot/videoconfig.txt" ]; then
-    echo "# Pi Screen Setup - Configuration pending" > /boot/videoconfig.txt
-    echo "# Run the configuration wizard in Volumio to configure display settings" >> /boot/videoconfig.txt
-    chown root:root /boot/videoconfig.txt
-    chmod 644 /boot/videoconfig.txt
-    echo "Created placeholder /boot/videoconfig.txt"
-fi
-
-echo "Installation complete."
+echo "Pi Screen Setup installed"
 echo "plugininstallend"

@@ -1,0 +1,134 @@
+// pss-vc4-kms-dpi-4inch.dtbo — the vendor's file, unchanged. This is dtc's reading of it.
+// vendor name: vc4-kms-DPI-4inch
+// source: https://files.waveshare.com/upload/8/8a/4DPIC-DTBO.zip (4DPIC-DTBO/vc4-kms-DPI-4inch.dtbo)
+// page: https://www.waveshare.com/wiki/4inch_DPI_LCD_(C)
+// sha256: a029d0eed4a348af8ba9d8d987531b178f62b3b3d3b2a99b3f0ebaf3cd49a2ab
+// fetched: 2026-11-02
+/dts-v1/;
+
+/ {
+	compatible = "brcm,bcm2835";
+
+	fragment@0 {
+		target-path = "/";
+
+		__overlay__ {
+
+			panel {
+				reg = <0x00>;
+				compatible = "panel-dpi";
+				width-mm = <0x48>;
+				height-mm = <0x48>;
+				bus-format = <0x1015>;
+				phandle = <0x03>;
+
+				panel-timing {
+					clock-frequency = <0x3938700>;
+					hactive = <0x2d0>;
+					hfront-porch = <0x2e>;
+					hsync-len = <0x02>;
+					hback-porch = <0x2a>;
+					hsync-active = <0x00>;
+					vactive = <0x2d0>;
+					vfront-porch = <0x10>;
+					vsync-len = <0x02>;
+					vback-porch = <0x12>;
+					vsync-active = <0x00>;
+					de-active = <0x01>;
+					pixelclk-active = <0x00>;
+					phandle = <0x04>;
+				};
+
+				port {
+
+					endpoint {
+						remote-endpoint = <0x01>;
+						phandle = <0x02>;
+					};
+				};
+			};
+		};
+	};
+
+	fragment@1 {
+		target = <0xffffffff>;
+
+		__overlay__ {
+			status = "okay";
+			pinctrl-names = "default";
+			pinctrl-0 = <0xffffffff>;
+			phandle = <0x05>;
+
+			port {
+
+				endpoint {
+					remote-endpoint = <0x02>;
+					phandle = <0x01>;
+				};
+			};
+		};
+	};
+
+	fragment@2 {
+		target = <0xffffffff>;
+
+		__overlay__ {
+			compatible = "gpio-leds";
+
+			wittypi_led {
+				label = "wittypi_led";
+				linux,default-trigger = "default-on";
+				gpios = <0xffffffff 0x12 0x01>;
+				phandle = <0x06>;
+			};
+		};
+	};
+
+	__symbols__ {
+		panel = "/fragment@0/__overlay__/panel";
+		timing = "/fragment@0/__overlay__/panel/panel-timing";
+		panel_in = "/fragment@0/__overlay__/panel/port/endpoint";
+		dpi_node = "/fragment@1/__overlay__";
+		dpi_out = "/fragment@1/__overlay__/port/endpoint";
+		wittypi_led = "/fragment@2/__overlay__/wittypi_led";
+	};
+
+	__fixups__ {
+		dpi = "/fragment@1:target:0";
+		dpi_18bit_cpadhi_gpio0 = "/fragment@1/__overlay__:pinctrl-0:0";
+		leds = "/fragment@2:target:0";
+		gpio = "/fragment@2/__overlay__/wittypi_led:gpios:0";
+	};
+
+	__local_fixups__ {
+
+		fragment@0 {
+
+			__overlay__ {
+
+				panel {
+
+					port {
+
+						endpoint {
+							remote-endpoint = <0x00>;
+						};
+					};
+				};
+			};
+		};
+
+		fragment@1 {
+
+			__overlay__ {
+
+				port {
+
+					endpoint {
+						remote-endpoint = <0x00>;
+					};
+				};
+			};
+		};
+	};
+};
