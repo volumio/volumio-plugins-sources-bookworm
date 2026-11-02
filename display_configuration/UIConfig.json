@@ -1,410 +1,540 @@
 {
   "page": {
-    "label": "TRANSLATE.PLUGIN_TITLE"
+    "label": "TRANSLATE.DISPLAY_CONFIGURATION.PLUGIN_NAME"
   },
   "sections": [
     {
-      "id": "display_settings",
+      "id": "profiles",
       "element": "section",
-      "label": "TRANSLATE.DISPLAY_SETTINGS_SECTION",
+      "label": "TRANSLATE.DISPLAY_CONFIGURATION.PROFILES_SECTION",
+      "icon": "fa-list",
+      "description": "",
       "onSave": {
         "type": "controller",
         "endpoint": "user_interface/display_configuration",
-        "method": "saveDeviceRotation"
+        "method": "saveProfiles"
       },
       "saveButton": {
-        "label": "TRANSLATE.APPLY",
+        "label": "TRANSLATE.DISPLAY_CONFIGURATION.SAVE_APPLY",
         "data": [
-          "rotatescreen",
-          "brightness"
+          "active_profile",
+          "profile_action",
+          "profile_name",
+          "profile_mode"
         ]
       },
       "content": [
         {
-          "id": "rotatescreen",
+          "id": "active_profile",
           "element": "select",
-          "doc": "TRANSLATE.SCREEN_ROT_DOC",
-          "label": "TRANSLATE.SCREEN_ROT",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.PROFILE",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.PROFILE_DOC",
           "value": {
-            "value": "normal",
-            "label": "Default"
+            "value": "default",
+            "label": "default"
           },
           "options": [
             {
-              "value": "normal",
-              "label": "TRANSLATE.DEFAULT"
-            },
-            {
-              "value": "left",
-              "label": "TRANSLATE.LEFT"
-            },
-            {
-              "value": "right",
-              "label": "TRANSLATE.RIGHT"
-            },
-            {
-              "value": "inverted",
-              "label": "TRANSLATE.INVERTED"
+              "value": "default",
+              "label": "default"
             }
           ]
         },
         {
-          "id": "brightness",
-          "element": "equalizer",
-          "label": "TRANSLATE.BRIGHTNESS",
-          "doc": "TRANSLATE.BRIGHTNESS_DOC",
-          "config": {
-            "orientation": "horizontal",
-            "bars": [
-              {
-                "min": "0",
-                "max": "1",
-                "step": "0.10",
-                "value": "1"
-              }
-            ]
-          }
+          "id": "profile_action",
+          "element": "select",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.PROFILE_ACTION",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.PROFILE_ACTION_DOC",
+          "value": {
+            "value": "use",
+            "label": "TRANSLATE.DISPLAY_CONFIGURATION.PROFILE_USE"
+          },
+          "options": [
+            {
+              "value": "use",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.PROFILE_USE"
+            },
+            {
+              "value": "copy",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.PROFILE_COPY"
+            },
+            {
+              "value": "rename",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.PROFILE_RENAME"
+            },
+            {
+              "value": "delete",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.PROFILE_DELETE"
+            }
+          ]
+        },
+        {
+          "id": "profile_name",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.PROFILE_NAME",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.PROFILE_NAME_DOC",
+          "value": "",
+          "attributes": [
+            {
+              "placeholder": "TRANSLATE.DISPLAY_CONFIGURATION.PROFILE_NAME_PLACEHOLDER"
+            },
+            {
+              "maxlength": 40
+            }
+          ]
+        },
+        {
+          "id": "profile_mode",
+          "element": "select",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.PROFILE_MODE",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.PROFILE_MODE_DOC",
+          "value": {
+            "value": "manual",
+            "label": "TRANSLATE.DISPLAY_CONFIGURATION.MODE_MANUAL"
+          },
+          "options": [
+            {
+              "value": "manual",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.MODE_MANUAL"
+            },
+            {
+              "value": "follow",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.MODE_FOLLOW"
+            }
+          ]
         }
       ]
     },
     {
-      "id": "advanced_settings",
+      "id": "inputs",
       "element": "section",
-      "label": "TRANSLATE.ADVANCED_SETTINGS_SECTION",
+      "label": "TRANSLATE.DISPLAY_CONFIGURATION.INPUTS_SECTION",
+      "icon": "fa-hand-pointer-o",
+      "description": "TRANSLATE.DISPLAY_CONFIGURATION.INPUTS_DESC",
       "onSave": {
         "type": "controller",
         "endpoint": "user_interface/display_configuration",
-        "method": "saveCalibration"
+        "method": "saveInputs"
       },
       "saveButton": {
-        "label": "TRANSLATE.APPLY",
+        "label": "TRANSLATE.DISPLAY_CONFIGURATION.SAVE_APPLY",
+        "data": []
+      },
+      "content": []
+    },
+    {
+      "id": "boot",
+      "element": "section",
+      "label": "TRANSLATE.DISPLAY_CONFIGURATION.BOOT_SECTION",
+      "icon": "fa-power-off",
+      "description": "TRANSLATE.DISPLAY_CONFIGURATION.BOOT_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "user_interface/display_configuration",
+        "method": "saveBoot"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.DISPLAY_CONFIGURATION.SAVE_APPLY",
         "data": [
-          "show_advanced",
-          "touch_offset",
-          "pointer_offset",
-          "fbcon_offset",
-          "plymouth_offset",
-          "overscan"
+          "console",
+          "splash"
         ]
       },
       "content": [
         {
-          "id": "show_advanced",
-          "element": "switch",
-          "label": "TRANSLATE.SHOW_ADVANCED",
-          "doc": "TRANSLATE.SHOW_ADVANCED_DOC",
-          "value": false
-        },
-        {
-          "id": "touch_offset",
+          "id": "console",
           "element": "select",
-          "doc": "TRANSLATE.TOUCH_ROTATION_DOC",
-          "label": "TRANSLATE.TOUCH_ROTATION",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.BOOT_CONSOLE",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.BOOT_CONSOLE_DOC",
           "value": {
-            "value": "0",
-            "label": "System default"
+            "value": "follow",
+            "label": "TRANSLATE.DISPLAY_CONFIGURATION.FOLLOW_SCREEN"
           },
           "options": [
             {
-              "value": "0",
-              "label": "TRANSLATE.SYSTEM_DEFAULT"
+              "value": "follow",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.FOLLOW_SCREEN"
             },
             {
-              "value": "90",
-              "label": "TRANSLATE.ROT_90CW"
+              "value": "normal",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.ORIENT_NORMAL"
             },
             {
-              "value": "180",
-              "label": "TRANSLATE.ROT_180"
+              "value": "right",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.ORIENT_RIGHT"
             },
             {
-              "value": "270",
-              "label": "TRANSLATE.ROT_90CCW"
+              "value": "inverted",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.ORIENT_INVERTED"
+            },
+            {
+              "value": "left",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.ORIENT_LEFT"
             }
-          ],
-          "visibleIf": {
-            "field": "show_advanced",
-            "value": true
-          }
+          ]
         },
         {
-          "id": "pointer_offset",
+          "id": "splash",
           "element": "select",
-          "doc": "TRANSLATE.MOUSE_ROTATION_DOC",
-          "label": "TRANSLATE.MOUSE_ROTATION",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.BOOT_SPLASH",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.BOOT_SPLASH_DOC",
           "value": {
-            "value": "0",
-            "label": "System default"
+            "value": "follow",
+            "label": "TRANSLATE.DISPLAY_CONFIGURATION.FOLLOW_SCREEN"
           },
           "options": [
             {
-              "value": "0",
-              "label": "TRANSLATE.SYSTEM_DEFAULT"
+              "value": "follow",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.FOLLOW_SCREEN"
             },
             {
-              "value": "90",
-              "label": "TRANSLATE.ROT_90CW"
+              "value": "normal",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.ORIENT_NORMAL"
             },
             {
-              "value": "180",
-              "label": "TRANSLATE.ROT_180"
+              "value": "right",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.ORIENT_RIGHT"
             },
             {
-              "value": "270",
-              "label": "TRANSLATE.ROT_90CCW"
+              "value": "inverted",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.ORIENT_INVERTED"
+            },
+            {
+              "value": "left",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.ORIENT_LEFT"
             }
-          ],
-          "visibleIf": {
-            "field": "show_advanced",
-            "value": true
-          }
-        },
-        {
-          "id": "fbcon_offset",
-          "element": "select",
-          "doc": "TRANSLATE.CONSOLE_TEXT_DOC",
-          "label": "TRANSLATE.CONSOLE_TEXT",
-          "value": {
-            "value": "same",
-            "label": "Same as Screen"
-          },
-          "options": [
-            {
-              "value": "same",
-              "label": "TRANSLATE.SAME_AS_SCREEN"
-            },
-            {
-              "value": "0",
-              "label": "TRANSLATE.SYSTEM_DEFAULT"
-            },
-            {
-              "value": "90",
-              "label": "TRANSLATE.ROT_90CW"
-            },
-            {
-              "value": "180",
-              "label": "TRANSLATE.ROT_180"
-            },
-            {
-              "value": "270",
-              "label": "TRANSLATE.ROT_90CCW"
-            }
-          ],
-          "visibleIf": {
-            "field": "show_advanced",
-            "value": true
-          }
-        },
-        {
-          "id": "plymouth_offset",
-          "element": "select",
-          "doc": "TRANSLATE.BOOT_LOGO_DOC",
-          "label": "TRANSLATE.BOOT_LOGO",
-          "value": {
-            "value": "same",
-            "label": "Same as Screen"
-          },
-          "options": [
-            {
-              "value": "same",
-              "label": "TRANSLATE.SAME_AS_SCREEN"
-            },
-            {
-              "value": "0",
-              "label": "TRANSLATE.SYSTEM_DEFAULT"
-            },
-            {
-              "value": "90",
-              "label": "TRANSLATE.ROT_90CW"
-            },
-            {
-              "value": "180",
-              "label": "TRANSLATE.ROT_180"
-            },
-            {
-              "value": "270",
-              "label": "TRANSLATE.ROT_90CCW"
-            }
-          ],
-          "visibleIf": {
-            "field": "show_advanced",
-            "value": true
-          }
-        },
-        {
-          "id": "overscan",
-          "element": "select",
-          "label": "TRANSLATE.OVERSCAN",
-          "doc": "TRANSLATE.OVERSCAN_DOC",
-          "value": {
-            "value": "1.00",
-            "label": "Native"
-          },
-          "options": [
-            {
-              "value": "0",
-              "label": "Off"
-            },
-            {
-              "value": "2",
-              "label": "2%"
-            },
-            {
-              "value": "4",
-              "label": "4%"
-            },
-            {
-              "value": "6",
-              "label": "6%"
-            },
-            {
-              "value": "8",
-              "label": "8%"
-            },
-            {
-              "value": "10",
-              "label": "10%"
-            }
-          ],
-          "visibleIf": {
-            "field": "show_advanced",
-            "value": true
-          }
+          ]
         }
       ]
     },
     {
       "id": "screensaver",
       "element": "section",
-      "label": "TRANSLATE.SCREENSAVER_SECTION",
+      "label": "TRANSLATE.DISPLAY_CONFIGURATION.SCREENSAVER_SECTION",
+      "icon": "fa-moon-o",
+      "description": "TRANSLATE.DISPLAY_CONFIGURATION.SCREENSAVER_DESC",
       "onSave": {
         "type": "controller",
         "endpoint": "user_interface/display_configuration",
         "method": "saveScreensaver"
       },
       "saveButton": {
-        "label": "TRANSLATE.APPLY",
+        "label": "TRANSLATE.DISPLAY_CONFIGURATION.SAVE_APPLY",
         "data": [
-          "hidecursor",
-          "screensavertype",
-          "timeout",
-          "noifplay"
+          "screensaver_type",
+          "screensaver_timeout",
+          "not_while_playing",
+          "hide_cursor",
+          "brightness"
         ]
       },
       "content": [
         {
-          "id": "hidecursor",
-          "element": "switch",
-          "label": "TRANSLATE.MOUSE_C",
-          "doc": "TRANSLATE.MOUSE_C_DOC",
-          "value": false
-        },
-        {
-          "id": "screensavertype",
+          "id": "screensaver_type",
           "element": "select",
-          "doc": "TRANSLATE.XSTYPE_DOC",
-          "label": "TRANSLATE.XSTYPE",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.SCREENSAVER_TYPE",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.SCREENSAVER_TYPE_DOC",
           "value": {
             "value": "dpms",
-            "label": "Turn the screen off"
+            "label": "TRANSLATE.DISPLAY_CONFIGURATION.SCREENSAVER_DPMS"
           },
           "options": [
             {
               "value": "dpms",
-              "label": "TRANSLATE.DPMS"
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.SCREENSAVER_DPMS"
             },
             {
               "value": "xscreensaver",
-              "label": "TRANSLATE.XSCREENSAVER"
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.SCREENSAVER_XSCREENSAVER"
+            },
+            {
+              "value": "off",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.SCREENSAVER_OFF"
             }
           ]
         },
         {
-          "id": "xscreensettings",
-          "element": "button",
-          "label": "TRANSLATE.XSCREEN_SAVER_SETTING",
-          "onClick": {
-            "type": "plugin",
-            "endpoint": "user_interface/display_configuration",
-            "method": "xscreensettings"
-          },
-          "visibleIf": {
-            "field": "screensavertype",
-            "value": "xscreensaver"
-          }
-        },
-        {
-          "id": "timeout",
+          "id": "screensaver_timeout",
           "element": "input",
           "type": "number",
-          "doc": "TRANSLATE.SCREENSAVER_DOC",
-          "label": "TRANSLATE.SCREENSAVER",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.SCREENSAVER_TIMEOUT",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.SCREENSAVER_TIMEOUT_DOC",
+          "value": 120,
           "attributes": [
             {
-              "placeholder": 120
+              "placeholder": "120"
             },
             {
-              "maxlength": 4
+              "maxlength": 5
             },
             {
               "min": 0
             },
             {
-              "max": 3600
+              "max": 86400
             }
-          ],
-          "value": 120,
+          ]
+        },
+        {
+          "id": "not_while_playing",
+          "element": "switch",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.NOT_WHILE_PLAYING",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.NOT_WHILE_PLAYING_DOC",
+          "value": true
+        },
+        {
+          "id": "xscreensaver_settings",
+          "element": "button",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.XSCREENSAVER_SETTINGS",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.XSCREENSAVER_SETTINGS_DOC",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "user_interface/display_configuration",
+            "method": "openScreensaverSettings",
+            "data": []
+          },
           "visibleIf": {
-            "field": "screensavertype",
-            "value": "dpms"
+            "field": "screensaver_type",
+            "value": "xscreensaver"
           }
         },
         {
-          "id": "noifplay",
+          "id": "hide_cursor",
           "element": "switch",
-          "label": "TRANSLATE.NO_SS_IF_PLAY",
-          "doc": "TRANSLATE.NO_SS_IF_PLAY_DOC",
-          "value": true
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.HIDE_CURSOR",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.HIDE_CURSOR_DOC",
+          "value": false
+        },
+        {
+          "id": "brightness",
+          "element": "input",
+          "type": "number",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.BRIGHTNESS",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.BRIGHTNESS_DOC",
+          "value": 100,
+          "attributes": [
+            {
+              "placeholder": "100"
+            },
+            {
+              "maxlength": 3
+            },
+            {
+              "min": 1
+            },
+            {
+              "max": 100
+            }
+          ]
+        },
+        {
+          "id": "screen_off",
+          "element": "button",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.SCREEN_OFF",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.SCREEN_OFF_DOC",
+          "onClick": {
+            "type": "plugin",
+            "endpoint": "user_interface/display_configuration",
+            "method": "screenOff",
+            "data": []
+          }
         }
       ]
     },
     {
-      "id": "debug",
+      "id": "virtual",
       "element": "section",
-      "label": "TRANSLATE.DEBUG_SECTION",
+      "label": "TRANSLATE.DISPLAY_CONFIGURATION.VIRTUAL_SECTION",
+      "icon": "fa-cube",
+      "description": "",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "user_interface/display_configuration",
+        "method": "saveVirtual"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.DISPLAY_CONFIGURATION.SAVE_APPLY",
+        "data": [
+          "virtual_enabled",
+          "virtual_resolution"
+        ]
+      },
       "content": [
         {
-          "id": "debug_logging",
+          "id": "virtual_enabled",
           "element": "switch",
-          "label": "TRANSLATE.DEBUG_LOGGING",
-          "doc": "TRANSLATE.DEBUG_LOGGING_DOC",
-          "value": true,
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.VIRTUAL_ENABLED",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.VIRTUAL_ENABLED_DOC",
+          "value": false
+        },
+        {
+          "id": "virtual_resolution",
+          "element": "select",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.VIRTUAL_RESOLUTION",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.VIRTUAL_RESOLUTION_DOC",
+          "value": {
+            "value": "1280x720",
+            "label": "1280x720"
+          },
+          "options": [
+            {
+              "value": "1280x720",
+              "label": "1280x720"
+            }
+          ],
+          "visibleIf": {
+            "field": "virtual_enabled",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "backup",
+      "element": "section",
+      "label": "TRANSLATE.DISPLAY_CONFIGURATION.BACKUP_SECTION",
+      "icon": "fa-save",
+      "description": "TRANSLATE.DISPLAY_CONFIGURATION.BACKUP_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "user_interface/display_configuration",
+        "method": "runBackup"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.DISPLAY_CONFIGURATION.BACKUP_RUN",
+        "data": [
+          "backup_action",
+          "backup_name",
+          "selected_backup"
+        ]
+      },
+      "content": [
+        {
+          "id": "backup_action",
+          "element": "select",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.BACKUP_ACTION",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.BACKUP_ACTION_DOC",
+          "value": {
+            "value": "create",
+            "label": "TRANSLATE.DISPLAY_CONFIGURATION.BACKUP_CREATE"
+          },
+          "options": [
+            {
+              "value": "create",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.BACKUP_CREATE"
+            },
+            {
+              "value": "restore",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.BACKUP_RESTORE"
+            },
+            {
+              "value": "delete",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.BACKUP_DELETE"
+            },
+            {
+              "value": "reset",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.BACKUP_RESET"
+            }
+          ]
+        },
+        {
+          "id": "backup_name",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.BACKUP_NAME",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.BACKUP_NAME_DOC",
+          "value": "",
+          "attributes": [
+            {
+              "placeholder": "TRANSLATE.DISPLAY_CONFIGURATION.BACKUP_NAME_PLACEHOLDER"
+            },
+            {
+              "maxlength": 40
+            }
+          ],
+          "visibleIf": {
+            "field": "backup_action",
+            "value": "create"
+          }
+        },
+        {
+          "id": "selected_backup",
+          "element": "select",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.BACKUP_SELECTED",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.BACKUP_SELECTED_DOC",
+          "value": {
+            "value": "",
+            "label": "TRANSLATE.DISPLAY_CONFIGURATION.BACKUP_NONE_YET"
+          },
+          "options": [
+            {
+              "value": "",
+              "label": "TRANSLATE.DISPLAY_CONFIGURATION.BACKUP_NONE_YET"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "maintenance",
+      "element": "section",
+      "label": "TRANSLATE.DISPLAY_CONFIGURATION.MAINTENANCE_SECTION",
+      "icon": "fa-wrench",
+      "description": "TRANSLATE.DISPLAY_CONFIGURATION.MAINTENANCE_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "user_interface/display_configuration",
+        "method": "saveMaintenance"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.DISPLAY_CONFIGURATION.SAVE",
+        "data": [
+          "debug"
+        ]
+      },
+      "content": [
+        {
+          "id": "debug",
+          "element": "switch",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.DEBUG",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.DEBUG_DOC",
+          "value": false
+        },
+        {
+          "id": "apply_now",
+          "element": "button",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.APPLY_NOW",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.APPLY_NOW_DOC",
           "onClick": {
             "type": "plugin",
             "endpoint": "user_interface/display_configuration",
-            "method": "toggleDebugLogging"
+            "method": "applyNow",
+            "data": []
           }
         },
         {
           "id": "restart_kiosk",
           "element": "button",
-          "label": "TRANSLATE.RESTART_DISPLAY",
-          "doc": "TRANSLATE.RESTART_DISPLAY_DOC",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.RESTART_KIOSK",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.RESTART_KIOSK_DOC",
           "onClick": {
             "type": "plugin",
             "endpoint": "user_interface/display_configuration",
-            "method": "restartKiosk"
+            "method": "restartKiosk",
+            "data": []
           }
         },
         {
-          "id": "generate_diagnostics",
+          "id": "diagnostics",
           "element": "button",
-          "label": "TRANSLATE.GENERATE_DIAG",
-          "doc": "TRANSLATE.GENERATE_DIAG_DOC",
+          "label": "TRANSLATE.DISPLAY_CONFIGURATION.DIAGNOSTICS",
+          "doc": "TRANSLATE.DISPLAY_CONFIGURATION.DIAGNOSTICS_DOC",
           "onClick": {
             "type": "plugin",
             "endpoint": "user_interface/display_configuration",
-            "method": "generateDiagnostics"
+            "method": "generateDiagnostics",
+            "data": []
           }
         }
       ]

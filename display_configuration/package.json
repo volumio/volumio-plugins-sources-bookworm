@@ -1,16 +1,13 @@
 {
   "name": "display_configuration",
-  "version": "0.0.43",
-  "description": "Configure the local display, touchscreen, screensaver...",
+  "version": "1.0.0",
+  "description": "Rotation, geometry, touch, boot console and splash, screensaver and brightness for the screen of a Volumio x86 player",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Balbuze,Nerd",
+  "author": "Balbuze, Just a Nerd",
   "license": "ISC",
-  "repository": "https://github.com/balbuze/volumio4-x86-kiosk-settings",
+  "repository": "https://github.com/foonerd/display-configuration",
   "volumio_info": {
-    "prettyName": "Display configuration",
+    "prettyName": "Display Configuration",
     "plugin_type": "user_interface",
     "icon": "fa-desktop",
     "architectures": [
@@ -19,17 +16,16 @@
     "os": [
       "bookworm"
     ],
-    "details": "Display configuration for Volumio x86",
-    "changelog": "overscan adjustments"
+    "details": "One place for everything the screen of an x86 player does: the turn and mirror of every connected output, the boot console and splash turned to match, the touch and pointer matrices that follow (with an offset for controllers mounted the other way), picture fit for screens that overscan, screensaver (DPMS or xscreensaver, held off while playing), cursor hiding and backlight brightness. Settings are named profiles with backup, restore and reset. On a virtual machine it fixes the resolution the guest boots with. Display and console changes apply at once; the boot splash takes one reboot.",
+    "changelog": "1.0.0 - Complete rework. Profiles with backup, restore and reset; every connected output, with mirror; touch and pointer follow the screen and persist across display restarts; picture fit and move for overscanning screens; virtual machine fixed resolution; settings apply and the page refreshes without a browser reload; root work through one installed helper, no password in the code."
   },
   "engines": {
     "node": ">=20",
     "volumio": ">=4"
   },
   "dependencies": {
-    "fs-extra": "*",
-    "kew": "*",
-    "v-conf": "*",
-    "socket.io-client": "2.3.0"
+    "fs-extra": "^11.2.0",
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.3"
   }
 }
