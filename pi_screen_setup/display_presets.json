@@ -1,15 +1,64 @@
 {
-  "version": "1.5.9",
-  "last_updated": "2026-03-24",
+  "schema": 2,
+  "version": "1.9.0",
+  "last_updated": "2026-11-02",
   "presets": {
     "auto": {
       "name": "Auto Detect (EDID)",
       "type": "hdmi",
       "description": "Let the display report its capabilities",
-      "config": {}
+      "config": {},
+      "provenance": "community"
     },
     "_comment_hdmi": "=== HDMI DISPLAYS ===",
     "_comment_hdmi_bar": "--- Bar/Ultrawide Displays ---",
+    "waveshare-11.6-1768x828-hdmi": {
+      "name": "Waveshare 11.6\" 1768x828 LCD",
+      "type": "hdmi",
+      "description": "Ultrawide bar display, HDMI or Type-C",
+      "native_resolution": "1768x828",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_timings": "1768 0 80 16 204 828 0 9 6 28 0 0 0 60 0 108000000 0"
+      },
+      "recommended_rotation": 0,
+      "video_mode": "1768x828M@60",
+      "notes": "Vendor lines: waveshare.com/wiki/11.6inch_1768x828_LCD (2026-11-02)",
+      "provenance": "https://www.waveshare.com/wiki/11.6inch_1768x828_LCD"
+    },
+    "waveshare-12.3-hdmi": {
+      "name": "Waveshare 12.3\" HDMI LCD / 1920x720 LCD (1920x720)",
+      "type": "hdmi",
+      "description": "Ultrawide bar display; the 12.3inch HDMI LCD and the 12.3inch 1920x720 LCD share these lines",
+      "native_resolution": "1920x720",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1920 720 60 6 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "Vendor lines: waveshare.com/wiki/12.3inch_HDMI_LCD and 12.3inch_1920x720_LCD (2026-11-02); the vendor sets hdmi_drive=2, which the HDMI mode \"screen + audio\" provides",
+      "provenance": "https://www.waveshare.com/wiki/12.3inch_HDMI_LCD",
+      "aliases": [
+        "Waveshare 12.3inch 1920x720 LCD"
+      ]
+    },
+    "waveshare-10.4hp-capqled": {
+      "name": "Waveshare 10.4HP-CAPQLED (1600x720)",
+      "type": "hdmi",
+      "description": "Ultrawide QLED touch monitor",
+      "native_resolution": "1600x720",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_timings": "1600 0 80 32 112 720 0 30 3 33 0 0 0 60 0 87000000 0"
+      },
+      "recommended_rotation": 0,
+      "video_mode": "1600x720M@60",
+      "notes": "Vendor lines: waveshare.com/wiki/10.4HP-CAPQLED (2026-11-02)",
+      "provenance": "https://www.waveshare.com/wiki/10.4HP-CAPQLED"
+    },
     "waveshare-11.9-hdmi": {
       "name": "Waveshare 11.9\" HDMI LCD (320x1480)",
       "type": "hdmi",
@@ -24,12 +73,13 @@
       },
       "video_mode": "320x1480M@60",
       "recommended_rotation": 90,
-      "notes": "Requires volumio-adaptive plymouth theme for proper boot splash"
+      "notes": "Requires volumio-adaptive plymouth theme for proper boot splash",
+      "provenance": "community"
     },
     "waveshare-8.8-hdmi": {
       "name": "Waveshare 8.8\" HDMI Side Monitor (480x1920)",
       "type": "hdmi",
-      "description": "Portrait native bar display, requires rotation for landscape use",
+      "description": "Portrait native bar display, requires rotation for landscape use (also the 8.8inch Side Monitor, same lines)",
       "native_resolution": "480x1920",
       "rotated_resolution": "1920x480",
       "config": {
@@ -41,7 +91,11 @@
       },
       "video_mode": "480x1920M@60",
       "recommended_rotation": 90,
-      "notes": "Pi Zero series should use gpu_mem=256"
+      "notes": "Pi Zero series should use gpu_mem=256",
+      "provenance": "community",
+      "aliases": [
+        "Waveshare 8.8inch Side Monitor"
+      ]
     },
     "waveshare-9.3-hdmi": {
       "name": "Waveshare 9.3\" HDMI LCD (1600x600)",
@@ -54,7 +108,8 @@
         "hdmi_cvt": "1600 600 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Supports HDMI audio output"
+      "notes": "Supports HDMI audio output",
+      "provenance": "community"
     },
     "waveshare-7.9-hdmi": {
       "name": "Waveshare 7.9\" HDMI LCD (400x1280)",
@@ -69,9 +124,25 @@
       },
       "video_mode": "400x1280M@60",
       "recommended_rotation": 90,
-      "notes": "Requires volumio-adaptive plymouth theme for proper boot splash"
+      "notes": "Requires volumio-adaptive plymouth theme for proper boot splash",
+      "provenance": "community"
     },
     "_comment_hdmi_round": "--- Round/Square Displays ---",
+    "waveshare-3.4-800x800-hdmi": {
+      "name": "Waveshare 3.4\" 800x800 LCD (round)",
+      "type": "hdmi",
+      "description": "Round IPS display, capacitive touch",
+      "native_resolution": "800x800",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_timings": "800 0 68 32 200 800 0 68 32 200 0 0 0 60 0 59400000 0"
+      },
+      "recommended_rotation": 0,
+      "video_mode": "800x800M@60",
+      "notes": "Vendor lines: waveshare.com/wiki/3.4inch_800x800_LCD (2026-11-02); the vendor also sets hdmi_force_hotplug=1",
+      "provenance": "https://www.waveshare.com/wiki/3.4inch_800x800_LCD"
+    },
     "waveshare-5-1080x1080-hdmi": {
       "name": "Waveshare 5\" Round HDMI (1080x1080)",
       "type": "hdmi",
@@ -84,7 +155,8 @@
         "hdmi_timings": "1080 0 68 32 100 1080 0 12 4 16 0 0 0 60 0 85500000 0"
       },
       "recommended_rotation": 0,
-      "notes": "Supports HDMI audio output with 3.5mm jack"
+      "notes": "Supports HDMI audio output with 3.5mm jack",
+      "provenance": "community"
     },
     "waveshare-4-720x720-hdmi": {
       "name": "Waveshare 4\" Square HDMI (720x720)",
@@ -97,9 +169,62 @@
         "hdmi_timings": "720 0 40 40 200 720 0 24 4 12 0 0 0 78 0 59400000 0"
       },
       "recommended_rotation": 0,
-      "notes": "Optical bonding for better display quality"
+      "notes": "Optical bonding for better display quality",
+      "provenance": "community",
+      "aliases": [
+        "Spotpear 4inch-720x720 round HDMI"
+      ]
     },
     "_comment_hdmi_small": "--- Small Displays (under 5 inch) ---",
+    "waveshare-3.2-hdmi-h": {
+      "name": "Waveshare 3.2\" HDMI LCD (H) (480x800)",
+      "type": "hdmi",
+      "description": "Portrait native small display",
+      "native_resolution": "480x800",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_timings": "480 0 50 20 50 800 0 19 20 20 0 0 0 60 0 38000000 6"
+      },
+      "recommended_rotation": 90,
+      "rotated_resolution": "800x480",
+      "video_mode": "480x800M@60",
+      "notes": "Vendor lines: waveshare.com/wiki/3.2inch_HDMI_LCD_(H) (2026-11-02)",
+      "provenance": "https://www.waveshare.com/wiki/3.2inch_HDMI_LCD_(H"
+    },
+    "waveshare-3.5-480x800-hdmi": {
+      "name": "Waveshare 3.5\" 480x800 LCD",
+      "type": "hdmi",
+      "description": "Portrait native small display, capacitive touch",
+      "native_resolution": "480x800",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "480 800 60 6 0 0 0"
+      },
+      "recommended_rotation": 90,
+      "rotated_resolution": "800x480",
+      "notes": "Vendor lines: waveshare.com/wiki/3.5inch_480x800_LCD (2026-11-02); the vendor also sets hdmi_force_hotplug=1 and hdmi_drive=1 (HDMI mode \"screen only\")",
+      "provenance": "https://www.waveshare.com/wiki/3.5inch_480x800_LCD",
+      "aliases": [
+        "Spotpear 3.5inch 480x800 HDMI"
+      ]
+    },
+    "waveshare-5dp-caplcd": {
+      "name": "Waveshare 5DP-CAPLCD (1024x600)",
+      "type": "hdmi",
+      "description": "5-inch DisplayPort/HDMI capacitive touch display",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 6 0 0 0",
+        "config_hdmi_boost": 10
+      },
+      "recommended_rotation": 0,
+      "notes": "Vendor lines: waveshare.com/wiki/5DP-CAPLCD (2026-11-02); the vendor also sets hdmi_force_hotplug=1",
+      "provenance": "https://www.waveshare.com/wiki/5DP-CAPLCD"
+    },
     "waveshare-2.8-hdmi-h": {
       "name": "Waveshare 2.8\" HDMI LCD (H) (480x640)",
       "type": "hdmi",
@@ -112,7 +237,8 @@
         "hdmi_timings": "480 0 100 16 100 640 0 100 20 100 0 0 0 60 0 42000000 6"
       },
       "recommended_rotation": 90,
-      "notes": "Touch via USB or I2C. Portrait native. Requires Waveshare overlay files for I2C touch."
+      "notes": "Touch via USB or I2C. Portrait native. Requires Waveshare overlay files for I2C touch.",
+      "provenance": "community"
     },
     "waveshare-3.5-hdmi": {
       "name": "Waveshare 3.5\" HDMI LCD (480x320)",
@@ -125,7 +251,8 @@
         "hdmi_cvt": "480 320 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch requires waveshare-ads7846 overlay. Can scale to 800x480 with hdmi_cvt 800 480 60 6 0 0 0"
+      "notes": "Touch requires waveshare-ads7846 overlay. Can scale to 800x480 with hdmi_cvt 800 480 60 6 0 0 0",
+      "provenance": "community"
     },
     "waveshare-3.5-hdmi-e": {
       "name": "Waveshare 3.5\" HDMI LCD (E) (640x480)",
@@ -138,7 +265,8 @@
         "hdmi_cvt": "640 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "10-point capacitive touch via USB"
+      "notes": "10-point capacitive touch via USB",
+      "provenance": "community"
     },
     "waveshare-4-hdmi": {
       "name": "Waveshare 4\" HDMI LCD (480x800)",
@@ -152,7 +280,8 @@
         "hdmi_timings": "480 0 40 10 80 800 0 13 3 32 0 0 0 60 0 32000000 3"
       },
       "recommended_rotation": 90,
-      "notes": "Requires waveshare-ads7846 overlay for touch"
+      "notes": "Requires waveshare-ads7846 overlay for touch",
+      "provenance": "community"
     },
     "waveshare-4-hdmi-c": {
       "name": "Waveshare 4\" HDMI LCD (C) (720x720)",
@@ -165,7 +294,8 @@
         "hdmi_timings": "720 0 40 40 200 720 0 24 4 12 0 0 0 60 0 42000000 0"
       },
       "recommended_rotation": 0,
-      "notes": "Square format, 5-point capacitive touch via USB"
+      "notes": "Square format, 5-point capacitive touch via USB",
+      "provenance": "community"
     },
     "waveshare-4-hdmi-h": {
       "name": "Waveshare 4\" HDMI LCD (H) (480x800)",
@@ -179,7 +309,8 @@
         "hdmi_timings": "480 0 40 10 80 800 0 13 3 32 0 0 0 60 0 32000000 3"
       },
       "recommended_rotation": 90,
-      "notes": "OSD menu for brightness/contrast. Touch requires waveshare-ads7846 overlay"
+      "notes": "OSD menu for brightness/contrast. Touch requires waveshare-ads7846 overlay",
+      "provenance": "community"
     },
     "waveshare-4.3-hdmi": {
       "name": "Waveshare 4.3\" HDMI LCD (480x272)",
@@ -192,7 +323,8 @@
         "hdmi_timings": "480 0 1 41 2 272 0 2 10 2 0 0 0 60 0 9009000 3"
       },
       "recommended_rotation": 0,
-      "notes": "Requires ads7846 overlay for touch"
+      "notes": "Requires ads7846 overlay for touch",
+      "provenance": "community"
     },
     "waveshare-4.3-hdmi-b": {
       "name": "Waveshare 4.3\" HDMI LCD (B) (800x480)",
@@ -205,9 +337,100 @@
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "5-point capacitive touch, supports HDMI audio with 3.5mm jack"
+      "notes": "5-point capacitive touch, supports HDMI audio with 3.5mm jack",
+      "provenance": "community"
     },
     "_comment_hdmi_standard": "--- Standard Displays ---",
+    "waveshare-8-768x1024-hdmi": {
+      "name": "Waveshare 8\" / 9.7\" 768x1024 LCD",
+      "type": "hdmi",
+      "description": "Portrait native 4:3 display; the 8inch and the 9.7inch 768x1024 LCD share these lines",
+      "native_resolution": "768x1024",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_timings": "768 0 80 32 60 1024 0 10 10 10 0 0 0 60 0 59400000 0"
+      },
+      "recommended_rotation": 90,
+      "rotated_resolution": "1024x768",
+      "video_mode": "768x1024M@60",
+      "notes": "Vendor lines: waveshare.com/wiki/8inch_768x1024_LCD (2026-11-02); the vendor also sets hdmi_force_hotplug=1",
+      "provenance": "https://www.waveshare.com/wiki/8inch_768x1024_LCD",
+      "aliases": [
+        "Waveshare 9.7inch 768x1024 LCD"
+      ]
+    },
+    "waveshare-8-1536x2048-hdmi": {
+      "name": "Waveshare 8\" 1536x2048 LCD",
+      "type": "hdmi",
+      "description": "Portrait native high-resolution display; needs the Pi 4 or Pi 5 pixel clock",
+      "native_resolution": "1536x2048",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_timings": "1536 0 500 66 158 2048 0 60 10 10 0 0 0 60 0 295000000 3",
+        "config_hdmi_boost": 4,
+        "hdmi_pixel_freq_limit": 356000000,
+        "max_framebuffer_width": 1536,
+        "max_framebuffer_height": 2048,
+        "framebuffer_width": 1536,
+        "framebuffer_height": 2048
+      },
+      "recommended_rotation": 90,
+      "rotated_resolution": "2048x1536",
+      "video_mode": "1536x2048M@60",
+      "notes": "Vendor lines: waveshare.com/wiki/8inch_1536x2048_LCD (2026-11-02)",
+      "provenance": "https://www.waveshare.com/wiki/8inch_1536x2048_LCD"
+    },
+    "waveshare-9hp-capqled": {
+      "name": "Waveshare 9HP-CAPQLED / 10.1HP-CAPQLED (1280x720)",
+      "type": "hdmi",
+      "description": "QLED capacitive touch displays; the 9HP and the 10.1HP share these lines",
+      "native_resolution": "1280x720",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_timings": "1280 0 160 32 48 720 0 10 10 12 0 0 0 60 0 77000000 3"
+      },
+      "recommended_rotation": 0,
+      "video_mode": "1280x720M@60",
+      "notes": "Vendor lines: waveshare.com/wiki/9HP-CAPQLED (2026-11-02)",
+      "provenance": "https://www.waveshare.com/wiki/9HP-CAPQLED",
+      "aliases": [
+        "Waveshare 10.1HP-CAPQLED"
+      ]
+    },
+    "waveshare-9hp-capqled-b": {
+      "name": "Waveshare 9HP-CAPQLED-B (1280x720)",
+      "type": "hdmi",
+      "description": "9-inch QLED capacitive touch display, B revision",
+      "native_resolution": "1280x720",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_timings": "1280 0 160 32 40 720 0 20 6 30 0 0 0 60 0 70400000 3"
+      },
+      "recommended_rotation": 0,
+      "video_mode": "1280x720M@60",
+      "notes": "Vendor lines: waveshare.com/wiki/9HP-CAPQLED-B (2026-11-02)",
+      "provenance": "https://www.waveshare.com/wiki/9HP-CAPQLED-B"
+    },
+    "waveshare-10.1ep-caplcd": {
+      "name": "Waveshare 10.1EP-CAPLCD (1920x1200)",
+      "type": "hdmi",
+      "description": "10.1-inch capacitive touch display, HDMI",
+      "native_resolution": "1920x1200",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_timings": "1920 0 48 32 80 1200 0 3 6 26 0 0 0 60 0 154000000 0",
+        "config_hdmi_boost": 10
+      },
+      "recommended_rotation": 0,
+      "video_mode": "1920x1200M@60",
+      "notes": "Vendor lines: waveshare.com/wiki/10.1EP-CAPLCD (2026-11-02); the vendor also sets hdmi_force_hotplug=1",
+      "provenance": "https://www.waveshare.com/wiki/10.1EP-CAPLCD"
+    },
     "waveshare-5-hdmi": {
       "name": "Waveshare 5\" HDMI LCD (800x480)",
       "type": "hdmi",
@@ -219,7 +442,8 @@
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch requires waveshare-ads7846 overlay via SPI"
+      "notes": "Touch requires waveshare-ads7846 overlay via SPI",
+      "provenance": "community"
     },
     "waveshare-5-hdmi-b": {
       "name": "Waveshare 5\" HDMI LCD (B) (800x480)",
@@ -232,7 +456,13 @@
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB, supports backlight control"
+      "notes": "Touch via USB, supports backlight control",
+      "provenance": "community",
+      "aliases": [
+        "Seeed 114990834",
+        "Joy-IT 5 Inch HDMI LCD V2 (RB-LCD-5)",
+        "Pollin 810817"
+      ]
     },
     "waveshare-5-hdmi-g": {
       "name": "Waveshare 5\" HDMI LCD (G) (800x480)",
@@ -245,7 +475,8 @@
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB, OSD for brightness/contrast, 3.5mm audio jack"
+      "notes": "Touch via USB, OSD for brightness/contrast, 3.5mm audio jack",
+      "provenance": "community"
     },
     "waveshare-5-hdmi-h": {
       "name": "Waveshare 5\" HDMI LCD (H) (800x480)",
@@ -258,7 +489,8 @@
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "10-point capacitive touch via USB, OSD menu, 3.5mm audio jack"
+      "notes": "10-point capacitive touch via USB, OSD menu, 3.5mm audio jack",
+      "provenance": "community"
     },
     "waveshare-5-hdmi-h-v4": {
       "name": "Waveshare 5\" HDMI LCD (H) V4 (800x480)",
@@ -271,7 +503,8 @@
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "V4 revision, 5-point capacitive touch via USB, backlight control"
+      "notes": "V4 revision, 5-point capacitive touch via USB, backlight control",
+      "provenance": "community"
     },
     "waveshare-5-hdmi-amoled": {
       "name": "Waveshare 5\" HDMI AMOLED (960x544)",
@@ -285,7 +518,8 @@
         "config_hdmi_boost": 10
       },
       "recommended_rotation": 0,
-      "notes": "AMOLED - avoid static images >1hr. 3.5mm audio jack"
+      "notes": "AMOLED - avoid static images >1hr. 3.5mm audio jack",
+      "provenance": "community"
     },
     "waveshare-5.5-hdmi-amoled": {
       "name": "Waveshare 5.5\" HDMI AMOLED (1080x1920)",
@@ -301,7 +535,8 @@
         "config_hdmi_boost": 10
       },
       "recommended_rotation": 90,
-      "notes": "AMOLED - avoid static images >1hr. Portrait native, 3.5mm audio jack"
+      "notes": "AMOLED - avoid static images >1hr. Portrait native, 3.5mm audio jack",
+      "provenance": "community"
     },
     "waveshare-5.5-hdmi-2k": {
       "name": "Waveshare 5.5\" 2K HDMI LCD (1440x2560)",
@@ -322,7 +557,8 @@
         "gpu_mem": 256
       },
       "recommended_rotation": 90,
-      "notes": "Pi 4/5 only. Portrait native. 10-point touch, 3.5mm audio"
+      "notes": "Pi 4/5 only. Portrait native. 10-point touch, 3.5mm audio",
+      "provenance": "community"
     },
     "waveshare-7-hdmi": {
       "name": "Waveshare 7\" HDMI LCD (1024x600)",
@@ -335,7 +571,8 @@
         "hdmi_cvt": "1024 600 60 3 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch requires waveshare-ads7846 overlay via SPI"
+      "notes": "Touch requires waveshare-ads7846 overlay via SPI",
+      "provenance": "community"
     },
     "waveshare-7-hdmi-b": {
       "name": "Waveshare 7\" HDMI LCD (B) (800x480)",
@@ -348,7 +585,8 @@
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Capacitive touch via USB, supports backlight control"
+      "notes": "Capacitive touch via USB, supports backlight control",
+      "provenance": "community"
     },
     "waveshare-7-hdmi-c": {
       "name": "Waveshare 7\" HDMI LCD (C) (1024x600)",
@@ -361,7 +599,11 @@
         "hdmi_cvt": "1024 600 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Capacitive touch via USB, supports HDMI audio"
+      "notes": "Capacitive touch via USB, supports HDMI audio",
+      "provenance": "community",
+      "aliases": [
+        "Waveshare 70H-1024600"
+      ]
     },
     "waveshare-7-hdmi-h": {
       "name": "Waveshare 7\" HDMI LCD (H) (1024x600)",
@@ -374,7 +616,8 @@
         "hdmi_cvt": "1024 600 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "5-point capacitive touch via USB, OSD menu, 3.5mm audio jack"
+      "notes": "5-point capacitive touch via USB, OSD menu, 3.5mm audio jack",
+      "provenance": "community"
     },
     "waveshare-7-hdmi-h-case": {
       "name": "Waveshare 7\" HDMI LCD (H) with Case (1024x600)",
@@ -387,7 +630,8 @@
         "hdmi_cvt": "1024 600 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "5-point capacitive touch via USB, OSD menu, 3.5mm audio jack, tilt stand"
+      "notes": "5-point capacitive touch via USB, OSD menu, 3.5mm audio jack, tilt stand",
+      "provenance": "community"
     },
     "waveshare-7-fhd-hdmi": {
       "name": "Waveshare 7\" FHD HDMI Monitor (1080x1920)",
@@ -404,7 +648,8 @@
         "gpu_mem": 512
       },
       "recommended_rotation": 90,
-      "notes": "Portrait native, Pi Zero use gpu_mem=256. Metal CNC case, 3.5mm audio"
+      "notes": "Portrait native, Pi Zero use gpu_mem=256. Metal CNC case, 3.5mm audio",
+      "provenance": "community"
     },
     "waveshare-10.1-hdmi": {
       "name": "Waveshare 10.1\" HDMI LCD (1024x600)",
@@ -417,7 +662,8 @@
         "hdmi_cvt": "1024 600 60 3 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch requires waveshare-ads7846 overlay via SPI"
+      "notes": "Touch requires waveshare-ads7846 overlay via SPI",
+      "provenance": "community"
     },
     "waveshare-10.1-hdmi-b": {
       "name": "Waveshare 10.1\" HDMI LCD (B) (1280x800)",
@@ -430,7 +676,16 @@
         "hdmi_cvt": "1280 800 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "10-point capacitive touch via USB, toughened glass, low power"
+      "notes": "10-point capacitive touch via USB, toughened glass, low power",
+      "provenance": "community",
+      "aliases": [
+        "Seeed 114990836",
+        "Waveshare 7EP-CAPLCD",
+        "Waveshare 8DP-CAPLCD",
+        "Waveshare 8HP-CAPLCD Monitor",
+        "Waveshare 10.1DP-CAPLCD",
+        "Waveshare 10.1HP-CAPLCD Monitor"
+      ]
     },
     "waveshare-10.1-hdmi-b-case": {
       "name": "Waveshare 10.1\" HDMI LCD (B) with Case (1280x800)",
@@ -443,7 +698,8 @@
         "hdmi_cvt": "1280 800 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "10-point capacitive touch via USB, with case and stand"
+      "notes": "10-point capacitive touch via USB, with case and stand",
+      "provenance": "community"
     },
     "waveshare-10.1-hdmi-d-case": {
       "name": "Waveshare 10.1\" HDMI LCD (D) with Case (1024x600)",
@@ -456,7 +712,8 @@
         "hdmi_cvt": "1024 600 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "10-point touch via USB, with case, OSD for brightness/contrast"
+      "notes": "10-point touch via USB, with case, OSD for brightness/contrast",
+      "provenance": "community"
     },
     "waveshare-10.1-hdmi-e": {
       "name": "Waveshare 10.1\" HDMI LCD (E) (1024x600)",
@@ -469,7 +726,8 @@
         "hdmi_cvt": "1024 600 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "10-point touch via USB, optical bonding, 3.5mm audio jack"
+      "notes": "10-point touch via USB, optical bonding, 3.5mm audio jack",
+      "provenance": "community"
     },
     "waveshare-10.1-hdmi-f": {
       "name": "Waveshare 10.1\" HDMI LCD (F) (1024x600)",
@@ -482,7 +740,8 @@
         "hdmi_cvt": "1024 600 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "10-point touch via USB, with protective case option"
+      "notes": "10-point touch via USB, with protective case option",
+      "provenance": "community"
     },
     "waveshare-10.1-hdmi-h": {
       "name": "Waveshare 10.1\" HDMI LCD (H) (1024x600)",
@@ -495,7 +754,8 @@
         "hdmi_cvt": "1024 600 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Capacitive touch via USB, external 12V power, VGA/AV inputs available"
+      "notes": "Capacitive touch via USB, external 12V power, VGA/AV inputs available",
+      "provenance": "community"
     },
     "waveshare-10.1-hdmi-g-case": {
       "name": "Waveshare 10.1\" HDMI LCD (G) with Case (1024x600)",
@@ -508,7 +768,8 @@
         "hdmi_cvt": "1024 600 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "10-point touch via USB, built-in speaker, 5V 3A output, wall mount holes"
+      "notes": "10-point touch via USB, built-in speaker, 5V 3A output, wall mount holes",
+      "provenance": "community"
     },
     "waveshare-10.1-hdmi-h-case": {
       "name": "Waveshare 10.1\" HDMI LCD (H) with Case (1024x600)",
@@ -521,7 +782,8 @@
         "hdmi_cvt": "1024 600 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Capacitive touch via USB, external 12V power, with protective case"
+      "notes": "Capacitive touch via USB, external 12V power, with protective case",
+      "provenance": "community"
     },
     "waveshare-10.5-hdmi-amoled": {
       "name": "Waveshare 10.5\" HDMI AMOLED (2560x1600)",
@@ -537,7 +799,8 @@
         "config_hdmi_boost": 4
       },
       "recommended_rotation": 0,
-      "notes": "Pi 4/5 only. AMOLED - avoid static images >1hr. CNC alloy case, speaker"
+      "notes": "Pi 4/5 only. AMOLED - avoid static images >1hr. CNC alloy case, speaker",
+      "provenance": "community"
     },
     "waveshare-6-hdmi-amoled": {
       "name": "Waveshare 6\" HDMI AMOLED (1080x2160)",
@@ -552,7 +815,8 @@
         "max_framebuffer_height": 2160
       },
       "recommended_rotation": 90,
-      "notes": "Pi 4/5 only. AMOLED - avoid static images >1hr. Flexible screen <1mm thick"
+      "notes": "Pi 4/5 only. AMOLED - avoid static images >1hr. Flexible screen <1mm thick",
+      "provenance": "community"
     },
     "waveshare-11.6-hdmi-h": {
       "name": "Waveshare 11.6\" HDMI LCD (H) (1920x1080)",
@@ -564,7 +828,8 @@
         "hdmi_mode": 82
       },
       "recommended_rotation": 0,
-      "notes": "10-point touch via USB. Requires 12V external power. VGA input available"
+      "notes": "10-point touch via USB. Requires 12V external power. VGA input available",
+      "provenance": "community"
     },
     "waveshare-11.6-hdmi-h-case": {
       "name": "Waveshare 11.6\" HDMI LCD (H) with Case (1920x1080)",
@@ -576,7 +841,8 @@
         "hdmi_mode": 82
       },
       "recommended_rotation": 0,
-      "notes": "10-point touch via USB. Requires 12V power. Hi-Fi speaker, 75mm VESA mount"
+      "notes": "10-point touch via USB. Requires 12V power. Hi-Fi speaker, 75mm VESA mount",
+      "provenance": "community"
     },
     "waveshare-13.3-hdmi-h": {
       "name": "Waveshare 13.3\" HDMI LCD (H) (1920x1080)",
@@ -588,7 +854,8 @@
         "hdmi_mode": 82
       },
       "recommended_rotation": 0,
-      "notes": "10-point touch via USB. Requires 12V external power"
+      "notes": "10-point touch via USB. Requires 12V external power",
+      "provenance": "community"
     },
     "waveshare-15.6-hdmi": {
       "name": "Waveshare 15.6\" HDMI LCD (1920x1080)",
@@ -600,7 +867,12 @@
         "hdmi_mode": 82
       },
       "recommended_rotation": 0,
-      "notes": "10-point touch via USB. Requires 12V external power. DDC/CI backlight control"
+      "notes": "10-point touch via USB. Requires 12V external power. DDC/CI backlight control",
+      "provenance": "community",
+      "aliases": [
+        "Waveshare 15.6inch HDMI LCD (H)",
+        "Waveshare 15.6HP-CAPQLED"
+      ]
     },
     "waveshare-15.6-fhd-monitor-b": {
       "name": "Waveshare 15.6\" FHD Monitor (B) (1920x1080)",
@@ -612,7 +884,8 @@
         "hdmi_mode": 82
       },
       "recommended_rotation": 0,
-      "notes": "10-point touch via USB. USB-C display input. Requires 5V 3A external power"
+      "notes": "10-point touch via USB. USB-C display input. Requires 5V 3A external power",
+      "provenance": "community"
     },
     "_comment_hdmi_joyit": "--- Joy-IT HDMI Displays ---",
     "joyit-5-hdmi-v2": {
@@ -626,7 +899,8 @@
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch requires goodtft LCD-show driver installation. Model: 5 Inch HDMI LCD V2"
+      "notes": "Touch requires goodtft LCD-show driver installation. Model: 5 Inch HDMI LCD V2",
+      "provenance": "community"
     },
     "joyit-7-hdmi-v2": {
       "name": "Joy-IT 7\" HDMI LCD V2 (1024x600)",
@@ -640,7 +914,8 @@
         "hdmi_drive": 1
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB. Single-touch on Pi, 5-point on PC"
+      "notes": "Touch via USB. Single-touch on Pi, 5-point on PC",
+      "provenance": "community"
     },
     "joyit-10-hdmi-v2": {
       "name": "Joy-IT 10\" HDMI LCD V2 (1280x800)",
@@ -653,7 +928,8 @@
         "hdmi_cvt": "1280 800 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB. Professional metal enclosure"
+      "notes": "Touch via USB. Professional metal enclosure",
+      "provenance": "community"
     },
     "joyit-10.1-hdmi-v3": {
       "name": "Joy-IT 10.1\" IPS HDMI V3 (1280x800)",
@@ -666,7 +942,8 @@
         "hdmi_cvt": "1280 800 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Has VGA input, 3.5mm audio out, built-in speakers. Touch via USB"
+      "notes": "Has VGA input, 3.5mm audio out, built-in speakers. Touch via USB",
+      "provenance": "community"
     },
     "joyit-10.1-hdmi-b": {
       "name": "Joy-IT 10.1\" HDMI LCD Version B (1280x800)",
@@ -679,7 +956,8 @@
         "hdmi_cvt": "1280 800 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB. Includes mounting bracket and stand"
+      "notes": "Touch via USB. Includes mounting bracket and stand",
+      "provenance": "community"
     },
     "_comment_hdmi_pollin": "--- Pollin HDMI Displays ---",
     "pollin-5-hdmi-800x480": {
@@ -695,9 +973,39 @@
       },
       "video_mode": "800x480M@60D",
       "recommended_rotation": 0,
-      "notes": "Touch via USB. Discontinued product (EBE170011535)"
+      "notes": "Touch via USB. Discontinued product (EBE170011535)",
+      "provenance": "community"
     },
     "_comment_hdmi_elecrow": "--- Elecrow HDMI Displays ---",
+    "elecrow-7-hdmi-d": {
+      "name": "Elecrow 7\" IPS Touch Screen-D DLH05170B (1024x600)",
+      "type": "hdmi",
+      "description": "7-inch IPS monitor, mini HDMI, USB touch",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 6 0 0 0",
+        "config_hdmi_boost": 7
+      },
+      "recommended_rotation": 0,
+      "notes": "Vendor lines: elecrow.com DLH05170B page (2026-11-02); the vendor also sets hdmi_force_hotplug=1, max_usb_current=1 and hdmi_drive=1",
+      "provenance": "vendor"
+    },
+    "elecrow-10.1-hdmi-sf101c": {
+      "name": "Elecrow 10.1\" SF101C (1280x800)",
+      "type": "hdmi",
+      "description": "10.1-inch IPS display with case, USB touch",
+      "native_resolution": "1280x800",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1280 800 60 6 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "Vendor lines: elecrow.com SF101C (DRD01230D) page (2026-11-02); the vendor also sets max_usb_current=1 and hdmi_drive=1",
+      "provenance": "vendor"
+    },
     "elecrow-5-hdmi": {
       "name": "Elecrow 5\" HDMI (800x480)",
       "type": "hdmi",
@@ -709,12 +1017,17 @@
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB, uses ads7846 overlay for SPI touch variants"
+      "notes": "Touch via USB, uses ads7846 overlay for SPI touch variants",
+      "provenance": "community",
+      "aliases": [
+        "Elecrow RPA05010R",
+        "Elecrow RC050"
+      ]
     },
     "elecrow-7-hdmi": {
       "name": "Elecrow 7\" HDMI (1024x600)",
       "type": "hdmi",
-      "description": "Standard landscape HDMI display with capacitive touch",
+      "description": "Standard landscape HDMI display with capacitive touch (also RPD10246D)",
       "native_resolution": "1024x600",
       "config": {
         "hdmi_group": 2,
@@ -722,7 +1035,11 @@
         "hdmi_cvt": "1024 600 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB, config_hdmi_boost=7 may help stability"
+      "notes": "Touch via USB, config_hdmi_boost=7 may help stability",
+      "provenance": "community",
+      "aliases": [
+        "Elecrow RPD10246D"
+      ]
     },
     "geeekpi-5-hdmi": {
       "name": "GeeekPi/52Pi 5\" HDMI (800x480)",
@@ -735,7 +1052,11 @@
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB, driver-free plug and play"
+      "notes": "Touch via USB, driver-free plug and play",
+      "provenance": "community",
+      "aliases": [
+        "52Pi EP-0081"
+      ]
     },
     "geeekpi-7-hdmi": {
       "name": "GeeekPi/52Pi 7\" HDMI (1024x600)",
@@ -749,7 +1070,8 @@
         "config_hdmi_boost": 4
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB, 10-point multitouch support"
+      "notes": "Touch via USB, 10-point multitouch support",
+      "provenance": "community"
     },
     "geeekpi-11.6-hdmi": {
       "name": "GeeekPi/52Pi 11.6\" HDMI (1366x768)",
@@ -763,7 +1085,8 @@
         "config_hdmi_boost": 4
       },
       "recommended_rotation": 0,
-      "notes": "Use 1360 instead of 1366 for Pi4 compatibility (even pixel requirement)"
+      "notes": "Use 1360 instead of 1366 for Pi4 compatibility (even pixel requirement)",
+      "provenance": "community"
     },
     "geeekpi-10.1-hdmi-1024": {
       "name": "GeeekPi/52Pi 10.1\" HDMI (1024x600)",
@@ -776,7 +1099,8 @@
         "hdmi_cvt": "1024 600 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB, built-in speakers on some models"
+      "notes": "Touch via USB, built-in speakers on some models",
+      "provenance": "community"
     },
     "geeekpi-10.1-hdmi-1280": {
       "name": "GeeekPi/52Pi 10.1\" HDMI (1280x800)",
@@ -789,7 +1113,8 @@
         "hdmi_cvt": "1280 800 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB, built-in speakers, supports HDMI and USB-C input"
+      "notes": "Touch via USB, built-in speakers, supports HDMI and USB-C input",
+      "provenance": "community"
     },
     "geeekpi-7-hdmi-1280": {
       "name": "GeeekPi/52Pi 7\" HDMI (1280x800)",
@@ -802,7 +1127,8 @@
         "hdmi_cvt": "1280 800 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB, OSD controls for brightness/contrast"
+      "notes": "Touch via USB, OSD controls for brightness/contrast",
+      "provenance": "community"
     },
     "uctronics-3.5-hdmi": {
       "name": "UCTRONICS 3.5\" HDMI (480x320)",
@@ -816,7 +1142,8 @@
         "config_hdmi_boost": 7
       },
       "recommended_rotation": 0,
-      "notes": "Touch requires SPI interface and UCTRONICS driver"
+      "notes": "Touch requires SPI interface and UCTRONICS driver",
+      "provenance": "community"
     },
     "uctronics-5-hdmi": {
       "name": "UCTRONICS 5\" HDMI (800x480)",
@@ -829,7 +1156,8 @@
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB, 5-point multitouch"
+      "notes": "Touch via USB, 5-point multitouch",
+      "provenance": "community"
     },
     "uctronics-7-hdmi": {
       "name": "UCTRONICS 7\" HDMI (1024x600)",
@@ -842,7 +1170,8 @@
         "hdmi_cvt": "1024 600 60 3 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB, set hdmi_force_hotplug=1 for single-cable mode"
+      "notes": "Touch via USB, set hdmi_force_hotplug=1 for single-cable mode",
+      "provenance": "community"
     },
     "uctronics-7-1024x768": {
       "name": "UCTRONICS 7\" HDMI (1024x768)",
@@ -854,7 +1183,8 @@
         "hdmi_mode": 16
       },
       "recommended_rotation": 0,
-      "notes": "Standard DMT mode 16, use for better pixel mapping on some displays"
+      "notes": "Standard DMT mode 16, use for better pixel mapping on some displays",
+      "provenance": "community"
     },
     "adafruit-7-1280x800": {
       "name": "Adafruit 7\" HDMI IPS (1280x800)",
@@ -867,7 +1197,8 @@
         "hdmi_timings": "1280 0 48 32 80 800 0 3 6 14 0 0 0 60 0 71000000 5"
       },
       "recommended_rotation": 0,
-      "notes": "Also works with hdmi_mode=28"
+      "notes": "Also works with hdmi_mode=28",
+      "provenance": "community"
     },
     "adafruit-10.1-1280x800": {
       "name": "Adafruit 10.1\" HDMI IPS (1280x800)",
@@ -879,7 +1210,8 @@
         "hdmi_mode": 28
       },
       "recommended_rotation": 0,
-      "notes": "Uses standard DMT mode 28"
+      "notes": "Uses standard DMT mode 28",
+      "provenance": "community"
     },
     "adafruit-5-800x480": {
       "name": "Adafruit 5\" HDMI (800x480)",
@@ -892,7 +1224,8 @@
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch variants use AR1100 USB controller"
+      "notes": "Touch variants use AR1100 USB controller",
+      "provenance": "community"
     },
     "adafruit-5-backpack": {
       "name": "Adafruit 5\" Display Backpack (800x480)",
@@ -905,7 +1238,8 @@
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "TFP401 decoder, no scaler - must output native resolution"
+      "notes": "TFP401 decoder, no scaler - must output native resolution",
+      "provenance": "community"
     },
     "adafruit-7-800x480": {
       "name": "Adafruit 7\" HDMI (800x480)",
@@ -918,7 +1252,8 @@
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Lower resolution 7 inch variant"
+      "notes": "Lower resolution 7 inch variant",
+      "provenance": "community"
     },
     "adafruit-7-1024x600": {
       "name": "Adafruit 7\" HDMI (1024x600)",
@@ -931,13 +1266,14 @@
         "hdmi_cvt": "1024 600 60 3 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch and audio variants available"
+      "notes": "Touch and audio variants available",
+      "provenance": "community"
     },
     "_comment_hdmi_lcdwiki": "--- LCDwiki/Goodtft Displays (Miuzei, Kuman rebrands) ---",
     "lcdwiki-3.5-hdmi": {
       "name": "LCDwiki 3.5\" HDMI (480x320)",
       "type": "hdmi",
-      "description": "LCDwiki/Goodtft MPI3508 and similar 3.5 inch displays",
+      "description": "LCDwiki/Goodtft MPI3508 and similar 3.5 inch displays (also MPI3508 \"3.5inch HDMI Display-B\")",
       "native_resolution": "480x320",
       "config": {
         "hdmi_group": 2,
@@ -946,7 +1282,11 @@
         "config_hdmi_boost": 7
       },
       "recommended_rotation": 0,
-      "notes": "Touch requires goodtft driver or SPI overlay"
+      "notes": "Touch requires goodtft driver or SPI overlay",
+      "provenance": "community",
+      "aliases": [
+        "LCDwiki MPI3508 3.5inch HDMI Display-B"
+      ]
     },
     "lcdwiki-4-hdmi-c": {
       "name": "LCDwiki 4\" HDMI-C (480x800)",
@@ -960,7 +1300,8 @@
         "hdmi_cvt": "480 800 60 6 0 0 0"
       },
       "recommended_rotation": 90,
-      "notes": "Portrait native, use rotation for landscape"
+      "notes": "Portrait native, use rotation for landscape",
+      "provenance": "community"
     },
     "lcdwiki-5-hdmi": {
       "name": "LCDwiki 5\" HDMI (800x480)",
@@ -974,12 +1315,17 @@
         "config_hdmi_boost": 7
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB, driver-free on most OS"
+      "notes": "Touch via USB, driver-free on most OS",
+      "provenance": "community",
+      "aliases": [
+        "LCDwiki MPI5008",
+        "Hosyond MPI5001"
+      ]
     },
     "lcdwiki-7-hdmi-b": {
       "name": "LCDwiki 7\" HDMI-B (800x480)",
       "type": "hdmi",
-      "description": "LCDwiki/Goodtft 7 inch 800x480 display",
+      "description": "LCDwiki/Goodtft 7 inch 800x480 display (also MPI7001)",
       "native_resolution": "800x480",
       "config": {
         "hdmi_group": 2,
@@ -988,7 +1334,11 @@
         "config_hdmi_boost": 7
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB"
+      "notes": "Touch via USB",
+      "provenance": "community",
+      "aliases": [
+        "LCDwiki MPI7001"
+      ]
     },
     "lcdwiki-7-hdmi-c": {
       "name": "LCDwiki 7\" HDMI-C (1024x600)",
@@ -1002,7 +1352,11 @@
         "config_hdmi_boost": 7
       },
       "recommended_rotation": 0,
-      "notes": "Supports HDMI audio, touch via USB"
+      "notes": "Supports HDMI audio, touch via USB",
+      "provenance": "community",
+      "aliases": [
+        "LCDwiki MPI7002"
+      ]
     },
     "_comment_hdmi_sunfounder": "--- Sunfounder Displays ---",
     "sunfounder-7-1024x600": {
@@ -1016,7 +1370,8 @@
         "hdmi_cvt": "1024 600 60 3 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Capacitive touch via USB"
+      "notes": "Capacitive touch via USB",
+      "provenance": "community"
     },
     "sunfounder-10.1-1024x600": {
       "name": "Sunfounder 10.1\" HDMI (1024x600)",
@@ -1029,7 +1384,8 @@
         "hdmi_cvt": "1024 600 60 3 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Capacitive touch via USB"
+      "notes": "Capacitive touch via USB",
+      "provenance": "community"
     },
     "_comment_hdmi_kuman": "--- Kuman Displays ---",
     "kuman-7-800x480": {
@@ -1043,7 +1399,8 @@
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB, may need max_usb_current=1"
+      "notes": "Touch via USB, may need max_usb_current=1",
+      "provenance": "community"
     },
     "kuman-7-1024x600": {
       "name": "Kuman 7\" HDMI (1024x600)",
@@ -1056,7 +1413,8 @@
         "hdmi_cvt": "1024 600 60 3 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB"
+      "notes": "Touch via USB",
+      "provenance": "community"
     },
     "_comment_hdmi_freenove": "--- Freenove Displays ---",
     "freenove-7-hdmi": {
@@ -1070,7 +1428,8 @@
         "hdmi_cvt": "1024 600 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB. Speaker variant available (FNK0055C)"
+      "notes": "Touch via USB. Speaker variant available (FNK0055C)",
+      "provenance": "community"
     },
     "_comment_hdmi_seeed": "--- Seeed Studio Displays ---",
     "seeed-5-720x1280": {
@@ -1088,7 +1447,8 @@
       },
       "video_mode": "720x1280M@60",
       "recommended_rotation": 90,
-      "notes": "Portrait native. May need hdmi_pixel_freq_limit=400000000 on older Pi models"
+      "notes": "Portrait native. May need hdmi_pixel_freq_limit=400000000 on older Pi models",
+      "provenance": "community"
     },
     "seeed-7-720x1280": {
       "name": "Seeed Studio 7\" HDMI (720x1280)",
@@ -1105,7 +1465,8 @@
       },
       "video_mode": "720x1280M@60",
       "recommended_rotation": 90,
-      "notes": "Portrait native. Backlight adjustable via buttons on back"
+      "notes": "Portrait native. Backlight adjustable via buttons on back",
+      "provenance": "community"
     },
     "seeed-7-1024x600": {
       "name": "Seeed Studio 7\" HDMI (1024x600)",
@@ -1118,7 +1479,8 @@
         "hdmi_cvt": "1024 600 60 3 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB. Driver-free plug and play"
+      "notes": "Touch via USB. Driver-free plug and play",
+      "provenance": "community"
     },
     "seeed-7-1280x800": {
       "name": "Seeed Studio 7\" HDMI IPS (1280x800)",
@@ -1130,7 +1492,8 @@
         "hdmi_mode": 28
       },
       "recommended_rotation": 0,
-      "notes": "Uses standard DMT mode 28 for 1280x800@60Hz"
+      "notes": "Uses standard DMT mode 28 for 1280x800@60Hz",
+      "provenance": "community"
     },
     "seeed-10.1-1280x800": {
       "name": "Seeed Studio 10.1\" HDMI IPS (1280x800)",
@@ -1142,7 +1505,8 @@
         "hdmi_mode": 28
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB. Multi-touch support"
+      "notes": "Touch via USB. Multi-touch support",
+      "provenance": "community"
     },
     "seeed-10.1-1200x1920": {
       "name": "Seeed Studio 10.1\" HDMI IPS (1200x1920)",
@@ -1157,7 +1521,8 @@
         "max_framebuffer_height": 1920
       },
       "recommended_rotation": 90,
-      "notes": "Portrait native. Backlight adjustable via buttons"
+      "notes": "Portrait native. Backlight adjustable via buttons",
+      "provenance": "community"
     },
     "seeed-10.1-1366x768": {
       "name": "Seeed Studio 10.1\" HDMI (1366x768)",
@@ -1170,7 +1535,8 @@
         "hdmi_cvt": "1360 768 60 3 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Use 1360 instead of 1366 for Pi4 compatibility. Supports multiple inputs"
+      "notes": "Use 1360 instead of 1366 for Pi4 compatibility. Supports multiple inputs",
+      "provenance": "community"
     },
     "_comment_hdmi_spotpear": "--- Spotpear Displays ---",
     "spotpear-4-hdmi": {
@@ -1185,7 +1551,8 @@
         "hdmi_cvt": "480 800 60 6 0 0 0"
       },
       "recommended_rotation": 90,
-      "notes": "Portrait native. Requires ads7846 overlay for touch"
+      "notes": "Portrait native. Requires ads7846 overlay for touch",
+      "provenance": "community"
     },
     "spotpear-5-hdmi": {
       "name": "Spotpear 5\" HDMI (1024x600)",
@@ -1199,7 +1566,8 @@
         "config_hdmi_boost": 10
       },
       "recommended_rotation": 0,
-      "notes": "Models 5DP-CAPLCD-B, 5DP-CAPLCD-G, 5DP-CAPLCD-H. Touch via USB"
+      "notes": "Models 5DP-CAPLCD-B, 5DP-CAPLCD-G, 5DP-CAPLCD-H. Touch via USB",
+      "provenance": "community"
     },
     "spotpear-7-hdmi": {
       "name": "Spotpear 7\" HDMI (1024x600)",
@@ -1212,7 +1580,8 @@
         "hdmi_cvt": "1024 600 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB. OSD for brightness/contrast adjustment"
+      "notes": "Touch via USB. OSD for brightness/contrast adjustment",
+      "provenance": "community"
     },
     "spotpear-7-hdmi-1280": {
       "name": "Spotpear 7\" HDMI (1280x800)",
@@ -1225,7 +1594,8 @@
         "hdmi_cvt": "1280 800 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Supports HDMI and USB-C input. Touch via USB"
+      "notes": "Supports HDMI and USB-C input. Touch via USB",
+      "provenance": "community"
     },
     "spotpear-10.1-hdmi": {
       "name": "Spotpear 10.1\" HDMI (1024x600)",
@@ -1239,7 +1609,8 @@
         "max_usb_current": 1
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB. May require display_rotate=2 for correct orientation"
+      "notes": "Touch via USB. May require display_rotate=2 for correct orientation",
+      "provenance": "community"
     },
     "spotpear-5-round-hdmi": {
       "name": "Spotpear 5\" Round HDMI (1080x1080)",
@@ -1253,7 +1624,8 @@
         "hdmi_pixel_freq_limit": 356000000
       },
       "recommended_rotation": 0,
-      "notes": "10-point capacitive touch via USB. Compatible with Waveshare 5\" Round timings"
+      "notes": "10-point capacitive touch via USB. Compatible with Waveshare 5\" Round timings",
+      "provenance": "community"
     },
     "_comment_hdmi_longruner": "--- Longruner Displays ---",
     "longruner-5-hdmi": {
@@ -1267,7 +1639,8 @@
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Uses goodtft/LCD-show drivers for touch. Power via GPIO, display via HDMI"
+      "notes": "Uses goodtft/LCD-show drivers for touch. Power via GPIO, display via HDMI",
+      "provenance": "community"
     },
     "longruner-7-hdmi": {
       "name": "Longruner 7\" HDMI (1024x600)",
@@ -1280,9 +1653,24 @@
         "hdmi_cvt": "1024 600 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB, driver-free. Compatible with LCDwiki displays"
+      "notes": "Touch via USB, driver-free. Compatible with LCDwiki displays",
+      "provenance": "community"
     },
     "_comment_hdmi_generic": "--- Generic Resolutions ---",
+    "luckfox-7-hdmi": {
+      "name": "Luckfox 7\" HD Touchscreen (1024x600)",
+      "type": "hdmi",
+      "description": "7-inch HDMI display with USB capacitive touch",
+      "native_resolution": "1024x600",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1024 600 60 6 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "Vendor lines: wiki.luckfox.com 7inch-HD-Touchscreen (2026-11-02); the page writes hdmi_driver=1 (sic) for hdmi_drive=1",
+      "provenance": "https://wiki.luckfox.com/Display/7inch-HD-Touchscreen"
+    },
     "generic-480x320": {
       "name": "Generic 480x320 HDMI",
       "type": "hdmi",
@@ -1294,7 +1682,8 @@
         "hdmi_cvt": "480 320 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Many 3.5 inch displays use SPI instead - check your model"
+      "notes": "Many 3.5 inch displays use SPI instead - check your model",
+      "provenance": "community"
     },
     "generic-800x480": {
       "name": "Generic 800x480 HDMI",
@@ -1306,7 +1695,8 @@
         "hdmi_mode": 87,
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
-      "recommended_rotation": 0
+      "recommended_rotation": 0,
+      "provenance": "community"
     },
     "generic-1024x600": {
       "name": "Generic 1024x600 HDMI",
@@ -1318,7 +1708,8 @@
         "hdmi_mode": 87,
         "hdmi_cvt": "1024 600 60 3 0 0 0"
       },
-      "recommended_rotation": 0
+      "recommended_rotation": 0,
+      "provenance": "community"
     },
     "generic-1280x800": {
       "name": "Generic 1280x800 HDMI",
@@ -1330,7 +1721,8 @@
         "hdmi_mode": 28
       },
       "recommended_rotation": 0,
-      "notes": "Standard DMT mode 28 for 1280x800@60Hz"
+      "notes": "Standard DMT mode 28 for 1280x800@60Hz",
+      "provenance": "community"
     },
     "generic-1366x768": {
       "name": "Generic 1366x768 HDMI (HD Ready)",
@@ -1343,7 +1735,64 @@
         "hdmi_cvt": "1360 768 60 3 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Pi4 requires 1360 (not 1366) due to even-pixel requirement"
+      "notes": "Pi4 requires 1360 (not 1366) due to even-pixel requirement",
+      "provenance": "community"
+    },
+    "generic-1520x720": {
+      "name": "Generic 1520x720 HDMI",
+      "type": "hdmi",
+      "description": "Wide 10.1\" bars (Elecrow DLH61101B and similar)",
+      "native_resolution": "1520x720",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1520 720 60 7 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "CVT 1520x720@60; 21:9 class panel",
+      "provenance": "community"
+    },
+    "generic-1920x1200": {
+      "name": "Generic 1920x1200 HDMI",
+      "type": "hdmi",
+      "description": "WUXGA 10.1\"-16\" panels (UPERFECT UPi B7 class) when the panel's EDID is not read",
+      "native_resolution": "1920x1200",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1920 1200 60 5 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "CVT 1920x1200@60; prefer Auto Detect when the panel has a working EDID",
+      "provenance": "community"
+    },
+    "generic-720x1280": {
+      "name": "Generic 720x1280 HDMI",
+      "type": "hdmi",
+      "description": "Portrait 5\"-7\" panels without vendor lines",
+      "native_resolution": "720x1280",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "720 1280 60 3 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "CVT 720x1280@60; rotate in the plugin for landscape use",
+      "provenance": "community"
+    },
+    "generic-1080x1920": {
+      "name": "Generic 1080x1920 HDMI",
+      "type": "hdmi",
+      "description": "Portrait FHD panels without vendor lines",
+      "native_resolution": "1080x1920",
+      "config": {
+        "hdmi_group": 2,
+        "hdmi_mode": 87,
+        "hdmi_cvt": "1080 1920 60 3 0 0 0"
+      },
+      "recommended_rotation": 0,
+      "notes": "CVT 1080x1920@60; rotate in the plugin for landscape use",
+      "provenance": "community"
     },
     "generic-720p": {
       "name": "720p (1280x720)",
@@ -1354,7 +1803,8 @@
         "hdmi_group": 1,
         "hdmi_mode": 4
       },
-      "recommended_rotation": 0
+      "recommended_rotation": 0,
+      "provenance": "community"
     },
     "generic-1080p": {
       "name": "1080p (1920x1080)",
@@ -1365,7 +1815,8 @@
         "hdmi_group": 1,
         "hdmi_mode": 16
       },
-      "recommended_rotation": 0
+      "recommended_rotation": 0,
+      "provenance": "community"
     },
     "generic-4k30": {
       "name": "4K 30Hz (3840x2160)",
@@ -1376,7 +1827,8 @@
         "hdmi_group": 1,
         "hdmi_mode": 95
       },
-      "recommended_rotation": 0
+      "recommended_rotation": 0,
+      "provenance": "community"
     },
     "generic-4k60": {
       "name": "4K 60Hz (3840x2160)",
@@ -1389,13 +1841,15 @@
         "hdmi_enable_4kp60": 1
       },
       "recommended_rotation": 0,
-      "notes": "Requires adequate cooling"
+      "notes": "Requires adequate cooling",
+      "provenance": "community"
     },
     "custom-hdmi": {
       "name": "Custom HDMI Timings",
       "type": "hdmi",
       "description": "Enter manual hdmi_timings or hdmi_cvt",
-      "config": {}
+      "config": {},
+      "provenance": "community"
     },
     "_comment_hdmi_bigtreetech": "--- BIGTREETECH/BIQU HDMI Displays ---",
     "btt-hdmi5-v1.0": {
@@ -1410,7 +1864,8 @@
         "hdmi_drive": 1
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB, supports 3.5mm audio output, hardware brightness buttons"
+      "notes": "Touch via USB, supports 3.5mm audio output, hardware brightness buttons",
+      "provenance": "vendor"
     },
     "btt-hdmi7-v1.0": {
       "name": "BIGTREETECH HDMI7 V1.0 (1024x600)",
@@ -1424,7 +1879,8 @@
         "hdmi_drive": 1
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB, supports 3.5mm audio output, hardware brightness buttons"
+      "notes": "Touch via USB, supports 3.5mm audio output, hardware brightness buttons",
+      "provenance": "vendor"
     },
     "btt-hdmi7-v1.2": {
       "name": "BIGTREETECH HDMI7 V1.2 (1024x600)",
@@ -1438,7 +1894,8 @@
         "hdmi_drive": 1
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB, supports 3.5mm audio output, hardware brightness buttons"
+      "notes": "Touch via USB, supports 3.5mm audio output, hardware brightness buttons",
+      "provenance": "vendor"
     },
     "_comment_hdmi_hosyond": "--- Hosyond HDMI Displays ---",
     "hosyond-5-hdmi-b": {
@@ -1453,7 +1910,8 @@
         "config_hdmi_boost": 7
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB. OSD for brightness/contrast. 3.5mm audio output"
+      "notes": "Touch via USB. OSD for brightness/contrast. 3.5mm audio output",
+      "provenance": "community"
     },
     "hosyond-7-hdmi-c": {
       "name": "Hosyond 7\" HDMI Display-C (1024x600)",
@@ -1467,7 +1925,8 @@
         "config_hdmi_boost": 7
       },
       "recommended_rotation": 0,
-      "notes": "5-point capacitive touch via USB. Backlight power switch"
+      "notes": "5-point capacitive touch via USB. Backlight power switch",
+      "provenance": "community"
     },
     "hosyond-7-hdmi-h": {
       "name": "Hosyond 7\" HDMI Display-H (1024x600)",
@@ -1481,7 +1940,8 @@
         "config_hdmi_boost": 7
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB. OSD menu. Includes protective case"
+      "notes": "Touch via USB. OSD menu. Includes protective case",
+      "provenance": "community"
     },
     "hosyond-8.8-hdmi": {
       "name": "Hosyond 8.8\" HDMI Bar (480x1920)",
@@ -1498,7 +1958,8 @@
       },
       "video_mode": "480x1920M@60",
       "recommended_rotation": 90,
-      "notes": "Portrait native IPS. Touch via USB Type-C. MPC8802 is non-touch variant"
+      "notes": "Portrait native IPS. Touch via USB Type-C. MPC8802 is non-touch variant",
+      "provenance": "community"
     },
     "hosyond-10.1-hdmi-h": {
       "name": "Hosyond 10.1\" HDMI Display-H (1024x600)",
@@ -1508,11 +1969,13 @@
       "config": {
         "hdmi_group": 2,
         "hdmi_mode": 87,
-        "hdmi_cvt": "1024 600 60 6 0 0 0",
+        "hdmi_timings": "1024 1 50 18 50 600 1 15 3 15 0 0 0 60 0 40000000 3",
         "config_hdmi_boost": 7
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB. OSD controls. External 12V power recommended"
+      "notes": "Touch via USB. OSD controls. External 12V power recommended. Vendor timings (Hosyond MPI1001 page on lcdwiki.com) replace the CVT line in 1.6.0",
+      "video_mode": "1024x600M@60",
+      "provenance": "vendor"
     },
     "hosyond-10.1-hdmi-y": {
       "name": "Hosyond 10.1\" HDMI Display-Y (1024x600)",
@@ -1526,7 +1989,8 @@
         "config_hdmi_boost": 7
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB. Y model variant"
+      "notes": "Touch via USB. Y model variant",
+      "provenance": "community"
     },
     "hosyond-10.1-hdmi-s": {
       "name": "Hosyond 10.1\" HDMI Display-S (1024x600)",
@@ -1540,7 +2004,8 @@
         "config_hdmi_boost": 7
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB. S model variant"
+      "notes": "Touch via USB. S model variant",
+      "provenance": "community"
     },
     "_comment_hdmi_hmtech": "--- HMTECH HDMI Displays ---",
     "hmtech-7-hdmi": {
@@ -1554,7 +2019,8 @@
         "hdmi_cvt": "800 480 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "USB powered. No touch. Use with Pi 4 requires Micro-HDMI adapter"
+      "notes": "USB powered. No touch. Use with Pi 4 requires Micro-HDMI adapter",
+      "provenance": "community"
     },
     "hmtech-10.1-hdmi": {
       "name": "HMTECH 10.1\" HDMI Touchscreen (1024x600)",
@@ -1567,9 +2033,30 @@
         "hdmi_cvt": "1024 600 60 6 0 0 0"
       },
       "recommended_rotation": 0,
-      "notes": "Touch via USB. Built-in stand. Use with Pi 4 requires Micro-HDMI adapter"
+      "notes": "Touch via USB. Built-in stand. Use with Pi 4 requires Micro-HDMI adapter",
+      "provenance": "community"
     },
     "_comment_dsi_official": "=== OFFICIAL RASPBERRY PI DSI DISPLAYS ===",
+    "rpi-touch2-10inch": {
+      "name": "Raspberry Pi Touch Display 2 - 10\"",
+      "type": "dsi",
+      "description": "Official 10.1-inch Touch Display 2, 1200x1920 portrait, four DSI lanes: Raspberry Pi 5, CM5 and CM4 IO board DISP1 only",
+      "native_resolution": "1200x1920",
+      "rotated_resolution": "1920x1200",
+      "config": {
+        "dtoverlay": "vc4-kms-dsi-ili79600-10-1inch"
+      },
+      "recommended_rotation": 0,
+      "overlay_rotation_param": true,
+      "notes": "raspberrypi.com/documentation (2026-11-02): needs current firmware and EEPROM (apt full-upgrade, rpi-eeprom-update -a); on CM5 DISP0 add ,dsi0 in the custom parameters",
+      "rotation_param": "rotation",
+      "provenance": "https://www.raspberrypi.com/documentation/accessories/touch-display-2.html",
+      "boards": [
+        "pi5",
+        "cm5",
+        "cm4"
+      ]
+    },
     "rpi-touch-7inch": {
       "name": "Raspberry Pi Touch Display 7\" (Original)",
       "type": "dsi",
@@ -1580,7 +2067,21 @@
       },
       "recommended_rotation": 0,
       "notes": "Original 7-inch display with FT5406 touch controller",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "https://www.raspberrypi.com/documentation/accessories/display.html",
+      "aliases": [
+        "Waveshare 43H-800480-IPS-CT",
+        "Waveshare 50H-800480-IPS-CT",
+        "Waveshare CM4-DISP-BASE-5A",
+        "Waveshare CM4-DISP-BASE-7A-BOX",
+        "Luckfox 4.3-DSI-Touchscreen",
+        "Luckfox 5-DSI-Touchscreen",
+        "Luckfox 7-DSI-Touchscreen",
+        "OSOYOO DSI 5 inch (v1.1, v2.0, v2.1)",
+        "DFRobot DFR0550-V2 5\" DSI",
+        "DFRobot DFR0678 7\" DSI"
+      ]
     },
     "rpi-touch2-7inch": {
       "name": "Raspberry Pi Touch Display 2 - 7\"",
@@ -1592,7 +2093,14 @@
       },
       "recommended_rotation": 0,
       "notes": "ILI9881 based panel, portrait native",
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "https://www.raspberrypi.com/documentation/accessories/touch-display-2.html",
+      "aliases": [
+        "Pollin 811844 7\" 720x1280 DSI",
+        "Joy-IT RB-LCD-7V2-Case",
+        "Seeed 104990902"
+      ]
     },
     "rpi-touch2-5inch": {
       "name": "Raspberry Pi Touch Display 2 - 5\"",
@@ -1604,7 +2112,12 @@
       },
       "recommended_rotation": 0,
       "notes": "ILI9881 based panel, portrait native",
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "https://www.raspberrypi.com/documentation/accessories/touch-display-2.html",
+      "aliases": [
+        "Waveshare 5inch Touch Display 2 class (720x1280)"
+      ]
     },
     "_comment_dsi_hosyond": "--- Hosyond DSI Displays ---",
     "hosyond-5-dsi": {
@@ -1617,7 +2130,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Uses official 7-inch overlay. Compatible with Pi 4/5",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "hosyond-7-dsi": {
       "name": "Hosyond 7\" DSI Display (800x480)",
@@ -1629,7 +2144,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Uses official 7-inch overlay. Compatible with Pi 4/5. Case variant available",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "_comment_dsi_waveshare": "=== WAVESHARE DSI DISPLAYS (vc4-kms-dsi-waveshare-panel) ===",
     "_comment_dsi_waveshare_special": "--- Waveshare 3.5\" DSI (custom overlays) ---",
@@ -1644,7 +2161,15 @@
       },
       "recommended_rotation": 0,
       "notes": "Requires waveshare_35DSI.dtbo in /boot/overlays",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "requires_overlay": [
+        "waveshare_35DSI"
+      ],
+      "provenance": "community",
+      "aliases": [
+        "Spotpear 3.5inch DSI LCD (E)"
+      ]
     },
     "waveshare-dsi-3.5h": {
       "name": "Waveshare 3.5\" DSI-H (480x800)",
@@ -1656,9 +2181,55 @@
       },
       "recommended_rotation": 0,
       "notes": "Requires waveshare_35DSI.dtbo in /boot/overlays",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "requires_overlay": [
+        "waveshare_35DSI"
+      ],
+      "provenance": "community"
     },
     "_comment_dsi_waveshare_std": "--- Waveshare Standard DSI (vc4-kms-dsi-waveshare-panel) ---",
+    "waveshare-dsi-10.1e-2lane": {
+      "name": "Waveshare 10.1\" DSI LCD (E) 2-lane (1920x1200)",
+      "type": "dsi",
+      "description": "Waveshare 10.1-inch DSI LCD (E), 1920x1200, two-lane cable for Pi 4B / 3B+ / 3A+",
+      "native_resolution": "1920x1200",
+      "config": {
+        "dtoverlay": "vc4-kms-dsi-waveshare-panel,10_1_inchE_2lane"
+      },
+      "recommended_rotation": 0,
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "min_kernel": "6.18.55",
+      "provenance": "https://www.waveshare.com/wiki/10.1inch_DSI_LCD_(E)",
+      "aliases": [
+        "Spotpear 10.1inch DSI LCD (E) 2-lane"
+      ],
+      "notes": "The 10_1_inchE tokens enter the kernel at 6.18.55 (vendor: rpi-update pulls/7662); on an older kernel the plugin says so and the line does nothing"
+    },
+    "waveshare-dsi-10.1e-4lane": {
+      "name": "Waveshare 10.1\" DSI LCD (E) 4-lane (1920x1200)",
+      "type": "dsi",
+      "description": "Waveshare 10.1-inch DSI LCD (E), 1920x1200, four-lane cable for Pi 5 / CM4 / CM5",
+      "native_resolution": "1920x1200",
+      "config": {
+        "dtoverlay": "vc4-kms-dsi-waveshare-panel,10_1_inchE_4lane"
+      },
+      "recommended_rotation": 0,
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "min_kernel": "6.18.55",
+      "boards": [
+        "pi5",
+        "cm4",
+        "cm5"
+      ],
+      "provenance": "https://www.waveshare.com/wiki/10.1inch_DSI_LCD_(E)",
+      "aliases": [
+        "Spotpear 10.1inch DSI LCD (E) 4-lane"
+      ],
+      "notes": "The 10_1_inchE tokens enter the kernel at 6.18.55 (vendor: rpi-update pulls/7662); on an older kernel the plugin says so and the line does nothing"
+    },
     "waveshare-dsi-2.8": {
       "name": "Waveshare 2.8\" DSI (480x640)",
       "type": "dsi",
@@ -1668,7 +2239,9 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel,2_8_inch"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "community"
     },
     "waveshare-dsi-3.4-round": {
       "name": "Waveshare 3.4\" DSI Round (800x800)",
@@ -1679,7 +2252,9 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel,3_4_inch"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "community"
     },
     "waveshare-dsi-4.0": {
       "name": "Waveshare 4.0\" DSI (480x800)",
@@ -1690,7 +2265,9 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel,4_0_inch"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "community"
     },
     "waveshare-dsi-4.0c": {
       "name": "Waveshare 4.0\" DSI-C (720x720)",
@@ -1701,7 +2278,9 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel,4_0_inchC"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "community"
     },
     "waveshare-dsi-4.3-800x480": {
       "name": "Waveshare 4.3\" DSI (800x480)",
@@ -1713,7 +2292,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Clone of Pi 7-inch display, uses official 7-inch overlay",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "waveshare-dsi-4.3-rev1-knockout": {
       "name": "Waveshare 4.3\" DSI rev1 (TC358762 / no vc4-kms-v3d)",
@@ -1727,7 +2308,9 @@
       "emit_dsi_overlay": false,
       "recommended_rotation": 0,
       "notes": "Omits vc4-kms-v3d and omits vc4-kms-dsi panel overlay in videoconfig (emit_dsi_overlay=false). Verified: touch OK, no artifacts. Add dtoverlay=rpi-ft5406 in Additional Parameters if touch fails on your stack.",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "waveshare-dsi-4.3-qled": {
       "name": "Waveshare 4.3\" DSI QLED (800x480)",
@@ -1739,7 +2322,9 @@
       },
       "recommended_rotation": 0,
       "notes": "QLED panel, clone of Pi 7-inch display, uses official 7-inch overlay",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "waveshare-dsi-5.0-800x480": {
       "name": "Waveshare 5\" DSI (800x480)",
@@ -1751,7 +2336,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Uses official 7-inch overlay, driver-free",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "waveshare-dsi-5.0b-800x480": {
       "name": "Waveshare 5\" DSI-B IPS (800x480)",
@@ -1763,31 +2350,40 @@
       },
       "recommended_rotation": 0,
       "notes": "IPS panel, uses official 7-inch overlay, driver-free",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "waveshare-dsi-5.0c-800x480": {
-      "name": "Waveshare 5\" DSI-C IPS (800x480)",
+      "name": "Waveshare 5\" DSI LCD (C) (1024x600)",
       "type": "dsi",
-      "description": "Waveshare 5-inch C model IPS 800x480 DSI touchscreen",
-      "native_resolution": "800x480",
+      "description": "Waveshare 5-inch DSI LCD (C), IPS 1024x600, five-point capacitive touch",
+      "native_resolution": "1024x600",
       "config": {
-        "dtoverlay": "vc4-kms-dsi-7inch"
+        "dtoverlay": "vc4-kms-dsi-waveshare-panel,7_0_inchC"
       },
       "recommended_rotation": 0,
-      "notes": "C variant IPS panel, uses official 7-inch overlay, driver-free",
-      "overlay_rotation_param": false
+      "notes": "Corrected in 1.6.0: the panel is 1024x600 and uses the 7_0_inchC token (waveshare.com/wiki/5inch_DSI_LCD_(C), oldid 109355); earlier entries said 800x480 with the official 7-inch overlay, which cannot drive this panel",
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "https://www.waveshare.com/wiki/5inch_DSI_LCD_(C",
+      "aliases": [
+        "Spotpear 5inch-DSI-LCD-(C)"
+      ]
     },
     "waveshare-dsi-5.0d-800x480": {
-      "name": "Waveshare 5\" DSI-D IPS (800x480)",
+      "name": "Waveshare 5\" DSI LCD (D) (720x1280)",
       "type": "dsi",
-      "description": "Waveshare 5-inch D model IPS 800x480 DSI touchscreen",
-      "native_resolution": "800x480",
+      "description": "Waveshare 5-inch DSI LCD (D), IPS 720x1280 portrait, optical bonding, five-point capacitive touch",
+      "native_resolution": "720x1280",
       "config": {
-        "dtoverlay": "vc4-kms-dsi-7inch"
+        "dtoverlay": "vc4-kms-dsi-waveshare-panel,5_0_inch"
       },
       "recommended_rotation": 0,
-      "notes": "D variant IPS panel, uses official 7-inch overlay, driver-free",
-      "overlay_rotation_param": false
+      "notes": "Corrected in 1.6.0: the panel is 720x1280 and uses the 5_0_inch token (waveshare.com/wiki/5inch_DSI_LCD_(D), oldid 109352); earlier entries said 800x480 with the official 7-inch overlay, which cannot drive this panel",
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "https://www.waveshare.com/wiki/5inch_DSI_LCD_(D"
     },
     "waveshare-dsi-7.0-800x480": {
       "name": "Waveshare 7\" DSI (800x480)",
@@ -1799,7 +2395,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Uses official 7-inch overlay, driver-free",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "waveshare-dsi-7.0b-800x480": {
       "name": "Waveshare 7\" DSI-B (800x480)",
@@ -1811,7 +2409,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Uses official 7-inch overlay, driver-free",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "waveshare-dsi-7.0-with-cam": {
       "name": "Waveshare 7\" DSI with Camera (800x480)",
@@ -1823,7 +2423,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Uses official 7-inch overlay. Add dtoverlay=ov5647 for camera",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "waveshare-dsi-8.0-800x480": {
       "name": "Waveshare 8\" DSI (800x480)",
@@ -1835,7 +2437,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Uses official 7-inch overlay, driver-free",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "waveshare-dsi-5.0": {
       "name": "Waveshare 5.0\" DSI (720x1280)",
@@ -1846,7 +2450,9 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel,5_0_inch"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "community"
     },
     "waveshare-dsi-6.25": {
       "name": "Waveshare 6.25\" DSI (720x1560)",
@@ -1857,7 +2463,9 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel,6_25_inch"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "community"
     },
     "waveshare-dsi-7.0c": {
       "name": "Waveshare 7.0\" DSI-C (1024x600)",
@@ -1865,10 +2473,13 @@
       "description": "Waveshare 7.0-inch C model DSI touchscreen",
       "native_resolution": "1024x600",
       "config": {
-        "dtoverlay": "vc4-kms-dsi-waveshare-panel,7_0_inchC"
+        "dtoverlay": "vc4-kms-dsi-waveshare-panel,7_0_inchC,i2c1"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "notes": "Touch is wired to I2C1 through the 4-pin cable (waveshare.com/wiki/7inch_DSI_LCD_(C)); the kernel overlay defaults to I2C0, so the i2c1 parameter is required. With the 0 ohm resistor moved to I2C0, remove ,i2c1 in the custom parameters. Corrected in 1.6.0",
+      "rotation_param": "rotation",
+      "provenance": "https://www.waveshare.com/wiki/7inch_DSI_LCD_(C)"
     },
     "waveshare-dsi-7.0h": {
       "name": "Waveshare 7.0\" DSI-H (1280x720)",
@@ -1879,7 +2490,9 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel,7_0_inchH"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "community"
     },
     "waveshare-dsi-7.0e": {
       "name": "Waveshare 7.0\" DSI-E (1280x800)",
@@ -1891,7 +2504,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Uses same overlay as 8-inch DSI",
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "community"
     },
     "waveshare-dsi-7.9": {
       "name": "Waveshare 7.9\" DSI (400x1280)",
@@ -1902,7 +2517,9 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel,7_9_inch"
       },
       "recommended_rotation": 90,
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "community"
     },
     "waveshare-dsi-8.0": {
       "name": "Waveshare 8.0\" DSI (1280x800)",
@@ -1913,7 +2530,9 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel,8_0_inch"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "community"
     },
     "waveshare-dsi-8.0c": {
       "name": "Waveshare 8.0\" DSI-C (1280x800)",
@@ -1925,7 +2544,9 @@
       },
       "recommended_rotation": 0,
       "notes": "C variant, same configuration as base model",
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "community"
     },
     "waveshare-dsi-8.0-with-cam": {
       "name": "Waveshare 8\" DSI with Camera (800x480)",
@@ -1937,7 +2558,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Uses official 7-inch overlay. Add dtoverlay=ov5647 for camera",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "waveshare-dsi-8.8": {
       "name": "Waveshare 8.8\" DSI (480x1920)",
@@ -1948,7 +2571,12 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel,8_8_inch"
       },
       "recommended_rotation": 90,
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "community",
+      "aliases": [
+        "Spotpear 8.8inch DSI LCD"
+      ]
     },
     "waveshare-dsi-10.1": {
       "name": "Waveshare 10.1\" DSI (1280x800)",
@@ -1959,7 +2587,12 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel,10_1_inch"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "community",
+      "aliases": [
+        "Waveshare RPI-HMI-080D-101D"
+      ]
     },
     "waveshare-dsi-10.1c": {
       "name": "Waveshare 10.1\" DSI-C (1280x800)",
@@ -1971,7 +2604,9 @@
       },
       "recommended_rotation": 0,
       "notes": "C variant, same configuration as base model",
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "community"
     },
     "waveshare-dsi-11.9": {
       "name": "Waveshare 11.9\" DSI (320x1480)",
@@ -1982,7 +2617,9 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel,11_9_inch"
       },
       "recommended_rotation": 90,
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "community"
     },
     "waveshare-dsi-13.3-4lane": {
       "name": "Waveshare 13.3\" DSI 4-lane (1920x1080)",
@@ -1994,7 +2631,14 @@
       },
       "recommended_rotation": 0,
       "notes": "Requires Compute Module or Pi 5 (4-lane DSI)",
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "community",
+      "boards": [
+        "pi5",
+        "cm4",
+        "cm5"
+      ]
     },
     "waveshare-dsi-13.3-2lane": {
       "name": "Waveshare 13.3\" DSI 2-lane (1920x1080)",
@@ -2005,7 +2649,9 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel,13_3_inch_2lane"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": true
+      "overlay_rotation_param": true,
+      "rotation_param": "rotation",
+      "provenance": "community"
     },
     "_comment_dsi_waveshare_v2": "=== WAVESHARE DSI-TOUCH V2 SERIES ===",
     "waveshare-dsi-v2-3.4c": {
@@ -2017,7 +2663,9 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel-v2,3_4_inch_c"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "waveshare-dsi-v2-4.0c": {
       "name": "Waveshare 4.0\" DSI-TOUCH V2 (720x720)",
@@ -2028,7 +2676,9 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel-v2,4_0_inch_c"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "waveshare-dsi-v2-5.0a": {
       "name": "Waveshare 5.0\" DSI-TOUCH V2-A (720x1280)",
@@ -2039,7 +2689,9 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel-v2,5_0_inch_a"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "waveshare-dsi-v2-5.5a": {
       "name": "Waveshare 5.5\" DSI-TOUCH V2-A (720x1280)",
@@ -2050,7 +2702,9 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel-v2,5_5_inch_a"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "waveshare-dsi-v2-7.0a": {
       "name": "Waveshare 7.0\" DSI-TOUCH V2-A (720x1280)",
@@ -2061,7 +2715,13 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel-v2,7_0_inch_a"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community",
+      "aliases": [
+        "Waveshare RPI-HMI-7A",
+        "Luckfox 7-DSI-TOUCH-A"
+      ]
     },
     "waveshare-dsi-v2-7.0b": {
       "name": "Waveshare 7.0\" DSI-TOUCH V2-B (720x1280)",
@@ -2072,7 +2732,9 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel-v2,7_0_inch_b"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "waveshare-dsi-v2-7.0c": {
       "name": "Waveshare 7.0\" DSI-TOUCH V2-C (1024x600)",
@@ -2083,7 +2745,16 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel-v2,7_0_inch_c"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community",
+      "aliases": [
+        "Waveshare 7-DSI-TOUCH-C"
+      ],
+      "boards": [
+        "pi5",
+        "cm5"
+      ]
     },
     "waveshare-dsi-v2-8.0a": {
       "name": "Waveshare 8.0\" DSI-TOUCH V2-A 2-lane (800x1280)",
@@ -2094,7 +2765,12 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel-v2,8_0_inch_a"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community",
+      "aliases": [
+        "Luckfox 8-DSI-TOUCH-A"
+      ]
     },
     "waveshare-dsi-v2-8.0a-4lane": {
       "name": "Waveshare 8.0\" DSI-TOUCH V2-A 4-lane (800x1280)",
@@ -2106,7 +2782,14 @@
       },
       "recommended_rotation": 0,
       "notes": "Requires Compute Module or Pi 5 (4-lane DSI)",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community",
+      "boards": [
+        "pi5",
+        "cm4",
+        "cm5"
+      ]
     },
     "waveshare-dsi-v2-8.8a": {
       "name": "Waveshare 8.8\" DSI-TOUCH V2-A (480x1920)",
@@ -2117,7 +2800,9 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel-v2,8_8_inch_a"
       },
       "recommended_rotation": 90,
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "waveshare-dsi-v2-9.0b": {
       "name": "Waveshare 9.0\" DSI-TOUCH V2-B 2-lane (720x1280)",
@@ -2128,7 +2813,12 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel-v2,9_0_inch_b"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community",
+      "aliases": [
+        "Luckfox 9-DSI-TOUCH-B"
+      ]
     },
     "waveshare-dsi-v2-9.0b-4lane": {
       "name": "Waveshare 9.0\" DSI-TOUCH V2-B 4-lane (720x1280)",
@@ -2140,7 +2830,14 @@
       },
       "recommended_rotation": 0,
       "notes": "Requires Compute Module or Pi 5 (4-lane DSI)",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community",
+      "boards": [
+        "pi5",
+        "cm4",
+        "cm5"
+      ]
     },
     "waveshare-dsi-v2-10.1a": {
       "name": "Waveshare 10.1\" DSI-TOUCH V2-A 2-lane (800x1280)",
@@ -2151,7 +2848,12 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel-v2,10_1_inch_a"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community",
+      "aliases": [
+        "Luckfox 10.1-DSI-TOUCH-A"
+      ]
     },
     "waveshare-dsi-v2-10.1a-4lane": {
       "name": "Waveshare 10.1\" DSI-TOUCH V2-A 4-lane (800x1280)",
@@ -2163,7 +2865,14 @@
       },
       "recommended_rotation": 0,
       "notes": "Requires Compute Module or Pi 5 (4-lane DSI)",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community",
+      "boards": [
+        "pi5",
+        "cm4",
+        "cm5"
+      ]
     },
     "waveshare-dsi-v2-10.1b": {
       "name": "Waveshare 10.1\" DSI-TOUCH V2-B 2-lane (720x1280)",
@@ -2174,7 +2883,12 @@
         "dtoverlay": "vc4-kms-dsi-waveshare-panel-v2,10_1_inch_b"
       },
       "recommended_rotation": 0,
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community",
+      "aliases": [
+        "Luckfox 10.1-DSI-TOUCH-B"
+      ]
     },
     "waveshare-dsi-v2-10.1b-4lane": {
       "name": "Waveshare 10.1\" DSI-TOUCH V2-B 4-lane (720x1280)",
@@ -2186,7 +2900,14 @@
       },
       "recommended_rotation": 0,
       "notes": "Requires Compute Module or Pi 5 (4-lane DSI)",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community",
+      "boards": [
+        "pi5",
+        "cm4",
+        "cm5"
+      ]
     },
     "waveshare-dsi-v2-12.3a-4lane": {
       "name": "Waveshare 12.3\" DSI-TOUCH V2-A 4-lane (720x1920)",
@@ -2198,7 +2919,16 @@
       },
       "recommended_rotation": 0,
       "notes": "Requires Compute Module or Pi 5 (4-lane DSI)",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community",
+      "aliases": [
+        "Waveshare 12.3-DSI-TOUCH-A"
+      ],
+      "boards": [
+        "pi5",
+        "cm5"
+      ]
     },
     "_comment_dsi_freenove": "=== FREENOVE DSI DISPLAYS ===",
     "freenove-4.3-dsi": {
@@ -2211,7 +2941,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Pi display compatible, uses official 7-inch overlay, driver-free",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "freenove-5-dsi": {
       "name": "Freenove 5\" DSI (800x480)",
@@ -2223,7 +2955,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Pi display compatible, uses official 7-inch overlay, driver-free",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "freenove-7-dsi": {
       "name": "Freenove 7\" DSI (800x480)",
@@ -2235,7 +2969,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Pi display compatible, uses official 7-inch overlay, driver-free",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "_comment_dsi_bigtreetech": "--- BIGTREETECH/BIQU DSI Displays ---",
     "btt-pitft50-v1.0": {
@@ -2250,7 +2986,9 @@
       "emit_dsi_overlay": false,
       "recommended_rotation": 0,
       "notes": "Tested with same videoconfig strategy as waveshare-dsi-4.3-rev1-knockout: no vc4-kms-v3d, no vc4-kms-dsi line. Touch OK, no artifacts. config.dtoverlay kept for reference; not written when emit_dsi_overlay=false.",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "_comment_dsi_dfrobot": "--- DFRobot DSI Displays ---",
     "dfrobot-dsi-5-tft-v1.0": {
@@ -2265,7 +3003,9 @@
       "emit_dsi_overlay": false,
       "recommended_rotation": 0,
       "notes": "Field-tested: works with same strategy as waveshare-dsi-4.3-rev1-knockout (manual comment of vc4-kms-dsi-waveshare-800x480 before emit_dsi_overlay). Touch OK, no artifacts. Not a Waveshare PCB — pick this preset by brand/model.",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "btt-pitft43-v2.0": {
       "name": "BIGTREETECH PI TFT43 V2.0 (800x480)",
@@ -2277,7 +3017,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Pi display compatible, powered via DSI ribbon, adjustable backlight via encoder",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "btt-pitft43-v2.1": {
       "name": "BIGTREETECH PI TFT43 V2.1 (800x480)",
@@ -2289,7 +3031,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Pi display compatible, powered via DSI ribbon, adjustable backlight via encoder",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "btt-pitft50-v2.0": {
       "name": "BIGTREETECH PI TFT50 V2.0 (800x480)",
@@ -2301,7 +3045,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Pi display compatible, powered via DSI ribbon, adjustable backlight via encoder",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "btt-pitft50-v2.1": {
       "name": "BIGTREETECH PI TFT50 V2.1 (800x480)",
@@ -2313,7 +3059,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Pi display compatible, powered via DSI ribbon, adjustable backlight via encoder",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "btt-pitft70-v2.0": {
       "name": "BIGTREETECH PI TFT70 V2.0 (800x480)",
@@ -2325,7 +3073,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Pi display compatible, powered via DSI ribbon, adjustable backlight via encoder",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "btt-pitft70-v2.1": {
       "name": "BIGTREETECH PI TFT70 V2.1 (800x480)",
@@ -2337,7 +3087,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Pi display compatible, powered via DSI ribbon, adjustable backlight via encoder",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "_comment_dsi_other": "=== OTHER DSI DISPLAYS ===",
     "jdi-lt070me05000": {
@@ -2350,7 +3102,14 @@
       },
       "recommended_rotation": 0,
       "notes": "Requires Compute Module (4-lane DSI)",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community",
+      "boards": [
+        "cm3",
+        "cm4",
+        "cm5"
+      ]
     },
     "jdi-lt070me05000-v2": {
       "name": "JDI LT070ME05000 V2 DSI (1920x1200)",
@@ -2362,7 +3121,14 @@
       },
       "recommended_rotation": 0,
       "notes": "Requires Compute Module (4-lane DSI)",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community",
+      "boards": [
+        "cm3",
+        "cm4",
+        "cm5"
+      ]
     },
     "custom-dsi": {
       "name": "Custom/Generic DSI Panel",
@@ -2374,7 +3140,9 @@
       },
       "recommended_rotation": 0,
       "notes": "Use overlay parameters to configure timings",
-      "overlay_rotation_param": false
+      "overlay_rotation_param": false,
+      "rotation_param": null,
+      "provenance": "community"
     },
     "_comment_dpi": "=== DPI DISPLAYS ===",
     "_comment_dpi_waveshare": "--- Waveshare DPI Displays ---",
@@ -2391,7 +3159,14 @@
         "dtoverlay_4": "waveshare-touch-28dpi"
       },
       "recommended_rotation": 90,
-      "notes": "Requires Waveshare overlay files in /boot/overlays. Portrait native."
+      "notes": "Requires Waveshare overlay files in /boot/overlays. Portrait native.",
+      "rotation_param": null,
+      "requires_overlay": [
+        "vc4-kms-dpi-2inch8",
+        "waveshare-28dpi-3b-4b",
+        "waveshare-touch-28dpi"
+      ],
+      "provenance": "community"
     },
     "waveshare-4dpi-b": {
       "name": "Waveshare 4\" DPI LCD (B) (480x800)",
@@ -2406,7 +3181,14 @@
         "dtoverlay_4": "waveshare-4dpib-4b"
       },
       "recommended_rotation": 90,
-      "notes": "Requires Waveshare overlay files in /boot/overlays. Portrait native."
+      "notes": "Requires Waveshare overlay files in /boot/overlays. Portrait native.",
+      "rotation_param": null,
+      "requires_overlay": [
+        "waveshare-4dpib-3b-4b",
+        "waveshare-4dpib-3b",
+        "waveshare-4dpib-4b"
+      ],
+      "provenance": "community"
     },
     "waveshare-5dpi": {
       "name": "Waveshare 5\" DPI LCD (800x480)",
@@ -2419,7 +3201,13 @@
         "dtoverlay_3": "waveshare-5dpi"
       },
       "recommended_rotation": 0,
-      "notes": "Requires Waveshare overlay files. Display only - no touch support."
+      "notes": "Requires Waveshare overlay files. Display only - no touch support.",
+      "rotation_param": null,
+      "requires_overlay": [
+        "vc4-kms-DPI-5inch",
+        "waveshare-5dpi"
+      ],
+      "provenance": "community"
     },
     "waveshare-7dpi": {
       "name": "Waveshare 7\" DPI LCD (1024x600)",
@@ -2432,7 +3220,13 @@
         "dtoverlay_3": "waveshare-7dpi"
       },
       "recommended_rotation": 0,
-      "notes": "Requires Waveshare overlay files and RGB LCD HAT. Display only - no touch."
+      "notes": "Requires Waveshare overlay files and RGB LCD HAT. Display only - no touch.",
+      "rotation_param": null,
+      "requires_overlay": [
+        "vc4-kms-DPI-7inch",
+        "waveshare-7dpi"
+      ],
+      "provenance": "community"
     },
     "waveshare-3.5dpi": {
       "name": "Waveshare 3.5\" DPI LCD (640x480)",
@@ -2445,7 +3239,13 @@
         "dtoverlay_3": "waveshare-touch-35dpi"
       },
       "recommended_rotation": 0,
-      "notes": "Requires Waveshare overlay files in /boot/overlays"
+      "notes": "Requires Waveshare overlay files in /boot/overlays",
+      "rotation_param": null,
+      "requires_overlay": [
+        "waveshare-35dpi",
+        "waveshare-touch-35dpi"
+      ],
+      "provenance": "community"
     },
     "waveshare-4dpi-c": {
       "name": "Waveshare 4\" DPI LCD-C (720x720)",
@@ -2460,7 +3260,15 @@
         "dtoverlay_5": "waveshare-touch-4dpi"
       },
       "recommended_rotation": 0,
-      "notes": "Requires Waveshare overlay files in /boot/overlays"
+      "notes": "Requires Waveshare overlay files in /boot/overlays",
+      "rotation_param": null,
+      "requires_overlay": [
+        "vc4-kms-DPI-4inch",
+        "waveshare-4dpic-3b-4b",
+        "waveshare-4dpi",
+        "waveshare-touch-4dpi"
+      ],
+      "provenance": "community"
     },
     "_comment_dpi_pimoroni": "--- Pimoroni DPI Displays ---",
     "hyperpixel4": {
@@ -2472,7 +3280,9 @@
         "dtoverlay": "vc4-kms-dpi-hyperpixel4"
       },
       "recommended_rotation": 0,
-      "notes": "Pimoroni HyperPixel 4.0 rectangular display"
+      "notes": "Pimoroni HyperPixel 4.0 rectangular display",
+      "rotation_param": "rotate",
+      "provenance": "community"
     },
     "hyperpixel4sq": {
       "name": "Pimoroni HyperPixel 4.0 Square",
@@ -2483,7 +3293,9 @@
         "dtoverlay": "vc4-kms-dpi-hyperpixel4sq"
       },
       "recommended_rotation": 0,
-      "notes": "Pimoroni HyperPixel 4.0 square display"
+      "notes": "Pimoroni HyperPixel 4.0 square display",
+      "rotation_param": "rotate",
+      "provenance": "community"
     },
     "hyperpixel2r": {
       "name": "Pimoroni HyperPixel 2.1 Round",
@@ -2494,7 +3306,9 @@
         "dtoverlay": "vc4-kms-dpi-hyperpixel2r"
       },
       "recommended_rotation": 0,
-      "notes": "Pimoroni HyperPixel 2.1 Round display. Touch can be disabled with disable-touch parameter."
+      "notes": "Pimoroni HyperPixel 2.1 Round display. Touch can be disabled with disable-touch parameter.",
+      "rotation_param": "rotate",
+      "provenance": "community"
     },
     "vga666": {
       "name": "VGA666 Adapter",
@@ -2505,7 +3319,9 @@
         "dtoverlay": "vc4-kms-vga666"
       },
       "recommended_rotation": 0,
-      "notes": "Converts DPI output to VGA signal"
+      "notes": "Converts DPI output to VGA signal",
+      "rotation_param": null,
+      "provenance": "community"
     },
     "_comment_dpi_bigtreetech": "--- BIGTREETECH/BIQU DPI Displays ---",
     "btt-tft43-dip": {
@@ -2521,9 +3337,51 @@
         "dtparam_4": "backlight-gpio=19"
       },
       "recommended_rotation": 0,
-      "notes": "Requires gt911_btt_tft43_dip overlay for touch from BIGTREETECH GitHub"
+      "notes": "Requires gt911_btt_tft43_dip overlay for touch from BIGTREETECH GitHub",
+      "rotation_param": "rotate",
+      "provenance": "community"
     },
     "_comment_dpi_other": "--- Other DPI Displays ---",
+    "adafruit-kippah-7inch": {
+      "name": "Adafruit DPI Kippah + 5\"/7\" 800x480",
+      "type": "dpi",
+      "description": "Adafruit DPI Kippah with the 5-inch or 7-inch 800x480 TTL display (in-tree panel)",
+      "native_resolution": "800x480",
+      "config": {
+        "dtoverlay": "vc4-kms-dpi-panel,kippah-7inch"
+      },
+      "recommended_rotation": 0,
+      "notes": "learn.adafruit.com, Bookworm 2024-04 (2026-11-02): dtoverlay=vc4-kms-dpi-panel,kippah-7inch",
+      "rotation_param": "rotate",
+      "provenance": "https://learn.adafruit.com/adafruit-dpi-display-kippah-ttl-tft/"
+    },
+    "geekworm-mzp280": {
+      "name": "Geekworm MZP280 2.8\" DPI (480x640)",
+      "type": "dpi",
+      "description": "Geekworm MZP280 2.8-inch DPI display, portrait native (in-tree panel)",
+      "native_resolution": "480x640",
+      "rotated_resolution": "640x480",
+      "config": {
+        "dtoverlay": "vc4-kms-dpi-panel,mzp280"
+      },
+      "recommended_rotation": 90,
+      "notes": "Kernel overlays README (rpi-6.12.y): vc4-kms-dpi-panel,mzp280",
+      "rotation_param": "rotate",
+      "provenance": "https://github.com/raspberrypi/linux/blob/rpi-6.12.y/arch/arm/boot/dts/overlays/README"
+    },
+    "innolux-at056tn53v1": {
+      "name": "Innolux AT056TN53 5.6\" DPI (640x480)",
+      "type": "dpi",
+      "description": "Innolux AT056TN53 v1 5.6-inch VGA panel on DPI (in-tree panel)",
+      "native_resolution": "640x480",
+      "config": {
+        "dtoverlay": "vc4-kms-dpi-panel,at056tn53v1"
+      },
+      "recommended_rotation": 0,
+      "notes": "Kernel overlays README (rpi-6.12.y): vc4-kms-dpi-panel,at056tn53v1",
+      "rotation_param": "rotate",
+      "provenance": "https://github.com/raspberrypi/linux/blob/rpi-6.12.y/arch/arm/boot/dts/overlays/README"
+    },
     "owootecc-dpi-4.3": {
       "name": "Owootecc 4.3\" DPI Panel (480x320)",
       "type": "dpi",
@@ -2533,7 +3391,11 @@
         "dtoverlay": "piscreen,speed=16000000,drm,xohms=100"
       },
       "recommended_rotation": 0,
-      "notes": "Uses piscreen overlay with DRM support"
+      "notes": "The PiScreen overlay under a name no product matches; see ozzmaker-piscreen. Kept so settings that name it keep working.",
+      "rotation_param": "rotate",
+      "provenance": "community",
+      "deprecated": true,
+      "superseded_by": "ozzmaker-piscreen"
     },
     "custom-dpi": {
       "name": "Custom/Generic DPI Panel",
@@ -2544,7 +3406,91 @@
         "dtoverlay": "vc4-kms-dpi-generic"
       },
       "recommended_rotation": 0,
-      "notes": "Use overlay parameters to configure timings"
+      "notes": "Use overlay parameters to configure timings",
+      "rotation_param": "rotate",
+      "provenance": "community"
+    },
+    "adafruit-pitft22": {
+      "name": "Adafruit PiTFT 2.2\" (320x240)",
+      "type": "spi",
+      "description": "ILI9341 over SPI, no touch; lines from adafruit-pitft.py with the drm option",
+      "native_resolution": "320x240",
+      "config": {
+        "dtoverlay": "pitft22,speed=64000000,fps=30,drm"
+      },
+      "recommended_rotation": 0,
+      "rotation_param": "rotate",
+      "provenance": "https://github.com/adafruit/Raspberry-Pi-Installer-Scripts/blob/main/adafruit-pitft.py",
+      "notes": "KMS connector SPI-1, a display device of its own beside the HDMI/DSI one; the UI may need Volumio's screen pointed at it. Touch orientation parameters are not set here."
+    },
+    "adafruit-pitft28-resistive": {
+      "name": "Adafruit PiTFT 2.8\"/2.4\"/3.2\" resistive (320x240)",
+      "type": "spi",
+      "description": "ILI9341 over SPI, STMPE resistive touch; lines from adafruit-pitft.py with the drm option",
+      "native_resolution": "320x240",
+      "config": {
+        "dtoverlay": "pitft28-resistive,speed=64000000,fps=30,drm"
+      },
+      "recommended_rotation": 0,
+      "rotation_param": "rotate",
+      "provenance": "https://github.com/adafruit/Raspberry-Pi-Installer-Scripts/blob/main/adafruit-pitft.py",
+      "notes": "KMS connector SPI-1, a display device of its own beside the HDMI/DSI one; the UI may need Volumio's screen pointed at it. Touch orientation parameters are not set here.",
+      "aliases": [
+        "Adafruit PiTFT 2.4\" resistive",
+        "Adafruit PiTFT 3.2\" resistive"
+      ]
+    },
+    "adafruit-pitft28-capacitive": {
+      "name": "Adafruit PiTFT 2.8\" capacitive (320x240)",
+      "type": "spi",
+      "description": "ILI9341 over SPI, FocalTech capacitive touch; lines from adafruit-pitft.py with the drm option",
+      "native_resolution": "320x240",
+      "config": {
+        "dtoverlay": "pitft28-capacitive,speed=64000000,fps=30,drm"
+      },
+      "recommended_rotation": 0,
+      "rotation_param": "rotate",
+      "provenance": "https://github.com/adafruit/Raspberry-Pi-Installer-Scripts/blob/main/adafruit-pitft.py",
+      "notes": "KMS connector SPI-1, a display device of its own beside the HDMI/DSI one; the UI may need Volumio's screen pointed at it. Touch orientation parameters are not set here."
+    },
+    "adafruit-pitft35-resistive": {
+      "name": "Adafruit PiTFT 3.5\" resistive (480x320)",
+      "type": "spi",
+      "description": "HX8357D over SPI, STMPE resistive touch; lines from adafruit-pitft.py with the drm option",
+      "native_resolution": "480x320",
+      "config": {
+        "dtoverlay": "pitft35-resistive,speed=20000000,fps=20,drm"
+      },
+      "recommended_rotation": 0,
+      "rotation_param": "rotate",
+      "provenance": "https://github.com/adafruit/Raspberry-Pi-Installer-Scripts/blob/main/adafruit-pitft.py",
+      "notes": "KMS connector SPI-1, a display device of its own beside the HDMI/DSI one; the UI may need Volumio's screen pointed at it. Touch orientation parameters are not set here."
+    },
+    "ozzmaker-piscreen": {
+      "name": "OzzMaker PiScreen 3.5\" (480x320)",
+      "type": "spi",
+      "description": "ILI9486 over SPI, ADS7846 resistive touch; the piscreen overlay with its drm option",
+      "native_resolution": "480x320",
+      "config": {
+        "dtoverlay": "piscreen,speed=16000000,drm,xohms=100"
+      },
+      "recommended_rotation": 0,
+      "rotation_param": "rotate",
+      "provenance": "https://github.com/raspberrypi/linux/blob/rpi-6.12.y/arch/arm/boot/dts/overlays/README",
+      "notes": "KMS connector SPI-1, a display device of its own beside the HDMI/DSI one; the UI may need Volumio's screen pointed at it. Touch orientation parameters are not set here."
+    },
+    "watterott-rpi-display": {
+      "name": "Watterott RPi-Display 2.8\" (320x240)",
+      "type": "spi",
+      "description": "ILI9341 over SPI, ADS7846 resistive touch; the watterott-display overlay with its drm option",
+      "native_resolution": "320x240",
+      "config": {
+        "dtoverlay": "watterott-display,drm"
+      },
+      "recommended_rotation": 0,
+      "rotation_param": "rotate",
+      "provenance": "https://github.com/raspberrypi/linux/blob/rpi-6.12.y/arch/arm/boot/dts/overlays/README",
+      "notes": "KMS connector SPI-1, a display device of its own beside the HDMI/DSI one; the UI may need Volumio's screen pointed at it. Touch orientation parameters are not set here."
     }
   }
 }

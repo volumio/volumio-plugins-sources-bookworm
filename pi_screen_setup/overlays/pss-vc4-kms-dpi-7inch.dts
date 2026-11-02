@@ -1,0 +1,111 @@
+// pss-vc4-kms-dpi-7inch.dtbo — the vendor's file, unchanged. This is dtc's reading of it.
+// vendor name: vc4-kms-DPI-7inch
+// source: https://files.waveshare.com/wiki/7inch-DSI-LCD-(with-cam)/7DPI-DTBO.zip (7DPI-DTBO/vc4-kms-DPI-7inch.dtbo)
+// page: https://www.waveshare.com/wiki/7inch_DPI_LCD
+// sha256: 010520efff148cc7f68c8cea95bdc09f7137e3ce32fe6be5f5976ede3b984c2b
+// fetched: 2026-11-02
+/dts-v1/;
+
+/ {
+	compatible = "brcm,bcm2835";
+
+	fragment@0 {
+		target-path = "/";
+
+		__overlay__ {
+
+			panel {
+				compatible = "panel-dpi";
+				phandle = <0x03>;
+				width-mm = <0x9a>;
+				height-mm = <0x56>;
+				bus-format = <0x1009>;
+
+				panel-timing {
+					clock-frequency = <0x29f6300>;
+					hactive = <0x400>;
+					hfront-porch = <0x28>;
+					hsync-len = <0x14>;
+					hback-porch = <0x3c>;
+					hsync-active = <0x00>;
+					vactive = <0x258>;
+					vfront-porch = <0x0c>;
+					vsync-len = <0x0a>;
+					vback-porch = <0x14>;
+					vsync-active = <0x00>;
+					de-active = <0x01>;
+					pixelclk-active = <0x01>;
+				};
+
+				port {
+
+					endpoint {
+						remote-endpoint = <0x01>;
+						phandle = <0x02>;
+					};
+				};
+			};
+		};
+	};
+
+	fragment@1 {
+		target = <0xffffffff>;
+
+		__overlay__ {
+			status = "okay";
+			pinctrl-names = "default";
+			pinctrl-0 = <0xffffffff>;
+
+			port {
+
+				endpoint@0 {
+					remote-endpoint = <0x02>;
+					phandle = <0x01>;
+				};
+			};
+		};
+	};
+
+	__symbols__ {
+		panel = "/fragment@0/__overlay__/panel";
+		panel_in = "/fragment@0/__overlay__/panel/port/endpoint";
+		dpi_out = "/fragment@1/__overlay__/port/endpoint@0";
+	};
+
+	__fixups__ {
+		dpi = "/fragment@1:target:0";
+		dpi_18bit_gpio0 = "/fragment@1/__overlay__:pinctrl-0:0";
+	};
+
+	__local_fixups__ {
+
+		fragment@0 {
+
+			__overlay__ {
+
+				panel {
+
+					port {
+
+						endpoint {
+							remote-endpoint = <0x00>;
+						};
+					};
+				};
+			};
+		};
+
+		fragment@1 {
+
+			__overlay__ {
+
+				port {
+
+					endpoint@0 {
+						remote-endpoint = <0x00>;
+					};
+				};
+			};
+		};
+	};
+};

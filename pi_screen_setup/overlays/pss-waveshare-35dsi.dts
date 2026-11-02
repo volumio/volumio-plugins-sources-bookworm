@@ -1,0 +1,252 @@
+// pss-waveshare-35dsi.dtbo — the vendor's file, unchanged. This is dtc's reading of it.
+// vendor name: Waveshare_35DSI
+// source: https://files.waveshare.com/wiki/common/Waveshare_35DSI.dtbo
+// page: https://www.waveshare.com/wiki/3.5inch_DSI_LCD_(E)
+// sha256: ae09deaccceb80ced72519977fedc6d7becbd548a3043538c147ad40633b4611
+// fetched: 2026-11-02
+/dts-v1/;
+
+/ {
+	compatible = "brcm,bcm2835";
+
+	fragment@0 {
+		target = <0xffffffff>;
+		phandle = <0x03>;
+
+		__overlay__ {
+			status = "okay";
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+
+			port {
+
+				endpoint {
+					remote-endpoint = <0x01>;
+					phandle = <0x02>;
+				};
+			};
+
+			panel-dsi-generic@0 {
+				compatible = "Generic,panel-dsi", "panel-dsi";
+				reg = <0x00>;
+				power-supply = <0x00>;
+				backlight = <0x00>;
+				dsi-color-format = "RGB888";
+				mode = "MODE_VIDEO";
+				width-mm = <0x00>;
+				height-mm = <0x00>;
+				phandle = <0x05>;
+
+				port {
+
+					endpoint {
+						data-lanes = <0x01>;
+						remote-endpoint = <0x02>;
+						phandle = <0x01>;
+					};
+				};
+
+				panel-timing {
+					clock-frequency = <0x16e3600>;
+					hactive = <0x280>;
+					vactive = <0x1e0>;
+					hback-porch = <0x50>;
+					hfront-porch = <0x30>;
+					hsync-len = <0x20>;
+					vback-porch = <0x0d>;
+					vfront-porch = <0x03>;
+					vsync-len = <0x04>;
+					phandle = <0x06>;
+				};
+			};
+		};
+	};
+
+	fragment@10 {
+		target = <0xffffffff>;
+		phandle = <0x04>;
+
+		__overlay__ {
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+			status = "okay";
+
+			goodix@14 {
+				reg = <0x14>;
+				compatible = "goodix,gt911";
+				phandle = <0x07>;
+			};
+
+			goodix@5d {
+				reg = <0x5d>;
+				compatible = "goodix,gt911";
+				phandle = <0x08>;
+			};
+		};
+	};
+
+	fragment@1 {
+		target = <0x01>;
+
+		__dormant__ {
+			data-lanes = <0x01>;
+		};
+	};
+
+	fragment@2 {
+		target = <0x01>;
+
+		__dormant__ {
+			data-lanes = <0x01 0x02>;
+		};
+	};
+
+	fragment@3 {
+		target = <0x01>;
+
+		__dormant__ {
+			data-lanes = <0x01 0x02 0x03>;
+		};
+	};
+
+	fragment@4 {
+		target = <0x01>;
+
+		__dormant__ {
+			data-lanes = <0x01 0x02 0x03 0x04>;
+		};
+	};
+
+	fragment@5 {
+		target = <0xffffffff>;
+
+		__overlay__ {
+			status = "okay";
+		};
+	};
+
+	fragment@6 {
+		target = <0xffffffff>;
+
+		__overlay__ {
+			status = "okay";
+		};
+	};
+
+	fragment@7 {
+		target = <0xffffffff>;
+
+		__dormant__ {
+			status = "okay";
+		};
+	};
+
+	__overrides__ {
+		dsi0 = <0x03 0x74617267 0x65743a30 0x3d00ffff 0xffff0000 0x47461 0x72676574 0x3a303d00 0xffffffff>;
+		35E = [00 00 00 05 73 74 61 74 75 73 3d 6f 6b 61 79 00 00 00 00 06 63 6c 6f 63 6b 2d 66 72 65 71 75 65 6e 63 79 3a 30 3d 32 34 30 30 30 30 30 30 00 00 00 00 06 68 61 63 74 69 76 65 3a 30 3d 36 34 30 00 00 00 00 06 68 66 72 6f 6e 74 2d 70 6f 72 63 68 3a 30 3d 34 38 00 00 00 00 06 68 73 79 6e 63 2d 6c 65 6e 3a 30 3d 33 32 00 00 00 00 06 68 62 61 63 6b 2d 70 6f 72 63 68 3a 30 3d 38 30 00 00 00 00 06 76 61 63 74 69 76 65 3a 30 3d 34 38 30 00 00 00 00 06 76 66 72 6f 6e 74 2d 70 6f 72 63 68 3a 30 3d 33 00 00 00 00 06 76 73 79 6e 63 2d 6c 65 6e 3a 30 3d 34 00 00 00 00 06 76 62 61 63 6b 2d 70 6f 72 63 68 3a 30 3d 31 33 00 00 00 00 05 77 69 64 74 68 2d 6d 6d 3a 30 3d 37 30 00 00 00 00 05 68 65 69 67 68 74 2d 6d 6d 3a 30 3d 35 30 00 00 00 00 05 64 73 69 2d 63 6f 6c 6f 72 2d 66 6f 72 6d 61 74 3d 52 47 42 38 38 38 00];
+		35H = [00 00 00 05 73 74 61 74 75 73 3d 6f 6b 61 79 00 00 00 00 06 63 6c 6f 63 6b 2d 66 72 65 71 75 65 6e 63 79 3a 30 3d 33 33 36 30 30 30 30 30 00 00 00 00 06 68 61 63 74 69 76 65 3a 30 3d 34 38 30 00 00 00 00 06 68 66 72 6f 6e 74 2d 70 6f 72 63 68 3a 30 3d 34 38 00 00 00 00 06 68 73 79 6e 63 2d 6c 65 6e 3a 30 3d 33 32 00 00 00 00 06 68 62 61 63 6b 2d 70 6f 72 63 68 3a 30 3d 38 30 00 00 00 00 06 76 61 63 74 69 76 65 3a 30 3d 38 30 30 00 00 00 00 06 76 66 72 6f 6e 74 2d 70 6f 72 63 68 3a 30 3d 33 00 00 00 00 06 76 73 79 6e 63 2d 6c 65 6e 3a 30 3d 31 30 00 00 00 00 06 76 62 61 63 6b 2d 70 6f 72 63 68 3a 30 3d 36 32 00 00 00 00 05 77 69 64 74 68 2d 6d 6d 3a 30 3d 37 30 00 00 00 00 05 68 65 69 67 68 74 2d 6d 6d 3a 30 3d 35 30 00 00 00 00 05 64 73 69 2d 63 6f 6c 6f 72 2d 66 6f 72 6d 61 74 3d 52 47 42 38 38 38 00];
+		clock-frequency = [00 00 00 06 63 6c 6f 63 6b 2d 66 72 65 71 75 65 6e 63 79 3a 30 00];
+		hactive = [00 00 00 06 68 61 63 74 69 76 65 3a 30 00];
+		hfp = [00 00 00 06 68 66 72 6f 6e 74 2d 70 6f 72 63 68 3a 30 00];
+		hsync = <0x06 0x6873796e 0x632d6c65 0x6e3a3000>;
+		hbp = [00 00 00 06 68 62 61 63 6b 2d 70 6f 72 63 68 3a 30 00];
+		vactive = [00 00 00 06 76 61 63 74 69 76 65 3a 30 00];
+		vfp = [00 00 00 06 76 66 72 6f 6e 74 2d 70 6f 72 63 68 3a 30 00];
+		vsync = <0x06 0x7673796e 0x632d6c65 0x6e3a3000>;
+		vbp = [00 00 00 06 76 62 61 63 6b 2d 70 6f 72 63 68 3a 30 00];
+		width-mm = [00 00 00 05 77 69 64 74 68 2d 6d 6d 3a 30 00];
+		height-mm = <0x05 0x68656967 0x68742d6d 0x6d3a3000>;
+		rgb565 = <0x05 0x6473692d 0x636f6c6f 0x722d666f 0x726d6174 0x3d524742 0x35363500>;
+		rgb666p = [00 00 00 05 64 73 69 2d 63 6f 6c 6f 72 2d 66 6f 72 6d 61 74 3d 52 47 42 36 36 36 5f 50 41 43 4b 45 44 00];
+		rgb666 = <0x05 0x6473692d 0x636f6c6f 0x722d666f 0x726d6174 0x3d524742 0x36363600>;
+		rgb888 = <0x05 0x6473692d 0x636f6c6f 0x722d666f 0x726d6174 0x3d524742 0x38383800>;
+		one-lane = [00 00 00 00 2b 31 00];
+		two-lane = [00 00 00 00 2b 32 00];
+		three-lane = [00 00 00 00 2b 33 00];
+		four-lane = [00 00 00 00 2b 34 00];
+	};
+
+	__symbols__ {
+		dsi_frag = "/fragment@0";
+		dsi_out = "/fragment@0/__overlay__/port/endpoint";
+		panel = "/fragment@0/__overlay__/panel-dsi-generic@0";
+		panel_dsi_port = "/fragment@0/__overlay__/panel-dsi-generic@0/port/endpoint";
+		timing = "/fragment@0/__overlay__/panel-dsi-generic@0/panel-timing";
+		i2c_frag = "/fragment@10";
+		touch1 = "/fragment@10/__overlay__/goodix@14";
+		touch2 = "/fragment@10/__overlay__/goodix@5d";
+	};
+
+	__fixups__ {
+		dsi1 = "/fragment@0:target:0";
+		i2c_csi_dsi = "/fragment@10:target:0";
+		i2c0if = "/fragment@5:target:0";
+		i2c0mux = "/fragment@6:target:0";
+		i2c_arm = "/fragment@7:target:0";
+		dsi0 = "/__overrides__:dsi0:14";
+		i2c_csi_dsi0 = "/__overrides__:dsi0:32";
+	};
+
+	__local_fixups__ {
+
+		fragment@0 {
+
+			__overlay__ {
+
+				port {
+
+					endpoint {
+						remote-endpoint = <0x00>;
+					};
+				};
+
+				panel-dsi-generic@0 {
+
+					port {
+
+						endpoint {
+							remote-endpoint = <0x00>;
+						};
+					};
+				};
+			};
+		};
+
+		fragment@1 {
+			target = <0x00>;
+		};
+
+		fragment@2 {
+			target = <0x00>;
+		};
+
+		fragment@3 {
+			target = <0x00>;
+		};
+
+		fragment@4 {
+			target = <0x00>;
+		};
+
+		__overrides__ {
+			dsi0 = <0x00 0x12>;
+			35E = <0x00 0x10 0x2f 0x41 0x57 0x6a 0x7f 0x91 0xa6 0xb8 0xcd 0xdf 0xf2>;
+			35H = <0x00 0x10 0x2f 0x41 0x57 0x6a 0x7f 0x91 0xa6 0xb9 0xce 0xe0 0xf3>;
+			clock-frequency = <0x00>;
+			hactive = <0x00>;
+			hfp = <0x00>;
+			hsync = <0x00>;
+			hbp = <0x00>;
+			vactive = <0x00>;
+			vfp = <0x00>;
+			vsync = <0x00>;
+			vbp = <0x00>;
+			width-mm = <0x00>;
+			height-mm = <0x00>;
+			rgb565 = <0x00>;
+			rgb666p = <0x00>;
+			rgb666 = <0x00>;
+			rgb888 = <0x00>;
+		};
+	};
+};

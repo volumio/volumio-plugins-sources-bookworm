@@ -58,6 +58,26 @@
           "value": "",
           "readonly": true,
           "hidden": true
+        },
+        {
+          "id": "hw_effective",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HW_EFFECTIVE",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.HW_EFFECTIVE_DOC",
+          "value": "",
+          "readonly": true
+        },
+        {
+          "id": "diagnostics_btn",
+          "element": "button",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DIAGNOSTICS",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.DIAGNOSTICS_DOC",
+          "onClick": {
+            "type": "controller",
+            "endpoint": "system_hardware/pi_screen_setup",
+            "method": "writeDiagnosticsReport"
+          }
         }
       ]
     },
@@ -330,6 +350,16 @@
           "options": []
         },
         {
+          "id": "hdmi_preset_hint",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.HDMI_PRESET_HINT_LABEL",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.HDMI_PRESET_HINT_DOC",
+          "value": "",
+          "readonly": true,
+          "hidden": true
+        },
+        {
           "id": "hdmi_custom_timings",
           "element": "input",
           "type": "text",
@@ -536,6 +566,16 @@
             "label": ""
           },
           "options": []
+        },
+        {
+          "id": "dpi_preset_hint",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.PI_SCREEN_SETUP.DPI_PRESET_HINT_LABEL",
+          "doc": "TRANSLATE.PI_SCREEN_SETUP.DPI_PRESET_HINT_DOC",
+          "value": "",
+          "readonly": true,
+          "hidden": true
         },
         {
           "id": "dpi_custom_timing",
@@ -1209,7 +1249,9 @@
             "type": "plugin",
             "endpoint": "system_hardware/pi_screen_setup",
             "method": "saveHostnameOverride",
-            "data": ["db_hostname_override"]
+            "data": [
+              "db_hostname_override"
+            ]
           },
           "visibleIf": {
             "field": "pm_show_advanced",

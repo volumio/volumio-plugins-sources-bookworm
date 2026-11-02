@@ -1,0 +1,93 @@
+// pss-waveshare-touch-28dpi.dtbo — the vendor's file, unchanged. This is dtc's reading of it.
+// vendor name: waveshare-touch-28dpi
+// source: https://files.waveshare.com/wiki/2.8inc-DPI-LCD/28DPI-DTBO.zip (28DPI-DTBO/waveshare-touch-28dpi.dtbo)
+// page: https://www.waveshare.com/wiki/2.8inch_DPI_LCD
+// sha256: 3f3591e498ce424ff04b6a24ff2edeb6535ac8f8f6fc9006ee7981129fa6174a
+// fetched: 2026-11-02
+/dts-v1/;
+
+/ {
+	compatible = "brcm,bcm2708", "brcm,bcm2711", "brcm,bcm2712";
+
+	fragment@0 {
+		target-path = "/";
+
+		__overlay__ {
+
+			rpi_backlight {
+				compatible = "gpio-backlight";
+				gpios = <0xffffffff 0x12 0x00>;
+				default-on;
+				pinctrl-names = "default";
+			};
+		};
+	};
+
+	fragment@1 {
+		target-path = "/";
+
+		__overlay__ {
+
+			i2c@0 {
+				compatible = "i2c-gpio";
+				gpios = <0xffffffff 0x0a 0x00 0xffffffff 0x0b 0x00>;
+				i2c-gpio,delay-us = <0x04>;
+				#address-cells = <0x01>;
+				#size-cells = <0x00>;
+				phandle = <0x01>;
+			};
+		};
+	};
+
+	fragment@2 {
+		target = <0x01>;
+
+		__overlay__ {
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+
+			ft6236@14 {
+				compatible = "goodix,gt911";
+				reg = <0x14>;
+				interrupt-parent = <0xffffffff>;
+				irq-gpios = <0xffffffff 0x1b 0x02>;
+				touchscreen-size-x = <0x1e0>;
+				touchscreen-size-y = <0x280>;
+				touchscreen-x-mm = <0x2b>;
+				touchscreen-y-mm = <0x3a>;
+				touchscreen-swapped-x-y;
+				touchscreen-inverted-y;
+			};
+
+			ft6236@5d {
+				compatible = "goodix,gt911";
+				reg = <0x5d>;
+				interrupt-parent = <0xffffffff>;
+				irq-gpios = <0xffffffff 0x1b 0x02>;
+				touchscreen-size-x = <0x1e0>;
+				touchscreen-size-y = <0x280>;
+				touchscreen-x-mm = <0x2b>;
+				touchscreen-y-mm = <0x3a>;
+				touchscreen-swapped-x-y;
+				touchscreen-inverted-y;
+			};
+		};
+	};
+
+	__overrides__ {
+		touchscreen-inverted-x = [00 00 00 00 2b 32 00];
+		touchscreen-inverted-y = [00 00 00 00 2d 33 00];
+		touchscreen-swapped-x-y = [00 00 00 00 2d 31 00];
+	};
+
+	__fixups__ {
+		gpio = "/fragment@0/__overlay__/rpi_backlight:gpios:0", "/fragment@1/__overlay__/i2c@0:gpios:0", "/fragment@1/__overlay__/i2c@0:gpios:12", "/fragment@2/__overlay__/ft6236@14:interrupt-parent:0", "/fragment@2/__overlay__/ft6236@14:irq-gpios:0", "/fragment@2/__overlay__/ft6236@5d:interrupt-parent:0", "/fragment@2/__overlay__/ft6236@5d:irq-gpios:0";
+	};
+
+	__local_fixups__ {
+
+		fragment@2 {
+			target = <0x00>;
+		};
+	};
+};

@@ -1,94 +1,29 @@
 #!/bin/bash
+# Pi Screen Setup uninstaller. Volumio's plugin manager runs it as root with sh.
+# The plugin's lines leave the boot files and the lines it took out of Volumio's own
+# files go back (the helper's clean-exit); the helper and its sudoers entry go; the
+# plugin folder the plugin manager removes. Backups and restore points under
+# /data/INTERNAL/pi_screen_setup are kept.
 
-# pi_screen_setup uninstall script
+echo "Uninstalling Pi Screen Setup"
 
-# Get plugin directory info from package.json
-PLUGIN_DIR="$(cd "$(dirname "$0")" && pwd)"
-PLUGIN_TYPE=$(grep -oP '"plugin_type"\s*:\s*"\K[^"]+' "${PLUGIN_DIR}/package.json")
-PLUGIN_NAME=$(grep -oP '"name"\s*:\s*"\K[^"]+' "${PLUGIN_DIR}/package.json")
+PLUGIN_DIR="/data/plugins/system_hardware/pi_screen_setup"
+HELPER="/usr/local/bin/pi-screen-setup-root"
+SUDOERS="/etc/sudoers.d/volumio-user-pi_screen_setup"
 
-echo "Uninstalling ${PLUGIN_NAME}..."
-
-# Paths
-DATA_DIR="/data/plugins/${PLUGIN_TYPE}/${PLUGIN_NAME}"
-FACTORY_DIR="${DATA_DIR}/backups/factory"
-
-# Check if factory backups exist
-if [ -d "${FACTORY_DIR}" ]; then
-    echo ""
-    echo "Restoring factory defaults from installation backup..."
-    
-    # Restore config.txt (this also removes include line)
-    if [ -f "${FACTORY_DIR}/config.txt" ]; then
-        echo "Restoring original config.txt..."
-        sudo cp "${FACTORY_DIR}/config.txt" /boot/config.txt
-        sudo chmod 644 /boot/config.txt
-    else
-        # No factory backup - just remove include line
-        if [ -f "/boot/config.txt" ]; then
-            if grep -q "^include videoconfig.txt" /boot/config.txt; then
-                echo "Removing include line from config.txt..."
-                sudo sed -i '/^include videoconfig.txt$/d' /boot/config.txt
-            fi
-        fi
-    fi
-    
-    # Restore cmdline.txt
-    if [ -f "${FACTORY_DIR}/cmdline.txt" ]; then
-        echo "Restoring original cmdline.txt..."
-        sudo cp "${FACTORY_DIR}/cmdline.txt" /boot/cmdline.txt
-        sudo chmod 644 /boot/cmdline.txt
-    fi
-    
-    # Restore volumioconfig.txt if we had a backup
-    if [ -f "${FACTORY_DIR}/volumioconfig.txt" ]; then
-        echo "Restoring original volumioconfig.txt..."
-        sudo cp "${FACTORY_DIR}/volumioconfig.txt" /boot/volumioconfig.txt
-        sudo chmod 644 /boot/volumioconfig.txt
-    fi
-    
-    # Restore userconfig.txt if we had a backup
-    if [ -f "${FACTORY_DIR}/userconfig.txt" ]; then
-        echo "Restoring original userconfig.txt..."
-        sudo cp "${FACTORY_DIR}/userconfig.txt" /boot/userconfig.txt
-        sudo chmod 644 /boot/userconfig.txt
-    fi
-    
-    echo "Factory defaults restored."
+if [ -x "$HELPER" ]; then
+  "$HELPER" clean-exit || echo "WARNING: the clean exit did not complete; check /boot/config.txt for 'include videoconfig.txt'"
+elif [ -f "$PLUGIN_DIR/scripts/pi-screen-setup-root.sh" ]; then
+  sh "$PLUGIN_DIR/scripts/pi-screen-setup-root.sh" clean-exit || echo "WARNING: the clean exit did not complete"
 else
-    # No factory backups - just remove include line
-    echo "No factory backups found - removing plugin configuration only..."
-    if [ -f "/boot/config.txt" ]; then
-        if grep -q "^include videoconfig.txt" /boot/config.txt; then
-            echo "Removing include line from config.txt..."
-            sudo sed -i '/^include videoconfig.txt$/d' /boot/config.txt
-        fi
-    fi
+  # A release before 1.0 left no helper: the include line and the plugin's file at least.
+  if [ -f /boot/config.txt ] && grep -q '^include videoconfig\.txt$' /boot/config.txt; then
+    sed -i '/^include videoconfig\.txt$/d' /boot/config.txt
+  fi
+  rm -f /boot/videoconfig.txt
 fi
 
-# Remove videoconfig.txt (plugin-created file)
-if [ -f "/boot/videoconfig.txt" ]; then
-    echo "Removing /boot/videoconfig.txt..."
-    sudo rm -f /boot/videoconfig.txt
-fi
+rm -f "$SUDOERS" "$HELPER"
 
-# Remove sudoers configuration
-SUDOERS_FILE="/etc/sudoers.d/volumio-user-pi_screen_setup"
-if [ -f "${SUDOERS_FILE}" ]; then
-    echo "Removing sudo permissions..."
-    sudo rm -f "${SUDOERS_FILE}"
-fi
-
-# Remove data directory (backups and config)
-if [ -d "${DATA_DIR}" ]; then
-    echo "Removing plugin data directory..."
-    rm -rf "${DATA_DIR}"
-fi
-
-echo ""
-echo "Uninstallation complete."
-echo ""
-echo "Factory boot configuration has been restored."
-echo "A reboot is recommended to apply the original settings."
-echo ""
+echo "Pi Screen Setup uninstalled; backups stay under /data/INTERNAL/pi_screen_setup"
 echo "pluginuninstallend"

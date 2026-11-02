@@ -1,0 +1,123 @@
+// pss-waveshare-touch-35dpi.dtbo — the vendor's file, unchanged. This is dtc's reading of it.
+// vendor name: waveshare-touch-35dpi
+// source: https://files.waveshare.com/wiki/3.5inch%20DPI%20LCD/3.5DPI-dtbo.zip (3.5DPI-dtbo/waveshare-touch-35dpi.dtbo)
+// page: https://www.waveshare.com/wiki/3.5inch_DPI_LCD
+// sha256: 0e0aaea9a7515cc27a3d7b49cc26056ec1859912209182b065fb04f258f3992a
+// fetched: 2026-11-02
+/dts-v1/;
+
+/ {
+	compatible = "brcm,bcm2708";
+
+	fragment@0 {
+		target = <0xffffffff>;
+
+		__overlay__ {
+			pinctrl-names = "default";
+			pinctrl-0 = <0x01>;
+		};
+	};
+
+	fragment@1 {
+		target = <0xffffffff>;
+
+		__overlay__ {
+
+			dpi18_pins {
+				brcm,pins = <0x00 0x01 0x02 0x03 0x04 0x05 0x06 0x07 0x08 0x09 0x0c 0x0d 0x0e 0x0f 0x10 0x11 0x14 0x15 0x16 0x17 0x18 0x19>;
+				brcm,function = <0x06>;
+				brcm,pull = <0x00>;
+				phandle = <0x01>;
+			};
+		};
+	};
+
+	fragment@2 {
+		target-path = "/";
+
+		__overlay__ {
+
+			rpi_backlight {
+				compatible = "gpio-backlight";
+				gpios = <0xffffffff 0x12 0x01>;
+				default-on;
+			};
+		};
+	};
+
+	fragment@3 {
+		target-path = "/";
+
+		__overlay__ {
+
+			i2c@0 {
+				compatible = "i2c-gpio";
+				gpios = <0xffffffff 0x0a 0x00 0xffffffff 0x0b 0x00>;
+				i2c-gpio,delay-us = <0x04>;
+				#address-cells = <0x01>;
+				#size-cells = <0x00>;
+				phandle = <0x02>;
+			};
+		};
+	};
+
+	fragment@4 {
+		target-path = "/__symbols__";
+
+		__overlay__ {
+			i2c_gpio = "/i2c@0";
+		};
+	};
+
+	fragment@5 {
+		target = <0x02>;
+
+		__overlay__ {
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+
+			ft6236@14 {
+				compatible = "goodix,gt911";
+				reg = <0x14>;
+				interrupt-parent = <0xffffffff>;
+				irq-gpios = <0xffffffff 0x1b 0x02>;
+				touchscreen-size-x = <0x280>;
+				touchscreen-size-y = <0x1e0>;
+				touchscreen-x-mm = <0x46>;
+				touchscreen-y-mm = <0x35>;
+				touchscreen-swapped-x-y;
+				touchscreen-inverted-x;
+			};
+
+			ft6236@5d {
+				compatible = "goodix,gt911";
+				reg = <0x5d>;
+				interrupt-parent = <0xffffffff>;
+				irq-gpios = <0xffffffff 0x1b 0x02>;
+				touchscreen-size-x = <0x280>;
+				touchscreen-size-y = <0x1e0>;
+				touchscreen-x-mm = <0x46>;
+				touchscreen-y-mm = <0x35>;
+				touchscreen-swapped-x-y;
+				touchscreen-inverted-x;
+			};
+		};
+	};
+
+	__overrides__ {
+		touchscreen-inverted-x = [00 00 00 01 2b 32 00];
+		touchscreen-swapped-x-y = [00 00 00 00 2d 31 00];
+	};
+
+	__fixups__ {
+		fb = "/fragment@0:target:0";
+		gpio = "/fragment@1:target:0", "/fragment@2/__overlay__/rpi_backlight:gpios:0", "/fragment@3/__overlay__/i2c@0:gpios:0", "/fragment@3/__overlay__/i2c@0:gpios:12", "/fragment@5/__overlay__/ft6236@14:interrupt-parent:0", "/fragment@5/__overlay__/ft6236@14:irq-gpios:0", "/fragment@5/__overlay__/ft6236@5d:interrupt-parent:0", "/fragment@5/__overlay__/ft6236@5d:irq-gpios:0";
+	};
+
+	__local_fixups__ {
+
+		fragment@5 {
+			target = <0x00>;
+		};
+	};
+};
