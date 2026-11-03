@@ -12,6 +12,7 @@ const VConf = require('v-conf');
 const P = require('./lib/profile');
 const UI = require('./lib/ui');
 const G = require('./lib/grub');
+const S = require('./lib/syslinux');
 const { createRunners } = require('./lib/runners');
 const { createStore } = require('./lib/backup');
 
@@ -479,7 +480,9 @@ DisplayConfiguration.prototype.generateDiagnostics = function () {
          ['Plan', JSON.stringify(plan, null, 2)],
          ['Last apply', JSON.stringify(self.lastReport, null, 2)],
          ['Kernel command line', probe.cmdline],
+         ['Bootloader', probe.bootloader + (self.lastReport && self.lastReport.boot ? ', boot settings ' + (self.lastReport.boot.inEffect ? 'in effect' : 'not in effect (restart needed)') : '')],
          ['rotation.cfg', fs.existsSync(G.PATH) ? fs.readFileSync(G.PATH, 'utf8') : '(absent)'],
+         ['syslinux.cfg', fs.existsSync(S.PATH) ? fs.readFileSync(S.PATH, 'utf8') : '(absent)'],
          ['xrandr --verbose', (probe.raw && probe.raw.xrandr) || '(no X)'],
          ['xinput list', (probe.raw && probe.raw.xinput) || '(no X)'],
          ['Xorg snippets', await tail('sh', ['-c', 'for f in /etc/X11/xorg.conf.d/*display-configuration*; do [ -f "$f" ] && { echo "== $f"; cat "$f"; }; done 2>/dev/null; true'])],

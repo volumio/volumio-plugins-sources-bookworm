@@ -9,6 +9,7 @@ const { execFile, spawn } = require('child_process');
 const X = require('./xrandr');
 const I = require('./xinput');
 const G = require('./grub');
+const S = require('./syslinux');
 const V = require('./virt');
 const O = require('./orientation');
 
@@ -83,9 +84,12 @@ function createRunners({ run = defaultRun, display = ':0', log = () => { }, read
     }
 
     async function probe() {
+        const syslinuxCfg = readFile(S.PATH);
         const result = {
             xAvailable: false, outputs: [], providers: [], inputs: [], dmi: dmi(), virt: null,
             cmdline: (readFile('/proc/cmdline') || '').trim(), rotationCfg: G.parse(readFile(G.PATH) || ''),
+            bootloader: S.detect({ efi: listDir(S.EFI_DIR).length > 0, syslinuxCfg: syslinuxCfg !== null }),
+            syslinuxCfg: S.parse(syslinuxCfg),
             backlight: null, fbconRotate: null, tools: {}, errors: [],
         };
         const dv = await run('systemd-detect-virt', [], { timeout: 4000 });
@@ -213,16 +217,40 @@ function createRunners({ run = defaultRun, display = ':0', log = () => { }, read
         }
     }
 
+    // rotation.cfg is always written: GRUB sources it on a UEFI boot and it is the
+    // record of what was chosen. On a legacy BIOS boot the kernel line is syslinux's,
+    // so the same tokens go onto its APPEND line through the helper, which is asked
+    // only when the file does not already read as it must, and is read back after.
     async function applyBoot(plan, probeResult, report) {
         const s = plan.steps.find((st) => st.action === 'rotation.cfg');
         if (!s) return;
-        const text = G.render({ plymouth: s.plymouth, fbcon: s.fbcon, video: s.video || {}, gfxpayload: s.gfxpayload });
+        const turn = { plymouth: s.plymouth, fbcon: s.fbcon, video: s.video || {} };
+        const text = G.render(Object.assign({ gfxpayload: s.gfxpayload }, turn));
         const before = readFile(G.PATH);
         if (before !== text) {
             writeFile(G.PATH, text, 0o644);
             report.changed.push('rotation.cfg');
             report.rebootNeeded = true;
         }
+        if (probeResult.bootloader === 'syslinux') {
+            try {
+                const wanted = S.tokens(turn);
+                const current = readFile(S.PATH);
+                const expected = S.render(current, wanted);
+                if (current !== expected) {
+                    const args = wanted.length ? ['set', ...wanted] : ['clear'];
+                    const r = await root('syslinux', args);
+                    report.commands.push(['sudo', '-n', ROOT_HELPER, 'syslinux', ...args]);
+                    if (r.code !== 0) report.errors.push('syslinux.cfg: ' + (r.stderr || r.error || 'the root helper refused').trim());
+                    else if (readFile(S.PATH) !== expected) report.errors.push('syslinux.cfg does not read back as written');
+                    else { report.changed.push('syslinux.cfg'); report.rebootNeeded = true; }
+                }
+            } catch (e) { report.errors.push('syslinux.cfg: ' + e.message); }
+        } else if (probeResult.bootloader === 'none') {
+            report.warnings.push('no GRUB or syslinux boot file on this player; the console and splash turn cannot be applied');
+        }
+        report.boot = { loader: probeResult.bootloader, inEffect: S.inEffect(probeResult.cmdline, turn) };
+        if (!report.boot.inEffect && probeResult.bootloader !== 'none') report.rebootNeeded = true;
         if (probeResult.fbconRotate !== null && probeResult.fbconRotate !== s.fbcon) {
             const r = await root('fbcon', [String(s.fbcon)]);
             if (r.code !== 0) report.warnings.push('console turn applies at the next boot: ' + (r.stderr || r.error || '').trim());

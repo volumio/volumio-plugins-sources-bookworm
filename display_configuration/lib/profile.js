@@ -233,8 +233,13 @@ function plan(cfg, probe) {
 
     // Boot: console and splash follow the primary output unless set apart. fbcon has
     // one rotation for the whole machine (drm_fb_helper), so a second output with a
-    // different turn is reported, not pretended.
-    const bootBase = primary ? primary.forKernel : O.NORMAL;
+    // different turn is reported, not pretended. The kernel's turn depends on the
+    // profile alone (the user's turn in manual mode, none in follow mode), so without
+    // X — at every cold start, before the kiosk — it is taken from the profile's
+    // settings for any screen; the boot file must not fall back to normal just
+    // because the probe saw no screen yet.
+    const anyWant = p.outputs[ANY] || p.outputs[Object.keys(p.outputs)[0]] || null;
+    const bootBase = primary ? primary.forKernel : (p.mode === 'follow' || !anyWant ? O.NORMAL : O.parse(anyWant.orientation));
     const consoleO = p.boot.console === 'follow' ? bootBase : O.parse(p.boot.console);
     const splashO = p.boot.splash === 'follow' ? bootBase : O.parse(p.boot.splash);
     const fb = O.toFbcon(consoleO);
