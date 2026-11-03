@@ -25,7 +25,7 @@ refuse() {
 [ -f "$HELPER_SRC" ] || refuse "ERROR: the plugin's root helper is missing"
 install -o root -g root -m 755 "$HELPER_SRC" "$HELPER"
 cat > "$SUDOERS" << 'EOF'
-# display_configuration plugin: the X cookie, the Xorg snippets, the console turn, the backlight, the kiosk service
+# display_configuration plugin: the X cookie, the Xorg snippets, the console turn, the backlight, the kiosk service, the syslinux kernel line
 volumio ALL=(ALL) NOPASSWD: /usr/local/bin/display-configuration-root *
 EOF
 chmod 0440 "$SUDOERS"

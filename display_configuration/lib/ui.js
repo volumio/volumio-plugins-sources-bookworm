@@ -6,6 +6,7 @@
 const P = require('./profile');
 const V = require('./virt');
 const O = require('./orientation');
+const S = require('./syslinux');
 
 const NS = 'DISPLAY_CONFIGURATION';
 const ORIENTATIONS = ['normal', 'right', 'inverted', 'left', 'normal+mirror', 'right+mirror', 'inverted+mirror', 'left+mirror'];
@@ -93,6 +94,19 @@ function statusText(t, cfg, probe) {
     return parts.join(' ');
 }
 
+// Which boot path this player takes and whether the boot that is running already
+// carries the configured turn; the plan is computed here because it is pure.
+function bootStatus(t, cfg, probe) {
+    if (!probe || !probe.bootloader) return [];
+    const parts = [t(probe.bootloader === 'grub' ? 'BOOT_LOADER_GRUB' : probe.bootloader === 'syslinux' ? 'BOOT_LOADER_SYSLINUX' : 'BOOT_LOADER_NONE')];
+    if (probe.bootloader === 'none') return parts;
+    let step = null;
+    try { step = P.plan(cfg, probe).steps.find((s) => s.action === 'rotation.cfg'); } catch (e) { step = null; }
+    if (!step) return parts;
+    parts.push(t(S.inEffect(probe.cmdline, { plymouth: step.plymouth, fbcon: step.fbcon, video: step.video || {} }) ? 'BOOT_IN_EFFECT' : 'BOOT_NOT_IN_EFFECT'));
+    return parts;
+}
+
 function outputSection(t, endpoint, cfg, probe, out, multi) {
     const p = cfg.profiles[cfg.activeProfile];
     const want = p.outputs[out.name] || p.outputs[P.ANY] || P.defaultOutput();
@@ -178,6 +192,7 @@ function build(template, { cfg, probe, backups, t, endpoint, tools }) {
     const boot = byId('boot');
     setSelect(boot, 'console', p.boot.console);
     setSelect(boot, 'splash', p.boot.splash);
+    boot.description = [boot.description].concat(bootStatus(t, cfg, probe)).join(' ');
 
     const ss = byId('screensaver');
     setSelect(ss, 'screensaver_type', p.screensaver.type);
@@ -263,4 +278,4 @@ function readVirtual(data) { return { enabled: bool(data.virtual_enabled), resol
 
 function readBackup(data) { return { action: sel(data.backup_action) || 'create', name: String(data.backup_name || '').trim(), selected: sel(data.selected_backup) || '' }; }
 
-module.exports = { NS, ORIENTATIONS, PANEL_ORIENTATIONS, SCREENSAVER_TYPES, PROFILE_ACTIONS, BACKUP_ACTIONS, slug, sel, build, statusText, readProfiles, readOutput, readInputs, readBoot, readScreensaver, readVirtual, readBackup };
+module.exports = { NS, ORIENTATIONS, PANEL_ORIENTATIONS, SCREENSAVER_TYPES, PROFILE_ACTIONS, BACKUP_ACTIONS, slug, sel, build, statusText, bootStatus, readProfiles, readOutput, readInputs, readBoot, readScreensaver, readVirtual, readBackup };
