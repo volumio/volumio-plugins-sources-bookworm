@@ -1,10 +1,11 @@
 #!/bin/bash
 
 # Name of the plugin
-PLUGIN_NAME="alsa-rme-adi2-volume"
+PLUGIN_NAME="alsa-rme-adi2-volume_control"
 
+# Category and plugin directory names under /data/plugins/
 PLUGIN_CATEGORY="system_hardware"
-PLUGIN_DIRECTORY="alsa_rme_adi2_volume"
+PLUGIN_DIRECTORY="alsa_rme_adi2_volume_control"
 
 # In a later version we will wire the suitable settings
 # from the plugin configuration page.
@@ -15,7 +16,7 @@ PLUGIN_DIRECTORY="alsa_rme_adi2_volume"
 RUN_ARGUMENTS=""
 
 # ###########################################################################
-# CONSTANTS
+# DO NOT EDIT BELOW THIS LINE
 # ###########################################################################
 
 # The canonical architecture names in Volumio are "amd64" and "armhf".
@@ -39,29 +40,26 @@ SERVICE_DIRECTORY_PATH="$SCRIPT_DIRECTORY_PATH/service"
 # $SERVICE_DIRECTORY_PATH/$ARCHITECTURE/ directory.
 SERVICE_INSTALLER_FILE_NAME="install.sh"
 
-# ###########################################################################
-# DO NOT EDIT BELOW THIS LINE
-# ###########################################################################
-
 # Set the correct architecture
-ARCHITECTURE=`dpkg --print-architecture`
-if [ "$ARCHITECTURE" = "amd64" ] | [ "$ARCHITECTURE" = "x86_64" ]
-then
-    # 64-bit OS on Intel/AMD 64-bit CPU (PC)
-    ARCHITECTURE="$ARCHITECTURE_CANONICAL_NAME_X86_64"
-elif [ "$ARCHITECTURE" = "arm" ] | [ "$ARCHITECTURE" = "armhf" ] || [ "$ARCHITECTURE" = "armv7l" ] || [ "$ARCHITECTURE" = "armv8l" ]
-then
-    # 32-bit OS, even on a 64-bit CPU (e.g., Raspberry Pi 3)
-    ARCHITECTURE="$ARCHITECTURE_CANONICAL_NAME_ARM"
-elif [ "$ARCHITECTURE" = "aarch64" ] | [ "$ARCHITECTURE" = "arm64" ]
-then
-    # 64-bit OS on ARM 64-bit CPU (e.g., Raspberry Pi 5)
-    ARCHITECTURE="$ARCHITECTURE_CANONICAL_NAME_AARCH64"
-else
+ARCHITECTURE=`uname -m`
+case "$ARCHITECTURE" in
+    amd64|x86_64)
+        # 64-bit OS on Intel/AMD 64-bit CPU (PC)
+        ARCHITECTURE="$ARCHITECTURE_CANONICAL_NAME_X86_64"
+        ;;
+    arm|armhf|armv7l|armv8l)
+        # 32-bit OS, even on a 64-bit CPU (e.g., Raspberry Pi 3)
+        ARCHITECTURE="$ARCHITECTURE_CANONICAL_NAME_ARM"
+        ;;
+    aarch64|arm64)
+        # 64-bit OS on ARM 64-bit CPU (e.g., Raspberry Pi 5)
+        ARCHITECTURE="$ARCHITECTURE_CANONICAL_NAME_AARCH64"
+        ;;
+    *)
     echo "[ERRO] Architecture $ARCHITECTURE has no pre-built executable."
     echo "[ERRO] Supported architectures are: 'amd64', 'armhf'."
-    exit 3
-fi
+    exit 3;
+esac
 echo "[INFO] Architecture (Volumio): '$ARCHITECTURE'"
 
 echo "[INFO] Run the service installer ..."
