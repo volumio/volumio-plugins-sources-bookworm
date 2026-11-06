@@ -1,0 +1,38 @@
+{
+	"name": "remote_control_amplifier",
+	"version": "0.0.1",
+	"description": "IR control of an amplifier",
+	"main": "index.js",
+	"scripts": {
+			"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "lcsongor",
+	"license": "ISC",
+	"volumio_info": {
+			"prettyName": "Amplifier controller",
+			"icon": "fa-microchip",
+			"plugin_type": "system_controller",
+			"boot_priority": 10
+	},
+	"architectures": [
+                        "amd64", 
+                        "armhf"
+                ],
+                "os": [
+                        "linux"
+                ],
+	"dependencies": {
+			"child_process": "",
+			"fs-extra": "^11.3.3",
+			"kew": "^0.7.0",
+			"lirc-client": "^2.0.0",
+			"observe": "^1.4.1",
+			"socket.io-client": "^2.5.0",
+			"v-conf": "^1.4.2"
+	},
+	"engines": {
+		"volumio": ">=4",
+		"node": ">=20"
+	},
+	"repository": "https://github.dev/lcsongor/volumio-plugins"
+}
