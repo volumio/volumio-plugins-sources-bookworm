@@ -40,6 +40,9 @@ SERVICE_DIRECTORY_PATH="$SCRIPT_DIRECTORY_PATH/service"
 # $SERVICE_DIRECTORY_PATH/$ARCHITECTURE/ directory.
 SERVICE_INSTALLER_FILE_NAME="install.sh"
 
+# Name of the background service"
+SERVICE_NAME="alsa-rma-adi2-volume-control.service"
+
 # Set the correct architecture
 ARCHITECTURE=`uname -m`
 case "$ARCHITECTURE" in

@@ -15,7 +15,6 @@ function alsaRmeAdi2VolumeControl(context) {
 	this.commandRouter = this.context.coreCommand;
 	this.logger = this.context.logger;
 	this.configManager = this.context.configManager;
-
 }
 
 
@@ -23,7 +22,7 @@ function alsaRmeAdi2VolumeControl(context) {
 alsaRmeAdi2VolumeControl.prototype.onVolumioStart = function()
 {
 	var self = this;
-	var configFile=this.commandRouter.pluginManager.getConfigurationFile(this.context,'config.json');
+	var configFile = this.commandRouter.pluginManager.getConfigurationFile(this.context, 'config.json');
 	this.config = new (require('v-conf'))();
 	this.config.loadFile(configFile);
 
@@ -70,8 +69,6 @@ alsaRmeAdi2VolumeControl.prototype.getUIConfig = function() {
         __dirname + '/UIConfig.json')
         .then(function(uiconf)
         {
-
-
             defer.resolve(uiconf);
         })
         .fail(function()
@@ -101,167 +98,3 @@ alsaRmeAdi2VolumeControl.prototype.setConf = function(varName, varValue) {
 	//Perform your installation tasks here
 };
 
-
-
-// Playback Controls ---------------------------------------------------------------------------------------
-// If your plugin is not a music_sevice don't use this part and delete it
-
-
-alsaRmeAdi2VolumeControl.prototype.addToBrowseSources = function () {
-
-	// Use this function to add your music service plugin to music sources
-    //var data = {name: 'Spotify', uri: 'spotify',plugin_type:'music_service',plugin_name:'spop'};
-    this.commandRouter.volumioAddToBrowseSources(data);
-};
-
-alsaRmeAdi2VolumeControl.prototype.handleBrowseUri = function (curUri) {
-    var self = this;
-
-    //self.commandRouter.logger.info(curUri);
-    var response;
-
-
-    return response;
-};
-
-
-
-// Define a method to clear, add, and play an array of tracks
-alsaRmeAdi2VolumeControl.prototype.clearAddPlayTrack = function(track) {
-	var self = this;
-	self.commandRouter.pushConsoleMessage('[' + Date.now() + '] ' + 'alsaRmeAdi2VolumeControl::clearAddPlayTrack');
-
-	self.commandRouter.logger.info(JSON.stringify(track));
-
-	return self.sendSpopCommand('uplay', [track.uri]);
-};
-
-alsaRmeAdi2VolumeControl.prototype.seek = function (timepos) {
-    this.commandRouter.pushConsoleMessage('[' + Date.now() + '] ' + 'alsaRmeAdi2VolumeControl::seek to ' + timepos);
-
-    return this.sendSpopCommand('seek '+timepos, []);
-};
-
-// Stop
-alsaRmeAdi2VolumeControl.prototype.stop = function() {
-	var self = this;
-	self.commandRouter.pushConsoleMessage('[' + Date.now() + '] ' + 'alsaRmeAdi2VolumeControl::stop');
-
-
-};
-
-// Spop pause
-alsaRmeAdi2VolumeControl.prototype.pause = function() {
-	var self = this;
-	self.commandRouter.pushConsoleMessage('[' + Date.now() + '] ' + 'alsaRmeAdi2VolumeControl::pause');
-
-
-};
-
-// Get state
-alsaRmeAdi2VolumeControl.prototype.getState = function() {
-	var self = this;
-	self.commandRouter.pushConsoleMessage('[' + Date.now() + '] ' + 'alsaRmeAdi2VolumeControl::getState');
-
-
-};
-
-//Parse state
-alsaRmeAdi2VolumeControl.prototype.parseState = function(sState) {
-	var self = this;
-	self.commandRouter.pushConsoleMessage('[' + Date.now() + '] ' + 'alsaRmeAdi2VolumeControl::parseState');
-
-	//Use this method to parse the state and eventually send it with the following function
-};
-
-// Announce updated State
-alsaRmeAdi2VolumeControl.prototype.pushState = function(state) {
-	var self = this;
-	self.commandRouter.pushConsoleMessage('[' + Date.now() + '] ' + 'alsaRmeAdi2VolumeControl::pushState');
-
-	return self.commandRouter.servicePushState(state, self.servicename);
-};
-
-
-alsaRmeAdi2VolumeControl.prototype.explodeUri = function(uri) {
-	var self = this;
-	var defer=libQ.defer();
-
-	// Mandatory: retrieve all info for a given URI
-
-	return defer.promise;
-};
-
-alsaRmeAdi2VolumeControl.prototype.getAlbumArt = function (data, path) {
-
-	var artist, album;
-
-	if (data != undefined && data.path != undefined) {
-		path = data.path;
-	}
-
-	var web;
-
-	if (data != undefined && data.artist != undefined) {
-		artist = data.artist;
-		if (data.album != undefined)
-			album = data.album;
-		else album = data.artist;
-
-		web = '?web=' + nodetools.urlEncode(artist) + '/' + nodetools.urlEncode(album) + '/large'
-	}
-
-	var url = '/albumart';
-
-	if (web != undefined)
-		url = url + web;
-
-	if (web != undefined && path != undefined)
-		url = url + '&';
-	else if (path != undefined)
-		url = url + '?';
-
-	if (path != undefined)
-		url = url + 'path=' + nodetools.urlEncode(path);
-
-	return url;
-};
-
-
-
-
-
-alsaRmeAdi2VolumeControl.prototype.search = function (query) {
-	var self=this;
-	var defer=libQ.defer();
-
-	// Mandatory, search. You can divide the search in sections using following functions
-
-	return defer.promise;
-};
-
-alsaRmeAdi2VolumeControl.prototype._searchArtists = function (results) {
-
-};
-
-alsaRmeAdi2VolumeControl.prototype._searchAlbums = function (results) {
-
-};
-
-alsaRmeAdi2VolumeControl.prototype._searchPlaylists = function (results) {
-
-
-};
-
-alsaRmeAdi2VolumeControl.prototype._searchTracks = function (results) {
-
-};
-
-alsaRmeAdi2VolumeControl.prototype.goto=function(data){
-    var self=this
-    var defer=libQ.defer()
-
-// Handle go to artist and go to album function
-
-     return defer.promise;
-};

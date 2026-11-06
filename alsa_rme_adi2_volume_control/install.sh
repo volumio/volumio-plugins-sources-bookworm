@@ -40,6 +40,9 @@ SERVICE_DIRECTORY_PATH="$SCRIPT_DIRECTORY_PATH/service"
 # $SERVICE_DIRECTORY_PATH/$ARCHITECTURE/ directory.
 SERVICE_INSTALLER_FILE_NAME="install.sh"
 
+# Name of the background service"
+SERVICE_NAME="alsa-rme-adi2-volume-control.service"
+
 # Set the correct architecture
 ARCHITECTURE=`uname -m`
 case "$ARCHITECTURE" in
@@ -72,6 +75,16 @@ else
     sudo bash "$SERVICE_INSTALLER_PATH" --from-source --no-compile --architecture "$ARCHITECTURE" "$RUN_ARGUMENTS"
 fi
 echo "[INFO] Run the service installer ... done"
+
+# Per Volumio plugins documentation, we want the effect of the plugin
+# to be controlled by the plugin enable/disable event.
+#
+# Therefore, here we stop and disable the service after it has been installed.
+echo "[INFO] Stopping and disabling the systemd service ..."
+sudo systemctl stop "$SERVICE_NAME"
+sudo systemctl disable "$SERVICE_NAME"
+sudo systemctl daemon-reload
+echo "[INFO] Stopping and disabling the systemd service ... done"
 
 #requred to end the plugin install
 echo "plugininstallend"
