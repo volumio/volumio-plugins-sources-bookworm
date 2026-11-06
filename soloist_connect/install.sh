@@ -139,4 +139,29 @@ bash "$PLUGIN_DIR/setup-glibc.sh"
 # ---------------------------------------------------------------------------
 chown -R volumio:volumio "$PLUGIN_DIR"
 
+# ---------------------------------------------------------------------------
+# An update leaves the plugin stopped. Volumio's updatePlugin stops the running
+# instance before the install, runs this script, then only sets the enabled
+# flag: it never starts the plugin again, and a toggle from the UI would load
+# the previous version from Node's require cache. A fresh install has no entry
+# in plugins.json yet and is asked about enabling by the UI, so nothing is done
+# then. On an update of an enabled plugin, a restart of the Volumio backend is
+# scheduled a few seconds out, as a transient systemd timer outside the
+# backend's own cgroup, so the plugin manager finishes its bookkeeping first.
+# The backend then loads this version and its onStart brings the daemon up.
+# ---------------------------------------------------------------------------
+PLUGIN_ENABLED=$(node -e '
+  try {
+    const d = JSON.parse(require("fs").readFileSync("/data/configuration/plugins.json", "utf8"));
+    const p = d.music_service && d.music_service.soloist_connect;
+    console.log(p && p.enabled && p.enabled.value === true ? "true" : "false");
+  } catch (e) { console.log("false"); }
+' 2>/dev/null || echo false)
+if [ "$PLUGIN_ENABLED" = "true" ]; then
+  echo "Update of an enabled plugin: the Volumio backend restarts in 8 seconds so this version starts."
+  systemd-run --quiet --on-active=8 --timer-property=AccuracySec=1s \
+    --unit="soloist-connect-backend-restart-$$" /bin/systemctl restart volumio.service \
+    || systemctl --no-block restart volumio.service
+fi
+
 echo "plugininstallend"
