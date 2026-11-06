@@ -1,6 +1,6 @@
 # Spotify Soloist Connect
 
-> **Cutting-edge, version 0.9.2.** The store package stays 0.9.1 until this build is accepted.
+> **Cutting-edge, version 0.9.9.** The store package stays 0.9.1 until this build is accepted.
 > This package tracks the cutting-edge line. An accepted build is published to the Volumio plugin store as a separate process.
 
 Turns a Volumio 4 device into a Spotify Connect endpoint using Spotify Soloist.
@@ -102,7 +102,7 @@ The plugin ships a private Pulse shim (`libpulse.so.0`) that implements the Puls
 No PulseAudio daemon is installed, and nothing else on the system is changed.
 
 Sample rate and quality shown in the Volumio UI are worked out on the device.
-Soloist does not report either, so the sample rate comes from the open ALSA stream and the quality tier is measured from the downloaded track: its size against its duration gives the bitrate, which maps onto Spotify's own tiers.
+Soloist does not report either, so the sample rate comes from the open ALSA stream, or from the stream parameters FusionDSP publishes when it is in the chain, and the quality tier is measured from the downloaded track: its size against its duration gives the bitrate, which maps onto Spotify's own tiers.
 A skip clears the previous tier. If the new file is not open yet, or is still filling, the line has no tier until the size settles or the bitrate is already lossless. The plugin does not read the playing cache file.
 
 ### Sharing the output with other sources
@@ -154,6 +154,9 @@ Volumio 4 (Debian Bookworm base) is required.
 
 ## Things to know
 
+**Updating the plugin restarts Volumio's backend.**
+Volumio does not start a plugin again after updating it, so the installer schedules a restart of the Volumio service eight seconds after an update of an enabled plugin. The web UI reconnects within about half a minute and Spotify Connect comes back on the new version without a toggle or a reboot. A first install does not restart anything.
+
 **Disabling the plugin stops the Soloist daemon.**
 It is then not a Spotify Connect endpoint. Pause and Volumio Stop do not stop the service; that is so resume stays instant.
 
@@ -181,7 +184,7 @@ That is what it is: memory, not storage. Saving Spotify, Sound, Cache or Diagnos
 `soloist_connect`, not `spop`. **Convert playlist** rewrites `spop` track rows in a saved Volumio list. A list that is already `soloist_connect` is left alone and does not appear in the selector. With queue playback off, converted rows still appear and are skipped when reached.
 
 **The Spotify Queue tile is this speaker's Connect list.**
-It appears on Browse only when **Play Spotify tracks from the Volumio queue** is on and Soloist is connected. Now playing, play next, up next, autoplay and recently played come from `get_queue` and stay in those sections. While the tile is open, a track change or `queue_changed` refreshes the page (a full `get_queue`, because the unsolicited event is capped at 10). That is not Volumio's mixed playlist, and there is no Spotify library browse or search.
+It appears on Browse only when **Play Spotify tracks from the Volumio queue** is on and Soloist is connected. Now playing, play next, up next, autoplay and recently played come from a full `get_queue` when the page is opened. The page does not refresh itself while it is open; leave and re-open it to see a change. That is not Volumio's mixed playlist, and there is no Spotify library browse or search.
 
 **A settings backup is not a clone of the Spotify login.**
 It is the stored plugin settings on this device. The API key is written into the file only when **Retain my API key** is on. Restore without a key keeps the key already on this box. The paired session under `/data/soloist/data` is left alone.
@@ -205,7 +208,7 @@ journalctl -u volumio -f | grep -i soloist
 Turn on **Verbose logging** first when investigating playback problems. Without it the audio shim is silent about what it does when ALSA reports a fault, and the log shows the symptom with nothing on either side of it. The startup line is always printed. It names the plugin, the shim, and which mode it is in:
 
 ```
-SoloistConnect: plugin=0.9.2 shim=0.2.9 rev=... userspace=armhf device=plug:volumio ... diag=1
+SoloistConnect: plugin=0.9.9 shim=0.2.13 rev=... userspace=armhf device=plug:volumio ... diag=1
 ```
 
 The journal on Volumio is held in memory and is destroyed by a reboot. Capture it before restarting:
@@ -229,7 +232,7 @@ Common cases:
 - **Install failed with "Pulse shim ... is not in the plugin package".** The package was built without the libraries for this architecture. Report it, including the architecture reported by `dpkg --print-architecture`.
 
 When reporting a problem, **never post your API key, unredacted logs, crash reports or the contents of `/data/soloist`.**
-Redact before sharing. From 0.7.6, `ps` should show `nice-try-logsubmit` in place of the key about two seconds after Soloist starts. A log taken in that window, or an older plugin, can still contain the real key.
+Redact before sharing. From 0.9.3, `ps` shows `nice-try-logsubmit` in place of the key about two seconds after Soloist starts, whether or not anything has played: the launcher preloads the shim, so its scrub runs at start. On 0.7.6 to 0.9.2 the scrub ran only once the first sound loaded the shim, so a daemon that had not played yet still showed the key. A log taken in the first two seconds, or from an older plugin that had not played, can contain the real key; revoke it on the Spotify dashboard if it was posted.
 
 ---
 

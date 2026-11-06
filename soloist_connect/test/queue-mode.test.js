@@ -2290,6 +2290,56 @@ async function main() {
       toasts.some((t) => t.type === 'error' && /left alone/.test(t.msg)));
   }
 
+  // 49. sample rate from FusionDSP's stream parameters while fresh; ALSA otherwise
+  {
+    const parse = SoloistConnect.parseFusionStreamParams;
+    const a = parse('44100,S16_LE,2,16\n');
+    check('fusion params parse 44.1 kHz 16 bit',
+      a && a.samplerate === '44.1 kHz' && a.bitdepth === '16 bit' &&
+      a.channels === 2 && a.source === 'fusiondsp', JSON.stringify(a));
+    const b = parse('96000,S24_LE,2,24');
+    check('fusion params parse 96 kHz 24 bit',
+      b && b.samplerate === '96 kHz' && b.bitdepth === '24 bit');
+    const c = parse('192000,S32_LE,2,32');
+    check('fusion params parse 192 kHz 32 bit',
+      c && c.samplerate === '192 kHz' && c.bitdepth === '32 bit');
+    const d = parse('44100,S24_LE,2');
+    check('fusion params take the depth from the format when bits are missing',
+      d && d.bitdepth === '24 bit' && d.channels === 2);
+    check('fusion params reject garbage',
+      parse('') === null && parse('abc,S16_LE,2,16') === null &&
+      parse('0,S16_LE,2,16') === null && parse(undefined) === null);
+
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'soloist-fusion-'));
+    const file = path.join(dir, 'fusiondsp_stream_params.log');
+    const p = newPlugin();
+    p.fetchAudioSpec = SoloistConnect.prototype.fetchAudioSpec;
+    p.fusionStreamParamsPath = file;
+    p.audioSpec = null;
+    logs.length = 0;
+
+    fs.writeFileSync(file, '48000,S16_LE,2,16\n');
+    p.fetchAudioSpec();
+    check('fresh fusion file sets audioSpec without ALSA',
+      p.audioSpec && p.audioSpec.samplerate === '48 kHz' &&
+      p.audioSpec.source === 'fusiondsp', JSON.stringify(p.audioSpec));
+    check('fusion source is logged',
+      logs.some((l) => /stream parameters from FusionDSP: 48 kHz 16 bit 2 ch/.test(l)));
+
+    const old = (Date.now() - 60000) / 1000;
+    fs.utimesSync(file, old, old);
+    check('stale fusion file is ignored', p.readFusionStreamParams(Date.now()) === null);
+    p.audioSpec = null;
+    p.fetchAudioSpec();
+    await new Promise((r) => setTimeout(r, 300));
+    check('stale fusion file never feeds audioSpec',
+      !(p.audioSpec && p.audioSpec.source === 'fusiondsp'), JSON.stringify(p.audioSpec));
+
+    fs.unlinkSync(file);
+    check('missing fusion file is ignored', p.readFusionStreamParams(Date.now()) === null);
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+
   console.log(failures === 0 ? 'ALL PASS' : failures + ' FAILURES');
   process.exit(failures === 0 ? 0 : 1);
 }
