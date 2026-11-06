@@ -43,6 +43,9 @@ SERVICE_INSTALLER_FILE_NAME="install.sh"
 # Name of the background service"
 SERVICE_NAME="alsa-rme-adi2-volume-control.service"
 
+# Path of the sudoers file for this service
+SUDOERS_FILE_PATH="/etc/sudoers.d/alsa-rme-adi2-volume-control"
+
 # Set the correct architecture
 ARCHITECTURE=`uname -m`
 case "$ARCHITECTURE" in
@@ -79,12 +82,22 @@ echo "[INFO] Run the service installer ... done"
 # Per Volumio plugins documentation, we want the effect of the plugin
 # to be controlled by the plugin enable/disable event.
 #
-# Therefore, here we stop and disable the service after it has been installed.
-echo "[INFO] Stopping and disabling the systemd service ..."
+# Therefore, here we stop the service after it has been installed.
+echo "[INFO] Stopping the systemd service ..."
 sudo systemctl stop "$SERVICE_NAME"
-sudo systemctl disable "$SERVICE_NAME"
-sudo systemctl daemon-reload
-echo "[INFO] Stopping and disabling the systemd service ... done"
+echo "[INFO] Stopping the systemd service ... done"
+
+# Commands called by index.js
+echo "[INFO] Creating sudoers file ..."
+cat > "$SUDOERS_FILE_PATH" << EOF
+# ALSA RME ADI-2 Volume Control
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl status $SERVICE_NAME
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl start $SERVICE_NAME
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl stop $SERVICE_NAME
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl restart $SERVICE_NAME
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
+EOF
+echo "[INFO] Creating sudoers file ... done"
 
 #requred to end the plugin install
 echo "plugininstallend"

@@ -43,6 +43,9 @@ SERVICE_INSTALLER_FILE_NAME="install.sh"
 # Name of the background service"
 SERVICE_NAME="alsa-rma-adi2-volume-control.service"
 
+# Path of the sudoers file for this service
+SUDOERS_FILE_PATH="/etc/sudoers.d/alsa-rme-adi2-volume-control"
+
 # Set the correct architecture
 ARCHITECTURE=`uname -m`
 case "$ARCHITECTURE" in
@@ -70,6 +73,10 @@ SERVICE_INSTALLER_PATH="$SERVICE_DIRECTORY_PATH/$ARCHITECTURE/$SERVICE_INSTALLER
 echo "[INFO] Using service installer file '$SERVICE_INSTALLER_PATH'"
 sudo bash "$SERVICE_INSTALLER_PATH" --uninstall --architecture "$ARCHITECTURE"
 echo "[INFO] Run the service installer ... done"
+
+echo "[INFO] Removing sudoers file ..."
+rm -f "$SUDOERS_FILE_PATH"
+echo "[INFO] Removing sudoers file ... done"
 
 #requred to end the plugin uninstall
 echo "Done"

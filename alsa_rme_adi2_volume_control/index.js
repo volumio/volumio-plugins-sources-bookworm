@@ -6,8 +6,8 @@ var config = new (require('v-conf'))();
 var exec = require('child_process').exec;
 var execSync = require('child_process').execSync;
 
-
 module.exports = alsaRmeAdi2VolumeControl;
+
 function alsaRmeAdi2VolumeControl(context) {
 	var self = this;
 
@@ -19,40 +19,78 @@ function alsaRmeAdi2VolumeControl(context) {
 
 
 
-alsaRmeAdi2VolumeControl.prototype.onVolumioStart = function()
-{
+alsaRmeAdi2VolumeControl.prototype.onVolumioStart = function() {
 	var self = this;
 	var configFile = this.commandRouter.pluginManager.getConfigurationFile(this.context, 'config.json');
 	this.config = new (require('v-conf'))();
 	this.config.loadFile(configFile);
-
     return libQ.resolve();
 }
 
 alsaRmeAdi2VolumeControl.prototype.onStart = function() {
     var self = this;
-	var defer=libQ.defer();
-
-
-	// Once the Plugin has successfull started resolve the promise
-	defer.resolve();
-
+	var defer = libQ.defer();
+    self.logger.info("Before calling startService");
+    self.startService();
+    self.logger.info("After calling startService");
     return defer.promise;
 };
 
 alsaRmeAdi2VolumeControl.prototype.onStop = function() {
     var self = this;
-    var defer=libQ.defer();
-
-    // Once the Plugin has successfull stopped resolve the promise
-    defer.resolve();
-
+    var defer = libQ.defer();
+    self.logger.info("Before calling stopService");
+    self.stopService();
+    self.logger.info("After calling stopService");
     return libQ.resolve();
 };
 
 alsaRmeAdi2VolumeControl.prototype.onRestart = function() {
     var self = this;
-    // Optional, use if you need it
+    self.stopService();
+    setTimeout(function() {
+        self.startService();
+    }, 1000);
+};
+
+
+// Systemd service control ---------------------------------------------------------------------------
+alsaRmeAdi2VolumeControl.prototype.startService = function() {
+    var self = this;
+    var defer = libQ.defer();
+
+    exec('/usr/bin/sudo /bin/systemctl start alsa-rme-adi2-volume-control.service', { uid: 1000, gid: 1000 },
+        function(error, stdout, stderr) {
+            if (error !== null) {
+                self.logger.error('ALSA RME ADI-2 Volume Control: cannot start service - ' + error);
+                defer.reject(error);
+            } else {
+                self.logger.info('ALSA RME ADI-2 Volume Control: service started');
+                defer.resolve();
+            }
+        }
+    );
+
+    return defer.promise;
+};
+
+alsaRmeAdi2VolumeControl.prototype.stopService = function() {
+    var self = this;
+    var defer = libQ.defer();
+
+    exec('/usr/bin/sudo /bin/systemctl stop alsa-rme-adi2-volume-control.service', { uid: 1000, gid: 1000 },
+        function(error, stdout, stderr) {
+            if (error !== null) {
+                self.logger.error('ALSA RME ADI-2 Volume Control: cannot stop service - ' + error);
+                defer.reject(error);
+            } else {
+                self.logger.info('ALSA RME ADI-2 Volume Control: service stopped');
+                defer.resolve();
+            }
+        }
+    );
+
+    return defer.promise;
 };
 
 
