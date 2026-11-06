@@ -45,15 +45,15 @@ SERVICE_INSTALLER_FILE_NAME="install.sh"
 
 # Set the correct architecture
 ARCHITECTURE=`dpkg --print-architecture`
-if [ "$ARCHITECTURE" = "amd64" ] || [ "$ARCHITECTURE" = "x86_64" ]
+if [ "$ARCHITECTURE" = "amd64" ] | [ "$ARCHITECTURE" = "x86_64" ]
 then
     # 64-bit OS on Intel/AMD 64-bit CPU (PC)
     ARCHITECTURE="$ARCHITECTURE_CANONICAL_NAME_X86_64"
-elif [ "$ARCHITECTURE" = "arm" ] || [ "$ARCHITECTURE" = "armhf" ] || [ "$ARCHITECTURE" = "armv7l" ] || [ "$ARCHITECTURE" = "armv8l" ]
+elif [ "$ARCHITECTURE" = "arm" ] | [ "$ARCHITECTURE" = "armhf" ] || [ "$ARCHITECTURE" = "armv7l" ] || [ "$ARCHITECTURE" = "armv8l" ]
 then
     # 32-bit OS, even on a 64-bit CPU (e.g., Raspberry Pi 3)
     ARCHITECTURE="$ARCHITECTURE_CANONICAL_NAME_ARM"
-elif [ "$ARCHITECTURE" = "aarch64" ] || [ "$ARCHITECTURE" = "arm64" ]
+elif [ "$ARCHITECTURE" = "aarch64" ] | [ "$ARCHITECTURE" = "arm64" ]
 then
     # 64-bit OS on ARM 64-bit CPU (e.g., Raspberry Pi 5)
     ARCHITECTURE="$ARCHITECTURE_CANONICAL_NAME_AARCH64"
