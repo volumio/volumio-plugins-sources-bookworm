@@ -170,29 +170,29 @@ alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsGeneral = function(data) 
     self.editServiceConfigurationAndRestart();
 }
 
-alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsLine12 = function(data) {
+alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsOutput = function(data, trigger, other) {
     var self = this;
 
-    self.config.set('line12_active', data['line12_active']);        // boolean
-    self.config.set('line12_min_db', data['line12_min_db'].value);  // select
-    self.config.set('line12_max_db', data['line12_max_db'].value);  // select
-    self.config.set('line12_volume', data['line12_volume'].value);  // select
+    self.config.set(trigger + '_active', data[trigger + '_active']);        // boolean
+    self.config.set(trigger + '_min_db', data[trigger + '_min_db'].value);  // select
+    self.config.set(trigger + '_max_db', data[trigger + '_max_db'].value);  // select
+    self.config.set(trigger + '_volume', data[trigger + '_volume'].value);  // select
 
     if (
-        (!self.config.get('phones34_active')) &&
-        (!self.config.get('line12_active'))
+        (!self.config.get(other + '_active')) &&
+        (!self.config.get(trigger + '_active'))
     ) {
-        self.logger.error('Force line12_active to be true, since outputs cannot be both inactive.');
-        self.config.set('line12_active', true);
+        self.logger.error('Force ' + trigger + '_active to be true, since outputs cannot be both inactive.');
+        self.config.set(trigger + '_active', true);
     }
 
-    var min_db = parseFloat(self.config.get('line12_min_db'));
-    var max_db = parseFloat(self.config.get('line12_max_db'));
+    var min_db = parseFloat(self.config.get(trigger + '_min_db'));
+    var max_db = parseFloat(self.config.get(trigger + '_max_db'));
     if (min_db > max_db) {
         self.logger.error(
-            'Force line12_min_db to be equal to line12_max_db, since the former cannot be greater than the latter.'
+            'Force ' + trigger + '_min_db to be equal to ' + trigger + '_max_db, since the former cannot be greater than the latter.'
         );
-        self.config.set('line12_min_db', max_db.toFixed(1));
+        self.config.set(trigger + '_min_db', max_db.toFixed(1));
     }
 
     self.config.save();
@@ -202,36 +202,14 @@ alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsLine12 = function(data) {
     self.editServiceConfigurationAndRestart();
 }
 
+alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsLine12 = function(data) {
+    var self = this;
+    self.applyServiceSettingsOutput(data, 'line12', 'phones34');
+}
+
 alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsPhones34 = function(data) {
     var self = this;
-
-    self.config.set('phones34_active', data['phones34_active']);        // boolean
-    self.config.set('phones34_min_db', data['phones34_min_db'].value);  // select
-    self.config.set('phones34_max_db', data['phones34_max_db'].value);  // select
-    self.config.set('phones34_volume', data['phones34_volume'].value);  // select
-
-    if (
-        (!self.config.get('line12_active')) &&
-        (!self.config.get('phones34_active'))
-    ) {
-        self.logger.error('Force phones34_active to be true, since outputs cannot be both inactive.');
-        self.config.set('phones34_active', true);
-    }
-
-    var min_db = parseFloat(self.config.get('phones34_min_db'));
-    var max_db = parseFloat(self.config.get('phones34_max_db'));
-    if (min_db > max_db) {
-        self.logger.error(
-            'Force phones34_min_db to be equal to phones34_max_db, since the former cannot be greater than the latter.'
-        );
-        self.config.set('phones34_min_db', max_db.toFixed(1));
-    }
-
-    self.config.save();
-
-    // modify the service configuration and
-    // restart the service so that changes can take effect
-    self.editServiceConfigurationAndRestart();
+    self.applyServiceSettingsOutput(data, 'phones34', 'line12');
 }
 
 
@@ -253,11 +231,14 @@ alsaRmeAdi2VolumeControl.prototype.getUIConfig = function() {
 
             self.logConfiguration();
 
-            // sections[0] == service active
+            // sections[0] == background service
+            //   content[0] == service active
             v = self.config.get('service_active', true);
             uiconf.sections[0].content[0].value = v;
 
             // sections[1] == general
+            //   content[0] == device name
+            //   content[1] == verbose log
             v = self.config.get('device_name', 'autodetect');
             uiconf.sections[1].content[0].value.value = v;
             uiconf.sections[1].content[0].value.label = v;
@@ -266,6 +247,10 @@ alsaRmeAdi2VolumeControl.prototype.getUIConfig = function() {
             uiconf.sections[1].content[1].value = v;
 
             // sections[2] == line12
+            //   content[0] == line12 active
+            //   content[1] == line12 min db
+            //   content[2] == line12 max db
+            //   content31] == line12 volume
             v = self.config.get('line12_active', true);
             uiconf.sections[2].content[0].value = v;
 
@@ -282,6 +267,10 @@ alsaRmeAdi2VolumeControl.prototype.getUIConfig = function() {
             uiconf.sections[2].content[3].value.label = v;
 
             // sections[3] == phones34
+            //   content[0] == phones34 active
+            //   content[1] == phones34 min db
+            //   content[2] == phones34 max db
+            //   content31] == phones34 volume
             v = self.config.get('phones34_active', true);
             uiconf.sections[3].content[0].value = v;
 
@@ -297,6 +286,7 @@ alsaRmeAdi2VolumeControl.prototype.getUIConfig = function() {
             uiconf.sections[3].content[3].value.value = v;
             uiconf.sections[3].content[3].value.label = v;
 
+            // done
             defer.resolve(uiconf);
         }
     ).fail(
