@@ -223,6 +223,15 @@ serialampcontroller.prototype.updateAmpSettings = function (data) {
     var self = this;
     var defer = libQ.defer();
     if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] updateAmpSettings: Saving Amplifier Settings:' + JSON.stringify(data));
+    // refuse volume settings that can't be right (an empty field, text, a typo like 350 for 35,
+    // a minimum above the maximum), so a bad entry can never lift the cap. Nothing is saved then.
+    var isLevel = v => Number.isInteger(toLevel(v)) && toLevel(v) >= 0 && toLevel(v) <= 100;
+    if (!isLevel(data['max_volume']) || !isLevel(data['min_volume']) || !isLevel(data['startup_volume']) ||
+        toLevel(data['min_volume']) > toLevel(data['max_volume'])) {
+        self.logger.error('[SERIALAMPCONTROLLER] updateAmpSettings: invalid volume settings, not saved: min ' + data['min_volume'] + ', max ' + data['max_volume'] + ', startup ' + data['startup_volume']);
+        self.commandRouter.pushToastMessage('error', self.getI18nString('TOAST_ERROR'), self.getI18nString('TOAST_VOLUME_SETTINGS_INVALID'));
+        return libQ.resolve();
+    }
     self.config.set('volumioInput', data['volumio_input'].label);
     self.config.set('minVolume', parseInt(data['min_volume']));
     self.config.set('maxVolume', parseInt(data['max_volume']));
@@ -272,29 +281,92 @@ serialampcontroller.prototype.activateSocketIO = function () {
     self.socket = io.connect('http://localhost:3000');
 	self.socket.emit('getState');
 	self.socket.on('pushState',function(data){
-        if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] on:pushState: ' + JSON.stringify(self.volumioStatus) + ' - ' + data.status);
-        if ((self.volumioStatus == undefined || self.volumioStatus.status == 'stop' || self.volumioStatus.status == 'pause' ) && data.status=='play') {
-            //status changed to play
-            if (self.ampStatus.power == 'standby') {
-                if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] on:pushState: amp in standby');
-                if (self.config.get('powerupOnPlay')) {
+        if (data === undefined || data === null) return;
+        if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] on:pushState: ' + (self.volumioStatus !== undefined ? self.volumioStatus.status : 'undefined') + ' -> ' + data.status + ' (service: ' + data.service + ', volume: ' + data.volume + ')');
+        // remember the previous state, so that only a start of playback powers the amp on and switches the input
+        // (not every 'play' update: track changes, seeks, metadata)
+        var wasPlaying = (self.volumioStatus !== undefined && self.volumioStatus.status == 'play');
+        self.volumioStatus = data;
+        if (data.status == 'play') {
+            // still warming up (see startPlaybackHold), e.g. play pressed again in the app: pause again
+            if (self.playbackHold !== undefined && Date.now() - self.playbackHold.lastPause > 1500) {
+                self.playbackHold.lastPause = Date.now();
+                self.logger.info('[SERIALAMPCONTROLLER] playbackHold: the amp is still warming up: pausing again');
+                self.socket.emit('pause');
+            }
+            // a new start of playback re-arms automatic power-on after the amp was switched off
+            if (!wasPlaying) self.suppressAutoPowerOn = false;
+            // treat an unknown power state ('off' = never reported) like standby,
+            // so amps that do not answer a power query still get woken up on play.
+            // Works for every Volumio source, including Qobuz Connect, Spotify Connect and AirPlay.
+            if (self.ampStatus.power != 'on') {
+                if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] on:pushState: amp in standby (or state unknown: ' + self.ampStatus.power + ')');
+                if (self.config.get('powerupOnPlay') && !self.powerOnPending && !self.suppressAutoPowerOn) {
                     if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] on:pushState: amp in standby - send powerup after play pressed');
+                    // only one power-up sequence at a time, until the amp is reported on (or 25s have passed)
+                    self.powerOnPending = true;
+                    clearTimeout(self.powerOnPendingTimer);
+                    self.powerOnPendingTimer = setTimeout(() => { self.powerOnPending = false; }, 25000);
+                    // some amps (e.g. McIntosh) reject other commands while waking up: wait before switching input
+                    var settleMs = self.selectedAmp.powerOnSettleMs || 0;
+                    self.startPlaybackHold();
                     self.sendCommand('powerOn')
-                    .then(_ => self.sendCommand('source',self.config.get('volumioInput')))
+                    .then(_ => setTimeout(() => {
+                        if (self.port === undefined) return;
+                        self.sendCommand('source',self.config.get('volumioInput'))
+                        .fail(err => self.logger.error('[SERIALAMPCONTROLLER] on:pushState: could not switch input after power-up: ' + err));
+                    }, settleMs))
+                    .fail(err => self.logger.error('[SERIALAMPCONTROLLER] on:pushState: could not power up the amp: ' + err));
                 }
-            } else if (self.config.get('switchInputAtPlay')) {
+            } else if (!wasPlaying && self.config.get('switchInputAtPlay')) {
                 self.sendCommand('source',self.config.get('volumioInput'));
             }
         }
-        if (self.volumioStatus!==undefined) {self.volumioStatus = data;}
+        self.followServiceVolume(data);
 	})
+}
+
+// follow volume changes made from a streaming service's own app (e.g. the Qobuz app
+// while using Qobuz Connect). Such services update Volumio's volume, which shows up in pushState,
+// but may not go through this plugin's volume override. "followServiceVolume" in ampCommands.json
+// is a regex matched against the state's service, trackType and URI scheme (on Volumio 4 a Qobuz
+// track can show up as service "mpd" with trackType "qobuz" and uri "qobuz://..."); leave it out to disable this.
+serialampcontroller.prototype.followServiceVolume = function(data) {
+    var self = this;
+    var pattern = (self.selectedAmp !== undefined) ? self.selectedAmp.followServiceVolume : undefined;
+    if (!pattern || data.status != 'play' || typeof data.volume != 'number') return;
+    var re = new RegExp(pattern, 'i');
+    var uriScheme = (typeof data.uri == 'string' && data.uri.indexOf('://') > 0) ? data.uri.split('://')[0] : undefined;
+    var source = [data.service, data.trackType, uriScheme].find(v => v !== undefined && v !== null && re.test(String(v)));
+    if (source === undefined) return;
+    if (self.ampStatus.power != 'on' || self.parser === undefined || self.port === undefined) return;
+    // current amp volume on Volumio's scale (same as getVolumeObject, without its side effects)
+    var current = self.ampToVolumio(self.ampStatus.volume);
+    if (data.volume === current) return; //already in sync
+    var now = Date.now();
+    // a value we reported ourselves in the last few seconds, arriving late (e.g. while the knob is turning)
+    if ((self.reportedVolumes || []).some(r => r.vol === data.volume && now - r.t < 3000)) return;
+    if (self.lastFollowedVolume === data.volume && now - self.lastFollowedTime < 2000) return; //just sent this one
+    self.lastFollowedVolume = data.volume;
+    self.lastFollowedTime = now;
+    if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] followServiceVolume: ' + source + ' changed volume to ' + data.volume + ' (amp is at ' + current + ')');
+    self.alsavolume(data.volume);
 }
 
 serialampcontroller.prototype.getAmpStatus = function() {
     var self = this;
 
     //send some requests to determine the current settings of the amp
-    if (self.parser!=undefined) {
+    if (self.parser!=undefined && (self.selectedAmp.initCommands !== undefined || self.selectedAmp.commandSpacingMs !== undefined)) {
+        // send init commands (e.g. enable status notifications) first,
+        // then the status requests one by one with a pause between them
+        var requests = (self.selectedAmp.initCommands || []).slice();
+        ['reqModel','reqPower','reqVolume','reqMute','reqSource'].forEach(req => {
+            if (self.selectedAmp.statusRequests && self.selectedAmp.statusRequests[req]) requests.push(self.selectedAmp.statusRequests[req]);
+        });
+        if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] getAmpStatus: sending init and status requests to Amp: ' + JSON.stringify(requests));
+        return self.writeSequence(requests, self.selectedAmp.commandSpacingMs || 0);
+    } else if (self.parser!=undefined) {
         if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] getAmpStatus: sending status requests to Amp');
         self.sendStatusRequest('reqModel');
         self.sendStatusRequest('reqPower');
@@ -305,6 +377,195 @@ serialampcontroller.prototype.getAmpStatus = function() {
         if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] getAmpStatus: listener not yet available');
     }
     return libQ.resolve();
+}
+
+// a volume level from the settings or a request: a finite number (number or numeric string), else NaN
+function toLevel(v) {
+    if (typeof v === 'number') return Number.isFinite(v) ? v : NaN;
+    if (typeof v === 'string' && /^\s*-?\d+(\.\d+)?\s*$/.test(v)) return Number(v);
+    return NaN;
+}
+
+// the volume window from the settings. Returns undefined if the settings can't be used
+// (then no volume command is sent at all: fail closed). If the minimum is above the maximum, the maximum wins.
+serialampcontroller.prototype.getVolumeLimits = function() {
+    var self = this;
+    // v-conf throws if a number setting holds text (e.g. a hand-edited config.json): treat that as unusable too
+    var read = key => { try { return self.config.get(key); } catch (e) { return undefined; } };
+    var max = toLevel(read('maxVolume'));
+    var min = toLevel(read('minVolume'));
+    if (!Number.isFinite(max) || max < 0 || max > 100) return undefined;
+    max = Math.floor(max); // whole steps only, rounded towards quiet
+    min = (Number.isFinite(min) && min > 0) ? Math.ceil(min) : 0;
+    return {min: Math.min(min, max), max: max};
+}
+
+// unusable volume settings switch volume control off (fail closed); say so on screen, at most once a minute
+serialampcontroller.prototype.warnInvalidVolumeSettings = function() {
+    var self = this;
+    if (self.lastInvalidSettingsToast !== undefined && Date.now() - self.lastInvalidSettingsToast < 60000) return;
+    self.lastInvalidSettingsToast = Date.now();
+    self.commandRouter.pushToastMessage('error', self.getI18nString('TOAST_ERROR'), self.getI18nString('TOAST_VOLUME_CONTROL_OFF'));
+}
+
+// an amp level on Volumio's 0..100 scale (mapTo100), safe for min == max and unusable settings
+serialampcontroller.prototype.ampToVolumio = function(level) {
+    var self = this;
+    var v = toLevel(level);
+    if (!Number.isFinite(v)) return 0;
+    if (self.config.get('mapTo100')) {
+        var limits = self.getVolumeLimits();
+        if (limits === undefined) return 0;
+        // rounded up: the smallest Volumio value that alsavolume maps back to this same level (it rounds down),
+        // so a streaming app sending the reported value back never moves the amp
+        v = (limits.max > limits.min) ? Math.ceil((v - limits.min) * 100 / (limits.max - limits.min)) : (v >= limits.max ? 100 : 0);
+    }
+    return Math.max(0, Math.min(100, Math.floor(v)));
+}
+
+// the level the amp is at, or will be at once it has carried out the last volume command
+// we sent (whichever is more recent), so several clicks sent before the amp answers can't add up.
+serialampcontroller.prototype.expectedVolume = function() {
+    var self = this;
+    var c = self.lastVolumeCommand;
+    if (c !== undefined && c.t >= (self.ampStatus.volumeTime || 0) && Date.now() - c.t < 2000) return c.vol;
+    return toLevel(self.ampStatus.volume);
+}
+
+// if the amp reports a level above the maximum, set it back to the maximum. Nothing the
+// plugin sends can exceed it, but the amp comes back from standby at its last level, which may be from
+// before the plugin was installed or from before the maximum was lowered (or the knob/remote was used).
+serialampcontroller.prototype.enforceMaxVolume = function() {
+    var self = this;
+    if (self.selectedAmp === undefined || !self.selectedAmp.enforceMaxVolume) return;
+    var limits = self.getVolumeLimits();
+    var level = toLevel(self.ampStatus.volume);
+    if (limits === undefined || !Number.isFinite(level) || level <= limits.max) return;
+    var now = Date.now();
+    if (self.lastEnforce !== undefined && now - self.lastEnforce < 500) {
+        // just corrected it; look again shortly (at most twice a second, so an amp that doesn't obey can't cause a flood)
+        if (self.enforceTimer === undefined) self.enforceTimer = setTimeout(() => { self.enforceTimer = undefined; self.enforceMaxVolume(); }, 500 - (now - self.lastEnforce));
+        return;
+    }
+    self.lastEnforce = now;
+    self.logger.info('[SERIALAMPCONTROLLER] enforceMaxVolume: the amp reported volume ' + level + ', above the maximum of ' + limits.max + ': setting it to ' + limits.max);
+    self.sendCommand('volValue', limits.max)
+    .fail(err => self.logger.error('[SERIALAMPCONTROLLER] enforceMaxVolume: could not set the volume: ' + err));
+}
+
+// after a power-up the amp is back at its last level. Ask for it every 500 ms until it answers
+// (McIntosh amps reject commands while waking up), so enforceMaxVolume can act as early as possible.
+serialampcontroller.prototype.checkVolumeAfterWake = function() {
+    var self = this;
+    var req = (self.selectedAmp !== undefined && self.selectedAmp.statusRequests !== undefined) ? self.selectedAmp.statusRequests.reqVolume : undefined;
+    if (!self.selectedAmp.enforceMaxVolume || !req) return;
+    clearTimeout(self.wakeCheckTimer);
+    var since = Date.now();
+    var until = since + (self.selectedAmp.powerOnSettleMs || 0) + 5000;
+    var ask = function() {
+        if (self.port === undefined || (self.ampStatus.volumeTime || 0) > since || Date.now() > until) return;
+        self.port.write(req, 'ascii', err => {
+            if (err) self.logger.error('[SERIALAMPCONTROLLER] checkVolumeAfterWake: Failed to send "' + req + '": ' + err);
+        });
+        self.wakeCheckTimer = setTimeout(ask, 500);
+    };
+    self.wakeCheckTimer = setTimeout(ask, 200);
+}
+
+// "holdPlaybackWhileWaking" in ampCommands.json: the MA352 un-mutes at the end of its ~16 s tube
+// warm-up at its remembered level and only then carries out commands sent during the warm-up, so a remembered
+// level above the maximum was audible for ~0.1 s (tested 2026-11-06). When playback wakes the amp, pause Volumio,
+// and press play again only when the warm-up is over and the amp has reported a level at or below the maximum.
+// No signal reaches the amp while it un-mutes, and the start of the track isn't lost in the warm-up.
+// Bounded: ends at the resume, or after HOLD_GIVE_UP_MS (then playback stays paused and a message is shown).
+var HOLD_QUIET_MS = 2000;    // reports in the first 2 s after the power-on reply are the wake-up dump, not the end of the warm-up
+var HOLD_SETTLE_MS = 1000;   // resume this long after the last report at or below the maximum
+var HOLD_GIVE_UP_MS = 40000;
+serialampcontroller.prototype.startPlaybackHold = function() {
+    var self = this;
+    if (self.selectedAmp === undefined || !self.selectedAmp.holdPlaybackWhileWaking) return;
+    self.endPlaybackHold();
+    var hold = self.playbackHold = { started: Date.now(), lastPause: Date.now() };
+    self.logger.info('[SERIALAMPCONTROLLER] playbackHold: pausing playback until the amp has warmed up at a safe volume');
+    self.socket.emit('pause');
+    hold.giveUpTimer = setTimeout(() => {
+        if (self.playbackHold !== hold) return;
+        self.endPlaybackHold();
+        self.logger.error('[SERIALAMPCONTROLLER] playbackHold: the amp did not report a volume at or below the maximum after waking; playback stays paused');
+        self.commandRouter.pushToastMessage('error', self.getI18nString('TOAST_ERROR'), self.getI18nString('TOAST_PLAYBACK_HELD'));
+    }, HOLD_GIVE_UP_MS);
+}
+
+serialampcontroller.prototype.endPlaybackHold = function() {
+    var self = this;
+    var hold = self.playbackHold;
+    if (hold === undefined) return;
+    clearTimeout(hold.giveUpTimer); clearTimeout(hold.resumeTimer); clearTimeout(hold.askTimer);
+    self.playbackHold = undefined;
+}
+
+// on respPowerOn: start asking for the volume. The MA352 holds its replies during the warm-up and sends them all
+// at its end, so the answers to these queries mark the end of the warm-up (and carry the level the amp is at).
+serialampcontroller.prototype.playbackHoldAmpAwake = function() {
+    var self = this;
+    var hold = self.playbackHold;
+    if (hold === undefined || hold.wokeAt !== undefined) return;
+    hold.wokeAt = Date.now();
+    var req = self.selectedAmp.statusRequests !== undefined ? self.selectedAmp.statusRequests.reqVolume : undefined;
+    var ask = function() {
+        if (self.playbackHold !== hold || self.port === undefined || !req) return;
+        self.port.write(req, 'ascii', err => { if (err) self.logger.error('[SERIALAMPCONTROLLER] playbackHold: Failed to send "' + req + '": ' + err); });
+        hold.askTimer = setTimeout(ask, 2000);
+    };
+    hold.askTimer = setTimeout(ask, HOLD_QUIET_MS + 500);
+}
+
+// on respVolume
+serialampcontroller.prototype.playbackHoldVolumeReport = function() {
+    var self = this;
+    var hold = self.playbackHold;
+    if (hold === undefined || hold.wokeAt === undefined || Date.now() - hold.wokeAt < HOLD_QUIET_MS) return;
+    clearTimeout(hold.resumeTimer);
+    var limits = self.getVolumeLimits();
+    var level = toLevel(self.ampStatus.volume);
+    if (limits === undefined || !Number.isFinite(level) || level > limits.max) return; // enforceMaxVolume is on it; wait for the next report
+    hold.resumeTimer = setTimeout(() => {
+        if (self.playbackHold !== hold) return;
+        var limitsNow = self.getVolumeLimits();
+        var levelNow = toLevel(self.ampStatus.volume);
+        if (limitsNow === undefined || !Number.isFinite(levelNow) || levelNow > limitsNow.max) return;
+        self.endPlaybackHold();
+        var paused = self.volumioStatus !== undefined && self.volumioStatus.status == 'pause';
+        // a paused "volatile" source (Qobuz Connect, AirPlay, ...) resumes with volatilePlay: Volumio's 'play' ends that
+        // session and plays Volumio's own queue instead (seen with Qobuz Connect on 4.239); 'play' resumes the queue
+        var resume = (paused && self.volumioStatus.volatile === true) ? 'volatilePlay' : 'play';
+        self.logger.info('[SERIALAMPCONTROLLER] playbackHold: the amp has warmed up at volume ' + levelNow + ' (maximum ' + limitsNow.max + ')' + (paused ? ': resuming playback (' + resume + ')' : ''));
+        if (paused) self.socket.emit(resume);
+    }, HOLD_SETTLE_MS);
+}
+
+// write a list of raw command strings to the amp, waiting delayMs between them.
+// Always resolves (errors are logged), so it can be used safely inside promise chains.
+serialampcontroller.prototype.writeSequence = function(strings, delayMs) {
+    var self = this;
+    var defer = libQ.defer();
+    var list = (strings || []).filter(s => typeof s === 'string' && s !== '');
+    var writeNext = function(i) {
+        if (i >= list.length || self.port === undefined) {
+            defer.resolve();
+            return;
+        }
+        self.port.write(list[i], 'ascii', function(err) {
+            if (err) {
+                self.logger.error('[SERIALAMPCONTROLLER] writeSequence: Failed to send "' + list[i] + '": ' + err);
+            } else if (self.debugLogging) {
+                self.logger.info('[SERIALAMPCONTROLLER] writeSequence: sent "' + list[i] + '"');
+            }
+            setTimeout(() => writeNext(i + 1), delayMs || 0);
+        });
+    };
+    writeNext(0);
+    return defer.promise;
 }
 
 serialampcontroller.prototype.setActiveAmp = function() {
@@ -656,6 +917,12 @@ serialampcontroller.prototype.onTcpClose = function(){
 serialampcontroller.prototype.closePort = function () {
     var self = this;
     var defer = libQ.defer();
+    // no more volume checks/corrections on a closed port
+    clearTimeout(self.wakeCheckTimer);
+    clearTimeout(self.enforceTimer);
+    clearTimeout(self.volumeReportTimer);
+    self.endPlaybackHold();
+    self.enforceTimer = undefined;
 
     if (self.port !== undefined) {
         if (self.port instanceof net.Socket) { //open TCP/IP port needs to be closed
@@ -792,8 +1059,18 @@ serialampcontroller.prototype.sendCommand  = function(...cmd) {
     if (self.debugLogging) self.logger.info("[SERIALAMPCONTROLLER] sendCommand: send " + cmd);
     if (self.selectedAmp != undefined && self.selectedAmp.commands != undefined && self.selectedAmp.sources != undefined && self.selectedAmp.sourceCmd != undefined) {
         switch (cmd[0]) {
-            case  "powerOn": 
-                if (self.ampStatus.Powering != 'up') cmdString = cmdString + self.selectedAmp.commands.powerOn;
+            case  "powerOn":
+                if (self.ampStatus.Powering != 'up') {
+                    cmdString = cmdString + self.selectedAmp.commands.powerOn;
+                    // if the amp never confirms the power-up, do not block further power-on attempts forever
+                    clearTimeout(self.poweringTimer);
+                    self.poweringTimer = setTimeout(() => {
+                        if (self.ampStatus.Powering == 'up') {
+                            if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] sendCommand: no power-on confirmation received, resetting powering state');
+                            self.ampStatus.Powering = '';
+                        }
+                    }, 20000);
+                }
                 self.ampStatus.Powering = 'up';
                 break;
             case  "powerToggle": 
@@ -804,21 +1081,42 @@ serialampcontroller.prototype.sendCommand  = function(...cmd) {
                     self.ampStatus.Powering = 'up'
                 }
                 break;
-            case  "volUp": 
-                cmdString = cmdString + self.selectedAmp.commands.volUp;
+            case  "volUp":
+                // never step past the maximum, counting steps the amp hasn't confirmed yet
+                // (assumes the amp's step is 1, as on McIntosh amps)
+                var limitsUp = self.getVolumeLimits();
+                var fromUp = self.expectedVolume();
+                if (limitsUp !== undefined && Number.isFinite(fromUp) && fromUp + 1 <= limitsUp.max) {
+                    cmdString = cmdString + self.selectedAmp.commands.volUp;
+                    self.lastVolumeCommand = {vol: fromUp + 1, t: Date.now()};
+                } else {
+                    self.logger.info('[SERIALAMPCONTROLLER] sendCommand: not sending volUp: ' + (limitsUp === undefined ? 'the Minimum/Maximum Volume settings are not valid' : 'already at the maximum of ' + limitsUp.max));
+                }
                 break;
-            case  "volDown": 
+            case  "volDown":
                 cmdString = cmdString + self.selectedAmp.commands.volDown;
+                var fromDown = self.expectedVolume();
+                if (Number.isFinite(fromDown)) self.lastVolumeCommand = {vol: Math.max(fromDown - 1, 0), t: Date.now()};
                 break;
-            case  "volValue": 
-                cmdString = cmdString + self.selectedAmp.commands.volValue;
-                var count = (cmdString.match(/#/g) || []).length;
+            case  "volValue":
+                // last line of defence for the volume limit. Whatever asked for it, every level sent
+                // to the amp is a whole number within the Minimum..Maximum Volume settings. If the settings can't be
+                // read or the value isn't a number, nothing is sent.
+                var limits = self.getVolumeLimits();
+                var level = Math.floor(toLevel(cmd[1]));
+                if (limits === undefined || !Number.isFinite(level)) {
+                    self.logger.error('[SERIALAMPCONTROLLER] sendCommand: not sending volume "' + cmd[1] + '": ' + (limits === undefined ? 'the Minimum/Maximum Volume settings are not valid' : 'not a number'));
+                    if (limits === undefined) self.warnInvalidVolumeSettings();
+                    break;
+                }
+                level = Math.min(Math.max(level, limits.min), limits.max);
+                var template = self.selectedAmp.commands.volValue || '';
+                var count = (template.match(/#/g) || []).length;
                 if (count > 0) {
-                    var re = new RegExp("#".repeat(count));
-                    cmdString = cmdString.replace(re,parseInt(cmd[1]).toString().padStart(count,"0"));
+                    cmdString = template.replace(new RegExp("#".repeat(count)), String(level).padStart(count, "0"));
+                    self.lastVolumeCommand = {vol: level, t: Date.now()};
                 } else {
                     if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] sendCommand: volValue command string has no ## characters. Do not know how to send volume value.')
-                    cmdString = '';
                 }
                 break;
             case  "mute": 
@@ -842,14 +1140,31 @@ serialampcontroller.prototype.sendCommand  = function(...cmd) {
     }
     if (self.port !== undefined && cmdString!==''){
         if (self.debugLogging) self.logger.info("[SERIALAMPCONTROLLER] sendCommand: now sending cmdString: " + cmdString);
+        // some amps need the power-on command twice to wake from standby
+        var repeatDelay = (cmd[0] == 'powerOn' && self.selectedAmp.powerOnRepeatDelayMs) ? self.selectedAmp.powerOnRepeatDelayMs : 0;
         self.port.write(cmdString,'ascii',function(err) {
             if (err) {
                 self.logger.error('[SERIALAMPCONTROLLER] sendCommand: Could not send command to serial interface "' + cmdString + '": ' + err)
                 defer.reject()
+                return;
             }
             if (self.debugLogging) self.logger.info("[SERIALAMPCONTROLLER] sendCommand: sent cmdString: " + cmdString);
-            defer.resolve();
+            if (repeatDelay > 0) {
+                setTimeout(() => {
+                    if (self.port === undefined) { defer.resolve(); return; }
+                    self.port.write(cmdString,'ascii',function(err2) {
+                        if (err2) self.logger.error('[SERIALAMPCONTROLLER] sendCommand: Could not repeat command "' + cmdString + '": ' + err2);
+                        else if (self.debugLogging) self.logger.info("[SERIALAMPCONTROLLER] sendCommand: repeated cmdString: " + cmdString);
+                        defer.resolve();
+                    });
+                }, repeatDelay);
+            } else {
+                defer.resolve();
+            }
         });
+    } else {
+        // nothing to send - resolve instead of leaving the caller waiting forever
+        defer.resolve();
     }
     return defer.promise;
 }
@@ -862,22 +1177,39 @@ serialampcontroller.prototype.processResponse = function(response, ...args) {
         case "respPowerOn":
             if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] processResponse: Amp signaled PowerOn. Previous state is: ' + self.ampStatus.power);
             if (self.ampStatus.Powering == 'up') self.ampStatus.Powering = '';
-            if (self.powerupAtVolumioStart) {self.powerupAtVolumioStart = false};   
+            if (self.powerupAtVolumioStart) {self.powerupAtVolumioStart = false};
+            // the amp is back at its last level: check it against the maximum as soon as possible
+            self.checkVolumeAfterWake();
+            self.playbackHoldAmpAwake();
+            // re-send init commands (e.g. status notifications) after a power-up,
+            // at most once every 30s so an echo can never cause a loop
+            if (self.selectedAmp.initCommands !== undefined && self.ampStatus.power != 'on' &&
+                (self.lastInitResend === undefined || Date.now() - self.lastInitResend > 30000)) {
+                self.lastInitResend = Date.now();
+                // after the settle time: a waking amp rejects commands
+                setTimeout(() => self.writeSequence(self.selectedAmp.initCommands, self.selectedAmp.commandSpacingMs || 0), Math.max(1000, (self.selectedAmp.powerOnSettleMs || 0) + 200));
+            }
             setTimeout(() => {
                 self.initVolumeSettings()
                 .then(_ => {
-                    if (self.config.get('startAtPowerup')) {
+                    if (self.config.get('startAtPowerup') && self.playbackHold === undefined) { // the hold resumes by itself
                         self.sendCommand('source',self.config.get('volumioInput'));
                         self.socket.emit('play');
                     }
                     self.messageReceived.emit('power', 'on');
                     self.ampStatus.power='on';
+                    self.powerOnPending = false;
                 })                
             }, 10000);
             break;
         case "respPowerOff":
             if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] processResponse: Amp signaled PowerOff');            
             if (self.ampStatus.Powering == 'down') self.ampStatus.Powering = '';
+            self.endPlaybackHold(); // switched off while waking: don't resume
+            // if the amp is switched off while music plays, do not switch it straight back on;
+            // automatic power-on is re-armed the next time playback starts
+            if (self.volumioStatus !== undefined && self.volumioStatus.status == 'play') self.suppressAutoPowerOn = true;
+            self.powerOnPending = false;
             self.socket.emit('pause'); //stops volumio if amp is powered down
             self.messageReceived.emit('power', 'standby');
             self.ampStatus.power='standby';
@@ -889,40 +1221,59 @@ serialampcontroller.prototype.processResponse = function(response, ...args) {
             break;
         case "respMuteOff":
             if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] processResponse: Amp signaled MuteOff');            
-            if (self.config.get('pauseWhenMuted')) {
+            // only when the mute state changes (a repeated status reply must not restart playback)
+            if (self.config.get('pauseWhenMuted') && self.ampStatus.mute) {
                 self.socket.emit('play');
             }
             self.ampStatus.mute = false;
-            self.commandRouter.volumioupdatevolume(self.getVolumeObject());
+            self.getVolumeObject(); //reports the new state to Volumio (see getVolumeObject)
             self.messageReceived.emit('mute', false);
             break;
         case "respMuteOn":
             if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] processResponse: Amp signaled MuteOn');            
-            if (self.config.get('pauseWhenMuted')) {
+            if (self.config.get('pauseWhenMuted') && !self.ampStatus.mute) {
                 self.socket.emit('pause');
             }
             self.ampStatus.mute = true;
-            self.commandRouter.volumioupdatevolume(self.getVolumeObject());
+            self.getVolumeObject(); //reports the new state to Volumio (see getVolumeObject)
             self.messageReceived.emit('mute', true);
             break;
         case 'respVolume':
             if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] processResponse: Amp signaled volume is ' + args[0]);
             self.ampStatus.volume = parseInt(args[0]);
-            self.commandRouter.volumioupdatevolume(self.getVolumeObject());
+            self.ampStatus.volumeTime = Date.now();
+            self.getVolumeObject(); //reports the new state to Volumio (see getVolumeObject)
             self.messageReceived.emit('volume', args[0]);
+            self.enforceMaxVolume();
+            self.playbackHoldVolumeReport();
+            // the MA352 reports every step of a volume change in one burst, and Volumio's own update
+            // for the command (made at the first step) can arrive after the last one; report once more when the
+            // reports stop, so Volumio (and the Qobuz app) end on the amp's final level
+            clearTimeout(self.volumeReportTimer);
+            self.volumeReportTimer = setTimeout(() => self.getVolumeObject(), 300);
             break;
         case 'respSource':
             if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] processResponse: Amp signaled source is ' + args[0]);
-            if (self.config.get('pauseWhenInputChanged')) {
+            // only when the input changes (a repeated status reply must not pause or restart playback)
+            if (self.config.get('pauseWhenInputChanged') && self.ampStatus.source != args[0]) {
                 var idx = self.selectedAmp.sources.indexOf(self.config.get('volumioInput'));
                 if ((self.selectedAmp.sourceRespPostfix[idx] == args[0])) {
-                    if (self.ampStatus.source!=args[0]) self.socket.emit('play');
+                    self.socket.emit('play');
                 } else {
                     self.socket.emit('pause');
                 }
             }
             self.ampStatus.source = args[0];         
             self.messageReceived.emit('source', args[0]);
+            break;
+        case 'respPassthru':
+            // in PASSTHRU the amp bypasses its volume control, so no limit applies. Say so loudly
+            // (log every time, on screen at most once a minute).
+            self.logger.error('[SERIALAMPCONTROLLER] processResponse: the amp is in PASSTHRU on this input: its volume is fixed and the plugin can NOT limit it. Turn Passthru off for this input in the amp\'s Setup menu.');
+            if (self.lastPassthruToast === undefined || Date.now() - self.lastPassthruToast > 60000) {
+                self.lastPassthruToast = Date.now();
+                self.commandRouter.pushToastMessage('error', self.getI18nString('TOAST_PASSTHRU_TITLE'), self.getI18nString('TOAST_PASSTHRU'));
+            }
             break;
         default:
             if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] processResponse: unhandled response "' + response +'"');
@@ -1136,7 +1487,7 @@ serialampcontroller.prototype.alsavolume = function (VolumeInteger) {
                     //amp only supports dedicated mute and off functions
                     if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] alsavolume: send dedicated muteOn/Off based on current state.');
                     defer.resolve(self.waitForAcknowledge('mute'));
-                    if (self.volume.mute) {
+                    if (self.ampStatus.mute) { // the amp's mute state (self.volume.mute is never set)
                         self.sendCommand('muteOff')
                     } else {
                         self.sendCommand('muteOn')
@@ -1163,22 +1514,30 @@ serialampcontroller.prototype.alsavolume = function (VolumeInteger) {
                 break;
             case '+':
             //increase volume by 1 step
-                if (self.ampStatus.volume < self.config.get('maxVolume')) {
+                var limitsPlus = self.getVolumeLimits();
+                var fromPlus = self.expectedVolume();
+                if (limitsPlus !== undefined && Number.isFinite(fromPlus) && fromPlus < limitsPlus.max) {
                     if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] alsavolume: increase volume by single step.');
-                    if (self.selectedAmp.commands.volUp != undefined) {
-                        //amp supports stepwise volume increase
+                    if (self.selectedAmp.commands.volValue != undefined) {
+                        // send the new level rather than a relative step, so clicks sent before the
+                        // amp has answered can't add up past the maximum
+                        defer.resolve(self.waitForAcknowledge('volume'));
+                        self.sendCommand('volValue', Math.min(fromPlus + Math.max(1, parseInt(self.config.get('volumeSteps')) || 1), limitsPlus.max));
+                    } else if (self.selectedAmp.commands.volUp != undefined) {
+                        //amp supports stepwise volume increase only
                         defer.resolve(self.waitForAcknowledge('volume'));
                         self.sendCommand('volUp')
-                    } else {
-                        //amp only supports sending of absolute volume
-                        defer.resolve(self.waitForAcknowledge('volume'));
-                        self.sendCommand('volValue',Math.min(parseInt(self.volume.vol + self.config.get('volumeSteps')),self.config.get('maxVolume')))
                     }
+                } else {
+                    if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] alsavolume: not increasing the volume, at the maximum (or the volume settings are not valid).');
+                    if (limitsPlus !== undefined) defer.resolve(self.getVolumeObject()); // show Volumio the real level
                 }
                 break;
             case '-':
             // decrease volume by 1 step
-                if (self.ampStatus.volume > self.config.get('minVolume')) {
+                var limitsMinus = self.getVolumeLimits();
+                var fromMinus = self.expectedVolume();
+                if (limitsMinus !== undefined && Number.isFinite(fromMinus) && fromMinus > limitsMinus.min) {
                     if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] alsavolume: decrease volume by single step.');
                     if (self.selectedAmp.commands.volDown != undefined) {
                         //amp supports stepwise volume decrease
@@ -1187,22 +1546,32 @@ serialampcontroller.prototype.alsavolume = function (VolumeInteger) {
                     } else {
                         //amp only supports sending of absolute volume
                         defer.resolve(self.waitForAcknowledge('volume'));
-                        self.sendCommand('volValue', Math.max(parseInt(self.volume.vol - self.config.get('volumeSteps')),self.config.get('minVolume')))
+                        self.sendCommand('volValue', Math.max(fromMinus - Math.max(1, parseInt(self.config.get('volumeSteps')) || 1), limitsMinus.min))
                     }
                 }
             break;
             default:
             //set volume to integer
-                if (self.config.get('mapTo100')) {
-                    VolumeInteger = self.config.get('minVolume') + VolumeInteger/100 * (self.config.get('maxVolume') - self.config.get('minVolume') );
-                } else {
-                    VolumeInteger = Math.min(VolumeInteger,self.config.get('maxVolume'));
-                    VolumeInteger = Math.max(VolumeInteger,self.config.get('minVolume'));
+                // only numbers (or numeric strings); Volumio's 0..100 scale is enforced before
+                // mapping, and the maximum is applied last so it wins even over a minimum set above it
+                var limitsSet = self.getVolumeLimits();
+                var requested = toLevel(VolumeInteger);
+                if (limitsSet === undefined || Number.isNaN(requested)) {
+                    self.logger.error('[SERIALAMPCONTROLLER] alsavolume: not setting volume "' + VolumeInteger + '": ' + (limitsSet === undefined ? 'the Minimum/Maximum Volume settings are not valid' : 'not a number'));
+                    if (limitsSet === undefined) self.warnInvalidVolumeSettings();
+                    defer.resolve(limitsSet !== undefined ? self.getVolumeObject() : undefined);
+                    break;
                 }
-                if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] alsavolume: set volume to integer value ' + VolumeInteger);
+                if (self.config.get('mapTo100')) {
+                    requested = Math.min(Math.max(requested, 0), 100);
+                    // multiply first: exact for whole numbers (sendCommand rounds down), see ampToVolumio
+                    requested = limitsSet.min + requested * (limitsSet.max - limitsSet.min) / 100;
+                }
+                requested = Math.min(Math.max(requested, limitsSet.min), limitsSet.max);
+                if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] alsavolume: set volume to integer value ' + requested);
                 defer.resolve(self.waitForAcknowledge('volume'));
-                self.sendCommand('volValue',VolumeInteger);
-                break;   
+                self.sendCommand('volValue',requested);
+                break;
         };
         
     } else {
@@ -1232,7 +1601,9 @@ serialampcontroller.prototype.getI18nString = function (key) {
         return self.i18nStrings[key];
     } else {
         if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] getI18nString("'+key+'")'+ self.i18nStringsDefaults[key]);
-        return self.i18nStringsDefaults['SERIALAMPCONTROL'][key];
+        // strings_en.json is flat (there is no 'SERIALAMPCONTROL' section): a key missing from another language
+        // threw a TypeError here instead of falling back to English
+        return self.i18nStringsDefaults[key];
     };
 }
 // A method to get some language strings used by the plugin
@@ -1260,35 +1631,30 @@ serialampcontroller.prototype.getVolumeObject = function() {
 
     volume.mute = self.ampStatus.mute;
     volume.currentDisableVolumeControl = false;
-    if (self.config.get('mapTo100')) {
-        //calculate the equivalent volume on a 0...100 scale
-        volume.vol = parseInt(((self.ampStatus.volume-self.config.get('minVolume'))/(self.config.get('maxVolume')-self.config.get('minVolume'))*100))
-        //user can still set values outside allowed window on the amp directly
-        volume.vol = Math.min(100,volume.vol);
-        volume.vol = Math.max(0,volume.vol);
-        if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] getVolumeObject: ' + JSON.stringify(volume));
-        return libQ.resolve(volume)
-        .then(function (volume) {
-          defer.resolve(volume);
-          self.commandRouter.volumioupdatevolume(volume);
-        });
-    } else {
-        volume.vol = self.ampStatus.volume;
-        volume.vol = Math.min(100,volume.vol);
-        volume.vol = Math.max(0,volume.vol);
-        if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] getVolumeObject: ' + JSON.stringify(volume));
-        return libQ.resolve(volume)
-        .then(function (volume) {
-          defer.resolve(volume);
-          self.commandRouter.volumioupdatevolume(volume);
-        });
-    }
-    return defer.promise;
+    volume.disableVolumeControl = false; // Volumio's state machine reads this name, not the one above
+    //on Volumio's 0...100 scale (mapTo100), limited to 0..100; no division by zero if min == max
+    volume.vol = self.ampToVolumio(self.ampStatus.volume);
+    if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] getVolumeObject: ' + JSON.stringify(volume));
+    // remember what we told Volumio, so followServiceVolume can tell these values
+    // (echoed back in pushState) apart from volume changes made in a streaming app
+    var now = Date.now();
+    self.reportedVolumes = (self.reportedVolumes || []).filter(r => now - r.t < 3000);
+    self.reportedVolumes.push({vol: volume.vol, t: now});
+    // Note: this also reports the volume to Volumio. Callers must not pass the returned promise to
+    // commandRouter.volumioupdatevolume (on Volumio 4 that pushes "volume: undefined" and writes 100 to /tmp/volume).
+    return libQ.resolve(volume)
+    .then(function (volume) {
+      defer.resolve(volume);
+      self.commandRouter.volumioupdatevolume(volume);
+      // resolve with the volume object (it resolved with undefined, which broke Volumio's
+      // volumiosetvolume -> volumioupdatevolume(result) and the state machine's getcurrentVolume)
+      return volume;
+    });
 };
 
 serialampcontroller.prototype.volumioupdatevolume = function() {
     var self = this;
-    return self.commandRouter.volumioupdatevolume(self.getVolumeObject());
+    return self.getVolumeObject(); //reports to Volumio itself
 };
 
 serialampcontroller.prototype.retrievevolume = function () {

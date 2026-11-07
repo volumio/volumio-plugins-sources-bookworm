@@ -44,5 +44,10 @@
   "POWERUP_ON_PLAY": "Powerup on playback",
   "D_POWERUP_ON_PLAY": "Power up the amplifier when playback is started.",
   "POWERUP_ON_BOOT": "Powerup on Volumio-start",
-  "D_POWERUP_ON_BOOT": "Power up the amplifier when Volumio starts up."
+  "D_POWERUP_ON_BOOT": "Power up the amplifier when Volumio starts up.",
+  "TOAST_VOLUME_SETTINGS_INVALID": "Not saved: Minimum, Maximum and Startup Volume must be whole numbers from 0 to 100, and the minimum must not be above the maximum.",
+  "TOAST_VOLUME_CONTROL_OFF": "Volume control is off: the Minimum/Maximum Volume settings of SerialAmpControl are not valid. Open the plugin settings and save them again.",
+  "TOAST_PASSTHRU_TITLE": "PASSTHRU is on",
+  "TOAST_PASSTHRU": "The amplifier ignores volume commands on this input (fixed level). Turn Passthru off for this input in the amplifier's Setup menu.",
+  "TOAST_PLAYBACK_HELD": "Playback paused: the amplifier did not confirm a volume at or below the maximum after waking. Check the amplifier, then press play."
 }
