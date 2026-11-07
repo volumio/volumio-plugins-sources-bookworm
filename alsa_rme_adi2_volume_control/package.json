@@ -11,7 +11,7 @@
 	"repository": "https://github.com/pettarin/alsa-rme-adi2-volume-control",
 	"volumio_info": {
 		"prettyName": "ALSA RME ADI-2 Volume Control",
-		"icon": "fa-lightbulb-o",
+		"icon": "fa-microchip",
 		"plugin_type": "system_hardware",
 		"architectures": [
 			"amd64",

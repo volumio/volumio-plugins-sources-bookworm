@@ -7,7 +7,7 @@
             "id": "section_general",
             "element": "section",
             "label": "TRANSLATE.ARAVC_SECTION_LABEL_BACKGROUND_SERVICE",
-            "icon": "fa-gear",
+            "icon": "fa-desktop",
             "onSave": {
                 "type": "controller",
                 "endpoint": "system_hardware/alsa_rme_adi2_volume_control",
@@ -100,7 +100,7 @@
             "id": "section_line12",
             "element": "section",
             "label": "TRANSLATE.ARAVC_SECTION_LABEL_LINE12",
-            "icon": "fa-gear",
+            "icon": "fa-music",
             "onSave": {
                 "type": "controller",
                 "endpoint": "system_hardware/alsa_rme_adi2_volume_control",
@@ -212,7 +212,7 @@
             "id": "section_phones34",
             "element": "section",
             "label": "TRANSLATE.ARAVC_SECTION_LABEL_PHONES34",
-            "icon": "fa-gear",
+            "icon": "fa-headphones",
             "onSave": {
                 "type": "controller",
                 "endpoint": "system_hardware/alsa_rme_adi2_volume_control",
