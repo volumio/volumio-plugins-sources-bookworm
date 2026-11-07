@@ -1,23 +1,31 @@
 #!/bin/bash
 
 # Name of the plugin
-PLUGIN_NAME="alsa-rme-adi2-volume_control"
+PLUGIN_NAME="alsa-rme-adi2-volume-control"
 
 # Category and plugin directory names under /data/plugins/
 PLUGIN_CATEGORY="system_hardware"
 PLUGIN_DIRECTORY="alsa_rme_adi2_volume_control"
 
-# In a later version we will wire the suitable settings
-# from the plugin configuration page.
-# For now the default values for the service
-# should work for most users.
-#
-# RUN_ARGUMENTS="--run-arguments \"--verbose\""
-RUN_ARGUMENTS=""
-
 # ###########################################################################
 # DO NOT EDIT BELOW THIS LINE
 # ###########################################################################
+
+EXIT_CODE=0
+EXIT_CODE_OK=0
+EXIT_CODE_ERROR=1
+
+on_exit () {
+    echo "Exit Status: $EXIT_CODE"
+    if [ $EXIT_CODE -eq $EXIT_CODE_OK ]
+    then
+        echo "Plugin $PLUGIN_NAME installed correctly"
+    else
+        echo "Plugin $PLUGIN_NAME failed to install"
+    fi
+    echo "plugininstallend"
+}
+trap on_exit EXIT
 
 # The canonical architecture names in Volumio are "amd64" and "armhf".
 #
@@ -64,28 +72,31 @@ case "$ARCHITECTURE" in
     *)
     echo "[ERRO] Architecture $ARCHITECTURE has no pre-built executable."
     echo "[ERRO] Supported architectures are: 'amd64', 'armhf'."
-    exit 3;
+    EXIT_CODE=$EXIT_CODE_ERROR
+    exit $EXIT_CODE_ERROR ;
 esac
 echo "[INFO] Architecture (Volumio): '$ARCHITECTURE'"
 
 echo "[INFO] Run the service installer ..."
 SERVICE_INSTALLER_PATH="$SERVICE_DIRECTORY_PATH/$ARCHITECTURE/$SERVICE_INSTALLER_FILE_NAME"
 echo "[INFO] Using service installer file '$SERVICE_INSTALLER_PATH'"
-if [ -z "$RUN_ARGUMENTS" ]
+sudo bash "$SERVICE_INSTALLER_PATH" --from-source --no-compile --architecture "$ARCHITECTURE"
+EXIT_CODE=$?
+if [ $EXIT_CODE_ERROR -ne $EXIT_CODE_OK ]
 then
-    sudo bash "$SERVICE_INSTALLER_PATH" --from-source --no-compile --architecture "$ARCHITECTURE"
-else
-    sudo bash "$SERVICE_INSTALLER_PATH" --from-source --no-compile --architecture "$ARCHITECTURE" "$RUN_ARGUMENTS"
+    echo "[ERRO] The service installer returned $EXIT_CODE"
+    exit $EXIT_CODE
 fi
 echo "[INFO] Run the service installer ... done"
 
 # Per Volumio plugins documentation, we want the effect of the plugin
 # to be controlled by the plugin enable/disable event.
 #
-# Therefore, here we stop the service after it has been installed.
-echo "[INFO] Stopping the systemd service ..."
+# Therefore, here we stop and disable the service after it has been installed.
+echo "[INFO] Stopping and disabling the systemd service ..."
 sudo systemctl stop "$SERVICE_NAME"
-echo "[INFO] Stopping the systemd service ... done"
+sudo systemctl disable "$SERVICE_NAME"
+echo "[INFO] Stopping and disabling the systemd service ... done"
 
 # Commands called by index.js
 echo "[INFO] Creating sudoers file ..."
@@ -99,5 +110,8 @@ volumio ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
 EOF
 echo "[INFO] Creating sudoers file ... done"
 
-#requred to end the plugin install
-echo "plugininstallend"
+# The required
+# echo "plugininstallend"
+# to end the plugin install will be called by the on_exit trap handler
+EXIT_CODE=$EXIT_CODE_OK
+exit $EXIT_CODE_OK

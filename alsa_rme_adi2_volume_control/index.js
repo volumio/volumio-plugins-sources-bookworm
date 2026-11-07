@@ -30,18 +30,18 @@ alsaRmeAdi2VolumeControl.prototype.onVolumioStart = function() {
 alsaRmeAdi2VolumeControl.prototype.onStart = function() {
     var self = this;
 	var defer = libQ.defer();
-    self.logger.info("Before calling startService");
+    self.logger.info("Enabling and starting service ...");
     self.startService();
-    self.logger.info("After calling startService");
+    self.logger.info("Enabling and starting service ... done");
     return defer.promise;
 };
 
 alsaRmeAdi2VolumeControl.prototype.onStop = function() {
     var self = this;
     var defer = libQ.defer();
-    self.logger.info("Before calling stopService");
+    self.logger.info("Stopping and disabling service ...");
     self.stopService();
-    self.logger.info("After calling stopService");
+    self.logger.info("Stopping and disabling service ... done");
     return libQ.resolve();
 };
 
@@ -58,26 +58,33 @@ alsaRmeAdi2VolumeControl.prototype.onRestart = function() {
 alsaRmeAdi2VolumeControl.prototype.startService = function() {
     var self = this;
     var defer = libQ.defer();
-
-    exec('/usr/bin/sudo /bin/systemctl start alsa-rme-adi2-volume-control.service', { uid: 1000, gid: 1000 },
+    exec('/usr/bin/sudo /bin/systemctl enable alsa-rme-adi2-volume-control.service', { uid: 1000, gid: 1000 },
         function(error, stdout, stderr) {
             if (error !== null) {
-                self.logger.error('ALSA RME ADI-2 Volume Control: cannot start service - ' + error);
+                self.logger.error('ALSA RME ADI-2 Volume Control: cannot enable service - ' + error);
                 defer.reject(error);
             } else {
-                self.logger.info('ALSA RME ADI-2 Volume Control: service started');
-                defer.resolve();
+                self.logger.info('ALSA RME ADI-2 Volume Control: service enabled');
+                exec('/usr/bin/sudo /bin/systemctl start alsa-rme-adi2-volume-control.service', { uid: 1000, gid: 1000 },
+                    function(error, stdout, stderr) {
+                        if (error !== null) {
+                            self.logger.error('ALSA RME ADI-2 Volume Control: cannot start service - ' + error);
+                            defer.reject(error);
+                        } else {
+                            self.logger.info('ALSA RME ADI-2 Volume Control: service started');
+                            defer.resolve();
+                        }
+                    }
+                );
             }
         }
     );
-
     return defer.promise;
 };
 
 alsaRmeAdi2VolumeControl.prototype.stopService = function() {
     var self = this;
     var defer = libQ.defer();
-
     exec('/usr/bin/sudo /bin/systemctl stop alsa-rme-adi2-volume-control.service', { uid: 1000, gid: 1000 },
         function(error, stdout, stderr) {
             if (error !== null) {
@@ -85,11 +92,20 @@ alsaRmeAdi2VolumeControl.prototype.stopService = function() {
                 defer.reject(error);
             } else {
                 self.logger.info('ALSA RME ADI-2 Volume Control: service stopped');
-                defer.resolve();
+                exec('/usr/bin/sudo /bin/systemctl disable alsa-rme-adi2-volume-control.service', { uid: 1000, gid: 1000 },
+                    function(error, stdout, stderr) {
+                        if (error !== null) {
+                            self.logger.error('ALSA RME ADI-2 Volume Control: cannot disable service - ' + error);
+                            defer.reject(error);
+                        } else {
+                            self.logger.info('ALSA RME ADI-2 Volume Control: service disabled');
+                            defer.resolve();
+                        }
+                    }
+                );
             }
         }
     );
-
     return defer.promise;
 };
 

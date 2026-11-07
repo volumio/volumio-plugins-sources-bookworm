@@ -1,23 +1,31 @@
 #!/bin/bash
 
 # Name of the plugin
-PLUGIN_NAME="alsa-rme-adi2-volume_control"
+PLUGIN_NAME="alsa-rme-adi2-volume-control"
 
 # Category and plugin directory names under /data/plugins/
 PLUGIN_CATEGORY="system_hardware"
 PLUGIN_DIRECTORY="alsa_rme_adi2_volume_control"
 
-# In a later version we will wire the suitable settings
-# from the plugin configuration page.
-# For now the default values for the service
-# should work for most users.
-#
-# RUN_ARGUMENTS="--run-arguments \"--verbose\""
-RUN_ARGUMENTS=""
-
 # ###########################################################################
 # DO NOT EDIT BELOW THIS LINE
 # ###########################################################################
+
+EXIT_CODE=0
+EXIT_CODE_OK=0
+EXIT_CODE_ERROR=1
+
+on_exit () {
+    echo "Exit Status: $EXIT_CODE"
+    if [ $EXIT_CODE -eq $EXIT_CODE_OK ]
+    then
+        echo "Plugin $PLUGIN_NAME installed correctly"
+    else
+        echo "Plugin $PLUGIN_NAME failed to install"
+    fi
+    echo "plugininstallend"
+}
+trap on_exit EXIT
 
 # The canonical architecture names in Volumio are "amd64" and "armhf".
 #
@@ -41,7 +49,7 @@ SERVICE_DIRECTORY_PATH="$SCRIPT_DIRECTORY_PATH/service"
 SERVICE_INSTALLER_FILE_NAME="install.sh"
 
 # Name of the background service"
-SERVICE_NAME="alsa-rma-adi2-volume-control.service"
+SERVICE_NAME="alsa-rme-adi2-volume-control.service"
 
 # Path of the sudoers file for this service
 SUDOERS_FILE_PATH="/etc/sudoers.d/alsa-rme-adi2-volume-control"
@@ -64,7 +72,8 @@ case "$ARCHITECTURE" in
     *)
     echo "[ERRO] Architecture $ARCHITECTURE has no pre-built executable."
     echo "[ERRO] Supported architectures are: 'amd64', 'armhf'."
-    exit 3;
+    EXIT_CODE=$EXIT_CODE_ERROR
+    exit $EXIT_CODE_ERROR ;
 esac
 echo "[INFO] Architecture (Volumio): '$ARCHITECTURE'"
 
@@ -72,12 +81,20 @@ echo "[INFO] Run the service installer ..."
 SERVICE_INSTALLER_PATH="$SERVICE_DIRECTORY_PATH/$ARCHITECTURE/$SERVICE_INSTALLER_FILE_NAME"
 echo "[INFO] Using service installer file '$SERVICE_INSTALLER_PATH'"
 sudo bash "$SERVICE_INSTALLER_PATH" --uninstall --architecture "$ARCHITECTURE"
+EXIT_CODE=$?
+if [ $EXIT_CODE_ERROR -ne $EXIT_CODE_OK ]
+then
+    echo "[ERRO] The service installer returned $EXIT_CODE"
+    exit $EXIT_CODE
+fi
 echo "[INFO] Run the service installer ... done"
 
 echo "[INFO] Removing sudoers file ..."
 rm -f "$SUDOERS_FILE_PATH"
 echo "[INFO] Removing sudoers file ... done"
 
-#requred to end the plugin uninstall
-echo "Done"
-echo "pluginuninstallend"
+# The required
+# echo "plugininstallend"
+# to end the plugin install will be called by the on_exit trap handler
+EXIT_CODE=$EXIT_CODE_OK
+exit $EXIT_CODE_OK
