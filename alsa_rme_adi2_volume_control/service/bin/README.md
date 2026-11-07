@@ -29,7 +29,7 @@ file armhf/alsa-rme-adi2-volume-control
 armhf/alsa-rme-adi2-volume-control: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, BuildID[sha1]=8c11271c3527041f365c48144de8017f330d9ad7, for GNU/Linux 3.2.0, not stripped
 ```
 
-The binary files have been compiled by the authort on suitable machines,
+The binary files have been compiled by the author on suitable machines,
 corresponding to the above architectures,
 using the source code from the
 [alsa-rme-adi2-volume-control GitHub repository](https://github.com/pettarin/alsa-rme-adi2-volume-control),
