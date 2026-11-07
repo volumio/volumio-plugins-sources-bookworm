@@ -82,7 +82,7 @@ SERVICE_INSTALLER_PATH="$SERVICE_DIRECTORY_PATH/$ARCHITECTURE/$SERVICE_INSTALLER
 echo "[INFO] Using service installer file '$SERVICE_INSTALLER_PATH'"
 sudo bash "$SERVICE_INSTALLER_PATH" --from-source --no-compile --architecture "$ARCHITECTURE"
 EXIT_CODE=$?
-if [ $EXIT_CODE_ERROR -ne $EXIT_CODE_OK ]
+if [ $EXIT_CODE -ne $EXIT_CODE_OK ]
 then
     echo "[ERRO] The service installer returned $EXIT_CODE"
     exit $EXIT_CODE
