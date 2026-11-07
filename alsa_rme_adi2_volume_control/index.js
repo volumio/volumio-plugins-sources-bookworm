@@ -15,9 +15,10 @@ function alsaRmeAdi2VolumeControl(context) {
 	this.commandRouter = this.context.coreCommand;
 	this.logger = this.context.logger;
 	this.configManager = this.context.configManager;
+
+    this.sudo_systemctl = '/usr/bin/sudo /bin/systemctl';
+    this.service_name = 'alsa-rme-adi2-volume-control.service';
 }
-
-
 
 alsaRmeAdi2VolumeControl.prototype.onVolumioStart = function() {
 	var self = this;
@@ -33,7 +34,7 @@ alsaRmeAdi2VolumeControl.prototype.onStart = function() {
     self.logger.info("Enabling and starting service ...");
     self.startService();
     self.logger.info("Enabling and starting service ... done");
-    return defer.promise;
+    return libQ.resolve();
 };
 
 alsaRmeAdi2VolumeControl.prototype.onStop = function() {
@@ -58,14 +59,14 @@ alsaRmeAdi2VolumeControl.prototype.onRestart = function() {
 alsaRmeAdi2VolumeControl.prototype.startService = function() {
     var self = this;
     var defer = libQ.defer();
-    exec('/usr/bin/sudo /bin/systemctl enable alsa-rme-adi2-volume-control.service', { uid: 1000, gid: 1000 },
+    exec(self.sudo_systemctl + ' enable ' + self.service_name, { uid: 1000, gid: 1000 },
         function(error, stdout, stderr) {
             if (error !== null) {
                 self.logger.error('ALSA RME ADI-2 Volume Control: cannot enable service - ' + error);
                 defer.reject(error);
             } else {
                 self.logger.info('ALSA RME ADI-2 Volume Control: service enabled');
-                exec('/usr/bin/sudo /bin/systemctl start alsa-rme-adi2-volume-control.service', { uid: 1000, gid: 1000 },
+                exec(self.sudo_systemctl + ' start ' + self.service_name, { uid: 1000, gid: 1000 },
                     function(error, stdout, stderr) {
                         if (error !== null) {
                             self.logger.error('ALSA RME ADI-2 Volume Control: cannot start service - ' + error);
@@ -85,14 +86,14 @@ alsaRmeAdi2VolumeControl.prototype.startService = function() {
 alsaRmeAdi2VolumeControl.prototype.stopService = function() {
     var self = this;
     var defer = libQ.defer();
-    exec('/usr/bin/sudo /bin/systemctl stop alsa-rme-adi2-volume-control.service', { uid: 1000, gid: 1000 },
+    exec(self.sudo_systemctl + ' stop ' + self.service_name, { uid: 1000, gid: 1000 },
         function(error, stdout, stderr) {
             if (error !== null) {
                 self.logger.error('ALSA RME ADI-2 Volume Control: cannot stop service - ' + error);
                 defer.reject(error);
             } else {
                 self.logger.info('ALSA RME ADI-2 Volume Control: service stopped');
-                exec('/usr/bin/sudo /bin/systemctl disable alsa-rme-adi2-volume-control.service', { uid: 1000, gid: 1000 },
+                exec(self.sudo_systemctl + ' disable ' + self.service_name, { uid: 1000, gid: 1000 },
                     function(error, stdout, stderr) {
                         if (error !== null) {
                             self.logger.error('ALSA RME ADI-2 Volume Control: cannot disable service - ' + error);
@@ -118,8 +119,8 @@ alsaRmeAdi2VolumeControl.prototype.getUIConfig = function() {
 
     var lang_code = this.commandRouter.sharedVars.get('language_code');
 
-    self.commandRouter.i18nJson(__dirname+'/i18n/strings_'+lang_code+'.json',
-        __dirname+'/i18n/strings_en.json',
+    self.commandRouter.i18nJson(__dirname+'/i18n/strings_' + lang_code + '.json',
+        __dirname + '/i18n/strings_en.json',
         __dirname + '/UIConfig.json')
         .then(function(uiconf)
         {
