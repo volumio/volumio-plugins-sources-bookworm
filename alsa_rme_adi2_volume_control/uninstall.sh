@@ -11,22 +11,10 @@ PLUGIN_DIRECTORY="alsa_rme_adi2_volume_control"
 # DO NOT EDIT BELOW THIS LINE
 # ###########################################################################
 
+# Exit codes
 EXIT_CODE=0
 EXIT_CODE_OK=0
 EXIT_CODE_ERROR=1
-
-on_exit () {
-    echo "[INFO] Exit Status: $EXIT_CODE"
-    if [ $EXIT_CODE -eq $EXIT_CODE_OK ]
-    then
-        echo "[INFO] Plugin $PLUGIN_NAME uninstalled correctly"
-    else
-        echo "[ERRO] Plugin $PLUGIN_NAME failed to uninstall"
-    fi
-    # required to end the plugin installation
-    echo "pluginuninstallend"
-}
-trap on_exit EXIT
 
 # The canonical architecture names in Volumio are "amd64" and "armhf".
 #
@@ -76,6 +64,20 @@ SERVICE_SUDOERS_FILE_DESTINATION_PATH="/etc/sudoers.d/$SERVICE_SUDOERS_FILE_NAME
 # Absolute path of the installer and uninstaller
 INSTALLER_FILE_PATH="$SCRIPT_DIRECTORY_PATH/install.sh"
 UNINSTALLER_FILE_PATH="$SCRIPT_DIRECTORY_PATH/uninstall.sh"
+
+# Trap for exit codes
+on_exit () {
+    echo "[INFO] Exit Status: $EXIT_CODE"
+    if [ $EXIT_CODE -eq $EXIT_CODE_OK ]
+    then
+        echo "[INFO] Plugin $PLUGIN_NAME uninstalled correctly"
+    else
+        echo "[ERRO] Plugin $PLUGIN_NAME failed to uninstall"
+    fi
+    # required to end the plugin installation
+    echo "pluginuninstallend"
+}
+trap on_exit EXIT
 
 # Set the correct architecture
 ARCHITECTURE=`uname -m`
