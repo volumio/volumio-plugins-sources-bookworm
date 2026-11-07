@@ -19,9 +19,9 @@ on_exit () {
     echo "[INFO] Exit Status: $EXIT_CODE"
     if [ $EXIT_CODE -eq $EXIT_CODE_OK ]
     then
-        echo "[INFO] Plugin $PLUGIN_NAME installed correctly"
+        echo "[INFO] Plugin $PLUGIN_NAME uninstalled correctly"
     else
-        echo "[ERRO] Plugin $PLUGIN_NAME failed to install"
+        echo "[ERRO] Plugin $PLUGIN_NAME failed to uninstall"
     fi
     # required to end the plugin installation
     echo "pluginuninstallend"
