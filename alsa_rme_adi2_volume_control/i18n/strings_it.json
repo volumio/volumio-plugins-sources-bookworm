@@ -1,10 +1,23 @@
 {
-  "ARAVC_APPLY": "Applica",
-  "ARAVC_CANCEL": "Annulla",
-  "ARAVC_PAGE_LABEL_CONFIGURATION": "ALSA RME ADI-2 Volume Control - Configurazione",
-  "ARAVC_SAVE": "Salva",
-  "ARAVC_SECTION_LABEL_GENERAL": "Generale",
-  "ARAVC_SWITCH_DOC_SERVICE_ACTIVE": "Attiva o disattiva il servizio in background che controlla gli output del device RME ADI-2.",
-  "ARAVC_SWITCH_LABEL_SERVICE_ACTIVE": "Attiva servizio in background",
-  "ARAVC_ZZZZZ_LAST": "This is a dummy entry which should always be the last one (no need to translate it)"
+    "ARAVC_APPLY": "Applica",
+    "ARAVC_CANCEL": "Annulla",
+    "ARAVC_SAVE": "Salva",
+
+    "ARAVC_PAGE_LABEL_CONFIGURATION": "ALSA RME ADI-2 Volume Control - Configurazione",
+
+    "ARAVC_SECTION_LABEL_GENERAL": "Generale",
+    "ARAVC_SWITCH_DOC_SERVICE_ACTIVE": "Attiva o disattiva il servizio in background che controlla gli output del device RME ADI-2.",
+    "ARAVC_SWITCH_LABEL_SERVICE_ACTIVE": "Attiva servizio in background",
+
+    "ARAVC_SECTION_LABEL_LINE12": "Line Output 1/2",
+    "ARAVC_SWITCH_DOC_LINE12_ACTIVE": "Attiva o disattiva il controllo di Line Output 1/2",
+    "ARAVC_SWITCH_LABEL_LINE12_ACTIVE": "Controlla",
+    "ARAVC_TEXT_DOC_LINE12_MIN_DB": "Volume minimo, in dB, del device RME ADI-2.",
+    "ARAVC_TEXT_LABEL_LINE_12_MIN_DB": "Volume minimo (dB)",
+    "ARAVC_TEXT_DOC_LINE12_MAX_DB": "Volume massimo, in dB, del device RME ADI-2.",
+    "ARAVC_TEXT_LABEL_LINE_12_MAX_DB": "Volume massimo (dB)",
+    "ARAVC_TEXT_DOC_LINE12_VOLUME": "Volume iniziale, in [0, 100].",
+    "ARAVC_TEXT_LABEL_LINE_12_VOLUME": "Volume iniziale",
+
+    "ARAVC_ZZZZZ_LAST": "This is a dummy entry which should always be the last one (no need to translate it)"
 }

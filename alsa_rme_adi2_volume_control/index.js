@@ -46,7 +46,7 @@ alsaRmeAdi2VolumeControl.prototype.onRestart = function() {
     var self = this;
     self.stopService();
     setTimeout(function() {
-        self.startService();
+        self.startOrStopService();
     }, 1000);
 };
 
@@ -119,7 +119,7 @@ alsaRmeAdi2VolumeControl.prototype.stopService = function() {
     return defer.promise;
 };
 
-alsaRmeAdi2VolumeControl.prototype.applyServiceActive = function(data) {
+alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsGeneral = function(data) {
     var self = this;
 
     var new_value = data['service_active'];
@@ -131,6 +131,38 @@ alsaRmeAdi2VolumeControl.prototype.applyServiceActive = function(data) {
     } else {
         self.onStop();
     }
+}
+
+alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsLine12 = function(data) {
+    var self = this;
+
+    self.config.set('line12_active', data['line12_active']);        // boolean
+    self.config.set('line12_min_db', data['line12_min_db'].value);  // select
+    self.config.set('line12_max_db', data['line12_max_db'].value);  // select
+    self.config.set('line12_volume', data['line12_volume'].value);  // select
+
+    if (
+        (!self.config.get('phones34_active')) &&
+        (!self.config.get('line12_active'))
+    ) {
+        self.logger.error("Force line12_active to be true, since outputs cannot be both inactive.");
+        self.config.set('line12_active', true);
+    }
+
+    var min_db = parseFloat(self.config.get('line12_min_db'));
+    var max_db = parseFloat(self.config.get('line12_max_db'));
+    if (min_db > max_db) {
+        self.logger.error(
+            "Force line12_min_db to be equal to line12_max_db, since the former cannot be greater than the latter."
+        );
+        self.config.set('line12_min_db', max_db.toFixed(1));
+    }
+
+    self.config.save();
+
+    // modify the service configuration and
+    // restart the service so that changes can take effect
+    // self.editServiceConfigurationAndRestart();
 }
 
 
@@ -148,8 +180,27 @@ alsaRmeAdi2VolumeControl.prototype.getUIConfig = function() {
         __dirname + '/UIConfig.json'
     ).then(
         function(uiconf) {
-            // service_active
-            uiconf.sections[0].content[0].value = self.config.get("service_active", true);
+            var v = "";
+
+            // sections[0] == general
+            v = self.config.get("service_active", true);
+            uiconf.sections[0].content[0].value = v;
+
+            // sections[1] == line12
+            v = self.config.get("line12_active", true);
+            uiconf.sections[1].content[0].value = v;
+
+            v = self.config.get("line12_min_db", "-60.0");
+            uiconf.sections[1].content[1].value.value = v;
+            uiconf.sections[1].content[1].value.label = v;
+
+            v = self.config.get("line12_max_db", "-10.0");
+            uiconf.sections[1].content[2].value.value = v;
+            uiconf.sections[1].content[2].value.label = v;
+
+            v = self.config.get("line12_volume", "50");
+            uiconf.sections[1].content[3].value.value = v;
+            uiconf.sections[1].content[3].value.label = v;
 
             defer.resolve(uiconf);
         }
@@ -169,10 +220,14 @@ alsaRmeAdi2VolumeControl.prototype.getConfigurationFiles = function() {
 alsaRmeAdi2VolumeControl.prototype.logConfiguration = function(data) {
     self.logger.info('Configuration');
     self.logger.info('  device_name:     ' + data['device_name']);
+    self.logger.info('  line12_active:   ' + data['line12_active']);
     self.logger.info('  line12_max_db:   ' + data['line12_max_db']);
     self.logger.info('  line12_min_db:   ' + data['line12_min_db']);
+    self.logger.info('  line12_volume:   ' + data['line12_volume']);
+    self.logger.info('  phones34_active: ' + data['phones34_active']);
     self.logger.info('  phones34_max_db: ' + data['phones34_max_db']);
     self.logger.info('  phones34_min_db: ' + data['phones34_min_db']);
+    self.logger.info('  phones34_volume: ' + data['phones34_volume']);
     self.logger.info('  service_active:  ' + data['service_active']);
 }
 

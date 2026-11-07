@@ -3,21 +3,37 @@
         "type": "string",
         "value": "autodetect"
     },
+    "line12_active": {
+        "type": "boolean",
+        "value": true
+    },
     "line12_min_db": {
-        "type": "number",
-        "value": -60.0
+        "type": "string",
+        "value": "-60.0"
     },
     "line12_max_db":{
-        "type": "number",
-        "value": -10.0
+        "type": "string",
+        "value": "-10.0"
+    },
+    "line12_volume":{
+        "type": "string",
+        "value": "50"
+    },
+    "phones34_active": {
+        "type": "boolean",
+        "value": true
     },
     "phones34_min_db":{
-        "type": "number",
-        "value": -10.0
+        "type": "string",
+        "value": "-10.0"
     },
     "phones34_max_db":{
-        "type": "number",
-        "value": -60.0
+        "type": "string",
+        "value": "-60.0"
+    },
+    "phones34_volume":{
+        "type": "string",
+        "value": "50"
     },
     "service_active": {
         "type": "boolean",
