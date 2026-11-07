@@ -50,7 +50,7 @@ alsaRmeAdi2VolumeControl.prototype.onRestart = function() {
     self.stopService();
     setTimeout(function() {
         self.startOrStopService();
-    }, 1000);
+    }, 5000);
 };
 
 
@@ -82,55 +82,42 @@ alsaRmeAdi2VolumeControl.prototype.editServiceConfigurationAndRestart = function
     var defer = libQ.defer();
 
     var tmpServiceFilePath = '/tmp/' + self.service_name;
-    var tmpServiceNewFilePath = tmpServiceFilePath + '.tmp';
     var dstServiceFilePath = '/lib/systemd/system/' + self.service_name;
 
     // Log the current configuration.
     self.logConfiguration();
 
-    exec(self.sudo_cp + ' ' + dstServiceFilePath + ' ' + tmpServiceFilePath, { uid: 1000, gid: 1000 },
+    // Read dstServiceFilePath,
+    // edit the ExecStart line depending on the current configuration,
+    // and write the result to tmpServiceFilePath.
+    self.editServiceFile(dstServiceFilePath, tmpServiceFilePath);
+
+    // Copy the tmpServiceFilePath back to dstServiceFilePath.
+    exec(self.sudo_cp + ' ' + tmpServiceFilePath + ' ' + dstServiceFilePath, { uid: 1000, gid: 1000 },
         function(error, stdout, stderr) {
+
+            // Remove the tmpServiceFilePath
+            exec(self.sudo_rm + ' ' + tmpServiceFilePath, { uid: 1000, gid: 1000 },
+                function(error, stdout, stderr) {
+                    // ignore any errors here
+                }
+            );
+
             if (error !== null) {
-                self.logger.error('ALSA RME ADI-2 Volume Control: cannot copy original service file - ' + error);
+                self.logger.error('ALSA RME ADI-2 Volume Control: cannot copy modified service file - ' + error);
                 defer.reject(error);
             } else {
-                self.logger.info('ALSA RME ADI-2 Volume Control: original service file copied');
+                self.logger.info('ALSA RME ADI-2 Volume Control: modified service file copied');
 
-                self.editServiceFile(tmpServiceFilePath, tmpServiceNewFilePath);
-
-                exec(self.sudo_cp + ' ' + tmpServiceNewFilePath + ' ' + dstServiceFilePath, { uid: 1000, gid: 1000 },
+                exec(self.sudo_systemctl + ' daemon-reload', { uid: 1000, gid: 1000 },
                     function(error, stdout, stderr) {
-
-                        // remove tmpServiceFilePath
-                        exec(self.sudo_rm + ' ' + tmpServiceFilePath, { uid: 1000, gid: 1000 },
-                            function(error, stdout, stderr) {
-                                // ignore any errors here
-                            }
-                        );
-                        exec(self.sudo_rm + ' ' + tmpServiceNewFilePath, { uid: 1000, gid: 1000 },
-                            function(error, stdout, stderr) {
-                                // ignore any errors here
-                            }
-                        );
-
                         if (error !== null) {
-                            self.logger.error('ALSA RME ADI-2 Volume Control: cannot copy modified service file - ' + error);
+                            self.logger.error('ALSA RME ADI-2 Volume Control: systemctl daemon-reload failed - ' + error);
                             defer.reject(error);
                         } else {
-                            self.logger.info('ALSA RME ADI-2 Volume Control: modified service file copied');
-
-                            exec(self.sudo_systemctl + ' daemon-reload', { uid: 1000, gid: 1000 },
-                                function(error, stdout, stderr) {
-                                    if (error !== null) {
-                                        self.logger.error('ALSA RME ADI-2 Volume Control: systemctl daemon-reload failed - ' + error);
-                                        defer.reject(error);
-                                    } else {
-                                        self.logger.info('ALSA RME ADI-2 Volume Control: systemctl daemon-reload succeeded');
-                                        self.startOrStopService();
-                                        defer.resolve();
-                                    }
-                                }
-                            );
+                            self.logger.info('ALSA RME ADI-2 Volume Control: systemctl daemon-reload succeeded');
+                            self.onRestart();
+                            defer.resolve();
                         }
                     }
                 );
@@ -141,7 +128,7 @@ alsaRmeAdi2VolumeControl.prototype.editServiceConfigurationAndRestart = function
     return defer.promise;
 }
 
-alsaRmeAdi2VolumeControl.prototype.editServiceFile = function(filePath, newFilePath) {
+alsaRmeAdi2VolumeControl.prototype.editServiceFile = function(readFilePath, writeFilePath) {
     var self = this;
 
     var c = '';
@@ -174,12 +161,12 @@ alsaRmeAdi2VolumeControl.prototype.editServiceFile = function(filePath, newFileP
     c = l.join(" ");
     self.logger.info('New command line for ' + self.service_name + ' service: ' + c);
 
-    fs.readFile(filePath, 'utf8', (err, data) => {
+    fs.readFile(readFilePath, 'utf8', (err, data) => {
         if (err) {
-            self.logger.error('Unable to read file ' + filePath);
+            self.logger.error('Unable to read file ' + readFilePath);
             return;
         }
-        self.logger.info('File ' + filePath + ' read successfully');
+        self.logger.info('File ' + readFilePath + ' read successfully');
 
         // replace the current ExecStart line with the new command line
         var new_data = data.replace(
@@ -187,14 +174,8 @@ alsaRmeAdi2VolumeControl.prototype.editServiceFile = function(filePath, newFileP
             'ExecStart=' + c
         );
 
-        //fs.writeFile(newFilePath, new_data, err => {
-        //    if (err) {
-        //        self.logger.error('Unable to write file ' + filePath);
-        //        return;
-        //   }
-        //});
-        fs.writeFileSync(newFilePath, new_data);
-        self.logger.info('File ' + newFilePath + ' written successfully');
+        fs.writeFileSync(writeFilePath, new_data);
+        self.logger.info('File ' + writeFilePath + ' written successfully');
     });
 }
 
