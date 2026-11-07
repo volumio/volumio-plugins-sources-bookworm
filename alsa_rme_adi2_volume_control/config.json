@@ -1,3 +1,30 @@
 {
- 
+    "device_name": {
+        "type": "string",
+        "value": "autodetect"
+    },
+    "line12_min_db": {
+        "type": "number",
+        "value": -60.0
+    },
+    "line12_max_db":{
+        "type": "number",
+        "value": -10.0
+    },
+    "phones34_min_db":{
+        "type": "number",
+        "value": -10.0
+    },
+    "phones34_max_db":{
+        "type": "number",
+        "value": -60.0
+    },
+    "service_active": {
+        "type": "boolean",
+        "value": true
+    },
+    "zzzzzz_dummy_last_item_ignore_me": {
+        "type": "boolean",
+        "value": true
+    }
 }

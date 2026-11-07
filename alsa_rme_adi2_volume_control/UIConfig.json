@@ -1,7 +1,33 @@
 {
-  "page": {
-    "label": "TRANSLATE.ARAVC_PLUGIN_CONFIGURATION"
-  },
-  "sections": [
-  ]
+    "page": {
+        "label": "TRANSLATE.ARAVC_PAGE_LABEL_CONFIGURATION"
+    },
+    "sections": [
+		{
+			"id": "section_general",
+			"element": "section",
+			"label": "TRANSLATE.ARAVC_SECTION_LABEL_GENERAL",
+			"icon": "fa-gear",
+			"onSave": {
+				"type": "controller",
+				"endpoint": "system_hardware/alsa_rme_adi2_volume_control",
+				"method": "applyServiceActive"
+			},
+			"saveButton": {
+				"label": "TRANSLATE.ARAVC_APPLY",
+				"data": [
+					"service_active"
+				]
+			},
+			"content": [
+				{
+					"id": "service_active",
+					"element": "switch",
+					"doc": "TRANSLATE.ARAVC_SWITCH_DOC_SERVICE_ACTIVE",
+					"label": "TRANSLATE.ARAVC_SWITCH_LABEL_SERVICE_ACTIVE",
+					"value": true
+				}
+			]
+		}
+    ]
 }

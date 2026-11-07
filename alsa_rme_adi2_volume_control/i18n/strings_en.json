@@ -1,5 +1,10 @@
 {
-  "ARAVC_PLUGIN_CONFIGURATION": "ALSA RME ADI-2 Volume Control - Configuration",
+  "ARAVC_APPLY": "Apply",
+  "ARAVC_CANCEL": "Cancel",
+  "ARAVC_PAGE_LABEL_CONFIGURATION": "ALSA RME ADI-2 Volume Control - Configuration",
   "ARAVC_SAVE": "Save",
+  "ARAVC_SECTION_LABEL_GENERAL": "General",
+  "ARAVC_SWITCH_DOC_SERVICE_ACTIVE": "Activate or deactivate the background service that controls the RME ADI-2 device outputs.",
+  "ARAVC_SWITCH_LABEL_SERVICE_ACTIVE": "Activate background service",
   "ARAVC_ZZZZZ_LAST": "This is a dummy entry which should always be the last one (no need to translate it)"
 }
