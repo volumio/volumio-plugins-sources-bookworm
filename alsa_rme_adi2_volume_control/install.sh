@@ -93,20 +93,23 @@ echo "[INFO] Run the service installer ... done"
 # to be controlled by the plugin enable/disable event.
 #
 # Therefore, here we stop and disable the service after it has been installed.
-echo "[INFO] Stopping and disabling the systemd service ..."
+echo "[INFO] Stopping, disabling, and masking the systemd service ..."
 sudo systemctl stop "$SERVICE_NAME"
 sudo systemctl disable "$SERVICE_NAME"
-echo "[INFO] Stopping and disabling the systemd service ... done"
+sudo systemctl mask "$SERVICE_NAME"
+echo "[INFO] Stopping, disabling, and masking the systemd service ... done"
 
 # Commands called by index.js
 echo "[INFO] Creating sudoers file ..."
 cat > "$SUDOERS_FILE_PATH" << EOF
 # ALSA RME ADI-2 Volume Control
-volumio ALL=(ALL) NOPASSWD: /bin/systemctl status $SERVICE_NAME
-volumio ALL=(ALL) NOPASSWD: /bin/systemctl start $SERVICE_NAME
-volumio ALL=(ALL) NOPASSWD: /bin/systemctl stop $SERVICE_NAME
-volumio ALL=(ALL) NOPASSWD: /bin/systemctl restart $SERVICE_NAME
 volumio ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl mask $SERVICE_NAME
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl restart $SERVICE_NAME
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl start $SERVICE_NAME
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl status $SERVICE_NAME
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl stop $SERVICE_NAME
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl unmask $SERVICE_NAME
 EOF
 echo "[INFO] Creating sudoers file ... done"
 
@@ -114,4 +117,4 @@ echo "[INFO] Creating sudoers file ... done"
 # echo "plugininstallend"
 # to end the plugin install will be called by the on_exit trap handler
 EXIT_CODE=$EXIT_CODE_OK
-exit $EXIT_CODE_OK
+exit $EXIT_CODE
