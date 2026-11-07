@@ -1,4 +1,5 @@
 {
-  "PLUGIN_CONFIGURATION":"ALSA RME ADI-2 Volume Control - Configurazione",
-  "SAVE":"Salva"
+  "ARAVC_PLUGIN_CONFIGURATION": "ALSA RME ADI-2 Volume Control - Configurazione",
+  "ARAVC_SAVE": "Salva",
+  "ARAVC_ZZZZZ_LAST": "This is a dummy entry which should always be the last one (no need to translate it)"
 }

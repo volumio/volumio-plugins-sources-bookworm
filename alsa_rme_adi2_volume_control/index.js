@@ -119,17 +119,19 @@ alsaRmeAdi2VolumeControl.prototype.getUIConfig = function() {
 
     var lang_code = this.commandRouter.sharedVars.get('language_code');
 
-    self.commandRouter.i18nJson(__dirname+'/i18n/strings_' + lang_code + '.json',
+    self.commandRouter.i18nJson(
+        __dirname + '/i18n/strings_' + lang_code + '.json',
         __dirname + '/i18n/strings_en.json',
-        __dirname + '/UIConfig.json')
-        .then(function(uiconf)
-        {
+        __dirname + '/UIConfig.json'
+    ).then(
+        function(uiconf) {
             defer.resolve(uiconf);
-        })
-        .fail(function()
-        {
+        }
+    ).fail(
+        function() {
             defer.reject(new Error());
-        });
+        }
+    );
 
     return defer.promise;
 };
