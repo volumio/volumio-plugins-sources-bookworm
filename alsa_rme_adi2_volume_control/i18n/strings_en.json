@@ -19,11 +19,21 @@
     "ARAVC_SWITCH_DOC_LINE12_ACTIVE": "Activate or deactive control of Line Output 1/2",
     "ARAVC_SWITCH_LABEL_LINE12_ACTIVE": "Control",
     "ARAVC_SELECT_DOC_LINE12_MIN_DB": "Minimum volume, in dB, on the RME ADI-2 device.",
-    "ARAVC_SELECT_LABEL_LINE_12_MIN_DB": "Minimum volume (dB)",
+    "ARAVC_SELECT_LABEL_LINE12_MIN_DB": "Minimum volume (dB)",
     "ARAVC_SELECT_DOC_LINE12_MAX_DB": "Maximum volume, in dB, on the RME ADI-2 device.",
-    "ARAVC_SELECT_LABEL_LINE_12_MAX_DB": "Maximum volume (dB)",
+    "ARAVC_SELECT_LABEL_LINE12_MAX_DB": "Maximum volume (dB)",
     "ARAVC_SELECT_DOC_LINE12_VOLUME": "Initial volume, in [0, 100].",
-    "ARAVC_SELECT_LABEL_LINE_12_VOLUME": "Initial volume",
+    "ARAVC_SELECT_LABEL_LINE12_VOLUME": "Initial volume",
+
+    "ARAVC_SECTION_LABEL_PHONES34": "Phones Output 3/4",
+    "ARAVC_SWITCH_DOC_PHONES34_ACTIVE": "Activate or deactive control of Phones Output 3/4",
+    "ARAVC_SWITCH_LABEL_PHONES34_ACTIVE": "Control",
+    "ARAVC_SELECT_DOC_PHONES34_MIN_DB": "Minimum volume, in dB, on the RME ADI-2 device.",
+    "ARAVC_SELECT_LABEL_PHONES34_MIN_DB": "Minimum volume (dB)",
+    "ARAVC_SELECT_DOC_PHONES34_MAX_DB": "Maximum volume, in dB, on the RME ADI-2 device.",
+    "ARAVC_SELECT_LABEL_PHONES34_MAX_DB": "Maximum volume (dB)",
+    "ARAVC_SELECT_DOC_PHONES34_VOLUME": "Initial volume, in [0, 100].",
+    "ARAVC_SELECT_LABEL_PHONES34_VOLUME": "Initial volume",
 
     "ARAVC_ZZZZZZ_DUMMY_LAST_ITEM_IGNORE_ME": ""
 }

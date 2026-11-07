@@ -202,6 +202,38 @@ alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsLine12 = function(data) {
     self.editServiceConfigurationAndRestart();
 }
 
+alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsPhones34 = function(data) {
+    var self = this;
+
+    self.config.set('phones34_active', data['phones34_active']);        // boolean
+    self.config.set('phones34_min_db', data['phones34_min_db'].value);  // select
+    self.config.set('phones34_max_db', data['phones34_max_db'].value);  // select
+    self.config.set('phones34_volume', data['phones34_volume'].value);  // select
+
+    if (
+        (!self.config.get('line12_active')) &&
+        (!self.config.get('phones34_active'))
+    ) {
+        self.logger.error('Force phones34_active to be true, since outputs cannot be both inactive.');
+        self.config.set('phones34_active', true);
+    }
+
+    var min_db = parseFloat(self.config.get('phones34_min_db'));
+    var max_db = parseFloat(self.config.get('phones34_max_db'));
+    if (min_db > max_db) {
+        self.logger.error(
+            'Force phones34_min_db to be equal to phones34_max_db, since the former cannot be greater than the latter.'
+        );
+        self.config.set('phones34_min_db', max_db.toFixed(1));
+    }
+
+    self.config.save();
+
+    // modify the service configuration and
+    // restart the service so that changes can take effect
+    self.editServiceConfigurationAndRestart();
+}
+
 
 // Configuration Methods -----------------------------------------------------------------------------
 
@@ -248,6 +280,22 @@ alsaRmeAdi2VolumeControl.prototype.getUIConfig = function() {
             v = self.config.get('line12_volume', '50');
             uiconf.sections[2].content[3].value.value = v;
             uiconf.sections[2].content[3].value.label = v;
+
+            // sections[3] == phones34
+            v = self.config.get('phones34_active', true);
+            uiconf.sections[3].content[0].value = v;
+
+            v = self.config.get('phones34_min_db', '-60.0');
+            uiconf.sections[3].content[1].value.value = v;
+            uiconf.sections[3].content[1].value.label = v;
+
+            v = self.config.get('phones34_max_db', '-10.0');
+            uiconf.sections[3].content[2].value.value = v;
+            uiconf.sections[3].content[2].value.label = v;
+
+            v = self.config.get('phones34_volume', '50');
+            uiconf.sections[3].content[3].value.value = v;
+            uiconf.sections[3].content[3].value.label = v;
 
             defer.resolve(uiconf);
         }
