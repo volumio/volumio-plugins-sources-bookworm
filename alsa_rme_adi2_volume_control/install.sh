@@ -54,13 +54,14 @@ SERVICE_PRESET_FILE_NAME="99-alsa-rme-adi2-volume-control.preset"
 SERVICE_PRESET_FILE_SOURCE_PATH="$SERVICE_DIRECTORY_PATH/$SERVICE_PRESET_FILE_NAME"
 SERVICE_PRESET_FILE_DESTINATION_PATH="/usr/lib/systemd/system-preset/$SERVICE_PRESET_FILE_NAME"
 
+# Absolute path of the service sudoers file
+SERVICE_SUDOERS_FILE_NAME="99-alsa-rme-adi2-volume-control"
+SERVICE_SUDOERS_FILE_SOURCE_PATH="$SERVICE_DIRECTORY_PATH/$SERVICE_SUDOERS_FILE_NAME.sudoers"
+SERVICE_SUDOERS_FILE_DESTINATION_PATH="/etc/sudoers.d/$SERVICE_SUDOERS_FILE_NAME"
+
 # File name of the service installer, located in the
 # $SERVICE_DIRECTORY_PATH/$ARCHITECTURE/ directory.
 SERVICE_INSTALLER_FILE_NAME="install.sh"
-
-
-# Path of the sudoers file for this service
-SUDOERS_FILE_PATH="/etc/sudoers.d/alsa-rme-adi2-volume-control"
 
 # Set the correct architecture
 ARCHITECTURE=`uname -m`
@@ -111,20 +112,9 @@ sudo systemctl disable "$SERVICE_UNIT_FILE_NAME"
 echo "[INFO] Stop and disable the systemd service ... done"
 
 # Commands called by index.js
-echo "[INFO] Create sudoers file ..."
-sudo cat > "$SUDOERS_FILE_PATH" << EOF
-# ALSA RME ADI-2 Volume Control
-volumio ALL=(ALL) NOPASSWD: /bin/cp $SERVICE_UNIT_FILE_DESTINATION_PATH $SERVICE_UNIT_FILE_TMP_PATH
-volumio ALL=(ALL) NOPASSWD: /bin/cp $SERVICE_UNIT_FILE_TMP_PATH.tmp $SERVICE_UNIT_FILE_DESTINATION_PATH
-volumio ALL=(ALL) NOPASSWD: /bin/rm $SERVICE_UNIT_FILE_TMP_PATH
-volumio ALL=(ALL) NOPASSWD: /bin/rm $SERVICE_UNIT_FILE_TMP_PATH.tmp
-volumio ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
-volumio ALL=(ALL) NOPASSWD: /bin/systemctl restart $SERVICE_UNIT_FILE_NAME
-volumio ALL=(ALL) NOPASSWD: /bin/systemctl start $SERVICE_UNIT_FILE_NAME
-volumio ALL=(ALL) NOPASSWD: /bin/systemctl status $SERVICE_UNIT_FILE_NAME
-volumio ALL=(ALL) NOPASSWD: /bin/systemctl stop $SERVICE_UNIT_FILE_NAME
-EOF
-echo "[INFO] Create sudoers file ... done"
+echo "[INFO] Copy sudoers file ..."
+sudo cp $SERVICE_SUDOERS_FILE_SOURCE_PATH $SERVICE_SUDOERS_FILE_DESTINATION_PATH
+echo "[INFO] Copy sudoers file ... done"
 
 # The required
 # echo "plugininstallend"

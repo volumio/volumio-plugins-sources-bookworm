@@ -54,13 +54,14 @@ SERVICE_PRESET_FILE_NAME="99-alsa-rme-adi2-volume-control.preset"
 SERVICE_PRESET_FILE_SOURCE_PATH="$SERVICE_DIRECTORY_PATH/$SERVICE_PRESET_FILE_NAME"
 SERVICE_PRESET_FILE_DESTINATION_PATH="/usr/lib/systemd/system-preset/$SERVICE_PRESET_FILE_NAME"
 
+# Absolute path of the service sudoers file
+SERVICE_SUDOERS_FILE_NAME="99-alsa-rme-adi2-volume-control"
+SERVICE_SUDOERS_FILE_SOURCE_PATH="$SERVICE_DIRECTORY_PATH/$SERVICE_SUDOERS_FILE_NAME.sudoers"
+SERVICE_SUDOERS_FILE_DESTINATION_PATH="/etc/sudoers.d/$SERVICE_SUDOERS_FILE_NAME"
+
 # File name of the service installer, located in the
 # $SERVICE_DIRECTORY_PATH/$ARCHITECTURE/ directory.
 SERVICE_INSTALLER_FILE_NAME="install.sh"
-
-
-# Path of the sudoers file for this service
-SUDOERS_FILE_PATH="/etc/sudoers.d/alsa-rme-adi2-volume-control"
 
 # Set the correct architecture
 ARCHITECTURE=`uname -m`
@@ -86,7 +87,7 @@ esac
 echo "[INFO] Architecture (Volumio): '$ARCHITECTURE'"
 
 echo "[INFO] Remove sudoers file ..."
-sudo rm -f "$SUDOERS_FILE_PATH"
+sudo rm -f "$SERVICE_SUDOERS_FILE_DESTINATION_PATH"
 echo "[INFO] Remove sudoers file ... done"
 
 echo "[INFO] Run the service installer ..."
