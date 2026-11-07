@@ -218,5 +218,11 @@ fi
 # Shim directory only. Soloist's RPATH already points at the sideloaded glibc.
 # Putting sysroot on LD_LIBRARY_PATH here would poison nothing (we exec),
 # but keep it off so a mistaken wrapper cannot break 64-bit helpers.
+#
+# LD_PRELOAD: Soloist can dlopen the shim only at the first sound (observed on
+# a Pi 3B+, armhf), so an idle daemon kept the real key in /proc/PID/cmdline.
+# Preloaded, the shim's constructor runs at exec and scrubs it after 2 s; the
+# later dlopen of libpulse.so.0 gets the same, already loaded library.
 exec env -u API_KEY LD_LIBRARY_PATH="$APULSE_DIR" \
+  LD_PRELOAD="$APULSE_DIR/libpulse.so.0" \
   "$BIN" "${ARGS[@]}"

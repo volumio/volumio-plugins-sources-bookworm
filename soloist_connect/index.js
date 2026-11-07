@@ -994,8 +994,65 @@ SoloistConnect.prototype.sendCommand = function (payload) {
 // Soloist's WebSocket API does not expose codec/samplerate/bitdepth.
 // Audio leaves through pcm.volumio, so report the ALSA hw_params of any
 // open playback stream (the shared AAMPP chain).
+//
+// With FusionDSP in the chain, /proc/asound shows the card below CamillaDSP,
+// which is CamillaDSP's output rate, not the stream's. FusionDSP's own ALSA
+// hook (volumiohook, hw_params_command in its asound contribution) writes the
+// stream's parameters as "rate,format,channels,bits" to
+// FUSIONDSP_STREAM_PARAMS at hw_params time, the same moment /proc/asound is
+// populated, so that file is preferred while it is fresh. A file older than
+// FUSIONDSP_STREAM_PARAMS_FRESH_MS is a previous stream's, possibly another
+// source's, and is ignored; so is the file of a FusionDSP that is disabled,
+// whose hook no longer fires.
+const FUSIONDSP_STREAM_PARAMS = '/tmp/fusiondsp_stream_params.log';
+const FUSIONDSP_STREAM_PARAMS_FRESH_MS = 15000;
+
+function audioSpecFrom(rate, fmt, channels, bits, source) {
+  let bitdepth = '';
+  if (bits === 16 || /S16/.test(fmt)) bitdepth = '16 bit';
+  else if (bits === 24 || /S24/.test(fmt)) bitdepth = '24 bit';
+  else if (bits === 32 || /S32|FLOAT/.test(fmt)) bitdepth = '32 bit';
+  return {
+    samplerate: rate ? (rate / 1000).toFixed(rate % 1000 === 0 ? 0 : 1) + ' kHz' : '',
+    bitdepth: bitdepth,
+    channels: channels || 2,
+    source: source,
+  };
+}
+
+SoloistConnect.parseFusionStreamParams = function (text) {
+  const fields = String(text || '').trim().split(',');
+  const rate = parseInt(fields[0], 10);
+  if (!rate || rate < 8000 || rate > 768000) return null;
+  const fmt = (fields[1] || '').trim();
+  const channels = parseInt(fields[2], 10) || 0;
+  const bits = parseInt(fields[3], 10) || 0;
+  return audioSpecFrom(rate, fmt, channels, bits, 'fusiondsp');
+};
+
+SoloistConnect.prototype.readFusionStreamParams = function (now) {
+  const file = this.fusionStreamParamsPath || FUSIONDSP_STREAM_PARAMS;
+  let mtime;
+  let text;
+  try {
+    mtime = fs.statSync(file).mtimeMs;
+    text = fs.readFileSync(file, 'utf8');
+  } catch (e) {
+    return null;
+  }
+  if ((now || Date.now()) - mtime > FUSIONDSP_STREAM_PARAMS_FRESH_MS) return null;
+  return SoloistConnect.parseFusionStreamParams(text);
+};
+
 SoloistConnect.prototype.fetchAudioSpec = function () {
   const self = this;
+  const fusion = this.readFusionStreamParams(Date.now());
+  if (fusion) {
+    this.audioSpec = fusion;
+    this.logger.info('SoloistConnect: stream parameters from FusionDSP: ' +
+      fusion.samplerate + ' ' + fusion.bitdepth + ' ' + fusion.channels + ' ch');
+    return;
+  }
   exec(
     'sh -c "cat /proc/asound/card*/pcm*p/sub*/hw_params 2>/dev/null"',
     { timeout: 5000 },
@@ -1009,17 +1066,7 @@ SoloistConnect.prototype.fetchAudioSpec = function () {
       const rate = rateM ? parseInt(rateM[1], 10) : 0;
       const fmt = fmtM ? fmtM[1] : '';
       const channels = chM ? parseInt(chM[1], 10) : 2;
-
-      let bitdepth = '';
-      if (/S16/.test(fmt)) bitdepth = '16 bit';
-      else if (/S24/.test(fmt)) bitdepth = '24 bit';
-      else if (/S32|FLOAT/.test(fmt)) bitdepth = '32 bit';
-
-      self.audioSpec = {
-        samplerate: rate ? (rate / 1000).toFixed(rate % 1000 === 0 ? 0 : 1) + ' kHz' : '',
-        bitdepth: bitdepth,
-        channels: channels || 2,
-      };
+      self.audioSpec = audioSpecFrom(rate, fmt, channels, 0, 'alsa');
     }
   );
 };
