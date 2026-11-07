@@ -6,8 +6,12 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
-	"author": "Alberto Pettarin",
-	"license": "ISC",
+	"author": {
+        "name": "Alberto Pettarin",
+        "email": "alberto@albertopettarin.it",
+        "url": "https://www.albertopettarin.it"
+    },
+	"license": "GPL-3.0",
 	"repository": "https://github.com/pettarin/volumio-plugins-sources-bookworm",
 	"volumio_info": {
 		"prettyName": "ALSA RME ADI-2 Volume Control",
