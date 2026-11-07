@@ -97,4 +97,4 @@ echo "[INFO] Removing sudoers file ... done"
 # echo "plugininstallend"
 # to end the plugin install will be called by the on_exit trap handler
 EXIT_CODE=$EXIT_CODE_OK
-exit $EXIT_CODE_OK
+exit $EXIT_CODE
