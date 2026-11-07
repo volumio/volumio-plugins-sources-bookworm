@@ -60,7 +60,7 @@ alsaRmeAdi2VolumeControl.prototype.startService = function() {
     var self = this;
     var defer = libQ.defer();
 
-    exec(self.sudo_systemctl + ' unmask' + self.service_name, { uid: 1000, gid: 1000 },
+    exec(self.sudo_systemctl + ' unmask ' + self.service_name, { uid: 1000, gid: 1000 },
         function(error, stdout, stderr) {
             if (error !== null) {
                 self.logger.error('ALSA RME ADI-2 Volume Control: cannot unmask service - ' + error);
