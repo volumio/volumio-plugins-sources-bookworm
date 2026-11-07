@@ -20,7 +20,7 @@
 		"os": [
 			"bookworm"
 		],
-		"details": "This Volumio 4 plugin install ALSA user-defined control elements (mute/unmute and volume) that Volumio can pilot as hardware mixer and a background service that watches them and sends the appropriate MIDI SysEx commands to the attached RME ADI-2 device.",
+		"details": "This Volumio 4 plugin installs ALSA user-defined control elements (mute/unmute and volume) that Volumio can pilot as an hardware mixer, and a background service that watches them and sends the appropriate MIDI SysEx commands to the attached RME ADI-2 device.",
 		"changelog": "See https://github.com/pettarin/alsa-rme-adi2-volume-control/blob/main/docs/CHANGELOG.md"
 	},
 	"engines": {
