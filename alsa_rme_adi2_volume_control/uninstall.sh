@@ -43,6 +43,9 @@ SCRIPT_DIRECTORY_PATH="/data/plugins/$PLUGIN_CATEGORY/$PLUGIN_DIRECTORY"
 # which is expected to contain a child directory
 # for each of the canonical architecture names.
 SERVICE_DIRECTORY_PATH="$SCRIPT_DIRECTORY_PATH/service"
+SERVICE_PRESET_FILE_NAME="99-alsa-rme-adi2-volume-control.preset"
+SERVICE_PRESET_FILE_SOURCE_PATH="$SERVICE_DIRECTORY_PATH/$SERVICE_PRESET_FILE_NAME"
+SERVICE_PRESET_FILE_DESTINATION_PATH="/usr/lib/systemd/system-preset/$SERVICE_PRESET_FILE_NAME"
 
 # File name of the service installer, located in the
 # $SERVICE_DIRECTORY_PATH/$ARCHITECTURE/ directory.
@@ -73,9 +76,13 @@ case "$ARCHITECTURE" in
     echo "[ERRO] Architecture $ARCHITECTURE has no pre-built executable."
     echo "[ERRO] Supported architectures are: 'amd64', 'armhf'."
     EXIT_CODE=$EXIT_CODE_ERROR
-    exit $EXIT_CODE_ERROR ;
+    exit $EXIT_CODE ;
 esac
 echo "[INFO] Architecture (Volumio): '$ARCHITECTURE'"
+
+echo "[INFO] Remove sudoers file ..."
+sudo rm -f "$SUDOERS_FILE_PATH"
+echo "[INFO] Remove sudoers file ... done"
 
 echo "[INFO] Run the service installer ..."
 SERVICE_INSTALLER_PATH="$SERVICE_DIRECTORY_PATH/$ARCHITECTURE/$SERVICE_INSTALLER_FILE_NAME"
@@ -89,9 +96,9 @@ then
 fi
 echo "[INFO] Run the service installer ... done"
 
-echo "[INFO] Removing sudoers file ..."
-rm -f "$SUDOERS_FILE_PATH"
-echo "[INFO] Removing sudoers file ... done"
+echo "[INFO] Remove service preset file ..."
+sudo rm "$SERVICE_PRESET_FILE_SOURCE_PATH" "$SERVICE_PRESET_FILE_DESTINATION_PATH"
+echo "[INFO] Remove service preset file ... done"
 
 # The required
 # echo "plugininstallend"
