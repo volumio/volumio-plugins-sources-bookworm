@@ -43,6 +43,13 @@ SCRIPT_DIRECTORY_PATH="/data/plugins/$PLUGIN_CATEGORY/$PLUGIN_DIRECTORY"
 # which is expected to contain a child directory
 # for each of the canonical architecture names.
 SERVICE_DIRECTORY_PATH="$SCRIPT_DIRECTORY_PATH/service"
+
+# Absolute path of the service unit file
+SERVICE_UNIT_FILE_NAME="alsa-rme-adi2-volume-control.service"
+SERVICE_UNIT_FILE_DESTINATION_PATH="/lib/systemd/system/$SERVICE_UNIT_FILE_NAME"
+SERVICE_UNIT_FILE_TMP_PATH="/tmp/$SERVICE_UNIT_FILE_NAME"
+
+# Absolute path of the service preset file
 SERVICE_PRESET_FILE_NAME="99-alsa-rme-adi2-volume-control.preset"
 SERVICE_PRESET_FILE_SOURCE_PATH="$SERVICE_DIRECTORY_PATH/$SERVICE_PRESET_FILE_NAME"
 SERVICE_PRESET_FILE_DESTINATION_PATH="/usr/lib/systemd/system-preset/$SERVICE_PRESET_FILE_NAME"
@@ -51,8 +58,6 @@ SERVICE_PRESET_FILE_DESTINATION_PATH="/usr/lib/systemd/system-preset/$SERVICE_PR
 # $SERVICE_DIRECTORY_PATH/$ARCHITECTURE/ directory.
 SERVICE_INSTALLER_FILE_NAME="install.sh"
 
-# Name of the background service"
-SERVICE_NAME="alsa-rme-adi2-volume-control.service"
 
 # Path of the sudoers file for this service
 SUDOERS_FILE_PATH="/etc/sudoers.d/alsa-rme-adi2-volume-control"
@@ -101,19 +106,23 @@ echo "[INFO] Run the service installer ... done"
 #
 # Therefore, here we stop and disable the service after it has been installed.
 echo "[INFO] Stop and disable the systemd service ..."
-sudo systemctl stop "$SERVICE_NAME"
-sudo systemctl disable "$SERVICE_NAME"
+sudo systemctl stop "$SERVICE_UNIT_FILE_NAME"
+sudo systemctl disable "$SERVICE_UNIT_FILE_NAME"
 echo "[INFO] Stop and disable the systemd service ... done"
 
 # Commands called by index.js
 echo "[INFO] Create sudoers file ..."
 sudo cat > "$SUDOERS_FILE_PATH" << EOF
 # ALSA RME ADI-2 Volume Control
-volumio ALL=(ALL) NOPASSWD: /bin/systemctl status $SERVICE_NAME
-volumio ALL=(ALL) NOPASSWD: /bin/systemctl start $SERVICE_NAME
-volumio ALL=(ALL) NOPASSWD: /bin/systemctl stop $SERVICE_NAME
-volumio ALL=(ALL) NOPASSWD: /bin/systemctl restart $SERVICE_NAME
+volumio ALL=(ALL) NOPASSWD: /bin/cp $SERVICE_UNIT_FILE_DESTINATION_PATH $SERVICE_UNIT_FILE_TMP_PATH
+volumio ALL=(ALL) NOPASSWD: /bin/cp $SERVICE_UNIT_FILE_TMP_PATH.tmp $SERVICE_UNIT_FILE_DESTINATION_PATH
+volumio ALL=(ALL) NOPASSWD: /bin/rm $SERVICE_UNIT_FILE_TMP_PATH
+volumio ALL=(ALL) NOPASSWD: /bin/rm $SERVICE_UNIT_FILE_TMP_PATH.tmp
 volumio ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl restart $SERVICE_UNIT_FILE_NAME
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl start $SERVICE_UNIT_FILE_NAME
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl status $SERVICE_UNIT_FILE_NAME
+volumio ALL=(ALL) NOPASSWD: /bin/systemctl stop $SERVICE_UNIT_FILE_NAME
 EOF
 echo "[INFO] Create sudoers file ... done"
 

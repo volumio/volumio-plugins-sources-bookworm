@@ -43,6 +43,13 @@ SCRIPT_DIRECTORY_PATH="/data/plugins/$PLUGIN_CATEGORY/$PLUGIN_DIRECTORY"
 # which is expected to contain a child directory
 # for each of the canonical architecture names.
 SERVICE_DIRECTORY_PATH="$SCRIPT_DIRECTORY_PATH/service"
+
+# Absolute path of the service unit file
+SERVICE_UNIT_FILE_NAME="alsa-rme-adi2-volume-control.service"
+SERVICE_UNIT_FILE_DESTINATION_PATH="/lib/systemd/system/$SERVICE_UNIT_FILE_NAME"
+SERVICE_UNIT_FILE_TMP_PATH="/tmp/$SERVICE_UNIT_FILE_NAME"
+
+# Absolute path of the service preset file
 SERVICE_PRESET_FILE_NAME="99-alsa-rme-adi2-volume-control.preset"
 SERVICE_PRESET_FILE_SOURCE_PATH="$SERVICE_DIRECTORY_PATH/$SERVICE_PRESET_FILE_NAME"
 SERVICE_PRESET_FILE_DESTINATION_PATH="/usr/lib/systemd/system-preset/$SERVICE_PRESET_FILE_NAME"
@@ -51,8 +58,6 @@ SERVICE_PRESET_FILE_DESTINATION_PATH="/usr/lib/systemd/system-preset/$SERVICE_PR
 # $SERVICE_DIRECTORY_PATH/$ARCHITECTURE/ directory.
 SERVICE_INSTALLER_FILE_NAME="install.sh"
 
-# Name of the background service"
-SERVICE_NAME="alsa-rme-adi2-volume-control.service"
 
 # Path of the sudoers file for this service
 SUDOERS_FILE_PATH="/etc/sudoers.d/alsa-rme-adi2-volume-control"

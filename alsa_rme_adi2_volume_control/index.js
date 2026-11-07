@@ -1,7 +1,7 @@
 'use strict';
 
 var libQ = require('kew');
-var fs=require('fs-extra');
+var fs = require('fs-extra');
 var config = new (require('v-conf'))();
 var exec = require('child_process').exec;
 var execSync = require('child_process').execSync;
@@ -16,8 +16,11 @@ function alsaRmeAdi2VolumeControl(context) {
     this.logger = this.context.logger;
     this.configManager = this.context.configManager;
 
-    this.sudo_systemctl = '/usr/bin/sudo /bin/systemctl';
+    this.service_executable_path = '/usr/local/bin/alsa-rme-adi2-volume-control';
     this.service_name = 'alsa-rme-adi2-volume-control.service';
+    this.sudo_cp = '/usr/bin/sudo /bin/cp';
+    this.sudo_rm = '/usr/bin/sudo /bin/rm';
+    this.sudo_systemctl = '/usr/bin/sudo /bin/systemctl';
 }
 
 alsaRmeAdi2VolumeControl.prototype.onVolumioStart = function() {
@@ -74,14 +77,125 @@ alsaRmeAdi2VolumeControl.prototype.startOrStopService = function() {
     }
 }
 
-
 alsaRmeAdi2VolumeControl.prototype.editServiceConfigurationAndRestart = function() {
     var self = this;
+    var defer = libQ.defer();
+
+    var tmpServiceFilePath = '/tmp/' + self.service_name;
+    var tmpServiceNewFilePath = tmpServiceFilePath + '.tmp';
+    var dstServiceFilePath = '/lib/systemd/system/' + self.service_name;
 
     // Log the current configuration.
     self.logConfiguration();
 
-    // TODO
+    exec(self.sudo_cp + ' ' + dstServiceFilePath + ' ' + tmpServiceFilePath, { uid: 1000, gid: 1000 },
+        function(error, stdout, stderr) {
+            if (error !== null) {
+                self.logger.error('ALSA RME ADI-2 Volume Control: cannot copy original service file - ' + error);
+                defer.reject(error);
+            } else {
+                self.logger.info('ALSA RME ADI-2 Volume Control: original service file copied');
+
+                self.editServiceFile(tmpServiceFilePath, tmpServiceNewFilePath);
+
+                exec(self.sudo_cp + ' ' + tmpServiceNewFilePath + ' ' + dstServiceFilePath, { uid: 1000, gid: 1000 },
+                    function(error, stdout, stderr) {
+
+                        // remove tmpServiceFilePath
+                        exec(self.sudo_rm + ' ' + tmpServiceFilePath, { uid: 1000, gid: 1000 },
+                            function(error, stdout, stderr) {
+                                // ignore any errors here
+                            }
+                        );
+                        exec(self.sudo_rm + ' ' + tmpServiceNewFilePath, { uid: 1000, gid: 1000 },
+                            function(error, stdout, stderr) {
+                                // ignore any errors here
+                            }
+                        );
+
+                        if (error !== null) {
+                            self.logger.error('ALSA RME ADI-2 Volume Control: cannot copy modified service file - ' + error);
+                            defer.reject(error);
+                        } else {
+                            self.logger.info('ALSA RME ADI-2 Volume Control: modified service file copied');
+
+                            exec(self.sudo_systemctl + ' daemon-reload', { uid: 1000, gid: 1000 },
+                                function(error, stdout, stderr) {
+                                    if (error !== null) {
+                                        self.logger.error('ALSA RME ADI-2 Volume Control: systemctl daemon-reload failed - ' + error);
+                                        defer.reject(error);
+                                    } else {
+                                        self.logger.info('ALSA RME ADI-2 Volume Control: systemctl daemon-reload succeeded');
+                                        self.startOrStopService();
+                                        defer.resolve();
+                                    }
+                                }
+                            );
+                        }
+                    }
+                );
+            }
+        }
+    );
+
+    return defer.promise;
+}
+
+alsaRmeAdi2VolumeControl.prototype.editServiceFile = function(filePath, newFilePath) {
+    var self = this;
+
+    var c = '';
+    var l = [
+        self.service_executable_path,
+        '--device-name', self.config.get('device_name', 'autodetect')
+    ];
+    if (self.config.get('verbose_log')) {
+        l.push('--verbose');
+    }
+    if (self.config.get('line12_active')) {
+        l.push('--line12-min-db', self.config.get('line12_min_db', '-60.0'));
+        l.push('--line12-max-db', self.config.get('line12_max_db', '-10.0'));
+        l.push('--line12-switch', '1');
+        l.push('--line12-volume', self.config.get('line12_volume', '50'));
+
+    } else {
+        l.push('--no-line12');
+    }
+    if (self.config.get('phones34_active')) {
+        l.push('--phones34-min-db', self.config.get('phones34_min_db', '-60.0'));
+        l.push('--phones34-max-db', self.config.get('phones34_max_db', '-10.0'));
+        l.push('--phones34-switch', '1');
+        l.push('--phones34-volume', self.config.get('phones34_volume', '50'));
+
+    } else {
+        l.push('--no-phones34');
+    }
+
+    c = l.join(" ");
+    self.logger.info('New command line for ' + self.service_name + ' service: ' + c);
+
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+            self.logger.error('Unable to read file ' + filePath);
+            return;
+        }
+        self.logger.info('File ' + filePath + ' read successfully');
+
+        // replace the current ExecStart line with the new command line
+        var new_data = data.replace(
+            /^ExecStart=.*$/gmu,
+            'ExecStart=' + c
+        );
+
+        //fs.writeFile(newFilePath, new_data, err => {
+        //    if (err) {
+        //        self.logger.error('Unable to write file ' + filePath);
+        //        return;
+        //   }
+        //});
+        fs.writeFileSync(newFilePath, new_data);
+        self.logger.info('File ' + newFilePath + ' written successfully');
+    });
 }
 
 alsaRmeAdi2VolumeControl.prototype.startService = function() {
@@ -177,6 +291,7 @@ alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsOutput = function(data, t
     self.config.set(trigger + '_min_db', data[trigger + '_min_db'].value);  // select
     self.config.set(trigger + '_max_db', data[trigger + '_max_db'].value);  // select
     self.config.set(trigger + '_volume', data[trigger + '_volume'].value);  // select
+    self.config.save();
 
     if (
         (!self.config.get(other + '_active')) &&
@@ -188,11 +303,16 @@ alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsOutput = function(data, t
 
     var min_db = parseFloat(self.config.get(trigger + '_min_db'));
     var max_db = parseFloat(self.config.get(trigger + '_max_db'));
-    if (min_db > max_db) {
+    if (min_db >= max_db) {
+        min_db = -93.8;
+        if (max_db == -93.8) {
+            max_db = -90.0;
+        }
         self.logger.error(
-            'Force ' + trigger + '_min_db to be equal to ' + trigger + '_max_db, since the former cannot be greater than the latter.'
+            'Force ' + trigger + '_min_db to be smaller than ' + trigger + '_max_db, since the former cannot be greater than or equal to the latter.'
         );
-        self.config.set(trigger + '_min_db', max_db.toFixed(1));
+        self.config.set(trigger + '_min_db', min_db.toFixed(1));
+        self.config.set(trigger + '_max_db', max_db.toFixed(1));
     }
 
     self.config.save();
@@ -304,18 +424,19 @@ alsaRmeAdi2VolumeControl.prototype.getConfigurationFiles = function() {
 
 alsaRmeAdi2VolumeControl.prototype.logConfiguration = function() {
     var self = this;
+
     self.logger.info('Configuration');
-    self.logger.info('  device_name:     ' + self.config.get('device_name', 'missing'));
-    self.logger.info('  line12_active:   ' + self.config.get('line12_active', 'missing'));
-    self.logger.info('  line12_max_db:   ' + self.config.get('line12_max_db', 'missing'));
-    self.logger.info('  line12_min_db:   ' + self.config.get('line12_min_db', 'missing'));
-    self.logger.info('  line12_volume:   ' + self.config.get('line12_volume', 'missing'));
+    self.logger.info('  device_name:     ' + self.config.get('device_name',     'missing'));
+    self.logger.info('  line12_active:   ' + self.config.get('line12_active',   'missing'));
+    self.logger.info('  line12_max_db:   ' + self.config.get('line12_max_db',   'missing'));
+    self.logger.info('  line12_min_db:   ' + self.config.get('line12_min_db',   'missing'));
+    self.logger.info('  line12_volume:   ' + self.config.get('line12_volume',   'missing'));
     self.logger.info('  phones34_active: ' + self.config.get('phones34_active', 'missing'));
     self.logger.info('  phones34_max_db: ' + self.config.get('phones34_max_db', 'missing'));
     self.logger.info('  phones34_min_db: ' + self.config.get('phones34_min_db', 'missing'));
     self.logger.info('  phones34_volume: ' + self.config.get('phones34_volume', 'missing'));
-    self.logger.info('  service_active:  ' + self.config.get('service_active', 'missing'));
-    self.logger.info('  verbose_log:     ' + self.config.get('verbose_log', 'missing'));
+    self.logger.info('  service_active:  ' + self.config.get('service_active',  'missing'));
+    self.logger.info('  verbose_log:     ' + self.config.get('verbose_log',     'missing'));
 }
 
 alsaRmeAdi2VolumeControl.prototype.setUIConfig = function(data) {
