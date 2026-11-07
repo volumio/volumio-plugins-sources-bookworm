@@ -54,6 +54,19 @@ alsaRmeAdi2VolumeControl.prototype.onRestart = function() {
 // Systemd service control ---------------------------------------------------------------------------
 alsaRmeAdi2VolumeControl.prototype.startOrStopService = function() {
     var self = this;
+
+    // Log the current configuration.
+    self.logConfiguration();
+
+    //
+    // Start or stop the background service,
+    // depending on the value of the 'service_active' boolean flag.
+    //
+    // This allows the end user to keep the plugin installed
+    // (along with its configuration, possibly modified)
+    // and start/stop the background service directly from the
+    // Volumio plugin configuration UI.
+    //
     if (self.config.get('service_active')) {
         self.startService();
     } else {
@@ -61,9 +74,21 @@ alsaRmeAdi2VolumeControl.prototype.startOrStopService = function() {
     }
 }
 
+
+alsaRmeAdi2VolumeControl.prototype.editServiceConfigurationAndRestart = function() {
+    var self = this;
+
+    // Log the current configuration.
+    self.logConfiguration();
+
+    // TODO
+}
+
 alsaRmeAdi2VolumeControl.prototype.startService = function() {
     var self = this;
     var defer = libQ.defer();
+
+    // Enable and start the background service
     self.logger.info('Enabling and starting service ...');
     exec(self.sudo_systemctl + ' enable ' + self.service_name, { uid: 1000, gid: 1000 },
         function(error, stdout, stderr) {
@@ -86,6 +111,7 @@ alsaRmeAdi2VolumeControl.prototype.startService = function() {
             }
         }
     );
+
     self.logger.info('Enabling and starting service ... done');
     return defer.promise;
 };
@@ -93,6 +119,8 @@ alsaRmeAdi2VolumeControl.prototype.startService = function() {
 alsaRmeAdi2VolumeControl.prototype.stopService = function() {
     var self = this;
     var defer = libQ.defer();
+
+    // Stop and disable the background service
     self.logger.info('Stopping and disabling service ...');
     exec(self.sudo_systemctl + ' stop ' + self.service_name, { uid: 1000, gid: 1000 },
         function(error, stdout, stderr) {
@@ -115,22 +143,31 @@ alsaRmeAdi2VolumeControl.prototype.stopService = function() {
             }
         }
     );
+
     self.logger.info('Stopping and disabling service ... done');
     return defer.promise;
 };
 
-alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsGeneral = function(data) {
+alsaRmeAdi2VolumeControl.prototype.applyServiceActive = function(data) {
     var self = this;
 
     self.config.set('service_active', data['service_active']);  // boolean
-    self.config.set('verbose_log',    data['verbose_log']);     // boolean
     self.config.save();
 
-    if (self.config.get('service_active', false)) {
-        self.onStart();
-    } else {
-        self.onStop();
-    }
+    // start and stop
+    self.startOrStopService();
+}
+
+alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsGeneral = function(data) {
+    var self = this;
+
+    self.config.set('device_name', data['device_name'].value);  // select
+    self.config.set('verbose_log', data['verbose_log']);        // boolean
+    self.config.save();
+
+    // modify the service configuration and
+    // restart the service so that changes can take effect
+    self.editServiceConfigurationAndRestart();
 }
 
 alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsLine12 = function(data) {
@@ -162,7 +199,7 @@ alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsLine12 = function(data) {
 
     // modify the service configuration and
     // restart the service so that changes can take effect
-    // self.editServiceConfigurationAndRestart();
+    self.editServiceConfigurationAndRestart();
 }
 
 
@@ -182,28 +219,35 @@ alsaRmeAdi2VolumeControl.prototype.getUIConfig = function() {
         function(uiconf) {
             var v = '';
 
-            // sections[0] == general
+            self.logConfiguration();
+
+            // sections[0] == service active
             v = self.config.get('service_active', true);
             uiconf.sections[0].content[0].value = v;
 
-            v = self.config.get('verbose_log', false);
-            uiconf.sections[0].content[1].value = v;
+            // sections[1] == general
+            v = self.config.get('device_name', 'autodetect');
+            uiconf.sections[1].content[0].value.value = v;
+            uiconf.sections[1].content[0].value.label = v;
 
-            // sections[1] == line12
+            v = self.config.get('verbose_log', false);
+            uiconf.sections[1].content[1].value = v;
+
+            // sections[2] == line12
             v = self.config.get('line12_active', true);
-            uiconf.sections[1].content[0].value = v;
+            uiconf.sections[2].content[0].value = v;
 
             v = self.config.get('line12_min_db', '-60.0');
-            uiconf.sections[1].content[1].value.value = v;
-            uiconf.sections[1].content[1].value.label = v;
+            uiconf.sections[2].content[1].value.value = v;
+            uiconf.sections[2].content[1].value.label = v;
 
             v = self.config.get('line12_max_db', '-10.0');
-            uiconf.sections[1].content[2].value.value = v;
-            uiconf.sections[1].content[2].value.label = v;
+            uiconf.sections[2].content[2].value.value = v;
+            uiconf.sections[2].content[2].value.label = v;
 
             v = self.config.get('line12_volume', '50');
-            uiconf.sections[1].content[3].value.value = v;
-            uiconf.sections[1].content[3].value.label = v;
+            uiconf.sections[2].content[3].value.value = v;
+            uiconf.sections[2].content[3].value.label = v;
 
             defer.resolve(uiconf);
         }
@@ -220,33 +264,33 @@ alsaRmeAdi2VolumeControl.prototype.getConfigurationFiles = function() {
     return ['config.json'];
 }
 
-alsaRmeAdi2VolumeControl.prototype.logConfiguration = function(data) {
+alsaRmeAdi2VolumeControl.prototype.logConfiguration = function() {
+    var self = this;
     self.logger.info('Configuration');
-    self.logger.info('  device_name:     ' + data['device_name']);
-    self.logger.info('  line12_active:   ' + data['line12_active']);
-    self.logger.info('  line12_max_db:   ' + data['line12_max_db']);
-    self.logger.info('  line12_min_db:   ' + data['line12_min_db']);
-    self.logger.info('  line12_volume:   ' + data['line12_volume']);
-    self.logger.info('  phones34_active: ' + data['phones34_active']);
-    self.logger.info('  phones34_max_db: ' + data['phones34_max_db']);
-    self.logger.info('  phones34_min_db: ' + data['phones34_min_db']);
-    self.logger.info('  phones34_volume: ' + data['phones34_volume']);
-    self.logger.info('  service_active:  ' + data['service_active']);
-    self.logger.info('  verbose_log:     ' + data['verbose_log']);
+    self.logger.info('  device_name:     ' + self.config.get('device_name', 'missing'));
+    self.logger.info('  line12_active:   ' + self.config.get('line12_active', 'missing'));
+    self.logger.info('  line12_max_db:   ' + self.config.get('line12_max_db', 'missing'));
+    self.logger.info('  line12_min_db:   ' + self.config.get('line12_min_db', 'missing'));
+    self.logger.info('  line12_volume:   ' + self.config.get('line12_volume', 'missing'));
+    self.logger.info('  phones34_active: ' + self.config.get('phones34_active', 'missing'));
+    self.logger.info('  phones34_max_db: ' + self.config.get('phones34_max_db', 'missing'));
+    self.logger.info('  phones34_min_db: ' + self.config.get('phones34_min_db', 'missing'));
+    self.logger.info('  phones34_volume: ' + self.config.get('phones34_volume', 'missing'));
+    self.logger.info('  service_active:  ' + self.config.get('service_active', 'missing'));
+    self.logger.info('  verbose_log:     ' + self.config.get('verbose_log', 'missing'));
 }
 
 alsaRmeAdi2VolumeControl.prototype.setUIConfig = function(data) {
     var self = this;
-    self.logConfiguration(data);
 };
 
 alsaRmeAdi2VolumeControl.prototype.getConf = function(varName) {
     var self = this;
-    //Perform your installation tasks here
+    // nothing to do
 };
 
 alsaRmeAdi2VolumeControl.prototype.setConf = function(varName, varValue) {
     var self = this;
-    //Perform your installation tasks here
+    // nothing to do
 };
 

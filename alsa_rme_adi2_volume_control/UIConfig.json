@@ -6,6 +6,32 @@
         {
             "id": "section_general",
             "element": "section",
+            "label": "TRANSLATE.ARAVC_SECTION_LABEL_BACKGROUND_SERVICE",
+            "icon": "fa-gear",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/alsa_rme_adi2_volume_control",
+                "method": "applyServiceActive"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.ARAVC_APPLY",
+                "data": [
+                    "service_active"
+                ]
+            },
+            "content": [
+                {
+                    "id": "service_active",
+                    "element": "switch",
+                    "doc": "TRANSLATE.ARAVC_SWITCH_DOC_SERVICE_ACTIVE",
+                    "label": "TRANSLATE.ARAVC_SWITCH_LABEL_SERVICE_ACTIVE",
+                    "value": true
+                }
+            ]
+        },
+        {
+            "id": "section_service",
+            "element": "section",
             "label": "TRANSLATE.ARAVC_SECTION_LABEL_GENERAL",
             "icon": "fa-gear",
             "onSave": {
@@ -16,17 +42,26 @@
             "saveButton": {
                 "label": "TRANSLATE.ARAVC_APPLY",
                 "data": [
-                    "service_active",
+                    "device_name",
                     "verbose_log"
                 ]
             },
             "content": [
                 {
-                    "id": "service_active",
-                    "element": "switch",
-                    "doc": "TRANSLATE.ARAVC_SWITCH_DOC_SERVICE_ACTIVE",
-                    "label": "TRANSLATE.ARAVC_SWITCH_LABEL_SERVICE_ACTIVE",
-                    "value": true
+                    "id": "device_name",
+                    "element": "select",
+                    "doc": "TRANSLATE.ARAVC_SELECT_DOC_DEVICE_NAME",
+                    "label": "TRANSLATE.ARAVC_SELECT_LABEL_DEVICE_NAME",
+                    "options": [
+                        { "value": "autodetect",  "label": "autodetect" },
+                        { "value": "ADI-2 DAC",   "label": "ADI-2 DAC" },
+                        { "value": "ADI-2 Pro",   "label": "ADI-2 Pro" },
+                        { "value": "ADI-2/4 Pro", "label": "ADI-2/4 Pro" }
+                    ],
+                    "value": {
+                        "value": "autodetect",
+                        "label": "autodetect"
+                    }
                 },
                 {
                     "id": "verbose_log",
@@ -67,8 +102,8 @@
                 {
                     "id": "line12_min_db",
                     "element": "select",
-                    "doc": "TRANSLATE.ARAVC_TEXT_DOC_LINE12_MIN_DB",
-                    "label": "TRANSLATE.ARAVC_TEXT_LABEL_LINE_12_MIN_DB",
+                    "doc": "TRANSLATE.ARAVC_SELECT_DOC_LINE12_MIN_DB",
+                    "label": "TRANSLATE.ARAVC_SELECT_LABEL_LINE_12_MIN_DB",
                     "options": [
                         { "value": "-93.8", "label": "-93.8" },
                         { "value": "-90.0", "label": "-90.0" },
@@ -95,8 +130,8 @@
                 {
                     "id": "line12_max_db",
                     "element": "select",
-                    "doc": "TRANSLATE.ARAVC_TEXT_DOC_LINE12_MAX_DB",
-                    "label": "TRANSLATE.ARAVC_TEXT_LABEL_LINE_12_MAX_DB",
+                    "doc": "TRANSLATE.ARAVC_SELECT_DOC_LINE12_MAX_DB",
+                    "label": "TRANSLATE.ARAVC_SELECT_LABEL_LINE_12_MAX_DB",
                     "options": [
                         { "value": "-93.8", "label": "-93.8" },
                         { "value": "-90.0", "label": "-90.0" },
@@ -123,8 +158,8 @@
                 {
                     "id": "line12_volume",
                     "element": "select",
-                    "doc": "TRANSLATE.ARAVC_TEXT_DOC_LINE12_VOLUME",
-                    "label": "TRANSLATE.ARAVC_TEXT_LABEL_LINE_12_VOLUME",
+                    "doc": "TRANSLATE.ARAVC_SELECT_DOC_LINE12_VOLUME",
+                    "label": "TRANSLATE.ARAVC_SELECT_LABEL_LINE_12_VOLUME",
                     "options": [
                         { "value": "  0", "label": "  0" },
                         { "value": " 10", "label": " 10" },
