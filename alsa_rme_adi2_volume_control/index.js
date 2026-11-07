@@ -59,50 +59,33 @@ alsaRmeAdi2VolumeControl.prototype.onRestart = function() {
 alsaRmeAdi2VolumeControl.prototype.startService = function() {
     var self = this;
     var defer = libQ.defer();
-
-    exec(self.sudo_systemctl + ' unmask' + self.service_name, { uid: 1000, gid: 1000 },
+    exec(self.sudo_systemctl + ' enable ' + self.service_name, { uid: 1000, gid: 1000 },
         function(error, stdout, stderr) {
             if (error !== null) {
-                self.logger.error('ALSA RME ADI-2 Volume Control: cannot unmask service - ' + error);
+                self.logger.error('ALSA RME ADI-2 Volume Control: cannot enable service - ' + error);
                 defer.reject(error);
             } else {
-                self.logger.info('ALSA RME ADI-2 Volume Control: service unmasked');
-
-                exec(self.sudo_systemctl + ' enable ' + self.service_name, { uid: 1000, gid: 1000 },
+                self.logger.info('ALSA RME ADI-2 Volume Control: service enabled');
+                exec(self.sudo_systemctl + ' start ' + self.service_name, { uid: 1000, gid: 1000 },
                     function(error, stdout, stderr) {
                         if (error !== null) {
-                            self.logger.error('ALSA RME ADI-2 Volume Control: cannot enable service - ' + error);
+                            self.logger.error('ALSA RME ADI-2 Volume Control: cannot start service - ' + error);
                             defer.reject(error);
                         } else {
-                            self.logger.info('ALSA RME ADI-2 Volume Control: service enabled');
-
-                            exec(self.sudo_systemctl + ' start ' + self.service_name, { uid: 1000, gid: 1000 },
-                                function(error, stdout, stderr) {
-                                    if (error !== null) {
-                                        self.logger.error('ALSA RME ADI-2 Volume Control: cannot start service - ' + error);
-                                        defer.reject(error);
-                                    } else {
-                                        self.logger.info('ALSA RME ADI-2 Volume Control: service started');
-                                        defer.resolve();
-                                    }
-                                }
-                            ); // start
-
+                            self.logger.info('ALSA RME ADI-2 Volume Control: service started');
+                            defer.resolve();
                         }
                     }
-                ); // enable
-
+                );
             }
         }
-    ); // unmask
-
+    );
     return defer.promise;
 };
 
 alsaRmeAdi2VolumeControl.prototype.stopService = function() {
     var self = this;
     var defer = libQ.defer();
-
     exec(self.sudo_systemctl + ' stop ' + self.service_name, { uid: 1000, gid: 1000 },
         function(error, stdout, stderr) {
             if (error !== null) {
@@ -110,7 +93,6 @@ alsaRmeAdi2VolumeControl.prototype.stopService = function() {
                 defer.reject(error);
             } else {
                 self.logger.info('ALSA RME ADI-2 Volume Control: service stopped');
-
                 exec(self.sudo_systemctl + ' disable ' + self.service_name, { uid: 1000, gid: 1000 },
                     function(error, stdout, stderr) {
                         if (error !== null) {
@@ -118,27 +100,13 @@ alsaRmeAdi2VolumeControl.prototype.stopService = function() {
                             defer.reject(error);
                         } else {
                             self.logger.info('ALSA RME ADI-2 Volume Control: service disabled');
-
-                            exec(self.sudo_systemctl + ' mask ' + self.service_name, { uid: 1000, gid: 1000 },
-                                function(error, stdout, stderr) {
-                                    if (error !== null) {
-                                        self.logger.error('ALSA RME ADI-2 Volume Control: cannot mask service - ' + error);
-                                        defer.reject(error);
-                                    } else {
-                                        self.logger.info('ALSA RME ADI-2 Volume Control: service masked');
-                                        defer.resolve();
-                                    }
-                                }
-                            ); // mask
-
+                            defer.resolve();
                         }
                     }
-                ); // disable
-
+                );
             }
         }
-    ); // stop
-
+    );
     return defer.promise;
 };
 
