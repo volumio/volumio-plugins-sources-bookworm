@@ -43,6 +43,7 @@
                 "label": "TRANSLATE.ARAVC_APPLY",
                 "data": [
                     "device_name",
+                    "card_number",
                     "verbose_log"
                 ]
             },
@@ -57,6 +58,29 @@
                         { "value": "ADI-2 DAC",   "label": "ADI-2 DAC" },
                         { "value": "ADI-2 Pro",   "label": "ADI-2 Pro" },
                         { "value": "ADI-2/4 Pro", "label": "ADI-2/4 Pro" }
+                    ],
+                    "value": {
+                        "value": "autodetect",
+                        "label": "autodetect"
+                    }
+                },
+                {
+                    "id": "card_number",
+                    "element": "select",
+                    "doc": "TRANSLATE.ARAVC_SELECT_DOC_CARD_NUMBER",
+                    "label": "TRANSLATE.ARAVC_SELECT_LABEL_CARD_NUMBER",
+                    "options": [
+                        { "value": "autodetect", "label": "autodetect" },
+                        { "value": "0",          "label": "0" },
+                        { "value": "1",          "label": "1" },
+                        { "value": "2",          "label": "2" },
+                        { "value": "3",          "label": "3" },
+                        { "value": "4",          "label": "4" },
+                        { "value": "5",          "label": "5" },
+                        { "value": "6",          "label": "6" },
+                        { "value": "7",          "label": "7" },
+                        { "value": "8",          "label": "8" },
+                        { "value": "9",          "label": "9" }
                     ],
                     "value": {
                         "value": "autodetect",

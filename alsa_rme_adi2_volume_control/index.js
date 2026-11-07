@@ -137,12 +137,30 @@ alsaRmeAdi2VolumeControl.prototype.editServiceFile = function(readFilePath, writ
 
     var c = '';
     var l = [
-        self.service_executable_path,
-        '--device-name', self.quote(self.config.get('device_name', 'autodetect'))
+        self.service_executable_path
     ];
+
+    if (self.config.get('card_number', 'autodetect') == 'autodetect') {
+        l.push('--device-name', self.quote(self.config.get('device_name', 'autodetect')));
+    } else {
+        var device_name = self.config.get('device_name', 'autodetect');
+        if (device_name == 'autodetect') {
+            l.push('--device-name', self.quote(device_name));
+        } else {
+            var device_name_to_id = {
+                'ADI-2 DAC': '0x71',
+                'ADI-2 Pro': '0x72',
+                'ADI-2/4 Pro': '0x73'
+            };
+            l.push('--device-id', self.quote(device_name_to_id[device_name]));
+        }
+        l.push('--card-number', self.quote(self.config.get('card_number', 'autodetect')));
+    }
+
     if (self.config.get('verbose_log')) {
         l.push('--verbose');
     }
+
     if (self.config.get('line12_active')) {
         l.push('--line12-min-db', self.quote(self.config.get('line12_min_db', '-60.0')));
         l.push('--line12-max-db', self.quote(self.config.get('line12_max_db', '-10.0')));
@@ -152,6 +170,7 @@ alsaRmeAdi2VolumeControl.prototype.editServiceFile = function(readFilePath, writ
     } else {
         l.push('--no-line12');
     }
+
     if (self.config.get('phones34_active')) {
         l.push('--phones34-min-db', self.quote(self.config.get('phones34_min_db', '-60.0')));
         l.push('--phones34-max-db', self.quote(self.config.get('phones34_max_db', '-10.0')));
@@ -261,6 +280,7 @@ alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsGeneral = function(data) 
     var self = this;
 
     self.config.set('device_name', data['device_name'].value);  // select
+    self.config.set('card_number', data['card_number'].value);  // select
     self.config.set('verbose_log', data['verbose_log']);        // boolean
     self.config.save();
 
@@ -343,13 +363,18 @@ alsaRmeAdi2VolumeControl.prototype.getUIConfig = function() {
 
             // sections[1] == general
             //   content[0] == device name
-            //   content[1] == verbose log
+            //   content[1] == card number
+            //   content[2] == verbose log
             v = self.config.get('device_name', 'autodetect');
             uiconf.sections[1].content[0].value.value = v;
             uiconf.sections[1].content[0].value.label = v;
 
+            v = self.config.get('card_number', 'autodetect');
+            uiconf.sections[1].content[1].value.value = v;
+            uiconf.sections[1].content[1].value.label = v;
+
             v = self.config.get('verbose_log', false);
-            uiconf.sections[1].content[1].value = v;
+            uiconf.sections[1].content[2].value = v;
 
             // sections[2] == line12
             //   content[0] == line12 active
@@ -411,6 +436,7 @@ alsaRmeAdi2VolumeControl.prototype.logConfiguration = function() {
     var self = this;
 
     self.logger.info('Configuration');
+    self.logger.info('  card_number:     ' + self.config.get('card_number',     'missing'));
     self.logger.info('  device_name:     ' + self.config.get('device_name',     'missing'));
     self.logger.info('  line12_active:   ' + self.config.get('line12_active',   'missing'));
     self.logger.info('  line12_max_db:   ' + self.config.get('line12_max_db',   'missing'));

@@ -1,4 +1,8 @@
 {
+    "card_number": {
+        "type": "string",
+        "value": "autodetect"
+    },
     "device_name": {
         "type": "string",
         "value": "autodetect"
@@ -25,11 +29,11 @@
     },
     "phones34_min_db":{
         "type": "string",
-        "value": "-10.0"
+        "value": "-60.0"
     },
     "phones34_max_db":{
         "type": "string",
-        "value": "-60.0"
+        "value": "-10.0"
     },
     "phones34_volume":{
         "type": "string",

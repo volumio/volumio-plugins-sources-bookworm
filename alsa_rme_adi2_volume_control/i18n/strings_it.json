@@ -12,6 +12,8 @@
     "ARAVC_SECTION_LABEL_GENERAL": "Generale",
     "ARAVC_SELECT_DOC_DEVICE_NAME": "Modello (famiglia) del device RME ADI-2. Seleziona 'autodetect' per consentire al servizio in background di rilevarlo automaticamente.",
     "ARAVC_SELECT_LABEL_DEVICE_NAME": "Modello RME ADI-2",
+    "ARAVC_SELECT_DOC_CARD_NUMBER": "Numero della scheda ALSA del device RME ADI-2. Seleziona 'autodetect' per consentire al servizio in background di rilevarlo automaticamente.",
+    "ARAVC_SELECT_LABEL_CARD_NUMBER": "Numero scheda ALSA",
     "ARAVC_SWITCH_DOC_VERBOSE_LOG": "Attiva o disattiva il log verboso per il servizio in background.",
     "ARAVC_SWITCH_LABEL_VERBOSE_LOG": "Log verboso",
 

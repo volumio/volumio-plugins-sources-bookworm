@@ -114,6 +114,7 @@ echo "[INFO] Stop and disable the systemd service ... done"
 # Commands called by index.js
 echo "[INFO] Copy sudoers file ..."
 sudo cp $SERVICE_SUDOERS_FILE_SOURCE_PATH $SERVICE_SUDOERS_FILE_DESTINATION_PATH
+sudo visudo -c -f $SERVICE_SUDOERS_FILE_DESTINATION_PATH
 echo "[INFO] Copy sudoers file ... done"
 
 # The required
