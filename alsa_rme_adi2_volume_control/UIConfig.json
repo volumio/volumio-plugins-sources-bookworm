@@ -139,8 +139,8 @@
                         { "value": "-30.0", "label": "-30.0" },
                         { "value": "-20.0", "label": "-20.0" },
                         { "value": "-10.0", "label": "-10.0" },
-                        { "value": "  0.0", "label": "  0.0" },
-                        { "value": "  6.0", "label": "  6.0" }
+                        { "value": "0.0",   "label": "0.0"   },
+                        { "value": "6.0",   "label": "6.0"   }
                     ],
                     "value": {
                         "value": "-60.0",
@@ -167,8 +167,8 @@
                         { "value": "-30.0", "label": "-30.0" },
                         { "value": "-20.0", "label": "-20.0" },
                         { "value": "-10.0", "label": "-10.0" },
-                        { "value": "  0.0", "label": "  0.0" },
-                        { "value": "  6.0", "label": "  6.0" }
+                        { "value": "0.0",   "label": "0.0"   },
+                        { "value": "6.0",   "label": "6.0"   }
                     ],
                     "value": {
                         "value": "-10.0",
@@ -185,16 +185,16 @@
                     "doc": "TRANSLATE.ARAVC_SELECT_DOC_LINE12_VOLUME",
                     "label": "TRANSLATE.ARAVC_SELECT_LABEL_LINE12_VOLUME",
                     "options": [
-                        { "value": "  0", "label": "  0" },
-                        { "value": " 10", "label": " 10" },
-                        { "value": " 20", "label": " 20" },
-                        { "value": " 30", "label": " 30" },
-                        { "value": " 40", "label": " 40" },
-                        { "value": " 50", "label": " 50" },
-                        { "value": " 60", "label": " 60" },
-                        { "value": " 70", "label": " 70" },
-                        { "value": " 80", "label": " 80" },
-                        { "value": " 90", "label": " 90" },
+                        { "value": "0",   "label": "0"   },
+                        { "value": "10",  "label": "10"  },
+                        { "value": "20",  "label": "20"  },
+                        { "value": "30",  "label": "30"  },
+                        { "value": "40",  "label": "40"  },
+                        { "value": "50",  "label": "50"  },
+                        { "value": "60",  "label": "60"  },
+                        { "value": "70",  "label": "70"  },
+                        { "value": "80",  "label": "80"  },
+                        { "value": "90",  "label": "90"  },
                         { "value": "100", "label": "100" }
                     ],
                     "value": {
@@ -251,8 +251,8 @@
                         { "value": "-30.0", "label": "-30.0" },
                         { "value": "-20.0", "label": "-20.0" },
                         { "value": "-10.0", "label": "-10.0" },
-                        { "value": "  0.0", "label": "  0.0" },
-                        { "value": "  6.0", "label": "  6.0" }
+                        { "value": "0.0",   "label": "0.0"   },
+                        { "value": "6.0",   "label": "6.0"   }
                     ],
                     "value": {
                         "value": "-60.0",
@@ -279,8 +279,8 @@
                         { "value": "-30.0", "label": "-30.0" },
                         { "value": "-20.0", "label": "-20.0" },
                         { "value": "-10.0", "label": "-10.0" },
-                        { "value": "  0.0", "label": "  0.0" },
-                        { "value": "  6.0", "label": "  6.0" }
+                        { "value": "0.0",   "label": "0.0"   },
+                        { "value": "6.0",   "label": "6.0"   }
                     ],
                     "value": {
                         "value": "-10.0",
@@ -297,16 +297,16 @@
                     "doc": "TRANSLATE.ARAVC_SELECT_DOC_PHONES34_VOLUME",
                     "label": "TRANSLATE.ARAVC_SELECT_LABEL_PHONES34_VOLUME",
                     "options": [
-                        { "value": "  0", "label": "  0" },
-                        { "value": " 10", "label": " 10" },
-                        { "value": " 20", "label": " 20" },
-                        { "value": " 30", "label": " 30" },
-                        { "value": " 40", "label": " 40" },
-                        { "value": " 50", "label": " 50" },
-                        { "value": " 60", "label": " 60" },
-                        { "value": " 70", "label": " 70" },
-                        { "value": " 80", "label": " 80" },
-                        { "value": " 90", "label": " 90" },
+                        { "value": "0",   "label": "0"   },
+                        { "value": "10",  "label": "10"  },
+                        { "value": "20",  "label": "20"  },
+                        { "value": "30",  "label": "30"  },
+                        { "value": "40",  "label": "40"  },
+                        { "value": "50",  "label": "50"  },
+                        { "value": "60",  "label": "60"  },
+                        { "value": "70",  "label": "70"  },
+                        { "value": "80",  "label": "80"  },
+                        { "value": "90",  "label": "90"  },
                         { "value": "100", "label": "100" }
                     ],
                     "value": {
