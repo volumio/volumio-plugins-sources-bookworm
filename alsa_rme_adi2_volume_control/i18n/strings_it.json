@@ -8,6 +8,8 @@
     "ARAVC_SECTION_LABEL_GENERAL": "Generale",
     "ARAVC_SWITCH_DOC_SERVICE_ACTIVE": "Attiva o disattiva il servizio in background che controlla gli output del device RME ADI-2.",
     "ARAVC_SWITCH_LABEL_SERVICE_ACTIVE": "Attiva servizio in background",
+    "ARAVC_SWITCH_DOC_VERBOSE_LOG": "Attiva o disattiva il log verboso per il servizio in background.",
+    "ARAVC_SWITCH_LABEL_VERBOSE_LOG": "Log verboso",
 
     "ARAVC_SECTION_LABEL_LINE12": "Line Output 1/2",
     "ARAVC_SWITCH_DOC_LINE12_ACTIVE": "Attiva o disattiva il controllo di Line Output 1/2",
@@ -19,5 +21,5 @@
     "ARAVC_TEXT_DOC_LINE12_VOLUME": "Volume iniziale, in [0, 100].",
     "ARAVC_TEXT_LABEL_LINE_12_VOLUME": "Volume iniziale",
 
-    "ARAVC_ZZZZZ_LAST": "This is a dummy entry which should always be the last one (no need to translate it)"
+    "ARAVC_ZZZZZZ_DUMMY_LAST_ITEM_IGNORE_ME": ""
 }

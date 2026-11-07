@@ -16,7 +16,8 @@
             "saveButton": {
                 "label": "TRANSLATE.ARAVC_APPLY",
                 "data": [
-                    "service_active"
+                    "service_active",
+                    "verbose_log"
                 ]
             },
             "content": [
@@ -26,6 +27,13 @@
                     "doc": "TRANSLATE.ARAVC_SWITCH_DOC_SERVICE_ACTIVE",
                     "label": "TRANSLATE.ARAVC_SWITCH_LABEL_SERVICE_ACTIVE",
                     "value": true
+                },
+                {
+                    "id": "verbose_log",
+                    "element": "switch",
+                    "doc": "TRANSLATE.ARAVC_SWITCH_DOC_VERBOSE_LOG",
+                    "label": "TRANSLATE.ARAVC_SWITCH_LABEL_VERBOSE_LOG",
+                    "value": false
                 }
             ]
         },

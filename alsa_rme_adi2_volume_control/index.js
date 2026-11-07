@@ -64,7 +64,7 @@ alsaRmeAdi2VolumeControl.prototype.startOrStopService = function() {
 alsaRmeAdi2VolumeControl.prototype.startService = function() {
     var self = this;
     var defer = libQ.defer();
-    self.logger.info("Enabling and starting service ...");
+    self.logger.info('Enabling and starting service ...');
     exec(self.sudo_systemctl + ' enable ' + self.service_name, { uid: 1000, gid: 1000 },
         function(error, stdout, stderr) {
             if (error !== null) {
@@ -86,14 +86,14 @@ alsaRmeAdi2VolumeControl.prototype.startService = function() {
             }
         }
     );
-    self.logger.info("Enabling and starting service ... done");
+    self.logger.info('Enabling and starting service ... done');
     return defer.promise;
 };
 
 alsaRmeAdi2VolumeControl.prototype.stopService = function() {
     var self = this;
     var defer = libQ.defer();
-    self.logger.info("Stopping and disabling service ...");
+    self.logger.info('Stopping and disabling service ...');
     exec(self.sudo_systemctl + ' stop ' + self.service_name, { uid: 1000, gid: 1000 },
         function(error, stdout, stderr) {
             if (error !== null) {
@@ -115,18 +115,18 @@ alsaRmeAdi2VolumeControl.prototype.stopService = function() {
             }
         }
     );
-    self.logger.info("Stopping and disabling service ... done");
+    self.logger.info('Stopping and disabling service ... done');
     return defer.promise;
 };
 
 alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsGeneral = function(data) {
     var self = this;
 
-    var new_value = data['service_active'];
-    self.config.set('service_active', new_value);
+    self.config.set('service_active', data['service_active']);  // boolean
+    self.config.set('verbose_log',    data['verbose_log']);     // boolean
     self.config.save();
-    self.logger.info('New value for service_active: ' + new_value);
-    if (new_value) {
+
+    if (self.config.get('service_active', false)) {
         self.onStart();
     } else {
         self.onStop();
@@ -145,7 +145,7 @@ alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsLine12 = function(data) {
         (!self.config.get('phones34_active')) &&
         (!self.config.get('line12_active'))
     ) {
-        self.logger.error("Force line12_active to be true, since outputs cannot be both inactive.");
+        self.logger.error('Force line12_active to be true, since outputs cannot be both inactive.');
         self.config.set('line12_active', true);
     }
 
@@ -153,7 +153,7 @@ alsaRmeAdi2VolumeControl.prototype.applyServiceSettingsLine12 = function(data) {
     var max_db = parseFloat(self.config.get('line12_max_db'));
     if (min_db > max_db) {
         self.logger.error(
-            "Force line12_min_db to be equal to line12_max_db, since the former cannot be greater than the latter."
+            'Force line12_min_db to be equal to line12_max_db, since the former cannot be greater than the latter.'
         );
         self.config.set('line12_min_db', max_db.toFixed(1));
     }
@@ -180,25 +180,28 @@ alsaRmeAdi2VolumeControl.prototype.getUIConfig = function() {
         __dirname + '/UIConfig.json'
     ).then(
         function(uiconf) {
-            var v = "";
+            var v = '';
 
             // sections[0] == general
-            v = self.config.get("service_active", true);
+            v = self.config.get('service_active', true);
             uiconf.sections[0].content[0].value = v;
 
+            v = self.config.get('verbose_log', false);
+            uiconf.sections[0].content[1].value = v;
+
             // sections[1] == line12
-            v = self.config.get("line12_active", true);
+            v = self.config.get('line12_active', true);
             uiconf.sections[1].content[0].value = v;
 
-            v = self.config.get("line12_min_db", "-60.0");
+            v = self.config.get('line12_min_db', '-60.0');
             uiconf.sections[1].content[1].value.value = v;
             uiconf.sections[1].content[1].value.label = v;
 
-            v = self.config.get("line12_max_db", "-10.0");
+            v = self.config.get('line12_max_db', '-10.0');
             uiconf.sections[1].content[2].value.value = v;
             uiconf.sections[1].content[2].value.label = v;
 
-            v = self.config.get("line12_volume", "50");
+            v = self.config.get('line12_volume', '50');
             uiconf.sections[1].content[3].value.value = v;
             uiconf.sections[1].content[3].value.label = v;
 
@@ -229,6 +232,7 @@ alsaRmeAdi2VolumeControl.prototype.logConfiguration = function(data) {
     self.logger.info('  phones34_min_db: ' + data['phones34_min_db']);
     self.logger.info('  phones34_volume: ' + data['phones34_volume']);
     self.logger.info('  service_active:  ' + data['service_active']);
+    self.logger.info('  verbose_log:     ' + data['verbose_log']);
 }
 
 alsaRmeAdi2VolumeControl.prototype.setUIConfig = function(data) {

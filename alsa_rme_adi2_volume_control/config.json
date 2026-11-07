@@ -39,6 +39,10 @@
         "type": "boolean",
         "value": true
     },
+    "verbose_log": {
+        "type": "boolean",
+        "value": false
+    },
     "zzzzzz_dummy_last_item_ignore_me": {
         "type": "boolean",
         "value": true
