@@ -128,31 +128,35 @@ alsaRmeAdi2VolumeControl.prototype.editServiceConfigurationAndRestart = function
     return defer.promise;
 }
 
+alsaRmeAdi2VolumeControl.prototype.quote = function(s) {
+    return '"' + s + '"';
+}
+
 alsaRmeAdi2VolumeControl.prototype.editServiceFile = function(readFilePath, writeFilePath) {
     var self = this;
 
     var c = '';
     var l = [
         self.service_executable_path,
-        '--device-name', self.config.get('device_name', 'autodetect')
+        '--device-name', self.quote(self.config.get('device_name', 'autodetect'))
     ];
     if (self.config.get('verbose_log')) {
         l.push('--verbose');
     }
     if (self.config.get('line12_active')) {
-        l.push('--line12-min-db', self.config.get('line12_min_db', '-60.0'));
-        l.push('--line12-max-db', self.config.get('line12_max_db', '-10.0'));
-        l.push('--line12-switch', '1');
-        l.push('--line12-volume', self.config.get('line12_volume', '50'));
+        l.push('--line12-min-db', self.quote(self.config.get('line12_min_db', '-60.0')));
+        l.push('--line12-max-db', self.quote(self.config.get('line12_max_db', '-10.0')));
+        l.push('--line12-switch', self.quote('1'));
+        l.push('--line12-volume', self.quote(self.config.get('line12_volume', '50')));
 
     } else {
         l.push('--no-line12');
     }
     if (self.config.get('phones34_active')) {
-        l.push('--phones34-min-db', self.config.get('phones34_min_db', '-60.0'));
-        l.push('--phones34-max-db', self.config.get('phones34_max_db', '-10.0'));
-        l.push('--phones34-switch', '1');
-        l.push('--phones34-volume', self.config.get('phones34_volume', '50'));
+        l.push('--phones34-min-db', self.quote(self.config.get('phones34_min_db', '-60.0')));
+        l.push('--phones34-max-db', self.quote(self.config.get('phones34_max_db', '-10.0')));
+        l.push('--phones34-switch', self.quote('1'));
+        l.push('--phones34-volume', self.quote(self.config.get('phones34_volume', '50')));
 
     } else {
         l.push('--no-phones34');
