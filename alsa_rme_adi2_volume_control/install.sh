@@ -57,7 +57,7 @@ SERVICE_UDEV_RULES_FILE_SOURCE_PATH="$SERVICE_DIRECTORY_PATH/udev/$SERVICE_UDEV_
 SERVICE_UDEV_RULES_FILE_DESTINATION_PATH="/etc/udev/rules.d/$SERVICE_UDEV_RULES_FILE_NAME"
 
 # Absolute path of the service sudoers file
-SERVICE_SUDOERS_FILE_NAME="99-alsa-rme-adi2-volume-control"
+SERVICE_SUDOERS_FILE_NAME="alsa-rme-adi2-volume-control"
 SERVICE_SUDOERS_FILE_SOURCE_PATH="$SERVICE_DIRECTORY_PATH/sudoers/$SERVICE_SUDOERS_FILE_NAME"
 SERVICE_SUDOERS_FILE_DESTINATION_PATH="/etc/sudoers.d/$SERVICE_SUDOERS_FILE_NAME"
 
@@ -140,6 +140,7 @@ echo "[INFO] Copy udev rules file ... done"
 # Commands called by index.js
 echo "[INFO] Copy sudoers file ..."
 sudo cp "$SERVICE_SUDOERS_FILE_SOURCE_PATH" "$SERVICE_SUDOERS_FILE_DESTINATION_PATH"
+sudo chmod 440 "$SERVICE_SUDOERS_FILE_DESTINATION_PATH"
 sudo visudo -c -f "$SERVICE_SUDOERS_FILE_DESTINATION_PATH"
 echo "[INFO] Copy sudoers file ... done"
 

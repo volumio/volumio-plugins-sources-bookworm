@@ -18,7 +18,7 @@ function alsaRmeAdi2VolumeControl(context) {
 
     this.service_executable_path = '/usr/local/bin/alsa-rme-adi2-volume-control';
     this.service_name = 'alsa-rme-adi2-volume-control.service';
-    this.sudo_cp = '/usr/bin/sudo /bin/cp';
+    this.sudo_mv = '/usr/bin/sudo /bin/mv';
     this.sudo_rm = '/usr/bin/sudo /bin/rm';
     this.sudo_systemctl = '/usr/bin/sudo /bin/systemctl';
 }
@@ -93,16 +93,8 @@ alsaRmeAdi2VolumeControl.prototype.editServiceConfigurationAndRestart = function
     self.editServiceFile(dstServiceFilePath, tmpServiceFilePath);
 
     // Copy the tmpServiceFilePath back to dstServiceFilePath.
-    exec(self.sudo_cp + ' ' + tmpServiceFilePath + ' ' + dstServiceFilePath, { uid: 1000, gid: 1000 },
+    exec(self.sudo_mv + ' ' + tmpServiceFilePath + ' ' + dstServiceFilePath, { uid: 1000, gid: 1000 },
         function(error, stdout, stderr) {
-
-            // Remove the tmpServiceFilePath
-            exec(self.sudo_rm + ' ' + tmpServiceFilePath, { uid: 1000, gid: 1000 },
-                function(error, stdout, stderr) {
-                    // ignore any errors here
-                }
-            );
-
             if (error !== null) {
                 self.logger.error('ALSA RME ADI-2 Volume Control: cannot copy modified service file - ' + error);
                 defer.reject(error);
