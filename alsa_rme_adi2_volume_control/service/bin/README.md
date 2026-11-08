@@ -17,10 +17,10 @@ tree .
 └── README.md
 
 sha256sum amd64/alsa-rme-adi2-volume-control
-9117b8bacd7b2b939729405e5f270643f8f1c4df5262ecf25485922d5f34dbfb  amd64/alsa-rme-adi2-volume-control
+d0647a572dd6b236fdad092f4d8e3132bbe2740b3aa0f818d2a5668f9f51b568  amd64/alsa-rme-adi2-volume-control
 
 file amd64/alsa-rme-adi2-volume-control
-amd64/alsa-rme-adi2-volume-control: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=833b7238c26eab09cb1193a9034df27df6e0cf2c, for GNU/Linux 3.2.0, not stripped
+amd64/alsa-rme-adi2-volume-control: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=375558154773b328a9b811f5220f148e74295f26, for GNU/Linux 3.2.0, not stripped
 
 sha256sum armhf/alsa-rme-adi2-volume-control
 ba819aec56619d7ad040400deccdcef60b30a10baca87e9273206472ac7433cc  armhf/alsa-rme-adi2-volume-control
