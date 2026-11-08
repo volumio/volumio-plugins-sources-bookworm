@@ -109,6 +109,11 @@ echo "[INFO] Uninstall any previous installation ..."
 sudo bash "$UNINSTALLER_FILE_PATH"
 echo "[INFO] Uninstall any previous installation ... done"
 
+echo "[INFO] Install run dependencies ..."
+sudo apt update --yes
+sudo apt install --yes --quiet 2 --no-install-recommends libasound2-dev
+echo "[INFO] Install run dependencies ... done"
+
 echo "[INFO] Copy service executable file ..."
 SERVICE_EXECUTABLE_FILE_SOURCE_PATH="$SERVICE_EXECUTABLE_BIN_DIRECTORY_PATH/$ARCHITECTURE/$SERVICE_EXECUTABLE_FILE_NAME"
 sudo cp "$SERVICE_EXECUTABLE_FILE_SOURCE_PATH" "$SERVICE_EXECUTABLE_FILE_DESTINATION_PATH"
