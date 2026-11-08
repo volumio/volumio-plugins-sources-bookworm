@@ -289,7 +289,7 @@ serialampcontroller.prototype.activateSocketIO = function () {
         self.volumioStatus = data;
         if (data.status == 'play') {
             // still warming up (see startPlaybackHold), e.g. play pressed again in the app: pause again
-            if (self.playbackHold !== undefined && Date.now() - self.playbackHold.lastPause > 1500) {
+            if (self.playbackHold !== undefined && self.playbackHold.paused && Date.now() - self.playbackHold.lastPause > 1500) {
                 self.playbackHold.lastPause = Date.now();
                 self.logger.info('[SERIALAMPCONTROLLER] playbackHold: the amp is still warming up: pausing again');
                 self.socket.emit('pause');
@@ -309,7 +309,7 @@ serialampcontroller.prototype.activateSocketIO = function () {
                     self.powerOnPendingTimer = setTimeout(() => { self.powerOnPending = false; }, 25000);
                     // some amps (e.g. McIntosh) reject other commands while waking up: wait before switching input
                     var settleMs = self.selectedAmp.powerOnSettleMs || 0;
-                    self.startPlaybackHold();
+                    self.startPlaybackHold(data);
                     self.sendCommand('powerOn')
                     .then(_ => setTimeout(() => {
                         if (self.port === undefined) return;
@@ -474,33 +474,54 @@ serialampcontroller.prototype.checkVolumeAfterWake = function() {
 
 // "holdPlaybackWhileWaking" in ampCommands.json: the MA352 un-mutes at the end of its ~16 s tube
 // warm-up at its remembered level and only then carries out commands sent during the warm-up, so a remembered
-// level above the maximum was audible for ~0.1 s (tested 2026-11-06). When playback wakes the amp, pause Volumio,
-// and press play again only when the warm-up is over and the amp has reported a level at or below the maximum.
-// No signal reaches the amp while it un-mutes, and the start of the track isn't lost in the warm-up.
-// Bounded: ends at the resume, or after HOLD_GIVE_UP_MS (then playback stays paused and a message is shown).
+// level above the maximum was audible for ~0.1 s (tested 2026-11-06). So when playback wakes the amp, no signal
+// may reach it while it un-mutes above the maximum. Two ways, depending on the source:
+// - full hold (Volumio's own queue and the volatile sources in HOLD_RESUMABLE_VOLATILE): pause at once, and press
+//   play again when the warm-up is over and the amp has reported a level at or below the maximum. The start of the
+//   track isn't lost in the warm-up either.
+// - safety-only hold (every other volatile source): these can't be relied on to resume after a ~17 s pause. AirPlay
+//   (shairport-sync 3.3 on Volumio 4.239) ends its session ~3 s after a pause and drops its remote control link
+//   ~10 s later, so nothing but the sending device can restart it (tested 2026-11-07). They keep playing while the
+//   amp warms up (muted), and are paused only if the amp wakes up above the maximum (or doesn't report its level
+//   within HOLD_QUIET_MS); then a message asks the user to press play once the amp is ready.
+// Bounded: ends at the resume, at the decision not to pause, or after HOLD_GIVE_UP_MS (paused, with a message).
 var HOLD_QUIET_MS = 2000;    // reports in the first 2 s after the power-on reply are the wake-up dump, not the end of the warm-up
 var HOLD_SETTLE_MS = 1000;   // resume this long after the last report at or below the maximum
 var HOLD_GIVE_UP_MS = 40000;
-serialampcontroller.prototype.startPlaybackHold = function() {
+var HOLD_RESUMABLE_VOLATILE = ['qobuzconnect']; // tested: pauses and resumes at the same position with 'volatilePlay'
+var HOLD_SAFETY_ONLY = ['airplay_emulation'];   // even before Volumio marks it volatile (it does so ~1 s after AirPlay starts)
+serialampcontroller.prototype.startPlaybackHold = function(state) {
     var self = this;
     if (self.selectedAmp === undefined || !self.selectedAmp.holdPlaybackWhileWaking) return;
     self.endPlaybackHold();
-    var hold = self.playbackHold = { started: Date.now(), lastPause: Date.now() };
-    self.logger.info('[SERIALAMPCONTROLLER] playbackHold: pausing playback until the amp has warmed up at a safe volume');
-    self.socket.emit('pause');
+    var volatile = state !== undefined && state.volatile === true;
+    var hold = self.playbackHold = { started: Date.now(), service: state !== undefined ? state.service : undefined,
+        full: (!volatile || HOLD_RESUMABLE_VOLATILE.indexOf(state.service) >= 0) && !(state !== undefined && HOLD_SAFETY_ONLY.indexOf(state.service) >= 0),
+        paused: false };
+    if (hold.full) self.playbackHoldPause(hold, 'pausing playback until the amp has warmed up at a safe volume');
+    else self.logger.info('[SERIALAMPCONTROLLER] playbackHold: ' + hold.service + ' keeps playing while the amp warms up, unless it wakes up above the maximum');
     hold.giveUpTimer = setTimeout(() => {
         if (self.playbackHold !== hold) return;
         self.endPlaybackHold();
+        if (!hold.paused) return;
         self.logger.error('[SERIALAMPCONTROLLER] playbackHold: the amp did not report a volume at or below the maximum after waking; playback stays paused');
         self.commandRouter.pushToastMessage('error', self.getI18nString('TOAST_ERROR'), self.getI18nString('TOAST_PLAYBACK_HELD'));
     }, HOLD_GIVE_UP_MS);
+}
+
+serialampcontroller.prototype.playbackHoldPause = function(hold, why) {
+    var self = this;
+    hold.paused = true;
+    hold.lastPause = Date.now();
+    self.logger.info('[SERIALAMPCONTROLLER] playbackHold: ' + why);
+    self.socket.emit('pause');
 }
 
 serialampcontroller.prototype.endPlaybackHold = function() {
     var self = this;
     var hold = self.playbackHold;
     if (hold === undefined) return;
-    clearTimeout(hold.giveUpTimer); clearTimeout(hold.resumeTimer); clearTimeout(hold.askTimer);
+    clearTimeout(hold.giveUpTimer); clearTimeout(hold.resumeTimer); clearTimeout(hold.askTimer); clearTimeout(hold.quietTimer);
     self.playbackHold = undefined;
 }
 
@@ -518,17 +539,38 @@ serialampcontroller.prototype.playbackHoldAmpAwake = function() {
         hold.askTimer = setTimeout(ask, 2000);
     };
     hold.askTimer = setTimeout(ask, HOLD_QUIET_MS + 500);
+    // safety-only hold: no level reported right after waking (the MA352 sends it in its wake-up dump) -> unknown, so pause
+    if (!hold.full) hold.quietTimer = setTimeout(() => {
+        if (self.playbackHold === hold && !hold.paused && !hold.levelSeen) {
+            hold.manualResume = true;
+            self.playbackHoldPause(hold, 'the amp did not report its volume after waking: pausing playback until it has warmed up');
+        }
+    }, HOLD_QUIET_MS);
 }
 
 // on respVolume
 serialampcontroller.prototype.playbackHoldVolumeReport = function() {
     var self = this;
     var hold = self.playbackHold;
-    if (hold === undefined || hold.wokeAt === undefined || Date.now() - hold.wokeAt < HOLD_QUIET_MS) return;
-    clearTimeout(hold.resumeTimer);
+    if (hold === undefined || hold.wokeAt === undefined) return;
     var limits = self.getVolumeLimits();
     var level = toLevel(self.ampStatus.volume);
-    if (limits === undefined || !Number.isFinite(level) || level > limits.max) return; // enforceMaxVolume is on it; wait for the next report
+    var safe = limits !== undefined && Number.isFinite(level) && level <= limits.max;
+    if (!hold.full && !hold.levelSeen && !hold.paused) {
+        // safety-only hold: the first report after waking is the level the amp will un-mute at
+        hold.levelSeen = true;
+        if (safe) {
+            self.logger.info('[SERIALAMPCONTROLLER] playbackHold: the amp woke up at volume ' + level + ' (maximum ' + limits.max + '): ' + hold.service + ' keeps playing');
+            self.endPlaybackHold();
+            return;
+        }
+        hold.manualResume = true;
+        self.playbackHoldPause(hold, 'the amp woke up above the maximum: pausing ' + hold.service + ' until it has warmed up');
+        return;
+    }
+    if (!hold.paused || Date.now() - hold.wokeAt < HOLD_QUIET_MS) return;
+    clearTimeout(hold.resumeTimer);
+    if (!safe) return; // enforceMaxVolume is on it; wait for the next report
     hold.resumeTimer = setTimeout(() => {
         if (self.playbackHold !== hold) return;
         var limitsNow = self.getVolumeLimits();
@@ -536,10 +578,16 @@ serialampcontroller.prototype.playbackHoldVolumeReport = function() {
         if (limitsNow === undefined || !Number.isFinite(levelNow) || levelNow > limitsNow.max) return;
         self.endPlaybackHold();
         var paused = self.volumioStatus !== undefined && self.volumioStatus.status == 'pause';
-        // a paused "volatile" source (Qobuz Connect, AirPlay, ...) resumes with volatilePlay: Volumio's 'play' ends that
+        // a paused "volatile" source (Qobuz Connect, ...) resumes with volatilePlay: Volumio's 'play' ends that
         // session and plays Volumio's own queue instead (seen with Qobuz Connect on 4.239); 'play' resumes the queue
         var resume = (paused && self.volumioStatus.volatile === true) ? 'volatilePlay' : 'play';
         self.logger.info('[SERIALAMPCONTROLLER] playbackHold: the amp has warmed up at volume ' + levelNow + ' (maximum ' + limitsNow.max + ')' + (paused ? ': resuming playback (' + resume + ')' : ''));
+        if (hold.manualResume) {
+            // a source that may not resume by itself (AirPlay ends its session when paused): try, and tell the user
+            if (paused && self.volumioStatus.volatile === true && self.volumioStatus.service === hold.service) self.socket.emit('volatilePlay');
+            self.commandRouter.pushToastMessage('warning', self.getI18nString('TOAST_PLAYBACK_PAUSED_TITLE'), self.getI18nString('TOAST_PLAYBACK_PRESS_PLAY'));
+            return;
+        }
         if (paused) self.socket.emit(resume);
     }, HOLD_SETTLE_MS);
 }
@@ -1189,7 +1237,10 @@ serialampcontroller.prototype.processResponse = function(response, ...args) {
                 // after the settle time: a waking amp rejects commands
                 setTimeout(() => self.writeSequence(self.selectedAmp.initCommands, self.selectedAmp.commandSpacingMs || 0), Math.max(1000, (self.selectedAmp.powerOnSettleMs || 0) + 200));
             }
+            // switched off again within these 10 s: don't mark it on (it would then not be woken at the next play)
+            var powerOffsBefore = self.powerOffCount || 0;
             setTimeout(() => {
+                if ((self.powerOffCount || 0) !== powerOffsBefore) return;
                 self.initVolumeSettings()
                 .then(_ => {
                     if (self.config.get('startAtPowerup') && self.playbackHold === undefined) { // the hold resumes by itself
@@ -1205,6 +1256,7 @@ serialampcontroller.prototype.processResponse = function(response, ...args) {
         case "respPowerOff":
             if (self.debugLogging) self.logger.info('[SERIALAMPCONTROLLER] processResponse: Amp signaled PowerOff');            
             if (self.ampStatus.Powering == 'down') self.ampStatus.Powering = '';
+            self.powerOffCount = (self.powerOffCount || 0) + 1; // cancels a pending "power on" from respPowerOn
             self.endPlaybackHold(); // switched off while waking: don't resume
             // if the amp is switched off while music plays, do not switch it straight back on;
             // automatic power-on is re-armed the next time playback starts

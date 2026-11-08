@@ -49,5 +49,7 @@
   "TOAST_VOLUME_CONTROL_OFF": "Volume control is off: the Minimum/Maximum Volume settings of SerialAmpControl are not valid. Open the plugin settings and save them again.",
   "TOAST_PASSTHRU_TITLE": "PASSTHRU is on",
   "TOAST_PASSTHRU": "The amplifier ignores volume commands on this input (fixed level). Turn Passthru off for this input in the amplifier's Setup menu.",
-  "TOAST_PLAYBACK_HELD": "Playback paused: the amplifier did not confirm a volume at or below the maximum after waking. Check the amplifier, then press play."
+  "TOAST_PLAYBACK_HELD": "Playback paused: the amplifier did not confirm a volume at or below the maximum after waking. Check the amplifier, then press play.",
+  "TOAST_PLAYBACK_PAUSED_TITLE": "Playback paused",
+  "TOAST_PLAYBACK_PRESS_PLAY": "The amplifier woke up above the maximum volume, so playback was paused while it warmed up. It is ready now: press play on your device."
 }
