@@ -10,12 +10,14 @@
   "LUX_MULTIPLIER": "Lux-kerroin",
   "LUX_MULTIPLIER_DOC": "Kalibrointikerroin VEML7700-anturille. Lisää kirkkaampaa vastetta varten, vähennä tummempaa vastetta varten.",
   "SMOOTHING_FACTOR": "Tasoituskerroin",
-  "SMOOTHING_FACTOR_DOC": "Ohjaa kirkkauden siirtymien nopeutta (0,0-1,0). Matalammat arvot luovat hitaampia, pehmeämpiä siirtymiä.",
+  "SMOOTHING_FACTOR_DOC": "Ohjaa kirkkauden siirtymien nopeutta (0,05-1,0). Matalammat arvot luovat hitaampia, pehmeämpiä siirtymiä.",
   "PLAYBACK_BOOST": "Toiston kirkkauslisäys",
   "PLAYBACK_BOOST_DOC": "Musiikin toiston aikana lisättävä kirkkaus (0-255). Aseta arvoon 0 poistaaksesi tämä ominaisuus käytöstä.",
   "PLAYBACK_BOOST_DURATION": "Lisäyksen kesto toiston jälkeen (sekuntia)",
   "PLAYBACK_BOOST_DURATION_DOC": "Kuinka kauan kirkkauden lisäys säilytetään toiston pysähtymisen jälkeen (0-300 sekuntia). Suositus: 30 sekuntia.",
   "SAVE": "Tallenna asetukset",
   "SAVE_SUCCESS": "Kokoonpano tallennettu onnistuneesti",
-  "SAVE_ERROR": "Virhe kokoonpanon tallennuksessa"
+  "SAVE_ERROR": "Virhe kokoonpanon tallennuksessa",
+  "MIN_MAX_ERROR": "Pienin kirkkaus ei saa olla suurempi kuin suurin kirkkaus",
+  "START_ERROR": "Taustavalopalvelua ei voitu käynnistää. Tarkista anturi ja lokit."
 }

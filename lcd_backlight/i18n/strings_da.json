@@ -10,12 +10,14 @@
   "LUX_MULTIPLIER": "Lux-multiplikator",
   "LUX_MULTIPLIER_DOC": "Kalibreringsmultiplikator for VEML7700-sensoren. Øg for lysere respons, reducer for mørkere respons.",
   "SMOOTHING_FACTOR": "Udglatningsfaktor",
-  "SMOOTHING_FACTOR_DOC": "Styrer hvor hurtigt lysstyrkeovergange sker (0,0-1,0). Lavere værdier skaber langsommere, blødere overgange.",
+  "SMOOTHING_FACTOR_DOC": "Styrer hvor hurtigt lysstyrkeovergange sker (0,05-1,0). Lavere værdier skaber langsommere, blødere overgange.",
   "PLAYBACK_BOOST": "Afspilning lysstyrkeforøgelse",
   "PLAYBACK_BOOST_DOC": "Ekstra lysstyrke tilføjet under musikafspilning (0-255). Indstil til 0 for at deaktivere denne funktion.",
   "PLAYBACK_BOOST_DURATION": "Boost-varighed efter afspilning (sekunder)",
   "PLAYBACK_BOOST_DURATION_DOC": "Hvor længe lysstyrkeforøgelsen skal opretholdes efter afspilningen stopper (0-300 sekunder). Anbefalet: 30 sekunder.",
   "SAVE": "Gem indstillinger",
   "SAVE_SUCCESS": "Konfiguration gemt",
-  "SAVE_ERROR": "Fejl ved lagring af konfiguration"
+  "SAVE_ERROR": "Fejl ved lagring af konfiguration",
+  "MIN_MAX_ERROR": "Minimal lysstyrke må ikke være større end maksimal lysstyrke",
+  "START_ERROR": "Baggrundslystjenesten kunne ikke startes. Kontroller sensoren og logfilerne."
 }

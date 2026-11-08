@@ -10,12 +10,14 @@
   "LUX_MULTIPLIER": "Multiplicateur de lux",
   "LUX_MULTIPLIER_DOC": "Multiplicateur d'étalonnage pour le capteur VEML7700. Augmenter pour une réponse plus lumineuse, diminuer pour une réponse plus sombre.",
   "SMOOTHING_FACTOR": "Facteur de lissage",
-  "SMOOTHING_FACTOR_DOC": "Contrôle la rapidité des transitions de luminosité (0,0-1,0). Des valeurs plus faibles créent des transitions plus lentes et plus douces.",
+  "SMOOTHING_FACTOR_DOC": "Contrôle la rapidité des transitions de luminosité (0,05-1,0). Des valeurs plus faibles créent des transitions plus lentes et plus douces.",
   "PLAYBACK_BOOST": "Augmentation de luminosité en lecture",
   "PLAYBACK_BOOST_DOC": "Luminosité supplémentaire ajoutée pendant la lecture musicale (0-255). Définir à 0 pour désactiver cette fonctionnalité.",
   "PLAYBACK_BOOST_DURATION": "Durée du boost après la lecture (secondes)",
   "PLAYBACK_BOOST_DURATION_DOC": "Combien de temps maintenir l'augmentation de luminosité après l'arrêt de la lecture (0-300 secondes). Recommandé : 30 secondes.",
   "SAVE": "Enregistrer les paramètres",
   "SAVE_SUCCESS": "Configuration enregistrée avec succès",
-  "SAVE_ERROR": "Erreur lors de l'enregistrement de la configuration"
+  "SAVE_ERROR": "Erreur lors de l'enregistrement de la configuration",
+  "MIN_MAX_ERROR": "La luminosité minimale ne doit pas être supérieure à la luminosité maximale",
+  "START_ERROR": "Le service de rétroéclairage n'a pas pu démarrer. Vérifiez le capteur et les journaux."
 }

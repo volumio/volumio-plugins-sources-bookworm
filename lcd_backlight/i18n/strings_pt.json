@@ -10,12 +10,14 @@
   "LUX_MULTIPLIER": "Multiplicador de lux",
   "LUX_MULTIPLIER_DOC": "Multiplicador de calibração para o sensor VEML7700. Aumentar para resposta mais brilhante, diminuir para resposta mais escura.",
   "SMOOTHING_FACTOR": "Fator de suavização",
-  "SMOOTHING_FACTOR_DOC": "Controla a rapidez das transições de brilho (0,0-1,0). Valores mais baixos criam transições mais lentas e suaves.",
+  "SMOOTHING_FACTOR_DOC": "Controla a rapidez das transições de brilho (0,05-1,0). Valores mais baixos criam transições mais lentas e suaves.",
   "PLAYBACK_BOOST": "Aumento de brilho na reprodução",
   "PLAYBACK_BOOST_DOC": "Brilho adicional adicionado durante a reprodução de música (0-255). Defina como 0 para desativar este recurso.",
   "PLAYBACK_BOOST_DURATION": "Duração do aumento após reprodução (segundos)",
   "PLAYBACK_BOOST_DURATION_DOC": "Quanto tempo manter o aumento de brilho após a reprodução parar (0-300 segundos). Recomendado: 30 segundos.",
   "SAVE": "Salvar configurações",
   "SAVE_SUCCESS": "Configuração salva com sucesso",
-  "SAVE_ERROR": "Erro ao salvar configuração"
+  "SAVE_ERROR": "Erro ao salvar configuração",
+  "MIN_MAX_ERROR": "O brilho mínimo não pode ser maior que o brilho máximo",
+  "START_ERROR": "Não foi possível iniciar o serviço de retroiluminação. Verifique o sensor e os registos."
 }

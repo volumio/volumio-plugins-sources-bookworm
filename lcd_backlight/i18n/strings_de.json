@@ -10,12 +10,14 @@
   "LUX_MULTIPLIER": "Lux-Multiplikator",
   "LUX_MULTIPLIER_DOC": "Kalibrierungsmultiplikator für den VEML7700-Sensor. Erhöhen für hellere Reaktion, verringern für dunklere Reaktion.",
   "SMOOTHING_FACTOR": "Glättungsfaktor",
-  "SMOOTHING_FACTOR_DOC": "Steuert, wie schnell Helligkeitsübergänge erfolgen (0,0-1,0). Niedrigere Werte erzeugen langsamere, sanftere Übergänge.",
+  "SMOOTHING_FACTOR_DOC": "Steuert, wie schnell Helligkeitsübergänge erfolgen (0,05-1,0). Niedrigere Werte erzeugen langsamere, sanftere Übergänge.",
   "PLAYBACK_BOOST": "Wiedergabe-Helligkeitserhöhung",
   "PLAYBACK_BOOST_DOC": "Zusätzliche Helligkeit während der Musikwiedergabe (0-255). Auf 0 setzen, um diese Funktion zu deaktivieren.",
   "PLAYBACK_BOOST_DURATION": "Boost-Dauer nach Wiedergabe (Sekunden)",
   "PLAYBACK_BOOST_DURATION_DOC": "Wie lange die Helligkeitserhöhung nach dem Stoppen der Wiedergabe beibehalten werden soll (0-300 Sekunden). Empfohlen: 30 Sekunden.",
   "SAVE": "Einstellungen speichern",
   "SAVE_SUCCESS": "Konfiguration erfolgreich gespeichert",
-  "SAVE_ERROR": "Fehler beim Speichern der Konfiguration"
+  "SAVE_ERROR": "Fehler beim Speichern der Konfiguration",
+  "MIN_MAX_ERROR": "Die minimale Helligkeit darf nicht größer als die maximale Helligkeit sein",
+  "START_ERROR": "Der Hintergrundbeleuchtungsdienst konnte nicht gestartet werden. Prüfen Sie den Sensor und die Logs."
 }

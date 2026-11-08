@@ -1,11 +1,11 @@
-# <img src="./images/logo.png" alt="Logo" width="25" style="vertical-align: text-bottom;">   LCD Backlight Control Plugin for Volumio 3
+# <img src="./images/logo.png" alt="Logo" width="25" style="vertical-align: text-bottom;">   LCD Backlight Control Plugin for Volumio 3 and Volumio 4
 
-![Python](https://img.shields.io/badge/python-3.x-blue.svg)
+![Python](https://img.shields.io/badge/python-3.7+-blue.svg)
 ![Raspberry Pi](https://img.shields.io/badge/platform-Raspberry%20Pi%203B%2B-red.svg)
-![Volumio](https://img.shields.io/badge/Volumio-3.0+-orange.svg)
+![Volumio](https://img.shields.io/badge/Volumio-3%20(buster)%20%7C%204%20(bookworm)-orange.svg)
 
 
-A Volumio 3 plugin for automatic LCD backlight control based on ambient light levels using the VEML7700 light sensor, with intelligent brightness boost during music playback.
+A Volumio 3 (buster) and Volumio 4 (bookworm) plugin for automatic LCD backlight control based on ambient light levels using the VEML7700 light sensor, with intelligent brightness boost during music playback.
 
 ## Overview
 
@@ -19,21 +19,23 @@ This plugin automatically adjusts the brightness of LCD displays with backlight 
 - **Smooth Transitions**: Adjustable smoothing factor for gradual brightness changes
 - **Customizable Sensor Calibration**: Fine-tune the sensor response with a lux multiplier
 - **Flexible Measurement Interval**: Configure how often the sensor reads ambient light (0.1 - 10 seconds)
-- **Real-time Playback Detection**: Monitors Volumio's playback state via API
-- **Multi-language Support**: Includes English and Slovak translations (extensible to all Volumio-supported languages)
+- **Real-time Playback Detection**: Receives Volumio playback state changes directly, without polling the API
+- **Live Configuration**: Changed settings are applied immediately, without restarting the service
+- **Full Brightness When Disabled**: The display is set to full brightness when the plugin is disabled or uninstalled
+- **Multi-language Support**: Translations for all Volumio-supported languages
 
-## ð§ Hardware Components
+## 🔧 Hardware Components
 
 | Component | Model/Type | Description |
 |-----------|------------|-------------|
 | **Main Unit** | Raspberry Pi 3B+ | Control unit |
 | **Display** | 7" LCD DPI (OFI009) | Touch display connected via DPI interface |
 | **Encoder** | KY-040 | Rotary encoder for volume control |
-| **Light Sensor** | VEML7700 (BH-014PA) | 16-bit I2C ambient light sensor |
+| **Light Sensor** | VEML7700 (BH-014PA) | 16-bit I²C ambient light sensor |
 
-## ð Wiring Diagram
+## 🔌 Wiring Diagram
 
-### I2C Bus (VEML7700 Sensor)
+### I²C Bus (VEML7700 Sensor)
 
 ![Wiring diagram for raspberrypi 3b+](images/veml7700_schema.png)
 
@@ -68,6 +70,7 @@ This plugin automatically adjusts the brightness of LCD displays with backlight 
 
 > **Note**: Configure encoder pins in Volumio's Rotary Encoder plugin using **BCM** pin numbers.<br>
 >           **No KY-040 rotary encoder connection is needed for the plugin to function properly.**
+
 ### Display Connection
 
 - **Power**: +5V and GND from connector X1
@@ -76,32 +79,34 @@ This plugin automatically adjusts the brightness of LCD displays with backlight 
 
 ## Installation
 
-1. Manual Plugin Installation
-   - download lcd_backlight.zip from download section , or from github
-   - unzip downladed zip file, to the lcd_backlight directory and run following comands from shell <br>
-     `cd ../lcd_backlight` <br>
-     `sudo sudo chmod +x install.sh`<br>
-     `sudo ./install.sh`<br>
-     `volumio plugin refresh`<br>
+I²C must be enabled (e.g. `dtparam=i2c_arm=on` in `/boot/userconfig.txt`) and the sensor must be visible with `sudo i2cdetect -y 1` at address `0x10`.
+
+1. Install the plugin through the Volumio web interface:
+   - Navigate to **Plugins** → **Search Plugins**
+   - Search for "LCD Backlight control" and install it
+   - Enable the plugin in **Plugins** → **Installed Plugins**
+
+2. Manual installation (from the source code), run on the Volumio device:
+   ```
+   git clone https://github.com/lubomirkarlik/volumio-plugins-sources-bookworm.git --depth=1 -b lcd_backlight
+   cd volumio-plugins-sources-bookworm/lcd_backlight
+   volumio plugin install
+   ```
    - The plugin will appear among the installed plugins.
+   - The same source code works on Volumio 3 (buster, Node 14, Python 3.7) and Volumio 4 (bookworm, Node 20, Python 3.11).
+
 ![Volumio Plugin install screen](images/volumio_plugins.png)
 
-If it does not, it is necessary to delete the file /data/configuration/plugins.json and restart Volumio using the command  volumio vrestart
-
-2. Install the plugin through the Volumio web interface:
-   - Navigate to **Plugins** â **Install Plugins**
-   - Search for "LCD Backlight Control" or upload the plugin package
-   
-2.1 The installation script will:
-   - Install Python dependencies (`python3-smbus`, `python3-requests`)
-   - Copy the Python control script to `/usr/local/bin/`
+The installation script will:
+   - Install the Python dependency (`python3-smbus`), only if it is not installed yet
+   - Link the Python control script to `/usr/local/bin/`
    - Create configuration directory at `/etc/lcd_backlight/`
-   - Install and enable the systemd service
+   - Install the systemd service (it is started and stopped by the plugin, not at boot)
    - Set appropriate permissions
 
 ## Configuration
 
-Access the plugin settings through the Volumio web interface under **Plugins** â **LCD Backlight Control** button **Settings** .
+Access the plugin settings through the Volumio web interface under **Plugins** → **Installed Plugins** → **LCD Backlight control** → **Settings**.
 ![plugin settings](images/plugin_settings.png)
 
 ### Available Settings
@@ -114,10 +119,10 @@ Access the plugin settings through the Volumio web interface under **Plugins** �
 #### Minimum Brightness
 - **Range**: 0 - 255
 - **Default**: 12
-- **Description**: The lowest brightness level the display will reach. Prevents the screen from becoming too dark or turning off completely.
+- **Description**: The lowest brightness level the display will reach. Prevents the screen from becoming too dark or turning off completely. Must not be greater than Maximum Brightness.
 
 #### Maximum Brightness
-- **Range**: 0 - 255
+- **Range**: 0 - 255 (limited to `max_brightness` of the backlight device)
 - **Default**: 255
 - **Description**: The highest brightness level the display will reach. Can be reduced to save power or limit maximum brightness.
 
@@ -127,7 +132,7 @@ Access the plugin settings through the Volumio web interface under **Plugins** �
 - **Description**: Calibration multiplier for the VEML7700 sensor. Increase for brighter response to ambient light, decrease for darker response. Use this to fine-tune the sensor's sensitivity to your environment.
 
 #### Smoothing Factor
-- **Range**: 0.0 - 1.0
+- **Range**: 0.05 - 1.0
 - **Default**: 0.3
 - **Description**: Controls how quickly brightness transitions occur. Lower values create slower, smoother transitions. Higher values make brightness changes more immediate and responsive.
 
@@ -145,11 +150,12 @@ Access the plugin settings through the Volumio web interface under **Plugins** �
 
 ### Ambient Light Control
 1. The plugin reads ambient light levels from the VEML7700 sensor at regular intervals
-2. The lux reading is multiplied by the configured lux multiplier for calibration
+2. The raw reading is multiplied by the configured lux multiplier for calibration
 3. The brightness value is calculated using a logarithmic curve and constrained within the min/max range
+4. If the sensor cannot be read, the current brightness is kept
 
 ### Playback Boost System
-1. The plugin monitors Volumio's playback state via its REST API (http://localhost:3000/api/v1/getState)
+1. The plugin receives every Volumio state change (`volumioPushState`) and writes the playback state to `/etc/lcd_backlight/lcd_playing` (`1` = playing). The file is written only when playback starts or stops; the Volumio API is not polled.
 2. When playback status changes to "play":
    - The configured brightness boost is added to the ambient-calculated brightness
    - The boost remains active throughout playback
@@ -169,93 +175,107 @@ Final Brightness = min(MAX_BACKLIGHT, Ambient_Brightness + Playback_Boost)
 ### File Structure
 ```text
 lcd_backlight/
-   ├── index.js # Main plugin controller
-   ├── backlight_control.py # Python script for hardware control
+   ├── index.js              # Main plugin controller
+   ├── backlight_control.py  # Python script for hardware control
    ├── lcd_backlight.service # Systemd service file
-   ├── install.sh # Installation script
-   ├── uninstall.sh # Uninstallation script
-   ├── UIConfig.json # Web UI configuration
-   ├── package.json # Plugin metadata
-   ├── i18n/ # Translations
-        ├── strings_en.json # English strings
-        ├── strings_sk.json # Slovak strings
-        └── strings_...json # Other language strings DE, FR, ...
-
-   └── images/ # Images
-         ├── logo.png # Logo image
-         ├── plugin_settings.png # Settings image
-         ├── veml7700_schema.png # Schematics drawings
-         └── volumio_plugins.png # Plugins screenshot
+   ├── install.sh            # Installation script
+   ├── uninstall.sh          # Uninstallation script
+   ├── UIConfig.json         # Web UI configuration
+   ├── config.json           # Default plugin settings
+   ├── package.json          # Plugin metadata
+   ├── i18n/                 # Translations
+   │     ├── strings_en.json # English strings
+   │     ├── strings_sk.json # Slovak strings
+   │     └── strings_...json # Other language strings DE, FR, ...
+   └── images/               # Images
+         ├── logo.png             # Logo image
+         ├── plugin_settings.png  # Settings image
+         ├── veml7700_schema.png  # Schematics drawings
+         └── volumio_plugins.png  # Plugins screenshot
 
 /usr/local/bin/
-   └── backlight_control.py # Main Python script (installed version)
-
+   └── backlight_control.py  # Symlink to the Python script in the plugin folder
 ```
+
 ### Configuration Files
 
 The plugin stores configuration in two locations:
 
-1. **Persistent Config**: `/data/plugins/system_hardware/lcd_backlight/config.json`
+1. **Persistent Config**: `/data/configuration/system_hardware/lcd_backlight/config.json`
    - Stores all plugin settings
    - Managed by Volumio's configuration system
 
 2. **Runtime Config**: `/etc/lcd_backlight/`
    - Individual files for each setting (e.g., `lcd_enabled`, `lcd_int_time`, `lcd_playback_boost`)
-   - Read by the Python control script
-   - Allows real-time configuration updates without restarting the service
+   - Written by the plugin, read by the Python control script
+   - Changes are detected and applied without restarting the service
 
 ### Service Management
 
 The plugin uses a systemd service (`lcd_backlight.service`) that:
 - Runs the Python control script as a daemon
-- Starts automatically on boot when the plugin is enabled
-- Restarts automatically on failure
+- Is started when the plugin is enabled and stopped when it is disabled
+- Sets the display to full brightness when stopped
+- Restarts automatically on failure (e.g. sensor not ready yet)
 - Logs to systemd journal
-- Monitors Volumio API for playback state changes
+- Reads the playback state written by the plugin
 
 #### Log Output Example
 
-For debug purpose, uncomment lines 358-360 in backlight_control.py:
+For debug purpose, uncomment the two lines at the end of `_update_brightness()` in `backlight_control.py`:
 ```python
-# Uncomment for debug
-# if success:
-#     boost_indicator = " [BOOST]" if self.playback_boost_active else ""
-#     print(f"[{time.strftime('%H:%M:%S')}] Lux: {lux:6.1f} | Brightness: {self.current_brightness:3d}/{self.max_backlight}{boost_indicator}")
+# Uncomment for debugging:
+# boost_indicator = " [BOOST]" if self.playback_boost_active and self.playback_boost > 0 else ""
+# log(f"Lux: {lux:8.1f} | Brightness: {brightness:3d}/{self.max_backlight}{boost_indicator}")
 ```
 
-Console output will be:
+Output in `journalctl -u lcd_backlight.service -f` will be:
 ```
-[12:34:56] Lux:  245.3 | Brightness: 145/255
-[12:34:57] Lux:  248.1 | Brightness: 147/255
-[12:35:12] Playback started - activating boost (+50)
-[12:35:13] Lux:  251.7 | Brightness: 199/255 [BOOST]
-[12:37:45] Playback stopped - boost active for 30s
-[12:38:15] Boost period expired - deactivating
-[12:38:16] Lux:  249.2 | Brightness: 148/255
-```
-
-### API Integration
-
-The plugin queries the Volumio API endpoint:
-```
-GET http://localhost:3000/api/v1/getState
+[12:34:56] Lux:    245.3 | Brightness: 145/255
+[12:34:57] Lux:    248.1 | Brightness: 147/255
+[12:35:12] Playback STARTED - activating boost (+50)
+[12:35:13] Lux:    251.7 | Brightness: 199/255 [BOOST]
+[12:37:45] Playback STOPPED - boost active for 30s
+[12:38:15] Boost period EXPIRED - deactivating
+[12:38:16] Lux:    249.2 | Brightness: 148/255
 ```
 
-Response format:
-```json
-{
-  "status": "play|pause|stop",
-  "title": "Song Title",
-  "artist": "Artist Name",
-  ...
-}
-```
+### Playback State Integration
+
+The plugin registers a `volumioPushState` callback in Volumio. On every state change it checks
+`state.status` (`play`, `pause`, `stop`) and, only when playing/not playing changes, writes
+`1` or `0` to `/etc/lcd_backlight/lcd_playing`. The Python service reads this file in every
+measurement cycle. No HTTP requests are made, so the Volumio log is not filled with
+`CoreCommandRouter::volumioGetState` messages.
 
 ## Troubleshooting
 
+### Plugin is not shown in Installed Plugins
+- Do not run `install.sh` manually. It only installs system files, the plugin is registered in Volumio by `volumio plugin install`.
+- Run `volumio plugin install` as user `volumio` (not as root and not with `sudo`). `whoami` must print `volumio`.
+
+### Installation hangs at "Downloading plugin"
+If the Volumio log (`sudo journalctl -f`) shows
+`/bin/mv: cannot move '/tmp/plugins/lcd_backlight.zip' to '/tmp/downloaded_plugin.zip': Permission denied`,
+`volumio plugin install` was run as root before and left root-owned temporary files.
+Volumio (user `volumio`) cannot move or overwrite them. Remove them once and install again as user `volumio`:
+```
+sudo rm -rf /tmp/plugins /tmp/downloaded_plugin.zip
+cd /home/volumio/volumio-plugins-sources/lcd_backlight
+volumio plugin install
+```
+
+### Old plugin behaviour after reinstall or update
+Volumio keeps the previously loaded `index.js` in memory when a plugin is reinstalled
+(Node.js module cache), only the Python service uses the new files. Restart Volumio after
+every reinstall or update of the plugin:
+```
+volumio vrestart
+```
+
 ### Plugin doesn't start
-- Check if the VEML7700 sensor is properly connected via IÂ²C
-- Verify IÂ²C is enabled on your system (`sudo i2cdetect -y 1`)
+- Check if the VEML7700 sensor is properly connected via I²C
+- Verify I²C is enabled on your system (`sudo i2cdetect -y 1`)
 - Check systemd service status: `systemctl status lcd_backlight.service`
 - Review logs: `journalctl -u lcd_backlight.service -f`
 
@@ -266,10 +286,9 @@ Response format:
 - Test sensor readings manually
 
 ### Playback boost not working
-- Verify Volumio API is accessible: `curl http://localhost:3000/api/v1/getState`
 - Check if playback_boost is set to a value greater than 0
-- Review service logs for API connection errors
-- Ensure python3-requests is installed
+- During playback `cat /etc/lcd_backlight/lcd_playing` must print `1`
+- Review service logs: `journalctl -u lcd_backlight.service -f` (shows "Playback STARTED")
 
 ### Brightness changes too quickly/slowly
 - Adjust the **Smoothing Factor** setting
@@ -285,21 +304,29 @@ Response format:
 ## Uninstallation
 
 The plugin can be uninstalled through the Volumio web interface. The uninstallation process will:
-- Stop and disable the systemd service
-- Remove the service file
-- Remove the Python control script
-- Clean up configuration files
+- Stop the systemd service (the display is set to full brightness)
+- Remove the service file and the Python script link
+- Remove the runtime configuration directory `/etc/lcd_backlight`
 
 ## Version
 
-**Current Version**: 1.1.0
- - added boost brightness durring playback
- - instal/uninstall script fix
+**Current Version**: 1.2.0
+ - Volumio 3 (buster) and Volumio 4 (bookworm) support from one source code
+ - validation of settings (minimum must not exceed maximum)
+ - settings are applied without restarting the service
+ - full brightness restored when the plugin is disabled or uninstalled
+ - service restarts automatically when the sensor is not ready at boot
+ - service is no longer started at boot when the plugin is disabled
+ - playback state is pushed by Volumio, the API is no longer polled every second
+
+**1.1.0**
+ - added boost brightness during playback
+ - install/uninstall script fix
 
 
 ## License
 
-This project is open-source and available under the ISC License. You may use and modify it freely. You may use the program as is at your own risk, no updates or modifications to the code will be made, no planed, and no warranties or claims for damages will be made in connection with any use of this code.
+This project is open-source and available under the ISC License. You may use and modify it freely. You may use the program as is at your own risk, no updates or modifications to the code will be made, no planned, and no warranties or claims for damages will be made in connection with any use of this code.
 
 ## Author
 
@@ -311,4 +338,4 @@ For issues, questions, or contributions, please visit the plugin's repository or
 
 ---
 
-**Note**: This plugin requires appropriate hardware (VEML7700 sensor and compatible LCD display) and may need system-level permissions to access IÂ²C, backlight control interfaces, and Volumio API.
+**Note**: This plugin requires appropriate hardware (VEML7700 sensor and compatible LCD display) and may need system-level permissions to access I²C, and backlight control interfaces.

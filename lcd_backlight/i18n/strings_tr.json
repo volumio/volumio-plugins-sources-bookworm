@@ -10,12 +10,14 @@
   "LUX_MULTIPLIER": "Lüks Çarpanı",
   "LUX_MULTIPLIER_DOC": "VEML7700 sensörü için kalibrasyon çarpanı. Daha parlak yanıt için artırın, daha karanlık yanıt için azaltın.",
   "SMOOTHING_FACTOR": "Yumuşatma Faktörü",
-  "SMOOTHING_FACTOR_DOC": "Parlaklık geçişlerinin ne kadar hızlı gerçekleşeceğini kontrol eder (0,0-1,0). Daha düşük değerler daha yavaş, daha yumuşak geçişler oluşturur.",
+  "SMOOTHING_FACTOR_DOC": "Parlaklık geçişlerinin ne kadar hızlı gerçekleşeceğini kontrol eder (0,05-1,0). Daha düşük değerler daha yavaş, daha yumuşak geçişler oluşturur.",
   "PLAYBACK_BOOST": "Oynatma Parlaklık Artışı",
   "PLAYBACK_BOOST_DOC": "Müzik çalma sırasında eklenen ekstra parlaklık (0-255). Bu özelliği devre dışı bırakmak için 0 olarak ayarlayın.",
   "PLAYBACK_BOOST_DURATION": "Oynatma Sonrası Artış Süresi (saniye)",
   "PLAYBACK_BOOST_DURATION_DOC": "Oynatma durduktan sonra parlaklık artışının ne kadar süre korunacağı (0-300 saniye). Önerilen: 30 saniye.",
   "SAVE": "Ayarları Kaydet",
   "SAVE_SUCCESS": "Yapılandırma başarıyla kaydedildi",
-  "SAVE_ERROR": "Yapılandırma kaydedilirken hata oluştu"
+  "SAVE_ERROR": "Yapılandırma kaydedilirken hata oluştu",
+  "MIN_MAX_ERROR": "Minimum parlaklık maksimum parlaklıktan büyük olamaz",
+  "START_ERROR": "Arka ışık hizmeti başlatılamadı. Sensörü ve günlükleri kontrol edin."
 }

@@ -5,7 +5,8 @@ After=network.target
 [Service]
 Type=simple
 User=root
-ExecStart=/usr/bin/python3 /usr/local/bin/backlight_control.py
+# -u: unbuffered output, so messages appear in the journal immediately
+ExecStart=/usr/bin/python3 -u /usr/local/bin/backlight_control.py
 Restart=on-failure
 RestartSec=5
 StandardOutput=journal
