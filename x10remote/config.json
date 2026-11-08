@@ -1,0 +1,62 @@
+{
+  "enabled": {
+    "type": "boolean",
+    "value": true
+  },
+  "debounce_ms": {
+    "type": "number",
+    "value": 300
+  },
+  "repeat_ms": {
+    "type": "number",
+    "value": 150
+  },
+  "ignore_scancodes": {
+    "type": "string",
+    "value": "0x00"
+  },
+  "allow_shell": {
+    "type": "boolean",
+    "value": false
+  },
+  "log_presses": {
+    "type": "boolean",
+    "value": false
+  },
+  "web_port": {
+    "type": "number",
+    "value": 7710
+  },
+  "active_profiles": {
+    "type": "string",
+    "value": "[]"
+  },
+  "migrated": {
+    "type": "boolean",
+    "value": false
+  },
+  "mappings": {
+    "type": "string",
+    "value": ""
+  },
+  "thd_exclusive": {
+    "type": "boolean",
+    "value": false
+  },
+  "thd_exclusive_delay": {
+    "type": "number",
+    "value": 10
+  },
+  "watchdog": {
+    "type": "boolean",
+    "value": true
+  },
+  "expert_mode": {
+    "type": "boolean",
+    "value": false
+  },
+  "expert_v17": {
+    "type": "boolean",
+    "value": false
+  }
+}

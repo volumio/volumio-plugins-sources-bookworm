@@ -1,0 +1,36 @@
+{
+  "name": "x10remote",
+  "version": "0.58.1",
+  "description": "RF/IR remotes for Volumio: wizard to read in remotes, profiles, keys only known as MSC_SCAN made usable for Triggerhappy, own commands replace audio.conf defaults per remote.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No tests\" && exit 0"
+  },
+  "author": "josh2000",
+  "license": "MIT",
+  "repository": "https://github.com/volumio/volumio-plugins-sources-bookworm/tree/master/x10remote",
+  "volumio_info": {
+    "prettyName": "X10 RF Remote",
+    "icon": "fa-gamepad",
+    "plugin_type": "system_hardware",
+    "architectures": [
+      "armhf",
+      "arm64",
+      "amd64"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "has_alsa_contribution": false,
+    "details": "Makes RF/IR remote keys usable in Volumio - including keys the kernel driver only reports as MSC_SCAN (e.g. X10 WTI RF receiver 0bc7:0006 with ati_remote). A wizard reads in all keys of a remote, lets you name them and assign Volumio commands, and saves everything as a profile (with description, notes and up to 6 pictures) in /data/INTERNAL/X10. Own commands for keys that already have a Volumio default replace it for that remote only; audio.conf is never modified. Includes a live key test page. Kernel and driver are not modified.",
+    "changelog": "0.58.1: several transmitters on one receiver with identical codes - the profile activated last applies instead of skipping, identical assignments are no conflict; 0.58.0: radio station action (3 URIs failover, presets, reachability check, display data, radio-stations.json), web radio report, add to My Web Radios, receivers in one folder named like the receiver, same Triggerhappy key allowed in different profiles; 0.57.0: transmitters and receivers with own names and pictures, 433 MHz mode (n:m), template library (Medion RF 20016398), all keys locked while reading in, used Triggerhappy keys greyed out, delete in profile list; 0.56.0: new wizard - profile first, then key by key (name and action right away), \"Done\", then pictures; 0.55.1: web interface follows the Volumio language automatically; 0.55.0: first public release - wizard to read in RF/IR remotes (including scan-code-only keys such as the X10 WTI receiver), profiles with labels, descriptions, notes and pictures, key test page, command reference, print view, rename/duplicate profiles, custom commands replace Volumio defaults per remote without modifying audio.conf, expert mode (custom shell commands off by default, exclusive Triggerhappy mode), watchdog, translations: English, Italian, German, Spanish, French"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.0"
+  }
+}

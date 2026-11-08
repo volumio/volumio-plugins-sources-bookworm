@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="WEB_TITLE_PRINT">X10 RF Remote</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body class="printpage">
+<main class="wrap">
+  <div class="row noprint toolbar">
+    <label class="check"><input type="checkbox" id="chkTech"> <span data-i18n="WEB_PRINT_TECH"></span></label>
+    <span class="spacer"></span>
+    <button id="btnCopy" type="button" data-i18n="WEB_PRINT_COPY"></button>
+    <button id="btnPrintNow" type="button" class="primary" data-i18n="WEB_PRINT_NOW"></button>
+    <a class="btn" id="btnBack" data-i18n="WEB_BACK_TO_PROFILE"></a>
+  </div>
+  <p class="muted noprint" data-i18n="WEB_PRINT_HELP"></p>
+  <article class="sheet" id="sheet">
+    <h1 id="pName">…</h1>
+    <p class="sub" id="pSub"></p>
+    <p class="desc" id="pDesc"></p>
+    <table class="plist" id="plist"></table>
+    <p class="foot" id="pFoot"></p>
+  </article>
+</main>
+<script src="app.js"></script>
+<script src="print.js"></script>
+</body>
+</html>

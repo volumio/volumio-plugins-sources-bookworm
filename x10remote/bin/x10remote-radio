@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+# x10remote-radio <profil>/<taste>
+# Startet einen Radiosender aus /data/INTERNAL/X10/radio-stations.json (vom Plugin "X10 RF Remote" erzeugt).
+# Failover: Die URIs werden der Reihe nach geprueft, die erste erreichbare wird gespielt; ist keine erreichbar,
+# wird trotzdem die erste versucht (die Pruefung kann z. B. an einem Zertifikat scheitern, MPD aber nicht).
+# Abspielen ueber die Volumio-REST-API (entspricht):
+#   curl -s -X POST -H 'Content-Type: application/json' \
+#        -d '{"service":"webradio","type":"webradio","title":"<Name>","uri":"<URI>"}' \
+#        http://127.0.0.1:3000/api/v1/replaceAndPlay
+import json
+import socket
+import ssl
+import sys
+import syslog
+import urllib.parse
+import urllib.request
+
+CATALOG = "/data/INTERNAL/X10/radio-stations.json"
+API = "http://127.0.0.1:3000/api/v1/replaceAndPlay"
+TIMEOUT = 4.0
+
+
+def log(msg):
+    syslog.syslog(syslog.LOG_INFO, "x10remote-radio: " + msg)
+
+
+def reachable(uri, hops=0):
+    """True, wenn der Server mit 2xx antwortet (HTTP oder ICY). Folgt bis zu 3 Weiterleitungen."""
+    try:
+        u = urllib.parse.urlsplit(uri)
+        if u.scheme not in ("http", "https") or not u.hostname:
+            return False
+        port = u.port or (443 if u.scheme == "https" else 80)
+        sock = socket.create_connection((u.hostname, port), timeout=TIMEOUT)
+        if u.scheme == "https":
+            sock = ssl.create_default_context().wrap_socket(sock, server_hostname=u.hostname)
+        path = (u.path or "/") + ("?" + u.query if u.query else "")
+        host = u.netloc.split("@")[-1]
+        sock.sendall(("GET %s HTTP/1.0\r\nHost: %s\r\nUser-Agent: X10Remote-Volumio/1.0\r\n"
+                      "Icy-MetaData: 0\r\nConnection: close\r\n\r\n" % (path, host)).encode("latin-1"))
+        data = b""
+        while b"\r\n\r\n" not in data and b"\n\n" not in data and len(data) < 16384:
+            chunk = sock.recv(4096)
+            if not chunk:
+                break
+            data += chunk
+        sock.close()
+        lines = data.decode("latin-1", "replace").splitlines()
+        if not lines:
+            return False
+        parts = lines[0].split()
+        if len(parts) < 2 or not parts[1].isdigit():
+            return False
+        status = int(parts[1])
+        if 300 <= status < 400 and hops < 3:
+            for line in lines[1:]:
+                if line.lower().startswith("location:"):
+                    return reachable(urllib.parse.urljoin(uri, line.split(":", 1)[1].strip()), hops + 1)
+        return 200 <= status < 300
+    except Exception:
+        return False
+
+
+def play(name, uri):
+    body = json.dumps({"service": "webradio", "type": "webradio", "title": name, "uri": uri}).encode("utf-8")
+    req = urllib.request.Request(API, data=body, headers={"Content-Type": "application/json"}, method="POST")
+    with urllib.request.urlopen(req, timeout=10) as r:
+        return r.read().decode("utf-8", "replace")
+
+
+def main():
+    if len(sys.argv) != 2:
+        print("usage: x10remote-radio <profile>/<key>", file=sys.stderr)
+        return 2
+    sid = sys.argv[1]
+    try:
+        with open(CATALOG, encoding="utf-8") as f:
+            cat = json.load(f)
+        station = next(s for s in cat.get("stations", []) if s.get("id") == sid)
+    except StopIteration:
+        print("x10remote-radio: station %s not found" % sid, file=sys.stderr)
+        return 1
+    except Exception as e:
+        print("x10remote-radio: cannot read %s: %s" % (CATALOG, e), file=sys.stderr)
+        return 1
+    uris = [u for u in station.get("uris", []) if isinstance(u, str) and u.startswith(("http://", "https://"))][:3]
+    if not uris:
+        return 1
+    name = str(station.get("name") or "")[:100]
+    chosen = None
+    for i, u in enumerate(uris):
+        if len(uris) == 1 or reachable(u):
+            chosen = u
+            break
+        log("%s: URI %d not reachable: %s" % (name, i + 1, u))
+    if chosen is None:
+        chosen = uris[0]
+        log("%s: no URI reachable, trying URI 1 anyway" % name)
+    try:
+        answer = play(name, chosen)
+        log("%s: playing %s (%s)" % (name, chosen, answer.strip()[:80]))
+        return 0
+    except Exception as e:
+        print("x10remote-radio: Volumio API error: %s" % e, file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="WEB_TITLE_WIZARD">X10 RF Remote</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<main class="wrap">
+  <h1 data-i18n="WEB_WIZ_TITLE"></h1>
+  <p class="lead" data-i18n="WEB_WIZ_LEAD"></p>
+  <div class="steps">
+    <div id="st1" data-i18n="WEB_WIZ_STEP1"></div>
+    <div id="st2" data-i18n="WEB_WIZ_STEP2"></div>
+    <div id="st3" data-i18n="WEB_WIZ_STEP3"></div>
+    <div id="st4" data-i18n="WEB_WIZ_STEP4"></div>
+  </div>
+
+  <!-- 1 · Profil -->
+  <section id="step1" class="hidden">
+    <div class="panel">
+      <p class="muted" data-i18n="WEB_WIZ_PROFILE_HELP"></p>
+      <label class="field"><span data-i18n="WEB_PROFILE_NAME"></span><input type="text" id="pName" maxlength="80" data-i18n-ph="WEB_WIZ_NAME_PH"></label>
+      <label class="field"><span data-i18n="WEB_DESCRIPTION"></span><textarea id="pDesc" maxlength="4000" data-i18n-ph="WEB_WIZ_DESC_PH"></textarea></label>
+      <label class="field"><span data-i18n="WEB_NOTES"></span><textarea id="pNotes" class="notes" maxlength="8000" data-i18n-ph="WEB_NOTES_PH"></textarea></label>
+      <label class="check"><input type="checkbox" id="pRf433"> <span data-i18n="WEB_RF433_SENDER"></span></label>
+      <p class="muted small" data-i18n="WEB_RF433_SENDER_HELP"></p>
+      <label class="check"><input type="checkbox" id="pActivate" checked> <span data-i18n="WEB_ACTIVATE_NOW"></span></label>
+    </div>
+    <div class="row">
+      <a class="btn" href="profiles.html" data-i18n="WEB_CANCEL"></a>
+      <span class="spacer"></span>
+      <button id="btnTo2" class="primary" data-i18n="WEB_NEXT"></button>
+    </div>
+  </section>
+
+  <!-- 2 · Empfaenger -->
+  <section id="step2" class="hidden">
+    <div id="recvPanel" class="panel current hidden">
+      <div class="row"><h2 data-i18n="WEB_WIZ_RECEIVER"></h2><span class="spacer"></span><span class="muted mono" id="recvDev"></span></div>
+      <div id="grabNote"></div>
+      <label class="field"><span data-i18n="WEB_RECV_NAME"></span><input type="text" id="rName" maxlength="80"></label>
+      <label class="check"><input type="checkbox" id="rRf433"> <span data-i18n="WEB_RF433_RECEIVER"></span></label>
+      <p class="muted small" data-i18n="WEB_RF433_RECEIVER_HELP"></p>
+      <div id="recvInfo"></div>
+      <div class="row">
+        <button id="btnOtherRecv" data-i18n="WEB_WIZ_OTHER_RECV"></button>
+        <span class="spacer"></span>
+        <button id="btnTo3" class="primary" data-i18n="WEB_WIZ_TO_KEYS"></button>
+      </div>
+    </div>
+    <div class="grid" id="recvChoose">
+      <div class="panel">
+        <h2 data-i18n="WEB_WIZ_IDENTIFY"></h2>
+        <p class="muted" data-i18n="WEB_WIZ_IDENTIFY_HELP"></p>
+        <button id="btnIdentify" class="primary" data-i18n="WEB_WIZ_IDENTIFY_BTN"></button>
+        <div id="identifyRun" class="listen hidden"><div class="pulse"></div><span id="identifyText"></span></div>
+        <div id="detected" class="devlist"></div>
+      </div>
+      <div class="panel">
+        <h2 data-i18n="WEB_WIZ_CHOOSE"></h2>
+        <p class="muted" data-i18n="WEB_WIZ_CHOOSE_HELP"></p>
+        <div id="devices" class="devlist"></div>
+        <div class="row"><button id="btnReload" class="small" data-i18n="WEB_RELOAD"></button></div>
+      </div>
+    </div>
+    <div class="row">
+      <button id="btnBack1" data-i18n="WEB_BACK"></button>
+    </div>
+  </section>
+
+  <!-- 3 · Tasten, eine nach der anderen -->
+  <section id="step3" class="hidden">
+    <div id="grabNote3"></div>
+    <div class="row">
+      <span class="muted" id="devLabel"></span>
+      <span class="spacer"></span>
+      <span class="muted"><span data-i18n="WEB_WIZ_COUNT_TOTAL"></span> <span class="counter" id="cTotal">0</span></span>
+    </div>
+    <div class="panel current" id="curPanel">
+      <div id="waitBox" class="waitbox">
+        <div class="listen"><div class="pulse big"></div><div>
+          <div class="waittitle" id="waitTitle"></div>
+          <div class="muted" data-i18n="WEB_WIZ_WAIT_HELP"></div>
+        </div></div>
+      </div>
+      <div id="editBox" class="hidden">
+        <div class="row"><h2 id="editTitle"></h2><span class="spacer"></span><span class="muted" id="editNote"></span></div>
+        <div id="editor"></div>
+        <div class="row">
+          <button id="btnDiscard" class="danger" data-i18n="WEB_WIZ_DISCARD"></button>
+          <span class="spacer"></span>
+          <button id="btnNext" class="primary" data-i18n="WEB_WIZ_NEXT_KEY"></button>
+        </div>
+        <p class="muted small" data-i18n="WEB_WIZ_EDIT_HELP"></p>
+      </div>
+    </div>
+    <h2 data-i18n="WEB_WIZ_KEYS"></h2>
+    <div class="panel" id="keyList"></div>
+    <div class="row">
+      <button id="btnBack2" data-i18n="WEB_BACK"></button>
+      <span class="spacer"></span>
+      <button id="btnDone" class="primary" data-i18n="WEB_WIZ_DONE"></button>
+    </div>
+  </section>
+
+  <!-- 4 · Bilder -->
+  <section id="step4" class="hidden">
+    <div class="note ok" id="savedNote"></div>
+    <h2 data-i18n="WEB_WIZ_IMAGES_SENDER"></h2>
+    <p class="muted" data-i18n="WEB_WIZ_IMAGES_HELP"></p>
+    <div class="images" id="images"></div>
+    <section id="recvImgSection" class="hidden">
+      <h2 id="recvImgTitle"></h2>
+      <p class="muted" data-i18n="WEB_RECV_IMAGES_HELP"></p>
+      <div class="images" id="recvImages"></div>
+    </section>
+    <div class="row">
+      <span class="spacer"></span>
+      <a class="btn primary" id="btnToProfile" data-i18n="WEB_WIZ_TO_PROFILE"></a>
+    </div>
+  </section>
+</main>
+<script src="app.js"></script>
+<script src="wizard.js"></script>
+</body>
+</html>

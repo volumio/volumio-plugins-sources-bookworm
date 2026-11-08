@@ -1,0 +1,78 @@
+#!/bin/sh
+# x10remote-action <aktion> [parameter]
+# Wird von Triggerhappy aufgerufen und steuert Volumio ueber die lokale REST-API.
+#
+#   toggle | play | pause | stop | next | prev
+#   volup | voldown | mute | unmute | mutetoggle
+#   volume <0-100>
+#   random | repeat           (schaltet um)
+#   clearqueue
+#   playlist "<Name>"
+#   api "<cmd-String>"        z. B. api "volume&volume=30"
+#   radio <profil>/<taste>    Radiosender aus /data/INTERNAL/X10/radio-stations.json (Failover ueber bis zu 3 URIs)
+
+API="http://127.0.0.1:3000/api/v1"
+
+get() {
+  if command -v curl >/dev/null 2>&1; then
+    curl -s -m 5 "$1"
+  else
+    wget -q -T 5 -O - "$1"
+  fi
+}
+
+call() {
+  get "$API/commands/?cmd=$1" >/dev/null 2>&1
+}
+
+urlencode() {
+  python3 -c 'import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1]))' "$1"
+}
+
+state_is_true() {
+  get "$API/getState" | tr -d ' ' | grep -q "\"$1\":true"
+}
+
+case "$1" in
+  toggle|play|pause|stop|next|prev)
+    call "$1" ;;
+  volup)
+    call "volume&volume=plus" ;;
+  voldown)
+    call "volume&volume=minus" ;;
+  mute)
+    call "volume&volume=mute" ;;
+  unmute)
+    call "volume&volume=unmute" ;;
+  mutetoggle)
+    if state_is_true mute; then call "volume&volume=unmute"; else call "volume&volume=mute"; fi ;;
+  volume)
+    case "$2" in
+      ''|*[!0-9]*) echo "x10remote-action: volume expects 0-100" >&2; exit 1 ;;
+    esac
+    call "volume&volume=$2" ;;
+  random)
+    if state_is_true random; then call "random&value=false"; else call "random&value=true"; fi ;;
+  repeat)
+    if state_is_true repeat; then call "repeat&value=false"; else call "repeat&value=true"; fi ;;
+  clearqueue)
+    call "clearQueue" ;;
+  playlist)
+    [ -n "$2" ] || { echo "x10remote-action: playlist expects a name" >&2; exit 1; }
+    call "playplaylist&name=$(urlencode "$2")" ;;
+  api)
+    [ -n "$2" ] || { echo "x10remote-action: api expects a cmd string" >&2; exit 1; }
+    call "$2" ;;
+  radio)
+    case "$2" in
+      [a-z0-9]*/k[0-9a-z]*) ;;
+      *) echo "x10remote-action: radio expects <profile>/<key>" >&2; exit 1 ;;
+    esac
+    exec /usr/local/bin/x10remote-radio "$2" ;;
+  none|'')
+    exit 0 ;;
+  *)
+    echo "x10remote-action: unknown action '$1'" >&2
+    exit 1 ;;
+esac
+exit 0

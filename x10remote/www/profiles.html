@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="WEB_TITLE_PROFILES">X10 RF Remote</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<main class="wrap">
+  <div class="row">
+    <h1 data-i18n="WEB_PROFILES_TITLE"></h1>
+    <span class="spacer"></span>
+    <a class="btn primary" href="wizard.html" data-i18n="WEB_NEW_PROFILE"></a>
+  </div>
+  <p class="lead" data-i18n="WEB_PROFILES_LEAD"></p>
+  <div class="panel">
+    <label class="field"><span data-i18n="WEB_CURRENT_PROFILE"></span><select id="selProfile"></select></label>
+    <div class="row"><button id="btnSelect" class="primary" data-i18n="WEB_SELECT_BTN"></button>
+      <span class="muted" data-i18n="WEB_SELECT_HELP"></span></div>
+  </div>
+  <h2 data-i18n="WEB_ALL_PROFILES"></h2>
+  <div class="grid wide" id="list"></div>
+  <section id="presetSection" class="hidden">
+    <h2 data-i18n="WEB_PRESETS"></h2>
+    <p class="muted" data-i18n="WEB_PRESETS_HELP"></p>
+    <div class="grid wide" id="presets"></div>
+  </section>
+</main>
+<script src="app.js"></script>
+<script src="profiles.js"></script>
+</body>
+</html>

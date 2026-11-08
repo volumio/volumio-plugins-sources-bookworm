@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="WEB_TITLE_HOME">X10 RF Remote</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<main class="wrap">
+  <h1 data-i18n="WEB_HOME_TITLE">X10 RF Remote</h1>
+  <p class="lead" data-i18n="WEB_HOME_LEAD"></p>
+  <div class="grid">
+    <a class="card tile" href="wizard.html">
+      <div class="big" data-i18n="WEB_NAV_WIZARD"></div>
+      <div class="muted" data-i18n="WEB_HOME_WIZARD"></div>
+    </a>
+    <a class="card tile" href="profiles.html">
+      <div class="big" data-i18n="WEB_NAV_PROFILES"></div>
+      <div class="muted" data-i18n="WEB_HOME_PROFILES"></div>
+    </a>
+    <a class="card tile" href="test.html">
+      <div class="big" data-i18n="WEB_NAV_TEST"></div>
+      <div class="muted" data-i18n="WEB_HOME_TEST"></div>
+    </a>
+    <a class="card tile" href="receivers.html">
+      <div class="big" data-i18n="WEB_NAV_RECEIVERS"></div>
+      <div class="muted" data-i18n="WEB_HOME_RECEIVERS"></div>
+    </a>
+  </div>
+  <h2 data-i18n="WEB_RADIO_SECTION"></h2>
+  <div class="panel">
+    <p class="muted" data-i18n="WEB_RADIO_CHECKALL_HELP"></p>
+    <div class="row"><button id="btnCheckAll" class="primary" data-i18n="WEB_RADIO_CHECKALL"></button>
+      <span class="muted" id="checkAllInfo"></span></div>
+  </div>
+  <h2 data-i18n="WEB_STATUS"></h2>
+  <div class="panel" id="status"></div>
+</main>
+<script src="app.js"></script>
+<script src="home.js"></script>
+</body>
+</html>
