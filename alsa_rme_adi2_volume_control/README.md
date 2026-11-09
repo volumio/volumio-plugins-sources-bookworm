@@ -77,6 +77,11 @@ If the user changes the mute or volume state on the RME ADI-2 device
 (e.g., using the volume knob or the IR remote),
 the ALSA controls will not be updated accordingly.
 
+As a consequence, it is not possible to implement
+a feature that reads the value of the mute and volume state
+of the RME ADI-2 device, and sets the corresponding initial values
+of the ALSA controls when the background service starts.
+
 This is a known limitation which will be addressed in a future release.
 
 ### Translations
@@ -91,8 +96,9 @@ for a language that is missing and that you are a (native) speaker of.
 
 ## Installation
 
-On the UI of your Volumio host, go to "Plugins",
-search for "ALSA RME ADI-2 Volume Control" in the plugin catalog,
+On the UI of your Volumio host, go to the "Plugins" settings,
+and in the "Available" tab search for "ALSA RME ADI-2 Volume Control"
+under the "System Hardware" category of the plugin catalog,
 and install it.
 The installation typically takes less than one minute.
 
@@ -102,11 +108,6 @@ Once the plugin is installed, make sure your RME ADI-2 device
 is connected and powered on, and then enable the plugin.
 
 ![Plugins after enabling](imgs/plugins_after_enabling.png)
-
-> [!TIP]
-> Rebooting the Volumio host is not necessary,
-> but it might help in case of problems with the background service
-> controlling the RME ADI-2 device.
 
 When the plugin is enabled the first time,
 the `alsa-rme-adi2-volume-control` background service is started
@@ -140,7 +141,103 @@ to control the volume appeared in the bottom right corner).
 
 ## Plugin Settings
 
-TODO
+The Plugin Settings are divided into four sections.
+
+### Background Service
+
+![Plugin Settings Background Service](imgs/plugin_settings_background_service_and_general.png)
+
+The "Background service activated" switch
+controls whether the background service is stopped (`false`) or started (`true`).
+This allows the user to stop or start the background service
+without disabling/enabling or uninstalling/installing the whole plugin.
+
+After changing the value of the switch
+the button "Apply" must be clicked
+for the change to take effect.
+
+> [!TIP]
+> Cycling the value of this control (`true` -> `false` -> `true`)
+> is a way to achieve a manual restart of the background service.
+
+### General
+
+![Plugin Settings General](imgs/plugin_settings_background_service_and_general.png)
+
+This section contains three controls:
+
+- RME ADI-2 device (default: `autodetect`);
+- ALSA card number (default: `autodetect`); and
+- Verbose log (default: `false`).
+
+The first two dropdown boxes control the arguments of options
+`--device-name / --device-id` and `--card-number`
+passed to the background service.
+
+Users with only one RME ADI-2 device attached to the Volumio host
+should be fine keeping the default value `autodetect` for both.
+
+Users with multiple RME ADI-2 devices attached to the Volumio host
+might want to specify the device name and ALSA card number
+they want to connect to the Volumio mute and volume controls,
+since it might not correspond to the RME ADI-2 device
+that `autodetect` determines.
+Indeed the autodetection process will use
+the first (lowest ALSA card number) device that matches the device name.
+If also the latter is `autodetect`, then the devices are probed
+in this order: `ADI-2/4 Pro`, `ADI-2 Pro`, `ADI-2 DAC`.
+
+The "Verbose log" switch
+controls the level of the log messages the background service emits:
+`info` (`false`) or `debug` (`true`).
+The messages can be inspected with `journalctl` or in the Volumio `/dev` page.
+
+After changing the value of one or more of the controls in this section
+the button "Apply" must be clicked
+for the changes to take effect.
+This will also cause a restart of the background service.
+
+### Line Output 1/2 And Phones Output 3/4
+
+![Plugin Settings Line Output 1/2](imgs/plugin_settings_line12.png)
+![Plugin Settings Phones Output 3/4](imgs/plugin_settings_phones34.png)
+
+These two sections contains the same controls,
+and they refer to the "Line Output 1/2" and "Phones Output 3/4"
+of the RME ADI-2 device, respectively:
+
+- Control (default: `true`);
+- Minimum volume (dB, default: `-60.0`);
+- Maximum volume (dB, default: `-10.0`); and
+- Initial volume (in `[0, 100]`, default: `50`).
+
+The "Control" switch determines whether
+the background service should control the corresponding output.
+Its default value is `true` for
+both "Line Output 1/2" and "Phones Output 3/4",
+resulting in both being controlled,
+so that either can be selected as the "Mixer Control Name"
+in the "Playback Options" by the Volumio end user.
+Flipping one of these two switches (but not both at the same time!)
+prevents the background service to register the ALSA controls
+for the corresponding output.
+
+The minimum and maximum volume levels (in dB) on the RME ADI-2 device
+correspond to the logical ALSA values of `0` and `100`, respectively,
+and they can be set to different values, independently for each output.
+
+The initial (logical ALSA) volume is set on the output
+when the background service starts (or restarts),
+for example when the Volumio host boots up.
+This ensures the RME ADI-2 device never plays
+at a dangerous volume, outside the range controlled by
+"Minimum volume (dB)" and "Maximum volume (dB)".
+Each output can have a different initial volume value.
+
+After changing the value of one or more of the controls in these sections
+the button "Apply" must be clicked
+for the changes to take effect.
+This will also cause a restart of the background service.
 
 
 ## Support
