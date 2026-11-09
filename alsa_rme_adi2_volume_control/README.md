@@ -16,15 +16,17 @@ By design,
 ADI-2 devices do not expose
 [ALSA](https://www.alsa-project.org/)
 hardware mixer controls,
-the manifacturer preferring end users to change their mute and volume state
+the manufacturer preferring end users to change their mute and volume state
 directly through the volume knob or the IR remote.
 Fortunately, the RME ADI-2 devices also honor a MIDI protocol
 that allows software using the MIDI interface
 to get and set their mute and volume state (and many other settings).
 
-This Volumio plugin provides a simple way for Volumio end users
+This
+[Volumio plugin](https://developers.volumio.com/plugins/plugins-overview)
+provides a simple way for Volumio end users
 to install, start and control the background service
-[alsa-rme-adi2-volume-control](https://github.com/pettarin/alsa-rme-adi2-volume-control)
+[`alsa-rme-adi2-volume-control`](https://github.com/pettarin/alsa-rme-adi2-volume-control)
 which exposes a fake ALSA hardware mixer controlling
 the mute and volume state of an RME ADI-2 device
 attached to the Volumio host via USB, through its MIDI interface.
@@ -36,7 +38,9 @@ the Volumio mute and volume controls (UI and API).
 > A detailed explanation of how the background service works
 > can be found in the last section of the
 > [DEVELOPMENT](https://github.com/pettarin/alsa-rme-adi2-volume-control/blob/main/docs/DEVELOPMENT.md)
-> document of the `alsa-rme-adi2-volume-control` project.
+> document of the
+> [`alsa-rme-adi2-volume-control`](https://github.com/pettarin/alsa-rme-adi2-volume-control)
+> project.
 
 ### Supported RME ADI-2 Devices
 
@@ -65,7 +69,8 @@ and the same MIDI interface for setting mute/volume parameters.
 
 ### Limitations
 
-In the current version of the service (and hence in this Volumio plugin)
+In the current version of the service
+(and hence in this Volumio plugin)
 the synchronization of the state is one-way only:
 from ALSA to the physical RME ADI-2 device.
 If the user changes the mute or volume state on the RME ADI-2 device
@@ -81,7 +86,7 @@ This is a known limitation which will be addressed in a future release.
 
 Feel free to open a PR to contribute a translation
 for a language that is missing and that you are a (native) speaker of.
-(Do not just use an automated tool!)
+(Do not just use an automated tool, please!)
 
 
 ## Installation
@@ -98,6 +103,11 @@ is connected and powered on, and then enable the plugin.
 
 ![Plugins after enabling](imgs/plugins_after_enabling.png)
 
+> [!TIP]
+> Rebooting the Volumio host is not necessary,
+> but it might help in case of problems with the background service
+> controlling the RME ADI-2 device.
+
 When the plugin is enabled the first time,
 the `alsa-rme-adi2-volume-control` background service is started
 with default parameters.
@@ -108,7 +118,7 @@ as the "Output Device" in the "Audio Output" section.
 
 ![Playback Options Output Device](imgs/playback_options_output_device.png)
 
-Scroll down to the "Volume Options" and
+Scroll down to the "Volume Options" section and
 select "Hardware" as value of "Mixer Type", then hit the "Save" button.
 
 ![Playback Options Mixer Hardware before saving](imgs/playback_options_mixer_hardware_before_saving.png)
@@ -121,22 +131,11 @@ of the RME ADI-2 device you want to control.
 
 ![Playback Options Mixer Hardware after saving](imgs/playback_options_mixer_hardware_after_saving.png)
 
+Congratulations!
 You should be able to control the mute and volume state
-of your RME ADI-2 device directly from the Volumio UI or API.
-
-> [!TIP]
-> By default, they are both `autodetect`, which will result
-> in the first (lowest ALSA card number) one to be used.
->
-> If you have more than one RME ADI-2 device attached,
-> you might want to specify in the plugins settings (see below)
-> the RME Device and ALSA Card Number of the device you want to use.
-> (See the next section "Plugin Settings".)
-
-> [!TIP]
-> Rebooting the Volumio host is not necessary,
-> but it might help in case of problems with the background service
-> controlling the RME ADI-2 device.
+of your RME ADI-2 device directly from the Volumio UI or API
+(notice how in the last screenshot the loudspeaker icon and the slider
+to control the volume appeared in the bottom right corner).
 
 
 ## Plugin Settings
