@@ -7,6 +7,8 @@
 
 A Volumio 3 (buster) and Volumio 4 (bookworm) plugin for automatic LCD backlight control based on ambient light levels using the VEML7700 light sensor, with intelligent brightness boost during music playback.
 
+**Tested on**: Volumio 3.832 (Volumio 3, buster) and Volumio 4.239 (Volumio 4, bookworm).
+
 ## Overview
 
 This plugin automatically adjusts the brightness of LCD displays with backlight control based on ambient light conditions. It uses the VEML7700 ambient light sensor to measure lux levels and dynamically adjusts the display brightness for optimal viewing in any lighting environment. Additionally, it can increase brightness during music playback for better visibility.
@@ -94,6 +96,7 @@ I²C must be enabled (e.g. `dtparam=i2c_arm=on` in `/boot/userconfig.txt`) and t
    ```
    - The plugin will appear among the installed plugins.
    - The same source code works on Volumio 3 (buster, Node 14, Python 3.7) and Volumio 4 (bookworm, Node 20, Python 3.11).
+   - Tested on Volumio 3.832 and Volumio 4.239.
 
 ![Volumio Plugin install screen](images/volumio_plugins.png)
 
@@ -311,7 +314,7 @@ The plugin can be uninstalled through the Volumio web interface. The uninstallat
 ## Version
 
 **Current Version**: 1.2.0
- - Volumio 3 (buster) and Volumio 4 (bookworm) support from one source code
+ - Volumio 3 (buster) and Volumio 4 (bookworm) support from one source code, tested on Volumio 3.832 and Volumio 4.239
  - validation of settings (minimum must not exceed maximum)
  - settings are applied without restarting the service
  - full brightness restored when the plugin is disabled or uninstalled
