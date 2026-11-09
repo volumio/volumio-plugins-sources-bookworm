@@ -202,7 +202,7 @@ This will also cause a restart of the background service.
 ![Plugin Settings Line Output 1/2](imgs/plugin_settings_line12.png)
 ![Plugin Settings Phones Output 3/4](imgs/plugin_settings_phones34.png)
 
-These two sections contains the same controls,
+These two sections contains the same four controls,
 and they refer to the "Line Output 1/2" and "Phones Output 3/4"
 of the RME ADI-2 device, respectively:
 
@@ -245,6 +245,112 @@ This will also cause a restart of the background service.
 - [Dedicated discussion on Volumio Community](https://community.volumio.com/t/plugin-alsa-rme-adi-2-volume-control/78093)
 - [Issues of volumio-plugins-sources-bookworm](https://github.com/volumio/volumio-plugins-sources-bookworm/issues/)
 - [Issues of alsa-rme-adi2-volume-control](https://github.com/pettarin/alsa-rme-adi2-volume-control/issues/)
+
+### Live Log
+
+Navigate to `http://<your volumio host>/dev` page, and enable the live log.
+
+In a different browser tab, go to the Plugins settings, and disable and the re-enable the plugin.
+
+In the live log text area you should see messages like the following ones:
+
+```
+info: Stopping and disabling service ...
+info: Stopping and disabling service ... done
+info: Disabling plugin alsa_rme_adi2_volume_control
+info: Done.
+ volumio : PWD=/ ; USER=root ; COMMAND=/bin/systemctl stop alsa-rme-adi2-volume-control.service
+pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+[INFO] Control loop exited with return code '0'
+Stopping alsa-rme-adi2-volume-control.service - Service exposing ALSA mute/volume controls on an RME ADI-2 device via MIDI...
+alsa-rme-adi2-volume-control.service: Deactivated successfully.
+Stopped alsa-rme-adi2-volume-control.service - Service exposing ALSA mute/volume controls on an RME ADI-2 device via MIDI.
+pam_unix(sudo:session): session closed for user root
+info: ALSA RME ADI-2 Volume Control: service stopped
+ volumio : PWD=/ ; USER=root ; COMMAND=/bin/systemctl disable alsa-rme-adi2-volume-control.service
+pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Reloading.
+/lib/systemd/system/sshtunnel.service:6: Standard output type syslog is obsolete, automatically updating to journal. Please update your unit file, and consider removing the setting altogether.
+/lib/systemd/system/sshtunnel.service:7: Standard output type syslog is obsolete, automatically updating to journal. Please update your unit file, and consider removing the setting altogether.
+pam_unix(sudo:session): session closed for user root
+info: ALSA RME ADI-2 Volume Control: service disabled
+info: Enabling plugin alsa_rme_adi2_volume_control
+info: Loading plugin "alsa_rme_adi2_volume_control"...
+info: Applying required configuration parameters for plugin alsa_rme_adi2_volume_control
+info: PLUGIN START: alsa_rme_adi2_volume_control
+info: Configuration
+info:   card_number:     autodetect
+info:   device_name:     autodetect
+info:   line12_active:   true
+info:   line12_max_db:   -10.0
+info:   line12_min_db:   -60.0
+info:   line12_volume:   60
+info:   phones34_active: true
+info:   phones34_max_db: -10.0
+info:   phones34_min_db: -60.0
+info:   phones34_volume: 50
+info:   service_active:  true
+info:   verbose_log:     false
+info: Enabling and starting service ...
+info: Enabling and starting service ... done
+info: Done.
+ volumio : PWD=/ ; USER=root ; COMMAND=/bin/systemctl enable alsa-rme-adi2-volume-control.service
+pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Reloading.
+/lib/systemd/system/sshtunnel.service:6: Standard output type syslog is obsolete, automatically updating to journal. Please update your unit file, and consider removing the setting altogether.
+/lib/systemd/system/sshtunnel.service:7: Standard output type syslog is obsolete, automatically updating to journal. Please update your unit file, and consider removing the setting altogether.
+pam_unix(sudo:session): session closed for user root
+info: ALSA RME ADI-2 Volume Control: service enabled
+ volumio : PWD=/ ; USER=root ; COMMAND=/bin/systemctl start alsa-rme-adi2-volume-control.service
+pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Started alsa-rme-adi2-volume-control.service - Service exposing ALSA mute/volume controls on an RME ADI-2 device via MIDI.
+pam_unix(sudo:session): session closed for user root
+info: ALSA RME ADI-2 Volume Control: service started
+[INFO] Using device ID '0x73'
+[INFO] Using ALSA card '5'
+[INFO] Using MIDI device 'hw:5,0,0'
+[INFO] Start control loop for device ID '0x73' on MIDI device 'hw:5,0,0' of ALSA card number '5'
+[INFO] SET mute off on line12
+[INFO] SET volume 60 == -30.0 dB on line12
+[INFO] SET mute off on phones34
+[INFO] SET volume 50 == -35.0 dB on phones34
+[INFO] Monitoring ALSA user-defined control elements 'Line Output 1/2 Playback Volume' and 'Line Output 1/2 Playback Switch' for changes
+[INFO] Monitoring ALSA user-defined control elements 'Phones Output 3/4 Playback Volume' and 'Phones Output 3/4 Playback Switch' for changes
+```
+
+Every time you change the mute or volume state,
+you should see the corresponding `SET` messages in the live log.
+
+If you have the verbose log enabled (see the "Plugin Settings" section above),
+you will see the actual ALSA events and MIDI commands:
+
+```
+# mute Line Output 1/2
+[DEBU] Read integer value 60
+[DEBU] Read boolean value 0
+[DEBU] WRITE MIDI SysEx: F0 00 20 0D 73 02 1B 60 01 F7 (mute: on, output: line12)
+[INFO] SET mute on on line12
+
+# unmute Line Output 1/2 and restore its volume 60%
+[DEBU] Read integer value 60
+[DEBU] Read boolean value 1
+[DEBU] WRITE MIDI SysEx: F0 00 20 0D 73 02 1B 60 00 F7 (mute: off, output: line12)
+[INFO] SET mute off on line12
+[DEBU] WRITE MIDI SysEx: F0 00 20 0D 73 02 1B 1D 54 F7 (volume: -30.0 dB, output: line12)
+[INFO] SET volume 60 == -30.0 dB on line12
+
+# set volume 40% for Line Output 1/2
+[DEBU] Read integer value 40
+[DEBU] Read boolean value 1
+[DEBU] WRITE MIDI SysEx: F0 00 20 0D 73 02 1B 60 00 F7 (mute: off, output: line12)
+[INFO] SET mute off on line12
+[DEBU] WRITE MIDI SysEx: F0 00 20 0D 73 02 1B 1C 70 F7 (volume: -40.0 dB, output: line12)
+[INFO] SET volume 40 == -40.0 dB on line12
+```
+
+> [!TIP]
+> It is normal to see a "SET mute off" message
+> before each "SET volume" message.
 
 
 ## Releases And Changelog
