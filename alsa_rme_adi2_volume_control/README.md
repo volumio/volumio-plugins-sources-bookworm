@@ -2,7 +2,7 @@
 
 This Volumio plugin installs
 the background service `alsa-rme-adi2-volume-control`
-which provides a fake ALSA hardware mixer
+which provides an ALSA hardware mixer
 for an attached RME ADI-2 device,
 allowing the Volumio end user to change
 the mute and volume state of the RME ADI-2 device
@@ -20,17 +20,17 @@ the manufacturer preferring end users to change their mute and volume state
 directly through the volume knob or the IR remote.
 Fortunately, the RME ADI-2 devices also honor a MIDI protocol
 that allows software using the MIDI interface
-to get and set their mute and volume state (and many other settings).
+to get and set, among many other settings, their mute and volume state.
 
 This
 [Volumio plugin](https://developers.volumio.com/plugins/plugins-overview)
 provides a simple way for Volumio end users
 to install, start and control the background service
 [`alsa-rme-adi2-volume-control`](https://github.com/pettarin/alsa-rme-adi2-volume-control)
-which exposes a fake ALSA hardware mixer controlling
+which exposes an ALSA hardware mixer controlling
 the mute and volume state of an RME ADI-2 device
 attached to the Volumio host via USB, through its MIDI interface.
-This fake ALSA hardware mixer can then be selected
+This ALSA hardware mixer can then be selected
 in Volumio "Playback Options" as the hardware mixer that is linked to
 the Volumio mute and volume controls (UI and API).
 
@@ -86,12 +86,11 @@ This is a known limitation which will be addressed in a future release.
 
 ### Translations
 
-- [English](i18n/strings_en.json)
-- [Italian](i18n/strings_it.json)
+- [English](i18n/strings_en.json) by `pettarin`
+- [Italian](i18n/strings_it.json) by `pettarin`
 
 Feel free to open a PR to contribute a translation
 for a language that is missing and that you are a (native) speaker of.
-(Do not just use an automated tool, please!)
 
 
 ## Installation
@@ -124,7 +123,8 @@ select "Hardware" as value of "Mixer Type", then hit the "Save" button.
 
 ![Playback Options Mixer Hardware before saving](imgs/playback_options_mixer_hardware_before_saving.png)
 
-The other hardware mixer controls should appear,
+A few seconds after you hit the "Save" button
+the other hardware mixer controls should appear,
 and you should be able to select
 "Line Output 1/2" or "Phones Output 3/4"
 as the "Mixer Control Name", depending on which output
@@ -134,22 +134,28 @@ of the RME ADI-2 device you want to control.
 
 Congratulations!
 You should be able to control the mute and volume state
-of your RME ADI-2 device directly from the Volumio UI or API
-(notice how in the last screenshot the loudspeaker icon and the slider
-to control the volume appeared in the bottom right corner).
+of your RME ADI-2 device directly from the Volumio UI (or API):
+notice how in the last screenshot the loudspeaker icon and the slider
+to control the volume appeared in the bottom right corner.
 
 
 ## Plugin Settings
 
-The Plugin Settings are divided into four sections.
+The Plugin Settings page for this plugin is divided into four sections.
 
 ### Background Service
 
 ![Plugin Settings Background Service](imgs/plugin_settings_background_service_and_general.png)
 
+This section contains only one control:
+
+- Background service activated` (default: `true`).
+
 The "Background service activated" switch
-controls whether the background service is stopped (`false`) or started (`true`).
-This allows the user to stop or start the background service
+controls whether the background service
+is running (`true`) or it is stopped (`false`).
+
+This switch allows the user to stop or start the background service
 without disabling/enabling or uninstalling/installing the whole plugin.
 
 After changing the value of the switch
@@ -170,7 +176,8 @@ This section contains three controls:
 - ALSA card number (default: `autodetect`); and
 - Verbose log (default: `false`).
 
-The first two dropdown boxes control the arguments of options
+The first two dropdown boxes "RME ADI-2 device" and "ALSA card number"
+control the values of the options
 `--device-name / --device-id` and `--card-number`
 passed to the background service.
 
@@ -186,6 +193,22 @@ Indeed the autodetection process will use
 the first (lowest ALSA card number) device that matches the device name.
 If also the latter is `autodetect`, then the devices are probed
 in this order: `ADI-2/4 Pro`, `ADI-2 Pro`, `ADI-2 DAC`.
+
+> [!TIP]
+> To learn the available ALSA cards (and their corresponding numbers),
+> you can `ssh` into your Volumio host and issue the command
+> `alsa-rme-adi2-volume-control --list-cards`.
+>
+> You should see an output similar to the following:
+> ```bash
+> alsa-rme-adi2-volume-control --list-cards
+> Index  ID    Name
+> 0      hw:0  vc4-hdmi-0
+> 1      hw:1  vc4-hdmi-1
+> 5      hw:5  ADI-2/4 Pro SE (52102163)
+> ```
+> which tells that an RME ADI-2/4 Pro SE is connected
+> as ALSA card number `5`.
 
 The "Verbose log" switch
 controls the level of the log messages the background service emits:
@@ -203,8 +226,8 @@ This will also cause a restart of the background service.
 ![Plugin Settings Phones Output 3/4](imgs/plugin_settings_phones34.png)
 
 These two sections contains the same four controls,
-and they refer to the "Line Output 1/2" and "Phones Output 3/4"
-of the RME ADI-2 device, respectively:
+and they apply to the "Line Output 1/2" and "Phones Output 3/4"
+outputs of the RME ADI-2 device, respectively:
 
 - Control (default: `true`);
 - Minimum volume (dB, default: `-60.0`);
@@ -212,19 +235,39 @@ of the RME ADI-2 device, respectively:
 - Initial volume (in `[0, 100]`, default: `50`).
 
 The "Control" switch determines whether
-the background service should control the corresponding output.
-Its default value is `true` for
-both "Line Output 1/2" and "Phones Output 3/4",
+the background service should control
+the corresponding output of the RME ADI-2 device.
+Its default value is `true` for both outputs,
 resulting in both being controlled,
 so that either can be selected as the "Mixer Control Name"
 in the "Playback Options" by the Volumio end user.
-Flipping one of these two switches (but not both at the same time!)
-prevents the background service to register the ALSA controls
-for the corresponding output.
+Flipping one of these two switches prevents the background service
+from registering the ALSA controls for the corresponding output.
+
+> [!WARNING]
+> You can disable the control of at most one output at a time.
+> If you attempt to disable both at the same time,
+> the last one you changed will not be disabled.
+> This will be apparent when navigating away and then back
+> to the plugin settings page.
 
 The minimum and maximum volume levels (in dB) on the RME ADI-2 device
 correspond to the logical ALSA values of `0` and `100`, respectively,
 and they can be set to different values, independently for each output.
+
+> [!WARNING]
+> The allowed range of volume levels is `[-93.8, 6.0]` dB.
+> Be careful when changing the minimum and maximum volume levels
+> not to set them to values that are too large
+> and dangerous for your hearing!
+
+> [!WARNING]
+> If you set a minimum volume level greater than or equal to
+> the maximum volume level, the change will be rejected
+> and the minimum volume level set to the lowest value possible
+> (`-93.8` dB) to prevent the background service from failing.
+> This will be apparent when navigating away and then back
+> to the plugin settings page.
 
 The initial (logical ALSA) volume is set on the output
 when the background service starts (or restarts),
@@ -242,15 +285,30 @@ This will also cause a restart of the background service.
 
 ## Support
 
-- [Dedicated discussion on Volumio Community](https://community.volumio.com/t/plugin-alsa-rme-adi-2-volume-control/78093)
-- [Issues of volumio-plugins-sources-bookworm](https://github.com/volumio/volumio-plugins-sources-bookworm/issues/)
-- [Issues of alsa-rme-adi2-volume-control](https://github.com/pettarin/alsa-rme-adi2-volume-control/issues/)
+To report a defect (bug) on the Volumio plugin itself,
+please use the
+[Issues of `volumio-plugins-sources-bookworm`](https://github.com/volumio/volumio-plugins-sources-bookworm/issues/)
+and tag `pettarin` when creating the issue.
+
+To get help, provide feedback, and for general discussions
+about the Volumio plugin, please use the
+[dedicated plugin discussion](https://community.volumio.com/t/plugin-alsa-rme-adi-2-volume-control/78093)
+in the
+[Volumio Community forum](https://community.volumio.com/).
+
+To report a defect (bug) on the background service,
+please use the
+[Issues of `alsa-rme-adi2-volume-control`](https://github.com/pettarin/alsa-rme-adi2-volume-control/issues/).
+
 
 ### Live Log
 
-Navigate to `http://<your volumio host>/dev` page, and enable the live log.
+Navigate to the `http://<your volumio host>/dev` page,
+and enable the Volumio live log.
 
-In a different browser tab, go to the Plugins settings, and disable and the re-enable the plugin.
+In a different browser tab,
+go to the Plugins settings,
+and disable and then re-enable the plugin.
 
 In the live log text area you should see messages like the following ones:
 
@@ -318,11 +376,13 @@ info: ALSA RME ADI-2 Volume Control: service started
 [INFO] Monitoring ALSA user-defined control elements 'Phones Output 3/4 Playback Volume' and 'Phones Output 3/4 Playback Switch' for changes
 ```
 
-Every time you change the mute or volume state,
+Every time you change the mute or volume state of Volumio,
 you should see the corresponding `SET` messages in the live log.
 
-If you have the verbose log enabled (see the "Plugin Settings" section above),
-you will see the actual ALSA events and MIDI commands:
+If you have the verbose log enabled
+(see the "Plugin Settings" section above),
+you will see the actual ALSA events captured and
+the MIDI commands sent to the RME ADI-2 device:
 
 ```
 # mute Line Output 1/2
@@ -426,4 +486,13 @@ Please refer to the
 
 This project and its authors are not affiliated
 nor endorsed by RME.
+
+Volumio and the Volumio logo are registered trademarks of Volumio SRL,
+a company registered in Italy (VAT ID: IT07009020483).
+
+Please refer to the
+[Volumio Terms Of Service](https://volumio.com/terms-of-service/).
+
+This project and its authors are not affiliated
+nor endorsed by Volumio SRL.
 
