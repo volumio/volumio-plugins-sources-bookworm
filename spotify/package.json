@@ -1,6 +1,6 @@
 {
 	"name": "spop",
-	"version": "4.5.1",
+	"version": "4.5.2",
 	"description": "Spotify plugin for Volumio4",
 	"main": "index.js",
 	"scripts": {
@@ -17,7 +17,7 @@
 			"bookworm"
 		],
 		"details": "Spotify plugin for Volumio4",
-		"changelog": "4.5.0: Spotify without reaching for your phone. Authorize this device once, from the device itself, and it plays \u2014 the session now survives reboots, and playback starts for real instead of pretending to. Built on go-librespot 0.9.1. This is the first update that is native for the new Nova UI.",
+		"changelog": "4.5.2: Spotify signs in again once the network is up, instead of staying signed out when Volumio started before it. A player that is only busy no longer asks to be authorized. Spotify Connect keeps working when a pairing is left unfinished. Built on go-librespot 0.10.5.",
 		"architectures": [
 			"amd64",
 			"armhf"
