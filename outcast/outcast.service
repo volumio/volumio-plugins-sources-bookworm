@@ -1,0 +1,29 @@
+[Unit]
+Description=Outcast Uplink core (outcast plugin)
+Documentation=https://github.com/foonerd/outcast
+After=network-online.target sound.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=volumio
+Group=volumio
+RuntimeDirectory=outcast
+RuntimeDirectoryMode=0755
+ExecStart=/data/plugins/audio_interface/outcast/bin/outcast --run /run/outcast
+# Behind the player's audio thread, which is real-time; the encoders never starve it.
+Nice=5
+Restart=always
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=5
+NoNewPrivileges=yes
+# full, not strict: /usr, /boot and /etc read-only, /data and /mnt as the recording
+# folder may be anywhere under them (a mounted share included).
+ProtectSystem=full
+ProtectHome=yes
+ReadWritePaths=/run/outcast /data/INTERNAL/outcast
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
