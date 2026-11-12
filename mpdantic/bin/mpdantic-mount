@@ -1,0 +1,86 @@
+#!/bin/sh
+# The only mount and umount path sudo grants the volumio user for MPDantic.
+# Mounts cifs or nfs under /run/mpdantic/mounts alone; umounts that tree alone.
+# Credentials, when named, must sit under /run/mpdantic. POSIX sh; run as root
+# through `sudo -n` from the core.
+set -eu
+
+MOUNTS=/run/mpdantic/mounts
+RUN=/run/mpdantic
+
+refuse() {
+  echo "mpdantic-mount: $*" >&2
+  exit 1
+}
+
+under() {
+  # $1 is $2 or a path under $2.
+  case "$1" in
+    "$2" | "$2"/*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# Absolute form of a path whose parent exists; the leaf need not (a fresh mount point).
+abs_under_parent() {
+  _parent=$(CDPATH='' cd -- "$(dirname -- "$1")" && pwd) || return 1
+  printf '%s/%s\n' "$_parent" "$(basename -- "$1")"
+}
+
+cmd=${1:-}
+[ -n "$cmd" ] || refuse "usage: mpdantic-mount mount|umount ..."
+shift
+
+case "$cmd" in
+  mount)
+    # Expected: -t TYPE SOURCE TARGET -o OPTIONS  (exactly six words after mount).
+    [ "${1:-}" = "-t" ] || refuse "expected -t"
+    fstype=${2:-}
+    source=${3:-}
+    target=${4:-}
+    [ "${5:-}" = "-o" ] || refuse "expected -o"
+    options=${6:-}
+    [ "$#" -eq 6 ] || refuse "mount takes -t TYPE SOURCE TARGET -o OPTIONS"
+    [ -n "$fstype" ] && [ -n "$source" ] && [ -n "$target" ] && [ -n "$options" ] \
+      || refuse "incomplete mount"
+    case "$fstype" in
+      cifs | nfs) ;;
+      *) refuse "type ${fstype} is not mounted here" ;;
+    esac
+    case "$fstype" in
+      cifs)
+        case "$source" in
+          //*/*) ;;
+          *) refuse "cifs source is not //host/share" ;;
+        esac
+        ;;
+      nfs)
+        case "$source" in
+          *:*) ;;
+          *) refuse "nfs source is not host:path" ;;
+        esac
+        ;;
+    esac
+    target_abs=$(abs_under_parent "$target") || refuse "target parent is missing"
+    under "$target_abs" "$MOUNTS" || refuse "target is outside ${MOUNTS}"
+    case ",${options}," in
+      *,credentials=*,*)
+        cred=${options#*credentials=}
+        cred=${cred%%,*}
+        under "$cred" "$RUN" || refuse "credentials are outside ${RUN}"
+        ;;
+    esac
+    exec /bin/mount -t "$fstype" "$source" "$target_abs" -o "$options"
+    ;;
+  umount)
+    [ "$#" -eq 1 ] || refuse "umount takes one target"
+    target=$1
+    [ -n "$target" ] || refuse "umount takes one target"
+    target_abs=$(abs_under_parent "$target") || refuse "target parent is missing"
+    under "$target_abs" "$MOUNTS" || refuse "target is outside ${MOUNTS}"
+    exec /bin/umount "$target_abs"
+    ;;
+  *)
+    refuse "usage: mpdantic-mount mount|umount ..."
+    ;;
+esac

@@ -1,0 +1,67 @@
+{
+  "page": {
+    "label": "TRANSLATE.MPDANTIC.PAGE_TITLE"
+  },
+  "sections": [
+    {
+      "id": "management_section",
+      "element": "section",
+      "label": "TRANSLATE.MPDANTIC.MGMT_SECTION",
+      "icon": "fa-stethoscope",
+      "description": "TRANSLATE.MPDANTIC.MGMT_SECTION_DESC",
+      "onSave": { "type": "controller", "endpoint": "system_controller/mpdantic", "method": "updateManagement" },
+      "saveButton": {
+        "label": "TRANSLATE.MPDANTIC.SAVE",
+        "data": ["port", "address"]
+      },
+      "content": [
+        { "id": "port", "element": "input", "label": "TRANSLATE.MPDANTIC.MGMT_PORT", "doc": "TRANSLATE.MPDANTIC.MGMT_PORT_DESC", "value": "6218" },
+        { "id": "address", "element": "input", "label": "TRANSLATE.MPDANTIC.MGMT_ADDRESS", "doc": "TRANSLATE.MPDANTIC.MGMT_ADDRESS_DESC", "value": "", "attributes": [ { "placeholder": "" } ] },
+        { "id": "open_here", "element": "button", "label": "TRANSLATE.MPDANTIC.OPEN_HERE", "doc": "TRANSLATE.MPDANTIC.OPEN_HERE_DESC", "onClick": { "type": "oauth", "plugin": "mpdantic", "performerUrl": "", "scopes": [] } },
+        { "id": "open_tab", "element": "button", "label": "TRANSLATE.MPDANTIC.OPEN_TAB", "doc": "TRANSLATE.MPDANTIC.OPEN_TAB_DESC", "onClick": { "type": "openUrl", "url": "" } }
+      ]
+    },
+    {
+      "id": "buffer_section",
+      "element": "section",
+      "label": "TRANSLATE.MPDANTIC.BUFFER_SECTION",
+      "icon": "fa-database",
+      "description": "TRANSLATE.MPDANTIC.BUFFER_SECTION_DESC",
+      "onSave": { "type": "controller", "endpoint": "system_controller/mpdantic", "method": "updateBuffer" },
+      "saveButton": {
+        "label": "TRANSLATE.MPDANTIC.SAVE",
+        "data": ["buffer_auto"]
+      },
+      "content": [
+        { "id": "buffer_auto", "element": "switch", "label": "TRANSLATE.MPDANTIC.BUFFER_AUTO", "doc": "TRANSLATE.MPDANTIC.BUFFER_AUTO_DESC", "value": true }
+      ]
+    },
+    {
+      "id": "mb_section",
+      "element": "section",
+      "label": "TRANSLATE.MPDANTIC.MB_SECTION",
+      "icon": "fa-music",
+      "description": "TRANSLATE.MPDANTIC.MB_SECTION_DESC",
+      "onSave": { "type": "controller", "endpoint": "system_controller/mpdantic", "method": "updateMusicBrainz" },
+      "saveButton": {
+        "label": "TRANSLATE.MPDANTIC.SAVE",
+        "data": ["mb_mirror", "mb_url"]
+      },
+      "content": [
+        { "id": "mb_mirror", "element": "switch", "label": "TRANSLATE.MPDANTIC.MB_MIRROR", "doc": "TRANSLATE.MPDANTIC.MB_MIRROR_DESC", "value": false },
+        { "id": "mb_url", "element": "input", "label": "TRANSLATE.MPDANTIC.MB_URL", "doc": "TRANSLATE.MPDANTIC.MB_URL_DESC", "value": "", "attributes": [ { "placeholder": "http://192.168.1.10:5000" } ], "visibleIf": { "field": "mb_mirror", "value": true } },
+        { "id": "mb_test", "element": "button", "label": "TRANSLATE.MPDANTIC.MB_TEST", "doc": "TRANSLATE.MPDANTIC.MB_TEST_DESC", "onClick": { "type": "plugin", "endpoint": "system_controller/mpdantic", "method": "testMusicBrainz", "data": ["mb_mirror", "mb_url"] }, "visibleIf": { "field": "mb_mirror", "value": true } }
+      ]
+    },
+    {
+      "id": "status_section",
+      "element": "section",
+      "label": "TRANSLATE.MPDANTIC.STATUS_SECTION",
+      "icon": "fa-info-circle",
+      "description": "TRANSLATE.MPDANTIC.STATUS_SECTION_DESC",
+      "onSave": { "type": "controller", "endpoint": "system_controller/mpdantic", "method": "showStatus" },
+      "saveButton": { "label": "TRANSLATE.MPDANTIC.STATUS_BUTTON", "data": [] },
+      "content": []
+    }
+  ]
+}

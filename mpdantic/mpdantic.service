@@ -1,0 +1,42 @@
+[Unit]
+Description=MPDantic core (mpdantic plugin)
+Documentation=https://github.com/foonerd/mpdantic
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=volumio
+Group=volumio
+RuntimeDirectory=mpdantic
+RuntimeDirectoryMode=0755
+ExecStart=/data/plugins/system_controller/mpdantic/bin/mpdantic --run /run/mpdantic --settings /data/configuration/system_controller/mpdantic/settings.json --music /var/lib/mpd/music --mpd /run/mpd/socket --data /data/INTERNAL/mpdantic --glass /data/plugins/user_interface/glass --networkfs /data/configuration/system_controller/networkfs/config.json
+# Well behind the player's audio thread, which is real-time; a library walk never
+# starves it.
+Nice=10
+Restart=always
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=5
+# No NoNewPrivileges: the core mounts a share's folder read-write for a write through
+# the plugin's own sudoers entry for mount and umount, and NoNewPrivileges would
+# block every setuid, mount.cifs included. The mounts live in this unit's own mount
+# namespace and never reach the host.
+# full, not strict: /usr, /boot and /etc read-only; the library under /mnt, the data
+# folder and the temporary mounts under /run/mpdantic stay reachable.
+ProtectSystem=full
+ProtectHome=yes
+ReadWritePaths=/run/mpdantic /data/INTERNAL/mpdantic
+PrivateTmp=yes
+# The library's files are mostly another user's: Volumio's Samba share takes guest
+# writes, so music copied over the network is nobody's, and a USB disk's files are
+# whoever wrote them. The core, still the volumio user, writes them with these three
+# capabilities and nothing more: past the mode bits, and each file it rewrites kept
+# as its owner's with its mode (a new file takes its folder's owner). No root and no
+# helper; the core's own checks confine every write to the library, its data folder
+# and Volumio's playlist folder, and ProtectSystem keeps the system read-only whatever
+# the capability. The bounding set is left whole: sudo's mount needs root's own.
+AmbientCapabilities=CAP_DAC_OVERRIDE CAP_CHOWN CAP_FOWNER
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,7 @@
+{
+  "port": { "type": "string", "value": "6218" },
+  "address": { "type": "string", "value": "" },
+  "buffer_auto": { "type": "boolean", "value": true },
+  "mb_mirror": { "type": "boolean", "value": false },
+  "mb_url": { "type": "string", "value": "" }
+}
