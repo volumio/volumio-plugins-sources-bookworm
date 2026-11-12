@@ -1,0 +1,19 @@
+#------ Outcast Uplink section -------
+
+# The tap of Outcast Uplink. Every source's stream passes through it byte
+# for byte, in the format the player and the output agreed, so PCM, DoP and
+# native DSD stay bit-perfect; on the way the stream's own bytes go into a
+# ring under /dev/shm, which the plugin's core reads for its uplinks. The
+# player never waits on a reader: a reader that falls behind loses what it
+# missed, and playback goes on.
+pcm.Outcast {
+  type evotap
+  slave.pcm "postOutcast"
+  ring "outcast"
+  audio 1
+}
+
+pcm_type.evotap {
+  lib /data/plugins/audio_interface/outcast/lib/libevotap.so
+}
+#------ End of Outcast Uplink section ------

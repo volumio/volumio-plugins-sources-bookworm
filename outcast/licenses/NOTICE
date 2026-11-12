@@ -1,0 +1,26 @@
+evopeg: a build of FFmpeg for the evo framework (https://evoframework.org), configured
+down to encoding and muxing audio from standard input to standard output. Nothing of
+FFmpeg or of the libraries is changed; the whole recipe is public at
+https://github.com/foonerd/evopeg, where each release's notes and the build.json beside
+this file name the exact sources, their digests and the configure set.
+
+The binary bin/evopeg is a static link of:
+
+  FFmpeg       GNU Lesser General Public License, version 2.1 or later
+               (ffmpeg-COPYING.LGPLv2.1; ffmpeg-LICENSE.md says which files carry
+               other licences). Built without --enable-gpl and without --enable-nonfree:
+               no GPL or non-free part of FFmpeg is in it.
+  LAME         GNU Library General Public License, version 2 or later
+               (lame-COPYING, lame-LICENSE).
+  Opus         BSD 3-clause (opus-COPYING).
+  libvorbis    BSD 3-clause (vorbis-COPYING).
+  libogg       BSD 3-clause (ogg-COPYING).
+
+So the binary as a whole is distributed under the GNU Lesser General Public License,
+version 2.1 or later. Its complete corresponding source is the FFmpeg and library
+releases named in build.json, obtained from the URLs there, and the recipe in the
+evopeg repository, which rebuilds the binary from them. A program that runs evopeg as
+a separate process, as the evo framework's plugins do, is not a work based on it.
+
+evopeg's own work, the recipe, the scripts and this packaging, is under the MIT licence
+(the LICENSE file beside this folder).

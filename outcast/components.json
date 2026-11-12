@@ -1,0 +1,23 @@
+{
+  "evotap": {
+    "version": "0.1.1",
+    "repository": "foonerd/evotap",
+    "files": {
+      "lib/armv7/libevotap.so": { "sha256": "cb2c4b9958fe0279436a97f1f38513bf1ed6b88a47dd8fc80e6e4384fe170320", "size": 756700 },
+      "bin/armv7/evotap-cat": { "sha256": "d432231d1e08d0cef50425d27814686f313af209b1eb7e1e9656f948461673a4", "size": 388212 },
+      "lib/armv8/libevotap.so": { "sha256": "8f3020f2b08cea4ce5796c92ed0c2871c04dd0930c2e9230a553736600c47c71", "size": 987664 },
+      "bin/armv8/evotap-cat": { "sha256": "afda12cd6105c28176e2658a216c11fe9733d90665be3fbbeb8386b3c714f3bf", "size": 398048 },
+      "lib/x64/libevotap.so": { "sha256": "94e39c9ec5cd08dc44d526096f5948b1d7919e4ae68bf4bb90e2ff373f2808fa", "size": 1543344 },
+      "bin/x64/evotap-cat": { "sha256": "2d9ccf648e26db3a1209ad033ccd7a0a115cb9c8784d52f39a8bcb9b60714b9d", "size": 426640 }
+    }
+  },
+  "evopeg": {
+    "version": "0.2.0",
+    "repository": "foonerd/evopeg",
+    "files": {
+      "bin/armv7/evopeg": { "sha256": "992b9b168b68e35c762e3d4a076f4fe640a0bf4996d58224d9acf917efcb600e", "size": 3240044 },
+      "bin/armv8/evopeg": { "sha256": "2c5dbc4570eb40494de94449e17b371fb01275550660c3f52af5446605ca02ef", "size": 4270856 },
+      "bin/x64/evopeg": { "sha256": "4ffe899392c3e87b1d19721e3ced5ed213f742d3097e1ac79500b55b014aef76", "size": 5078408 }
+    }
+  }
+}
