@@ -3,7 +3,7 @@
   "SETTINGS_TITLE": "Ustawienia Audio Keepalive",
   "SETTINGS_DESC": "Utrzymuj urządzenie wyjścia audio aktywne, aby zapobiec opóźnieniom negocjacji, trzaskom i kliknięciom na wyjściach HDMI, SPDIF i USB DAC.",
   "KEEPALIVE_ENABLED": "Utrzymuj urządzenie audio aktywne",
-  "KEEPALIVE_ENABLED_DESC": "Ciągle zapisuje niesłyszalny szum na wyjście. Muzyka jest automatycznie mieszana. Bez dodatkowego regulatora głośności. Działa z HDMI, SPDIF i USB DAC.",
+  "KEEPALIVE_ENABLED_DESC": "Gdy muzyka nie gra, na wyjście zapisywany jest niesłyszalny szum, aby urządzenie nigdy się nie zamykało. Muzyka jest przekazywana bez zmian. Bez dodatkowego regulatora głośności. Działa z HDMI, SPDIF i USB DAC.",
   "SETTINGS_SAVED": "Ustawienia Audio Keepalive zastosowane",
   "SAVE": "Zapisz"
 }

@@ -1,9 +1,9 @@
 {
   "PLUGIN_NAME": "Audio Keepalive",
   "SETTINGS_TITLE": "Audio Keepalive Settings",
-  "SETTINGS_DESC": "Keeps a continuous audio stream on the output so HDMI receivers, SPDIF decoders, and USB DACs do not drop lock when idle.",
+  "SETTINGS_DESC": "Keeps the audio output open so HDMI receivers, SPDIF decoders and USB DACs do not lose lock, click or cut the start of a track after a pause.",
   "KEEPALIVE_ENABLED": "Keep audio device active",
-  "KEEPALIVE_ENABLED_DESC": "When enabled, a background mix of inaudible noise is written continuously to the output. Music is mixed in automatically. There is no extra volume control. Works with HDMI, SPDIF, and USB DACs.",
+  "KEEPALIVE_ENABLED_DESC": "While no music plays, inaudible noise is written to the output so the device never closes. Music is passed through unchanged. There is no extra volume control. Works with HDMI, SPDIF and USB DACs.",
   "SETTINGS_SAVED": "Audio Keepalive settings applied",
   "SAVE": "Save"
 }

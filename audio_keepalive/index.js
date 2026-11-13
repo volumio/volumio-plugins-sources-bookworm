@@ -1,13 +1,33 @@
 'use strict';
 
-var libQ = require('kew');
-var fs = require('fs-extra');
+var fs = require('fs');
 var path = require('path');
 var exec = require('child_process').exec;
 
+// The zip carries no node_modules: kew and v-conf are Volumio's own copies,
+// so the promises handed back are the kind the plugin manager checks for.
+function coreModule(name) {
+    try {
+        return require('/volumio/node_modules/' + name);
+    } catch (e) {
+        return require(name);
+    }
+}
+
+var libQ = coreModule('kew');
+
 var LOG_PREFIX = 'AudioKeepalive: ';
 var ASOUND_CONTRIBUTION_FILENAME = 'keepaliveProxy.keepaliveProxyOut.-1.conf';
+// The ALSA client stays in the plugin's asound folder: pcm_type names the
+// module by path, so nothing is installed under the system's alsa-lib
+// directory. install.sh links asound/<module> to the build for this machine;
+// alsa_controller reads only the *.conf files there.
+var ALSA_MODULE = path.join(__dirname, 'asound', 'libasound_module_pcm_keepalive.so');
 var ASOUND_CONTRIBUTION_CONTENT = [
+    'pcm_type.keepalive {',
+    '    lib "' + ALSA_MODULE + '"',
+    '}',
+    '',
     'pcm.keepaliveProxy {',
     '    type keepalive',
     '    socket "/run/audio-keepalive/ctl.sock"',
@@ -30,7 +50,7 @@ function AudioKeepalive(context) {
 
 AudioKeepalive.prototype.onVolumioStart = function () {
     var configFile = this.commandRouter.pluginManager.getConfigurationFile(this.context, 'config.json');
-    this.config = new (require('v-conf'))();
+    this.config = new (coreModule('v-conf'))();
     this.config.loadFile(configFile);
     return libQ.resolve();
 };
@@ -73,7 +93,7 @@ AudioKeepalive.prototype._ensureAsoundContribution = function () {
     var asoundDir = path.join(__dirname, 'asound');
     var contributionPath = path.join(asoundDir, ASOUND_CONTRIBUTION_FILENAME);
     try {
-        fs.ensureDirSync(asoundDir);
+        fs.mkdirSync(asoundDir, { recursive: true });
         fs.writeFileSync(contributionPath, ASOUND_CONTRIBUTION_CONTENT, 'utf8');
         this.logger.info(LOG_PREFIX + 'ALSA contribution file written');
     } catch (e) {
@@ -85,7 +105,7 @@ AudioKeepalive.prototype._removeAsoundContribution = function () {
     var contributionPath = path.join(__dirname, 'asound', ASOUND_CONTRIBUTION_FILENAME);
     try {
         if (fs.existsSync(contributionPath)) {
-            fs.removeSync(contributionPath);
+            fs.unlinkSync(contributionPath);
             this.logger.info(LOG_PREFIX + 'ALSA contribution file removed');
         }
     } catch (e) {

@@ -1,13 +1,10 @@
 {
   "name": "audio_keepalive",
-  "version": "2.0.1",
+  "version": "2.1.1",
   "description": "Maintains continuous audio output to prevent HDMI/SPDIF/USB signal loss during idle",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "Just a Nerd",
-  "license": "ISC",
+  "license": "GPL-2.0-or-later",
   "volumio_info": {
     "prettyName": "Audio Keepalive",
     "icon": "fa-plug",
@@ -15,22 +12,17 @@
     "os": [
       "bookworm"
     ],
-    "details": "Keeps a continuous inaudible noise mix on the output so HDMI receivers, SPDIF decoders, and USB DACs do not drop lock when idle",
-    "changelog": "v2.0.0: Continuous mix daemon. Virtual PCM forwards music; daemon always owns the output and mixes inaudible Gaussian noise. No switching, no volume control.",
+    "details": "Keeps the output open so HDMI receivers, SPDIF decoders and USB DACs do not drop lock when idle. Music passes through unchanged; inaudible noise is written only while nothing plays.",
+    "changelog": "v2.1.1: Keeps the audio output open so HDMI receivers, S/PDIF decoders and USB DACs do not drop lock while nothing plays: a daemon owns the output and writes inaudible noise only while idle; music passes through unchanged and without gaps, paced to the device, and nothing queued is lost on pause, stop or a short device write.",
     "architectures": [
       "amd64",
       "armhf"
     ],
     "has_alsa_contribution": true
   },
-  "dependencies": {
-    "fs-extra": "^0.28.0",
-    "kew": "^0.7.0",
-    "v-conf": "^1.4.2"
-  },
   "engines": {
     "node": ">=20",
     "volumio": ">=4"
   },
-  "repository": "https://github.com/volumio/volumio-plugins-sources-bookworm"
+  "repository": "https://github.com/foonerd/alsa-pcm-keepalive"
 }
