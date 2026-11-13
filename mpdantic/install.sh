@@ -9,12 +9,16 @@ PLUGIN_DIR=/data/plugins/system_controller/mpdantic
 DATA_DIR=/data/INTERNAL/mpdantic
 UNIT=/etc/systemd/system/mpdantic.service
 SUDOERS=/etc/sudoers.d/volumio-user-mpdantic
+# Root-owned mount helper outside the plugin tree (volumio must not rewrite what sudo runs).
+MOUNT_HELPER=/usr/local/libexec/mpdantic-mount
+MOUNT_HELPER_DIR=/usr/local/libexec
 
 # A refused install leaves nothing behind, so the next attempt starts clean.
 refuse() {
   echo ""
   echo "$1"
   rm -rf "$PLUGIN_DIR"
+  rm -f "$MOUNT_HELPER"
   exit 1
 }
 
@@ -39,9 +43,20 @@ echo "Core: $("$PLUGIN_DIR/bin/$ARCH/mpdantic" --version)"
 # One name for the binary, whatever the architecture: the unit names it.
 ln -sf "$PLUGIN_DIR/bin/$ARCH/mpdantic" "$PLUGIN_DIR/bin/mpdantic"
 
-# The mount helper sudo runs: only cifs/nfs under /run/mpdantic/mounts.
-chmod +x "$PLUGIN_DIR/bin/mpdantic-mount" 2>/dev/null || true
-[ -x "$PLUGIN_DIR/bin/mpdantic-mount" ] || refuse "ERROR: the mount helper is missing"
+# The mount helper sudo runs: only cifs/nfs under /run/mpdantic/mounts. Installed
+# root-owned outside the plugin folder so a volumio process cannot rewrite it.
+[ -f "$PLUGIN_DIR/bin/mpdantic-mount" ] || refuse "ERROR: the mount helper is missing from the zip"
+mkdir -p "$MOUNT_HELPER_DIR"
+install -m 755 -o root -g root "$PLUGIN_DIR/bin/mpdantic-mount" "$MOUNT_HELPER" \
+  || refuse "ERROR: could not install the mount helper as root"
+# Refuse a sudoers grant unless the helper on disk is root-owned and not group/other-writable.
+owner=$(stat -c '%u' "$MOUNT_HELPER" 2>/dev/null || stat -f '%u' "$MOUNT_HELPER" 2>/dev/null || echo "")
+mode=$(stat -c '%a' "$MOUNT_HELPER" 2>/dev/null || stat -f '%Lp' "$MOUNT_HELPER" 2>/dev/null || echo "")
+[ "$owner" = "0" ] || refuse "ERROR: the mount helper is not root-owned"
+case "$mode" in
+  755|555|511) ;;
+  *) refuse "ERROR: the mount helper mode must be 755 (got ${mode})" ;;
+esac
 
 # =============================================================================
 # SETUP: the folders. The data folder is for what the user can undo and is never
@@ -68,7 +83,7 @@ cat > "$SUDOERS" <<'EOF'
 # /run/mpdantic/mounts only); the announcement file where the Avahi folder is closed
 volumio ALL=(ALL) NOPASSWD: /bin/systemctl start mpdantic.service, /bin/systemctl stop mpdantic.service, /bin/systemctl restart mpdantic.service, /bin/systemctl is-active mpdantic.service
 volumio ALL=(ALL) NOPASSWD: /usr/bin/systemctl start mpdantic.service, /usr/bin/systemctl stop mpdantic.service, /usr/bin/systemctl restart mpdantic.service, /usr/bin/systemctl is-active mpdantic.service
-volumio ALL=(ALL) NOPASSWD: /data/plugins/system_controller/mpdantic/bin/mpdantic-mount
+volumio ALL=(ALL) NOPASSWD: /usr/local/libexec/mpdantic-mount
 volumio ALL=(ALL) NOPASSWD: /usr/bin/tee /etc/avahi/services/mpdantic.service, /bin/rm -f /etc/avahi/services/mpdantic.service, /usr/bin/rm -f /etc/avahi/services/mpdantic.service
 EOF
 chmod 0440 "$SUDOERS"
@@ -76,6 +91,5 @@ if ! visudo -c -f "$SUDOERS" >/dev/null 2>&1; then
   rm -f "$SUDOERS"
   refuse "ERROR: the sudoers entry did not validate"
 fi
-
 echo "MPDantic installed"
 echo "plugininstallend"
