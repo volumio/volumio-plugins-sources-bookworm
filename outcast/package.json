@@ -1,6 +1,6 @@
 {
   "name": "outcast",
-  "version": "0.1.28",
+  "version": "0.1.29",
   "description": "Casts whatever the player plays out to any uplink: Icecast, SHOUTcast, RTMP, SRT, HLS, the LAN or a file. An evo framework plugin built on evotap.",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "os": ["bookworm"],
     "architectures": ["armhf", "amd64"],
     "details": "Streams whatever the player plays, from any service, to Icecast, SHOUTcast, RTMP, SRT, HLS, the LAN or a file, with the screen's title. Built on evotap.",
-    "changelog": "0.1.28 First store release. Streams whatever the player plays, from any service, to Icecast or SHOUTcast, RTMP, SRT, HLS and DASH, a stream on the LAN or a recording to file, with the screen's title; each uplink has its own encoder, transport and reconnection, up to three Icecast destinations at once; DJ mode schedules the day's programme. Built on evotap and evopeg."
+    "changelog": "0.1.29 First store release. Streams whatever the player plays, from any service, to Icecast or SHOUTcast, RTMP, SRT, HLS and DASH, a stream on the LAN or a recording to file, with the screen's title; each uplink has its own encoder, transport and reconnection, up to three Icecast destinations at once; DJ mode schedules the day's programme. Built on evotap and evopeg."
   },
   "dependencies": {
     "kew": "^0.7.0",
