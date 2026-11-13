@@ -5,7 +5,7 @@ Wants=sound.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/audio-keepalive-daemon --pcm keepaliveProxyOut --fallback-pcm volumioOutput
+ExecStart=/data/plugins/audio_interface/audio_keepalive/bin/audio-keepalive-daemon --pcm keepaliveProxyOut --fallback-pcm volumioOutput
 Restart=always
 RestartSec=1
 StandardOutput=journal

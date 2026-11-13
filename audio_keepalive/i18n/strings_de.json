@@ -3,7 +3,7 @@
   "SETTINGS_TITLE": "Audio Keepalive Einstellungen",
   "SETTINGS_DESC": "Audioausgabegerät aktiv halten, um Verzögerungen bei der Signalaushandlung, Knackser und Klicks an HDMI-, SPDIF- und USB-DAC-Ausgängen zu vermeiden.",
   "KEEPALIVE_ENABLED": "Audiogerät aktiv halten",
-  "KEEPALIVE_ENABLED_DESC": "Schreibt unhörbares Rauschen dauerhaft auf den Ausgang. Musik wird automatisch darunter gemischt. Kein extra Lautstärkeregler. Funktioniert mit HDMI, SPDIF und USB-DACs.",
+  "KEEPALIVE_ENABLED_DESC": "Solange keine Musik spielt, wird unhörbares Rauschen auf den Ausgang geschrieben, damit das Gerät nie schließt. Musik wird unverändert durchgereicht. Kein extra Lautstärkeregler. Funktioniert mit HDMI, SPDIF und USB-DACs.",
   "SETTINGS_SAVED": "Audio Keepalive Einstellungen angewendet",
   "SAVE": "Speichern"
 }
