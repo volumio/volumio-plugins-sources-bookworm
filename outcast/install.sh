@@ -53,6 +53,21 @@ ln -sf "$PLUGIN_DIR/lib/$ARCH/libevotap.so" "$PLUGIN_DIR/lib/libevotap.so"
 echo "Tap: $PLUGIN_DIR/lib/$ARCH/libevotap.so"
 
 # =============================================================================
+# SETUP: the node modules. The zip carries none: the plugin store wants them made on the
+# player, as Volumio's own plugin tool makes them, so the install makes them here from
+# the npm registry at the versions package-lock.json pins. The player needs the internet
+# for this, as it did to fetch the plugin.
+# =============================================================================
+command -v npm >/dev/null 2>&1 || refuse "ERROR: npm is not on this player; the plugin's modules cannot be installed"
+echo "Modules: installing from the npm registry"
+( cd "$PLUGIN_DIR" && npm install --omit=dev --no-audit --no-fund --loglevel=error --fetch-retries=3 ) \
+  || refuse "ERROR: the plugin's modules could not be installed from the npm registry; is the player online?"
+for module in $(sed -n '/"dependencies"/,/}/p' "$PLUGIN_DIR/package.json" | sed -n 's/^ *"\([^"]*\)": *"[^"]*",*$/\1/p'); do
+  [ -f "$PLUGIN_DIR/node_modules/$module/package.json" ] || refuse "ERROR: the module $module did not install"
+done
+echo "Modules: $(find "$PLUGIN_DIR/node_modules" -mindepth 1 -maxdepth 1 -type d | wc -l) installed"
+
+# =============================================================================
 # SETUP: the folders. The ALSA contribution is written by the plugin when it starts,
 # after it has proved the tap loads; the data folder is for recordings and is never
 # removed by an uninstall.
