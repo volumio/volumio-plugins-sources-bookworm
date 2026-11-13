@@ -1,6 +1,6 @@
 {
   "name": "mpdantic",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Audits and repairs a music library for MPD: output buffer sizing by RAM, .mpdignore management, CUE sheet repair, playlist rebasing, tag validation. Rust core, thin Node shell.",
   "main": "index.js",
   "scripts": {
@@ -25,7 +25,7 @@
       "amd64"
     ],
     "details": "Pedantic about your library, so MPD does not choke on it. Audits and repairs a music library for MPD, folder by folder, from its own management pages on the player. Those pages are open to the player's network, as Volumio's own are: anyone who can reach the player can read and write the library from them; every write is undoable. Press Update library when ready \u2014 Volumio rebuilds its album list once then, which takes a while on a large library.",
-    "changelog": "0.1.7 First store release, as beta. Audits and repairs a music library for MPD, folder by folder, from its own management pages on the player: sizes MPD's output buffer to the player's memory, manages .mpdignore files, checks and repairs CUE sheets, rebases and imports playlists, renames and organises folders from tags; every write is previewed first and undoable; Update library rebuilds MPD and Volumio's albums once, when you ask."
+    "changelog": "0.1.8 Audits and repairs a music library for MPD, folder by folder, from its own management pages on the player: sizes MPD's output buffer to the player's memory, manages .mpdignore files, checks and repairs CUE sheets, rebases and imports playlists, renames and organises folders from tags; every write is previewed first and undoable; Update library rebuilds MPD and Volumio's albums once, when you ask."
   },
   "dependencies": {
     "kew": "^0.7.0",
