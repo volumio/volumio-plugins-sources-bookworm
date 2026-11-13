@@ -17,10 +17,8 @@
         "label": "TRANSLATE.STREAM_WATCHDOG.SAVE",
         "data": [
           "offlinePlaylistName",
-          "streamCheckInterval",
           "restoreCheckInterval",
-          "autoRestore",
-          "shuffleOffline"
+          "autoRestore"
         ]
       },
       "content": [
@@ -33,17 +31,6 @@
           "placeholder": "Offline",
           "type": {
             "name": "text"
-          }
-        },
-        {
-          "id": "streamCheckInterval",
-          "element": "input",
-          "doc": "",
-          "label": "TRANSLATE.STREAM_WATCHDOG.STREAM_CHECK_INTERVAL",
-          "description": "TRANSLATE.STREAM_WATCHDOG.STREAM_CHECK_INTERVAL_DESC",
-          "placeholder": "30",
-          "type": {
-            "name": "number"
           }
         },
         {
@@ -63,13 +50,6 @@
           "doc": "",
           "label": "TRANSLATE.STREAM_WATCHDOG.AUTO_RESTORE",
           "description": "TRANSLATE.STREAM_WATCHDOG.AUTO_RESTORE_DESC"
-        },
-        {
-          "id": "shuffleOffline",
-          "element": "switch",
-          "doc": "",
-          "label": "TRANSLATE.STREAM_WATCHDOG.SHUFFLE_OFFLINE",
-          "description": "TRANSLATE.STREAM_WATCHDOG.SHUFFLE_OFFLINE_DESC"
         }
       ]
     }
