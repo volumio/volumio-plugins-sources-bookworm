@@ -66,8 +66,10 @@ let CamillaDsp = function (logger) {
             return;
         }
 
-        // Check uptime: if process was up long enough, reset respawn count
-        if (uptime >= respawnCountResetMs) {
+        // Reset the count after a long enough run, or after a clean exit.
+        // Code 0 means the FIFO writer closed. Some players do that on every
+        // track skip, so it is not a failure.
+        if (uptime >= respawnCountResetMs || code === 0) {
             consecutiveRespawns = 0;
         }
 
