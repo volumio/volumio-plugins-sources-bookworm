@@ -232,8 +232,17 @@ FusionDsp.prototype.onStart = function () {
       await self._doCreateCamilladspfile(null, true);
       if (self._isStopping) return;
 
-      self.camillaProcess = new CamillaDsp(self.logger);
-      self.camillaProcess.start();
+      // Returns false until checksamplerate is set up, so CamillaDSP
+      // falls back to a plain respawn.
+      self.camillaProcess = new CamillaDsp(self.logger, function () {
+        if (!self.readStreamParams) return false;
+        self.readStreamParams();
+        return true;
+      });
+      // Starting now would use a guessed rate, and a waiting stream would
+      // make CamillaDSP grab the DAC before hwinfo probes it. checksamplerate
+      // starts it once a stream reports its rate.
+      self.camillaProcess.waitForStream();
 
       await self.hwinfo();
       if (self._isStopping) return;
@@ -248,6 +257,10 @@ FusionDsp.prototype.onStart = function () {
       self.volumioState();
       self.reportFusionEnabled();
       self.checksamplerate();
+      // A player may already be streaming, e.g. when Volumio restarts mid-track.
+      if (self.camillaProcess.streamIsOpen()) {
+        self.readStreamParams();
+      }
 
       if (self.config.get('loudness')) {
         self.sendvolumelevel();
@@ -3424,7 +3437,10 @@ FusionDsp.prototype.checksamplerate = function () {
 
       isSamplerateUpdating = true;
 
-      if (self.pushstateSamplerate != hcurrentsamplerate)
+      // Not running means the last stream ended and CamillaDSP is waiting
+      // for this one, so start it even if the rate is unchanged.
+      if (self.pushstateSamplerate != hcurrentsamplerate ||
+        (self.camillaProcess && !self.camillaProcess.isRunning()))
         needRestart = true;
 
       self.pushstateSamplerate = hcurrentsamplerate;
@@ -3469,6 +3485,9 @@ FusionDsp.prototype.checksamplerate = function () {
       callbackRead();
     }, streamWatcherDebounceMs);
   };
+
+  // camilladsp-js calls this when CamillaDSP exits while a stream is open
+  self.readStreamParams = debouncedCallbackRead;
 
   // Install a file watcher over fileStreamParams
   // when the file changes, read the content and update the samplerate (debounced)
