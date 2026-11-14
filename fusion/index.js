@@ -232,7 +232,13 @@ FusionDsp.prototype.onStart = function () {
       await self._doCreateCamilladspfile(null, true);
       if (self._isStopping) return;
 
-      self.camillaProcess = new CamillaDsp(self.logger);
+      // Returns false until checksamplerate is set up, so CamillaDSP
+      // falls back to a plain respawn.
+      self.camillaProcess = new CamillaDsp(self.logger, function () {
+        if (!self.readStreamParams) return false;
+        self.readStreamParams();
+        return true;
+      });
       self.camillaProcess.start();
 
       await self.hwinfo();
@@ -3424,7 +3430,10 @@ FusionDsp.prototype.checksamplerate = function () {
 
       isSamplerateUpdating = true;
 
-      if (self.pushstateSamplerate != hcurrentsamplerate)
+      // Not running means the last stream ended and CamillaDSP is waiting
+      // for this one, so start it even if the rate is unchanged.
+      if (self.pushstateSamplerate != hcurrentsamplerate ||
+        (self.camillaProcess && !self.camillaProcess.isRunning()))
         needRestart = true;
 
       self.pushstateSamplerate = hcurrentsamplerate;
@@ -3469,6 +3478,9 @@ FusionDsp.prototype.checksamplerate = function () {
       callbackRead();
     }, streamWatcherDebounceMs);
   };
+
+  // camilladsp-js calls this when CamillaDSP exits while a stream is open
+  self.readStreamParams = debouncedCallbackRead;
 
   // Install a file watcher over fileStreamParams
   // when the file changes, read the content and update the samplerate (debounced)
