@@ -1,0 +1,39 @@
+{
+  "name": "radio2playlist",
+  "version": "1.4.2",
+  "description": "Save web radio stations to Volumio playlists (Favorites + optional Auto mode)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dieter Senf (Steyer-Tec)",
+  "license": "MIT",
+  "volumio_info": {
+    "prettyName": "Radio to Playlist",
+    "icon": "fa-list-ul",
+    "plugin_type": "user_interface",
+    "os": [
+      "bookworm"
+    ],
+    "architectures": [
+      "armhf",
+      "amd64"
+    ],
+    "details": "Save the currently playing web radio stream as a Volumio playlist entry.",
+    "changelog": "1.4.2: Review compliance, safe playlist writes, error handling and UI refresh"
+  },
+  "dependencies": {
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.2",
+    "socket.io-client": "^2.5.0"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Steyer-Tec/volumio-plugins-sources-bookworm.git",
+    "directory": "radio2playlist"
+  }
+}
