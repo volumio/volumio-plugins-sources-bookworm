@@ -149,7 +149,7 @@ The Plugin Settings page for this plugin is divided into four sections.
 
 This section contains only one control:
 
-- Background service activated` (default: `true`).
+- Background service activated (default: `true`).
 
 The "Background service activated" switch
 controls whether the background service

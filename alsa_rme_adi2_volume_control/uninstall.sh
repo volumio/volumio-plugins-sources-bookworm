@@ -74,7 +74,7 @@ on_exit () {
     else
         echo "[ERRO] Plugin $PLUGIN_NAME failed to uninstall"
     fi
-    # required to end the plugin installation
+    # required to end the plugin uninstallation
     echo "pluginuninstallend"
 }
 trap on_exit EXIT
@@ -126,6 +126,6 @@ echo "[INFO] Remove service executable file ... done"
 
 # The required
 # echo "plugininstallend"
-# to end the plugin install will be called by the on_exit trap handler
+# to end the plugin uninstall will be called by the on_exit trap handler
 EXIT_CODE=$EXIT_CODE_OK
 exit $EXIT_CODE
