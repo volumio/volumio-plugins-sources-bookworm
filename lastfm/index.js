@@ -39,6 +39,14 @@ function ControllerLastFM(context)
 	self.timeToPlay = 0;
     self.apiResponse = null;
     self.lfm = null;
+    // Session state: see initLastFMSession / ensureLastFMSession
+    self.authenticating = false;
+    self.authStartedAt = 0;
+    self.sessionGeneration = 0;
+    self.sessionRetryTimer = null;
+    self.sessionRetryAttempt = 0;
+    self.pendingScrobbles = [];
+    self.stopped = false;
 	self.previousScrobble = 
     {	artist: '',
         title: '',
@@ -79,6 +87,10 @@ ControllerLastFM.prototype.getConfigurationFiles = function()
 ControllerLastFM.prototype.onStop = function() {
 	var self = this;
 	self.logger.info("Performing onStop action");
+	self.stopped = true;
+	self.sessionGeneration++;
+	self.authenticating = false;
+	self.clearSessionRetry();
 	
 	return libQ.resolve();
 };
@@ -102,6 +114,8 @@ ControllerLastFM.prototype.onStart = function() {
     self.currentTimer = new pTimer(self.context, debugEnabled);
 
     self.initScrobbleSettings();
+    self.stopped = false;
+    self.sessionRetryAttempt = 0;
     self.initLastFMSession().then(result => self.logger.info('[LastFM] finished init: ' + result), error => self.logger.info('[LastFM] finished init with error: ' + error) );
     self.logger.info('[LastFM] Left init routine');
  
@@ -625,7 +639,8 @@ ControllerLastFM.prototype.updateCredentials = function (data)
 	self.config.set('authToken', md5(data['username'] + md5(data['password'])));
 	
     // Should init new LastFM session after credentials were updated.
-    self.initLastFMSession();
+    self.sessionRetryAttempt = 0;
+    self.initLastFMSession().fail(function () {});
     // To-Do: check that session has started properly...
     defer.resolve();
 		
@@ -913,12 +928,25 @@ ControllerLastFM.prototype.formatScrobbleData = function (state)
 	return success;
 };
 
+// Delays between automatic re-authentication attempts after a failure (ms).
+// The last value is repeated for every further attempt.
+ControllerLastFM.SESSION_RETRY_DELAYS_MS = [30000, 60000, 120000, 300000, 900000, 1800000];
+// An attempt that has not answered after this long is considered lost.
+ControllerLastFM.SESSION_ATTEMPT_TIMEOUT_MS = 60000;
+// Minimum time between two attempts triggered by playback.
+ControllerLastFM.SESSION_MIN_INTERVAL_MS = 30000;
+// Scrobbles kept while there is no session (Last.fm accepts them up to 14 days late).
+ControllerLastFM.MAX_PENDING_SCROBBLES = 50;
+
 ControllerLastFM.prototype.initLastFMSession = function () {
     var self = this;
 	var defer = libQ.defer();
-    
+
     var msg = '';
-    
+
+    // A new attempt replaces any retry that was still scheduled.
+    self.clearSessionRetry();
+
     if (
         (self.config.get('API_KEY') != '') &&
         (self.config.get('API_SECRET') != '') &&
@@ -929,34 +957,53 @@ ControllerLastFM.prototype.initLastFMSession = function () {
         if (debugEnabled)
             self.logger.info('[LastFM] trying to authenticate...');
 
-        self.lfm = new lastfm({
+        var generation = ++self.sessionGeneration;
+        self.authenticating = true;
+        self.authStartedAt = Date.now();
+
+        var client = new lastfm({
             api_key: self.config.get('API_KEY'),
             api_secret: self.config.get('API_SECRET'),
             username: self.config.get('username'),
             authToken: self.config.get('authToken')
         });
+        self.lfm = client;
 
-        self.lfm.getSessionKey(function (result)
+        client.getSessionKey(function (result)
 		{
-            if (result.success)
+            // Answer from an attempt that was replaced in the meantime
+            // (credentials saved again, plugin stopped, timed-out attempt): ignore it.
+            if (generation !== self.sessionGeneration || self.stopped)
+                return;
+            self.authenticating = false;
+
+            if (result.success && client.session_key)
 			{
+                if (self.sessionRetryAttempt > 0)
+                    self.logger.info('[LastFM] authenticated after ' + self.sessionRetryAttempt + ' retry(s)');
+                self.sessionRetryAttempt = 0;
                 self.commandRouter.pushToastMessage('success', 'LastFM connection', 'Authenticated successfully with LastFM.');
                 if (debugEnabled)
                     self.logger.info('[LastFM] authenticated successfully!');
+                self.flushPendingScrobbles();
                 defer.resolve('Authenticated successfully!');
             }
             else
 			{
-                msg = 'Error: ' + result.error;
-                self.commandRouter.pushToastMessage('error', 'LastFM connection failed', msg);                    
-                self.logger.error('[LastFM] ' + msg); 
+                msg = 'Error: ' + (result.error || 'no session key returned');
+                // Only the first failure of a series is shown in the UI, retries are only logged.
+                if (self.sessionRetryAttempt == 0)
+                    self.commandRouter.pushToastMessage('error', 'LastFM connection failed', msg);
+                self.logger.error('[LastFM] ' + msg);
+                self.scheduleSessionRetry();
                 defer.reject(msg);
             }
         });
     }
     else
 	{
-        // Configuration errors
+        // Configuration errors: nothing to retry until the user saves the settings.
+        self.authenticating = false;
         msg = 'Configuration parameters missing:';
         if (self.config.get('API_KEY') == '')
             msg += '  "API_KEY"';
@@ -966,11 +1013,135 @@ ControllerLastFM.prototype.initLastFMSession = function () {
             msg += '  "username"';
         if (self.config.get('authToken') == '')
             msg += '  "authToken"';
-        self.commandRouter.pushToastMessage('error', 'LastFM connection failed', msg);                    
-        self.logger.info('[LastFM] ' + msg); 
+        self.commandRouter.pushToastMessage('error', 'LastFM connection failed', msg);
+        self.logger.info('[LastFM] ' + msg);
         defer.reject(msg);
     }
     return defer.promise;
+};
+
+ControllerLastFM.prototype.hasLastFMSession = function ()
+{
+    var self = this;
+    return self.lfm != null && !self.authenticating && !!self.lfm.session_key;
+};
+
+ControllerLastFM.prototype.clearSessionRetry = function ()
+{
+    var self = this;
+    if (self.sessionRetryTimer)
+    {
+        clearTimeout(self.sessionRetryTimer);
+        self.sessionRetryTimer = null;
+    }
+};
+
+ControllerLastFM.prototype.scheduleSessionRetry = function ()
+{
+    var self = this;
+    if (self.stopped)
+        return;
+    self.clearSessionRetry();
+    var delays = ControllerLastFM.SESSION_RETRY_DELAYS_MS;
+    var delay = delays[Math.min(self.sessionRetryAttempt, delays.length - 1)];
+    self.sessionRetryAttempt++;
+    self.logger.info('[LastFM] will retry authentication in ' + Math.round(delay / 1000) + 's (attempt ' + self.sessionRetryAttempt + ')');
+    self.sessionRetryTimer = setTimeout(function ()
+    {
+        self.sessionRetryTimer = null;
+        self.initLastFMSession().fail(function () {});
+    }, delay);
+};
+
+// Called when playback needs a session: authenticate now unless an attempt is
+// already running or one was made very recently (the scheduled retry covers that).
+// forceReauth: Last.fm rejected the current session key, get a new one.
+ControllerLastFM.prototype.ensureLastFMSession = function (forceReauth)
+{
+    var self = this;
+    if (self.stopped || self.lfm == null)
+        return;
+    if (!forceReauth && self.hasLastFMSession())
+        return;
+    var sinceLastAttempt = Date.now() - self.authStartedAt;
+    if (self.authenticating && sinceLastAttempt < ControllerLastFM.SESSION_ATTEMPT_TIMEOUT_MS)
+        return;
+    if (!self.authenticating && sinceLastAttempt < ControllerLastFM.SESSION_MIN_INTERVAL_MS)
+    {
+        // Too soon for a new attempt: make sure one is at least scheduled.
+        if (!self.sessionRetryTimer)
+            self.scheduleSessionRetry();
+        return;
+    }
+    self.logger.info('[LastFM] no valid session, re-authenticating');
+    self.initLastFMSession().fail(function () {});
+};
+
+ControllerLastFM.prototype.isInvalidSessionError = function (error)
+{
+    return typeof error == 'string' && /invalid session key/i.test(error);
+};
+
+ControllerLastFM.prototype.queueScrobble = function (data)
+{
+    var self = this;
+    self.pendingScrobbles.push(data);
+    if (self.pendingScrobbles.length > ControllerLastFM.MAX_PENDING_SCROBBLES)
+    {
+        var dropped = self.pendingScrobbles.shift();
+        self.logger.error('[LastFM] too many pending scrobbles, dropped: ' + dropped.artist + ' - ' + dropped.title);
+    }
+    self.logger.info('[LastFM] scrobble queued until LastFM session is available: ' + data.artist + ' - ' + data.title + ' (' + self.pendingScrobbles.length + ' pending)');
+};
+
+ControllerLastFM.prototype.flushPendingScrobbles = function ()
+{
+    var self = this;
+    if (self.pendingScrobbles.length == 0)
+        return;
+    var queue = self.pendingScrobbles;
+    self.pendingScrobbles = [];
+    self.logger.info('[LastFM] sending ' + queue.length + ' pending scrobble(s)');
+    queue.forEach(function (data) { self.sendScrobble(data); });
+};
+
+ControllerLastFM.prototype.sendScrobble = function (data)
+{
+    var self = this;
+    self.lfm.scrobbleTrack({
+        artist: data.artist,
+        track: data.title,
+        album: data.album,
+        timestamp: data.timestamp,
+        callback: function(result)
+        {
+            var album = (data.album == undefined || data.album == '') ? '[unknown album]' : data.album;
+            if (result.success)
+            {
+                if (self.config.get('pushToastOnScrobble'))
+                    self.commandRouter.pushToastMessage('success', 'Scrobble succesful', 'Scrobbled: ' + data.artist + ' - ' + data.title + ' (' + album + ').');
+                if (debugEnabled)
+                    self.logger.info('[LastFM] Scrobble successful for: ' + data.artist + ' - ' + data.title + ' (' + album + ').');
+            }
+            else
+            {
+                console.log("in callback, finished: ", result);
+                // Session rejected by Last.fm: keep the scrobble, get a new session, send it again.
+                if (self.isInvalidSessionError(result.error) && (data.attempts || 0) < 2)
+                {
+                    data.attempts = (data.attempts || 0) + 1;
+                    self.logger.info('[LastFM] session rejected by LastFM, re-authenticating before retrying the scrobble');
+                    self.queueScrobble(data);
+                    self.ensureLastFMSession(true);
+                    return;
+                }
+                if (self.config.get('pushToastOnScrobble'))
+                    self.commandRouter.pushToastMessage('error', 'Scrobble failed', 'Tried to scrobbled: ' + data.artist + ' - ' + data.title + ' (' + album + ').');
+                if (debugEnabled)
+                    self.logger.info('[LastFM] Scrobble failed for: ' + data.artist + ' - ' + data.title + ' (' + album + ').');
+            }
+        }
+    });
 };
 
 
@@ -1015,6 +1186,14 @@ ControllerLastFM.prototype.updateNowPlaying = function ()
         });
 
         // Used to notify Last.fm that a user has started listening to a track. Parameter names are case sensitive.
+        // It needs a session key: without one Last.fm answers "missing a required parameter".
+        if (!self.hasLastFMSession())
+        {
+            self.logger.info('[LastFM] no valid session, "now playing" update skipped');
+            self.updatingNowPlaying = false;
+            self.ensureLastFMSession();
+            return defer.promise;
+        }
         self.lfm.scrobbleNowPlayingTrack({
             artist: self.scrobbleData.artist,
             track: self.scrobbleData.title,
@@ -1023,7 +1202,11 @@ ControllerLastFM.prototype.updateNowPlaying = function ()
             callback: function (result)
 			{
                 if (!result.success)
+                {
                     console.log('[LastFM] updated "now playing" failed: ', result);
+                    if (self.isInvalidSessionError(result.error))
+                        self.ensureLastFMSession(true);
+                }
                 else
 				{
                     if (debugEnabled)
@@ -1057,32 +1240,21 @@ ControllerLastFM.prototype.scrobble = function ()
 		if(debugEnabled)
 			self.logger.info('[LastFM] preparing to scrobble...');
 
-		self.lfm.scrobbleTrack({
+		var data = {
 			artist: self.scrobbleData.artist,
-			track: self.scrobbleData.title,
+			title: self.scrobbleData.title,
 			album: self.scrobbleData.album,
-            timestamp: trackStartTime,
-			callback: function(result)
-			{
-                if (result.success)
-				{
-                    if (self.scrobbleData.album == undefined || self.scrobbleData.album == '')
-                        self.scrobbleData.album = '[unknown album]';
-                    if (self.config.get('pushToastOnScrobble'))
-                        self.commandRouter.pushToastMessage('success', 'Scrobble succesful', 'Scrobbled: ' + self.scrobbleData.artist + ' - ' + self.scrobbleData.title + ' (' + self.scrobbleData.album + ').');
-                    if (debugEnabled)
-                        self.logger.info('[LastFM] Scrobble successful for: ' + self.scrobbleData.artist + ' - ' + self.scrobbleData.title + ' (' + self.scrobbleData.album + ').');
-                }
-                else
-				{
-                    console.log("in callback, finished: ", result);
-                    if (self.config.get('pushToastOnScrobble'))
-                        self.commandRouter.pushToastMessage('error', 'Scrobble failed', 'Tried to scrobbled: ' + self.scrobbleData.artist + ' - ' + self.scrobbleData.title + ' (' + self.scrobbleData.album + ').');
-                    if (debugEnabled)
-                        self.logger.info('[LastFM] Scrobble failed for: ' + self.scrobbleData.artist + ' - ' + self.scrobbleData.title + ' (' + self.scrobbleData.album + ').');
-                }
-			}
-		});	
+			timestamp: trackStartTime,
+			attempts: 0
+		};
+		if (self.hasLastFMSession())
+			self.sendScrobble(data);
+		else
+		{
+			// No session (e.g. authentication failed at boot): keep the scrobble and send it once authenticated.
+			self.queueScrobble(data);
+			self.ensureLastFMSession();
+		}
 		self.previousScrobble.artist = self.scrobbleData.artist;
         self.previousScrobble.title = self.scrobbleData.title;
         self.previousScrobble.scrobbleTime = trackStartTime;
