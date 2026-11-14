@@ -1,0 +1,17 @@
+unifont.hex is GNU Unifont, the bitmap font the display draws text in when a
+line holds characters beyond Latin-1.
+
+    Copyright (C) 1998-2024 Roman Czyborra, Paul Hardy, Qianqian Fang,
+    Andrew Miller, Johnnie Weaver, David Corbett, Nils Moskopp, Rebecca
+    Bettencourt, et al.
+
+GNU Unifont is licensed under the GNU General Public License, either version
+2 or (at your option) a later version, with the exception that embedding the
+font in a document does not in itself bring that document under the GNU GPL.
+Releases from 13.0.04 on are also licensed under the SIL Open Font License
+version 1.1.
+
+    https://unifoundry.com/unifont/
+
+The file is distributed here unmodified. It is font data, apart from the
+plugin's own code and its MIT licence.

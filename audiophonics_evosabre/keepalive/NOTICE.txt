@@ -1,0 +1,12 @@
+audio-keepalive-daemon and libasound_module_pcm_keepalive.so are Audio
+Keepalive, the program behind the plugin's Click prevention switch: the
+daemon holds the audio output open and passes the music through untouched,
+and the players write to it through the ALSA client.
+
+They are a separate work from the plugin, shipped unmodified from its own
+release, and are under the GNU General Public License; see LICENSE beside
+this note. Source and releases:
+
+    https://github.com/foonerd/alsa-pcm-keepalive
+
+The version shipped is named in build.json at the plugin's root.
