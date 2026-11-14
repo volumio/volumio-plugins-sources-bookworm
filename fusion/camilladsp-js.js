@@ -17,6 +17,7 @@ let CamillaDsp = function (logger) {
     const cdLogLevel = "warn";
     const cdPortWs = 9876;
     const cdPathConfig = "/data/configuration/audio_interface/fusiondsp/camilladsp.yml";
+    const cdFifo = "/tmp/fusiondspfifo";
 
     // Respawn backoff settings
     const baseRespawnDelayMs = 1000;
@@ -39,9 +40,25 @@ let CamillaDsp = function (logger) {
     let respawnStopped = false;
 
     /**
+     * True while a player has the FIFO open. The volumiofifo ALSA plugin keeps
+     * its own read end open for as long as the device is open. With CamillaDSP
+     * gone, a non-blocking open for writing only succeeds if that reader exists.
+     */
+    let streamIsOpen = function() {
+
+        try {
+            fs.closeSync(fs.openSync(cdFifo, fs.constants.O_WRONLY | fs.constants.O_NONBLOCK));
+            return true;
+        } catch (e) {
+            return false; // ENXIO: no reader, so no player has the device open
+        }
+
+    };
+
+    /**
      * Listener for event sent on camilladsp process termination.
      * The process may terminate either because FIFO has been closed (hence
-     * we need to respawn the process immediately) or because of an error.
+     * we wait for the next stream, see below) or because of an error.
      * In case of error, we wait with exponential backoff to avoid hogging CPU.
      * If too many consecutive quick respawns occur, stop respawning entirely.
      */
@@ -59,6 +76,16 @@ let CamillaDsp = function (logger) {
         // not to be respawned. Just stop here in case.
         if (run === false)
             return;
+
+        // Code 0 means the player closed the FIFO. A respawn now would start
+        // with the last stream's sample rate. If the next track has a different
+        // rate, its first moments would play at the wrong speed until
+        // checksamplerate restarts CamillaDSP. So unless the next stream is
+        // already open, leave the start to checksamplerate, which knows the rate.
+        if (code === 0 && !streamIsOpen()) {
+            logger.info("camilladsp stream ended, waiting for the next one");
+            return;
+        }
 
         // If respawning was stopped due to too many failures, don't respawn
         if (respawnStopped) {
@@ -311,6 +338,13 @@ let CamillaDsp = function (logger) {
 
         return new Promise(function(resolve, reject) {
 
+            // Between streams there is no process to reload. The next start
+            // reads the config file anyway.
+            if (run === true && camilla === null) {
+                resolve();
+                return;
+            }
+
             if (run === false || camilla === null || camilla.exitCode !== null || camilla.signalCode !== null) {
                 reject(new Error("CamillaDSP is not running; cannot reload configuration"));
                 return;
@@ -333,6 +367,12 @@ let CamillaDsp = function (logger) {
             }
 
         });
+
+    };
+
+    this.isRunning = function() {
+
+        return camilla !== null;
 
     };
 

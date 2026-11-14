@@ -3424,7 +3424,10 @@ FusionDsp.prototype.checksamplerate = function () {
 
       isSamplerateUpdating = true;
 
-      if (self.pushstateSamplerate != hcurrentsamplerate)
+      // Not running means the last stream ended and CamillaDSP is waiting
+      // for this one, so start it even if the rate is unchanged.
+      if (self.pushstateSamplerate != hcurrentsamplerate ||
+        (self.camillaProcess && !self.camillaProcess.isRunning()))
         needRestart = true;
 
       self.pushstateSamplerate = hcurrentsamplerate;
