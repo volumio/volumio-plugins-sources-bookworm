@@ -1,35 +1,32 @@
 {
-  "name": "audiophonics_evo_sabre",
-  "version": "2.0.1",
-  "description": "Hardware configuration & display drivers for Evo Sabre",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Olivier Audiophonics",
-  "license": "ISC", 
-  "repository": "https://github.com/audiophonics/volumio-plugins-sources-bookworm",
-  "volumio_info": {
-    "prettyName": "Audiophonics Evo Sabre", 
-    "icon": "fa-hdd-o", 
-    "plugin_type": "system_hardware", 
-    "architectures": [
-			"armhf"
-		],
-		"os": [ 
-			"bookworm"
-		],
-		"details": "Hardware configuration & display drivers for Evo Sabre",  
-		"changelog": "Replaced rpio nodejs dependency with spi-device & implemented kernel agnostic GPIO handling" 
-  },
-  "engines": {
-		"node": ">=20",
-		"volumio": ">=0" 
-	},
-  "dependencies": {
-		"fs-extra": "*",
-		"kew": "*",                  
-		"systeminformation": "*",
-		"v-conf": "*"
-  }
+    "name": "audiophonics_evo_sabre",
+    "version": "3.0.0",
+    "description": "The EVO Sabre's second display and its remote control",
+    "main": "index.js",
+    "author": "Just a Nerd",
+    "license": "MIT",
+    "repository": "https://github.com/foonerd/audiophonics",
+    "volumio_info": {
+        "prettyName": "Audiophonics Evo Sabre",
+        "icon": "fa-hdd-o",
+        "plugin_type": "system_hardware",
+        "os": [
+            "bookworm"
+        ],
+        "architectures": [
+            "armhf"
+        ],
+        "has_alsa_contribution": true,
+        "details": "Drives the EVO Sabre's second OLED display (the track, its format, level meters, the time played, a clock while the player rests) and the transport keys of its remote control, and can hold the audio output open so the DAC's clocks never stop between tracks. One small native program runs the display and the remote; nothing is compiled on the player and no remote-control daemon is installed.",
+        "changelog": "3.0.0 A rewrite of version 2. The display and the remote are now one small native program: nothing to rebuild when Volumio moves on, no lirc, and the same program runs on the Raspberry Pi 4 and 5 families. New: level meters beside the track, a clock while the player rests, dimming in place of the screensaver, Click prevention to keep the DAC's clocks running between tracks, and a settings page in eleven languages. Installing over version 2 keeps your settings."
+    },
+    "engines": {
+        "node": ">=20",
+        "volumio": ">=4"
+    },
+    "dependencies": {
+        "fs-extra": "^11.2.0",
+        "kew": "^0.7.0",
+        "v-conf": "^1.4.3"
+    }
 }

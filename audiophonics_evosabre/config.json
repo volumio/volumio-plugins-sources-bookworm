@@ -1,4 +1,44 @@
 {
+    "oled_active": {
+        "type": "boolean",
+        "value": true
+    },
+    "remote_active": {
+        "type": "boolean",
+        "value": true
+    },
+    "click_prevention": {
+        "type": "boolean",
+        "value": false
+    },
+    "contrast": {
+        "type": "number",
+        "value": 100
+    },
+    "track_time": {
+        "type": "boolean",
+        "value": true
+    },
+    "meters": {
+        "type": "boolean",
+        "value": false
+    },
+    "meters_style": {
+        "type": "string",
+        "value": "horizontal"
+    },
+    "meters_gain": {
+        "type": "number",
+        "value": 0
+    },
+    "clock_after": {
+        "type": "number",
+        "value": 6
+    },
+    "clock_segments": {
+        "type": "string",
+        "value": "very_faint"
+    },
     "sleep_after": {
         "type": "number",
         "value": 1200
@@ -7,16 +47,8 @@
         "type": "number",
         "value": 3600
     },
-    "contrast": {
-        "type": "number",
-        "value": 100
-    },
-    "remote_active": {
-        "type": "boolean",
-        "value": true
-    },
-    "oled_active": {
-        "type": "boolean",
-        "value": true
+    "log_level": {
+        "type": "string",
+        "value": "error"
     }
 }

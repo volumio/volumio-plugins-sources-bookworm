@@ -1,0 +1,11 @@
+libevotap.so is evotap, the audio tap of the evo framework: an ALSA plugin
+the player's stream passes through byte for byte, measured on the way. The
+plugin's level meters read what it measures.
+
+It is a separate work from the plugin, shipped unmodified from its own
+release, under the MIT licence; see LICENSE beside this note. Source,
+releases and the contract of what it publishes:
+
+    https://github.com/foonerd/evotap
+
+The version shipped is named in build.json at the plugin's root.

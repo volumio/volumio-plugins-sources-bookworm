@@ -1,0 +1,24 @@
+[Unit]
+Description=EVO Sabre display and remote
+Documentation=https://github.com/foonerd/audiophonics
+After=local-fs.target systemd-udevd.service
+# A display that cannot be opened is tried again, a few times, then left.
+StartLimitIntervalSec=120
+StartLimitBurst=20
+
+[Service]
+Type=simple
+User=volumio
+Group=volumio
+SupplementaryGroups=spi gpio input
+RuntimeDirectory=evosabre-panel
+RuntimeDirectoryMode=0755
+ExecStart=/data/plugins/system_hardware/audiophonics_evo_sabre/bin/evosabre-panel
+Restart=on-failure
+RestartSec=3
+KillSignal=SIGTERM
+# On a halt the panel holds its goodbye for three seconds before it goes dark.
+TimeoutStopSec=8
+
+[Install]
+WantedBy=multi-user.target
