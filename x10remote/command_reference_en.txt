@@ -1,0 +1,154 @@
+X10 RF Remote - Command reference
+==================================
+(template of the X10 RF Remote plugin)
+
+This file is located at /data/INTERNAL/X10/command reference.txt (share "Internal Storage")
+and can be extended freely. The plugin never overwrites a file you have edited.
+As long as it is unchanged, the plugin shows it in the selected language.
+
+Select a command, copy it (Ctrl+C) and paste it into the "Command" field.
+Custom commands must be allowed: plugin settings → Expert mode → "Allow custom shell commands".
+Commands run through Triggerhappy (user of the Triggerhappy service, usually "nobody")
+- i.e. without root rights and without a terminal. One command per field, max. 2000 characters.
+Triggerhappy runs the command with /bin/sh (pipes |, ; and >> work).
+Important: the character # must not be used - Triggerhappy cuts the line there.
+
+
+1. Plugin helper script x10remote-action  (recommended)
+-------------------------------------------------------
+Controls Volumio via the local REST API (http://127.0.0.1:3000/api/v1).
+
+/usr/local/bin/x10remote-action toggle               toggle play/pause
+/usr/local/bin/x10remote-action play                 start playback
+/usr/local/bin/x10remote-action pause                pause
+/usr/local/bin/x10remote-action stop                 stop
+/usr/local/bin/x10remote-action next                 next track
+/usr/local/bin/x10remote-action prev                 previous track
+/usr/local/bin/x10remote-action volup                volume up (one step)
+/usr/local/bin/x10remote-action voldown              volume down (one step)
+/usr/local/bin/x10remote-action volume 30            set volume to 30 (0-100)
+/usr/local/bin/x10remote-action mute                 mute
+/usr/local/bin/x10remote-action unmute               unmute
+/usr/local/bin/x10remote-action mutetoggle           toggle mute
+/usr/local/bin/x10remote-action random               toggle random
+/usr/local/bin/x10remote-action repeat               toggle repeat
+/usr/local/bin/x10remote-action clearqueue           clear the queue
+/usr/local/bin/x10remote-action playlist "Radio"     play the playlist "Radio"
+/usr/local/bin/x10remote-action api "cmd-string"     any REST command (see 3.)
+
+Examples for "api":
+/usr/local/bin/x10remote-action api "play&N=0"                     play the first track of the queue
+/usr/local/bin/x10remote-action api "random&value=true"            random on
+/usr/local/bin/x10remote-action api "random&value=false"           random off
+/usr/local/bin/x10remote-action api "repeat&value=true"            repeat on
+/usr/local/bin/x10remote-action api "volume&volume=plus"           volume up
+/usr/local/bin/x10remote-action api "playplaylist&name=Radio"      playlist (spaces as %20)
+
+
+2. Volumio command line (/usr/local/bin/volumio)
+------------------------------------------------
+This is also how the commands appear in Volumio's audio.conf.
+
+/usr/local/bin/volumio toggle           toggle play/pause
+/usr/local/bin/volumio play             play
+/usr/local/bin/volumio pause            pause
+/usr/local/bin/volumio stop             stop
+/usr/local/bin/volumio next             next track
+/usr/local/bin/volumio previous         previous track
+/usr/local/bin/volumio clear            clear the queue
+/usr/local/bin/volumio status           print playback status
+/usr/local/bin/volumio volume           print current volume
+/usr/local/bin/volumio volume 40        set volume 0-100
+/usr/local/bin/volumio volume plus      volume up (one step)
+/usr/local/bin/volumio volume minus     volume down (one step)
+/usr/local/bin/volumio volume mute      mute
+/usr/local/bin/volumio volume unmute    unmute
+/usr/local/bin/volumio volume toggle    toggle mute
+/usr/local/bin/volumio seek plus        10 s forward
+/usr/local/bin/volumio seek minus       10 s back
+/usr/local/bin/volumio seek 60          jump to 60 s
+/usr/local/bin/volumio repeat           toggle repeat
+/usr/local/bin/volumio random           toggle random
+
+
+3. REST API directly with curl
+------------------------------
+Basic form:  /usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=<command>"
+
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=toggle"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=play"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=play&N=2"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=pause"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=stop"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=next"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=prev"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=volume&volume=50"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=volume&volume=plus"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=volume&volume=minus"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=volume&volume=mute"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=volume&volume=unmute"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=clearQueue"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=playplaylist&name=Radio"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=repeat&value=true"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=random&value=false"
+
+Only for looking things up in a browser (no action):
+http://<IP>/api/v1/getState          current state
+http://<IP>/api/v1/getQueue          queue
+http://<IP>/api/v1/listplaylists     playlists (names for "playlist")
+
+
+4. Controlling other Volumio devices on the network
+---------------------------------------------------
+Adjust the IP (e.g. a second Volumio in the next room):
+
+/usr/bin/curl -s "http://192.168.178.115/api/v1/commands/?cmd=toggle"
+/usr/bin/curl -s "http://192.168.178.115/api/v1/commands/?cmd=volume&volume=plus"
+
+
+5. Examples
+-----------
+
+[[VOLUMIO SERVICE CONTROL]]  (terminal only - they need root rights, usually without effect as a key command)
+volumio vstart                          starts the Volumio service
+volumio vstop                           stops the Volumio service
+volumio vrestart                        restarts the Volumio service
+
+[[Start web radios]]
+RADIO PARADISE:
+/usr/bin/curl -s --header "Content-Type: application/json" localhost:3000/api/v1/replaceAndPlay --data '{  "service": "webradio",  "type": "webradio",  "title": "RadioParadise",  "uri": "https://stream.radioparadise.com/aac-320",  "albumart": "https://radioparadise.com/graphics/logo_flat_350x103.png"}'
+RADIO PARADISE ROCK:
+/usr/bin/curl -s --header "Content-Type: application/json" localhost:3000/api/v1/replaceAndPlay --data '{  "service": "webradio",  "type": "webradio",  "title": "RadioParadiseRock",  "uri": "https://stream.radioparadise.com/rock-320",  "albumart": "https://radioparadise.com/graphics/logo_flat_350x103.png"}'
+RADIO EGOFM:
+/usr/bin/curl -s --header "Content-Type: application/json" localhost:3000/api/v1/replaceAndPlay --data '{  "service": "webradio",  "type": "webradio",  "title": "EgoFM",  "uri": "http://mp3ad.egofm.c.nmdn.net/ps-egofm_192/livestream.mp3",  "albumart": "https://www.egofm.de/images/site/logo.svg"}'
+
+[[Spotify]]
+Get more Spotify playlists in a browser: http://<IP>/api/v1/browse?uri=spotify/playlists
+SPOTIFY RELEASE RADAR:
+/usr/bin/curl -s --header "Content-Type: application/json" localhost:3000/api/v1/replaceAndPlay --data '{  "service": "spop", "type": "playlist", "title": "Release Radar", "albumart": "https://newjams-images.scdn.co/v3/release-radar/ab6761610000e5ebda012e44f73353016e419282/en/large", "uri": "spotify:user:spotify:playlist:37i9dQZEVXboZS2Bc5o5qH"}'
+SPOTIFY DISCOVER WEEKLY:
+/usr/bin/curl -s --header "Content-Type: application/json" localhost:3000/api/v1/replaceAndPlay --data '{ "service": "spop", "type": "playlist", "title": "Discover Weekly", "albumart": "https://newjams-images.scdn.co/v3/discover-weekly/aAbca4VNfzWuUCQ_FGiEFA==/bmVuZW5lbmVuZW5lbmVuZQ==/default", "uri": "spotify:user:spotify:playlist:37i9dQZEVXcKMQKnTB7OVv"}'
+
+[[Volumio playlists  (spaces in the name as %20)]]
+/usr/bin/curl -s "http://localhost:3000/api/v1/commands/?cmd=playplaylist&name=Key%201"
+/usr/bin/curl -s "http://localhost:3000/api/v1/commands/?cmd=playplaylist&name=Key%202"
+/usr/bin/curl -s "http://localhost:3000/api/v1/commands/?cmd=playplaylist&name=Key%203"
+
+[[Shell commands  (write the track being played to a file)]]
+/usr/local/bin/volumio status | jq -r 'if .status == "play" then "\(.artist) - \(.title)" else empty end' >> /data/INTERNAL/played_tracks.txt
+  - needs jq (sudo apt-get install jq) and write permission of the Triggerhappy user on the file,
+    e.g. once in a terminal: touch /data/INTERNAL/played_tracks.txt; chmod 666 /data/INTERNAL/played_tracks.txt
+
+
+6. Notes
+--------
+- Always use full paths (/usr/local/bin/..., /usr/bin/curl).
+- Several commands in a row: separate them with ;, e.g.
+  /usr/local/bin/x10remote-action clearqueue; /usr/local/bin/x10remote-action playlist "Radio"
+- Write spaces in URLs as %20.
+- Only use straight quotes " and ' - typographic ones (“ ” ‘ ’ from Word) do not work in the shell.
+- No # in a command (Triggerhappy cuts the line there); the plugin rejects such commands when saving.
+- Commands that need root rights (starting services, rebooting the device) do not work here.
+- Testing: run the command in a terminal (ssh volumio@<IP>) first, then copy it into the field.
+
+Sources: developers.volumio.com/api/rest-api, developers.volumio.com/api/command-line-client

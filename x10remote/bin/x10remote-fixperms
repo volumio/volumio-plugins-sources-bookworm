@@ -1,0 +1,14 @@
+#!/bin/sh
+# Volumio-Plugin "X10 RF Remote": Schreibrechte im Ordner X10 der Freigabe "Internal Storage" herstellen.
+# /data/INTERNAL ist als SMB-Freigabe fuer Gaeste beschreibbar gedacht; Windows schreibt dort als Gast
+# (nicht als "volumio"). Daher: Ordner 0777, Dateien 0666 - fuer Explorer und Plugin gleichermassen.
+# Laeuft als root (x10remote-fixperms.service), aufgerufen vom Plugin per "systemctl start" und von install.sh.
+# Folgt keinen symbolischen Links und verlaesst das Dateisystem nicht.
+
+DIR=/data/INTERNAL/X10
+[ -L "$DIR" ] && { echo "x10remote-fixperms: $DIR is a symbolic link - aborted" >&2; exit 1; }
+[ -d "$DIR" ] || exit 0
+find "$DIR" -xdev \( -type d ! -perm 0777 -exec chmod 0777 {} + \) -o \( -type f ! -perm 0666 -exec chmod 0666 {} + \)
+# vom Plugin exportierte Wrapper-Pakete direkt in /data/INTERNAL
+find /data/INTERNAL -maxdepth 1 -type f -name 'x10remote-wrapper-*.tar.gz' ! -perm 0666 -exec chmod 0666 {} +
+exit 0

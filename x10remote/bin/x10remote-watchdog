@@ -1,0 +1,39 @@
+#!/bin/sh
+# Watchdog des Volumio-Plugins "X10 RF Remote" (gestartet von x10remote-watchdog.timer alle 5 Minuten).
+# Prueft Triggerhappy und den Wrapper (x10mapper) und startet sie neu, wenn sie gestoppt oder abgestuerzt sind.
+#  - x10mapper nur, wenn das Plugin ihn laufen lassen will (/run/x10remote/mapper.wanted)
+#  - Zustaende "activating"/"reloading" gelten als in Ordnung (Plugin startet gerade selbst neu)
+#  - der Timer laeuft nur, solange das Plugin aktiv ist (onStart/onStop)
+
+RUN=/run/x10remote
+LOG=$RUN/watchdog.log
+mkdir -p "$RUN" 2>/dev/null
+
+log() {
+  echo "$*"
+  {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') $*"
+  } >> "$LOG" 2>/dev/null
+  if [ -f "$LOG" ] && [ "$(wc -l < "$LOG")" -gt 200 ]; then
+    tail -n 100 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG"
+  fi
+}
+
+check() {
+  state=$(systemctl is-active "$1" 2>/dev/null)
+  case "$state" in
+    active|activating|reloading) return 0 ;;
+  esac
+  log "$1: state '${state:-unknown}' - restarting"
+  if systemctl restart "$1"; then
+    sleep 2
+    log "$1: restarted, state '$(systemctl is-active "$1" 2>/dev/null)'"
+  else
+    log "$1: restart failed"
+  fi
+}
+
+check triggerhappy.service
+[ -f "$RUN/mapper.wanted" ] && check x10mapper.service
+date '+%Y-%m-%d %H:%M:%S' > "$RUN/watchdog.last" 2>/dev/null
+exit 0

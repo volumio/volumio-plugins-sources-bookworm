@@ -1,0 +1,888 @@
+{
+  "format": 1,
+  "name": {
+    "de": "Medion RF 20016398",
+    "en": "Medion RF 20016398",
+    "es": "Medion RF 20016398",
+    "fr": "Medion RF 20016398",
+    "it": "Medion RF 20016398"
+  },
+  "description": {
+    "de": "433-MHz-Funkfernbedienung (X10), 2 × AAA-Batterie",
+    "en": "433 MHz RF remote control (X10), 2 × AAA battery",
+    "es": "Mando a distancia RF de 433 MHz (X10), 2 pilas AAA",
+    "fr": "Télécommande RF 433 MHz (X10), 2 piles AAA",
+    "it": "Telecomando RF a 433 MHz (X10), 2 batterie AAA"
+  },
+  "rf433": true,
+  "receivers": [
+    {
+      "device": "0bc7:0006",
+      "name": "X10 WTI RF receiver",
+      "rf433": true
+    }
+  ],
+  "keys": [
+    {
+      "type": "scan",
+      "code": 44,
+      "scan": 44,
+      "key_name": null,
+      "action": "none",
+      "thd_key": "KEY_F13",
+      "repeat": false,
+      "name": {
+        "de": "TV",
+        "en": "TV",
+        "es": "TV",
+        "fr": "TV",
+        "it": "TV"
+      },
+      "remote_label": "TV"
+    },
+    {
+      "type": "scan",
+      "code": 45,
+      "scan": 45,
+      "key_name": null,
+      "action": "none",
+      "thd_key": "KEY_F14",
+      "repeat": false,
+      "name": {
+        "de": "Videorekorder",
+        "en": "VCR",
+        "es": "Vídeo",
+        "fr": "Magnétoscope",
+        "it": "Videoregistratore"
+      },
+      "remote_label": "VCR"
+    },
+    {
+      "type": "key",
+      "code": 389,
+      "scan": 4,
+      "key_name": "KEY_DVD",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "DVD",
+        "en": "DVD",
+        "es": "DVD",
+        "fr": "DVD",
+        "it": "DVD"
+      },
+      "remote_label": "DVD"
+    },
+    {
+      "type": "scan",
+      "code": 6,
+      "scan": 6,
+      "key_name": null,
+      "action": "none",
+      "thd_key": "KEY_F15",
+      "repeat": false,
+      "name": {
+        "de": "Musik",
+        "en": "Music",
+        "es": "Música",
+        "fr": "Musique",
+        "it": "Musica"
+      },
+      "remote_label": "MUSIC"
+    },
+    {
+      "type": "scan",
+      "code": 46,
+      "scan": 46,
+      "key_name": null,
+      "action": "none",
+      "thd_key": "KEY_F16",
+      "repeat": false,
+      "name": {
+        "de": "Radio",
+        "en": "Radio",
+        "es": "Radio",
+        "fr": "Radio",
+        "it": "Radio"
+      },
+      "remote_label": "RADIO"
+    },
+    {
+      "type": "scan",
+      "code": 5,
+      "scan": 5,
+      "key_name": null,
+      "action": "none",
+      "thd_key": "KEY_F17",
+      "repeat": false,
+      "name": {
+        "de": "Foto",
+        "en": "Photo",
+        "es": "Foto",
+        "fr": "Photo",
+        "it": "Foto"
+      },
+      "remote_label": "PHOTO"
+    },
+    {
+      "type": "key",
+      "code": 358,
+      "scan": 47,
+      "key_name": "KEY_INFO",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "TV-Vorschau",
+        "en": "TV preview",
+        "es": "Vista previa TV",
+        "fr": "Aperçu TV",
+        "it": "Anteprima TV"
+      },
+      "remote_label": "TV Preview"
+    },
+    {
+      "type": "key",
+      "code": 355,
+      "scan": 48,
+      "key_name": "KEY_CLEAR",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Senderliste",
+        "en": "Channel list",
+        "es": "Lista de canales",
+        "fr": "Liste des chaînes",
+        "it": "Elenco canali"
+      },
+      "remote_label": "Channel List"
+    },
+    {
+      "type": "key",
+      "code": 226,
+      "scan": 27,
+      "key_name": "KEY_MEDIA",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Einstellungen",
+        "en": "Setup",
+        "es": "Configuración",
+        "fr": "Configuration",
+        "it": "Impostazioni"
+      },
+      "remote_label": "Setup"
+    },
+    {
+      "type": "key",
+      "code": 365,
+      "scan": 49,
+      "key_name": "KEY_EPG",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Video-Desktop",
+        "en": "Video desktop",
+        "es": "Escritorio de vídeo",
+        "fr": "Bureau vidéo",
+        "it": "Desktop video"
+      },
+      "remote_label": "Video Desktop"
+    },
+    {
+      "type": "key",
+      "code": 402,
+      "scan": 11,
+      "key_name": "KEY_CHANNELUP",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Kanal +",
+        "en": "Channel +",
+        "es": "Canal +",
+        "fr": "Chaîne +",
+        "it": "Canale +"
+      },
+      "remote_label": "Channel Up"
+    },
+    {
+      "type": "key",
+      "code": 403,
+      "scan": 12,
+      "key_name": "KEY_CHANNELDOWN",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Kanal −",
+        "en": "Channel −",
+        "es": "Canal −",
+        "fr": "Chaîne −",
+        "it": "Canale −"
+      },
+      "remote_label": "Channel down"
+    },
+    {
+      "type": "key",
+      "code": 114,
+      "scan": 8,
+      "key_name": "KEY_VOLUMEDOWN",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Leiser",
+        "en": "Volume down",
+        "es": "Bajar volumen",
+        "fr": "Volume −",
+        "it": "Volume giù"
+      },
+      "remote_label": "Volume down"
+    },
+    {
+      "type": "key",
+      "code": 115,
+      "scan": 9,
+      "key_name": "KEY_VOLUMEUP",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Lauter",
+        "en": "Volume up",
+        "es": "Subir volumen",
+        "fr": "Volume +",
+        "it": "Volume su"
+      },
+      "remote_label": "Volume up"
+    },
+    {
+      "type": "key",
+      "code": 113,
+      "scan": null,
+      "key_name": "KEY_MUTE",
+      "action": "mutetoggle",
+      "repeat": false,
+      "name": {
+        "de": "Stumm",
+        "en": "Mute",
+        "es": "Silencio",
+        "fr": "Muet",
+        "it": "Muto"
+      },
+      "remote_label": "Mute"
+    },
+    {
+      "type": "key",
+      "code": 398,
+      "scan": 50,
+      "key_name": "KEY_RED",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Rot",
+        "en": "Red",
+        "es": "Rojo",
+        "fr": "Rouge",
+        "it": "Rosso"
+      },
+      "remote_label": "RED"
+    },
+    {
+      "type": "key",
+      "code": 399,
+      "scan": 51,
+      "key_name": "KEY_GREEN",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Grün",
+        "en": "Green",
+        "es": "Verde",
+        "fr": "Vert",
+        "it": "Verde"
+      },
+      "remote_label": "Green"
+    },
+    {
+      "type": "key",
+      "code": 400,
+      "scan": 52,
+      "key_name": "KEY_YELLOW",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Gelb",
+        "en": "Yellow",
+        "es": "Amarillo",
+        "fr": "Jaune",
+        "it": "Giallo"
+      },
+      "remote_label": "Yellow"
+    },
+    {
+      "type": "key",
+      "code": 401,
+      "scan": 53,
+      "key_name": "KEY_BLUE",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Blau",
+        "en": "Blue",
+        "es": "Azul",
+        "fr": "Bleu",
+        "it": "Blu"
+      },
+      "remote_label": "Blue"
+    },
+    {
+      "type": "key",
+      "code": 388,
+      "scan": 22,
+      "key_name": "KEY_TEXT",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Videotext",
+        "en": "Teletext",
+        "es": "Teletexto",
+        "fr": "Télétexte",
+        "it": "Televideo"
+      },
+      "remote_label": "TXT"
+    },
+    {
+      "type": "key",
+      "code": 513,
+      "scan": 13,
+      "key_name": "KEY_NUMERIC_1",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "1",
+        "en": "1",
+        "es": "1",
+        "fr": "1",
+        "it": "1"
+      },
+      "remote_label": "1"
+    },
+    {
+      "type": "key",
+      "code": 514,
+      "scan": 14,
+      "key_name": "KEY_NUMERIC_2",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "2",
+        "en": "2",
+        "es": "2",
+        "fr": "2",
+        "it": "2"
+      },
+      "remote_label": "2"
+    },
+    {
+      "type": "key",
+      "code": 515,
+      "scan": 15,
+      "key_name": "KEY_NUMERIC_3",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "3",
+        "en": "3",
+        "es": "3",
+        "fr": "3",
+        "it": "3"
+      },
+      "remote_label": "3"
+    },
+    {
+      "type": "key",
+      "code": 516,
+      "scan": 16,
+      "key_name": "KEY_NUMERIC_4",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "4",
+        "en": "4",
+        "es": "4",
+        "fr": "4",
+        "it": "4"
+      },
+      "remote_label": "4"
+    },
+    {
+      "type": "key",
+      "code": 517,
+      "scan": 17,
+      "key_name": "KEY_NUMERIC_5",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "5",
+        "en": "5",
+        "es": "5",
+        "fr": "5",
+        "it": "5"
+      },
+      "remote_label": "5"
+    },
+    {
+      "type": "key",
+      "code": 518,
+      "scan": 18,
+      "key_name": "KEY_NUMERIC_6",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "6",
+        "en": "6",
+        "es": "6",
+        "fr": "6",
+        "it": "6"
+      },
+      "remote_label": "6"
+    },
+    {
+      "type": "key",
+      "code": 519,
+      "scan": 19,
+      "key_name": "KEY_NUMERIC_7",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "7",
+        "en": "7",
+        "es": "7",
+        "fr": "7",
+        "it": "7"
+      },
+      "remote_label": "7"
+    },
+    {
+      "type": "key",
+      "code": 520,
+      "scan": 20,
+      "key_name": "KEY_NUMERIC_8",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "8",
+        "en": "8",
+        "es": "8",
+        "fr": "8",
+        "it": "8"
+      },
+      "remote_label": "8"
+    },
+    {
+      "type": "key",
+      "code": 521,
+      "scan": 21,
+      "key_name": "KEY_NUMERIC_9",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "9",
+        "en": "9",
+        "es": "9",
+        "fr": "9",
+        "it": "9"
+      },
+      "remote_label": "9"
+    },
+    {
+      "type": "key",
+      "code": 377,
+      "scan": 28,
+      "key_name": "KEY_TV",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "TV/Radio",
+        "en": "TV/Radio",
+        "es": "TV/Radio",
+        "fr": "TV/Radio",
+        "it": "TV/Radio"
+      },
+      "remote_label": "TV/RADIO"
+    },
+    {
+      "type": "key",
+      "code": 512,
+      "scan": 23,
+      "key_name": "KEY_NUMERIC_0",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "0",
+        "en": "0",
+        "es": "0",
+        "fr": "0",
+        "it": "0"
+      },
+      "remote_label": "0"
+    },
+    {
+      "type": "key",
+      "code": 158,
+      "scan": 32,
+      "key_name": "KEY_BACK",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Zurück",
+        "en": "Back",
+        "es": "Atrás",
+        "fr": "Retour",
+        "it": "Indietro"
+      },
+      "remote_label": "<- Back"
+    },
+    {
+      "type": "key",
+      "code": 28,
+      "scan": 54,
+      "key_name": "KEY_ENTER",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Umbenennen",
+        "en": "Rename",
+        "es": "Renombrar",
+        "fr": "Renommer",
+        "it": "Rinomina"
+      },
+      "remote_label": "Rename"
+    },
+    {
+      "type": "key",
+      "code": 366,
+      "scan": 24,
+      "key_name": "KEY_PVR",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Schnappschuss",
+        "en": "Snapshot",
+        "es": "Captura",
+        "fr": "Instantané",
+        "it": "Istantanea"
+      },
+      "remote_label": "Snapshot"
+    },
+    {
+      "type": "key",
+      "code": 103,
+      "scan": 26,
+      "key_name": "KEY_UP",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Hoch",
+        "en": "Up",
+        "es": "Arriba",
+        "fr": "Haut",
+        "it": "Su"
+      },
+      "remote_label": "Up"
+    },
+    {
+      "type": "key",
+      "code": 105,
+      "scan": 29,
+      "key_name": "KEY_LEFT",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Links",
+        "en": "Left",
+        "es": "Izquierda",
+        "fr": "Gauche",
+        "it": "Sinistra"
+      },
+      "remote_label": "Left"
+    },
+    {
+      "type": "key",
+      "code": 106,
+      "scan": 31,
+      "key_name": "KEY_RIGHT",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Rechts",
+        "en": "Right",
+        "es": "Derecha",
+        "fr": "Droite",
+        "it": "Destra"
+      },
+      "remote_label": "Right"
+    },
+    {
+      "type": "key",
+      "code": 108,
+      "scan": 34,
+      "key_name": "KEY_DOWN",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Runter",
+        "en": "Down",
+        "es": "Abajo",
+        "fr": "Bas",
+        "it": "Giù"
+      },
+      "remote_label": "Down"
+    },
+    {
+      "type": "key",
+      "code": 352,
+      "scan": 30,
+      "key_name": "KEY_OK",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "OK",
+        "en": "OK",
+        "es": "OK",
+        "fr": "OK",
+        "it": "OK"
+      },
+      "remote_label": "OK"
+    },
+    {
+      "type": "key",
+      "code": 522,
+      "scan": 55,
+      "key_name": "KEY_NUMERIC_STAR",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Bild erfassen",
+        "en": "Acquire image",
+        "es": "Capturar imagen",
+        "fr": "Acquérir l’image",
+        "it": "Acquisisci immagine"
+      },
+      "remote_label": "Aquire Image"
+    },
+    {
+      "type": "key",
+      "code": 523,
+      "scan": 56,
+      "key_name": "KEY_NUMERIC_POUND",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Bild bearbeiten",
+        "en": "Edit image",
+        "es": "Editar imagen",
+        "fr": "Modifier l’image",
+        "it": "Modifica immagine"
+      },
+      "remote_label": "Edit Image"
+    },
+    {
+      "type": "key",
+      "code": 168,
+      "scan": 36,
+      "key_name": "KEY_REWIND",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Zurückspulen",
+        "en": "Rewind",
+        "es": "Rebobinar",
+        "fr": "Retour rapide",
+        "it": "Riavvolgi"
+      },
+      "remote_label": "<< Rewind"
+    },
+    {
+      "type": "key",
+      "code": 207,
+      "scan": 37,
+      "key_name": "KEY_PLAY",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Wiedergabe",
+        "en": "Play",
+        "es": "Reproducir",
+        "fr": "Lecture",
+        "it": "Riproduci"
+      },
+      "remote_label": "> PLAY"
+    },
+    {
+      "type": "key",
+      "code": 159,
+      "scan": 38,
+      "key_name": "KEY_FORWARD",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Vorspulen",
+        "en": "Fast forward",
+        "es": "Avance rápido",
+        "fr": "Avance rapide",
+        "it": "Avanti veloce"
+      },
+      "remote_label": ">> Forward"
+    },
+    {
+      "type": "key",
+      "code": 167,
+      "scan": 39,
+      "key_name": "KEY_RECORD",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Aufnahme",
+        "en": "Record",
+        "es": "Grabar",
+        "fr": "Enregistrer",
+        "it": "Registra"
+      },
+      "remote_label": "Record"
+    },
+    {
+      "type": "key",
+      "code": 128,
+      "scan": 40,
+      "key_name": "KEY_STOP",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Stopp",
+        "en": "Stop",
+        "es": "Detener",
+        "fr": "Arrêt",
+        "it": "Stop"
+      },
+      "remote_label": "Stop"
+    },
+    {
+      "type": "key",
+      "code": 119,
+      "scan": 41,
+      "key_name": "KEY_PAUSE",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Pause",
+        "en": "Pause",
+        "es": "Pausa",
+        "fr": "Pause",
+        "it": "Pausa"
+      },
+      "remote_label": "|| PAUSE"
+    },
+    {
+      "type": "key",
+      "code": 412,
+      "scan": 33,
+      "key_name": "KEY_PREVIOUS",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Vorheriger Titel",
+        "en": "Previous",
+        "es": "Anterior",
+        "fr": "Précédent",
+        "it": "Precedente"
+      },
+      "remote_label": "Previous"
+    },
+    {
+      "type": "scan",
+      "code": 57,
+      "scan": 57,
+      "key_name": null,
+      "action": "none",
+      "thd_key": "KEY_F18",
+      "repeat": false,
+      "name": {
+        "de": "Vollbild",
+        "en": "Full screen",
+        "es": "Pantalla completa",
+        "fr": "Plein écran",
+        "it": "Schermo intero"
+      },
+      "remote_label": "FULL SCREEN"
+    },
+    {
+      "type": "key",
+      "code": 407,
+      "scan": 35,
+      "key_name": "KEY_NEXT",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Nächster Titel",
+        "en": "Next",
+        "es": "Siguiente",
+        "fr": "Suivant",
+        "it": "Successivo"
+      },
+      "remote_label": "Next"
+    },
+    {
+      "type": "scan",
+      "code": 25,
+      "scan": 25,
+      "key_name": null,
+      "action": "none",
+      "thd_key": "KEY_F19",
+      "repeat": false,
+      "name": {
+        "de": "DVD-Menü",
+        "en": "DVD menu",
+        "es": "Menú DVD",
+        "fr": "Menu DVD",
+        "it": "Menu DVD"
+      },
+      "remote_label": "DVD Menu"
+    },
+    {
+      "type": "scan",
+      "code": 58,
+      "scan": 58,
+      "key_name": null,
+      "action": "none",
+      "thd_key": "",
+      "repeat": false,
+      "name": {
+        "de": "DVD-Audio",
+        "en": "DVD audio",
+        "es": "Audio DVD",
+        "fr": "Audio DVD",
+        "it": "Audio DVD"
+      },
+      "remote_label": "DVD Audio"
+    },
+    {
+      "type": "key",
+      "code": 116,
+      "scan": 2,
+      "key_name": "KEY_POWER",
+      "action": "default",
+      "repeat": false,
+      "name": {
+        "de": "Ein/Aus",
+        "en": "Power",
+        "es": "Encendido",
+        "fr": "Marche/arrêt",
+        "it": "Accensione"
+      },
+      "remote_label": "Power"
+    }
+  ],
+  "images": [
+    "image1.jpg",
+    "image2.jpg"
+  ],
+  "source": "josh2000, 2026-11-08"
+}

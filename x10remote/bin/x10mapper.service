@@ -1,0 +1,16 @@
+[Unit]
+Description=X10 RF Remote mapper (Volumio plugin x10remote)
+After=systemd-udevd.service systemd-modules-load.service
+Before=triggerhappy.service
+
+[Service]
+Type=simple
+ExecStartPre=-/sbin/modprobe uinput
+ExecStart=/usr/bin/python3 -u /usr/local/bin/x10mapper.py --config /data/configuration/system_hardware/x10remote/mapper.json
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=3
+
+# Wird vom Plugin in onStart gestartet und in onStop gestoppt (nicht beim Systemstart aktiviert).
+[Install]
+WantedBy=multi-user.target

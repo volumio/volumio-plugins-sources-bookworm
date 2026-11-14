@@ -1,0 +1,375 @@
+{
+  "page": {
+    "label": "TRANSLATE.X10.PLUGIN_NAME"
+  },
+  "sections": [
+    {
+      "id": "section_web",
+      "element": "section",
+      "label": "TRANSLATE.X10.SECTION_WEB",
+      "description": "TRANSLATE.X10.SECTION_WEB_DESC",
+      "icon": "fa-desktop",
+      "content": [
+        {
+          "id": "btn_open_wizard",
+          "element": "button",
+          "label": "TRANSLATE.X10.BTN_WIZARD",
+          "description": "TRANSLATE.X10.BTN_WIZARD_DESC",
+          "onClick": {
+            "type": "openUrl",
+            "url": "/"
+          }
+        },
+        {
+          "id": "btn_open_profiles",
+          "element": "button",
+          "label": "TRANSLATE.X10.BTN_PROFILES",
+          "description": "TRANSLATE.X10.BTN_PROFILES_DESC",
+          "onClick": {
+            "type": "openUrl",
+            "url": "/"
+          }
+        },
+        {
+          "id": "btn_open_test",
+          "element": "button",
+          "label": "TRANSLATE.X10.BTN_TEST",
+          "description": "TRANSLATE.X10.BTN_TEST_DESC",
+          "onClick": {
+            "type": "openUrl",
+            "url": "/"
+          }
+        },
+        {
+          "id": "btn_addresses",
+          "element": "button",
+          "label": "TRANSLATE.X10.BTN_ADDRESSES",
+          "description": "TRANSLATE.X10.BTN_ADDRESSES_DESC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_hardware/x10remote",
+              "method": "openAddresses",
+              "data": {}
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_profiles",
+      "element": "section",
+      "label": "TRANSLATE.X10.SECTION_PROFILES",
+      "description": "TRANSLATE.X10.SECTION_PROFILES_DESC",
+      "icon": "fa-list",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/x10remote",
+        "method": "saveProfiles"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.X10.SAVE",
+        "data": []
+      },
+      "content": []
+    },
+    {
+      "id": "section_general",
+      "element": "section",
+      "label": "TRANSLATE.X10.SECTION_GENERAL",
+      "description": "TRANSLATE.X10.SECTION_GENERAL_DESC",
+      "icon": "fa-cogs",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/x10remote",
+        "method": "saveGeneral"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.X10.SAVE",
+        "data": [
+          "enabled",
+          "debounce_ms",
+          "repeat_ms",
+          "ignore_scancodes",
+          "watchdog",
+          "log_presses",
+          "web_port"
+        ]
+      },
+      "content": [
+        {
+          "id": "enabled",
+          "element": "switch",
+          "label": "TRANSLATE.X10.ENABLED",
+          "doc": "TRANSLATE.X10.ENABLED_DOC",
+          "value": true
+        },
+        {
+          "id": "debounce_ms",
+          "type": "number",
+          "element": "input",
+          "label": "TRANSLATE.X10.DEBOUNCE",
+          "doc": "TRANSLATE.X10.DEBOUNCE_DOC",
+          "attributes": [
+            {
+              "min": 0
+            },
+            {
+              "max": 2000
+            }
+          ],
+          "value": 300
+        },
+        {
+          "id": "repeat_ms",
+          "type": "number",
+          "element": "input",
+          "label": "TRANSLATE.X10.REPEAT",
+          "doc": "TRANSLATE.X10.REPEAT_DOC",
+          "attributes": [
+            {
+              "min": 50
+            },
+            {
+              "max": 2000
+            }
+          ],
+          "value": 150
+        },
+        {
+          "id": "ignore_scancodes",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.X10.IGNORE",
+          "doc": "TRANSLATE.X10.IGNORE_DOC",
+          "value": "0x00"
+        },
+        {
+          "id": "watchdog",
+          "element": "switch",
+          "label": "TRANSLATE.X10.WATCHDOG",
+          "doc": "TRANSLATE.X10.WATCHDOG_DOC",
+          "value": true
+        },
+        {
+          "id": "log_presses",
+          "element": "switch",
+          "label": "TRANSLATE.X10.LOG_PRESSES",
+          "doc": "TRANSLATE.X10.LOG_PRESSES_DOC",
+          "value": false
+        },
+        {
+          "id": "web_port",
+          "type": "number",
+          "element": "input",
+          "label": "TRANSLATE.X10.WEB_PORT",
+          "doc": "TRANSLATE.X10.WEB_PORT_DOC",
+          "attributes": [
+            {
+              "min": 1024
+            },
+            {
+              "max": 65535
+            }
+          ],
+          "value": 7710
+        }
+      ]
+    },
+    {
+      "id": "section_expertmode",
+      "element": "section",
+      "label": "TRANSLATE.X10.EXPERT_SECTION",
+      "description": "TRANSLATE.X10.EXPERT_SECTION_DESC",
+      "icon": "fa-flask",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/x10remote",
+        "method": "saveExpert"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.X10.SAVE",
+        "data": [
+          "expert_mode",
+          "allow_shell",
+          "thd_exclusive",
+          "thd_exclusive_delay"
+        ]
+      },
+      "content": [
+        {
+          "id": "expert_mode",
+          "element": "switch",
+          "label": "TRANSLATE.X10.EXPERT_MODE",
+          "doc": "TRANSLATE.X10.EXPERT_MODE_DOC",
+          "value": false
+        },
+        {
+          "id": "allow_shell",
+          "element": "switch",
+          "label": "TRANSLATE.X10.ALLOW_SHELL",
+          "doc": "TRANSLATE.X10.ALLOW_SHELL_DOC",
+          "value": false,
+          "visibleIf": {
+            "field": "expert_mode",
+            "value": true
+          }
+        },
+        {
+          "id": "thd_exclusive",
+          "element": "switch",
+          "label": "TRANSLATE.X10.THD_EXCLUSIVE",
+          "doc": "TRANSLATE.X10.THD_EXCLUSIVE_DOC",
+          "value": false,
+          "visibleIf": {
+            "field": "expert_mode",
+            "value": true
+          }
+        },
+        {
+          "id": "thd_exclusive_delay",
+          "type": "number",
+          "element": "input",
+          "label": "TRANSLATE.X10.THD_EXCLUSIVE_DELAY",
+          "doc": "TRANSLATE.X10.THD_EXCLUSIVE_DELAY_DOC",
+          "attributes": [
+            {
+              "min": 0
+            },
+            {
+              "max": 600
+            }
+          ],
+          "value": 10,
+          "visibleIf": {
+            "field": "thd_exclusive",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_tools",
+      "element": "section",
+      "label": "TRANSLATE.X10.SECTION_TOOLS",
+      "icon": "fa-stethoscope",
+      "content": [
+        {
+          "id": "btn_status",
+          "element": "button",
+          "label": "TRANSLATE.X10.BTN_STATUS",
+          "description": "TRANSLATE.X10.BTN_STATUS_DESC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_hardware/x10remote",
+              "method": "showStatus",
+              "data": {}
+            }
+          }
+        },
+        {
+          "id": "btn_log",
+          "element": "button",
+          "label": "TRANSLATE.X10.BTN_LOG",
+          "description": "TRANSLATE.X10.BTN_LOG_DESC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_hardware/x10remote",
+              "method": "showLog",
+              "data": {}
+            }
+          }
+        },
+        {
+          "id": "btn_restart",
+          "element": "button",
+          "label": "TRANSLATE.X10.BTN_RESTART",
+          "description": "TRANSLATE.X10.BTN_RESTART_DESC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_hardware/x10remote",
+              "method": "restartService",
+              "data": {}
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_expert",
+      "element": "section",
+      "label": "TRANSLATE.X10.SECTION_EXPERT",
+      "description": "TRANSLATE.X10.SECTION_EXPERT_DESC",
+      "icon": "fa-wrench",
+      "content": [
+        {
+          "id": "btn_overrides",
+          "element": "button",
+          "label": "TRANSLATE.X10.BTN_OVERRIDES",
+          "description": "TRANSLATE.X10.BTN_OVERRIDES_DESC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_hardware/x10remote",
+              "method": "showOverrides",
+              "data": {}
+            }
+          }
+        },
+        {
+          "id": "btn_show_thd",
+          "element": "button",
+          "label": "TRANSLATE.X10.BTN_SHOW_THD",
+          "description": "TRANSLATE.X10.BTN_SHOW_THD_DESC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_hardware/x10remote",
+              "method": "showGeneratedConfig",
+              "data": {}
+            }
+          }
+        },
+        {
+          "id": "btn_export",
+          "element": "button",
+          "label": "TRANSLATE.X10.BTN_EXPORT",
+          "description": "TRANSLATE.X10.BTN_EXPORT_DESC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_hardware/x10remote",
+              "method": "exportWrapper",
+              "data": {}
+            }
+          }
+        },
+        {
+          "id": "btn_default",
+          "element": "button",
+          "label": "TRANSLATE.X10.BTN_DEFAULT",
+          "description": "TRANSLATE.X10.BTN_DEFAULT_DESC",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "system_hardware/x10remote",
+              "method": "recreateDefaultProfile",
+              "data": {}
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

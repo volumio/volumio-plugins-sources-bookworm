@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="WEB_TITLE_PROFILE">X10 RF Remote</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<main class="wrap">
+  <div class="row">
+    <h1 id="title">…</h1>
+    <span class="spacer"></span>
+    <span class="badge" id="activeBadge"></span>
+  </div>
+  <p class="muted mono" id="deviceLine"></p>
+  <div id="problems"></div>
+  <div id="dupNote"></div>
+
+  <h2 data-i18n="WEB_DETAILS"></h2>
+  <div class="panel">
+    <label class="field"><span data-i18n="WEB_PROFILE_NAME"></span><input type="text" id="pName" maxlength="80"></label>
+    <label class="field"><span data-i18n="WEB_DESCRIPTION"></span><textarea id="pDesc" maxlength="4000"></textarea></label>
+    <label class="field"><span data-i18n="WEB_NOTES"></span><textarea id="pNotes" class="notes" maxlength="8000" data-i18n-ph="WEB_NOTES_PH"></textarea></label>
+  </div>
+
+  <h2 data-i18n="WEB_RECEIVERS"></h2>
+  <div class="panel">
+    <p class="muted" data-i18n="WEB_PROFILE_RECEIVERS_HELP"></p>
+    <label class="check"><input type="checkbox" id="pRf433"> <span data-i18n="WEB_RF433_SENDER"></span></label>
+    <p class="muted small" data-i18n="WEB_RF433_SENDER_HELP"></p>
+    <div id="recvList" class="devlist"></div>
+  </div>
+
+  <h2 data-i18n="WEB_IMAGES"></h2>
+  <p class="muted" data-i18n="WEB_IMAGES_HELP"></p>
+  <div class="images" id="images"></div>
+
+  <div class="row"><h2 data-i18n="WEB_KEYS"></h2><span class="spacer"></span>
+    <a class="btn small" id="btnAddKeys" data-i18n="WEB_ADD_KEYS"></a></div>
+  <p class="muted" data-i18n="WEB_PROFILE_KEYS_HELP"></p>
+  <div class="panel" id="keyTable"></div>
+
+  <div class="row" id="actions">
+    <button id="btnSave" class="primary" data-i18n="WEB_SAVE"></button>
+    <label class="check"><input type="checkbox" id="pActive"> <span data-i18n="WEB_ACTIVE"></span></label>
+    <span class="spacer"></span>
+    <a class="btn" id="btnPrint" target="_blank" rel="noopener" data-i18n="WEB_PRINT_PROFILE"></a>
+    <button id="btnDuplicate" data-i18n="WEB_DUPLICATE"></button>
+    <button id="btnFavourites" class="hidden" data-i18n="WEB_RADIO_TO_FAVOURITES"></button>
+    <a class="btn" href="profiles.html" data-i18n="WEB_BACK_TO_LIST"></a>
+    <button id="btnDelete" class="danger" data-i18n="WEB_DELETE_PROFILE"></button>
+  </div>
+</main>
+<script src="app.js"></script>
+<script src="profile.js"></script>
+</body>
+</html>
