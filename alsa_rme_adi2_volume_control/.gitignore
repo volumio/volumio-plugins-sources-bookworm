@@ -1,2 +1,5 @@
-node_modules/
-alsa_rme_adi2_volume_control.zip
+.gitignore
+node_modules
+*.zip
+package-lock.json
+
