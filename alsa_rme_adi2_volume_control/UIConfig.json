@@ -1,0 +1,324 @@
+{
+    "page": {
+        "label": "TRANSLATE.ARAVC_PAGE_LABEL_CONFIGURATION"
+    },
+    "sections": [
+        {
+            "id": "section_general",
+            "element": "section",
+            "label": "TRANSLATE.ARAVC_SECTION_LABEL_BACKGROUND_SERVICE",
+            "icon": "fa-desktop",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/alsa_rme_adi2_volume_control",
+                "method": "applyServiceActive"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.ARAVC_APPLY",
+                "data": [
+                    "service_active"
+                ]
+            },
+            "content": [
+                {
+                    "id": "service_active",
+                    "element": "switch",
+                    "doc": "TRANSLATE.ARAVC_SWITCH_DOC_SERVICE_ACTIVE",
+                    "label": "TRANSLATE.ARAVC_SWITCH_LABEL_SERVICE_ACTIVE",
+                    "value": true
+                }
+            ]
+        },
+        {
+            "id": "section_service",
+            "element": "section",
+            "label": "TRANSLATE.ARAVC_SECTION_LABEL_GENERAL",
+            "icon": "fa-gear",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/alsa_rme_adi2_volume_control",
+                "method": "applyServiceSettingsGeneral"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.ARAVC_APPLY",
+                "data": [
+                    "device_name",
+                    "card_number",
+                    "verbose_log"
+                ]
+            },
+            "content": [
+                {
+                    "id": "device_name",
+                    "element": "select",
+                    "doc": "TRANSLATE.ARAVC_SELECT_DOC_DEVICE_NAME",
+                    "label": "TRANSLATE.ARAVC_SELECT_LABEL_DEVICE_NAME",
+                    "options": [
+                        { "value": "autodetect",  "label": "autodetect" },
+                        { "value": "ADI-2 DAC",   "label": "ADI-2 DAC" },
+                        { "value": "ADI-2 Pro",   "label": "ADI-2 Pro" },
+                        { "value": "ADI-2/4 Pro", "label": "ADI-2/4 Pro" }
+                    ],
+                    "value": {
+                        "value": "autodetect",
+                        "label": "autodetect"
+                    }
+                },
+                {
+                    "id": "card_number",
+                    "element": "select",
+                    "doc": "TRANSLATE.ARAVC_SELECT_DOC_CARD_NUMBER",
+                    "label": "TRANSLATE.ARAVC_SELECT_LABEL_CARD_NUMBER",
+                    "options": [
+                        { "value": "autodetect", "label": "autodetect" },
+                        { "value": "0",          "label": "0" },
+                        { "value": "1",          "label": "1" },
+                        { "value": "2",          "label": "2" },
+                        { "value": "3",          "label": "3" },
+                        { "value": "4",          "label": "4" },
+                        { "value": "5",          "label": "5" },
+                        { "value": "6",          "label": "6" },
+                        { "value": "7",          "label": "7" },
+                        { "value": "8",          "label": "8" },
+                        { "value": "9",          "label": "9" }
+                    ],
+                    "value": {
+                        "value": "autodetect",
+                        "label": "autodetect"
+                    }
+                },
+                {
+                    "id": "verbose_log",
+                    "element": "switch",
+                    "doc": "TRANSLATE.ARAVC_SWITCH_DOC_VERBOSE_LOG",
+                    "label": "TRANSLATE.ARAVC_SWITCH_LABEL_VERBOSE_LOG",
+                    "value": false
+                }
+            ]
+        },
+        {
+            "id": "section_line12",
+            "element": "section",
+            "label": "TRANSLATE.ARAVC_SECTION_LABEL_LINE12",
+            "icon": "fa-music",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/alsa_rme_adi2_volume_control",
+                "method": "applyServiceSettingsLine12"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.ARAVC_APPLY",
+                "data": [
+                    "line12_active",
+                    "line12_min_db",
+                    "line12_max_db",
+                    "line12_volume"
+                ]
+            },
+            "content": [
+                {
+                    "id": "line12_active",
+                    "element": "switch",
+                    "doc": "TRANSLATE.ARAVC_SWITCH_DOC_LINE12_ACTIVE",
+                    "label": "TRANSLATE.ARAVC_SWITCH_LABEL_LINE12_ACTIVE",
+                    "value": true
+                },
+                {
+                    "id": "line12_min_db",
+                    "element": "select",
+                    "doc": "TRANSLATE.ARAVC_SELECT_DOC_LINE12_MIN_DB",
+                    "label": "TRANSLATE.ARAVC_SELECT_LABEL_LINE12_MIN_DB",
+                    "options": [
+                        { "value": "-93.8", "label": "-93.8" },
+                        { "value": "-90.0", "label": "-90.0" },
+                        { "value": "-80.0", "label": "-80.0" },
+                        { "value": "-70.0", "label": "-70.0" },
+                        { "value": "-60.0", "label": "-60.0" },
+                        { "value": "-50.0", "label": "-50.0" },
+                        { "value": "-40.0", "label": "-40.0" },
+                        { "value": "-30.0", "label": "-30.0" },
+                        { "value": "-20.0", "label": "-20.0" },
+                        { "value": "-10.0", "label": "-10.0" },
+                        { "value": "0.0",   "label": "0.0"   },
+                        { "value": "6.0",   "label": "6.0"   }
+                    ],
+                    "value": {
+                        "value": "-60.0",
+                        "label": "-60.0"
+                    },
+                    "visibleIf": {
+                        "field": "line12_active",
+                        "value": true
+                    }
+                },
+                {
+                    "id": "line12_max_db",
+                    "element": "select",
+                    "doc": "TRANSLATE.ARAVC_SELECT_DOC_LINE12_MAX_DB",
+                    "label": "TRANSLATE.ARAVC_SELECT_LABEL_LINE12_MAX_DB",
+                    "options": [
+                        { "value": "-93.8", "label": "-93.8" },
+                        { "value": "-90.0", "label": "-90.0" },
+                        { "value": "-80.0", "label": "-80.0" },
+                        { "value": "-70.0", "label": "-70.0" },
+                        { "value": "-60.0", "label": "-60.0" },
+                        { "value": "-50.0", "label": "-50.0" },
+                        { "value": "-40.0", "label": "-40.0" },
+                        { "value": "-30.0", "label": "-30.0" },
+                        { "value": "-20.0", "label": "-20.0" },
+                        { "value": "-10.0", "label": "-10.0" },
+                        { "value": "0.0",   "label": "0.0"   },
+                        { "value": "6.0",   "label": "6.0"   }
+                    ],
+                    "value": {
+                        "value": "-10.0",
+                        "label": "-10.0"
+                    },
+                    "visibleIf": {
+                        "field": "line12_active",
+                        "value": true
+                    }
+                },
+                {
+                    "id": "line12_volume",
+                    "element": "select",
+                    "doc": "TRANSLATE.ARAVC_SELECT_DOC_LINE12_VOLUME",
+                    "label": "TRANSLATE.ARAVC_SELECT_LABEL_LINE12_VOLUME",
+                    "options": [
+                        { "value": "0",   "label": "0"   },
+                        { "value": "10",  "label": "10"  },
+                        { "value": "20",  "label": "20"  },
+                        { "value": "30",  "label": "30"  },
+                        { "value": "40",  "label": "40"  },
+                        { "value": "50",  "label": "50"  },
+                        { "value": "60",  "label": "60"  },
+                        { "value": "70",  "label": "70"  },
+                        { "value": "80",  "label": "80"  },
+                        { "value": "90",  "label": "90"  },
+                        { "value": "100", "label": "100" }
+                    ],
+                    "value": {
+                        "value": "50",
+                        "label": "50"
+                    },
+                    "visibleIf": {
+                        "field": "line12_active",
+                        "value": true
+                    }
+                }
+            ]
+        },
+        {
+            "id": "section_phones34",
+            "element": "section",
+            "label": "TRANSLATE.ARAVC_SECTION_LABEL_PHONES34",
+            "icon": "fa-headphones",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/alsa_rme_adi2_volume_control",
+                "method": "applyServiceSettingsPhones34"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.ARAVC_APPLY",
+                "data": [
+                    "phones34_active",
+                    "phones34_min_db",
+                    "phones34_max_db",
+                    "phones34_volume"
+                ]
+            },
+            "content": [
+                {
+                    "id": "phones34_active",
+                    "element": "switch",
+                    "doc": "TRANSLATE.ARAVC_SWITCH_DOC_PHONES34_ACTIVE",
+                    "label": "TRANSLATE.ARAVC_SWITCH_LABEL_PHONES34_ACTIVE",
+                    "value": true
+                },
+                {
+                    "id": "phones34_min_db",
+                    "element": "select",
+                    "doc": "TRANSLATE.ARAVC_SELECT_DOC_PHONES34_MIN_DB",
+                    "label": "TRANSLATE.ARAVC_SELECT_LABEL_PHONES34_MIN_DB",
+                    "options": [
+                        { "value": "-93.8", "label": "-93.8" },
+                        { "value": "-90.0", "label": "-90.0" },
+                        { "value": "-80.0", "label": "-80.0" },
+                        { "value": "-70.0", "label": "-70.0" },
+                        { "value": "-60.0", "label": "-60.0" },
+                        { "value": "-50.0", "label": "-50.0" },
+                        { "value": "-40.0", "label": "-40.0" },
+                        { "value": "-30.0", "label": "-30.0" },
+                        { "value": "-20.0", "label": "-20.0" },
+                        { "value": "-10.0", "label": "-10.0" },
+                        { "value": "0.0",   "label": "0.0"   },
+                        { "value": "6.0",   "label": "6.0"   }
+                    ],
+                    "value": {
+                        "value": "-60.0",
+                        "label": "-60.0"
+                    },
+                    "visibleIf": {
+                        "field": "phones34_active",
+                        "value": true
+                    }
+                },
+                {
+                    "id": "phones34_max_db",
+                    "element": "select",
+                    "doc": "TRANSLATE.ARAVC_SELECT_DOC_PHONES34_MAX_DB",
+                    "label": "TRANSLATE.ARAVC_SELECT_LABEL_PHONES34_MAX_DB",
+                    "options": [
+                        { "value": "-93.8", "label": "-93.8" },
+                        { "value": "-90.0", "label": "-90.0" },
+                        { "value": "-80.0", "label": "-80.0" },
+                        { "value": "-70.0", "label": "-70.0" },
+                        { "value": "-60.0", "label": "-60.0" },
+                        { "value": "-50.0", "label": "-50.0" },
+                        { "value": "-40.0", "label": "-40.0" },
+                        { "value": "-30.0", "label": "-30.0" },
+                        { "value": "-20.0", "label": "-20.0" },
+                        { "value": "-10.0", "label": "-10.0" },
+                        { "value": "0.0",   "label": "0.0"   },
+                        { "value": "6.0",   "label": "6.0"   }
+                    ],
+                    "value": {
+                        "value": "-10.0",
+                        "label": "-10.0"
+                    },
+                    "visibleIf": {
+                        "field": "phones34_active",
+                        "value": true
+                    }
+                },
+                {
+                    "id": "phones34_volume",
+                    "element": "select",
+                    "doc": "TRANSLATE.ARAVC_SELECT_DOC_PHONES34_VOLUME",
+                    "label": "TRANSLATE.ARAVC_SELECT_LABEL_PHONES34_VOLUME",
+                    "options": [
+                        { "value": "0",   "label": "0"   },
+                        { "value": "10",  "label": "10"  },
+                        { "value": "20",  "label": "20"  },
+                        { "value": "30",  "label": "30"  },
+                        { "value": "40",  "label": "40"  },
+                        { "value": "50",  "label": "50"  },
+                        { "value": "60",  "label": "60"  },
+                        { "value": "70",  "label": "70"  },
+                        { "value": "80",  "label": "80"  },
+                        { "value": "90",  "label": "90"  },
+                        { "value": "100", "label": "100" }
+                    ],
+                    "value": {
+                        "value": "50",
+                        "label": "50"
+                    },
+                    "visibleIf": {
+                        "field": "phones34_active",
+                        "value": true
+                    }
+                }
+            ]
+        }
+    ]
+}

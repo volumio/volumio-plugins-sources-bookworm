@@ -1,0 +1,3 @@
+# This file is part of the alsa-rme-adi2-volume-control project
+
+disable alsa-rme-adi2-volume-control.service
