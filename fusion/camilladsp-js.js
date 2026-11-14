@@ -10,7 +10,7 @@ let counter = 0;
  * CamillaDsp class to handle the external process
  * spawned as child process
  */
-let CamillaDsp = function (logger) {
+let CamillaDsp = function (logger, onStreamOpen) {
 
     const cdPath = "/data/plugins/audio_interface/fusiondsp/camilladsp"
     const cdLog = "/tmp/camilladsp.log";
@@ -80,11 +80,22 @@ let CamillaDsp = function (logger) {
         // Code 0 means the player closed the FIFO. A respawn now would start
         // with the last stream's sample rate. If the next track has a different
         // rate, its first moments would play at the wrong speed until
-        // checksamplerate restarts CamillaDSP. So unless the next stream is
-        // already open, leave the start to checksamplerate, which knows the rate.
-        if (code === 0 && !streamIsOpen()) {
-            logger.info("camilladsp stream ended, waiting for the next one");
-            return;
+        // checksamplerate restarts CamillaDSP. So leave the start to
+        // checksamplerate, which knows the rate.
+        if (code === 0) {
+
+            if (!streamIsOpen()) {
+                logger.info("camilladsp stream ended, waiting for the next one");
+                return;
+            }
+
+            // The next stream is already open. Its params may have arrived
+            // while this process was still exiting, so ask for another read.
+            if (onStreamOpen && onStreamOpen()) {
+                logger.info("camilladsp stream ended, next one already open");
+                return;
+            }
+
         }
 
         // If respawning was stopped due to too many failures, don't respawn
