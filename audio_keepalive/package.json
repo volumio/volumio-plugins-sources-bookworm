@@ -1,6 +1,6 @@
 {
   "name": "audio_keepalive",
-  "version": "2.1.1",
+  "version": "2.1.3",
   "description": "Maintains continuous audio output to prevent HDMI/SPDIF/USB signal loss during idle",
   "main": "index.js",
   "author": "Just a Nerd",
@@ -13,7 +13,7 @@
       "bookworm"
     ],
     "details": "Keeps the output open so HDMI receivers, SPDIF decoders and USB DACs do not drop lock when idle. Music passes through unchanged; inaudible noise is written only while nothing plays.",
-    "changelog": "v2.1.1: Keeps the audio output open so HDMI receivers, S/PDIF decoders and USB DACs do not drop lock while nothing plays: a daemon owns the output and writes inaudible noise only while idle; music passes through unchanged and without gaps, paced to the device, and nothing queued is lost on pause, stop or a short device write.",
+    "changelog": "v2.1.3: Keeps the audio output open so HDMI receivers, S/PDIF decoders and USB DACs do not drop lock while nothing plays: a daemon owns the output and writes inaudible noise only while idle; music passes through unchanged and without gaps, paced to the device, and nothing queued is lost on pause, stop or a short device write.",
     "architectures": [
       "amd64",
       "armhf"
