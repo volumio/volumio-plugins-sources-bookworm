@@ -43,6 +43,7 @@ var THEMES = ['dark', 'light', 'system'];
 var DELAYS = [-1, 0, 1, 2, 5, 10];   // -1: always in ambient
 var TEXT_SIZES = ['s', 'm', 'l', 'xl'];
 var LAYOUTS = ['cover', 'clock', 'bleed'];
+var BACKGROUNDS = ['still', 'aurora'];   // the blurred cover alone, or soft colours from it drifting behind
 var CLOCKS = ['24', '12'];
 var EVENT = 'pushArtworkSettings';
 
@@ -420,6 +421,7 @@ ArtworkOne.prototype.cleanAmbient = function (a) {
   if (typeof a.on === 'boolean') { out.on = a.on; }
   if (DELAYS.indexOf(Number(a.delay)) > -1) { out.delay = Number(a.delay); }
   if (LAYOUTS.indexOf(a.layout) > -1) { out.layout = a.layout; }
+  if (BACKGROUNDS.indexOf(a.background) > -1) { out.background = a.background; }
   if (CLOCKS.indexOf(String(a.clock)) > -1) { out.clock = String(a.clock); }
   if (typeof a.night === 'boolean') { out.night = a.night; }
   if (isTime(a.nightFrom)) { out.nightFrom = a.nightFrom; }
