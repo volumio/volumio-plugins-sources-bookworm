@@ -1,0 +1,19 @@
+{
+    "UNSPIKE": {
+        "PLUGIN_NAME": "Unspike my CPU",
+        "PLUGIN_CONFIGURATION": "Unspike my CPU",
+        "SECTION_STATUS": "このプレーヤーでは",
+        "SECTION_STATUS_DOC": "このページを開いたときに Unspike がこのプレーヤーで確認した内容を下に示します。",
+        "CHECK": "もう一度確認",
+        "CHECK_DOC": "Unspike が今このプレーヤーで確認した内容を表示します。",
+        "STATE_NOT_NEEDED": "このプレーヤーのカーネルは {{kernel}} です。Unspike は、名前が -v7l+ で終わる Raspberry Pi 4、Pi 400、Compute Module 4 の 32 ビットカーネル用です。このプレーヤーでは何もしないので、アンインストールしてかまいません。",
+        "STATE_ACTIVE": "今回の起動から動作しています。このプレーヤーのカーネルは {{kernel}} で、Volumio は io_uring を使わずに起動しました。現在のプレーヤー上の io_uring スレッド数: {{threads}}。",
+        "STATE_SYSTEM": "このプレーヤーのカーネルは {{kernel}} で、システム自体がすでに Volumio を io_uring なしで起動させています。Unspike はここでは何もしないので、アンインストールしてかまいません。",
+        "STATE_PENDING": "Unspike は次回の起動から動作します。このプレーヤーのカーネルは {{kernel}} です。プレーヤーを一度再起動してください。現在のプレーヤー上の io_uring スレッド数: {{threads}}。",
+        "SECTION_ABOUT": "Unspike が行うこと",
+        "SECTION_ABOUT_DOC": "32 ビットカーネルで動く Raspberry Pi 4、Pi 400、Compute Module 4 では、Volumio が動作している Node のバージョンが、起動のたびに数分間プロセッサーのすべてのコアを使い続けます。これは io_uring というカーネルの機能を通じて起こり、この機能はそのカーネルでは正しく動作しません。その間、プレーヤーは熱くなり、応答も画面の表示も遅くなります。Unspike は Volumio がその機能を使わずに起動するようにします。Volumio のサービスが起動する前に、そのカーネルの場合に限り、サービスに対して UV_USE_IO_URING=0 を設定します。Volumio のファイルは一切変更しません。プラグインを無効にするかアンインストールすると、次回の起動からすべて元に戻ります。",
+        "RESTART_TITLE": "再起動が必要です",
+        "RESTART_MSG": "Unspike はプレーヤーの起動時から働くため、まだ何もしていません。プレーヤーを一度再起動してください。",
+        "SERVICE_FAILED": "Unspike を有効にできませんでした: {{error}}"
+    }
+}

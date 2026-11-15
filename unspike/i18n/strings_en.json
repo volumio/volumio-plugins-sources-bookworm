@@ -1,0 +1,19 @@
+{
+    "UNSPIKE": {
+        "PLUGIN_NAME": "Unspike my CPU",
+        "PLUGIN_CONFIGURATION": "Unspike my CPU",
+        "SECTION_STATUS": "On this player",
+        "SECTION_STATUS_DOC": "What Unspike found on this player when this page was opened is said below.",
+        "CHECK": "Look again",
+        "CHECK_DOC": "Says what Unspike finds on this player now.",
+        "STATE_NOT_NEEDED": "This player's kernel is {{kernel}}. Unspike is for the 32-bit kernel of the Raspberry Pi 4, Pi 400 and Compute Module 4, whose name ends in -v7l+. It does nothing here and can be uninstalled.",
+        "STATE_ACTIVE": "Working since this start. This player's kernel is {{kernel}}, and Volumio started without io_uring. io_uring threads on the player now: {{threads}}.",
+        "STATE_SYSTEM": "This player's kernel is {{kernel}}, and the system itself already has Volumio start without io_uring. Unspike does nothing here and can be uninstalled.",
+        "STATE_PENDING": "Unspike works from the next start. This player's kernel is {{kernel}}; restart the player once. io_uring threads on the player now: {{threads}}.",
+        "SECTION_ABOUT": "What Unspike does",
+        "SECTION_ABOUT_DOC": "On a Raspberry Pi 4, Pi 400 or Compute Module 4 running the 32-bit kernel, the version of Node that Volumio runs on keeps every core of the processor busy for minutes after each start. It does so through a feature of the kernel called io_uring, which does not work properly on that kernel. While it lasts the player is hot, slow to answer and slow to show its screens. Unspike has Volumio start with that feature left unused: before Volumio's services start, on that kernel only, it sets UV_USE_IO_URING=0 for them. It changes no file of Volumio's. Switching the plugin off or uninstalling it puts everything back from the next start.",
+        "RESTART_TITLE": "A restart is needed",
+        "RESTART_MSG": "Unspike works from the moment the player starts, so it has done nothing yet. Restart the player once.",
+        "SERVICE_FAILED": "Unspike could not be switched on: {{error}}"
+    }
+}

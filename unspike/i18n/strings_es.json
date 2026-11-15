@@ -1,0 +1,19 @@
+{
+    "UNSPIKE": {
+        "PLUGIN_NAME": "Unspike my CPU",
+        "PLUGIN_CONFIGURATION": "Unspike my CPU",
+        "SECTION_STATUS": "En este reproductor",
+        "SECTION_STATUS_DOC": "Abajo se dice lo que Unspike encontró en este reproductor al abrir esta página.",
+        "CHECK": "Mirar de nuevo",
+        "CHECK_DOC": "Dice lo que Unspike encuentra ahora en este reproductor.",
+        "STATE_NOT_NEEDED": "El kernel de este reproductor es {{kernel}}. Unspike es para el kernel de 32 bits de la Raspberry Pi 4, la Pi 400 y el Compute Module 4, cuyo nombre termina en -v7l+. Aquí no hace nada y puede desinstalarse.",
+        "STATE_ACTIVE": "En marcha desde este arranque. El kernel de este reproductor es {{kernel}}, y Volumio se inició sin io_uring. Hilos de io_uring en el reproductor ahora: {{threads}}.",
+        "STATE_SYSTEM": "El kernel de este reproductor es {{kernel}}, y el propio sistema ya hace que Volumio se inicie sin io_uring. Unspike no hace nada aquí y puede desinstalarse.",
+        "STATE_PENDING": "Unspike funciona a partir del próximo arranque. El kernel de este reproductor es {{kernel}}; reinicie el reproductor una vez. Hilos de io_uring en el reproductor ahora: {{threads}}.",
+        "SECTION_ABOUT": "Qué hace Unspike",
+        "SECTION_ABOUT_DOC": "En una Raspberry Pi 4, una Pi 400 o un Compute Module 4 con el kernel de 32 bits, la versión de Node sobre la que funciona Volumio mantiene ocupados todos los núcleos del procesador durante minutos después de cada arranque. Lo hace a través de una función del kernel llamada io_uring, que no funciona bien en ese kernel. Mientras dura, el reproductor se calienta, tarda en responder y tarda en mostrar sus pantallas. Unspike hace que Volumio se inicie sin usar esa función: antes de que se inicien los servicios de Volumio, y solo en ese kernel, establece UV_USE_IO_URING=0 para ellos. No cambia ningún archivo de Volumio. Al desactivar o desinstalar el plugin, todo vuelve a ser como antes a partir del próximo arranque.",
+        "RESTART_TITLE": "Hace falta un reinicio",
+        "RESTART_MSG": "Unspike actúa desde el momento en que el reproductor arranca, así que todavía no ha hecho nada. Reinicie el reproductor una vez.",
+        "SERVICE_FAILED": "No se pudo activar Unspike: {{error}}"
+    }
+}

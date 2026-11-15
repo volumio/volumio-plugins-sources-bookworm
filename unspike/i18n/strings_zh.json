@@ -1,0 +1,19 @@
+{
+    "UNSPIKE": {
+        "PLUGIN_NAME": "Unspike my CPU",
+        "PLUGIN_CONFIGURATION": "Unspike my CPU",
+        "SECTION_STATUS": "在此播放器上",
+        "SECTION_STATUS_DOC": "下面是打开此页面时 Unspike 在此播放器上发现的情况。",
+        "CHECK": "再看一次",
+        "CHECK_DOC": "说明 Unspike 现在在此播放器上发现的情况。",
+        "STATE_NOT_NEEDED": "此播放器的内核是 {{kernel}}。Unspike 适用于 Raspberry Pi 4、Pi 400 和 Compute Module 4 的 32 位内核，其名称以 -v7l+ 结尾。它在这里不起作用，可以卸载。",
+        "STATE_ACTIVE": "自本次启动起生效。此播放器的内核是 {{kernel}}，Volumio 已在不使用 io_uring 的情况下启动。播放器上当前的 io_uring 线程数：{{threads}}。",
+        "STATE_SYSTEM": "此播放器的内核是 {{kernel}}，系统本身已经让 Volumio 在不使用 io_uring 的情况下启动。Unspike 在这里不起作用，可以卸载。",
+        "STATE_PENDING": "Unspike 从下次启动起生效。此播放器的内核是 {{kernel}}；请重新启动播放器一次。播放器上当前的 io_uring 线程数：{{threads}}。",
+        "SECTION_ABOUT": "Unspike 的作用",
+        "SECTION_ABOUT_DOC": "在使用 32 位内核的 Raspberry Pi 4、Pi 400 或 Compute Module 4 上，Volumio 所运行的 Node 版本会在每次启动后的几分钟内让处理器的所有核心一直忙碌。这是通过内核中一项名为 io_uring 的功能发生的，而该功能在这种内核上工作不正常。在此期间，播放器发热、响应缓慢、显示页面也慢。Unspike 让 Volumio 在不使用该功能的情况下启动：在 Volumio 的服务启动之前，并且仅在这种内核上，为它们设置 UV_USE_IO_URING=0。它不修改 Volumio 的任何文件。停用或卸载插件后，从下次启动起一切恢复原状。",
+        "RESTART_TITLE": "需要重新启动",
+        "RESTART_MSG": "Unspike 从播放器启动的那一刻起才起作用，所以它现在还什么都没做。请重新启动播放器一次。",
+        "SERVICE_FAILED": "无法启用 Unspike：{{error}}"
+    }
+}

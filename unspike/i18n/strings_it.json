@@ -1,0 +1,19 @@
+{
+    "UNSPIKE": {
+        "PLUGIN_NAME": "Unspike my CPU",
+        "PLUGIN_CONFIGURATION": "Unspike my CPU",
+        "SECTION_STATUS": "Su questo lettore",
+        "SECTION_STATUS_DOC": "Qui sotto è scritto ciò che Unspike ha trovato su questo lettore all'apertura di questa pagina.",
+        "CHECK": "Guarda di nuovo",
+        "CHECK_DOC": "Dice ciò che Unspike trova ora su questo lettore.",
+        "STATE_NOT_NEEDED": "Il kernel di questo lettore è {{kernel}}. Unspike è per il kernel a 32 bit di Raspberry Pi 4, Pi 400 e Compute Module 4, il cui nome termina con -v7l+. Qui non fa nulla e può essere disinstallato.",
+        "STATE_ACTIVE": "In funzione da questo avvio. Il kernel di questo lettore è {{kernel}} e Volumio si è avviato senza io_uring. Thread io_uring sul lettore ora: {{threads}}.",
+        "STATE_SYSTEM": "Il kernel di questo lettore è {{kernel}} e il sistema stesso fa già avviare Volumio senza io_uring. Unspike qui non fa nulla e può essere disinstallato.",
+        "STATE_PENDING": "Unspike funziona dal prossimo avvio. Il kernel di questo lettore è {{kernel}}; riavvia il lettore una volta. Thread io_uring sul lettore ora: {{threads}}.",
+        "SECTION_ABOUT": "Che cosa fa Unspike",
+        "SECTION_ABOUT_DOC": "Su un Raspberry Pi 4, un Pi 400 o un Compute Module 4 con il kernel a 32 bit, la versione di Node su cui gira Volumio tiene occupati tutti i core del processore per minuti dopo ogni avvio. Lo fa attraverso una funzione del kernel chiamata io_uring, che su quel kernel non funziona bene. Finché dura, il lettore è caldo, lento a rispondere e lento a mostrare le sue schermate. Unspike fa avviare Volumio senza usare quella funzione: prima che partano i servizi di Volumio, e solo su quel kernel, imposta UV_USE_IO_URING=0 per loro. Non modifica alcun file di Volumio. Disattivando o disinstallando il plugin, dal prossimo avvio tutto torna com'era.",
+        "RESTART_TITLE": "Serve un riavvio",
+        "RESTART_MSG": "Unspike agisce dal momento in cui il lettore si avvia, quindi non ha ancora fatto nulla. Riavvia il lettore una volta.",
+        "SERVICE_FAILED": "Non è stato possibile attivare Unspike: {{error}}"
+    }
+}

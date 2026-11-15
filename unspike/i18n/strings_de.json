@@ -1,0 +1,19 @@
+{
+    "UNSPIKE": {
+        "PLUGIN_NAME": "Unspike my CPU",
+        "PLUGIN_CONFIGURATION": "Unspike my CPU",
+        "SECTION_STATUS": "Auf diesem Player",
+        "SECTION_STATUS_DOC": "Was Unspike beim Öffnen dieser Seite auf diesem Player vorgefunden hat, steht unten.",
+        "CHECK": "Erneut nachsehen",
+        "CHECK_DOC": "Sagt, was Unspike jetzt auf diesem Player vorfindet.",
+        "STATE_NOT_NEEDED": "Der Kernel dieses Players ist {{kernel}}. Unspike ist für den 32-Bit-Kernel des Raspberry Pi 4, Pi 400 und Compute Module 4 gedacht, dessen Name auf -v7l+ endet. Hier tut es nichts und kann deinstalliert werden.",
+        "STATE_ACTIVE": "Seit diesem Start aktiv. Der Kernel dieses Players ist {{kernel}}, und Volumio ist ohne io_uring gestartet. io_uring-Threads auf dem Player jetzt: {{threads}}.",
+        "STATE_SYSTEM": "Der Kernel dieses Players ist {{kernel}}, und das System selbst lässt Volumio bereits ohne io_uring starten. Unspike tut hier nichts und kann deinstalliert werden.",
+        "STATE_PENDING": "Unspike wirkt ab dem nächsten Start. Der Kernel dieses Players ist {{kernel}}; starten Sie den Player einmal neu. io_uring-Threads auf dem Player jetzt: {{threads}}.",
+        "SECTION_ABOUT": "Was Unspike tut",
+        "SECTION_ABOUT_DOC": "Auf einem Raspberry Pi 4, Pi 400 oder Compute Module 4 mit dem 32-Bit-Kernel hält die Node-Version, auf der Volumio läuft, nach jedem Start minutenlang alle Kerne des Prozessors beschäftigt. Sie tut das über eine Funktion des Kernels namens io_uring, die auf diesem Kernel nicht richtig funktioniert. Solange das andauert, ist der Player heiß, antwortet langsam und zeigt seine Seiten langsam an. Unspike lässt Volumio starten, ohne diese Funktion zu benutzen: Bevor die Dienste von Volumio starten, setzt es, nur auf diesem Kernel, UV_USE_IO_URING=0 für sie. Es ändert keine Datei von Volumio. Wird das Plugin ausgeschaltet oder deinstalliert, ist ab dem nächsten Start alles wieder wie zuvor.",
+        "RESTART_TITLE": "Ein Neustart ist erforderlich",
+        "RESTART_MSG": "Unspike wirkt von dem Moment an, in dem der Player startet, und hat deshalb noch nichts getan. Starten Sie den Player einmal neu.",
+        "SERVICE_FAILED": "Unspike konnte nicht eingeschaltet werden: {{error}}"
+    }
+}
