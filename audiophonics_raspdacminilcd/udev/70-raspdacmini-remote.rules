@@ -1,0 +1,5 @@
+# raspdac_mini_lcd plugin: the infrared receiver on a GPIO decodes the NEC
+# frames the RaspDac Mini's handset sends, beside whatever it decoded before,
+# and its device is open to the input group, which the display's service has.
+ACTION=="add|change", SUBSYSTEM=="rc", ENV{DRV_NAME}=="gpio_ir_recv", ATTR{protocols}="+nec"
+ACTION=="add|change", SUBSYSTEM=="lirc", DRIVERS=="gpio_ir_recv", GROUP="input", MODE="0660"

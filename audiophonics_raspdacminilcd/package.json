@@ -1,34 +1,32 @@
 {
-  "name": "raspdac_mini_lcd",
-  "version": "1.2.0",
-  "description": "Hardware configuration & display drivers for Audiophonics RaspDacMini LCD",
-  "main": "index.js",
-  "scripts": {
-    "test": "sh scripts/validate-plugin.sh"
-  },
-  "author": "Olivier Schwach, Just a Nerd",
-  "license": "GPL-3.0",
-  "repository": "https://github.com/foonerd/RaspDacMini",
-  "volumio_info": {
-    "prettyName": "RaspDacMini LCD",
-    "icon": "fa-television",
-    "plugin_type": "system_hardware",
-    "architectures": [
-      "armhf"
-    ],
-    "os": [
-      "bookworm"
-    ],
-    "details": "Display driver for Audiophonics RaspDacMini 2.4 inch LCD (ILI9341). Provides real-time playback information, album art, volume control, repeat/shuffle indicators, DAC input switching, and metadata display with configurable screen timeout.",
-    "changelog": "1.2.0: Add boot-time splash with prebuilt RGB565 frames; load LCD dtoverlay on plugin enable when not already active."
-  },
-  "engines": {
-    "node": ">=20",
-    "volumio": ">=4"
-  },
-  "dependencies": {
-    "fs-extra": "*",
-    "kew": "*",
-    "v-conf": "*"
-  }
+    "name": "raspdac_mini_lcd",
+    "version": "2.0.0",
+    "description": "The RaspDac Mini's display and its remote control",
+    "main": "index.js",
+    "author": "Just a Nerd",
+    "license": "MIT",
+    "repository": "https://github.com/foonerd/audiophonics",
+    "volumio_info": {
+        "prettyName": "RaspDacMini LCD",
+        "icon": "fa-television",
+        "plugin_type": "system_hardware",
+        "os": [
+            "bookworm"
+        ],
+        "architectures": [
+            "armhf"
+        ],
+        "has_alsa_contribution": true,
+        "details": "Drives the RaspDac Mini's 2.4 inch display (the cover of what plays, the track, the volume, repeat and shuffle, level meters, a second page with the stream's format) and its remote control, including the DAC's input and filter. One small native program runs both; nothing is compiled on the player and no remote-control daemon is installed.",
+        "changelog": "2.0.0 A rewrite of version 1. The display and the remote are now one small native program: nothing to rebuild when Volumio moves on, no lirc and no Node add-on, and Volumio's own start-up screens show on the display. New: level meters in four placements, a track line that runs a pixel at a time, a Getting ready screen until the player has finished starting, the Audiophonics mark with Restarting or Shutting down while the system goes down, text in any script, covers in every format the player serves, a second way to drive the display, and a settings page in sixteen languages. Installing over version 1 keeps your settings."
+    },
+    "engines": {
+        "node": ">=20",
+        "volumio": ">=4"
+    },
+    "dependencies": {
+        "fs-extra": "^11.2.0",
+        "kew": "^0.7.0",
+        "v-conf": "^1.4.3"
+    }
 }
