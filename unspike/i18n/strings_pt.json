@@ -1,0 +1,19 @@
+{
+    "UNSPIKE": {
+        "PLUGIN_NAME": "Unspike my CPU",
+        "PLUGIN_CONFIGURATION": "Unspike my CPU",
+        "SECTION_STATUS": "Neste leitor",
+        "SECTION_STATUS_DOC": "Abaixo está o que o Unspike encontrou neste leitor quando esta página foi aberta.",
+        "CHECK": "Ver de novo",
+        "CHECK_DOC": "Diz o que o Unspike encontra agora neste leitor.",
+        "STATE_NOT_NEEDED": "O kernel deste leitor é {{kernel}}. O Unspike destina-se ao kernel de 32 bits do Raspberry Pi 4, do Pi 400 e do Compute Module 4, cujo nome termina em -v7l+. Aqui não faz nada e pode ser desinstalado.",
+        "STATE_ACTIVE": "A funcionar desde este arranque. O kernel deste leitor é {{kernel}}, e o Volumio arrancou sem io_uring. Threads io_uring no leitor neste momento: {{threads}}.",
+        "STATE_SYSTEM": "O kernel deste leitor é {{kernel}}, e o próprio sistema já faz o Volumio arrancar sem io_uring. O Unspike não faz nada aqui e pode ser desinstalado.",
+        "STATE_PENDING": "O Unspike funciona a partir do próximo arranque. O kernel deste leitor é {{kernel}}; reinicie o leitor uma vez. Threads io_uring no leitor neste momento: {{threads}}.",
+        "SECTION_ABOUT": "O que o Unspike faz",
+        "SECTION_ABOUT_DOC": "Num Raspberry Pi 4, num Pi 400 ou num Compute Module 4 com o kernel de 32 bits, a versão do Node em que o Volumio corre mantém todos os núcleos do processador ocupados durante minutos após cada arranque. Fá-lo através de uma função do kernel chamada io_uring, que não funciona bem nesse kernel. Enquanto dura, o leitor fica quente, demora a responder e demora a mostrar os seus ecrãs. O Unspike faz o Volumio arrancar sem usar essa função: antes de os serviços do Volumio arrancarem, e só nesse kernel, define UV_USE_IO_URING=0 para eles. Não altera nenhum ficheiro do Volumio. Desligar ou desinstalar o plugin repõe tudo como estava a partir do arranque seguinte.",
+        "RESTART_TITLE": "É preciso um reinício",
+        "RESTART_MSG": "O Unspike atua a partir do momento em que o leitor arranca, por isso ainda não fez nada. Reinicie o leitor uma vez.",
+        "SERVICE_FAILED": "Não foi possível ligar o Unspike: {{error}}"
+    }
+}

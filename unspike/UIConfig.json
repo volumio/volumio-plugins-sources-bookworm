@@ -1,0 +1,36 @@
+{
+    "page": {
+        "label": "TRANSLATE.UNSPIKE.PLUGIN_CONFIGURATION"
+    },
+    "sections": [
+        {
+            "id": "section_status",
+            "element": "section",
+            "label": "TRANSLATE.UNSPIKE.SECTION_STATUS",
+            "description": "TRANSLATE.UNSPIKE.SECTION_STATUS_DOC",
+            "icon": "fa-tachometer",
+            "content": [
+                {
+                    "id": "check",
+                    "element": "button",
+                    "label": "TRANSLATE.UNSPIKE.CHECK",
+                    "doc": "TRANSLATE.UNSPIKE.CHECK_DOC",
+                    "onClick": {
+                        "type": "controller",
+                        "endpoint": "system_controller/unspike",
+                        "method": "check",
+                        "data": []
+                    }
+                }
+            ]
+        },
+        {
+            "id": "section_about",
+            "element": "section",
+            "label": "TRANSLATE.UNSPIKE.SECTION_ABOUT",
+            "description": "TRANSLATE.UNSPIKE.SECTION_ABOUT_DOC",
+            "icon": "fa-info-circle",
+            "content": []
+        }
+    ]
+}

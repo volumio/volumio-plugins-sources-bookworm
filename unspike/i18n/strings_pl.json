@@ -1,0 +1,19 @@
+{
+    "UNSPIKE": {
+        "PLUGIN_NAME": "Unspike my CPU",
+        "PLUGIN_CONFIGURATION": "Unspike my CPU",
+        "SECTION_STATUS": "Na tym odtwarzaczu",
+        "SECTION_STATUS_DOC": "Poniżej podano, co Unspike zastał na tym odtwarzaczu w chwili otwarcia tej strony.",
+        "CHECK": "Sprawdź ponownie",
+        "CHECK_DOC": "Podaje, co Unspike zastaje teraz na tym odtwarzaczu.",
+        "STATE_NOT_NEEDED": "Jądro tego odtwarzacza to {{kernel}}. Unspike jest przeznaczony dla 32-bitowego jądra Raspberry Pi 4, Pi 400 i Compute Module 4, którego nazwa kończy się na -v7l+. Tutaj nic nie robi i można go odinstalować.",
+        "STATE_ACTIVE": "Działa od tego uruchomienia. Jądro tego odtwarzacza to {{kernel}}, a Volumio uruchomiło się bez io_uring. Wątki io_uring na odtwarzaczu w tej chwili: {{threads}}.",
+        "STATE_SYSTEM": "Jądro tego odtwarzacza to {{kernel}}, a sam system już uruchamia Volumio bez io_uring. Unspike nic tu nie robi i można go odinstalować.",
+        "STATE_PENDING": "Unspike działa od następnego uruchomienia. Jądro tego odtwarzacza to {{kernel}}; uruchom odtwarzacz ponownie jeden raz. Wątki io_uring na odtwarzaczu w tej chwili: {{threads}}.",
+        "SECTION_ABOUT": "Co robi Unspike",
+        "SECTION_ABOUT_DOC": "Na Raspberry Pi 4, Pi 400 lub Compute Module 4 z 32-bitowym jądrem wersja Node, na której działa Volumio, przez kilka minut po każdym uruchomieniu zajmuje wszystkie rdzenie procesora. Dzieje się to za sprawą funkcji jądra o nazwie io_uring, która na tym jądrze nie działa poprawnie. Dopóki to trwa, odtwarzacz jest gorący, wolno odpowiada i wolno wyświetla swoje ekrany. Unspike sprawia, że Volumio uruchamia się bez korzystania z tej funkcji: zanim wystartują usługi Volumio, i tylko na tym jądrze, ustawia dla nich UV_USE_IO_URING=0. Nie zmienia żadnego pliku Volumio. Wyłączenie lub odinstalowanie wtyczki przywraca wszystko od następnego uruchomienia.",
+        "RESTART_TITLE": "Potrzebne jest ponowne uruchomienie",
+        "RESTART_MSG": "Unspike działa od chwili startu odtwarzacza, więc jeszcze nic nie zrobił. Uruchom odtwarzacz ponownie jeden raz.",
+        "SERVICE_FAILED": "Nie udało się włączyć Unspike: {{error}}"
+    }
+}

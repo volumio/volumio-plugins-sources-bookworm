@@ -1,0 +1,30 @@
+{
+    "name": "unspike",
+    "version": "0.1.0",
+    "description": "Stops a Raspberry Pi 4 running flat out for minutes after every start",
+    "main": "index.js",
+    "author": "Just a Nerd",
+    "license": "MIT",
+    "repository": "https://github.com/foonerd/unspike",
+    "volumio_info": {
+        "prettyName": "Unspike my CPU",
+        "icon": "fa-tachometer",
+        "plugin_type": "system_controller",
+        "os": [
+            "bookworm"
+        ],
+        "architectures": [
+            "armhf"
+        ],
+        "details": "On a Raspberry Pi 4, Pi 400 or Compute Module 4 with the 32-bit kernel, Volumio keeps every core of the processor busy for minutes after each start. Unspike has Volumio start without the cause of it. It does one thing, changes no file of Volumio's, and does nothing on any other player.",
+        "changelog": "0.1.0: First store release. Stops a Raspberry Pi 4, Pi 400 or Compute Module 4 on the 32-bit kernel keeping every core of the processor busy for minutes after each start. Changes no file of Volumio's and does nothing on any other player."
+    },
+    "engines": {
+        "node": ">=20",
+        "volumio": ">=4"
+    },
+    "dependencies": {
+        "kew": "^0.7.0",
+        "v-conf": "^1.4.3"
+    }
+}

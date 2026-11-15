@@ -1,0 +1,23 @@
+[Unit]
+Description=Unspike: Node without io_uring on the 32-bit Raspberry Pi 4 kernel
+Documentation=https://github.com/foonerd/unspike
+# On the 32-bit kernel of the Raspberry Pi 4 family (its name ends in
+# -v7l+), the Node the player runs on keeps every core busy for minutes
+# after a start, through io_uring. UV_USE_IO_URING=0 has Node do without
+# it. It is put into systemd's own environment before the player's services
+# start, so they and what they start inherit it; no file of the player's is
+# touched. On any other kernel this unit is skipped. Where the system
+# already says how Node is to use io_uring it does nothing. When it has set
+# the variable it leaves a mark, so the plugin can say so and can take the
+# variable back.
+DefaultDependencies=no
+ConditionKernelVersion=*-v7l+
+Before=volumio.service wireless.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'if /bin/systemctl show-environment | grep -q "^UV_USE_IO_URING=" || /bin/systemctl show -p Environment volumio.service wireless.service | grep -q "UV_USE_IO_URING="; then echo "the system already says how Node uses io_uring: nothing done"; else /bin/systemctl set-environment UV_USE_IO_URING=0 && : > /run/unspike.set && echo "io_uring switched off for Node: UV_USE_IO_URING=0"; fi'
+
+[Install]
+WantedBy=sysinit.target

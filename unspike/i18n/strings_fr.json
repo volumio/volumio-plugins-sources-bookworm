@@ -1,0 +1,19 @@
+{
+    "UNSPIKE": {
+        "PLUGIN_NAME": "Unspike my CPU",
+        "PLUGIN_CONFIGURATION": "Unspike my CPU",
+        "SECTION_STATUS": "Sur ce lecteur",
+        "SECTION_STATUS_DOC": "Ce qu'Unspike a trouvé sur ce lecteur à l'ouverture de cette page est indiqué ci-dessous.",
+        "CHECK": "Regarder à nouveau",
+        "CHECK_DOC": "Indique ce qu'Unspike trouve maintenant sur ce lecteur.",
+        "STATE_NOT_NEEDED": "Le noyau de ce lecteur est {{kernel}}. Unspike est destiné au noyau 32 bits du Raspberry Pi 4, du Pi 400 et du Compute Module 4, dont le nom se termine par -v7l+. Ici, il ne fait rien et peut être désinstallé.",
+        "STATE_ACTIVE": "En service depuis ce démarrage. Le noyau de ce lecteur est {{kernel}}, et Volumio a démarré sans io_uring. Threads io_uring sur le lecteur en ce moment : {{threads}}.",
+        "STATE_SYSTEM": "Le noyau de ce lecteur est {{kernel}}, et le système fait déjà démarrer Volumio sans io_uring de lui-même. Unspike ne fait rien ici et peut être désinstallé.",
+        "STATE_PENDING": "Unspike agit à partir du prochain démarrage. Le noyau de ce lecteur est {{kernel}} ; redémarrez le lecteur une fois. Threads io_uring sur le lecteur en ce moment : {{threads}}.",
+        "SECTION_ABOUT": "Ce que fait Unspike",
+        "SECTION_ABOUT_DOC": "Sur un Raspberry Pi 4, un Pi 400 ou un Compute Module 4 avec le noyau 32 bits, la version de Node sur laquelle fonctionne Volumio occupe tous les cœurs du processeur pendant plusieurs minutes après chaque démarrage. Elle le fait par une fonction du noyau appelée io_uring, qui ne fonctionne pas correctement sur ce noyau. Tant que cela dure, le lecteur chauffe, répond lentement et affiche lentement ses écrans. Unspike fait démarrer Volumio sans utiliser cette fonction : avant le démarrage des services de Volumio, et sur ce noyau seulement, il définit UV_USE_IO_URING=0 pour eux. Il ne modifie aucun fichier de Volumio. Désactiver ou désinstaller le plugin remet tout comme avant dès le démarrage suivant.",
+        "RESTART_TITLE": "Un redémarrage est nécessaire",
+        "RESTART_MSG": "Unspike agit dès l'instant où le lecteur démarre ; il n'a donc encore rien fait. Redémarrez le lecteur une fois.",
+        "SERVICE_FAILED": "Unspike n'a pas pu être activé : {{error}}"
+    }
+}

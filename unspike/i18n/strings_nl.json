@@ -1,0 +1,19 @@
+{
+    "UNSPIKE": {
+        "PLUGIN_NAME": "Unspike my CPU",
+        "PLUGIN_CONFIGURATION": "Unspike my CPU",
+        "SECTION_STATUS": "Op deze speler",
+        "SECTION_STATUS_DOC": "Hieronder staat wat Unspike op deze speler aantrof toen deze pagina werd geopend.",
+        "CHECK": "Opnieuw kijken",
+        "CHECK_DOC": "Zegt wat Unspike nu op deze speler aantreft.",
+        "STATE_NOT_NEEDED": "De kernel van deze speler is {{kernel}}. Unspike is voor de 32-bits kernel van de Raspberry Pi 4, Pi 400 en Compute Module 4, waarvan de naam eindigt op -v7l+. Hier doet het niets en kan het worden verwijderd.",
+        "STATE_ACTIVE": "Werkt sinds deze start. De kernel van deze speler is {{kernel}}, en Volumio is gestart zonder io_uring. io_uring-threads op de speler nu: {{threads}}.",
+        "STATE_SYSTEM": "De kernel van deze speler is {{kernel}}, en het systeem zelf laat Volumio al zonder io_uring starten. Unspike doet hier niets en kan worden verwijderd.",
+        "STATE_PENDING": "Unspike werkt vanaf de volgende start. De kernel van deze speler is {{kernel}}; herstart de speler één keer. io_uring-threads op de speler nu: {{threads}}.",
+        "SECTION_ABOUT": "Wat Unspike doet",
+        "SECTION_ABOUT_DOC": "Op een Raspberry Pi 4, Pi 400 of Compute Module 4 met de 32-bits kernel houdt de versie van Node waarop Volumio draait na elke start minutenlang alle kernen van de processor bezig. Dat gebeurt via een functie van de kernel die io_uring heet en die op die kernel niet goed werkt. Zolang het duurt is de speler heet, traag met antwoorden en traag met het tonen van zijn schermen. Unspike laat Volumio starten zonder die functie te gebruiken: voordat de diensten van Volumio starten, en alleen op die kernel, stelt het UV_USE_IO_URING=0 voor ze in. Het wijzigt geen enkel bestand van Volumio. Als de plugin wordt uitgeschakeld of verwijderd, is vanaf de volgende start alles weer zoals het was.",
+        "RESTART_TITLE": "Een herstart is nodig",
+        "RESTART_MSG": "Unspike werkt vanaf het moment dat de speler start en heeft dus nog niets gedaan. Herstart de speler één keer.",
+        "SERVICE_FAILED": "Unspike kon niet worden ingeschakeld: {{error}}"
+    }
+}
