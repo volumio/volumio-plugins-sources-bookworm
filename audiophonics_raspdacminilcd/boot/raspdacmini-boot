@@ -1,0 +1,84 @@
+#!/bin/sh
+# RaspDacMini LCD: the plugin's lines in the boot configuration, for the
+# way the display is driven.
+#
+#   raspdacmini-boot framebuffer    the kernel drives the panel; it is a
+#                                   framebuffer from the start of the boot
+#   raspdacmini-boot spi            the plugin's program drives the panel
+#
+# The lines go into the plugin's own block of userconfig.txt, between its
+# marks; a line the boot configuration already carries elsewhere is not
+# written again, since a line written twice loads its overlay twice. What
+# version 1 of the plugin wrote there is taken out. Says "changed" when the
+# file is not what it was, which takes effect when the player restarts,
+# and "unchanged" otherwise. Run as root.
+#
+# Volumio runs the installer with sh, and the installer runs this, so it
+# keeps to what sh has.
+set -eu
+
+DRIVER="${1:-}"
+BOOT="${RASPDACMINI_BOOT:-/boot}"
+USERCONFIG="$BOOT/userconfig.txt"
+MARK_BEGIN="# >>> raspdac_mini_lcd"
+MARK_END="# <<< raspdac_mini_lcd"
+# The panel as it is wired and mounted: an ILI9341 on SPI0 CE0, its colours
+# in the order blue, green, red, reset on GPIO 24 and D/C on GPIO 27, on
+# its side, at 64 MHz, and sent what changes within a hundredth of a
+# second of its changing, which is what keeps a running line even.
+PANEL="dtoverlay=fbtft,spi0-0,ili9341,bgr,reset_pin=24,dc_pin=27,rotate=90,speed=64000000,fps=100"
+RECEIVER="dtoverlay=gpio-ir,gpio_pin=4"
+
+case "$DRIVER" in
+  framebuffer | spi) ;;
+  *)
+    echo "usage: raspdacmini-boot framebuffer|spi" >&2
+    exit 2
+    ;;
+esac
+if [ ! -f "$BOOT/config.txt" ]; then
+  echo "no $BOOT/config.txt here; the boot configuration is not set up" >&2
+  exit 1
+fi
+
+outside=$(mktemp)
+block=$(mktemp)
+trap 'rm -f "$outside" "$block"' EXIT
+touch "$USERCONFIG"
+# Everything but this plugin's block and version 1's lines: its overlay with
+# the comment above it, and the receiver's line where it stands under
+# version 1's comment.
+sed "/^$MARK_BEGIN\$/,/^$MARK_END\$/d" "$USERCONFIG" \
+  | sed '/^# RaspDacMini LCD Display$/d; /^dtoverlay=raspdac-mini-lcd$/d' \
+  | sed '/^# IR Remote Control (GPIO 4)$/{$!N;/\ndtoverlay=gpio-ir,gpio_pin=4$/d;s/^# IR Remote Control (GPIO 4)\n//;/^# IR Remote Control (GPIO 4)$/d;}' > "$outside"
+
+carried() {
+  cat "$BOOT/config.txt" "$BOOT/volumioconfig.txt" "$outside" 2>/dev/null | grep -qE "$1"
+}
+: > "$block"
+if [ "$DRIVER" = framebuffer ]; then
+  # The overlay switches the SPI bus on itself.
+  echo "$PANEL" >> "$block"
+elif ! carried '^dtparam=spi=on$'; then
+  echo "dtparam=spi=on" >> "$block"
+fi
+if ! carried '^dtoverlay=gpio-ir(,|$)'; then
+  echo "$RECEIVER" >> "$block"
+fi
+if [ -s "$block" ]; then
+  # A file whose last line has no end would have the mark joined to it.
+  if [ -s "$outside" ] && [ -n "$(tail -c 1 "$outside")" ]; then
+    echo >> "$outside"
+  fi
+  {
+    echo "$MARK_BEGIN"
+    cat "$block"
+    echo "$MARK_END"
+  } >> "$outside"
+fi
+if cmp -s "$outside" "$USERCONFIG"; then
+  echo "unchanged"
+else
+  cat "$outside" > "$USERCONFIG"
+  echo "changed"
+fi

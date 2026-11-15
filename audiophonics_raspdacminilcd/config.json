@@ -1,14 +1,38 @@
 {
-  "lcd_active": {
-    "type": "boolean",
-    "value": true
-  },
-  "boot_splash": {
-    "type": "boolean",
-    "value": true
-  },
-  "sleep_after": {
-    "type": "number",
-    "value": 900
-  }
+    "lcd_active": {
+        "type": "boolean",
+        "value": true
+    },
+    "display_driver": {
+        "type": "string",
+        "value": "framebuffer"
+    },
+    "boot_splash": {
+        "type": "boolean",
+        "value": true
+    },
+    "sleep_after": {
+        "type": "number",
+        "value": 900
+    },
+    "meters": {
+        "type": "boolean",
+        "value": false
+    },
+    "meters_style": {
+        "type": "string",
+        "value": "vertical_right"
+    },
+    "meters_gain": {
+        "type": "number",
+        "value": 0
+    },
+    "remote_active": {
+        "type": "boolean",
+        "value": true
+    },
+    "log_level": {
+        "type": "string",
+        "value": "error"
+    }
 }

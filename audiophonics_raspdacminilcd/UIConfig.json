@@ -1,78 +1,239 @@
 {
-  "page": {
-    "label": "TRANSLATE.PLUGIN_CONFIGURATION"
-  },
-  "sections": [
-    {
-      "id": "section_lcd_settings",
-      "element": "section",
-      "label": "TRANSLATE.LCD_DISPLAY",
-      "icon": "fa-television",
-      "onSave": {
-        "type": "controller",
-        "endpoint": "system_hardware/raspdac_mini_lcd",
-        "method": "updateLCDConfig"
-      },
-      "saveButton": {
-        "label": "TRANSLATE.SAVE",
-        "data": [
-          "lcd_active",
-          "boot_splash",
-          "sleep_after"
-        ]
-      },
-      "content": [
-        {
-          "id": "lcd_active",
-          "element": "switch",
-          "label": "TRANSLATE.ENABLE_LCD",
-          "doc": "TRANSLATE.ENABLE_LCD_DOC",
-          "value": true
-        },
-        {
-          "id": "boot_splash",
-          "element": "switch",
-          "label": "TRANSLATE.BOOT_SPLASH",
-          "doc": "TRANSLATE.BOOT_SPLASH_DOC",
-          "value": true
-        },
-        {
-          "id": "sleep_after",
-          "element": "input",
-          "label": "TRANSLATE.SLEEP_AFTER",
-          "doc": "TRANSLATE.SLEEP_AFTER_DOC",
-          "type": "number",
-          "value": 900,
-          "attributes": [
-            {
-              "min": 0,
-              "max": 3600
-            }
-          ]
-        }
-      ]
+    "page": {
+        "label": "TRANSLATE.RASPDACMINI.PLUGIN_CONFIGURATION"
     },
-    {
-      "id": "section_lcd_actions",
-      "element": "section",
-      "label": "TRANSLATE.LCD_ACTIONS",
-      "icon": "fa-cog",
-      "content": [
+    "sections": [
         {
-          "id": "restart_lcd",
-          "element": "button",
-          "label": "TRANSLATE.RESTART_LCD",
-          "doc": "TRANSLATE.RESTART_LCD_DOC",
-          "onClick": {
-            "type": "emit",
-            "message": "callMethod",
-            "data": {
-              "endpoint": "system_hardware/raspdac_mini_lcd",
-              "method": "restartLCD"
-            }
-          }
+            "id": "section_display",
+            "element": "section",
+            "label": "TRANSLATE.RASPDACMINI.SECTION_DISPLAY",
+            "description": "TRANSLATE.RASPDACMINI.SECTION_DISPLAY_DOC",
+            "icon": "fa-television",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/raspdac_mini_lcd",
+                "method": "saveDisplay"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.RASPDACMINI.SAVE",
+                "data": [
+                    "lcd_active",
+                    "display_driver",
+                    "boot_splash",
+                    "sleep_after",
+                    "meters",
+                    "meters_style",
+                    "meters_gain"
+                ]
+            },
+            "content": [
+                {
+                    "id": "lcd_active",
+                    "element": "switch",
+                    "label": "TRANSLATE.RASPDACMINI.LCD_ACTIVE",
+                    "doc": "TRANSLATE.RASPDACMINI.LCD_ACTIVE_DOC",
+                    "value": true
+                },
+                {
+                    "id": "display_driver",
+                    "element": "select",
+                    "label": "TRANSLATE.RASPDACMINI.DISPLAY_DRIVER",
+                    "doc": "TRANSLATE.RASPDACMINI.DISPLAY_DRIVER_DOC",
+                    "value": {
+                        "value": "framebuffer",
+                        "label": "TRANSLATE.RASPDACMINI.DRIVER_FRAMEBUFFER"
+                    },
+                    "options": [
+                        {
+                            "value": "framebuffer",
+                            "label": "TRANSLATE.RASPDACMINI.DRIVER_FRAMEBUFFER"
+                        },
+                        {
+                            "value": "spi",
+                            "label": "TRANSLATE.RASPDACMINI.DRIVER_SPI"
+                        }
+                    ]
+                },
+                {
+                    "id": "boot_splash",
+                    "element": "switch",
+                    "label": "TRANSLATE.RASPDACMINI.BOOT_SPLASH",
+                    "doc": "TRANSLATE.RASPDACMINI.BOOT_SPLASH_DOC",
+                    "value": true
+                },
+                {
+                    "id": "sleep_after",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.RASPDACMINI.SLEEP_AFTER",
+                    "doc": "TRANSLATE.RASPDACMINI.SLEEP_AFTER_DOC",
+                    "value": 900,
+                    "attributes": [
+                        {
+                            "min": 0
+                        },
+                        {
+                            "max": 3600
+                        },
+                        {
+                            "step": 1
+                        }
+                    ]
+                },
+                {
+                    "id": "meters",
+                    "element": "switch",
+                    "label": "TRANSLATE.RASPDACMINI.METERS",
+                    "doc": "TRANSLATE.RASPDACMINI.METERS_DOC",
+                    "value": false
+                },
+                {
+                    "id": "meters_style",
+                    "element": "select",
+                    "label": "TRANSLATE.RASPDACMINI.METERS_STYLE",
+                    "doc": "TRANSLATE.RASPDACMINI.METERS_STYLE_DOC",
+                    "value": {
+                        "value": "vertical_right",
+                        "label": "TRANSLATE.RASPDACMINI.METERS_VERTICAL_RIGHT"
+                    },
+                    "visibleIf": {
+                        "field": "meters",
+                        "value": true
+                    },
+                    "options": [
+                        {
+                            "value": "vertical_right",
+                            "label": "TRANSLATE.RASPDACMINI.METERS_VERTICAL_RIGHT"
+                        },
+                        {
+                            "value": "vertical_left",
+                            "label": "TRANSLATE.RASPDACMINI.METERS_VERTICAL_LEFT"
+                        },
+                        {
+                            "value": "vertical_both",
+                            "label": "TRANSLATE.RASPDACMINI.METERS_VERTICAL_BOTH"
+                        },
+                        {
+                            "value": "horizontal",
+                            "label": "TRANSLATE.RASPDACMINI.METERS_HORIZONTAL"
+                        }
+                    ]
+                },
+                {
+                    "id": "meters_gain",
+                    "element": "input",
+                    "type": "number",
+                    "label": "TRANSLATE.RASPDACMINI.METERS_GAIN",
+                    "doc": "TRANSLATE.RASPDACMINI.METERS_GAIN_DOC",
+                    "value": 0,
+                    "visibleIf": {
+                        "field": "meters",
+                        "value": true
+                    },
+                    "attributes": [
+                        {
+                            "min": -12
+                        },
+                        {
+                            "max": 12
+                        },
+                        {
+                            "step": 1
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "section_remote",
+            "element": "section",
+            "label": "TRANSLATE.RASPDACMINI.SECTION_REMOTE",
+            "description": "TRANSLATE.RASPDACMINI.SECTION_REMOTE_DOC",
+            "icon": "fa-wifi",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/raspdac_mini_lcd",
+                "method": "saveRemote"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.RASPDACMINI.SAVE",
+                "data": [
+                    "remote_active"
+                ]
+            },
+            "content": [
+                {
+                    "id": "remote_active",
+                    "element": "switch",
+                    "label": "TRANSLATE.RASPDACMINI.REMOTE_ACTIVE",
+                    "doc": "TRANSLATE.RASPDACMINI.REMOTE_ACTIVE_DOC",
+                    "value": true
+                },
+                {
+                    "id": "check_remote",
+                    "element": "button",
+                    "label": "TRANSLATE.RASPDACMINI.CHECK_REMOTE",
+                    "doc": "TRANSLATE.RASPDACMINI.CHECK_REMOTE_DOC",
+                    "onClick": {
+                        "type": "controller",
+                        "endpoint": "system_hardware/raspdac_mini_lcd",
+                        "method": "checkRemote",
+                        "data": []
+                    }
+                }
+            ]
+        },
+        {
+            "id": "section_dac",
+            "element": "section",
+            "label": "TRANSLATE.RASPDACMINI.SECTION_DAC",
+            "description": "TRANSLATE.RASPDACMINI.SECTION_DAC_DOC",
+            "icon": "fa-sliders",
+            "content": []
+        },
+        {
+            "id": "section_journal",
+            "element": "section",
+            "label": "TRANSLATE.RASPDACMINI.SECTION_JOURNAL",
+            "description": "TRANSLATE.RASPDACMINI.SECTION_JOURNAL_DOC",
+            "icon": "fa-file-text-o",
+            "onSave": {
+                "type": "controller",
+                "endpoint": "system_hardware/raspdac_mini_lcd",
+                "method": "saveJournal"
+            },
+            "saveButton": {
+                "label": "TRANSLATE.RASPDACMINI.SAVE",
+                "data": [
+                    "log_level"
+                ]
+            },
+            "content": [
+                {
+                    "id": "log_level",
+                    "element": "select",
+                    "label": "TRANSLATE.RASPDACMINI.LOG_LEVEL",
+                    "doc": "TRANSLATE.RASPDACMINI.LOG_LEVEL_DOC",
+                    "value": {
+                        "value": "error",
+                        "label": "TRANSLATE.RASPDACMINI.LOG_ERROR"
+                    },
+                    "options": [
+                        {
+                            "value": "error",
+                            "label": "TRANSLATE.RASPDACMINI.LOG_ERROR"
+                        },
+                        {
+                            "value": "info",
+                            "label": "TRANSLATE.RASPDACMINI.LOG_INFO"
+                        },
+                        {
+                            "value": "debug",
+                            "label": "TRANSLATE.RASPDACMINI.LOG_DEBUG"
+                        }
+                    ]
+                }
+            ]
         }
-      ]
-    }
-  ]
+    ]
 }

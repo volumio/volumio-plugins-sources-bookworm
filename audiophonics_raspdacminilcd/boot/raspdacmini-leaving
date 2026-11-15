@@ -1,0 +1,42 @@
+#!/bin/sh
+# RaspDacMini LCD: tells the display's program which way the system is
+# going down, when it is.
+#
+#   raspdacmini-leaving PID    PID is the display's program
+#
+# The display's service runs this as it is stopped, before its program is
+# asked to end. A service is stopped for many reasons; when the reason is
+# that the whole system is shutting down or restarting, the program is to
+# say so on the glass, whoever asked for it: the player, a command, an
+# update. systemd knows, by the target it is on its way to, and this asks
+# it: USR2 to the program for a restart, USR1 for a power-off or a halt,
+# and nothing where the service alone is being stopped. Run as root.
+#
+# systemd runs this with sh, so it keeps to what sh has.
+set -u
+
+PID="${1:-}"
+SYSTEMCTL="${RASPDACMINI_SYSTEMCTL:-/bin/systemctl}"
+
+case "$PID" in
+  '' | *[!0-9]*) exit 0 ;;
+esac
+
+# The jobs systemd has in hand, a line each: number, unit, what is done to
+# it, how far it is. A system going down has its last target to start.
+jobs=$("$SYSTEMCTL" list-jobs --no-legend 2>/dev/null) || exit 0
+going=
+while read -r _ unit kind _; do
+  [ "$kind" = start ] || continue
+  case "$unit" in
+    reboot.target | kexec.target) going=USR2 ;;
+    poweroff.target | halt.target) [ -n "$going" ] || going=USR1 ;;
+  esac
+done << JOBS
+$jobs
+JOBS
+
+if [ -n "$going" ]; then
+  kill -"$going" "$PID" 2>/dev/null || true
+fi
+exit 0
