@@ -1,0 +1,33 @@
+{
+  "name": "mausberry_switch",
+  "version": "1.0.0",
+  "description": "Safely shuts down Volumio with a Mausberry Circuits power switch",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "tomcek42",
+  "license": "MIT",
+  "repository": "https://github.com/tomcek42/mausberry-switch-libgpiod",
+  "volumio_info": {
+    "prettyName": "Mausberry Switch",
+    "icon": "fa-power-off",
+    "plugin_type": "system_controller",
+    "architectures": [
+      "armhf"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "details": "Support for Mausberry Circuits power switches. Installs the mausberry-switch daemon (libgpiod based), which watches the switch and powers off the Raspberry Pi safely. The GPIO pins and the shutdown delay can be set on the plugin settings page.",
+    "changelog": "1.0.0: Initial release, installs mausberry-switch 0.9.5"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.0"
+  }
+}

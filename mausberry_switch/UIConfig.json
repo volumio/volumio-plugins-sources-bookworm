@@ -1,0 +1,52 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_CONFIGURATION"
+  },
+  "sections": [
+    {
+      "id": "section_switch",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_SWITCH",
+      "icon": "fa-power-off",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_controller/mausberry_switch",
+        "method": "saveConfig"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "out_pin",
+          "in_pin",
+          "delay"
+        ]
+      },
+      "content": [
+        {
+          "id": "out_pin",
+          "type": "number",
+          "element": "input",
+          "label": "TRANSLATE.OUT_PIN",
+          "doc": "TRANSLATE.OUT_PIN_DOC",
+          "value": 23
+        },
+        {
+          "id": "in_pin",
+          "type": "number",
+          "element": "input",
+          "label": "TRANSLATE.IN_PIN",
+          "doc": "TRANSLATE.IN_PIN_DOC",
+          "value": 24
+        },
+        {
+          "id": "delay",
+          "type": "number",
+          "element": "input",
+          "label": "TRANSLATE.DELAY",
+          "doc": "TRANSLATE.DELAY_DOC",
+          "value": 0
+        }
+      ]
+    }
+  ]
+}
