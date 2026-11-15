@@ -2,8 +2,6 @@
 
 var libQ = require('kew');
 var fs = require('fs');
-var os = require('os');
-var path = require('path');
 var execFile = require('child_process').execFile;
 
 var CONF_FILE = '/etc/mausberry-switch.conf';
@@ -103,16 +101,10 @@ ControllerMausberrySwitch.prototype.saveConfig = function (data) {
   text = setValue(text, 'In', inp);
   text = setValue(text, 'Delay', delay);
 
-  var tmp = path.join(os.tmpdir(), 'mausberry-switch.conf.' + process.pid);
-  try {
-    fs.writeFileSync(tmp, text, 'utf8');
-  } catch (e) {
-    self.logger.error('mausberry_switch: cannot write ' + tmp + ': ' + e);
-    return self.fail('ERR_WRITE');
-  }
-
+  // Volumio's sudoers allows /usr/bin/tee without a password, but not
+  // install/cp. tee overwrites the existing file and keeps its owner and mode.
   return self
-    .run('sudo', ['/usr/bin/install', '-m', '0644', '-o', 'root', '-g', 'root', tmp, CONF_FILE])
+    .runInput('sudo', ['-n', '/usr/bin/tee', CONF_FILE], text)
     .then(function () {
       return self.systemctl(['restart', SERVICE]);
     })
@@ -121,9 +113,6 @@ ControllerMausberrySwitch.prototype.saveConfig = function (data) {
     })
     .fail(function () {
       self.toast('error', 'ERR_WRITE');
-    })
-    .fin(function () {
-      fs.unlink(tmp, function () {});
     });
 };
 
@@ -147,7 +136,7 @@ ControllerMausberrySwitch.prototype.readDaemonConfig = function () {
 };
 
 ControllerMausberrySwitch.prototype.systemctl = function (args) {
-  return this.run('sudo', ['/bin/systemctl'].concat(args));
+  return this.run('sudo', ['-n', '/bin/systemctl'].concat(args));
 };
 
 ControllerMausberrySwitch.prototype.run = function (cmd, args) {
@@ -161,6 +150,21 @@ ControllerMausberrySwitch.prototype.run = function (cmd, args) {
       defer.resolve(stdout);
     }
   });
+  return defer.promise;
+};
+
+ControllerMausberrySwitch.prototype.runInput = function (cmd, args, input) {
+  var self = this;
+  var defer = libQ.defer();
+  var child = execFile(cmd, args, { timeout: 30000 }, function (err, stdout, stderr) {
+    if (err) {
+      self.logger.error('mausberry_switch: ' + cmd + ' ' + args.join(' ') + ' failed: ' + (stderr || err));
+      defer.reject(err);
+    } else {
+      defer.resolve(stdout);
+    }
+  });
+  child.stdin.end(input);
   return defer.promise;
 };
 
