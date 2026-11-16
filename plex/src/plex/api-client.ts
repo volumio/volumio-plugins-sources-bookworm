@@ -11,6 +11,7 @@
 
 import http from "http";
 import https from "https";
+import os from "os";
 import type { PlexConnection } from "../core/stream-resolver.js";
 import type {
   RawLibraryResponse,
@@ -65,6 +66,8 @@ export interface PaginationParams {
 export interface PlexApiClientOptions extends PlexConnection {
   /** Request timeout in milliseconds. Default: 10 000 */
   timeoutMs?: number;
+  /** Friendly device name shown in the Plex dashboard. Default: OS hostname. */
+  deviceName?: string;
 }
 
 export class PlexApiClient {
@@ -73,6 +76,7 @@ export class PlexApiClient {
   private readonly token: string;
   private readonly https: boolean;
   private readonly timeoutMs: number;
+  private readonly deviceName: string;
 
   constructor(options: PlexApiClientOptions) {
     this.host = options.host;
@@ -80,6 +84,7 @@ export class PlexApiClient {
     this.token = options.token;
     this.https = options.https ?? false;
     this.timeoutMs = options.timeoutMs ?? 10_000;
+    this.deviceName = options.deviceName ?? os.hostname();
   }
 
   /** Fetch all library sections. */
@@ -88,22 +93,24 @@ export class PlexApiClient {
   }
 
   /** Fetch artists for a library section (type=8 requests artist-level items). */
-  async getArtists(libraryKey: string, pagination?: PaginationParams): Promise<RawArtistResponse> {
+  async getArtists(libraryKey: string, pagination?: PaginationParams, sort?: string): Promise<RawArtistResponse> {
     const paginationQuery = pagination
       ? `&X-Plex-Container-Start=${pagination.offset}&X-Plex-Container-Size=${pagination.limit}`
       : "";
+    const sortQuery = sort ? `&sort=${encodeURIComponent(sort)}` : "";
     return this.request<RawArtistResponse>(
-      `/library/sections/${encodeURIComponent(libraryKey)}/all?type=8${paginationQuery}`,
+      `/library/sections/${encodeURIComponent(libraryKey)}/all?type=8${paginationQuery}${sortQuery}`,
     );
   }
 
   /** Fetch albums for a library section (type=9 requests album-level items). */
-  async getAlbums(libraryKey: string, pagination?: PaginationParams): Promise<RawAlbumResponse> {
+  async getAlbums(libraryKey: string, pagination?: PaginationParams, sort?: string): Promise<RawAlbumResponse> {
     const paginationQuery = pagination
       ? `&X-Plex-Container-Start=${pagination.offset}&X-Plex-Container-Size=${pagination.limit}`
       : "";
+    const sortQuery = sort ? `&sort=${encodeURIComponent(sort)}` : "";
     return this.request<RawAlbumResponse>(
-      `/library/sections/${encodeURIComponent(libraryKey)}/all?type=9${paginationQuery}`,
+      `/library/sections/${encodeURIComponent(libraryKey)}/all?type=9${paginationQuery}${sortQuery}`,
     );
   }
 
@@ -175,7 +182,66 @@ export class PlexApiClient {
     );
   }
 
+  /**
+   * Report current playback state to the Plex server.
+   * Returns a Promise that rejects on network error or non-2xx response.
+   * Used for playback reporting: Plex marks a track as played once enough of it
+   * has been reported as played via the timeline endpoint.
+   */
+  reportTimeline(params: {
+    ratingKey: string;
+    state: "playing" | "paused" | "stopped";
+    time: number;
+    duration: number;
+  }): Promise<void> {
+    const { ratingKey, state, time, duration } = params;
+    const enc = encodeURIComponent;
+    const path =
+      `/:/timeline?ratingKey=${enc(ratingKey)}` +
+      `&key=${enc(`/library/metadata/${ratingKey}`)}` +
+      `&state=${enc(state)}` +
+      `&time=${Math.round(time)}` +
+      `&duration=${Math.round(duration)}` +
+      `&identifier=com.plexapp.plugins.library`;
+    return this.fireAndForget(path);
+  }
+
   // ── Internal ────────────────────────────────────────────────────
+
+  /** Make a GET request and discard the response body. Rejects on network error or non-2xx. */
+  private fireAndForget(path: string): Promise<void> {
+    const separator = path.includes("?") ? "&" : "?";
+    const fullPath = `${path}${separator}X-Plex-Token=${encodeURIComponent(this.token)}`;
+    const httpModule = this.https ? https : http;
+    return new Promise<void>((resolve, reject) => {
+      const req = httpModule.get(
+        {
+          hostname: this.host,
+          port: this.port,
+          path: fullPath,
+          headers: {
+            "X-Plex-Product": "Volumio",
+            "X-Plex-Version": "1.0",
+            "X-Plex-Platform": "Volumio",
+            "X-Plex-Device-Name": this.deviceName,
+            "X-Plex-Client-Identifier": `volumio-plex-${this.deviceName}`,
+          },
+          timeout: this.timeoutMs,
+        },
+        (res) => {
+          res.resume();
+          const statusCode = res.statusCode ?? 0;
+          if (statusCode < 200 || statusCode >= 300) {
+            reject(new Error(`HTTP ${statusCode}`));
+          } else {
+            resolve();
+          }
+        },
+      );
+      req.on("error", reject);
+      req.on("timeout", () => { req.destroy(); reject(new Error("timeout")); });
+    });
+  }
 
   private request<T>(path: string): Promise<T> {
     const separator = path.includes("?") ? "&" : "?";

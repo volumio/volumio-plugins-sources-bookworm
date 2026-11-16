@@ -155,7 +155,7 @@
       },
       "saveButton": {
         "label": "TRANSLATE.SAVE",
-        "data": ["gaplessPlayback", "crossfadeEnabled", "crossfadeDuration"]
+        "data": ["gaplessPlayback", "crossfadeEnabled", "crossfadeDuration", "scrobble"]
       },
       "content": [
         {
@@ -182,6 +182,14 @@
           "label": "TRANSLATE.PLEX_CROSSFADE_DURATION",
           "value": 5,
           "visibleIf": { "field": "crossfadeEnabled", "value": true }
+        },
+        {
+          "id": "scrobble",
+          "type": "switch",
+          "element": "switch",
+          "doc": "TRANSLATE.PLEX_SCROBBLE_DOC",
+          "label": "TRANSLATE.PLEX_SCROBBLE",
+          "value": false
         }
       ]
     }

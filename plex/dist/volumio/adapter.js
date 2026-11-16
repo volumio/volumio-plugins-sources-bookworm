@@ -23,14 +23,24 @@ function jsPromiseToKew(libQ, promise) {
 class VolumioAdapter {
     constructor(context, libQ) {
         this.plexService = null;
+        this.apiClient = null;
         this.connection = null;
         this.shuffleEnabled = false;
         this.pageSize = DEFAULT_PAGE_SIZE;
         this.gaplessPlayback = true;
         this.crossfadeEnabled = false;
         this.crossfadeDuration = 5;
+        this.playbackReporting = false;
+        this.playbackTimer = null;
+        this.nextTrackId = null;
+        // Playback position tracking for scrobbling
+        this.currentTrackId = null;
+        this.currentTrackDurationMs = 0;
+        this.playbackStartTime = null; // Date.now() when play/resume started
+        this.pausedPositionMs = 0; // confirmed position when paused or seeked
         this.originalServicePushState = null;
         this.currentQuality = {};
+        this.currentStreamUri = null;
         this.browseSource = {
             name: "Plex",
             uri: "plex",
@@ -61,9 +71,14 @@ class VolumioAdapter {
         this.installStateMaskHook();
         return this.libQ.resolve();
     }
+    /** Stop background tasks before this adapter instance is replaced during reconfiguration. */
+    dispose() {
+        this.stopPlaybackTimer();
+    }
     /** Called when the plugin is disabled — remove browse source, clean up. */
     onStop() {
         this.logger.info("[Plex] onStop");
+        this.stopPlaybackTimer();
         this.commandRouter.volumioRemoveToBrowseSources(this.browseSource);
         this.removeStateMaskHook();
         this.plexService = null;
@@ -77,13 +92,23 @@ class VolumioAdapter {
     // ── Configure (for external config injection in tests/setup) ───────
     /** Set up the PlexService and connection from external config. */
     configure(plexService, connection, options) {
+        const wasReporting = this.playbackReporting;
         this.plexService = plexService;
         this.connection = connection;
+        this.apiClient = options?.apiClient ?? null;
         this.shuffleEnabled = options?.shuffle ?? false;
         this.pageSize = options?.pageSize ?? DEFAULT_PAGE_SIZE;
         this.gaplessPlayback = options?.gaplessPlayback ?? true;
         this.crossfadeEnabled = options?.crossfadeEnabled ?? false;
         this.crossfadeDuration = options?.crossfadeDuration ?? 5;
+        this.playbackReporting = options?.scrobble ?? false;
+        if (!this.playbackReporting) {
+            this.stopPlaybackTimer();
+        }
+        else if (!wasReporting && this.currentTrackId) {
+            // Reporting re-enabled mid-track — resume the heartbeat.
+            this.startPlaybackTimer();
+        }
     }
     // ── Browse ─────────────────────────────────────────────────────────
     /**
@@ -114,12 +139,12 @@ class VolumioAdapter {
         if (uri === "plex") {
             return (0, browse_handlers_js_1.browseRoot)();
         }
-        // plex/artists or plex/artists@{libKey}:{offset}
-        if (uri === "plex/artists" || uri.startsWith("plex/artists@")) {
+        // plex/artists, plex/artists@{libKey}:{offset}, plex/artists~{sort}, plex/artists~{sort}@{libKey}:{offset}
+        if (uri === "plex/artists" || uri.startsWith("plex/artists@") || uri.startsWith("plex/artists~")) {
             return (0, browse_handlers_js_1.browseArtists)(service, (0, uri_utils_js_1.parsePaginationUri)(uri), options);
         }
-        // plex/albums or plex/albums@{libKey}:{offset}
-        if (uri === "plex/albums" || uri.startsWith("plex/albums@")) {
+        // plex/albums, plex/albums@{libKey}:{offset}, plex/albums~{sort}, plex/albums~{sort}@{libKey}:{offset}
+        if (uri === "plex/albums" || uri.startsWith("plex/albums@") || uri.startsWith("plex/albums~")) {
             return (0, browse_handlers_js_1.browseAlbums)(service, (0, uri_utils_js_1.parsePaginationUri)(uri), options);
         }
         // plex/playlists
@@ -265,6 +290,13 @@ class VolumioAdapter {
             ...(track.samplerate && { samplerate: track.samplerate }),
             ...(track.bitdepth && { bitdepth: track.bitdepth }),
         };
+        // Capture track identity for scrobbling. URI format: plex/track/{id}/stream/{key}
+        const trackMatch = track.uri.match(/^plex\/track\/(\d+)\//);
+        this.currentTrackId = trackMatch ? trackMatch[1] : null;
+        this.currentTrackDurationMs = (track.duration ?? 0) * 1000;
+        this.currentStreamUri = null; // cleared so the next state push doesn't trigger a false transition
+        this.pausedPositionMs = 0;
+        this.playbackStartTime = null;
         const mpdPlugin = this.getMpdPlugin();
         const streamUrl = this.resolveStreamUrl(track.uri);
         // Clear MPD queue
@@ -289,6 +321,9 @@ class VolumioAdapter {
         // Set consume mode and play
         this.commandRouter.stateMachine.setConsumeUpdateService("mpd", true, false);
         await mpdPlugin.sendMpdCommand("play", []);
+        this.playbackStartTime = Date.now();
+        this.sendTimeline("playing", 0);
+        this.startPlaybackTimer();
     }
     /** Pre-buffer the next track into the MPD queue for gapless playback. */
     prefetch(track) {
@@ -310,6 +345,8 @@ class VolumioAdapter {
             }
             await mpdPlugin.sendMpdCommand("consume 1", []);
             this.commandRouter.stateMachine.prefetchDone = true;
+            const nextMatch = track.uri.match(/^plex\/track\/(\d+)\//);
+            this.nextTrackId = nextMatch ? nextMatch[1] : null;
             this.logger.info(`[Plex] Prefetched next track: ${track.name}`);
         }
         catch (err) {
@@ -349,30 +386,54 @@ class VolumioAdapter {
     /** Stop playback. */
     stop() {
         this.logger.info("[Plex] stop");
+        this.stopPlaybackTimer();
+        this.sendTimeline("stopped");
+        this.currentTrackId = null;
+        this.playbackStartTime = null;
+        this.pausedPositionMs = 0;
         this.commandRouter.stateMachine.setConsumeUpdateService("mpd", true, false);
         return this.getMpdPlugin().stop();
     }
     /** Pause playback. */
     pause() {
         this.logger.info("[Plex] pause");
+        this.stopPlaybackTimer();
+        const pos = this.estimatePositionMs();
+        this.pausedPositionMs = pos;
+        this.playbackStartTime = null;
+        this.sendTimeline("paused", pos);
         this.commandRouter.stateMachine.setConsumeUpdateService("mpd", true, false);
         return this.getMpdPlugin().pause();
     }
     /** Start or resume playback. */
     play() {
         this.logger.info("[Plex] play");
+        this.playbackStartTime = Date.now();
+        this.sendTimeline("playing");
+        this.startPlaybackTimer();
         this.commandRouter.stateMachine.setConsumeUpdateService("mpd", true, false);
         return this.getMpdPlugin().resume();
     }
     /** Resume playback. */
     resume() {
         this.logger.info("[Plex] resume");
+        this.playbackStartTime = Date.now();
+        this.sendTimeline("playing");
+        this.startPlaybackTimer();
         this.commandRouter.stateMachine.setConsumeUpdateService("mpd", true, false);
         return this.getMpdPlugin().resume();
     }
     /** Seek to a position in milliseconds. */
     seek(position) {
         this.logger.info(`[Plex] seek: ${position}ms`);
+        this.pausedPositionMs = position;
+        if (this.playbackStartTime !== null) {
+            this.playbackStartTime = Date.now();
+            this.sendTimeline("playing", position);
+        }
+        else {
+            this.sendTimeline("paused", position);
+        }
         this.commandRouter.stateMachine.setConsumeUpdateService("mpd", true, false);
         return this.getMpdPlugin().seek(position);
     }
@@ -439,6 +500,39 @@ class VolumioAdapter {
     pushState(state) {
         this.commandRouter.servicePushState(state, SERVICE_NAME);
     }
+    // ── Playback reporting helpers ──────────────────────────────────────
+    /** Estimate current playback position in ms using wall-clock time since last play/resume. */
+    estimatePositionMs() {
+        if (this.playbackStartTime === null)
+            return this.pausedPositionMs;
+        return this.pausedPositionMs + (Date.now() - this.playbackStartTime);
+    }
+    /** Send a timeline report to Plex. No-ops if reporting is disabled or no track is active. */
+    sendTimeline(state, timeMs) {
+        if (!this.playbackReporting || !this.apiClient || !this.currentTrackId)
+            return;
+        const time = Math.min(timeMs ?? this.estimatePositionMs(), this.currentTrackDurationMs);
+        this.apiClient.reportTimeline({
+            ratingKey: this.currentTrackId,
+            state,
+            time,
+            duration: this.currentTrackDurationMs,
+        }).catch((err) => this.logger.warn(`[Plex] Timeline report failed: ${err}`));
+    }
+    /** Start sending periodic timeline heartbeats every 10 seconds while playing. */
+    startPlaybackTimer() {
+        this.stopPlaybackTimer();
+        if (!this.playbackReporting)
+            return;
+        this.playbackTimer = setInterval(() => this.sendTimeline("playing"), 10000);
+    }
+    /** Stop the periodic timeline heartbeat timer. */
+    stopPlaybackTimer() {
+        if (this.playbackTimer !== null) {
+            clearInterval(this.playbackTimer);
+            this.playbackTimer = null;
+        }
+    }
     // ── Internal helpers ───────────────────────────────────────────────
     requireService() {
         if (!this.plexService) {
@@ -467,8 +561,29 @@ class VolumioAdapter {
         this.originalServicePushState = original;
         this.commandRouter.servicePushState = (state, serviceName) => {
             if (state.uri && state.uri.includes("X-Plex-Token")) {
+                // Detect gapless track transition: URI changed before clearAddPlayTrack ran.
+                if (this.currentStreamUri !== null && state.uri !== this.currentStreamUri) {
+                    if (this.nextTrackId) {
+                        // Gapless advance: adopt the prefetched track's identity.
+                        this.currentTrackId = this.nextTrackId;
+                        this.nextTrackId = null;
+                        this.pausedPositionMs = state.seek ?? 0;
+                        this.playbackStartTime = Date.now();
+                        this.startPlaybackTimer();
+                    }
+                    else {
+                        // Unknown transition — stop reporting until clearAddPlayTrack fires.
+                        this.currentTrackId = null;
+                        this.stopPlaybackTimer();
+                    }
+                }
+                this.currentStreamUri = state.uri;
                 state = { ...state, uri: state.uri.replace(/X-Plex-Token=[^&]+/, "X-Plex-Token=████████") };
                 state = { ...state, ...this.currentQuality };
+                // MPD reports the authoritative file duration — keep our stored duration in sync.
+                if (typeof state.duration === "number" && state.duration > 0) {
+                    this.currentTrackDurationMs = state.duration * 1000;
+                }
             }
             return original(state, serviceName);
         };
