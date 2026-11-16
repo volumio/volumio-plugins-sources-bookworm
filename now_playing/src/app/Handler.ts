@@ -5,7 +5,7 @@ import np from '../lib/NowPlayingContext';
 import { type PluginInfo, getPluginInfo } from '../lib/utils/System';
 import metadataAPI from '../lib/api/MetadataAPI';
 import settingsAPI from '../lib/api/SettingsAPI';
-import weatherAPI from '../lib/api/WeatherAPI';
+import { getWeatherAPI } from '../lib/api/WeatherAPI';
 import unsplashAPI from '../lib/api/UnsplashAPI';
 import CommonSettingsLoader from '../lib/config/CommonSettingsLoader';
 import { CommonSettingsCategory } from 'now-playing-common';
@@ -21,11 +21,18 @@ interface RenderViewData {
   [k: string]: any;
 }
 
+const getAPIs: Record<string, () => any> = {
+  metadata: () => metadataAPI,
+  settings: () => settingsAPI,
+  weather: () => getWeatherAPI(),
+  unsplash: () => unsplashAPI
+};
+
 const APIs: Record<string, any> = {
-  metadata: metadataAPI,
-  settings: settingsAPI,
-  weather: weatherAPI,
-  unsplash: unsplashAPI
+  metadata: null,
+  settings: null,
+  weather: null,
+  unsplash: null
 };
 
 export async function index(req: express.Request, res: express.Response) {
@@ -90,7 +97,14 @@ export function myBackground(params: Record<string, any>, res: express.Response)
 }
 
 export async function api(apiName: string, method: string, params: Record<string, any>, res: express.Response) {
-  const api = apiName && method ? APIs[apiName] : null;
+  let api: any = null;
+  if (apiName && method) {
+    api = APIs[apiName];
+    if (!api && getAPIs[apiName]) {
+      api = getAPIs[apiName]();
+      APIs[apiName]  = api;
+    }
+  }
   const fn = api && typeof api[method] === 'function' ? api[method] : null;
   if (fn) {
     try {
