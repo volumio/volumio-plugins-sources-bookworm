@@ -65,9 +65,10 @@ class LyrionContext {
         if (key.indexOf('.') > 0) {
             const mainKey = key.split('.')[0];
             const secKey = key.split('.')[1];
-            str = __classPrivateFieldGet(this, _LyrionContext_i18n, "f")[mainKey]?.[secKey] ||
-                __classPrivateFieldGet(this, _LyrionContext_i18nDefaults, "f")[mainKey]?.[secKey] ||
-                key;
+            str =
+                __classPrivateFieldGet(this, _LyrionContext_i18n, "f")[mainKey]?.[secKey] ||
+                    __classPrivateFieldGet(this, _LyrionContext_i18nDefaults, "f")[mainKey]?.[secKey] ||
+                    key;
         }
         else {
             str = (__classPrivateFieldGet(this, _LyrionContext_i18n, "f")[key] || __classPrivateFieldGet(this, _LyrionContext_i18nDefaults, "f")[key] || key);
@@ -105,4 +106,3 @@ _LyrionContext_pluginContext = new WeakMap(), _LyrionContext_i18n = new WeakMap(
     __classPrivateFieldGet(this, _LyrionContext_instances, "m", _LyrionContext_loadI18n).call(this);
 };
 exports.default = new LyrionContext();
-//# sourceMappingURL=LyrionContext.js.map
