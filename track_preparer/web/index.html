@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="__TP_LANG__">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="tp-lang" content="__TP_LANG__">
+<title>Track Preparer</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; background: #fff; color: #111;
+    font: 15px/1.45 Ubuntu, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 14px; }
+
+  .card {
+    background: #f4f4f4; border: 1px solid #e0e0e0; border-radius: 16px;
+    padding: 22px 24px 18px; margin-bottom: 14px;
+  }
+  .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .head-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .head-icon { width: 22px; height: 22px; color: #10b981; flex-shrink: 0; }
+  h1 { font-size: 19px; font-weight: 600; margin: 0; }
+  .sub { margin: 18px 0 0; color: #6b7280; font-size: 14px; }
+  hr { border: 0; border-top: 1px solid #e3e3e3; margin: 20px 0; }
+
+  h2 { font-size: 16px; font-weight: 600; margin: 0 0 10px; }
+  .text { margin: 0 0 12px; font-size: 16px; }
+  .path-row { display: flex; gap: 12px; margin: 0 0 10px; }
+  .path-row svg { width: 20px; height: 20px; color: #555; flex-shrink: 0; margin-top: 2px; }
+  .path-label { font-weight: 600; font-size: 16px; }
+  .path {
+    display: block; margin-top: 4px; color: #222; word-break: break-all;
+    font: 13.5px/1.3 ui-monospace, Menlo, Consolas, "DejaVu Sans Mono", monospace;
+  }
+  .note { font-size: 12px; color: #6b7280; margin: 14px 0 0; }
+
+  /* ---- состояние и прогресс (после запуска) ---- */
+  #run { display: none; }
+  .run-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .badge {
+    padding: 3px 11px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    background: #e5e7eb; color: #4b5563;
+  }
+  .badge.running   { background: #dbeafe; color: #1d4ed8; }
+  .badge.done      { background: #d1fae5; color: #047857; }
+  .badge.error     { background: #fee2e2; color: #b91c1c; }
+  .badge.cancelled { background: #fef3c7; color: #92400e; }
+  .progress-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+  .pct { font-size: 24px; font-weight: 600; line-height: 1; }
+  .time { font-size: 12.5px; color: #6b7280; }
+  .bar { height: 7px; background: #e4e4e4; border-radius: 999px; overflow: hidden; margin-bottom: 12px; }
+  .bar > div { height: 100%; width: 0; background: #10b981; transition: width .4s ease; }
+  .bar.error > div { background: #ef4444; }
+  .bar.cancelled > div { background: #f59e0b; }
+  .info { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 18px; font-size: 13.5px; }
+  .info .row { display: flex; gap: 8px; min-width: 0; }
+  .info .row.wide { grid-column: 1 / -1; }
+  .info .k { color: #9ca3af; flex-shrink: 0; min-width: 84px; }
+  .info .v { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .msg { color: #b91c1c; font-size: 13px; margin: 8px 0 0; word-break: break-word; }
+
+  /* ---- кнопки ---- */
+  .btns { display: flex; gap: 10px; margin-top: 4px; }
+  button {
+    font: inherit; font-size: 14.5px; font-weight: 500; padding: 13px 18px;
+    border-radius: 10px; border: 1px solid #d4d4d4; background: #fff; color: #111; cursor: pointer;
+  }
+  button:disabled { opacity: .45; cursor: default; }
+  button.primary { flex: 1; background: #0c0c0c; border-color: #0c0c0c; color: #fff; }
+  button.primary:hover:not(:disabled) { background: #222; }
+  button.danger { color: #b91c1c; border-color: #fecaca; background: #fff; }
+  .hint { text-align: center; color: #6b7280; font-size: 14px; margin: 14px 0 0; }
+
+  /* ---- журнал ---- */
+  #logcard { display: none; padding: 14px 16px; }
+  .log-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .log-header h3 { font-size: 14px; font-weight: 600; margin: 0; color: #374151; }
+  .log-dot { width: 8px; height: 8px; border-radius: 50%; background: #d1d5db; }
+  .log-dot.running { background: #10b981; animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  #log {
+    background: #0f1419; color: #cfd8dc; border-radius: 10px; padding: 10px 12px;
+    height: 46vh; min-height: 240px; overflow: auto; margin: 0;
+    font: 12px/1.5 ui-monospace, Menlo, Consolas, monospace; white-space: pre-wrap; word-break: break-word;
+  }
+  #log .e { color: #ff8a80; } #log .h { color: #82b1ff; font-weight: 600; } #log .k { color: #69f0ae; } #log .w { color: #ffd54f; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="card">
+    <div class="head">
+      <div class="head-left">
+        <svg class="head-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5v14M22 10v4M7 5v14M2 10v4"/></svg>
+        <h1 id="t_title"></h1>
+      </div>
+    </div>
+    <p class="sub" id="t_sub"></p>
+
+    <hr>
+    <h2 id="t_s1"></h2>
+    <p class="text" id="t_s1text"></p>
+    <div class="path-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      <div><div class="path-label" id="t_music"></div><code class="path" id="p_in">/mnt/HDD/in/music</code></div>
+    </div>
+
+    <hr>
+    <h2 id="t_s2"></h2>
+    <p class="text" id="t_s2text"></p>
+    <div class="path-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/><path d="m9 13 2 2 4-4"/></svg>
+      <div><div class="path-label" id="t_ready"></div><code class="path" id="p_out">/mnt/HDD/out/music</code></div>
+    </div>
+    <p class="note" id="t_note"></p>
+
+    <hr>
+    <div id="run">
+      <div class="run-head"><h2 id="t_state" style="margin:0"></h2><span id="badge" class="badge">…</span></div>
+      <div class="progress-row"><span class="pct" id="pct">0%</span><span class="time" id="time"></span></div>
+      <div id="bar" class="bar"><div id="fill"></div></div>
+      <div class="info">
+        <div class="row"><span class="k" id="k_item"></span><span class="v" id="item">—</span></div>
+        <div class="row"><span class="k" id="k_step"></span><span class="v" id="step">—</span></div>
+        <div class="row wide"><span class="k" id="k_file"></span><span class="v" id="file">—</span></div>
+        <div class="row"><span class="k" id="k_done"></span><span class="v" id="count">—</span></div>
+        <div class="row"><span class="k" id="k_prob"></span><span class="v" id="problems">0</span></div>
+      </div>
+      <div id="msg" class="msg"></div>
+      <hr>
+    </div>
+
+    <div class="btns">
+      <button id="start" class="primary"></button>
+      <button id="cancel" class="danger" style="display:none"></button>
+    </div>
+    <p class="hint" id="t_hint"></p>
+  </div>
+
+  <div class="card" id="logcard">
+    <div class="log-header"><h3 id="l_log"></h3><span id="logdot" class="log-dot"></span></div>
+    <div id="log"></div>
+  </div>
+
+</div>
+<script>
+(function () {
+  // The Volumio language comes from the plugin (meta tag replaced on the server),
+  // because navigator.language reflects the browser/OS, not the Volumio setting.
+  var meta = document.querySelector('meta[name="tp-lang"]');
+  var sysLang = meta ? String(meta.content || '').toLowerCase() : '';
+  var ru;
+  if (sysLang === 'ru' || sysLang === 'en') {
+    ru = sysLang === 'ru';
+  } else {
+    ru = /^(ru|uk|be)(?:-|$)/i.test(navigator.language || '');
+  }
+  var pageLang = ru ? 'ru' : 'en';
+  var T = ru ? {
+    title: 'Подготовка аудиофайлов',
+    sub: 'Подготовьте файлы к обработке и запустите процесс.',
+    s1: '1. Подготовьте файлы',
+    s1text: 'Скопируйте папки с музыкой во входную папку. Каждая вложенная папка обрабатывается отдельно, структура не важна. После обработки входная папка очищается.',
+    music: 'Музыка',
+    s2: '2. Результат обработки',
+    s2text: 'Готовые треки раскладываются по тегам: артист / альбом.',
+    ready: 'Готовая музыка',
+    note: 'Пути указаны для справки и не редактируются.',
+    hint: 'Ход выполнения и сообщения об ошибках появятся после запуска.',
+    state: 'Состояние',
+    k: { item: 'Сейчас', step: 'Этап', file: 'Файл', done: 'Обработано', prob: 'Проблемы' },
+    idle: 'Ожидание', running: 'Выполняется', done: 'Готово',
+    error: 'Ошибка', cancelled: 'Остановлено', cancelling: 'Останавливаю…',
+    start: 'Начать обработку', cancel: 'Остановить', log: 'Журнал',
+    of: ' из ', items: ' (папок)', elapsed: 'прошло', left: 'осталось ~',
+    steps: {
+      extract: 'Распаковка архивов (.iso.wv, .zip)', unpack: 'Конвертация форматов (lossless → flac, lossy → mp3)', cue: 'Нарезка CUE',
+      check: 'Проверка тегов и обложки', cover: 'Поиск обложки',
+      tracks: 'Обрезка тишины, обложка', merge: 'Объединение дисков',
+      names: 'Очистка имён', replaygain: 'ReplayGain',
+      sort: 'Перенос в выходную папку'
+    },
+    reasons: {
+      TOAST_BUSY: 'Уже выполняется.',
+      TOAST_NO_DISK: '/mnt/HDD недоступен.',
+      TOAST_BAD_PATHS: 'Входная и выходная папки должны быть разными и не вложенными друг в друга.',
+      TOAST_EMPTY: 'Во входной папке нет аудиофайлов.'
+    }
+  } : {
+    title: 'Audio preparation',
+    sub: 'Get your files ready and start the process.',
+    s1: '1. Prepare your files',
+    s1text: 'Copy your music folders into the input folder. Every nested folder is processed on its own, the structure does not matter. The input folder is cleaned after processing.',
+    music: 'Music',
+    s2: '2. Result',
+    s2text: 'Finished tracks are sorted by tags: artist / album.',
+    ready: 'Finished music',
+    note: 'Paths are shown for reference and cannot be edited.',
+    hint: 'Progress and error messages will appear after you start.',
+    state: 'Status',
+    k: { item: 'Now', step: 'Step', file: 'File', done: 'Processed', prob: 'Problems' },
+    idle: 'Idle', running: 'Running', done: 'Done',
+    error: 'Error', cancelled: 'Stopped', cancelling: 'Stopping…',
+    start: 'Start processing', cancel: 'Stop', log: 'Log',
+    of: ' of ', items: ' (folders)', elapsed: 'elapsed', left: '~',
+    steps: {
+      extract: 'Unpacking archives (.iso.wv, .zip)', unpack: 'Converting formats (lossless to flac, lossy to mp3)', cue: 'Splitting CUE',
+      check: 'Checking tags and cover', cover: 'Looking for cover',
+      tracks: 'Trimming silence, cover', merge: 'Merging discs',
+      names: 'Cleaning names', replaygain: 'ReplayGain',
+      sort: 'Moving to output folder'
+    },
+    reasons: {
+      TOAST_BUSY: 'Already running.',
+      TOAST_NO_DISK: '/mnt/HDD is not available.',
+      TOAST_BAD_PATHS: 'The input and output folders must be different and must not be inside one another.',
+      TOAST_EMPTY: 'No audio files in the input folder.'
+    }
+  };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var set = function (id, txt) { $(id).textContent = txt; };
+  set('t_title', T.title); set('t_sub', T.sub); set('t_s1', T.s1); set('t_s1text', T.s1text);
+  set('t_music', T.music); set('t_s2', T.s2); set('t_s2text', T.s2text); set('t_ready', T.ready);
+  set('t_note', T.note); set('t_hint', T.hint); set('t_state', T.state); set('l_log', T.log);
+  set('start', T.start); set('cancel', T.cancel);
+  set('k_item', T.k.item); set('k_step', T.k.step); set('k_file', T.k.file);
+  set('k_done', T.k.done); set('k_prob', T.k.prob);
+  document.title = T.title;
+
+  function fmt(sec) {
+    sec = Math.max(0, Math.round(sec));
+    var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+    return (h ? h + ':' + ('0' + m).slice(-2) : m) + ':' + ('0' + s).slice(-2);
+  }
+  function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  function post(url) {
+    return fetch(url, { method: 'POST', headers: { 'X-Track-Preparer': '1' } })
+      .then(function (r) { return r.json(); });
+  }
+
+  var lastLogKey = '';
+  function renderLog(lines) {
+    var key = lines.length + '|' + (lines[lines.length - 1] || '');
+    if (key === lastLogKey) { return; }
+    lastLogKey = key;
+    var box = $('log');
+    var stick = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+    box.innerHTML = lines.map(function (l) {
+      var c = /^\S+ ✖/.test(l) ? 'e' : /^\S+ ===/.test(l) ? 'h' : /^\S+ ✓/.test(l) ? 'k' : /^\S+ ⚠/.test(l) ? 'w' : '';
+      return '<div' + (c ? ' class="' + c + '"' : '') + '>' + esc(l) + '</div>';
+    }).join('');
+    if (stick) { box.scrollTop = box.scrollHeight; }
+  }
+
+  function render(d) {
+    // The system language was changed while the page was open: reload so the
+    // server can inject the other language into the HTML.
+    if (d && d.lang && d.lang !== pageLang) { location.reload(); return; }
+    if (d.paths) {
+      if (d.paths.in_music) { set('p_in', d.paths.in_music); }
+      if (d.paths.out_music) { set('p_out', d.paths.out_music); }
+    }
+    var s = d.status || null;
+    var started = !!(d.running || s);
+    var state = d.running ? 'running' : (s && s.state !== 'running' ? s.state : 'idle');
+
+    // прогресс, журнал и «подсказка» зависят от того, был ли запуск
+    $('run').style.display = started ? 'block' : 'none';
+    $('logcard').style.display = started ? 'block' : 'none';
+    $('t_hint').style.display = started ? 'none' : '';
+
+    var badge = $('badge');
+    badge.className = 'badge ' + state;
+    badge.textContent = (d.running && s && s.cancelling) ? T.cancelling : T[state];
+
+    var pct = s ? s.percent : 0;
+    $('fill').style.width = pct + '%';
+    $('bar').className = 'bar ' + state;
+    set('pct', Math.round(pct) + '%');
+
+    var tm = '';
+    if (s && s.started) {
+      var end = (state === 'running') ? Date.now() / 1000 : (s.finished || s.updated || s.started);
+      tm = T.elapsed + ' ' + fmt(end - s.started);
+      if (state === 'running' && s.eta) { tm += ' · ' + T.left + fmt(s.eta); }
+    }
+    set('time', tm);
+
+    set('item', (s && s.item) || '—'); $('item').title = $('item').textContent;
+    set('step', (s && s.step && (T.steps[s.step] || s.step)) || '—');
+    set('file', (s && s.file) || '—'); $('file').title = $('file').textContent;
+    set('count', s ? (s.items_done + T.of + s.items_total + T.items) : '—');
+    var p = $('problems');
+    p.textContent = s ? s.problems : 0;
+    p.style.color = (s && s.problems) ? '#b91c1c' : '';
+    set('msg', (s && state === 'error' && s.message) ? s.message : '');
+
+    $('start').disabled = d.running;
+    $('cancel').style.display = d.running ? '' : 'none';
+    $('cancel').disabled = !d.running || !!(s && s.cancelling);
+    $('logdot').className = 'log-dot' + (d.running ? ' running' : '');
+    renderLog(d.log || []);
+  }
+
+  var failed = 0;
+  function poll() {
+    fetch('/api/status', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { failed = 0; render(d); })
+      .catch(function () { failed++; if (failed > 2) { set('badge', '…'); } })
+      .then(function () { setTimeout(poll, 1000); });
+  }
+
+  $('start').onclick = function () {
+    set('msg', '');
+    post('/api/start').then(function (r) {
+      if (!r.ok && r.reason) {
+        $('run').style.display = 'block';
+        set('msg', T.reasons[r.reason] || r.reason);
+      }
+    });
+  };
+  $('cancel').onclick = function () { post('/api/cancel'); };
+
+  poll();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "PLUGIN_NAME": "Track Preparer",
+  "SECTION_PREPARE": "1. Prepare files",
+  "PREPARE_DESC": "Copy your music folders into the input folder /mnt/HDD/in/music. Every nested folder is processed on its own, the structure does not matter (artist, album, compilation — anything). The input folder is cleaned after processing.",
+  "SECTION_RESULT": "2. Result",
+  "RESULT_DESC": "Finished tracks are sorted by tags into /mnt/HDD/out/music: artist / album.",
+  "SECTION_RUN": "Processing",
+  "RUN_DESC": "Press the button to open the preparation window: start button, current step and live log.",
+  "OPEN_MONITOR": "Open preparation window",
+  "TOAST_RUNNING": "Processing started…",
+  "TOAST_BUSY": "Already running…",
+  "TOAST_EMPTY": "No audio files in the input folder",
+  "TOAST_DONE": "Done",
+  "TOAST_DONE_PROBLEMS": "Done with problems: %d. See log/errors.log",
+  "TOAST_ERROR": "Processing failed. See the plugin log.",
+  "TOAST_NO_DISK": "/mnt/HDD is not available. Connect and mount the disk first.",
+  "TOAST_BAD_PATHS": "The input and output folders must be different and must not be inside one another.",
+  "TOAST_CANCELLED": "Stopped. Finished albums are already in the output folder."
+}
