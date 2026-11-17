@@ -1,0 +1,10 @@
+{
+  "in_music": {
+    "type": "string",
+    "value": "/mnt/HDD/in/music"
+  },
+  "out_music": {
+    "type": "string",
+    "value": "/mnt/HDD/out/music"
+  }
+}

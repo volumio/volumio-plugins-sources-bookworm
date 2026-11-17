@@ -1,0 +1,42 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_NAME",
+    "icon": "fa-music"
+  },
+  "sections": [
+    {
+      "id": "section_prepare",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_PREPARE",
+      "icon": "fa-folder-open",
+      "description": "TRANSLATE.PREPARE_DESC",
+      "content": []
+    },
+    {
+      "id": "section_result",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_RESULT",
+      "icon": "fa-folder",
+      "description": "TRANSLATE.RESULT_DESC",
+      "content": []
+    },
+    {
+      "id": "section_run",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_RUN",
+      "icon": "fa-play",
+      "description": "TRANSLATE.RUN_DESC",
+      "content": [
+        {
+          "id": "open_monitor",
+          "element": "button",
+          "label": "TRANSLATE.OPEN_MONITOR",
+          "onClick": {
+            "type": "openUrl",
+            "url": ""
+          }
+        }
+      ]
+    }
+  ]
+}
