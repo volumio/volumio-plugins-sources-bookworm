@@ -1,0 +1,72 @@
+{
+  "page": { "label": "TRANSLATE.PLUGIN_CONFIGURATION" },
+  "sections": [
+    {
+      "id": "section_status",
+      "element": "section",
+      "label": "TRANSLATE.STATUS",
+      "icon": "fa-info-circle",
+      "description": "",
+      "content": [
+        {
+          "id": "refresh",
+          "element": "button",
+          "label": "TRANSLATE.REFRESH",
+          "onClick": { "type": "plugin", "endpoint": "system_hardware/disk_automount", "method": "refreshUI", "data": [] }
+        }
+      ]
+    },
+    {
+      "id": "section_disk",
+      "element": "section",
+      "label": "TRANSLATE.DISK_SETTINGS",
+      "icon": "fa-hdd-o",
+      "onSave": { "type": "controller", "endpoint": "system_hardware/disk_automount", "method": "saveConfig" },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE_AND_MOUNT",
+        "data": ["device", "mount_name", "link_mpd", "open_perms", "mount_on_boot"]
+      },
+      "content": [
+        {
+          "id": "device",
+          "element": "select",
+          "label": "TRANSLATE.DEVICE",
+          "doc": "TRANSLATE.DEVICE_DOC",
+          "value": { "value": "", "label": "" },
+          "options": []
+        },
+        {
+          "id": "mount_name",
+          "element": "input",
+          "type": "text",
+          "label": "TRANSLATE.MOUNT_NAME",
+          "doc": "TRANSLATE.MOUNT_NAME_DOC",
+          "value": "HDD"
+        },
+        { "id": "link_mpd", "element": "switch", "label": "TRANSLATE.LINK_MPD", "doc": "TRANSLATE.LINK_MPD_DOC", "value": true },
+        { "id": "open_perms", "element": "switch", "label": "TRANSLATE.OPEN_PERMS", "doc": "TRANSLATE.OPEN_PERMS_DOC", "value": false },
+        { "id": "mount_on_boot", "element": "switch", "label": "TRANSLATE.MOUNT_ON_BOOT", "value": true }
+      ]
+    },
+    {
+      "id": "section_actions",
+      "element": "section",
+      "label": "TRANSLATE.ACTIONS",
+      "icon": "fa-cogs",
+      "content": [
+        {
+          "id": "unmount",
+          "element": "button",
+          "label": "TRANSLATE.UNMOUNT",
+          "onClick": { "type": "plugin", "endpoint": "system_hardware/disk_automount", "method": "unmountNow", "data": [] }
+        },
+        {
+          "id": "update",
+          "element": "button",
+          "label": "TRANSLATE.UPDATE_LIBRARY",
+          "onClick": { "type": "plugin", "endpoint": "system_hardware/disk_automount", "method": "updateLibrary", "data": [] }
+        }
+      ]
+    }
+  ]
+}

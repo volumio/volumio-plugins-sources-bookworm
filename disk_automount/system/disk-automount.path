@@ -1,0 +1,9 @@
+[Unit]
+Description=Disk Automount for Volumio (watch plugin settings)
+
+[Path]
+PathChanged=/data/configuration/system_hardware/disk_automount/request
+Unit=disk-automount-apply.service
+
+[Install]
+WantedBy=multi-user.target
