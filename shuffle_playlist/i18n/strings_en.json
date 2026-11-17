@@ -1,0 +1,15 @@
+{
+  "PLUGIN_TITLE": "Shuffle Playlist",
+  "SECTION_TITLE": "Create shuffled playlist",
+  "SECTION_DESC": "Choose a saved playlist. A copy with randomly ordered tracks is created and ' shuffle' is added to its name. Running it again re-shuffles the copy. Every track plays once per pass and Previous works normally. Tip: use the shuffled copy together with an autostart plugin that resumes the queue after a restart.",
+  "PLAYLIST_LABEL": "Playlist",
+  "CREATE_BTN": "Create shuffled copy",
+  "CREATE_BTN_DESC": "The original playlist is not changed",
+  "NO_PLAYLISTS": "No playlists found",
+  "DONE": "Playlist created",
+  "DONE_MSG": "\"{0}\" created ({1} tracks)",
+  "ERR_TITLE": "Shuffle Playlist",
+  "ERR_NO_SELECTION": "Select a playlist first",
+  "ERR_EMPTY": "The playlist is empty or unreadable",
+  "ERR_WRITE": "Could not save the new playlist"
+}
