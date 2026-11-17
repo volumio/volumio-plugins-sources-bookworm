@@ -1,0 +1,10 @@
+{"volume":66,
+"deviceName":{"type":"string","value":"RAV300"},
+"startButton":{"type":"string","value":"KEY_POWER"},
+"stopButton":{"type":"string","value":"KEY_POWER2"},
+"volUpButton":{"type":"string","value":"KEY_VOLUMEUP"},
+"volDownButton":{"type":"string","value":"KEY_VOLUMEDOWN"},
+"powerOnOnPlay":{"type":"boolean","value":true},
+"powerOffOnStop":{"type":"boolean","value":true},
+"powerOffOnPause":{"type":"boolean","value":true},
+"powerOffDelay":{"type":"number","value":60}}
