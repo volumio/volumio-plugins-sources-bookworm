@@ -1,0 +1,36 @@
+{
+  "page": {
+    "label": "TRANSLATE.PLUGIN_TITLE"
+  },
+  "sections": [
+    {
+      "id": "section_main",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_TITLE",
+      "icon": "fa-random",
+      "description": "TRANSLATE.SECTION_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "miscellanea/shuffle_playlist",
+        "method": "shufflePlaylist"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.CREATE_BTN",
+        "data": ["playlist_select"]
+      },
+      "content": [
+        {
+          "id": "playlist_select",
+          "element": "select",
+          "label": "TRANSLATE.PLAYLIST_LABEL",
+          "doc": "TRANSLATE.CREATE_BTN_DESC",
+          "value": {
+            "value": "",
+            "label": ""
+          },
+          "options": []
+        }
+      ]
+    }
+  ]
+}
