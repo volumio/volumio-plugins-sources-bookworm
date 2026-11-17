@@ -1,0 +1,14 @@
+[Unit]
+Description=Disk Automount for Volumio (mount the configured disk at boot)
+After=local-fs.target systemd-udevd.service
+Before=volumio.service mpd.service
+ConditionPathExists=/data/configuration/system_hardware/disk_automount/request
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/disk-automount boot
+TimeoutStartSec=90
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target

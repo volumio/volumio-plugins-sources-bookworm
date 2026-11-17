@@ -1,0 +1,265 @@
+#!/bin/bash
+# disk-automount - privileged helper of the Volumio plugin "Disk Automount".
+#
+# Runs as root, started by systemd only:
+#   disk-automount.service         -> "boot"    (mount the configured disk at boot)
+#   disk-automount-apply.service   -> "apply"   (triggered by disk-automount.path
+#                                                when the plugin rewrites the request)
+#   plugin uninstall.sh            -> "cleanup" (unmount, remove the MPD link)
+#
+# The plugin (user "volumio") only writes a small request file. This script reads
+# it as plain data: it is never sourced or executed, every value is validated
+# against a strict pattern and checked against the real system state before use.
+
+set -u
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+
+CONF_DIR=/data/configuration/system_hardware/disk_automount
+REQ="$CONF_DIR/request"
+STATE_DIR=/run/disk_automount
+STATUS="$STATE_DIR/status"
+APPLIED="$STATE_DIR/applied"
+MPD_MUSIC=/var/lib/mpd/music
+SVC_USER=volumio
+
+# Space-delimited lists (matched as " item ").
+RESERVED_NAMES=" internal usb nas upnp playlists favourites "
+RESERVED_LABELS=" volumio volumio_data boot imgpart "
+SYSTEM_TARGETS=" / /boot /boot/efi /data /imgpart /static "
+ALLOWED_FS=" ext2 ext3 ext4 xfs btrfs ntfs exfat vfat "
+
+MODE=apply
+WAIT=3
+ID=0
+ACTION=""; UUID=""; NAME=""; LINK_MPD=0; OPEN_PERMS=0; MOUNT_ON_BOOT=1
+DEV=""; FSTYPE=""; LABEL=""; MP=""; OPTS=""; OLD_MP=""
+ERRF=""
+
+log() { logger -t disk_automount -- "$*"; }
+
+# report <ok|error> <CODE> [detail]  -> atomically writes the status file the plugin polls
+report() {
+    local detail=${3:-} tmp="$STATE_DIR/status.$$"
+    detail=${detail//$'\n'/ }
+    detail=${detail:0:200}
+    printf 'ID=%s\nSTATE=%s\nCODE=%s\nDETAIL=%s\n' "$ID" "$1" "$2" "$detail" > "$tmp" \
+        && chmod 0644 "$tmp" && mv -f -- "$tmp" "$STATUS"
+    log "$1 $2 $detail"
+}
+
+# die <CODE> [detail]
+# A disk that is simply not plugged in at boot is not a failure of the service.
+die() {
+    report error "$1" "${2:-}"
+    if [ "$MODE" = boot ] && [ "$1" = ERR_NO_DEVICE ]; then exit 0; fi
+    exit 1
+}
+
+in_list() { case "$2" in *" $1 "*) return 0 ;; esac; return 1; }
+
+# get <KEY>: value of the first "KEY=value" line (data only, nothing is evaluated)
+get() {
+    local line
+    line=$(grep -a -m1 "^$1=" "$REQ" 2>/dev/null) || return 0
+    printf '%s' "${line#*=}"
+}
+
+read_request() {
+    [ -f "$REQ" ] && [ ! -L "$REQ" ] || return 1
+    ID=$(get ID); [[ $ID =~ ^[0-9]{1,20}$ ]] || ID=0
+    ACTION=$(get ACTION)
+    UUID=$(get UUID)
+    NAME=$(get NAME)
+    LINK_MPD=$(get LINK_MPD);           [ "$LINK_MPD" = 1 ] || LINK_MPD=0
+    OPEN_PERMS=$(get OPEN_PERMS);       [ "$OPEN_PERMS" = 1 ] || OPEN_PERMS=0
+    MOUNT_ON_BOOT=$(get MOUNT_ON_BOOT); [ "$MOUNT_ON_BOOT" = 0 ] || MOUNT_ON_BOOT=1
+    return 0
+}
+
+validate_target() {
+    [[ $UUID =~ ^[A-Za-z0-9-]{4,64}$ ]] || die ERR_BAD_UUID ""
+    [[ $NAME =~ ^[A-Za-z0-9_-]{1,32}$ ]] || die ERR_BAD_NAME ""
+    if in_list "${NAME,,}" "$RESERVED_NAMES"; then die ERR_RESERVED_NAME "$NAME"; fi
+    MP="/mnt/$NAME"
+}
+
+# find_device <seconds to wait>: sets DEV from the UUID
+find_device() {
+    local waited=0
+    udevadm settle --timeout=5 >/dev/null 2>&1
+    while :; do
+        DEV=$(blkid -U "$UUID" 2>/dev/null)
+        if [ -n "$DEV" ] && [ -b "$DEV" ]; then return 0; fi
+        [ "$waited" -ge "$1" ] && return 1
+        waited=$((waited + 1))
+        sleep 1
+    done
+}
+
+# Never touch the Volumio system disk, whatever the request says.
+check_device_safe() {
+    local target
+    case "$DEV" in
+        /dev/mmcblk*|/dev/loop*|/dev/zram*|/dev/ram*|/dev/sr*) die ERR_SYSTEM_DISK "$DEV" ;;
+    esac
+    FSTYPE=$(blkid -o value -s TYPE "$DEV" 2>/dev/null)
+    LABEL=$(blkid -o value -s LABEL "$DEV" 2>/dev/null)
+    in_list "$FSTYPE" "$ALLOWED_FS" || die ERR_BAD_FS "${FSTYPE:-unknown}"
+    if in_list "${LABEL,,}" "$RESERVED_LABELS"; then die ERR_SYSTEM_DISK "$LABEL"; fi
+
+    while IFS= read -r target; do
+        [ -n "$target" ] || continue
+        if in_list "$target" "$SYSTEM_TARGETS"; then die ERR_SYSTEM_DISK "$target"; fi
+        [ "$target" = "$MP" ] || [ "$target" = "$OLD_MP" ] || die ERR_ALREADY_MOUNTED "$target"
+    done < <(findmnt -rn -S "$DEV" -o TARGET 2>/dev/null)
+}
+
+mount_options() {
+    local uid gid
+    uid=$(id -u "$SVC_USER" 2>/dev/null) || uid=1000
+    gid=$(id -g "$SVC_USER" 2>/dev/null) || gid=1000
+    case "$FSTYPE" in
+        ntfs|exfat|vfat)
+            if [ "$OPEN_PERMS" = 1 ]; then
+                OPTS="uid=$uid,gid=$gid,umask=000,noatime"
+            else
+                OPTS="uid=$uid,gid=$gid,dmask=0022,fmask=0133,noatime"
+            fi ;;
+        *) OPTS="noatime" ;;
+    esac
+}
+
+# release_mount <name>: unmount /mnt/<name> and drop our MPD link (name already validated)
+release_mount() {
+    local mp="/mnt/$1" link="$MPD_MUSIC/$1"
+    if findmnt -rn -M "$mp" >/dev/null 2>&1; then
+        umount -- "$mp" 2>"$ERRF" || return 1
+    fi
+    if [ -L "$link" ] && [ "$(readlink -- "$link")" = "$mp" ]; then rm -f -- "$link"; fi
+    rmdir -- "$mp" 2>/dev/null || true
+    rm -f -- "$APPLIED"
+    return 0
+}
+
+do_mount() {
+    local src old_name="" old_uuid="" link type_args=()
+    validate_target
+    link="$MPD_MUSIC/$NAME"
+
+    # A different disk/name was applied earlier in this session. Remember it, but
+    # release it only after every check below has passed (never leave a half-done state).
+    if [ -f "$APPLIED" ]; then
+        read -r old_name old_uuid < "$APPLIED" || true
+        if [[ $old_name =~ ^[A-Za-z0-9_-]{1,32}$ ]] \
+            && { [ "$old_name" != "$NAME" ] || [ "$old_uuid" != "$UUID" ]; }; then
+            OLD_MP="/mnt/$old_name"
+        else
+            old_name=""
+        fi
+    fi
+
+    find_device "$WAIT" || die ERR_NO_DEVICE "$UUID"
+    check_device_safe
+
+    # Check everything that can fail before changing anything.
+    if [ -e "$MP" ] && [ ! -d "$MP" ]; then die ERR_MP_BUSY "$MP"; fi
+    if [ "$LINK_MPD" = 1 ]; then
+        [ -d "$MPD_MUSIC" ] || die ERR_LINK_CONFLICT "$MPD_MUSIC"
+        if [ -L "$link" ]; then
+            [ "$(readlink -- "$link")" = "$MP" ] || die ERR_LINK_CONFLICT "$link"
+        elif [ -e "$link" ]; then
+            die ERR_LINK_CONFLICT "$link"
+        fi
+    fi
+
+    if [ -d "$MP" ] && ! findmnt -rn -M "$MP" >/dev/null 2>&1 && [ -n "$(ls -A -- "$MP")" ]; then
+        die ERR_MP_NOT_EMPTY "$MP"
+    fi
+    if [ "$MP" != "$OLD_MP" ] && findmnt -rn -M "$MP" >/dev/null 2>&1; then
+        src=$(findmnt -rn -M "$MP" -o SOURCE | head -n1)
+        [ "$src" = "$DEV" ] || die ERR_MP_BUSY "$src"
+    fi
+
+    if [ -n "$OLD_MP" ]; then
+        release_mount "$old_name" || die ERR_UNMOUNT_FAILED "$(head -c 200 "$ERRF")"
+    fi
+
+    mkdir -p -- "$MP"
+    if findmnt -rn -M "$MP" >/dev/null 2>&1; then
+        src=$(findmnt -rn -M "$MP" -o SOURCE | head -n1)
+        [ "$src" = "$DEV" ] || die ERR_MP_BUSY "$src"
+    else
+        [ -z "$(ls -A -- "$MP")" ] || die ERR_MP_NOT_EMPTY "$MP"
+        mount_options
+        if [ "$FSTYPE" = ntfs ]; then
+            if command -v mount.ntfs-3g >/dev/null 2>&1; then type_args=(-t ntfs-3g); else type_args=(-t ntfs3); fi
+        fi
+        mount "${type_args[@]}" -o "$OPTS" -- "UUID=$UUID" "$MP" 2>"$ERRF" \
+            || die ERR_MOUNT_FAILED "$(head -c 200 "$ERRF")"
+    fi
+
+    # Native Linux filesystems: make the top folder usable by the volumio user.
+    case "$FSTYPE" in
+        ext2|ext3|ext4|xfs|btrfs)
+            if [ "$(stat -c %u -- "$MP")" = 0 ]; then chown "$SVC_USER:" -- "$MP"; fi ;;
+    esac
+
+    if [ "$LINK_MPD" = 1 ]; then
+        ln -sfn -- "$MP" "$link"
+    elif [ -L "$link" ] && [ "$(readlink -- "$link")" = "$MP" ]; then
+        rm -f -- "$link"
+    fi
+
+    printf '%s %s\n' "$NAME" "$UUID" > "$APPLIED"
+    report ok OK_MOUNTED "$MP"
+}
+
+do_unmount() {
+    local a_name="" cur_dev src
+    validate_target
+    if findmnt -rn -M "$MP" >/dev/null 2>&1; then
+        # Only unmount what this plugin mounted (or what provably is the configured disk).
+        if [ -f "$APPLIED" ]; then read -r a_name _ < "$APPLIED" || true; fi
+        if [ "$a_name" != "$NAME" ]; then
+            cur_dev=$(blkid -U "$UUID" 2>/dev/null)
+            src=$(findmnt -rn -M "$MP" -o SOURCE | head -n1)
+            if [ -z "$cur_dev" ] || [ "$src" != "$cur_dev" ]; then die ERR_NOT_OURS "$MP"; fi
+        fi
+    fi
+    release_mount "$NAME" || die ERR_UNMOUNT_FAILED "$(head -c 200 "$ERRF")"
+    report ok OK_UNMOUNTED "$MP"
+}
+
+main() {
+    MODE=${1:-apply}
+    install -d -m 0755 "$STATE_DIR" || exit 1
+    ERRF=$(mktemp "$STATE_DIR/err.XXXXXX") || exit 1
+    trap 'rm -f -- "$ERRF"' EXIT
+    exec 9>"$STATE_DIR/lock"
+    flock -w 60 9 || exit 1
+
+    read_request || { log "no request file, nothing to do"; exit 0; }
+
+    case "$MODE" in
+        boot)
+            # The last action may have been "unmount"; it is not persistent, the
+            # boot decision belongs to MOUNT_ON_BOOT only.
+            [ "$MOUNT_ON_BOOT" = 1 ] || exit 0
+            WAIT=15
+            do_mount ;;
+        apply)
+            WAIT=3
+            case "$ACTION" in
+                mount)   do_mount ;;
+                unmount) do_unmount ;;
+                *)       die ERR_BAD_REQUEST "" ;;
+            esac ;;
+        cleanup)
+            do_unmount ;;
+        *)
+            echo "usage: $0 boot|apply|cleanup" >&2
+            exit 2 ;;
+    esac
+}
+
+main "$@"

@@ -1,0 +1,7 @@
+{
+  "device": { "type": "string", "value": "" },
+  "mount_name": { "type": "string", "value": "HDD" },
+  "link_mpd": { "type": "boolean", "value": true },
+  "open_perms": { "type": "boolean", "value": false },
+  "mount_on_boot": { "type": "boolean", "value": true }
+}

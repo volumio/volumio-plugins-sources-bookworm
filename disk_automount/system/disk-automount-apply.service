@@ -1,0 +1,8 @@
+[Unit]
+Description=Disk Automount for Volumio (apply settings saved in the plugin)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/disk-automount apply
+TimeoutStartSec=90
+NoNewPrivileges=yes
