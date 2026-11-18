@@ -10,7 +10,7 @@
       "icon": "fa-power-off",
       "onSave": {
         "type": "controller",
-        "endpoint": "system_controller/mausberry_switch",
+        "endpoint": "system_hardware/mausberry_switch",
         "method": "saveConfig"
       },
       "saveButton": {

@@ -12,7 +12,12 @@ echo "Installing mausberry-switch ${VERSION}"
 if wget -q -O "${TMPDIR}/${DEB}" "${URL}"; then
   sudo apt-get update
   # apt (not dpkg) resolves the libgpiod2 dependency.
-  if ! sudo apt-get install -y "${TMPDIR}/${DEB}"; then
+  if sudo apt-get install -y "${TMPDIR}/${DEB}" --no-install-recommends; then
+    # The package enables and starts the service on its own. Volumio plugins
+    # must only act after onStart, so leave it stopped until the plugin is
+    # enabled (index.js runs "systemctl enable --now").
+    sudo systemctl disable --now mausberry-switch.service
+  else
     echo "ERROR: installing ${DEB} failed"
   fi
 else
