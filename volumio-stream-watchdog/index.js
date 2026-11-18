@@ -14,7 +14,7 @@
 // that never came. Here the only timer is the tick, and it never stops while
 // the plugin is active.
 //
-// This file is the Volumio shell: lifecycle, the stop hook, observing the
+// This file is the Volumio shell: lifecycle, the UI hook, observing the
 // player, executing actions, settings. The policy lives in lib/decide.js.
 // =============================================================================
 
@@ -27,6 +27,8 @@ var vconf   = volumioRequire('v-conf');
 var policy  = require('./lib/decide.js');
 var probes  = require('./lib/probe.js');
 var offline = require('./lib/offline.js');
+var sound   = require('./lib/soundcard.js');
+var mpdlog  = require('./lib/mpdlog.js');
 
 module.exports = StreamWatchdog;
 
@@ -66,8 +68,13 @@ function StreamWatchdog(context) {
   self.tickTimer    = null;
   self.pendingSince = 0;     // epoch ms an async step started, 0 when none
   self.pendingWhat  = null;
-  self._origVolumioStop = null;
+  self._ui = null;           // listeners on the Volumio UI socket, while active
   self.probe = probes.createProbe({ logger: self.logger, tag: LOG });
+  self.card  = sound.createSampler({ commandRouter: self.commandRouter });
+  self.cardNote = null;      // why the card is not being checked, once logged
+  self.mpdlog = mpdlog.createWatcher();
+  self.mpdNote = null;       // why mpd.log is not being checked, once logged
+  self.offlineKeys = {};     // trackKey → true for the offline queue last played
 }
 
 StreamWatchdog.prototype.onVolumioStart = function () {
@@ -96,17 +103,17 @@ StreamWatchdog.prototype.onStart = function () {
   return libQ.resolve();
 };
 
-/** Arms the stop hook and the loop. Separate from onStart so tests can call it. */
+/** Arms the UI hook and the loop. Separate from onStart so tests can call it. */
 StreamWatchdog.prototype.activate = function () {
   var self = this;
   try {
-    self._installStopHook();
+    self._installUiHook();
     self.ready = true;
     self.tickTimer = setInterval(self._guarded('Tick', function () { self.tick(); }), TICK_MS);
     self.logger.info(LOG + 'Active — checking the player every ' + (TICK_MS / 1000) + 's');
     self.tick();
   } catch (e) {
-    // A half-armed plugin (ticking without the stop hook) would fight the
+    // A half-armed plugin (ticking without the UI hook) would fight the
     // user's Stop button. Better to stay off and say so.
     self._teardown();
     self._log('error', 'Activation failed — staying inactive: ' + ((e && e.stack) || e));
@@ -124,12 +131,17 @@ StreamWatchdog.prototype.onStop = function () {
 StreamWatchdog.prototype._teardown = function () {
   var self = this;
   if (self.tickTimer) { clearInterval(self.tickTimer); self.tickTimer = null; }
-  self._removeStopHook();
+  self._removeUiHook();
   self.ready        = false;
   self.mem          = policy.initialMemory();
   self.pendingSince = 0;
   self.pendingWhat  = null;
+  self.offlineKeys  = {};
+  self.mpdlog.reset();
   self.probe.clearCache();
+  self.card.reset();
+  self.cardNote = null;
+  self.mpdNote  = null;
 };
 
 /**
@@ -150,41 +162,70 @@ StreamWatchdog.prototype._log = function (level, msg) {
 };
 
 // =============================================================================
-// The user's Stop
+// The user's intent: buttons pressed in the Volumio UI
 // =============================================================================
 
+// What the Volumio web UIs (www, www3, www4) emit for the transport buttons.
+var UI_COMMANDS = ['stop', 'pause', 'next', 'prev'];
+
 /**
- * Anything that calls commandRouter.volumioStop — the UI, the app, another
- * plugin — is someone who wants the music off, so the watchdog stops looking
- * after the stream. The plugin itself never calls volumioStop: it switches
- * sources with replaceAndPlay, which stops through the state machine
- * directly. That is what lets one hook replace 1.x's three stop flags.
+ * Only the Volumio UI says what the user wants: a person opened it and
+ * pressed Stop, Pause, Next or Back. The same commands through the REST API
+ * or the CLI — a Bluetooth remote via triggerhappy (2026-10-30: five `next`
+ * in 7 s), a script — reach the same commandRouter methods, so hooking those
+ * cannot tell them apart. The UI's socket events can: the plugin listens on
+ * every UI connection, next to Volumio's own handlers, and never sends one.
  */
-StreamWatchdog.prototype._installStopHook = function () {
+StreamWatchdog.prototype._installUiHook = function () {
   var self = this;
-  if (self._origVolumioStop) return;
-  if (!self.commandRouter || typeof self.commandRouter.volumioStop !== 'function') {
-    throw new Error('commandRouter.volumioStop unavailable');
+  if (self._ui) return;
+  var pm  = self.commandRouter && self.commandRouter.pluginManager;
+  var web = pm && typeof pm.getPlugin === 'function' && pm.getPlugin('user_interface', 'websocket');
+  var nsp = web && web.libSocketIO && web.libSocketIO.sockets;
+  if (!nsp || typeof nsp.on !== 'function') {
+    throw new Error('the Volumio UI socket (websocket plugin) is unavailable');
   }
-  self._origVolumioStop = self.commandRouter.volumioStop;
-  self.commandRouter.volumioStop = function () {
-    try { self._onUserStop(); } catch (e) { self._log('error', 'Stop hook threw: ' + e); }
-    return self._origVolumioStop.apply(self.commandRouter, arguments);
-  };
+  var handlers = {};
+  UI_COMMANDS.forEach(function (cmd) {
+    handlers[cmd] = function () {
+      try { self._onUiCommand(cmd, this); } catch (e) { self._log('error', 'UI hook threw: ' + e); }
+    };
+  });
+  function attach(socket) {
+    UI_COMMANDS.forEach(function (cmd) { socket.on(cmd, handlers[cmd]); });
+  }
+  self._ui = { nsp: nsp, handlers: handlers, attach: attach };
+  uiSockets(nsp).forEach(attach);   // pages already open when the plugin starts
+  nsp.on('connection', attach);
 };
 
-StreamWatchdog.prototype._removeStopHook = function () {
-  if (this._origVolumioStop) {
-    this.commandRouter.volumioStop = this._origVolumioStop;
-    this._origVolumioStop = null;
-  }
+StreamWatchdog.prototype._removeUiHook = function () {
+  var ui = this._ui;
+  if (!ui) return;
+  this._ui = null;
+  ui.nsp.removeListener('connection', ui.attach);
+  uiSockets(ui.nsp).forEach(function (socket) {
+    UI_COMMANDS.forEach(function (cmd) { socket.removeListener(cmd, ui.handlers[cmd]); });
+  });
 };
 
-StreamWatchdog.prototype._onUserStop = function () {
-  if (!this.mem.wanted) return;
+/** The connected sockets: an object by id in socket.io 1.x, a Map in 3+. */
+function uiSockets(nsp) {
+  var s = nsp.connected || nsp.sockets;
+  if (!s) return [];
+  if (Array.isArray(s)) return s.slice();
+  if (typeof s.values === 'function') return Array.from(s.values());
+  return Object.keys(s).map(function (k) { return s[k]; });
+}
+
+StreamWatchdog.prototype._onUiCommand = function (cmd, socket) {
+  var r = policy.userCommand(this.mem, cmd);
+  if (!r.forgot) return;
   var before = this._stateName(this.mem);
-  this.mem = policy.forget(this.mem);
-  this._log('info', before + ' → IDLE (stop requested)');
+  this.mem = r.mem;
+  this._log('info', before + ' → IDLE (' + cmd + ' pressed in the Volumio UI)');
+  var from = socket && socket.handshake && socket.handshake.address;
+  if (from) this._log('verbose', 'UI ' + cmd + ' came from ' + from);
 };
 
 // =============================================================================
@@ -207,6 +248,14 @@ StreamWatchdog.prototype.tick = function () {
   var before = self._stateName(self.mem);
   var r      = policy.decide(obs, self.mem, now, self._policyConfig());
   self.mem   = r.mem;
+  self._forgetOfflineQueue(obs, now);
+
+  if (r.cardIdle) {
+    self._log('info', 'Sound card idle while Volumio says play (' + obs.card + ')');
+  }
+  if (r.starved) {
+    self._log('info', 'MPD playing silence while Volumio says play (' + obs.mpd + ')');
+  }
 
   var after = self._stateName(self.mem);
   if (after !== before) self._onTransition(before, after, r.why);
@@ -217,19 +266,109 @@ StreamWatchdog.prototype.tick = function () {
   self._execute(r.action, r.why);
 };
 
-/** The player state, or null if it cannot be read. */
+/**
+ * The offline queue is ours for as long as its tracks sit in Volumio's queue.
+ * It is forgotten when nothing is looked after, or when the radio plays (past
+ * the playlist's start-up grace) and Volumio's queue holds none of them any
+ * more — from then on local music is the user's again; with the library
+ * fallback the list would otherwise hold every local track.
+ *
+ * Not by time alone: on 2026-11-05 the reissued radio won a race against the
+ * offline playlist inside MPD, the list was forgotten the moment the radio
+ * was seen, and 4 min 42 later Volumio — still counting down the first
+ * offline track in its own queue — announced the second. Taken for the
+ * user's choice: IDLE for four hours with the radio on air.
+ */
+StreamWatchdog.prototype._forgetOfflineQueue = function (obs, now) {
+  var self = this;
+  var m = self.mem;
+  if (!m.wanted) { self.offlineKeys = {}; return; }
+  if (!(m.mode === MODE.RADIO && obs && obs.status === 'play' && policy.isStream(obs) &&
+        now - m.offlineAt >= policy.DEFAULTS.offlineGraceMs)) return;
+  var queue = self._volumioQueue();
+  // An unreadable queue is no evidence that the tracks are gone: keep them.
+  if (!queue) return;
+  var still = queue.some(function (it) { return it && self.offlineKeys[offline.trackKey(it.uri)]; });
+  if (!still) self.offlineKeys = {};
+};
+
+/**
+ * Volumio's play queue, or null when it cannot be read. The array itself:
+ * stateMachine.getQueue() writes a journal line per call.
+ */
+StreamWatchdog.prototype._volumioQueue = function () {
+  try {
+    var sm = this.commandRouter.stateMachine;
+    var q  = sm && sm.playQueue && sm.playQueue.arrayQueue;
+    return Array.isArray(q) ? q : null;
+  } catch (e) { return null; }
+};
+
+/**
+ * The player state, or null if it cannot be read. While Volumio says `play`
+ * or `pause` it also carries `starved` (MPD played silence since the last
+ * tick — lib/mpdlog.js) and `audio`: whether the sound card is actually
+ * playing (Volumio can say either one wrongly — see lib/decide.js).
+ */
 StreamWatchdog.prototype._observe = function () {
   var cr = this.commandRouter;
+  var st;
   try {
     // stateMachine.getState() directly: volumioGetState() writes a line to
     // the journal on every call, and this runs every few seconds.
     var sm = cr.stateMachine;
-    var st = (sm && typeof sm.getState === 'function') ? sm.getState() : cr.volumioGetState();
-    return st || null;
+    st = (sm && typeof sm.getState === 'function') ? sm.getState() : cr.volumioGetState();
   } catch (e) {
     this._log('warn', 'Could not read the player state: ' + e);
     return null;
   }
+  if (!st) return null;
+  // mpd.log is read every tick, so that only what MPD wrote since the last
+  // tick is ever counted.
+  var mpd = this._readMpdLog();
+  if (st.status !== 'play' && st.status !== 'pause') { this.card.reset(); return st; }
+  var card = this._readCard();
+  return Object.assign({}, st, { audio: card.audio, card: card.detail,
+                                 starved: mpd.starved, mpd: mpd.detail,
+                                 offline: !!this.offlineKeys[offline.trackKey(st.uri)] });
+};
+
+/** MPD's log, or { starved: null } when it cannot be read — logged once. */
+StreamWatchdog.prototype._readMpdLog = function () {
+  var r;
+  try { r = this.mpdlog.read(); }
+  catch (e) { r = { starved: null, detail: 'read threw: ' + e }; }
+  if (r.starved === null || r.starved === undefined) {
+    if (r.detail !== this.mpdNote) {
+      this.mpdNote = r.detail;
+      this._log('info', 'MPD log not checked (' + r.detail + ')');
+    }
+  } else if (this.mpdNote) {
+    this.mpdNote = null;
+    this._log('info', 'MPD log checked again');
+  }
+  return r;
+};
+
+/**
+ * The sound card, or { audio: null } when it cannot be told. An unreadable
+ * card is no evidence and never causes a reissue: it is logged once, and
+ * the loop goes on with Volumio's state alone.
+ */
+StreamWatchdog.prototype._readCard = function () {
+  var c;
+  try { c = this.card.read(); }
+  catch (e) { c = { audio: null, detail: 'read threw: ' + e }; }
+  if (c.audio === null || c.audio === undefined) {
+    if (c.detail !== this.cardNote) {
+      this.cardNote = c.detail;
+      this._log('info', 'Sound card not checked — using Volumio\'s state only (' + c.detail + ')');
+    }
+  } else if (this.cardNote) {
+    this.cardNote = null;
+    this._log('info', 'Sound card checked again (' + c.detail + ')');
+  }
+  return c;
 };
 
 StreamWatchdog.prototype._policyConfig = function () {
@@ -301,6 +440,10 @@ StreamWatchdog.prototype._playOffline = function (why) {
     }
     var list = offline.shuffle(res.items);
     self._log('info', 'Offline queue: ' + list.length + ' tracks from the ' + res.source + ', shuffled');
+    // Remembered so the policy never takes our own playlist for the user's.
+    self.offlineKeys = {};
+    list.forEach(function (it) { self.offlineKeys[offline.trackKey(it.uri)] = true; });
+    self.mem = policy.noteOffline(self.mem, Date.now());
     self._replaceAndPlay({ list: list, index: 0 }, 'play the offline playlist');
   }).fail(function (e) {
     self._end();

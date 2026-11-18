@@ -22,6 +22,15 @@ var LOCAL_LIBRARY_URI = 'music-library/INTERNAL';
 // 'internal-folder' — see the Volumio mpd plugin's lsInfo).
 var FOLDER_TYPES = ['folder', 'internal-folder', 'remdisk', 'album', 'artist'];
 
+/**
+ * The same track under the spellings Volumio uses for it: the playlist file
+ * and the queue say `mnt/INTERNAL/…`, browsing says `music-library/INTERNAL/…`,
+ * MPD says `INTERNAL/…`.
+ */
+function trackKey(uri) {
+  return String(uri || '').replace(/^\/+/, '').replace(/^(music-library|mnt)\//, '');
+}
+
 /** Fisher-Yates. Returns a new array; `random` is injectable for tests. */
 function shuffle(items, random) {
   var rnd = random || Math.random;
@@ -111,6 +120,6 @@ function loadTracks(commandRouter, name, logger, tag) {
 }
 
 module.exports = {
-  shuffle: shuffle, loadTracks: loadTracks, collectTracks: collectTracks,
+  shuffle: shuffle, trackKey: trackKey, loadTracks: loadTracks, collectTracks: collectTracks,
   LOCAL_LIBRARY_URI: LOCAL_LIBRARY_URI
 };
