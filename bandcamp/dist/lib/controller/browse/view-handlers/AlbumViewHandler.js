@@ -33,7 +33,10 @@ class AlbumViewHandler extends ExplodableViewHandler_1.default {
         const trackRenderer = this.getRenderer(renderers_1.RendererType.Track);
         const albumInfo = await model.getAlbum(albumUrl);
         const trackItems = albumInfo.tracks?.reduce((result, track) => {
-            const parsed = trackRenderer.renderToListItem({ ...track, type: 'track' });
+            const parsed = trackRenderer.renderToListItem({
+                ...track,
+                type: 'track'
+            });
             if (parsed) {
                 result.push(parsed);
             }

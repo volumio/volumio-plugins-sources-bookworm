@@ -1,26 +1,48 @@
 import bandcamp from '../../../../BandcampContext';
-import BaseRenderer, { type RenderedHeader, type RenderedListItem } from './BaseRenderer';
+import BaseRenderer, {
+  type RenderedHeader,
+  type RenderedListItem
+} from './BaseRenderer';
 import UIHelper from '../../../../util/UIHelper';
 import type ShowEntity from '../../../../entities/ShowEntity';
 import { type ShowView } from '../ShowViewHandler';
 import ViewHelper from '../ViewHelper';
 
 export default class ShowRenderer extends BaseRenderer<ShowEntity> {
-
-  renderToListItem(data: ShowEntity, playOnClick = false): RenderedListItem | null {
+  renderToListItem(
+    data: ShowEntity,
+    playOnClick = false
+  ): RenderedListItem | null {
     if (!data.url) {
       return null;
     }
+
+    const common = {
+      title: data.name,
+      artist: UIHelper.reformatDate(data.date),
+      albumart: data.thumbnail
+    };
+
     const showView: ShowView = {
       name: 'show',
-      showUrl: data.url
+      showUrl: data.url,
+      explode: {
+        ...common,
+        uri: ViewHelper.constructUriFromViews([
+          {
+            name: 'root'
+          },
+          {
+            name: 'show',
+            showUrl: data.url
+          } satisfies ShowView
+        ])
+      }
     };
     const result: RenderedListItem = {
       service: 'bandcamp',
       type: 'folder',
-      title: data.name,
-      artist: UIHelper.reformatDate(data.date),
-      albumart: data.thumbnail,
+      ...common,
       uri: `${this.uri}/${ViewHelper.constructUriSegmentFromView(showView)}`
     };
 
@@ -37,14 +59,14 @@ export default class ShowRenderer extends BaseRenderer<ShowEntity> {
 
   renderToHeader(data: ShowEntity): RenderedHeader | null {
     return {
-      'uri': this.uri,
-      'service': 'bandcamp',
-      'type': 'song',
-      'title': data.name,
-      'artist': bandcamp.getI18n('BANDCAMP_HEADER_SHOW'),
-      'year': data.date,
-      'duration': data.description,
-      'albumart': data.thumbnail
+      uri: this.uri,
+      service: 'bandcamp',
+      type: 'song',
+      title: data.name,
+      artist: bandcamp.getI18n('BANDCAMP_HEADER_SHOW'),
+      year: data.date,
+      duration: data.description,
+      albumart: data.thumbnail
     };
   }
 }

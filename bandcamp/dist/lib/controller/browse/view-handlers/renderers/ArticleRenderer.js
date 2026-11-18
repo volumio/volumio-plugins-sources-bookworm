@@ -38,20 +38,40 @@ class ArticleRenderer extends BaseRenderer_1.default {
         };
     }
     renderMediaItemTrack(article, mediaItem, track) {
-        const articleView = {
-            name: 'article',
-            articleUrl: article.url,
-            mediaItemRef: mediaItem.mediaItemRef,
-            track: track.position?.toString()
-        };
-        return {
-            service: 'bandcamp',
-            type: 'song',
+        const common = {
             title: track.name,
             album: mediaItem.name,
             artist: mediaItem.artist ? mediaItem.artist.name : '',
             albumart: mediaItem.thumbnail,
-            duration: track.duration,
+            duration: track.duration
+        };
+        const params = {
+            articleUrl: article.url,
+            mediaItemRef: mediaItem.mediaItemRef,
+            track: track.position?.toString()
+        };
+        const articleView = {
+            name: 'article',
+            ...params,
+            explode: {
+                ...common,
+                uri: ViewHelper_1.default.constructUriFromViews([
+                    {
+                        name: 'root'
+                    },
+                    {
+                        name: 'article',
+                        ...params,
+                        albumUrl: mediaItem.type === 'album' ? mediaItem.url : mediaItem.album?.url,
+                        artistUrl: mediaItem.artist?.url,
+                    }
+                ])
+            }
+        };
+        return {
+            service: 'bandcamp',
+            type: 'song',
+            ...common,
             uri: `${this.uri}/${ViewHelper_1.default.constructUriSegmentFromView(articleView)}`
         };
     }

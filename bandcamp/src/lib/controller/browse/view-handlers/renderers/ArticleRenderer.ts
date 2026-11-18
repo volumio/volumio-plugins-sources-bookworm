@@ -1,7 +1,10 @@
 import bandcamp from '../../../../BandcampContext';
-import BaseRenderer, { type RenderedHeader, type RenderedListItem } from './BaseRenderer';
+import BaseRenderer, {
+  type RenderedHeader,
+  type RenderedListItem
+} from './BaseRenderer';
 import UIHelper from '../../../../util/UIHelper';
-import {type ArticleEntityMediaItem} from '../../../../entities/ArticleEntity';
+import { type ArticleEntityMediaItem } from '../../../../entities/ArticleEntity';
 import type ArticleEntity from '../../../../entities/ArticleEntity';
 import type TrackEntity from '../../../../entities/TrackEntity';
 import type AlbumEntity from '../../../../entities/AlbumEntity';
@@ -9,7 +12,6 @@ import { type ArticleView } from '../ArticleViewHandler';
 import ViewHelper from '../ViewHelper';
 
 export default class ArticleRenderer extends BaseRenderer<ArticleEntity> {
-
   renderToListItem(data: ArticleEntity): RenderedListItem | null {
     if (!data.url) {
       return null;
@@ -37,25 +39,53 @@ export default class ArticleRenderer extends BaseRenderer<ArticleEntity> {
       albumart: data.thumbnail,
       artist: `${bandcamp.getI18n('BANDCAMP_DAILY')} - ${data.category?.name}`,
       year: UIHelper.reformatDate(data.date),
-      duration: data.author ? bandcamp.getI18n('BANDCAMP_ARTICLE_BY', data.author.name) : undefined
+      duration:
+        data.author ?
+          bandcamp.getI18n('BANDCAMP_ARTICLE_BY', data.author.name)
+        : undefined
     };
   }
 
-  renderMediaItemTrack(article: ArticleEntity, mediaItem: ArticleEntityMediaItem<AlbumEntity | TrackEntity>, track: TrackEntity): RenderedListItem {
-    const articleView: ArticleView = {
-      name: 'article',
-      articleUrl: article.url,
-      mediaItemRef: mediaItem.mediaItemRef,
-      track: track.position?.toString()
-    };
-    return {
-      service: 'bandcamp',
-      type: 'song',
+  renderMediaItemTrack(
+    article: ArticleEntity,
+    mediaItem: ArticleEntityMediaItem<AlbumEntity | TrackEntity>,
+    track: TrackEntity
+  ): RenderedListItem {
+    const common = {
       title: track.name,
       album: mediaItem.name,
       artist: mediaItem.artist ? mediaItem.artist.name : '',
       albumart: mediaItem.thumbnail,
-      duration: track.duration,
+      duration: track.duration
+    };
+    const params = {
+      articleUrl: article.url,
+      mediaItemRef: mediaItem.mediaItemRef,
+      track: track.position?.toString()
+    };
+    const articleView: ArticleView = {
+      name: 'article',
+      ...params,
+      explode: {
+        ...common,
+        uri: ViewHelper.constructUriFromViews([
+          {
+            name: 'root'
+          },
+          {
+            name: 'article',
+            ...params,
+            albumUrl:
+              mediaItem.type === 'album' ? mediaItem.url : mediaItem.album?.url,
+            artistUrl: mediaItem.artist?.url
+          } satisfies ArticleView
+        ])
+      }
+    };
+    return {
+      service: 'bandcamp',
+      type: 'song',
+      ...common,
       uri: `${this.uri}/${ViewHelper.constructUriSegmentFromView(articleView)}`
     };
   }

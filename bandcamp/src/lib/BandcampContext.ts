@@ -4,7 +4,6 @@ import type winston from 'winston';
 import Cache from './util/Cache';
 
 class BandcampContext {
-
   #singletons: Record<string, any>;
   #data: Record<string, any>;
   #pluginContext?: any;
@@ -29,9 +28,11 @@ class BandcampContext {
     this.#data[key] = value;
   }
 
-  get<T>(key: string, defaultValue: T): T
+  get<T>(key: string, defaultValue: T): T;
   get<T>(key: string, defaultValue?: T): T | null {
-    return (this.#data[key] !== undefined) ? this.#data[key] : (defaultValue || null);
+    return this.#data[key] !== undefined ?
+        this.#data[key]
+      : defaultValue || null;
   }
 
   delete(key: string) {
@@ -44,12 +45,19 @@ class BandcampContext {
 
     this.#loadI18n();
     if (!this.#i18CallbackRegistered) {
-      this.#pluginContext.coreCommand.sharedVars.registerCallback('language_code', this.#onSystemLanguageChanged.bind(this));
+      this.#pluginContext.coreCommand.sharedVars.registerCallback(
+        'language_code',
+        this.#onSystemLanguageChanged.bind(this)
+      );
       this.#i18CallbackRegistered = true;
     }
   }
 
-  toast(type: 'success' | 'info' | 'error' | 'warning', message: string, title = 'Bandcamp Discover') {
+  toast(
+    type: 'success' | 'info' | 'error' | 'warning',
+    message: string,
+    title = 'Bandcamp Discover'
+  ) {
     this.#pluginContext.coreCommand.pushToastMessage(type, title, message);
   }
 
@@ -63,16 +71,13 @@ class BandcampContext {
       if (json) {
         try {
           return JSON.parse(val);
-        }
-        catch (e) {
+        } catch (_) {
           return defaultValue;
         }
-      }
-      else {
+      } else {
         return val;
       }
-    }
-    else {
+    } else {
       return defaultValue;
     }
   }
@@ -86,11 +91,21 @@ class BandcampContext {
   }
 
   getAlbumArtPlugin() {
-    return this.#getSingleton('albumArtPlugin', () => this.#pluginContext.coreCommand.pluginManager.getPlugin('miscellanea', 'albumart'));
+    return this.#getSingleton('albumArtPlugin', () =>
+      this.#pluginContext.coreCommand.pluginManager.getPlugin(
+        'miscellanea',
+        'albumart'
+      )
+    );
   }
 
   getMpdPlugin(): any {
-    return this.#getSingleton('mpdPlugin', () => this.#pluginContext.coreCommand.pluginManager.getPlugin('music_service', 'mpd'));
+    return this.#getSingleton('mpdPlugin', () =>
+      this.#pluginContext.coreCommand.pluginManager.getPlugin(
+        'music_service',
+        'mpd'
+      )
+    );
   }
 
   getStateMachine(): any {
@@ -99,7 +114,10 @@ class BandcampContext {
 
   getCache() {
     if (!this.#cache) {
-      this.#cache = new Cache(this.getConfigValue('cacheTTL', 1800), this.getConfigValue('cacheMaxEntries', 5000));
+      this.#cache = new Cache(
+        this.getConfigValue('cacheTTL', 1800),
+        this.getConfigValue('cacheMaxEntries', 5000)
+      );
     }
     return this.#cache;
   }
@@ -131,11 +149,11 @@ class BandcampContext {
     if (key.indexOf('.') > 0) {
       const mainKey = key.split('.')[0];
       const secKey = key.split('.')[1];
-      str = (this.#i18n[mainKey] as Record<string, string>)?.[secKey] ||
+      str =
+        (this.#i18n[mainKey] as Record<string, string>)?.[secKey] ||
         (this.#i18nDefaults[mainKey] as Record<string, string>)?.[secKey] ||
         key;
-    }
-    else {
+    } else {
       str = (this.#i18n[key] || this.#i18nDefaults[key] || key) as string;
     }
 
@@ -152,16 +170,17 @@ class BandcampContext {
 
       try {
         this.#i18nDefaults = fs.readJsonSync(`${i18nPath}/strings_en.json`);
-      }
-      catch (e) {
+      } catch (_) {
         this.#i18nDefaults = {};
       }
 
       try {
-        const language_code = this.#pluginContext.coreCommand.sharedVars.get('language_code');
-        this.#i18n = fs.readJsonSync(`${i18nPath}/strings_${language_code}.json`);
-      }
-      catch (e) {
+        const language_code =
+          this.#pluginContext.coreCommand.sharedVars.get('language_code');
+        this.#i18n = fs.readJsonSync(
+          `${i18nPath}/strings_${language_code}.json`
+        );
+      } catch (_) {
         this.#i18n = this.#i18nDefaults;
       }
     }

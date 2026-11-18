@@ -21,7 +21,6 @@ interface ShowExplodeTrack extends TrackEntity {
 }
 
 export default class ShowViewHandler extends ExplodableViewHandler<ShowView> {
-
   async browse(): Promise<RenderedPage> {
     const showUrl = this.currentView.showUrl;
     if (showUrl) {
@@ -35,7 +34,10 @@ export default class ShowViewHandler extends ExplodableViewHandler<ShowView> {
     const view = this.currentView;
 
     const modelParams: ShowModelGetShowsParams = {
-      limit: view.inSection ? bandcamp.getConfigValue('itemsPerSection', 5) : bandcamp.getConfigValue('itemsPerPage', 47)
+      limit:
+        view.inSection ?
+          bandcamp.getConfigValue('itemsPerSection', 5)
+        : bandcamp.getConfigValue('itemsPerPage', 47)
     };
 
     if (view.pageRef) {
@@ -53,7 +55,10 @@ export default class ShowViewHandler extends ExplodableViewHandler<ShowView> {
       return result;
     }, []);
 
-    const nextPageRef = this.constructPageRef(shows.nextPageToken, shows.nextPageOffset);
+    const nextPageRef = this.constructPageRef(
+      shows.nextPageToken,
+      shows.nextPageOffset
+    );
     if (nextPageRef) {
       const nextUri = this.constructNextUri(nextPageRef);
       listItems.push(this.constructNextPageItem(nextUri));
@@ -62,11 +67,17 @@ export default class ShowViewHandler extends ExplodableViewHandler<ShowView> {
     return {
       navigation: {
         prev: { uri: this.constructPrevUri() },
-        lists: [ {
-          title: UIHelper.addBandcampIconToListTitle(bandcamp.getI18n(view.inSection ? 'BANDCAMP_SHOWS_SHORT' : 'BANDCAMP_SHOWS')),
-          availableListViews: [ 'list', 'grid' ],
-          items: listItems
-        } ]
+        lists: [
+          {
+            title: UIHelper.addBandcampIconToListTitle(
+              bandcamp.getI18n(
+                view.inSection ? 'BANDCAMP_SHOWS_SHORT' : 'BANDCAMP_SHOWS'
+              )
+            ),
+            availableListViews: ['list', 'grid'],
+            items: listItems
+          }
+        ]
       }
     };
   }
@@ -87,9 +98,13 @@ export default class ShowViewHandler extends ExplodableViewHandler<ShowView> {
         target: '_blank'
       };
       const playFullStreamLinkList: RenderedList = {
-        title: UIHelper.constructListTitleWithLink('', viewShowExternalLink, true),
-        availableListViews: [ 'list' ],
-        items: [ showListItem ]
+        title: UIHelper.constructListTitleWithLink(
+          '',
+          viewShowExternalLink,
+          true
+        ),
+        availableListViews: ['list'],
+        items: [showListItem]
       };
       allLists.push(playFullStreamLinkList);
     }
@@ -113,29 +128,34 @@ export default class ShowViewHandler extends ExplodableViewHandler<ShowView> {
         }
       };
       const featuredAlbumsList: RenderedList = {
-        title: UIHelper.constructListTitleWithLink(bandcamp.getI18n('BANDCAMP_TRACK_SOURCES'), switchViewLink, false),
-        availableListViews: [ 'list', 'grid' ],
+        title: UIHelper.constructListTitleWithLink(
+          bandcamp.getI18n('BANDCAMP_TRACK_SOURCES'),
+          switchViewLink,
+          false
+        ),
+        availableListViews: ['list', 'grid'],
         items: []
       };
 
       const _fetchAlbumOrTrackPromise = async (track: TrackEntity) => {
         if (track.album) {
           return track.album;
-        }
-        else if (track.url) {
+        } else if (track.url) {
           try {
             return await trackModel.getTrack(track.url);
-          }
-          catch (error: any) {
+          } catch (_) {
             return null;
           }
         }
         return null;
       };
 
-      const fetchAlbumOrTrackPromises = show.tracks?.map((track) => _fetchAlbumOrTrackPromise(track)) || [];
+      const fetchAlbumOrTrackPromises =
+        show.tracks?.map((track) => _fetchAlbumOrTrackPromise(track)) || [];
 
-      const fetchedAlbumsOrTracks = (await Promise.all(fetchAlbumOrTrackPromises));
+      const fetchedAlbumsOrTracks = await Promise.all(
+        fetchAlbumOrTrackPromises
+      );
       const albumsAdded: string[] = [];
 
       fetchedAlbumsOrTracks.forEach((item) => {
@@ -143,12 +163,14 @@ export default class ShowViewHandler extends ExplodableViewHandler<ShowView> {
           return true;
         }
         if (item.type === 'track') {
-          const rendered = trackRenderer.renderToListItem(item, true, true);
+          const rendered = trackRenderer.renderToListItem(item, {
+            addType: true,
+            fakeAlbum: true
+          });
           if (rendered) {
             featuredAlbumsList.items.push(rendered);
           }
-        }
-        else if (item.type === 'album' && !albumsAdded.includes(item.url)) {
+        } else if (item.type === 'album' && !albumsAdded.includes(item.url)) {
           const rendered = albumRenderer.renderToListItem(item);
           if (rendered) {
             featuredAlbumsList.items.push(rendered);
@@ -159,8 +181,7 @@ export default class ShowViewHandler extends ExplodableViewHandler<ShowView> {
 
       allLists.push(featuredAlbumsList);
       this.#checkAndAddSwitchViewListItem(switchViewLinkData, allLists);
-    }
-    else {
+    } else {
       const trackRenderer = this.getRenderer(RendererType.Track);
       const switchViewLinkData = {
         uri: this.#constructUriWithParams({ view: 'albums', noExplode: 1 }),
@@ -178,8 +199,12 @@ export default class ShowViewHandler extends ExplodableViewHandler<ShowView> {
         }
       };
       const featuredTracksList: RenderedList = {
-        title: UIHelper.constructListTitleWithLink(bandcamp.getI18n('BANDCAMP_FEATURED_TRACKS'), switchViewLink, false),
-        availableListViews: [ 'list' ],
+        title: UIHelper.constructListTitleWithLink(
+          bandcamp.getI18n('BANDCAMP_FEATURED_TRACKS'),
+          switchViewLink,
+          false
+        ),
+        availableListViews: ['list'],
         items: []
       };
       const fetchTrackPromises = show.tracks?.map(async (track) => {
@@ -188,12 +213,12 @@ export default class ShowViewHandler extends ExplodableViewHandler<ShowView> {
             return await trackModel.getTrack(track.url);
           }
           return null;
-        }
-        catch (error: any) {
+        } catch (_) {
           return null;
         }
       });
-      const tracks = fetchTrackPromises ? await Promise.all(fetchTrackPromises) : [];
+      const tracks =
+        fetchTrackPromises ? await Promise.all(fetchTrackPromises) : [];
 
       tracks.forEach((track) => {
         if (track) {
@@ -227,7 +252,10 @@ export default class ShowViewHandler extends ExplodableViewHandler<ShowView> {
     ]);
   }
 
-  #checkAndAddSwitchViewListItem(linkData: { uri: string; text: string }, allLists: RenderedList[]) {
+  #checkAndAddSwitchViewListItem(
+    linkData: { uri: string; text: string },
+    allLists: RenderedList[]
+  ) {
     if (!UIHelper.supportsEnhancedTitles()) {
       // Compensate for loss of switch view link
       const switchViewListItem: RenderedListItem = {
@@ -238,8 +266,8 @@ export default class ShowViewHandler extends ExplodableViewHandler<ShowView> {
         icon: 'fa fa-arrow-circle-right'
       };
       allLists.push({
-        availableListViews: [ 'list' ],
-        items: [ switchViewListItem ]
+        availableListViews: ['list'],
+        items: [switchViewListItem]
       });
     }
     return allLists;
@@ -276,9 +304,27 @@ export default class ShowViewHandler extends ExplodableViewHandler<ShowView> {
    * bandcamp/show@showUrl={showUrl}
    */
   getTrackUri(track: ShowExplodeTrack) {
+    const common: Record<string, string> & { showUrl: string } = {
+      showUrl: track.showUrl
+    };
     const showView: ShowView = {
       name: 'show',
-      showUrl: track.showUrl
+      ...common,
+      explode: {
+        title: track.name,
+        artist: track.artist?.name,
+        album: track.album?.name,
+        albumart: track.thumbnail,
+        uri: ViewHelper.constructUriFromViews([
+          {
+            name: 'root'
+          },
+          {
+            name: 'show',
+            ...common
+          } satisfies ShowView
+        ])
+      }
     };
     return `bandcamp/${ViewHelper.constructUriSegmentFromView(showView)}`;
   }

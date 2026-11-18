@@ -2,17 +2,17 @@ import type AlbumEntity from '../../../../entities/AlbumEntity';
 import type ArtistEntity from '../../../../entities/ArtistEntity';
 import type LabelEntity from '../../../../entities/LabelEntity';
 import type TrackEntity from '../../../../entities/TrackEntity';
-import { type AlbumView } from '../AlbumViewHandler';
-import { type BandView } from '../BandViewHandler';
-import { type TrackView } from '../TrackViewHandler';
 import type View from '../View';
 import ViewHelper from '../ViewHelper';
 import BaseRenderer, { type RenderedListItem } from './BaseRenderer';
 
-type SearchResultEntity = ArtistEntity | LabelEntity | AlbumEntity | TrackEntity;
+type SearchResultEntity =
+  | ArtistEntity
+  | LabelEntity
+  | AlbumEntity
+  | TrackEntity;
 
 export default class SearchResultRenderer extends BaseRenderer<SearchResultEntity> {
-
   renderToListItem(data: SearchResultEntity): RenderedListItem | null {
     if (!data.url) {
       return null;
@@ -31,7 +31,7 @@ export default class SearchResultRenderer extends BaseRenderer<SearchResultEntit
         view = {
           name: 'band',
           bandUrl: data.url
-        } as BandView;
+        };
         result.type = 'folder';
         result.artist = data.location;
         break;
@@ -40,7 +40,7 @@ export default class SearchResultRenderer extends BaseRenderer<SearchResultEntit
         view = {
           name: 'band',
           bandUrl: data.url
-        } as BandView;
+        };
         result.type = 'folder';
         break;
 
@@ -48,7 +48,7 @@ export default class SearchResultRenderer extends BaseRenderer<SearchResultEntit
         view = {
           name: 'album',
           albumUrl: data.url
-        } as AlbumView;
+        };
         result.type = 'folder';
         result.artist = data.artist?.name;
         break;
@@ -57,7 +57,7 @@ export default class SearchResultRenderer extends BaseRenderer<SearchResultEntit
         view = {
           name: 'track',
           trackUrl: data.url
-        } as TrackView;
+        };
         result.type = 'folder';
         result.artist = data.artist?.name;
         result.album = data.album?.name;
