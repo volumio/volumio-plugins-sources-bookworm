@@ -1,0 +1,16 @@
+[Unit]
+Description=LCD Backlight Control Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+# -u: unbuffered output, so messages appear in the journal immediately
+ExecStart=/usr/bin/python3 -u /usr/local/bin/backlight_control.py
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
