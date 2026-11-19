@@ -398,6 +398,96 @@
                 "reqMute":"#01,03\r",
                 "reqModel":"#13,02\r"
             }
+        },
+        {
+            "vendor": "McIntosh",
+            "model":"MA352 & newer (PWR/VOL protocol)",
+            "baudRate": 115200,
+            "parity": "none",
+            "dataBits": 8,
+            "stopBits": 1,
+            "rtscts": false,
+            "xon": false,
+            "xoff": false,
+            "xany": false,
+            "sources": ["Input 1","Input 2","Input 3","Input 4","Input 5","Input 6","Input 7","Input 8"],
+            "sourceCmd": ["(INP 1)\r\n","(INP 2)\r\n","(INP 3)\r\n","(INP 4)\r\n","(INP 5)\r\n","(INP 6)\r\n","(INP 7)\r\n","(INP 8)\r\n"],
+            "sourceRespPostfix": ["1","2","3","4","5","6","7","8"],
+            "delimiter": ")",
+            "commandSpacingMs": 150,
+            "powerOnRepeatDelayMs": 100,
+            "powerOnSettleMs": 3000,
+            "followServiceVolume": "qobuz",
+            "enforceMaxVolume": true,
+            "holdPlaybackWhileWaking": true,
+            "initCommands": ["(STA 1)\r\n"],
+            "commands": {
+                "powerOn": "(PWR 1)\r\n",
+                "volDown": "(VOL D)\r\n",
+                "volValue": "(VOL #)\r\n",
+                "muteOn": "(MUT 1)\r\n",
+                "muteOff": "(MUT 0)\r\n"
+            },
+            "responses": [
+                {"rx": "\\(PWR 1", "cmd": ["respPowerOn"]},
+                {"rx": "\\(PWR 0", "cmd": ["respPowerOff"]},
+                {"rx": "\\(VOL ([0-9]{1,3})", "cmd": ["respVolume"]},
+                {"rx": "\\(MUT 1", "cmd": ["respMuteOn"]},
+                {"rx": "\\(MUT 0", "cmd": ["respMuteOff"]},
+                {"rx": "\\(INP ([0-9]{1,2})", "cmd": ["respSource"]},
+                {"rx": "In Passthru", "cmd": ["respPassthru"]}
+            ],
+            "statusRequests": {
+                "reqPower":"(PWR)\r\n",
+                "reqSource":"(INP)\r\n",
+                "reqVolume":"(VOL)\r\n",
+                "reqMute":"(MUT)\r\n",
+                "reqModel":""
+            }
+        },
+        {
+            "vendor": "McIntosh",
+            "model":"Legacy (PON/VST protocol)",
+            "baudRate": 115200,
+            "parity": "none",
+            "dataBits": 8,
+            "stopBits": 1,
+            "rtscts": false,
+            "xon": false,
+            "xoff": false,
+            "xany": false,
+            "sources": ["Input 1","Input 2","Input 3","Input 4","Input 5","Input 6","Input 7","Input 8","Input 9"],
+            "sourceCmd": ["(INP Z1 1)\r\n","(INP Z1 2)\r\n","(INP Z1 3)\r\n","(INP Z1 4)\r\n","(INP Z1 5)\r\n","(INP Z1 6)\r\n","(INP Z1 7)\r\n","(INP Z1 8)\r\n","(INP Z1 9)\r\n"],
+            "sourceRespPostfix": ["1","2","3","4","5","6","7","8","9"],
+            "delimiter": "\n",
+            "commandSpacingMs": 150,
+            "powerOnRepeatDelayMs": 100,
+            "powerOnSettleMs": 3000,
+            "followServiceVolume": "qobuz",
+            "enforceMaxVolume": true,
+            "initCommands": ["(CTL 1)\r\n"],
+            "commands": {
+                "powerOn": "(PON Z1)\r\n",
+                "volDown": "(VDN Z1)\r\n",
+                "volValue": "(VST Z1 #)\r\n",
+                "muteOn": "(MUT Z1 1)\r\n",
+                "muteOff": "(MUT Z1 0)\r\n"
+            },
+            "responses": [
+                {"rx": "(^|\\()PON\\b", "cmd": ["respPowerOn"]},
+                {"rx": "(^|\\()POF\\b", "cmd": ["respPowerOff"]},
+                {"rx": "\\(VST Z1 ([0-9]{1,3})", "cmd": ["respVolume"]},
+                {"rx": "\\(MUT Z1 1", "cmd": ["respMuteOn"]},
+                {"rx": "\\(MUT Z1 0", "cmd": ["respMuteOff"]},
+                {"rx": "\\(INP Z1 ([0-9]{1,2})", "cmd": ["respSource"]}
+            ],
+            "statusRequests": {
+                "reqPower":"",
+                "reqSource":"",
+                "reqVolume":"(QRY)\r\n",
+                "reqMute":"",
+                "reqModel":""
+            }
         }
       ]
 }
