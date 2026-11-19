@@ -1,0 +1,34 @@
+{
+  "name": "argon_one_power_fan",
+  "version": "0.1.0",
+  "description": "Power button, power-off signal and fan control for Argon ONE cases (beta)",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/selftest.js"
+  },
+  "author": "Andrew Pono",
+  "license": "ISC",
+  "repository": "https://github.com/andrewpono/volumio-plugins-sources-bookworm",
+  "volumio_info": {
+    "prettyName": "Argon ONE Power & Fan",
+    "icon": "fa-power-off",
+    "plugin_type": "system_hardware",
+    "boot_priority": 5,
+    "os": [
+      "bookworm"
+    ],
+    "architectures": [
+      "armhf"
+    ],
+    "has_configuration": true,
+    "details": "BETA. Power button handling (double tap reboots, hold shuts down), optional power-off signal over the UART, and fan control for Argon ONE cases that use Argon's argon1.sh (V2 tested; V1, V3 and V5 should work but are untested). Needs no packages beyond the plugin itself.",
+    "changelog": "0.1.0: Initial beta."
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "@iiot2k/gpiox": "^2.1.4"
+  }
+}
