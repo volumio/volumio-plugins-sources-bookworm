@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendRpcRequest = sendRpcRequest;
 const Util_1 = require("./Util");
 const BASE_REQUEST_BODY = {
-    'id': 1,
-    'method': 'slim.request'
+    id: 1,
+    method: 'slim.request'
 };
 const BASE_HEADERS = {
     'Content-Type': 'application/json'
@@ -38,7 +38,3 @@ async function sendRpcRequest(connectParams, params, abortController) {
         throw error;
     }
 }
-module.exports = {
-    sendRpcRequest
-};
-//# sourceMappingURL=RPC.js.map
