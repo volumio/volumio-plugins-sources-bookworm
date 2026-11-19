@@ -1,0 +1,14 @@
+{
+  "PAGE_TITLE": "ReplayGain",
+  "SECTION_TITLE": "ReplayGain",
+  "SECTION_DESC": "Plays every track at a consistent loudness using the ReplayGain tags already stored in your files, as written by taggers such as rsgain, loudgain or foobar2000. Tracks without tags are left untouched. Saving restarts the player.",
+  "SAVE": "Save",
+  "MODE": "ReplayGain",
+  "MODE_DESC": "Album mode keeps the loudness differences within an album intact, which is what you want when listening to albums end to end. Track mode levels every track on its own.",
+  "MODE_OFF": "Off",
+  "MODE_ALBUM": "Album gain",
+  "MODE_TRACK": "Track gain",
+  "MODE_AUTO": "Auto (track gain when shuffling)",
+  "PREAMP": "ReplayGain preamp",
+  "PREAMP_DESC": "Gain applied on top of ReplayGain. ReplayGain targets a fairly quiet reference level, so a positive preamp is often desirable. Clipping is prevented automatically."
+}

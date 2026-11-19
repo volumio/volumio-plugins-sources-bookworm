@@ -1,0 +1,35 @@
+{
+  "name": "replaygain",
+  "version": "1.0.0",
+  "description": "ReplayGain volume normalization for Volumio",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Claudio Saavedra",
+  "license": "MIT",
+  "volumio_info": {
+    "prettyName": "ReplayGain",
+    "plugin_type": "audio_interface",
+    "os": [
+      "bookworm"
+    ],
+    "icon": "fa-sliders",
+    "boot_priority": 10,
+    "details": "Plays every track at a consistent loudness using the ReplayGain tags already stored in your files, as written by rsgain, loudgain, foobar2000 or similar taggers. Applies to everything that plays through MPD, including local and NAS libraries, web radio and plugins such as Jellyfin.",
+    "changelog": "bookworm version",
+    "architectures": [
+      "amd64",
+      "armhf"
+    ]
+  },
+  "engines": {
+    "volumio": ">=4",
+    "node": ">=20"
+  },
+  "dependencies": {
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.2"
+  },
+  "repository": "https://github.com/volumio/volumio-plugins-sources-bookworm"
+}

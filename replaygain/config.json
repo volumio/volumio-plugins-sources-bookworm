@@ -1,0 +1,10 @@
+{
+  "mode": {
+    "type": "string",
+    "value": "album"
+  },
+  "preamp": {
+    "type": "number",
+    "value": 0
+  }
+}
