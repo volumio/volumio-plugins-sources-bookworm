@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="WEB_TITLE_MOBILE">X10 RF Remote</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<main class="wrap">
+  <h1 data-i18n="WEB_MOBILE_TITLE"></h1>
+  <p class="lead" data-i18n="WEB_MOBILE_LEAD"></p>
+
+  <div class="panel">
+    <label class="check"><input type="checkbox" id="mEnabled"> <span data-i18n="WEB_MOBILE_ENABLE"></span></label>
+    <p class="muted small" data-i18n="WEB_MOBILE_ENABLE_HELP"></p>
+    <label class="field"><span data-i18n="WEB_MOBILE_PORT"></span>
+      <input type="number" id="mPort" min="1024" max="65535" step="1" inputmode="numeric"></label>
+    <div id="mState"></div>
+    <div id="mUrls"></div>
+  </div>
+
+  <h2 data-i18n="WEB_MOBILE_GRAPHIC_TITLE"></h2>
+  <p class="muted" data-i18n="WEB_MOBILE_GRAPHIC_HELP"></p>
+  <div class="grid" id="graphics"></div>
+
+  <h2 data-i18n="WEB_MOBILE_BUTTONS"></h2>
+  <p class="muted" data-i18n="WEB_MOBILE_BUTTONS_HELP"></p>
+  <div id="problems"></div>
+  <div id="keyTable"></div>
+  <div class="row" id="actions">
+    <button id="btnSave" class="primary" data-i18n="WEB_SAVE"></button>
+    <a class="btn" href="mobilesim.html" data-i18n="WEB_MOBILE_SIM_BTN"></a>
+    <a class="btn" id="btnPrint" target="_blank" rel="noopener" data-i18n="WEB_PRINT_PROFILE"></a>
+    <span class="spacer"></span>
+    <select id="selTemplate" class="hidden"></select>
+    <button id="btnTemplate" class="hidden" data-i18n="WEB_TEMPLATE_SAVE"></button>
+  </div>
+</main>
+<script src="app.js"></script>
+<script src="mobile.js"></script>
+</body>
+</html>

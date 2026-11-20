@@ -1,0 +1,154 @@
+X10 RF Remote - Command reference
+==================================
+(Vorlage des Plugins X10 RF Remote)
+
+Diese Datei liegt unter /data/INTERNAL/X10/command reference.txt (Freigabe "Internal Storage")
+und kann frei ergänzt werden. Eine selbst geänderte Datei wird vom Plugin nie überschrieben.
+Solange sie unverändert ist, zeigt das Plugin sie in der eingestellten Sprache an.
+
+Befehle markieren, kopieren (Strg+C) und in das Feld "Befehl" einfügen.
+Eigene Befehle müssen erlaubt sein: Plugin-Einstellungen → Expertenmodus → "Eigene Shell-Befehle erlauben".
+Die Befehle laufen über Triggerhappy (Benutzer laut Triggerhappy-Dienst, meist "nobody")
+- also ohne Root-Rechte und ohne Terminal. Ein Befehl pro Feld, max. 2000 Zeichen.
+Triggerhappy führt den Befehl mit /bin/sh aus (Pipes |, ; und >> funktionieren).
+Wichtig: Das Zeichen # darf nicht vorkommen - Triggerhappy schneidet die Zeile dort ab.
+
+
+1. Plugin-Hilfsskript x10remote-action  (empfohlen)
+---------------------------------------------------
+Steuert Volumio über die lokale REST-API (http://127.0.0.1:3000/api/v1).
+
+/usr/local/bin/x10remote-action toggle               Play/Pause umschalten
+/usr/local/bin/x10remote-action play                 Wiedergabe starten
+/usr/local/bin/x10remote-action pause                Pause
+/usr/local/bin/x10remote-action stop                 Stopp
+/usr/local/bin/x10remote-action next                 nächster Titel
+/usr/local/bin/x10remote-action prev                 vorheriger Titel
+/usr/local/bin/x10remote-action volup                lauter (eine Stufe)
+/usr/local/bin/x10remote-action voldown              leiser (eine Stufe)
+/usr/local/bin/x10remote-action volume 30            Lautstärke auf 30 (0-100)
+/usr/local/bin/x10remote-action mute                 stumm
+/usr/local/bin/x10remote-action unmute               Ton an
+/usr/local/bin/x10remote-action mutetoggle           stumm umschalten
+/usr/local/bin/x10remote-action random               Zufallswiedergabe umschalten
+/usr/local/bin/x10remote-action repeat               Wiederholen umschalten
+/usr/local/bin/x10remote-action clearqueue           Warteschlange leeren
+/usr/local/bin/x10remote-action playlist "Radio"     Playlist "Radio" abspielen
+/usr/local/bin/x10remote-action api "cmd-string"     beliebiger REST-Befehl (siehe 3.)
+
+Beispiele für "api":
+/usr/local/bin/x10remote-action api "play&N=0"                     ersten Titel der Warteschlange spielen
+/usr/local/bin/x10remote-action api "random&value=true"            Zufall an
+/usr/local/bin/x10remote-action api "random&value=false"           Zufall aus
+/usr/local/bin/x10remote-action api "repeat&value=true"            Wiederholen an
+/usr/local/bin/x10remote-action api "volume&volume=plus"           lauter
+/usr/local/bin/x10remote-action api "playplaylist&name=Radio"      Playlist (Leerzeichen als %20)
+
+
+2. Volumio-Kommandozeile (/usr/local/bin/volumio)
+-------------------------------------------------
+So stehen die Befehle auch in Volumios audio.conf.
+
+/usr/local/bin/volumio toggle           Play/Pause umschalten
+/usr/local/bin/volumio play             Wiedergabe
+/usr/local/bin/volumio pause            Pause
+/usr/local/bin/volumio stop             Stopp
+/usr/local/bin/volumio next             nächster Titel
+/usr/local/bin/volumio previous         vorheriger Titel
+/usr/local/bin/volumio clear            Warteschlange leeren
+/usr/local/bin/volumio status           Wiedergabestatus ausgeben
+/usr/local/bin/volumio volume           aktuelle Lautstärke ausgeben
+/usr/local/bin/volumio volume 40        Lautstärke 0-100
+/usr/local/bin/volumio volume plus      lauter (eine Stufe)
+/usr/local/bin/volumio volume minus     leiser (eine Stufe)
+/usr/local/bin/volumio volume mute      stumm
+/usr/local/bin/volumio volume unmute    Ton an
+/usr/local/bin/volumio volume toggle    stumm umschalten
+/usr/local/bin/volumio seek plus        10 s vor
+/usr/local/bin/volumio seek minus       10 s zurück
+/usr/local/bin/volumio seek 60          an Position 60 s springen
+/usr/local/bin/volumio repeat           Wiederholen umschalten
+/usr/local/bin/volumio random           Zufall umschalten
+
+
+3. REST-API direkt mit curl
+---------------------------
+Grundform:  /usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=<Befehl>"
+
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=toggle"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=play"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=play&N=2"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=pause"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=stop"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=next"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=prev"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=volume&volume=50"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=volume&volume=plus"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=volume&volume=minus"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=volume&volume=mute"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=volume&volume=unmute"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=clearQueue"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=playplaylist&name=Radio"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=repeat&value=true"
+/usr/bin/curl -s "http://127.0.0.1:3000/api/v1/commands/?cmd=random&value=false"
+
+Nur zum Nachsehen im Browser (keine Aktion):
+http://<IP>/api/v1/getState          aktueller Zustand
+http://<IP>/api/v1/getQueue          Warteschlange
+http://<IP>/api/v1/listplaylists     Playlisten (Namen für "playlist")
+
+
+4. Andere Volumio-Geräte im Netz steuern
+----------------------------------------
+IP anpassen (z. B. ein zweites Volumio im Nachbarraum):
+
+/usr/bin/curl -s "http://192.168.178.115/api/v1/commands/?cmd=toggle"
+/usr/bin/curl -s "http://192.168.178.115/api/v1/commands/?cmd=volume&volume=plus"
+
+
+5. Beispiele
+------------
+
+[[VOLUMIO SERVICE CONTROL]]  (nur im Terminal - brauchen Root-Rechte, als Tastenbefehl meist ohne Wirkung)
+volumio vstart                          startet den Volumio-Dienst
+volumio vstop                           stoppt den Volumio-Dienst
+volumio vrestart                        startet den Volumio-Dienst neu
+
+[[Webradios starten]]
+RADIO PARADISE:
+/usr/bin/curl -s --header "Content-Type: application/json" localhost:3000/api/v1/replaceAndPlay --data '{  "service": "webradio",  "type": "webradio",  "title": "RadioParadise",  "uri": "https://stream.radioparadise.com/aac-320",  "albumart": "https://radioparadise.com/graphics/logo_flat_350x103.png"}'
+RADIO PARADISE ROCK:
+/usr/bin/curl -s --header "Content-Type: application/json" localhost:3000/api/v1/replaceAndPlay --data '{  "service": "webradio",  "type": "webradio",  "title": "RadioParadiseRock",  "uri": "https://stream.radioparadise.com/rock-320",  "albumart": "https://radioparadise.com/graphics/logo_flat_350x103.png"}'
+RADIO EGOFM:
+/usr/bin/curl -s --header "Content-Type: application/json" localhost:3000/api/v1/replaceAndPlay --data '{  "service": "webradio",  "type": "webradio",  "title": "EgoFM",  "uri": "http://mp3ad.egofm.c.nmdn.net/ps-egofm_192/livestream.mp3",  "albumart": "https://www.egofm.de/images/site/logo.svg"}'
+
+[[Spotify]]
+Weitere Spotify-Playlists im Browser abrufen: http://<IP>/api/v1/browse?uri=spotify/playlists
+SPOTIFY RELEASE RADAR:
+/usr/bin/curl -s --header "Content-Type: application/json" localhost:3000/api/v1/replaceAndPlay --data '{  "service": "spop", "type": "playlist", "title": "Release Radar", "albumart": "https://newjams-images.scdn.co/v3/release-radar/ab6761610000e5ebda012e44f73353016e419282/en/large", "uri": "spotify:user:spotify:playlist:37i9dQZEVXboZS2Bc5o5qH"}'
+SPOTIFY DISCOVER WEEKLY:
+/usr/bin/curl -s --header "Content-Type: application/json" localhost:3000/api/v1/replaceAndPlay --data '{ "service": "spop", "type": "playlist", "title": "Discover Weekly", "albumart": "https://newjams-images.scdn.co/v3/discover-weekly/aAbca4VNfzWuUCQ_FGiEFA==/bmVuZW5lbmVuZW5lbmVuZQ==/default", "uri": "spotify:user:spotify:playlist:37i9dQZEVXcKMQKnTB7OVv"}'
+
+[[Volumio-Playlists  (Leerzeichen im Namen als %20)]]
+/usr/bin/curl -s "http://localhost:3000/api/v1/commands/?cmd=playplaylist&name=Key%201"
+/usr/bin/curl -s "http://localhost:3000/api/v1/commands/?cmd=playplaylist&name=Key%202"
+/usr/bin/curl -s "http://localhost:3000/api/v1/commands/?cmd=playplaylist&name=Key%203"
+
+[[Shell-Befehle  (gespielten Titel in eine Datei schreiben)]]
+/usr/local/bin/volumio status | jq -r 'if .status == "play" then "\(.artist) - \(.title)" else empty end' >> /data/INTERNAL/played_tracks.txt
+  - braucht jq (sudo apt-get install jq) und Schreibrecht des Triggerhappy-Benutzers auf die Datei,
+    z. B. einmalig im Terminal: touch /data/INTERNAL/played_tracks.txt; chmod 666 /data/INTERNAL/played_tracks.txt
+
+
+6. Hinweise
+-----------
+- Immer vollständige Pfade verwenden (/usr/local/bin/..., /usr/bin/curl).
+- Mehrere Befehle nacheinander: mit ; trennen, z. B.
+  /usr/local/bin/x10remote-action clearqueue; /usr/local/bin/x10remote-action playlist "Radio"
+- Leerzeichen in URLs als %20 schreiben.
+- Nur gerade Anführungszeichen " und ' verwenden - typografische (“ ” ‚ ‘ aus Word) funktionieren in der Shell nicht.
+- Kein # im Befehl (Triggerhappy schneidet dort ab); das Plugin lehnt solche Befehle beim Speichern ab.
+- Befehle, die Root-Rechte brauchen (Dienste starten, Neustart des Geräts), funktionieren hier nicht.
+- Testen: Befehl im Terminal eingeben (ssh volumio@<IP>), dann ins Feld übernehmen.
+
+Quellen: developers.volumio.com/api/rest-api, developers.volumio.com/api/command-line-client

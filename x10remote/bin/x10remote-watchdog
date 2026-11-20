@@ -1,0 +1,54 @@
+#!/bin/sh
+# Watchdog of the Volumio plugin "X10 RF Remote" (started by x10remote-watchdog.timer every 5 minutes).
+# Checks Triggerhappy and the wrapper (x10mapper) and restarts them if they crashed.
+# Off by default (setting "Watchdog").
+#  - x10mapper only if the plugin wants it running (/run/x10remote/mapper.wanted)
+#  - the states "activating"/"reloading" count as fine (the plugin is restarting it itself)
+#  - the timer runs only while the plugin is active (onStart/onStop)
+
+RUN=/run/x10remote
+LOG=$RUN/watchdog.log
+mkdir -p "$RUN" 2>/dev/null
+
+log() {
+  echo "$*"
+  {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') $*"
+  } >> "$LOG" 2>/dev/null
+  if [ -f "$LOG" ] && [ "$(wc -l < "$LOG")" -gt 200 ]; then
+    tail -n 100 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG"
+  fi
+}
+
+# Only a service that CRASHED is restarted (failed, or inactive with an error result).
+# A service stopped on purpose (systemctl stop -> inactive, Result=success) stays stopped.
+check() {
+  state=$(systemctl show -p ActiveState --value "$1" 2>/dev/null)
+  result=$(systemctl show -p Result --value "$1" 2>/dev/null)
+  case "$state" in
+    active|activating|reloading|deactivating) return 0 ;;
+    failed) ;;
+    inactive)
+      if [ -z "$result" ] || [ "$result" = "success" ]; then
+        return 0          # stopped (e.g. by hand) - do not interfere
+      fi ;;
+    *) return 0 ;;
+  esac
+  # exit code 78 (python3-evdev or /dev/uinput missing): a restart does not help
+  if [ "$(systemctl show -p ExecMainStatus --value "$1" 2>/dev/null)" = "78" ]; then
+    log "$1: stopped with exit code 78 (missing python3-evdev or /dev/uinput) - not restarted"
+    return 0
+  fi
+  log "$1: state '${state:-unknown}', result '${result:-unknown}' - restarting"
+  if systemctl restart "$1"; then
+    sleep 2
+    log "$1: restarted, state '$(systemctl is-active "$1" 2>/dev/null)'"
+  else
+    log "$1: restart failed"
+  fi
+}
+
+check triggerhappy.service
+[ -f "$RUN/mapper.wanted" ] && check x10mapper.service
+date '+%Y-%m-%d %H:%M:%S' > "$RUN/watchdog.last" 2>/dev/null
+exit 0

@@ -1,0 +1,6 @@
+[Unit]
+Description=X10 RF Remote: write permissions in /data/INTERNAL/X10 (SMB share)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/x10remote-fixperms

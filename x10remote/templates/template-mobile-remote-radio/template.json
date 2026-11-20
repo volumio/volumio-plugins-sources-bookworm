@@ -1,0 +1,121 @@
+{
+ "format": 1,
+ "kind": "mobile",
+ "name": {
+  "en": "Mobile Remote – four radio stations",
+  "it": "Mobile Remote – quattro stazioni radio",
+  "de": "Mobile Remote – vier Radiosender",
+  "es": "Mobile Remote: cuatro emisoras de radio",
+  "fr": "Mobile Remote – quatre stations de radio"
+ },
+ "description": {
+  "en": "Buttons 1–4: Swissgroove, SomaFM Left Coast 70s, Radio Manouche, Radio Swiss Jazz",
+  "it": "Tasti 1–4: Swissgroove, SomaFM Left Coast 70s, Radio Manouche, Radio Swiss Jazz",
+  "de": "Tasten 1–4: Swissgroove, SomaFM Left Coast 70s, Radio Manouche, Radio Swiss Jazz",
+  "es": "Botones 1–4: Swissgroove, SomaFM Left Coast 70s, Radio Manouche, Radio Swiss Jazz",
+  "fr": "Boutons 1–4 : Swissgroove, SomaFM Left Coast 70s, Radio Manouche, Radio Swiss Jazz"
+ },
+ "notes": "",
+ "rf433": false,
+ "receivers": [],
+ "images": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "keys": [
+  {
+   "name": "Swissgroove",
+   "type": "scan",
+   "code": 1,
+   "scan": 1,
+   "key_name": null,
+   "action": "radio",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "",
+   "description": "",
+   "radio": {
+    "name": "Swissgroove",
+    "uris": [
+     "http://relay1.swissgroove.ch:80",
+     "http://relay2.swissgroove.ch:80"
+    ],
+    "logo": null,
+    "quality": "",
+    "format": ""
+   }
+  },
+  {
+   "name": "SOMA 70's",
+   "type": "scan",
+   "code": 2,
+   "scan": 2,
+   "key_name": null,
+   "action": "radio",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "",
+   "description": "",
+   "radio": {
+    "name": "SomaFM - Left Coast 70's",
+    "uris": [
+     "https://ice4.somafm.com/seventies-320-mp3"
+    ],
+    "logo": null,
+    "quality": "",
+    "format": ""
+   }
+  },
+  {
+   "name": "Jazz Manouche",
+   "type": "scan",
+   "code": 3,
+   "scan": 3,
+   "key_name": null,
+   "action": "radio",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "",
+   "description": "",
+   "radio": {
+    "name": "Radio Manouche – Le Son Gypsy",
+    "uris": [
+     "http://stream.radiomanouche.com:8118/listen"
+    ],
+    "logo": null,
+    "quality": "",
+    "format": ""
+   }
+  },
+  {
+   "name": "Swiss Jazz",
+   "type": "scan",
+   "code": 4,
+   "scan": 4,
+   "key_name": null,
+   "action": "radio",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "",
+   "description": "",
+   "radio": {
+    "name": "Radio Swiss Jazz",
+    "uris": [
+     "http://stream.srg-ssr.ch/m/rsj/mp3_128"
+    ],
+    "logo": null,
+    "quality": "",
+    "format": ""
+   }
+  }
+ ],
+ "source": "josh2000, 2026-11-15"
+}

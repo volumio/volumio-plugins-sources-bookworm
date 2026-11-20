@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="WEB_TITLE_RECEIVER">X10 RF Remote</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<main class="wrap">
+  <div class="row">
+    <h1 id="title">…</h1>
+    <span class="spacer"></span>
+    <span class="badge" id="connBadge"></span>
+  </div>
+  <p class="muted mono" id="deviceLine"></p>
+
+  <h2 data-i18n="WEB_DETAILS"></h2>
+  <div class="panel">
+    <label class="field"><span data-i18n="WEB_RECV_NAME"></span><input type="text" id="rName" maxlength="80"></label>
+    <label class="field"><span data-i18n="WEB_DESCRIPTION"></span><textarea id="rDesc" maxlength="4000"></textarea></label>
+    <label class="field"><span data-i18n="WEB_NOTES"></span><textarea id="rNotes" class="notes" maxlength="8000" data-i18n-ph="WEB_NOTES_PH"></textarea></label>
+    <label class="check"><input type="checkbox" id="rRf433"> <span data-i18n="WEB_RF433_RECEIVER"></span></label>
+    <p class="muted small" data-i18n="WEB_RF433_RECEIVER_HELP"></p>
+  </div>
+
+  <h2 data-i18n="WEB_RECV_TRANSMITTERS_TITLE"></h2>
+  <div class="panel" id="txList"></div>
+
+  <h2 data-i18n="WEB_IMAGES"></h2>
+  <p class="muted" data-i18n="WEB_RECV_IMAGES_HELP"></p>
+  <div class="images" id="images"></div>
+
+  <div class="row" id="actions">
+    <button id="btnSave" class="primary" data-i18n="WEB_SAVE"></button>
+    <span class="spacer"></span>
+    <a class="btn" href="receivers.html" data-i18n="WEB_BACK_TO_RECEIVERS"></a>
+    <button id="btnDelete" class="danger" data-i18n="WEB_RECV_DELETE"></button>
+  </div>
+</main>
+<script src="app.js"></script>
+<script src="receiver.js"></script>
+</body>
+</html>

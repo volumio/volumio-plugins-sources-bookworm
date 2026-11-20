@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="WEB_TITLE_TEST">X10 RF Remote</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<main class="wrap">
+  <h1 data-i18n="WEB_TEST_TITLE"></h1>
+  <p class="lead" data-i18n="WEB_TEST_LEAD"></p>
+  <div class="panel last" id="last">
+    <div class="led" id="lastLed"></div>
+    <div>
+      <div class="last-key" id="lastKey">–</div>
+      <div class="last-sub" id="lastSub" data-i18n="WEB_TEST_WAITING"></div>
+    </div>
+  </div>
+  <div id="groups"></div>
+  <h2 data-i18n="WEB_TEST_UNKNOWN"></h2>
+  <div class="grid" id="unknown"><div class="muted" id="unknownEmpty" data-i18n="WEB_TEST_UNKNOWN_EMPTY"></div></div>
+  <div class="row"><h2 data-i18n="WEB_TEST_EVENTS"></h2><span class="spacer"></span><button id="btnClear" class="small" data-i18n="WEB_CLEAR"></button></div>
+  <div class="panel log" id="log"></div>
+</main>
+<script src="app.js"></script>
+<script src="test.js"></script>
+</body>
+</html>

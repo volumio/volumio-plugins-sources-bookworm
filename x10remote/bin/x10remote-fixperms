@@ -1,0 +1,14 @@
+#!/bin/sh
+# Volumio plugin "X10 RF Remote": establish write permissions in the folder X10 of the share "Internal Storage".
+# /data/INTERNAL is meant to be writable for guests as an SMB share; Windows writes there as guest
+# (not as "volumio"). Hence: folders 0777, files 0666 - for the file explorer and the plugin alike.
+# Runs as root (x10remote-fixperms.service), called by the plugin with "systemctl start" and by install.sh.
+# Follows no symbolic links and does not leave the file system.
+
+DIR=/data/INTERNAL/X10
+[ -L "$DIR" ] && { echo "x10remote-fixperms: $DIR is a symbolic link - aborted" >&2; exit 1; }
+[ -d "$DIR" ] || exit 0
+find "$DIR" -xdev \( -type d ! -perm 0777 -exec chmod 0777 {} + \) -o \( -type f ! -perm 0666 -exec chmod 0666 {} + \)
+# wrapper packages exported by the plugin directly in /data/INTERNAL
+find /data/INTERNAL -maxdepth 1 -type f -name 'x10remote-wrapper-*.tar.gz' ! -perm 0666 -exec chmod 0666 {} +
+exit 0
