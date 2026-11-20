@@ -1,14 +1,14 @@
 'use strict';
 
 /*
- * Weboberflaeche des Plugins (Tastentest, Einlese-Assistent, Profile) und Ereignisempfang vom Mapper.
+ * Web interface of the plugin (key test, read-in wizard, profiles) and event receiver for the mapper.
  *
- *  HTTP  0.0.0.0:<web_port>   statische Seiten aus www/ + JSON-API + Server-Sent Events
- *  UDP   127.0.0.1:<event_port>  Ereignisse von x10mapper.py
+ *  HTTP  0.0.0.0:<web_port>   static pages from www/ + JSON API + Server-Sent Events
+ *  UDP   127.0.0.1:<event_port>  events from x10mapper.py
  *
- * Laeuft im Volumio-Prozess als Benutzer "volumio" (keine Root-Rechte), nur zwischen onStart und onStop.
- * Schutz: feste Dateiliste, Groessenlimits, JSON-Content-Type fuer Schreibzugriffe, Origin-Pruefung,
- * Content-Security-Policy ohne Inline-Skripte.
+ * Runs inside the Volumio process as user "volumio" (no root privileges), only between onStart and onStop.
+ * Protection: fixed file list, size limits, JSON content type for writes, origin check,
+ * Content-Security-Policy without inline scripts.
  */
 
 var http = require('http');
@@ -36,11 +36,21 @@ var STATIC = {
   '/receivers.html': 'receivers.html',
   '/receivers.js': 'receivers.js',
   '/receiver.html': 'receiver.html',
-  '/receiver.js': 'receiver.js'
+  '/receiver.js': 'receiver.js',
+  '/mobile.html': 'mobile.html',
+  '/mobile.js': 'mobile.js',
+  '/mobilesim.html': 'mobilesim.html',
+  '/mobilesim.js': 'mobilesim.js',
+  // simulation of the phone page: the same files as on the phone port, embedded in mobilesim.html
+  '/sim/': 'mobile/remote.html',
+  '/sim/remote.css': 'mobile/remote.css',
+  '/sim/remote.js': 'mobile/remote.js'
 };
 var MIME = { html: 'text/html; charset=utf-8', css: 'text/css; charset=utf-8', js: 'text/javascript; charset=utf-8' };
 var CSP = "default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; " +
   "connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'";
+// the simulated phone page may be embedded by the own web interface (only)
+var CSP_SIM = CSP.replace("frame-ancestors 'none'", "frame-ancestors 'self'");
 var MAX_SSE_CLIENTS = 20;
 
 function HttpError(status, code, detail) {
@@ -52,7 +62,7 @@ function HttpError(status, code, detail) {
 }
 
 function WebServer(ctl, logger) {
-  this.ctl = ctl;               // Controller mit den API-Funktionen (siehe index.js)
+  this.ctl = ctl;               // controller with the API functions (see index.js)
   this.logger = logger;
   this.server = null;
   this.udp = null;
@@ -166,6 +176,10 @@ WebServer.prototype._onUdp = function (buf) {
   var ev;
   try { ev = JSON.parse(buf.toString('utf8')); } catch (e) { return; }
   if (!ev || typeof ev.event !== 'string') return;
+  if (ev.event === 'thd_device_missing') {       // mapper: Triggerhappy does not read a virtual device
+    if (this.ctl && typeof this.ctl.onThdDeviceMissing === 'function') this.ctl.onThdDeviceMissing(ev);
+    return;
+  }
   if (['press', 'unmapped', 'passthrough', 'swallowed', 'capture'].indexOf(ev.event) === -1) return;
   this.broadcast(ev);
 };
@@ -198,6 +212,8 @@ WebServer.prototype._handle = function (req, res) {
   if (req.method === 'GET' && p === '/api/events') return self._sse(req, res);
   var logo = /^\/logo\/([a-z0-9-]{1,40})\/(logo-[0-9a-f]{12}\.(?:png|jpg|webp))$/.exec(p);
   if (req.method === 'GET' && logo) return self._file(res, self.ctl.logoFile(logo[1], logo[2]));
+  var graphic = /^\/sim\/graphic-(light|dark)$/.exec(p);
+  if (req.method === 'GET' && graphic) return self._file(res, self.ctl.mobileGraphicFile(graphic[1]));
   var img = /^\/(img|rimg|pimg)\/([^/]{1,240})\/([1-6])$/.exec(p);
   if (req.method === 'GET' && img) {
     var imgId;
@@ -233,6 +249,15 @@ WebServer.prototype._routes = function () {
     'GET /api/devices': function () { return ctl.webDevices(); },
     'GET /api/audioconf': function () { return ctl.webAudioConf(); },
     'GET /api/profiles': function (q) { return ctl.webProfiles(q.get('lang')); },
+    'GET /api/profiles/invalid': function () { return ctl.webInvalid(); },
+    'GET /api/mobile': function () { return ctl.webMobile(); },
+    'POST /api/mobile/save': function (b) { return ctl.webMobileSave(b); },
+    // simulation: the same functions as on the phone port
+    'GET /sim/api/state': function () { return ctl.mobileState(); },
+    'POST /sim/api/press': function (b) { return ctl.mobilePress(b && b.button); },
+    'POST /sim/api/volume': function (b) { return ctl.mobileVolume(b); },
+    'POST /sim/api/transport': function (b) { return ctl.mobileTransport(b && b.action); },
+    'POST /api/mobile/graphic': function (b) { return ctl.webMobileGraphic(b && b.theme, b && b.data); },
     'GET /api/profile': function (q) { return ctl.webProfile(q.get('id'), q.get('lang')); },
     'POST /api/profile/save': function (b) { return ctl.webSaveProfile(b && b.profile, b && b.activate === true); },
     'POST /api/profile/delete': function (b) { return ctl.webDeleteProfile(b && b.id); },
@@ -255,8 +280,11 @@ WebServer.prototype._routes = function () {
     'POST /api/radio/check': function (b) { return ctl.webRadioCheck(b && b.uris); },
     'POST /api/radio/checkall': function (b) { return ctl.webRadioCheckAll(b && b.lang); },
     'POST /api/radio/favourites': function (b) { return ctl.webRadioFavourites(b && b.id); },
-    'GET /api/presets': function (q) { return ctl.webPresets(q.get('lang')); },
-    'POST /api/preset/create': function (b) { return ctl.webCreateFromPreset(b && b.id, b && b.activate === true); },
+    'GET /api/templates': function (q) { return ctl.webTemplates(q.get('lang')); },
+    'GET /api/template': function (q) { return ctl.webTemplate(q.get('id'), q.get('lang')); },
+    'POST /api/template/create': function (b) { return ctl.webCreateFromTemplate(b && b.id, b && b.activate === true); },
+    'POST /api/template/save': function (b) { return ctl.webSaveTemplate(b && b.id); },
+    'POST /api/template/delete': function (b) { return ctl.webDeleteTemplate(b && b.id); },
     'POST /api/capture/identify': function () { return ctl.webCapture('identify'); },
     'POST /api/capture/start': function (b) { return ctl.webCapture('start', b && b.device); },
     'POST /api/capture/keepalive': function () { return ctl.webCapture('keepalive'); },
@@ -268,8 +296,10 @@ WebServer.prototype._routes = function () {
   var rimage = function (b) { return ctl.webSetReceiverImage(b && b.id, b && b.slot, b && b.data); };
   rimage.big = true;
   r['POST /api/receiver/image'] = rimage;
-  r['POST /api/profile/save'].limit = C.LIMITS.PROFILE_BODY_BYTES;   // Senderlogos kommen als data-URL mit
-  r['POST /api/capture/stop'].anyType = true;       // navigator.sendBeacon beim Verlassen der Seite
+  r['POST /api/mobile/save'].limit = C.LIMITS.PROFILE_BODY_BYTES;    // likewise
+  r['POST /api/mobile/graphic'].big = true;                          // picture as data URL
+  r['POST /api/profile/save'].limit = C.LIMITS.PROFILE_BODY_BYTES;   // station logos arrive as data URLs
+  r['POST /api/capture/stop'].anyType = true;       // navigator.sendBeacon when the page is left
   return r;
 };
 
@@ -323,18 +353,18 @@ WebServer.prototype._static = function (req, res, file) {
       return;
     }
     var headers = { 'Content-Type': MIME[ext], 'Cache-Control': 'no-cache', 'Content-Length': data.length };
-    if (ext === 'html') headers['Content-Security-Policy'] = CSP;
+    if (ext === 'html') headers['Content-Security-Policy'] = file === 'mobile/remote.html' ? CSP_SIM : CSP;
     res.writeHead(200, headers);
     res.end(req.method === 'HEAD' ? undefined : data);
   });
 };
 
 WebServer.prototype._image = function (res, id, slot, kind) {
-  var store = kind === 'rimg' ? this.ctl.receivers : (kind === 'pimg' ? this.ctl.presetImages() : this.ctl.store);
+  var store = kind === 'rimg' ? this.ctl.receivers : (kind === 'pimg' ? this.ctl.templateImages() : this.ctl.store);
   return this._file(res, Promise.resolve().then(function () { return store.imageFile(id, slot); }));
 };
 
-/** Bilddatei ausliefern; img = Promise auf { path, mime } oder null. */
+/** Serve an image file; img = promise of { path, mime } or null. */
 WebServer.prototype._file = function (res, img) {
   var self = this;
   Promise.resolve(img).then(function (img) {

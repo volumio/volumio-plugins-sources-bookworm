@@ -1,0 +1,847 @@
+{
+ "format": 1,
+ "kind": "sender",
+ "name": {
+  "en": "G21 Pro remote (2.4 GHz, USB dongle)",
+  "it": "Telecomando G21 Pro (2,4 GHz, dongle USB)",
+  "de": "G21 Pro Fernbedienung (2,4 GHz, USB-Empfänger)",
+  "es": "Mando G21 Pro (2,4 GHz, receptor USB)",
+  "fr": "Télécommande G21 Pro (2,4 GHz, récepteur USB)"
+ },
+ "description": {
+  "en": "2.4 GHz RF remote with its own USB dongle and learning function",
+  "it": "Telecomando RF a 2,4 GHz con dongle USB dedicato e funzione di apprendimento",
+  "de": "2,4-GHz-Funkfernbedienung mit eigenem USB-Empfänger und Lernfunktion",
+  "es": "Mando RF de 2,4 GHz con receptor USB propio y función de aprendizaje",
+  "fr": "Télécommande RF 2,4 GHz avec son récepteur USB et fonction d’apprentissage"
+ },
+ "notes": "",
+ "rf433": false,
+ "receivers": [
+  {
+   "device": "0c45:8301",
+   "name": {
+    "en": "G21 Pro USB dongle (2.4 GHz)",
+    "it": "Dongle USB G21 Pro (2,4 GHz)",
+    "de": "G21 Pro USB-Empfänger (2,4 GHz)",
+    "es": "Receptor USB G21 Pro (2,4 GHz)",
+    "fr": "Récepteur USB G21 Pro (2,4 GHz)"
+   },
+   "usb_name": "MIC MIC Device Keyboard",
+   "description": "",
+   "notes": "",
+   "rf433": false,
+   "images": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ]
+  }
+ ],
+ "images": [
+  "image1.jpg",
+  "image2.jpg",
+  "image3.jpg",
+  "image4.jpg",
+  null,
+  null
+ ],
+ "keys": [
+  {
+   "name": {
+    "en": "Power",
+    "it": "Accensione",
+    "de": "Ein/Aus",
+    "es": "Encendido",
+    "fr": "Marche/Arrêt"
+   },
+   "type": "key",
+   "code": 116,
+   "scan": 65665,
+   "key_name": "KEY_POWER",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Power",
+    "it": "Accensione",
+    "de": "Ein/Aus",
+    "es": "Encendido",
+    "fr": "Marche/Arrêt"
+   },
+   "type": "scan",
+   "code": 65665,
+   "scan": 65665,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "Power",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Mute",
+    "it": "Muto",
+    "de": "Stumm",
+    "es": "Silencio",
+    "fr": "Muet"
+   },
+   "type": "key",
+   "code": 113,
+   "scan": 786658,
+   "key_name": "KEY_MUTE",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Mute",
+    "it": "Muto",
+    "de": "Stumm",
+    "es": "Silencio",
+    "fr": "Muet"
+   },
+   "type": "scan",
+   "code": 786658,
+   "scan": 786658,
+   "key_name": null,
+   "action": "mutetoggle",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "Mute",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Volume down",
+    "it": "Volume −",
+    "de": "Leiser",
+    "es": "Bajar volumen",
+    "fr": "Volume −"
+   },
+   "type": "key",
+   "code": 114,
+   "scan": 786666,
+   "key_name": "KEY_VOLUMEDOWN",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Volume down",
+    "it": "Volume −",
+    "de": "Leiser",
+    "es": "Bajar volumen",
+    "fr": "Volume −"
+   },
+   "type": "scan",
+   "code": 786666,
+   "scan": 786666,
+   "key_name": null,
+   "action": "voldown",
+   "command": "",
+   "thd_key": "",
+   "repeat": true,
+   "remote_label": "Volume down",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Volume up",
+    "it": "Volume +",
+    "de": "Lauter",
+    "es": "Subir volumen",
+    "fr": "Volume +"
+   },
+   "type": "key",
+   "code": 115,
+   "scan": 786665,
+   "key_name": "KEY_VOLUMEUP",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Volume up",
+    "it": "Volume +",
+    "de": "Lauter",
+    "es": "Subir volumen",
+    "fr": "Volume +"
+   },
+   "type": "scan",
+   "code": 786665,
+   "scan": 786665,
+   "key_name": null,
+   "action": "volup",
+   "command": "",
+   "thd_key": "",
+   "repeat": true,
+   "remote_label": "Volume up",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Voice command",
+    "it": "Comando vocale",
+    "de": "Sprachbefehl",
+    "es": "Comando de voz",
+    "fr": "Commande vocale"
+   },
+   "type": "key",
+   "code": 582,
+   "scan": 786639,
+   "key_name": "KEY_VOICECOMMAND",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Microphone",
+    "it": "Microfono",
+    "de": "Mikrofon",
+    "es": "Micrófono",
+    "fr": "Microphone"
+   },
+   "type": "scan",
+   "code": 786639,
+   "scan": 786639,
+   "key_name": null,
+   "action": "clearqueue",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "Microphone",
+   "description": {
+    "en": "Clear queue",
+    "it": "Svuota coda",
+    "de": "Warteschlange leeren",
+    "es": "Vaciar cola",
+    "fr": "Vider la file d’attente"
+   }
+  },
+  {
+   "name": {
+    "en": "Homepage",
+    "it": "Pagina iniziale",
+    "de": "Startseite",
+    "es": "Página de inicio",
+    "fr": "Page d’accueil"
+   },
+   "type": "key",
+   "code": 172,
+   "scan": 786979,
+   "key_name": "KEY_HOMEPAGE",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Home",
+    "it": "Home",
+    "de": "Home",
+    "es": "Inicio",
+    "fr": "Accueil"
+   },
+   "type": "scan",
+   "code": 786979,
+   "scan": 786979,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "Home",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Compose",
+    "it": "Componi",
+    "de": "Compose-Taste",
+    "es": "Componer",
+    "fr": "Composer"
+   },
+   "type": "key",
+   "code": 127,
+   "scan": 458853,
+   "key_name": "KEY_COMPOSE",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Menu",
+    "it": "Menu",
+    "de": "Menü",
+    "es": "Menú",
+    "fr": "Menu"
+   },
+   "type": "scan",
+   "code": 458853,
+   "scan": 458853,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "Menu",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Right",
+    "it": "Destra",
+    "de": "Rechts",
+    "es": "Derecha",
+    "fr": "Droite"
+   },
+   "type": "key",
+   "code": 273,
+   "scan": 589826,
+   "key_name": "BTN_RIGHT",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Return",
+    "it": "Ritorno",
+    "de": "Return",
+    "es": "Volver",
+    "fr": "Retour"
+   },
+   "type": "scan",
+   "code": 589826,
+   "scan": 589826,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "Return",
+   "description": ""
+  },
+  {
+   "name": "1",
+   "type": "key",
+   "code": 2,
+   "scan": 458782,
+   "key_name": "KEY_1",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": "1",
+   "type": "scan",
+   "code": 458782,
+   "scan": 458782,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "1",
+   "description": ""
+  },
+  {
+   "name": "2",
+   "type": "key",
+   "code": 3,
+   "scan": 458783,
+   "key_name": "KEY_2",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": "2",
+   "type": "scan",
+   "code": 458783,
+   "scan": 458783,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "2",
+   "description": ""
+  },
+  {
+   "name": "3",
+   "type": "key",
+   "code": 4,
+   "scan": 458784,
+   "key_name": "KEY_3",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": "3",
+   "type": "scan",
+   "code": 458784,
+   "scan": 458784,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "3",
+   "description": ""
+  },
+  {
+   "name": "4",
+   "type": "key",
+   "code": 5,
+   "scan": 458785,
+   "key_name": "KEY_4",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": "4",
+   "type": "scan",
+   "code": 458785,
+   "scan": 458785,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "4",
+   "description": ""
+  },
+  {
+   "name": "5",
+   "type": "key",
+   "code": 6,
+   "scan": 458786,
+   "key_name": "KEY_5",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": "5",
+   "type": "scan",
+   "code": 458786,
+   "scan": 458786,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "5",
+   "description": ""
+  },
+  {
+   "name": "6",
+   "type": "key",
+   "code": 7,
+   "scan": 458787,
+   "key_name": "KEY_6",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": "6",
+   "type": "scan",
+   "code": 458787,
+   "scan": 458787,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "6",
+   "description": ""
+  },
+  {
+   "name": "7",
+   "type": "key",
+   "code": 8,
+   "scan": 458788,
+   "key_name": "KEY_7",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": "7",
+   "type": "scan",
+   "code": 458788,
+   "scan": 458788,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "7",
+   "description": ""
+  },
+  {
+   "name": "8",
+   "type": "key",
+   "code": 9,
+   "scan": 458789,
+   "key_name": "KEY_8",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": "8",
+   "type": "scan",
+   "code": 458789,
+   "scan": 458789,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "8",
+   "description": ""
+  },
+  {
+   "name": "9",
+   "type": "key",
+   "code": 10,
+   "scan": 458790,
+   "key_name": "KEY_9",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": "9",
+   "type": "scan",
+   "code": 458790,
+   "scan": 458790,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "9",
+   "description": ""
+  },
+  {
+   "name": "0",
+   "type": "key",
+   "code": 11,
+   "scan": 458791,
+   "key_name": "KEY_0",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": "0",
+   "type": "scan",
+   "code": 458791,
+   "scan": 458791,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "0",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Backspace",
+    "it": "Backspace",
+    "de": "Rücktaste",
+    "es": "Retroceso",
+    "fr": "Retour arrière"
+   },
+   "type": "key",
+   "code": 14,
+   "scan": 458794,
+   "key_name": "KEY_BACKSPACE",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Back",
+    "it": "Indietro",
+    "de": "Zurück",
+    "es": "Atrás",
+    "fr": "Retour"
+   },
+   "type": "scan",
+   "code": 458794,
+   "scan": 458794,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "Back",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Up",
+    "it": "Su",
+    "de": "Hoch",
+    "es": "Arriba",
+    "fr": "Haut"
+   },
+   "type": "key",
+   "code": 103,
+   "scan": 458834,
+   "key_name": "KEY_UP",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Up",
+    "it": "Su",
+    "de": "Hoch",
+    "es": "Arriba",
+    "fr": "Haut"
+   },
+   "type": "scan",
+   "code": 458834,
+   "scan": 458834,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "UP",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Down",
+    "it": "Giù",
+    "de": "Runter",
+    "es": "Abajo",
+    "fr": "Bas"
+   },
+   "type": "key",
+   "code": 108,
+   "scan": 458833,
+   "key_name": "KEY_DOWN",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Down",
+    "it": "Giù",
+    "de": "Runter",
+    "es": "Abajo",
+    "fr": "Bas"
+   },
+   "type": "scan",
+   "code": 458833,
+   "scan": 458833,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "Down",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Left",
+    "it": "Sinistra",
+    "de": "Links",
+    "es": "Izquierda",
+    "fr": "Gauche"
+   },
+   "type": "key",
+   "code": 105,
+   "scan": 458832,
+   "key_name": "KEY_LEFT",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Left",
+    "it": "Sinistra",
+    "de": "Links",
+    "es": "Izquierda",
+    "fr": "Gauche"
+   },
+   "type": "scan",
+   "code": 458832,
+   "scan": 458832,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "Left",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Right",
+    "it": "Destra",
+    "de": "Rechts",
+    "es": "Derecha",
+    "fr": "Droite"
+   },
+   "type": "key",
+   "code": 106,
+   "scan": 458831,
+   "key_name": "KEY_RIGHT",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Right",
+    "it": "Destra",
+    "de": "Rechts",
+    "es": "Derecha",
+    "fr": "Droite"
+   },
+   "type": "scan",
+   "code": 458831,
+   "scan": 458831,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "Right",
+   "description": ""
+  },
+  {
+   "name": {
+    "en": "Enter",
+    "it": "Invio",
+    "de": "Enter",
+    "es": "Intro",
+    "fr": "Entrée"
+   },
+   "type": "key",
+   "code": 28,
+   "scan": 458792,
+   "key_name": "KEY_ENTER",
+   "action": "default",
+   "command": "",
+   "thd_key": null,
+   "repeat": false,
+   "remote_label": "",
+   "description": ""
+  },
+  {
+   "name": "OK",
+   "type": "scan",
+   "code": 458792,
+   "scan": 458792,
+   "key_name": null,
+   "action": "none",
+   "command": "",
+   "thd_key": "",
+   "repeat": false,
+   "remote_label": "OK",
+   "description": ""
+  }
+ ],
+ "source": "josh2000, 2026-11-15"
+}

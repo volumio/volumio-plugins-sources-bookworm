@@ -1,4 +1,4 @@
-/* Druck-/Kopierliste eines Profils: Beschriftung + Beschreibung, optional Befehl und Scan-Code/KEY_* */
+/* Print/copy list of a profile: label + description, optionally command and scan code/KEY_* */
 (function () {
   'use strict';
   var el = X10.el;
@@ -8,7 +8,7 @@
 
   function techOn() { return X10.$('chkTech').checked; }
 
-  /** Beschriftung auf der Fernbedienung; nur wenn keine eingetragen ist, der Name der Taste. */
+  /** Label on the remote; the name of the key only if none is entered. */
   function labelOf(r) { return r.remote_label || r.name; }
   function descOf(r) { return r.description || r.action; }
   function commandOf(r) {
@@ -42,7 +42,7 @@
     table.appendChild(body);
   }
 
-  /** Tabelle als Text (Tabulator-getrennt, laesst sich in Word/Excel einfuegen). */
+  /** Table as text (tab separated, can be pasted into Word/Excel). */
   function asText() {
     var tech = techOn();
     var lines = [data.name];
@@ -61,7 +61,7 @@
 
   function copyText(text) {
     if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
-    // ohne HTTPS: klassischer Weg ueber ein verstecktes Textfeld
+    // without HTTPS: classic way through a hidden text field
     return new Promise(function (resolve, reject) {
       var ta = el('textarea', { class: 'offscreen', readonly: true });
       ta.value = text;
@@ -82,7 +82,7 @@
   X10.$('btnCopy').addEventListener('click', function () {
     if (!data) return;
     copyText(asText()).then(function () { X10.toast(X10.t('WEB_PRINT_COPIED')); }, function () {
-      // letzter Ausweg: Tabelle markieren, Nutzer kopiert mit Strg+C
+      // last resort: select the table, the user copies with Ctrl+C
       var range = document.createRange();
       range.selectNodeContents(X10.$('sheet'));
       var sel = window.getSelection();

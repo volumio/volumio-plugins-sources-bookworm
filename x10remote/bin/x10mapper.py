@@ -1,30 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-x10mapper.py - Userspace-Mapper fuer RF/IR-Fernbedienungen (Volumio-Plugin "x10remote")
+x10mapper.py - userspace mapper for RF/IR remotes (Volumio plugin "x10remote")
 
-    Fernbedienung -> Treiber -> /dev/input/eventX -> x10mapper.py
-        -> /dev/uinput "X10Remote virtual keyboard"   (virtuelle Tasten KEY_F13 ...)
-        -> /dev/uinput "X10Remote passthrough ..."    (unveraenderte Tasten, nur bei exklusivem Zugriff)
+    remote -> driver -> /dev/input/eventX -> x10mapper.py
+        -> /dev/uinput "X10Remote virtual keyboard"   (virtual keys KEY_F13 ...)
+        -> /dev/uinput "X10Remote passthrough ..."    (unchanged keys, only with exclusive access)
         -> Triggerhappy -> Volumio
 
-Funktionen
-  * Tasten, die der Treiber nur als MSC_SCAN meldet, werden als virtuelle Tasten ausgegeben.
-  * Bereits erkannte Tasten (EV_KEY) koennen ersetzt oder gesperrt werden: Das Geraet wird dann
-    exklusiv geoeffnet (EVIOCGRAB); alle nicht ersetzten Ereignisse werden unveraendert ueber ein
-    virtuelles Durchreich-Geraet weitergegeben. Andere Triggerhappy-Dateien (z. B. audio.conf)
-    werden nie veraendert - sie sehen fuer ersetzte Tasten nur die virtuelle Taste.
-  * Erfassungsmodus fuer den Einlese-Assistenten (Geraet erkennen / Tasten einlesen).
-  * Ereignisse werden per UDP an 127.0.0.1 gemeldet (Tastentest, Assistent).
-  * Statusdatei /run/x10mapper-status.json (Geraete, exklusiver Zugriff, Probleme).
+Functions
+  * Keys the driver reports only as MSC_SCAN are emitted as virtual keys.
+  * Already recognised keys (EV_KEY) can be replaced or disabled: the device is then opened
+    exclusively (EVIOCGRAB); all events that are not replaced are passed on unchanged through a
+    virtual passthrough device. Other Triggerhappy files (e.g. audio.conf) are never modified -
+    for replaced keys they only see the virtual key.
+  * Capture mode for the read-in wizard (detect a device / read in keys).
+    While detecting (device "*") only remote-like devices are read exclusively - never
+    touchscreens, mice or full keyboards (a kiosk stays usable).
+  * Events are reported by UDP to 127.0.0.1 (key test, wizard).
+  * Status file /run/x10mapper-status.json (devices, exclusive access, problems).
 
-Kernel und Treiber werden nicht veraendert. Beim Beenden oder Absturz gibt der Kernel den
-exklusiven Zugriff automatisch frei - das Originalverhalten ist dann sofort wieder da.
+Kernel and drivers are not modified. On exit or crash the kernel releases the exclusive access
+automatically - the original behaviour is back at once.
 
-Aufruf:
-    x10mapper.py --config mapper.json      Dienstbetrieb (systemd, SIGHUP = neu laden)
-    x10mapper.py --list                    Eingabegeraete als JSON auflisten
-    x10mapper.py --learn [--timeout 10]    naechsten Tastendruck erfassen (Diagnose)
+Usage:
+    x10mapper.py --config mapper.json      service mode (systemd, SIGHUP = reload)
+    x10mapper.py --list                    list input devices as JSON
+    x10mapper.py --learn [--timeout 10]    capture the next key press (diagnostics)
 """
 
 import argparse
@@ -32,7 +34,12 @@ import json
 import os
 import select
 import signal
+
+# Until the handlers are set in Mapper.run(), an early SIGHUP ("systemctl reload" right after the start,
+# while Python is still importing evdev) would end the process - therefore ignore it at first.
+signal.signal(signal.SIGHUP, signal.SIG_IGN)
 import socket
+import struct
 import subprocess
 import sys
 import time
@@ -41,8 +48,11 @@ try:
     import evdev
     from evdev import ecodes, InputDevice, UInput
 except ImportError:  # pragma: no cover
+    # 78 = EX_CONFIG: systemd then does not restart the service forever (RestartPreventExitStatus=78)
     print(json.dumps({"ok": False, "error": "python3-evdev is not installed"}), flush=True)
-    sys.exit(2)
+    sys.exit(78)
+
+EXIT_CONFIG = 78
 
 OWN_PREFIX = "X10Remote"
 VIRTUAL_NAME = "X10Remote virtual keyboard"
@@ -50,22 +60,107 @@ PASS_PREFIX = "X10Remote passthrough"
 VIRTUAL_VENDOR = 0x1209
 VIRTUAL_PRODUCT = 0x0a10
 
-# Pool der virtuellen Tasten (selten genutzt, Triggerhappy kennt alle Namen)
+# Pool of virtual keys (rarely used) - identical to lib/constants.js. The plugin decides which of them
+# are assigned (KEY_MACRO1-30 only if Triggerhappy knows them). Names this python-evdev does not know
+# are skipped (see output_keys).
 VIRTUAL_KEYS = (
     ["KEY_F%d" % n for n in range(13, 25)] +
     ["KEY_PROG1", "KEY_PROG2", "KEY_PROG3", "KEY_PROG4"] +
     ["KEY_FN_F%d" % n for n in range(1, 13)] +
-    ["KEY_BRL_DOT%d" % n for n in range(1, 9)]
+    ["KEY_BRL_DOT%d" % n for n in range(1, 9)] +
+    ["KEY_MACRO%d" % n for n in range(1, 31)]
 )
 
 DEFAULT_CONFIG = "/data/configuration/system_hardware/x10remote/mapper.json"
 STATUS_FILE = "/run/x10mapper-status.json"
+# "Mobile Remote": the plugin (user volumio) reports a button press of the phone page through this
+# Unix socket. Only {"inject": <1..20>} from root or the user volumio is accepted (SO_PEERCRED), and
+# only an assignment entered in mapper.json for the pseudo device MOBILE_DEVICE is triggered.
+INJECT_SOCKET = "/run/x10mapper.sock"
+MOBILE_DEVICE = "name:X10Remote mobile remote"
+MOBILE_BUTTONS = 20
 RESCAN_INTERVAL = 5.0
+# Triggerhappy opens input devices only when it starts; devices created later (virtual keyboard,
+# passthrough) are announced to it by a udev rule - which cannot be relied on everywhere. Therefore the
+# mapper checks after THD_SETTLE seconds itself and, if necessary, registers the device with th-cmd.
+THD_CMD = "/usr/sbin/th-cmd"
+THD_SOCKET = "/run/thd.socket"
+THD_SETTLE = 1.5
+THD_VERIFY = 1.5
 MAX_CAPTURE_SECONDS = 900
 
 
 def log(msg):
     print(msg, flush=True)
+
+
+def uinput_node(ui, name):
+    """/dev/input/eventN of a uinput device created here (None if it cannot be determined)."""
+    try:
+        path = ui.device.path
+        if path and path.startswith("/dev/input/event"):
+            return path
+    except Exception:
+        pass
+    best = None
+    try:
+        with open("/proc/bus/input/devices", "r") as fh:
+            blocks = fh.read().split("\n\n")
+    except OSError:
+        return None
+    for b in blocks:
+        if ('N: Name="%s"' % name) not in b:
+            continue
+        for line in b.splitlines():
+            if line.startswith("H: Handlers="):
+                for word in line.split("=", 1)[1].split():
+                    if word.startswith("event") and word[5:].isdigit():
+                        n = int(word[5:])
+                        best = n if best is None or n > best else best
+    return None if best is None else "/dev/input/event%d" % best
+
+
+def thd_process(proc="/proc"):
+    """(pid, socket) of the running Triggerhappy, or (None, None)."""
+    try:
+        entries = os.listdir(proc)
+    except OSError:
+        return None, None
+    for e in entries:
+        if not e.isdigit():
+            continue
+        try:
+            with open(os.path.join(proc, e, "comm"), "r") as fh:
+                if fh.read().strip() != "thd":
+                    continue
+            with open(os.path.join(proc, e, "cmdline"), "rb") as fh:
+                args = [a.decode("utf-8", "replace") for a in fh.read().split(b"\0") if a]
+        except OSError:
+            continue
+        sock = THD_SOCKET
+        for i, a in enumerate(args):
+            if a == "--socket" and i + 1 < len(args):
+                sock = args[i + 1]
+            elif a.startswith("--socket="):
+                sock = a.split("=", 1)[1]
+        return int(e), sock
+    return None, None
+
+
+def thd_has_open(pid, node, proc="/proc"):
+    """True/False: Triggerhappy has opened the device; None: cannot be determined."""
+    d = os.path.join(proc, str(pid), "fd")
+    try:
+        fds = os.listdir(d)
+    except OSError:
+        return None
+    for fd in fds:
+        try:
+            if os.readlink(os.path.join(d, fd)) == node:
+                return True
+        except OSError:
+            continue
+    return False
 
 
 def parse_code(value):
@@ -102,7 +197,7 @@ def norm_device(value):
     return dev if dev.startswith("name:") else dev.lower()
 
 
-# Namen, die nur Bereichsgrenzen markieren (z. B. 113 = KEY_MIN_INTERESTING / KEY_MUTE)
+# names that only mark range limits (e.g. 113 = KEY_MIN_INTERESTING / KEY_MUTE)
 NOT_A_KEY = ("KEY_MIN_INTERESTING", "KEY_MAX", "KEY_CNT", "BTN_MISC")
 
 
@@ -116,6 +211,48 @@ def key_name(code):
 
 def is_own(dev):
     return (dev.name or "").startswith(OWN_PREFIX)
+
+
+# BTN_* lie between BTN_MISC (0x100) and KEY_OK (0x160) and from BTN_TRIGGER_HAPPY (0x2c0) on
+def is_button(code):
+    return 0x100 <= code < 0x160 or 0x2c0 <= code < 0x300
+
+
+LETTER_KEYS = None
+
+
+def classify(dev):
+    """Kind of input device: remote | keyboard | pointer | touch | other.
+    
+    touch:    reports absolute position axes (touchscreen, touchpad, graphics tablet, joystick/gamepad).
+              ABS_VOLUME/ABS_MISC and the like alone (HID "Consumer Control" of many receivers) do NOT count.
+    pointer:  mouse (relative axes + mouse buttons) with only a few real keys
+    keyboard: full keyboard (at least 20 letter keys), e.g. also FLIRC
+    remote:   everything else with real keys (X10/ati_remote with mouse pad, IR receivers, HDMI-CEC ...)
+    While detecting only "remote" is read exclusively; pointer/touch are not observed at all.
+    """
+    global LETTER_KEYS
+    if LETTER_KEYS is None:
+        LETTER_KEYS = set(ecodes.ecodes["KEY_" + c] for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    try:
+        caps = dev.capabilities()
+    except OSError:
+        return "other"
+    keys = set(caps.get(ecodes.EV_KEY, []))
+    real = [k for k in keys if not is_button(k) and k > 0]
+    abs_codes = set((a[0] if isinstance(a, (tuple, list)) else a) for a in caps.get(ecodes.EV_ABS, []))
+    position = abs_codes & set([ecodes.ABS_X, ecodes.ABS_Y, ecodes.ABS_MT_POSITION_X, ecodes.ABS_MT_POSITION_Y,
+                                ecodes.ABS_RX, ecodes.ABS_RY, ecodes.ABS_HAT0X, ecodes.ABS_HAT0Y])
+    if position or ecodes.BTN_TOUCH in keys or ecodes.BTN_TOOL_FINGER in keys or ecodes.BTN_TOOL_PEN in keys:
+        return "touch"
+    rel = set(caps.get(ecodes.EV_REL, []))
+    if ecodes.REL_X in rel and ecodes.BTN_LEFT in keys and len(real) < 10:
+        return "pointer"
+    if not real:
+        return "pointer" if rel else "other"
+    if len(keys & LETTER_KEYS) >= 20:
+        return "keyboard"
+    return "remote"
 
 
 def open_input_devices():
@@ -139,7 +276,8 @@ def cmd_list():
     for dev in open_input_devices():
         caps = dev.capabilities()
         out.append({"path": dev.path, "name": dev.name, "id": device_id(dev), "phys": dev.phys,
-                    "has_scan": ecodes.EV_MSC in caps, "has_keys": ecodes.EV_KEY in caps})
+                    "has_scan": ecodes.EV_MSC in caps, "has_keys": ecodes.EV_KEY in caps,
+                    "class": classify(dev)})
         dev.close()
     print(json.dumps(out), flush=True)
     return 0
@@ -186,20 +324,20 @@ def cmd_learn(timeout, ignore):
 # -------------------------------------------------------------------------- config
 
 class Config(object):
-    """Gelesene mapper.json. Ungueltige Eintraege werden protokolliert und uebersprungen."""
+    """The mapper.json that was read. Invalid entries are logged and skipped."""
 
     def __init__(self, raw=None):
         raw = raw or {}
-        self.debounce = max(0, min(5000, int(raw.get("debounce_ms", 300)))) / 1000.0
+        self.debounce = max(0, min(5000, int(raw.get("debounce_ms", 600)))) / 1000.0
         self.repeat = max(50, min(5000, int(raw.get("repeat_ms", 150)))) / 1000.0
         self.ignore = parse_code_list(raw.get("ignore_scancodes", [0]))
         self.log_presses = bool(raw.get("log_presses", False))
         port = int(raw.get("event_port", 0) or 0)
         self.event_port = port if 0 < port < 65536 else 0
         self.mappings = {}          # (device, type, code) -> mapping
-        self.devices = set()        # Geraete, die geoeffnet werden
-        self.grab = set()           # Geraete mit exklusivem Zugriff (ersetzte erkannte Tasten)
-        self.errors = []            # fuer den Status: uebersprungene Belegungen
+        self.devices = set()        # devices that are opened
+        self.grab = set()           # devices with exclusive access (replaced recognised keys)
+        self.errors = []            # for the status: skipped assignments
         for m in raw.get("mappings", []) or []:
             try:
                 self._add(m)
@@ -249,7 +387,7 @@ class Config(object):
         if until <= time.time():
             return None
         dev = norm_device(raw.get("device") or "*")
-        # Auch beim Erkennen (device "*") exklusiv: waehrend des Einlesens loest keine Taste etwas aus.
+        # Exclusive while detecting (device "*") too: during reading in no key triggers anything.
         return {"device": dev, "grab": bool(raw.get("grab", False)), "until": until}
 
     @classmethod
@@ -261,8 +399,8 @@ class Config(object):
         return self.mappings.get((did, mtype, code))
 
     def output_keys(self):
-        """Alle Tasten, die die virtuelle Tastatur senden muss (Pool + gewaehlte Triggerhappy-Tasten)."""
-        keys = set(ecodes.ecodes[k] for k in VIRTUAL_KEYS)
+        """All keys the virtual keyboard must be able to send (pool + chosen Triggerhappy keys)."""
+        keys = set(ecodes.ecodes[k] for k in VIRTUAL_KEYS if k in ecodes.ecodes)
         for m in self.mappings.values():
             if m["kcode"] is not None:
                 keys.add(m["kcode"])
@@ -272,7 +410,7 @@ class Config(object):
 # ------------------------------------------------------------------------ handles
 
 class Handle(object):
-    """Ein geoeffnetes Eingabegeraet."""
+    """An opened input device."""
 
     def __init__(self, dev):
         self.dev = dev
@@ -280,9 +418,14 @@ class Handle(object):
         self.grabbed = False
         self.passthrough = None
         self.error = None
+        self.cls = classify(dev)
         self.frame_scan = None
         self.frame_keys = []
         self.frame_has_key_event = False
+        self.frame_pointer = False      # frame contains pointer/touch events (EV_REL/EV_ABS)
+        # rc-core (IR): while a recognised key is held, the kernel sends frames with MSC_SCAN only.
+        # Remember scan code -> recognised key so that these frames do not count as a key of their own.
+        self.scan_keys = {}
 
 
 class Mapper(object):
@@ -290,18 +433,21 @@ class Mapper(object):
         self.config_path = config_path
         self.cfg = Config()
         self.handles = {}           # fd -> Handle
-        self.known = {}             # path -> {"id","name","own"} aller Eingabegeraete (Status)
+        self.known = {}             # path -> {"id","name","own"} of all input devices (status)
         self.last_seen = {}
         self.last_emit = {}
         self.last_capture = {}
         self.running = True
         self.reload_requested = False
+        self.inject_sock = None
+        self.inject_uids = set([0])
         self.ui = None
         self.ui_keys = set()
         self.sock = None
         self.problems = []
+        self.thd_pending = {}       # /dev/input/eventN -> {"at": monotonic, "tried": bool, "name": str}
 
-    # ---- Konfiguration / Status ----------------------------------------------
+    # ---- configuration / status ----------------------------------------------
     def load(self):
         try:
             self.cfg = Config.load(self.config_path)
@@ -325,8 +471,16 @@ class Mapper(object):
             return cap
         return None
 
-    def wants(self, did):
-        return did in self.cfg.devices or self.capture_for(did) is not None
+    def wants(self, did, cls=None):
+        if did in self.cfg.devices:
+            return True
+        cap = self.capture_for(did)
+        if cap is None:
+            return False
+        # detecting (all devices): touchscreens and mice are not observed at all
+        if cap["device"] == "*" and cls in ("touch", "pointer"):
+            return False
+        return True
 
     def write_status(self):
         cap = self.cfg.capture
@@ -335,8 +489,9 @@ class Mapper(object):
             "time": time.time(),
             "capture": {"device": cap["device"], "grab": cap["grab"], "until": cap["until"]} if cap else None,
             "open": [{"id": h.did, "name": h.dev.name, "path": h.dev.path, "grabbed": h.grabbed,
+                      "class": h.cls, "grab_wanted": self.desired_grab(h),
                       "error": h.error} for h in self.handles.values()],
-            "inputs": sorted(({"id": v["id"], "name": v["name"], "path": p}
+            "inputs": sorted(({"id": v["id"], "name": v["name"], "path": p, "class": v.get("cls")}
                               for p, v in self.known.items() if not v.get("own")),
                              key=lambda x: x["path"]),
             "problems": list(self.problems),
@@ -350,7 +505,7 @@ class Mapper(object):
         except OSError:
             pass
 
-    # ---- Ereignisse an das Plugin ---------------------------------------------
+    # ---- events to the plugin --------------------------------------------------
     def notify(self, payload):
         port = self.cfg.event_port
         if not port:
@@ -364,7 +519,7 @@ class Mapper(object):
         except (OSError, ValueError):
             pass
 
-    # ---- virtuelle Geraete ----------------------------------------------------
+    # ---- virtual devices -------------------------------------------------------
     def create_uinput(self):
         codes = sorted(self.cfg.output_keys())
         if self.ui is not None:
@@ -382,11 +537,154 @@ class Mapper(object):
             time.sleep(1)
             self.ui = UInput({ecodes.EV_KEY: codes}, **kwargs)
         log("Virtual keyboard created: %s (%d keys)" % (VIRTUAL_NAME, len(codes)))
+        self.announce(self.ui, VIRTUAL_NAME)
+
+    # ---- register own devices with Triggerhappy --------------------------------
+    def announce(self, ui, name):
+        """Note a newly created uinput device for checking (see check_thd)."""
+        node = uinput_node(ui, name)
+        if node is None:
+            log("WARNING: device node of '%s' not found - cannot check Triggerhappy" % name)
+            return
+        self.thd_pending[node] = {"at": time.monotonic() + THD_SETTLE, "tried": False, "name": name}
+
+    def check_thd(self):
+        """
+        Has Triggerhappy opened the noted devices? If not: register once with th-cmd
+        (--passfd: th-cmd opens the device as root and passes it on - thd runs as nobody).
+        If that does not help either, the plugin is told (event thd_device_missing) and restarts
+        Triggerhappy. Only what is provably missing is registered - never twice.
+        """
+        if not self.thd_pending:
+            return
+        now = time.monotonic()
+        due = [n for n, p in self.thd_pending.items() if p["at"] <= now]
+        if not due:
+            return
+        pid, sock = thd_process()
+        for node in due:
+            p = self.thd_pending[node]
+            if not os.path.exists(node):
+                del self.thd_pending[node]      # the device no longer exists
+                continue
+            if pid is None:
+                del self.thd_pending[node]      # Triggerhappy opens all devices when it starts
+                log("Triggerhappy: not running - %s (%s) not checked" % (node, p["name"]))
+                continue
+            state = thd_has_open(pid, node)
+            if state is None or state:
+                del self.thd_pending[node]
+                if state is None:
+                    log("Triggerhappy: cannot check whether %s (%s) is open" % (node, p["name"]))
+                elif p["tried"]:
+                    log("Triggerhappy: %s (%s) registered with th-cmd" % (node, p["name"]))
+                else:
+                    log("Triggerhappy: %s (%s) already open" % (node, p["name"]))
+                continue
+            if not p["tried"]:
+                p["tried"] = True
+                p["at"] = now + THD_VERIFY
+                try:
+                    rc = subprocess.call([THD_CMD, "--socket", sock, "--passfd", "--add", node],
+                                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
+                except Exception as exc:
+                    rc = str(exc)
+                if rc != 0:
+                    log("WARNING: th-cmd --add %s failed (%s)" % (node, rc))
+                continue
+            del self.thd_pending[node]
+            log("WARNING: Triggerhappy does not read %s (%s) - asking the plugin to restart it" % (node, p["name"]))
+            self.notify({"event": "thd_device_missing", "path": node, "name": p["name"]})
 
     def ensure_uinput(self):
-        """Virtuelle Tastatur neu anlegen, wenn neue Ausgabetasten (z. B. KEY_OK) hinzugekommen sind."""
+        """Recreate the virtual keyboard when new output keys (e.g. KEY_OK) have been added."""
         if self.ui is None or not self.cfg.output_keys() <= self.ui_keys:
             self.create_uinput()
+
+    # ---- Mobile Remote -------------------------------------------------------
+    def open_inject(self):
+        """Unix socket for button presses of the Mobile Remote page. Errors are not fatal."""
+        self.inject_sock = None
+        self.inject_uids = set([0])
+        try:
+            import pwd
+            self.inject_uids.add(pwd.getpwnam("volumio").pw_uid)
+        except (KeyError, ImportError):
+            pass
+        try:
+            try:
+                os.unlink(INJECT_SOCKET)
+            except OSError:
+                pass
+            sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            old = os.umask(0o111)            # anyone may connect; SO_PEERCRED decides who may send
+            try:
+                sock.bind(INJECT_SOCKET)
+            finally:
+                os.umask(old)
+            sock.listen(8)
+            sock.setblocking(False)
+            self.inject_sock = sock
+        except OSError as exc:
+            log("Mobile remote socket %s not available: %s" % (INJECT_SOCKET, exc))
+
+    def close_inject(self):
+        if getattr(self, "inject_sock", None) is not None:
+            try:
+                self.inject_sock.close()
+            except OSError:
+                pass
+            self.inject_sock = None
+            try:
+                os.unlink(INJECT_SOCKET)
+            except OSError:
+                pass
+
+    def handle_inject(self):
+        try:
+            conn, _ = self.inject_sock.accept()
+        except OSError:
+            return
+        try:
+            cred = conn.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize("3i"))
+            uid = struct.unpack("3i", cred)[1]
+            if uid not in self.inject_uids:
+                return
+            conn.settimeout(0.2)
+            data = conn.recv(256)
+            reply = self.inject(data)
+            try:
+                conn.sendall((json.dumps(reply) + "\n").encode("utf-8"))
+            except OSError:
+                pass
+        except (OSError, struct.error):
+            pass
+        finally:
+            try:
+                conn.close()
+            except OSError:
+                pass
+
+    def inject(self, data):
+        """One line of JSON {"inject": n}. Answer {"ok": bool, "error"?: str}."""
+        try:
+            msg = json.loads(data.decode("utf-8"))
+            code = msg.get("inject") if isinstance(msg, dict) else None
+        except (ValueError, UnicodeDecodeError):
+            return {"ok": False, "error": "bad_request"}
+        if isinstance(code, bool) or not isinstance(code, int) or not 1 <= code <= MOBILE_BUTTONS:
+            return {"ok": False, "error": "bad_request"}
+        m = self.cfg.lookup(MOBILE_DEVICE, "scan", code)
+        if m is None or m["mode"] != "emit":
+            return {"ok": False, "error": "not_assigned"}
+        if self.ui is None:
+            return {"ok": False, "error": "no_uinput"}
+        self.emit(m["kcode"])
+        self.notify({"event": "press", "id": m["id"], "device": MOBILE_DEVICE, "type": "scan", "code": code,
+                     "key": m["key"], "label": m["label"], "key_name": None})
+        if self.cfg.log_presses:
+            log("Key: mobile remote button %d -> %s%s" % (code, m["key"], (" (%s)" % m["label"]) if m["label"] else ""))
+        return {"ok": True}
 
     def emit(self, kcode):
         self.ui.write(ecodes.EV_KEY, kcode, 1)
@@ -394,11 +692,22 @@ class Mapper(object):
         self.ui.write(ecodes.EV_KEY, kcode, 0)
         self.ui.syn()
 
-    # ---- Geraeteverwaltung ----------------------------------------------------
+    # ---- device handling -------------------------------------------------------
+    def has_key_sibling(self, h):
+        return any(o is not h and o.did == h.did and o.cls in ("remote", "keyboard") for o in self.handles.values())
+
     def desired_grab(self, h):
         cap = self.capture_for(h.did)
-        if cap and cap["grab"]:
-            return True
+        if cap and cap["grab"] and h.cls != "touch":
+            if cap["device"] == "*":
+                # Detecting: only grab remote-like devices (never keyboard, mouse, touchscreen).
+                if h.cls == "remote":
+                    return True
+            elif h.cls != "pointer" or not self.has_key_sibling(h):
+                # Reading in a confirmed device: that device - but not its pointer part if there is a key
+                # part next to it (a USB receiver often reports keyboard and touchpad/mouse as several input
+                # devices under the same USB id). Touch parts never.
+                return True
         return h.did in self.cfg.grab
 
     def apply_mode(self, h):
@@ -415,6 +724,7 @@ class Mapper(object):
             try:
                 name = (PASS_PREFIX + " " + (h.dev.name or h.did))[:79]
                 h.passthrough = UInput.from_device(h.dev, name=name)
+                self.announce(h.passthrough, name)
             except Exception as exc:
                 self.release(h)
                 h.error = "Passthrough not possible: %s" % exc
@@ -456,7 +766,7 @@ class Mapper(object):
             if path not in paths:
                 self.known.pop(path, None)
         for fd, h in list(self.handles.items()):
-            if not self.wants(h.did):
+            if not self.wants(h.did, h.cls):
                 self.close_handle(fd, "no longer needed")
             else:
                 self.apply_mode(h)
@@ -465,25 +775,30 @@ class Mapper(object):
             if path in open_paths:
                 continue
             info = self.known.get(path)
-            if info is not None and (info.get("own") or not self.wants(info["id"])):
+            if info is not None and (info.get("own") or not self.wants(info["id"], info.get("cls"))):
                 continue
             try:
                 dev = InputDevice(path)
             except OSError:
                 continue
             did = device_id(dev)
-            self.known[path] = {"id": did, "name": dev.name, "own": is_own(dev)}
-            if is_own(dev) or not self.wants(did):
+            cls = classify(dev)
+            self.known[path] = {"id": did, "name": dev.name, "own": is_own(dev), "cls": cls}
+            if is_own(dev) or not self.wants(did, cls):
                 dev.close()
                 continue
             h = Handle(dev)
             self.handles[dev.fd] = h
             log("Input device opened: %s [%s] %s" % (dev.path, did, dev.name))
             self.apply_mode(h)
+        # once all devices are open, check again: whether a pointer part is grabbed depends on the
+        # sibling devices of the same USB id
+        for h in list(self.handles.values()):
+            self.apply_mode(h)
         self.problems = ["%s: %s" % (h.did, h.error) for h in self.handles.values() if h.error] + list(self.cfg.errors)
         self.write_status()
 
-    # ---- Ereignisverarbeitung -------------------------------------------------
+    # ---- event processing -------------------------------------------------
     def forward(self, h, ev):
         if h.grabbed and h.passthrough is not None:
             try:
@@ -493,7 +808,8 @@ class Mapper(object):
 
     def handle_event(self, h, ev):
         cap = self.capture_for(h.did)
-        exclusive_capture = cap is not None and cap["grab"]
+        # Only a device that is really read exclusively is "silent" during capture.
+        exclusive_capture = cap is not None and cap["grab"] and h.grabbed
         if ev.type == ecodes.EV_MSC and ev.code == ecodes.MSC_SCAN:
             h.frame_scan = ev.value
             if not exclusive_capture:
@@ -509,9 +825,12 @@ class Mapper(object):
             try:
                 self.process_frame(h, cap, exclusive_capture)
             finally:
-                h.frame_scan, h.frame_keys, h.frame_has_key_event = None, [], False
-        elif not exclusive_capture:
-            self.forward(h, ev)
+                h.frame_scan, h.frame_keys, h.frame_has_key_event, h.frame_pointer = None, [], False, False
+        else:
+            if ev.type in (ecodes.EV_REL, ecodes.EV_ABS):
+                h.frame_pointer = True
+            if not exclusive_capture:
+                self.forward(h, ev)
 
     def process_frame(self, h, cap, exclusive_capture):
         scan = h.frame_scan
@@ -519,16 +838,37 @@ class Mapper(object):
             scan = None
         pressed = [code for code, value in h.frame_keys if value == 1]
 
-        if cap is not None and (scan is not None or pressed):
+        # rc-core: scan code together with a recognised key -> remember; later frames with only this
+        # scan code are repeats of the held key and are not treated as a key of their own.
+        if scan is not None and pressed:
+            h.scan_keys[scan] = pressed[0]
+            if len(h.scan_keys) > 512:
+                h.scan_keys.clear()
+                h.scan_keys[scan] = pressed[0]
+        if scan is not None and not h.frame_has_key_event and scan in h.scan_keys:
+            return
+
+        if cap is not None and cap["device"] == "*" and (h.frame_pointer or any(is_button(c) for c in pressed)):
+            cap_skip = True              # detecting: mouse movement/click or touch is not a remote key
+        else:
+            cap_skip = False
+
+        if cap is not None and not cap_skip and (scan is not None or pressed):
             key_code = pressed[0] if pressed else None
             ident = (h.did, "key", key_code) if key_code is not None else (h.did, "scan", scan)
             now = time.monotonic()
             last = self.last_capture.get(ident, 0.0)
             self.last_capture[ident] = now
             if key_code is not None or now - last > self.cfg.debounce:
-                self.notify({"event": "capture", "device": h.did, "name": h.dev.name, "scan": scan,
-                             "key_code": key_code,
-                             "key_name": key_name(key_code) if key_code is not None else None})
+                if cap["device"] == "*" and h.cls == "keyboard":
+                    # detecting: from a keyboard only THAT a key came is reported - never which one
+                    # (the events go to the web interface without authentication).
+                    self.notify({"event": "capture", "device": h.did, "name": h.dev.name, "scan": None,
+                                 "key_code": None, "class": h.cls, "key_name": None, "hidden": True})
+                else:
+                    self.notify({"event": "capture", "device": h.did, "name": h.dev.name, "scan": scan,
+                                 "key_code": key_code, "class": h.cls,
+                                 "key_name": key_name(key_code) if key_code is not None else None})
         if exclusive_capture:
             return
 
@@ -537,7 +877,7 @@ class Mapper(object):
             if m is not None:
                 if value == 1 or (value == 2 and m["repeat"]):
                     self.act(h, m, "key", code, value)
-            elif value == 1:
+            elif value == 1 and not (cap is not None and cap["device"] == "*" and h.cls == "keyboard"):
                 self.notify({"event": "passthrough", "device": h.did, "type": "key", "code": code,
                              "key_name": key_name(code), "scan": scan})
         if h.frame_has_key_event or scan is None:
@@ -582,13 +922,18 @@ class Mapper(object):
             log("Key: %s %s -> %s%s" % (h.did, what, m["key"],
                                           (" (%s)" % m["label"]) if m["label"] else ""))
 
-    # ---- Hauptschleife --------------------------------------------------------
+    # ---- main loop --------------------------------------------------------
     def run(self):
         signal.signal(signal.SIGHUP, self._on_hup)
         signal.signal(signal.SIGTERM, self._on_term)
         signal.signal(signal.SIGINT, self._on_term)
         self.load()
-        self.create_uinput()
+        try:
+            self.create_uinput()
+        except Exception as exc:
+            log("ERROR: /dev/uinput not usable (%s) - stopping without restart" % exc)
+            return EXIT_CONFIG
+        self.open_inject()
         self.scan_devices()
         last_scan = time.monotonic()
         had_capture = self.cfg.capture is not None
@@ -596,26 +941,34 @@ class Mapper(object):
             if self.reload_requested:
                 self.reload_requested = False
                 self.load()
+                for h in self.handles.values():
+                    h.scan_keys.clear()      # the key table of the driver may have changed (ir-keytable)
                 self.ensure_uinput()
                 self.scan_devices()
                 last_scan = time.monotonic()
                 had_capture = self.cfg.capture is not None
+            self.check_thd()
             has_capture = self.capture_active() is not None
             if has_capture != had_capture or time.monotonic() - last_scan > RESCAN_INTERVAL:
                 had_capture = has_capture
                 self.scan_devices()
                 last_scan = time.monotonic()
             fds = list(self.handles.keys())
+            if self.inject_sock is not None:
+                fds.append(self.inject_sock.fileno())
             try:
                 ready, _, _ = select.select(fds, [], [], 1.0)
             except (OSError, ValueError):
                 ready = []
-                for fd in fds:
+                for fd in list(self.handles.keys()):
                     try:
                         os.fstat(fd)
                     except OSError:
                         self.close_handle(fd, "invalid")
             for fd in ready:
+                if self.inject_sock is not None and fd == self.inject_sock.fileno():
+                    self.handle_inject()
+                    continue
                 h = self.handles.get(fd)
                 if h is None:
                     continue
@@ -626,6 +979,7 @@ class Mapper(object):
                     self.close_handle(fd, "removed")
         for fd in list(self.handles.keys()):
             self.close_handle(fd, "shutdown")
+        self.close_inject()
         if self.ui:
             self.ui.close()
         try:

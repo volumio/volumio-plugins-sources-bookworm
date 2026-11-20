@@ -1,7 +1,7 @@
 [Unit]
 Description=X10 RF Remote watchdog every 5 minutes
 
-# Wird vom Plugin in onStart gestartet und in onStop gestoppt (nicht beim Systemstart aktiviert).
+# Started by the plugin in onStart and stopped in onStop (not enabled at boot).
 [Timer]
 OnActiveSec=5min
 OnUnitActiveSec=5min

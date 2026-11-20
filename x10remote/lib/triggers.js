@@ -1,14 +1,14 @@
 'use strict';
 
 /*
- * Triggerhappy-Hilfen
- *  - readOtherTriggers(): liest (nur lesend!) alle anderen *.conf in triggers.d, z. B. Volumios audio.conf
- *  - buildMappings():     aktive Profile -> Belegungen fuer den Mapper (mit virtuellen Tasten)
- *  - buildThdConf():      Inhalt von x10remote.conf
+ * Triggerhappy helpers
+ *  - readOtherTriggers(): reads (read-only!) all other *.conf in triggers.d, e.g. Volumio's audio.conf
+ *  - buildMappings():     active profiles -> assignments for the mapper (with virtual keys)
+ *  - buildThdConf():      content of x10remote.conf
  *
- * Ersetzen ohne audio.conf zu aendern: Hat eine bereits erkannte Taste (Typ "key") eine eigene Aktion,
- * wird sie vom Mapper exklusiv abgefangen und als virtuelle Taste ausgegeben. audio.conf sieht die
- * Originaltaste dieser Fernbedienung dann nicht mehr; fuer alle anderen Geraete gilt sie unveraendert.
+ * Replacing without changing audio.conf: if an already recognised key (type "key") has an own action,
+ * the mapper grabs it exclusively and emits it as a virtual key. audio.conf then no longer sees the
+ * original key of this remote; for all other devices it applies unchanged.
  */
 
 var fs = require('fs');
@@ -19,7 +19,7 @@ var receiversOf = require('./profiles').receiversOf;
 
 var EVENT_RE = /^(KEY|BTN)_[A-Z0-9_]+$/;
 
-/** { KEY_VOLUMEUP: [{file, value, command}], ... } aus allen fremden Triggerhappy-Dateien. */
+/** { KEY_VOLUMEUP: [{file, value, command}], ... } from all foreign Triggerhappy files. */
 async function readOtherTriggers(dir) {
   dir = dir || C.THD_DIR;
   var result = {};
@@ -40,7 +40,7 @@ async function readOtherTriggers(dir) {
       var l = line.replace(/#.*$/, '').trim();
       if (!l) return;
       var m = /^(\S+)\s+(\d+)\s+(.+)$/.exec(l);
-      if (!m || !EVENT_RE.test(m[1])) return;     // Kombinationen (KEY_A+KEY_B) werden nicht betrachtet
+      if (!m || !EVENT_RE.test(m[1])) return;     // combinations (KEY_A+KEY_B) are not considered
       (result[m[1]] = result[m[1]] || []).push({ file: files[i], value: parseInt(m[2], 10), command: m[3].trim() });
     });
   }
@@ -48,9 +48,9 @@ async function readOtherTriggers(dir) {
 }
 
 /**
- * Alle Zeilen der fremden Triggerhappy-Dateien unveraendert (ohne Kommentare/Leerzeilen) - fuer den
- * Exklusivbetrieb, in dem Triggerhappy diese Dateien nicht selbst liest. Nur lesend.
- * Rueckgabe: [{ file, lines: [{ event, raw }] }]
+ * All lines of the foreign Triggerhappy files unchanged (without comments/empty lines) - for exclusive
+ * mode, in which Triggerhappy does not read these files itself. Read-only.
+ * Returns [{ file, lines: [{ event, raw }] }]
  */
 async function readOtherRaw(dir) {
   dir = dir || C.THD_DIR;
@@ -79,16 +79,28 @@ async function readOtherRaw(dir) {
   return out;
 }
 
+/** Text for one line of a Triggerhappy file: remove all control characters (in comments too!). */
+function oneLine(s) {
+  return String(s === undefined || s === null ? '' : s).replace(/[\u0000-\u001f\u007f\u0085\u2028\u2029]+/g, ' ');
+}
+
+/** Valid key name for Triggerhappy (whitelist format). */
+function validKey(k) {
+  return typeof k === 'string' && /^(KEY|BTN)_[A-Z0-9_]{1,40}$/.test(k);
+}
+
 function hex(n) {
   var h = Number(n).toString(16);
   return '0x' + (h.length < 2 ? '0' + h : h);
 }
 
 function sourceText(k) {
-  return k.type === 'scan' ? 'Scan ' + hex(k.code) : (k.key_name || ('Key ' + k.code));
+  var code = Number(k.code);
+  if (!(code >= 0)) code = 0;
+  return k.type === 'scan' ? 'Scan ' + hex(code) : (validKey(k.key_name) ? k.key_name : ('Key ' + code));
 }
 
-/** Zwei Belegungen desselben Codes bewirken dasselbe (dann ist es kein Konflikt). */
+/** Two assignments of the same code have the same effect (then it is not a conflict). */
 function sameEffect(a, b) {
   if (a.action !== b.action) return false;
   if (a.type === 'scan' && (a.thd_key || '') !== (b.thd_key || '')) return false;
@@ -97,11 +109,11 @@ function sameEffect(a, b) {
   return true;
 }
 
-/** Befehlszeile fuer Triggerhappy oder null. */
+/** Command line for Triggerhappy, or null. */
 function commandFor(k, allowShell, profileId) {
-  if (!k.action || k.action === 'none' || k.action === 'default' || k.action === 'tkey') return null;
+  if (!k.action || k.action === 'none' || k.action === 'default') return null;
   if (k.action === 'radio') {
-    // Senderdaten liest x10remote-action aus dem Katalog (keine URI in der Befehlszeile: '#', Anfuehrungszeichen)
+    // x10remote-action reads the station data from the catalogue (no URI in the command line: '#', quotes)
     var pid = k.profile || profileId;
     var kid = k.key_id || k.id;
     if (!k.radio || !/^[a-z0-9-]+$/.test(String(pid || '')) || !/^k[0-9a-z]+$/.test(String(kid || ''))) return null;
@@ -109,37 +121,47 @@ function commandFor(k, allowShell, profileId) {
   }
   if (k.action === 'custom') {
     if (!allowShell) return null;
-    var c = String(k.command || '').replace(/[\r\n]+/g, ' ').trim();
-    return c || null;
+    // Triggerhappy reads line by line and treats everything from '#' on as a comment
+    var c = oneLine(k.command).trim();
+    if (!c || c.indexOf('#') !== -1) return null;
+    return c;
   }
   if (C.BUILTIN_ACTIONS.indexOf(k.action) === -1) return null;
   return C.ACTION_BIN + ' ' + k.action;
 }
 
 /**
- * Aktive Profile -> Belegungen. Reihenfolge der Profile = Reihenfolge der Aktivierung.
- * other = readOtherTriggers() (audio.conf usw., nur gelesen).
+ * Active profiles -> assignments. Order of the profiles = order of activation.
+ * other = readOtherTriggers() (audio.conf etc., read only).
  *
- * Grundsatz: Eine Taste mit eigener Aktion loest NIE zusaetzlich einen Befehl aus audio.conf oder einer
- * anderen Triggerhappy-Datei aus. Deshalb erhaelt jede Belegung mit eigener Aktion eine Ausgabetaste,
- * auf die nur x10remote.conf reagiert:
- *  - erkannte Tasten (type key): exklusiv abgefangen, Ausgabe als freie virtuelle Taste
- *  - Scan-Code-Tasten mit gewaehlter Triggerhappy-Taste (z. B. KEY_PLAYPAUSE): ist diese Taste bereits
- *    anderweitig belegt (audio.conf, andere Datei, Treiber einer aktiven Fernbedienung, andere Scan-Taste),
- *    gibt der Wrapper intern eine freie virtuelle Taste aus ("geschuetzt"); angezeigt wird weiter die
- *    gewaehlte Taste.
- * Der Pool der virtuellen Tasten enthaelt nur Tasten, die keine andere Triggerhappy-Datei verwendet.
- * Rueckgabe: { mappings: [...], problems: [...] }
+ * Principle: a key with an own action NEVER additionally triggers a command from audio.conf or another
+ * Triggerhappy file. Therefore every assignment with an own action gets an output key that only
+ * x10remote.conf reacts to:
+ *  - recognised keys (type key): grabbed exclusively, emitted as a free virtual key
+ *  - scan-code keys with a chosen Triggerhappy key (e.g. KEY_PLAYPAUSE): if that key is already used
+ *    elsewhere (audio.conf, another file, driver of an active remote, scan key without own action),
+ *    the wrapper internally emits a free virtual key ("shielded"); the chosen key is still what is
+ *    displayed.
+ *  - The same Triggerhappy key may be chosen several times (in the same or in different profiles):
+ *    keys with the SAME command share the key (one command line, nothing taken from the pool);
+ *    the first key with a DIFFERENT command keeps the chosen key, every further one internally gets
+ *    a free virtual key ("shielded") - so one press never runs two commands.
+ * The pool of virtual keys only contains keys no other Triggerhappy file uses.
+ * Returns { mappings: [...], problems: [...] }
  */
-function buildMappings(profiles, allowShell, other) {
+function buildMappings(profiles, allowShell, other, poolKeys) {
   other = other || {};
+  // poolKeys: usable virtual keys (see listThdKeys); without it only the ones known everywhere
+  poolKeys = poolKeys || C.VIRTUAL_KEYS.slice(0, C.VIRTUAL_KEYS_BASE);
   var chosenCount = {};
   var driverKeys = {};
-  // Mehrere Sender an einem (433-MHz-)Empfaenger koennen gleiche Codes liefern - der Empfaenger kann sie
-  // nicht unterscheiden. Dann gilt die Belegung des zuletzt aktivierten Profils; gleich belegte Tasten
-  // sind kein Konflikt. Deshalb werden die Profile in umgekehrter Aktivierungsreihenfolge verarbeitet.
+  // Several transmitters on one (433 MHz) receiver can deliver the same codes - the receiver cannot
+  // tell them apart. Then the assignment of the profile activated last applies; keys with the same
+  // assignment are no conflict. Therefore the profiles are processed in reverse order of activation.
   var ordered = profiles.slice().reverse();
   var claimed = {};
+  var rawChosen = {};        // chosen keys that are (also) emitted without an own command
+  var direct = {};           // chosen key -> command that uses it directly
   ordered.forEach(function (p) {
     var devs = receiversOf(p);
     (p.keys || []).forEach(function (k) {
@@ -152,14 +174,19 @@ function buildMappings(profiles, allowShell, other) {
         var ident = d + '|' + k.type + '|' + k.code;
         if (!claimed[ident]) { claimed[ident] = true; wins = true; }
       });
-      if (!wins) return;                                   // ueberall von einem neueren Profil belegt
+      if (!wins) return;                                   // taken everywhere by a newer profile
       var name = scanThdKey(k);
-      if (name) chosenCount[name] = (chosenCount[name] || 0) + 1;
-      // erkannte Tasten, die unveraendert bei Triggerhappy ankommen
+      if (name) {
+        chosenCount[name] = (chosenCount[name] || 0) + 1;
+        // scan key that emits the chosen key without an own command (for audio.conf or similar)
+        var cmd0 = commandFor({ profile: p.id, key_id: k.id, action: k.action, command: k.command || '', radio: k.radio }, allowShell);
+        if (!cmd0) rawChosen[name] = true;
+      }
+      // recognised keys that reach Triggerhappy unchanged
       if (k.type === 'key' && k.key_name && (k.action === 'default' || !k.action)) driverKeys[k.key_name] = true;
     });
   });
-  var pool = C.VIRTUAL_KEYS.filter(function (k) {
+  var pool = poolKeys.filter(function (k) {
     return !chosenCount[k] && !(other[k] && other[k].length) && !driverKeys[k];
   });
   var mappings = [];
@@ -171,9 +198,10 @@ function buildMappings(profiles, allowShell, other) {
       problems.push({ code: 'no_device', profile: p.id });
       return;
     }
-    // Ein Sender kann (433 MHz) mit mehreren Empfaengern arbeiten: Belegung je Empfaenger.
-    // Die Ausgabetaste ist fuer alle Empfaenger dieselbe (erster Durchlauf vergibt sie).
+    // A transmitter can (433 MHz) work with several receivers: one assignment per receiver.
+    // The output key is the same for all receivers (the first pass assigns it).
     var outFor = {};
+    var shieldFor = {};
     devices.forEach(function (device) {
     (p.keys || []).forEach(function (k) {
       var ident = device + '|' + k.type + '|' + k.code;
@@ -184,9 +212,9 @@ function buildMappings(profiles, allowShell, other) {
         remote_label: k.remote_label || '', description: k.description || '',
         radio: k.action === 'radio' && k.radio ? { name: k.radio.name } : null
       };
-      if (k.type === 'key' && k.action === 'default') return;          // unveraendert durchreichen
+      if (k.type === 'key' && k.action === 'default') return;          // pass through unchanged
       if (taken[ident]) {
-        // gleicher Code schon von einem zuletzt aktivierten Profil belegt: gleiche Wirkung -> kein Hinweis
+        // same code already taken by a profile activated later: same effect -> no notice
         if (!sameEffect(taken[ident].k, k)) {
           problems.push({ code: 'overridden', profile: p.id, key: k.remote_label || k.name, other: taken[ident].name });
         }
@@ -199,11 +227,12 @@ function buildMappings(profiles, allowShell, other) {
       }
       if (k.action === 'custom' && !allowShell) {
         problems.push({ code: 'shell_disabled', profile: p.id, key: k.name });
-        if (k.type === 'key') return;                                   // Original bleibt aktiv
+        if (k.type === 'key') return;                                   // the original stays active
       }
-      // Scan-Code-Tasten werden immer umgesetzt: gewaehlte Triggerhappy-Taste oder freie virtuelle Taste
+      // scan-code keys are always translated: chosen Triggerhappy key or a free virtual key
       var chosenKey = k.type === 'scan' ? scanThdKey(k) : '';
-      var hasCmd = !!commandFor(base, allowShell);
+      var cmd = commandFor(base, allowShell);
+      var hasCmd = !!cmd;
       var shielded = false;
       var shieldBy = [];
       if (chosenKey && hasCmd) {
@@ -211,22 +240,32 @@ function buildMappings(profiles, allowShell, other) {
           other[chosenKey].forEach(function (a) { if (shieldBy.indexOf(a.file) === -1) shieldBy.push(a.file); });
         }
         if (driverKeys[chosenKey]) shieldBy.push('driver');
-        if (chosenCount[chosenKey] > 1) shieldBy.push('profile');
+        // another scan key emits the same key without an own command -> its press must not trigger
+        // this command
+        if (rawChosen[chosenKey]) shieldBy.push('profile');
+        // chosen several times: the same command shares the key, a different command is shielded
+        if (!shieldBy.length && !outFor[k.id]) {
+          if (direct[chosenKey] === undefined) direct[chosenKey] = cmd;
+          else if (direct[chosenKey] !== cmd) shieldBy.push('profile');
+        }
         shielded = shieldBy.length > 0;
       }
+      // further receiver of the same transmitter: the same decision as for the first
+      if (shieldFor[k.id]) { shielded = shieldFor[k.id].shielded; shieldBy = shieldFor[k.id].by; }
+      else shieldFor[k.id] = { shielded: shielded, by: shieldBy };
       var outKey = outFor[k.id] || ((chosenKey && !shielded) ? chosenKey : pool.shift());
       outFor[k.id] = outKey;
       if (!outKey) {
-        problems.push({ code: 'pool_exhausted', profile: p.id, key: k.name });
+        problems.push({ code: 'pool_exhausted', profile: p.id, key: k.name, max: poolKeys.length });
         return;
       }
       taken[ident] = { name: p.name, k: k };
       mappings.push(Object.assign(base, {
         mode: 'emit',
-        key: outKey,                         // Taste, die der Mapper tatsaechlich ausgibt
-        thd_key: chosenKey || outKey,        // Taste, als die die Taste angezeigt wird
+        key: outKey,                         // key the mapper really emits
+        thd_key: chosenKey || outKey,        // key the key is displayed as
         chosen: !!chosenKey,
-        shielded: shielded,                  // audio.conf & Co. werden fuer diese Taste nicht ausgefuehrt
+        shielded: shielded,                  // audio.conf & co. are not executed for this key
         shield_by: shieldBy,
         virtual: !chosenKey
       }));
@@ -243,12 +282,16 @@ function buildMappings(profiles, allowShell, other) {
   return { mappings: mappings, problems: problems };
 }
 
-/** Fest gewaehlte Triggerhappy-Taste einer Scan-Code-Taste ('' = automatisch). */
+/** Fixed Triggerhappy key of a scan-code key ('' = automatic). */
 function scanThdKey(k) {
   if (k.type !== 'scan') return '';
   if (k.thd_key) return k.thd_key;
-  if (k.action === 'tkey' && k.target) return k.target;                 // Profile aus Version 1.3.3
   return '';
+}
+
+/** Empty lines become '#': Triggerhappy reports every empty line as "Unable to parse trigger line". */
+function confText(lines) {
+  return lines.map(function (l) { return l === '' ? '#' : l; }).join('\n') + '\n';
 }
 
 function buildThdConf(mappings, allowShell) {
@@ -260,43 +303,57 @@ function buildThdConf(mappings, allowShell) {
     ''
   ];
   var written = {};
+  var writtenLine = {};
   mappings.forEach(function (m) {
-    // Sender an mehreren Empfaengern: gleiche Ausgabetaste - die Befehlszeile nur einmal schreiben,
-    // sonst fuehrte Triggerhappy den Befehl doppelt aus.
+    // transmitter on several receivers: same output key - write the command line only once,
+    // otherwise Triggerhappy would run the command twice.
     if (written[m.id]) {
-      lines.push('#   ' + m.id + ' also via receiver ' + m.device + ' (same key ' + (m.key || '-') + ')');
+      lines.push('#   ' + oneLine(m.id) + ' also via receiver ' + oneLine(m.device) + ' (same key ' + oneLine(m.key || '-') + ')');
       return;
     }
     written[m.id] = true;
-    lines.push('# ' + String(m.profile_name || m.profile).replace(/[\r\n]+/g, ' ') + ' | ' +
-      String(m.label || '').replace(/[\r\n]+/g, ' ') + (m.remote_label ? ' [' + m.remote_label + ']' : '') +
-      ' | ' + m.device + ' | ' + sourceText(m) + (m.shielded ? ' | as ' + m.thd_key + ' (internally ' + m.key +
-      ', so that ' + m.shield_by.join('/') + ' does not run as well)' : ''));
-    if (m.description) lines.push('#   ' + String(m.description).replace(/[\r\n]+/g, ' '));
-    if (m.mode === 'emit' && !commandFor(m, allowShell)) {
-      lines.push('#   ' + m.key + (m.virtual ? '\t(virtual key, no own action)'
-        : '\t(no own action - other Triggerhappy files such as audio.conf apply)'));
-      return;
-    }
+    lines.push('# ' + oneLine(m.profile_name || m.profile) + ' | ' +
+      oneLine(m.label) + (m.remote_label ? ' [' + oneLine(m.remote_label) + ']' : '') +
+      ' | ' + oneLine(m.device) + ' | ' + sourceText(m) + (m.shielded ? ' | as ' + oneLine(m.thd_key) + ' (internally ' + oneLine(m.key) +
+      ', so that ' + oneLine((m.shield_by || []).join('/')) + ' does not run as well)' : ''));
+    if (m.description) lines.push('#   ' + oneLine(m.description));
     if (m.mode === 'swallow') {
       lines.push('#   locked (swallowed by the mapper)');
       return;
     }
-    lines.push(m.key + '\t1\t' + commandFor(m, allowShell));
+    if (!validKey(m.key)) {
+      lines.push('#   skipped: invalid key name');
+      return;
+    }
+    var cmd = commandFor(m, allowShell);
+    if (m.mode === 'emit' && !cmd) {
+      lines.push('#   ' + m.key + (m.virtual ? '\t(virtual key, no own action)'
+        : '\t(no own action - other Triggerhappy files such as audio.conf apply)'));
+      return;
+    }
+    // Several keys share the same Triggerhappy key with the same command: write the line only once -
+    // Triggerhappy runs every matching line.
+    var line = m.key + '\t1\t' + oneLine(cmd);
+    if (writtenLine[line]) {
+      lines.push('#   shares ' + m.key + ' with the same command (line above) - written once');
+      return;
+    }
+    writtenLine[line] = true;
+    lines.push(line);
   });
-  return lines.join('\n') + '\n';
+  return confText(lines);
 }
 
 /**
- * Datei fuer den Exklusivbetrieb (Triggerhappy liest nur diesen Ordner):
- *  1. die eigenen Belegungen (wie buildThdConf)
- *  2. je Profil: Tasten ohne eigene Aktion, fuer die audio.conf (o. a.) einen Befehl hat - uebernommen
- *  3. alle uebrigen Zeilen der fremden Dateien fuer Geraete ohne Profil - uebernommen
- * Jede Zeile der fremden Dateien erscheint hoechstens einmal; Ausgabetasten des Plugins kollidieren nicht
- * mit uebernommenen Zeilen (siehe buildMappings: geschuetzte Tasten, Pool ohne fremde Tasten).
+ * File for exclusive mode (Triggerhappy reads only this folder):
+ *  1. the own assignments (as buildThdConf)
+ *  2. per profile: keys without own action for which audio.conf (or another file) has a command - taken over
+ *  3. all remaining lines of the foreign files for devices without a profile - taken over
+ * Every line of the foreign files appears at most once; output keys of the plugin do not collide with
+ * lines taken over (see buildMappings: shielded keys, pool without foreign keys).
  */
 function buildExclusiveConf(mappings, profiles, allowShell, raw) {
-  var one = function (s) { return String(s || '').replace(/[\r\n]+/g, ' '); };
+  var one = oneLine;
   var lines = [
     '# Generated by the Volumio plugin "X10 RF Remote" - exclusive mode.',
     '# Triggerhappy currently reads ONLY this file. audio.conf and the other files in ' + C.THD_DIR,
@@ -319,7 +376,7 @@ function buildExclusiveConf(mappings, profiles, allowShell, raw) {
     (p.keys || []).forEach(function (k) {
       var m = byId[p.id + '/' + k.id];
       var ev = null;
-      if (k.type === 'key' && !m) ev = k.key_name;                                  // Volumio-Standard
+      if (k.type === 'key' && !m) ev = k.key_name;                                  // Volumio default
       else if (k.type === 'scan' && m && m.mode === 'emit' && !commandFor(m, allowShell)) ev = m.key;
       if (!ev || done[ev] || !byEvent[ev]) return;
       done[ev] = true;
@@ -339,10 +396,10 @@ function buildExclusiveConf(mappings, profiles, allowShell, raw) {
     lines.push('', '# ---- Other devices: copied from ' + f.file + ' ----');
     rest.forEach(function (l) { lines.push(l.raw); });
   });
-  return lines.join('\n') + '\n';
+  return confText(lines);
 }
 
-/** Alle Tastennamen, die Triggerhappy kennt (`thd --listevents`), sonst die eingebaute Liste. */
+/** All key names Triggerhappy knows (`thd --listevents`), otherwise the built-in list. */
 var thdKeyCache = null;
 function listThdKeys(execFile) {
   if (thdKeyCache) return Promise.resolve(thdKeyCache);
@@ -360,15 +417,19 @@ function listThdKeys(execFile) {
   return tryBin(0).then(function (list) {
     var source = list ? 'thd' : 'fallback';
     list = (list || C.FALLBACK_THD_KEYS.slice());
-    C.VIRTUAL_KEYS.forEach(function (k) { if (list.indexOf(k) === -1) list.push(k); });
+    // stock for "automatic": the 36 base keys always, KEY_MACRO1-30 only if thd lists them itself
+    var pool = C.VIRTUAL_KEYS.filter(function (k, i) {
+      return i < C.VIRTUAL_KEYS_BASE || (source === 'thd' && list.indexOf(k) !== -1);
+    });
+    pool.forEach(function (k) { if (list.indexOf(k) === -1) list.push(k); });
     list.sort(keyOrder);
-    var result = { keys: list, source: source };
-    if (source === 'thd') thdKeyCache = result;      // Ersatzliste nicht dauerhaft merken
+    var result = { keys: list, source: source, pool: pool };
+    if (source === 'thd') thdKeyCache = result;      // do not keep the fallback list permanently
     return result;
   });
 }
 
-/** KEY_ vor BTN_, dann alphabetisch mit Zahlen in natuerlicher Reihenfolge. */
+/** KEY_ before BTN_, then alphabetically with numbers in natural order. */
 function keyOrder(a, b) {
   var pa = a.indexOf('BTN_') === 0 ? 1 : 0;
   var pb = b.indexOf('BTN_') === 0 ? 1 : 0;
@@ -385,5 +446,6 @@ module.exports = {
   buildThdConf: buildThdConf,
   commandFor: commandFor,
   sourceText: sourceText,
-  hex: hex
+  hex: hex,
+  oneLine: oneLine
 };

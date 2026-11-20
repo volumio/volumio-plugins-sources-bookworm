@@ -1,8 +1,8 @@
-/* Startseite */
+/* Home page */
 (function () {
   'use strict';
   var el = X10.el;
-  /** Bericht anzeigen: markierbarer Text, Kopieren, Datei in /data/INTERNAL/X10. */
+  /** Show a report: selectable text, copy, file in /data/INTERNAL/X10. */
   function showReport(res) {
     var pre = el('textarea', { class: 'mono report', readonly: 'readonly', spellcheck: 'false' });
     pre.value = res.text;
@@ -50,7 +50,7 @@
       box.appendChild(el('div', null, [el('b', { text: X10.t('WEB_ACTIVE_PROFILES') + ': ' }),
         names.length ? names.map(function (n) { return n + ' (' + profiles[n] + ')'; }).join(', ') : X10.t('WEB_VANILLA_NAME')]));
       var problems = state.mapper_problems.concat(state.problems.map(function (p) {
-        return X10.t('WEB_PROBLEM_' + String(p.code).toUpperCase(), { key: p.key || '', other: p.other || '', profile: p.profile || '' });
+        return X10.t('WEB_PROBLEM_' + String(p.code).toUpperCase(), { key: p.key || '', other: p.other || '', profile: p.profile || '', max: p.max || '' });
       }));
       problems.forEach(function (p) { box.appendChild(el('div', { class: 'note warn', text: p })); });
     });

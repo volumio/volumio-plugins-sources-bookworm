@@ -41,6 +41,26 @@
           }
         },
         {
+          "id": "btn_open_mobile",
+          "element": "button",
+          "label": "TRANSLATE.X10.BTN_MOBILE",
+          "description": "TRANSLATE.X10.BTN_MOBILE_DESC",
+          "onClick": {
+            "type": "openUrl",
+            "url": "/"
+          }
+        },
+        {
+          "id": "btn_open_mobilesim",
+          "element": "button",
+          "label": "TRANSLATE.X10.BTN_MOBILESIM",
+          "description": "TRANSLATE.X10.BTN_MOBILESIM_DESC",
+          "onClick": {
+            "type": "openUrl",
+            "url": "/"
+          }
+        },
+        {
           "id": "btn_addresses",
           "element": "button",
           "label": "TRANSLATE.X10.BTN_ADDRESSES",
@@ -94,7 +114,9 @@
           "ignore_scancodes",
           "watchdog",
           "log_presses",
-          "web_port"
+          "web_port",
+          "mobile_port",
+          "event_port"
         ]
       },
       "content": [
@@ -119,7 +141,7 @@
               "max": 2000
             }
           ],
-          "value": 300
+          "value": 600
         },
         {
           "id": "repeat_ms",
@@ -150,7 +172,7 @@
           "element": "switch",
           "label": "TRANSLATE.X10.WATCHDOG",
           "doc": "TRANSLATE.X10.WATCHDOG_DOC",
-          "value": true
+          "value": false
         },
         {
           "id": "log_presses",
@@ -173,7 +195,39 @@
               "max": 65535
             }
           ],
-          "value": 7710
+          "value": 7810
+        },
+        {
+          "id": "mobile_port",
+          "type": "number",
+          "element": "input",
+          "label": "TRANSLATE.X10.MOBILE_PORT",
+          "doc": "TRANSLATE.X10.MOBILE_PORT_DOC",
+          "attributes": [
+            {
+              "min": 1024
+            },
+            {
+              "max": 65535
+            }
+          ],
+          "value": 7812
+        },
+        {
+          "id": "event_port",
+          "type": "number",
+          "element": "input",
+          "label": "TRANSLATE.X10.EVENT_PORT",
+          "doc": "TRANSLATE.X10.EVENT_PORT_DOC",
+          "attributes": [
+            {
+              "min": 1024
+            },
+            {
+              "max": 65535
+            }
+          ],
+          "value": 7811
         }
       ]
     },

@@ -25,7 +25,7 @@ a { color: var(--accent); }
 .muted { color: var(--muted); }
 .mono { font-family: var(--mono); }
 
-/* Kopfzeile */
+/* header */
 .top { position: sticky; top: 0; z-index: 5; background: rgba(20, 23, 28, .94); border-bottom: 1px solid var(--line); margin-bottom: 20px; }
 .top .wrap { display: flex; align-items: center; gap: 18px; padding-top: 12px; padding-bottom: 12px; flex-wrap: wrap; }
 .brand { font-weight: 700; letter-spacing: .3px; color: var(--text); text-decoration: none; }
@@ -49,7 +49,7 @@ h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var
 .spacer { flex: 1; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 12px; }
 
-/* Formular */
+/* form */
 label.field, div.field { display: block; margin-bottom: 12px; }
 label.field > span, div.field > span { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
 input[type=text], input[type=search], input[type=url], textarea, select {
@@ -72,7 +72,7 @@ button.danger { color: var(--red); }
 button.small, .btn.small { padding: 4px 9px; font-size: 13px; }
 .row.tools { gap: 6px; flex-wrap: wrap; }
 
-/* Hinweise */
+/* notices */
 .note { border-left: 3px solid var(--accent); background: var(--panel); padding: 10px 14px; border-radius: 6px; margin: 12px 0; font-size: 14px; }
 .note.warn { border-color: var(--orange); }
 .note.err { border-color: var(--red); }
@@ -96,7 +96,7 @@ button.small, .btn.small { padding: 4px 9px; font-size: 13px; }
 .badge.key { color: var(--blue); border-color: rgba(90,169,240,.5); }
 .badge.on { color: var(--green); border-color: rgba(53,208,127,.5); }
 
-/* Tastentabelle */
+/* key table */
 .keys { width: 100%; border-collapse: collapse; }
 .keys th { text-align: left; font-size: 12px; color: var(--muted); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--line); }
 .keys td { padding: 8px; border-bottom: 1px solid #22262e; vertical-align: top; }
@@ -117,7 +117,7 @@ button.small, .btn.small { padding: 4px 9px; font-size: 13px; }
   .keys td.ledcell { width: auto; }
 }
 
-/* Karten */
+/* cards */
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
 .card.on { border-color: var(--green); }
 .card.warn.on { border-color: var(--orange); }
@@ -129,7 +129,7 @@ button.small, .btn.small { padding: 4px 9px; font-size: 13px; }
 .tile:hover { border-color: var(--accent); }
 .tile .big { font-size: 18px; font-weight: 650; }
 
-/* Tastentest */
+/* key test */
 .last { display: flex; align-items: center; gap: 18px; margin-bottom: 18px; }
 .last .led { width: 42px; height: 42px; }
 .last-key { font-family: var(--mono); font-size: 32px; font-weight: 700; }
@@ -151,7 +151,7 @@ button.small, .btn.small { padding: 4px 9px; font-size: 13px; }
 .log .ai { color: var(--muted); }
 .log div { white-space: normal; }
 
-/* Assistent */
+/* wizard */
 .steps { display: flex; gap: 8px; margin: 10px 0 18px; flex-wrap: wrap; }
 .steps div { padding: 6px 12px; border-radius: 20px; border: 1px solid var(--line); color: var(--muted); font-size: 13px; }
 .steps div.on { border-color: var(--accent); color: var(--text); }
@@ -164,7 +164,7 @@ button.small, .btn.small { padding: 4px 9px; font-size: 13px; }
 .devlist label:hover { border-color: var(--accent); }
 .counter { font-family: var(--mono); color: var(--accent); }
 
-/* Bilder */
+/* pictures */
 .images { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 12px; }
 .slot { border: 1px dashed var(--line); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
 .slot img { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: var(--bg); border-radius: 6px; display: block; cursor: zoom-in; }
@@ -190,7 +190,7 @@ button.small, .btn.small { padding: 4px 9px; font-size: 13px; }
 textarea.notes { min-height: 180px; }
 .camview { width: 100%; max-height: 60vh; background: #000; border-radius: 8px; margin-top: 8px; }
 
-/* Befehlsreferenz */
+/* command reference */
 .cmdline { display: flex; gap: 8px; align-items: flex-start; }
 .cmdline input, .cmdline textarea { flex: 1; min-width: 0; }
 .cmdline button { white-space: nowrap; }
@@ -208,7 +208,7 @@ textarea.cmdtext { font-family: var(--mono); font-size: 13px; line-height: 1.45;
 .cmdref .ln.cmd { color: var(--accent); cursor: text; }
 .cmdref .ln.cmd:hover { background: rgba(84,195,162,.08); }
 
-/* Druckliste */
+/* print list */
 .printpage .toolbar { margin-top: 18px; gap: 10px; flex-wrap: wrap; }
 .sheet { background: #fff; color: #111; border-radius: 10px; padding: 28px 32px; margin: 12px 0 40px; }
 .sheet h1 { color: #111; margin: 0 0 4px; font-size: 24px; }
@@ -237,10 +237,10 @@ textarea.cmdtext { font-family: var(--mono); font-size: 13px; line-height: 1.45;
   .plist thead { display: table-header-group; }
 }
 
-/* Sprachauswahl im Kopf */
+/* language selection in the header */
 header.top select.lang { width: auto; padding: 3px 6px; font-size: 12px; background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 6px; }
 
-/* Assistent: Taste fuer Taste */
+/* wizard: key by key */
 .panel.current { border-width: 2px; border-color: var(--accent); margin-bottom: 16px; }
 .panel.current.flash { background: rgba(84,195,162,.12); }
 .waitbox { padding: 18px 6px; }
@@ -261,7 +261,7 @@ p.small { font-size: 12px; margin: 8px 0 0; }
 .panel.current { scroll-margin-top: 80px; }
 @media (max-width: 760px) { .panel.current { scroll-margin-top: 190px; } }
 
-/* Empfaenger */
+/* receivers */
 .devlist img.mini { width: 56px; height: 42px; object-fit: contain; background: var(--bg); border-radius: 4px; flex: none; }
 .devlist label.disabled { opacity: .55; cursor: not-allowed; }
 .devlist label input[type=radio], .devlist label input[type=checkbox] { flex: none; }
@@ -269,7 +269,7 @@ p.small { font-size: 12px; margin: 8px 0 0; }
 .muted.small, div.small { font-size: 12px; }
 select option:disabled { color: #8a8f98; }
 
-/* Radiosender */
+/* radio stations */
 .radiobox { display: flex; align-items: center; gap: 8px; margin: 6px 0; padding: 6px 8px; border: 1px dashed var(--line); border-radius: 8px; }
 .radiobox .radiosum { flex: 1; font-size: 13px; word-break: break-word; }
 .radiobox .radiosum.warn { color: var(--orange); }
@@ -282,3 +282,25 @@ textarea.curl { width: 100%; font-size: 12px; min-height: 64px; }
 textarea.report { width: 100%; min-height: 50vh; font-size: 12px; white-space: pre; }
 .dlg h4 { margin: 14px 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 .led.off { background: var(--orange); }
+
+/* simulation of the phone page (mobilesim.html) */
+.simstage { display: flex; justify-content: center; padding: 18px 0 8px; }
+.simphone {
+  width: 413px;
+  max-width: 100%;
+  height: min(872px, calc(100vh - 40px));
+  min-height: 560px;
+  padding: 10px;
+  border-radius: 46px;
+  background: #1d1f21;
+  box-shadow: 0 0 0 2px #3a3f44, 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+.simphone.dark { background: #2a2d30; }
+.simscreen { display: block; width: 100%; height: 100%; border: 0; border-radius: 36px; background: #ffffff; }
+.simphone.dark .simscreen { background: #080807; }
+
+/* Mobile Remote: preview of the own picture on a light or dark background */
+.gprev { height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 6px; padding: 8px; }
+.gprev.light { background: #ffffff; }
+.gprev.dark { background: #080807; }
+.slot .gprev img { width: auto; max-width: 80%; max-height: 100%; aspect-ratio: auto; background: transparent; cursor: default; }

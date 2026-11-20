@@ -1,15 +1,15 @@
 #!/bin/sh
-# x10remote-action <aktion> [parameter]
-# Wird von Triggerhappy aufgerufen und steuert Volumio ueber die lokale REST-API.
+# x10remote-action <action> [parameter]
+# Called by Triggerhappy; controls Volumio through the local REST API.
 #
 #   toggle | play | pause | stop | next | prev
 #   volup | voldown | mute | unmute | mutetoggle
 #   volume <0-100>
-#   random | repeat           (schaltet um)
+#   random | repeat           (toggles)
 #   clearqueue
 #   playlist "<Name>"
-#   api "<cmd-String>"        z. B. api "volume&volume=30"
-#   radio <profil>/<taste>    Radiosender aus /data/INTERNAL/X10/radio-stations.json (Failover ueber bis zu 3 URIs)
+#   api "<cmd string>"        e.g. api "volume&volume=30"
+#   radio <profile>/<key>     radio station from /data/INTERNAL/X10/radio-stations.json (failover over up to 3 URIs)
 
 API="http://127.0.0.1:3000/api/v1"
 

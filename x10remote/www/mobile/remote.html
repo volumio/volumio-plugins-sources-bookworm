@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#080807" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Remote">
+<meta name="format-detection" content="telephone=no">
+<title>Mobile Remote</title>
+<link rel="stylesheet" href="remote.css">
+</head>
+<body>
+<main class="remote">
+  <div class="device">
+    <div class="host" id="host">&nbsp;</div>
+    <div class="ip" id="ip">&nbsp;</div>
+  </div>
+  <header class="now" aria-live="polite">
+    <div class="title" id="title">&nbsp;</div>
+    <div class="artist" id="artist">&nbsp;</div>
+    <div class="album" id="album">&nbsp;</div>
+  </header>
+
+  <section class="pad" id="pad"></section>
+
+  <footer class="vol">
+    <div class="graphic">
+      <span class="vtext" id="vtext">&nbsp;</span>
+      <img id="gimg" alt="" hidden>
+    </div>
+    <div class="volrow">
+      <button type="button" class="step" id="minus" aria-label="-">&minus;</button>
+      <input type="range" id="slider" min="0" max="100" step="1" value="0" aria-label="Volume">
+      <button type="button" class="step" id="plus" aria-label="+">+</button>
+    </div>
+    <div class="transport">
+      <button type="button" class="tkey" id="prev" data-action="prev" aria-label="Previous">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="2.6" height="14" rx="1"/><path d="M20 5.6v12.8a.8.8 0 0 1-1.25.66L9.3 12.66a.8.8 0 0 1 0-1.32l9.45-6.4A.8.8 0 0 1 20 5.6z"/></svg>
+      </button>
+      <button type="button" class="tkey" id="pause" data-action="pause" aria-label="Pause">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg>
+      </button>
+      <button type="button" class="tkey" id="play" data-action="play" aria-label="Play">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5.1v13.8a.8.8 0 0 0 1.22.68l11.1-6.9a.8.8 0 0 0 0-1.36L8.22 4.42A.8.8 0 0 0 7 5.1z"/></svg>
+      </button>
+      <button type="button" class="tkey" id="next" data-action="next" aria-label="Next">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.6v12.8a.8.8 0 0 0 1.25.66l9.45-6.4a.8.8 0 0 0 0-1.32L5.25 4.94A.8.8 0 0 0 4 5.6z"/><rect x="17.4" y="5" width="2.6" height="14" rx="1"/></svg>
+      </button>
+    </div>
+  </footer>
+</main>
+<script src="remote.js"></script>
+</body>
+</html>

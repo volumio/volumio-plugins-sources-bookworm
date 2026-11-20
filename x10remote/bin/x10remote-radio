@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-# x10remote-radio <profil>/<taste>
-# Startet einen Radiosender aus /data/INTERNAL/X10/radio-stations.json (vom Plugin "X10 RF Remote" erzeugt).
-# Failover: Die URIs werden der Reihe nach geprueft, die erste erreichbare wird gespielt; ist keine erreichbar,
-# wird trotzdem die erste versucht (die Pruefung kann z. B. an einem Zertifikat scheitern, MPD aber nicht).
-# Abspielen ueber die Volumio-REST-API (entspricht):
+# x10remote-radio <profile>/<key>
+# Starts a radio station from /data/INTERNAL/X10/radio-stations.json (created by the plugin "X10 RF Remote").
+# Failover: the URIs are checked in order and the first reachable one is played; if none is reachable,
+# the first one is tried anyway (the check can fail e.g. on a certificate while MPD does not).
+# Playback through the Volumio REST API (equivalent to):
 #   curl -s -X POST -H 'Content-Type: application/json' \
 #        -d '{"service":"webradio","type":"webradio","title":"<Name>","uri":"<URI>"}' \
 #        http://127.0.0.1:3000/api/v1/replaceAndPlay
@@ -25,7 +25,7 @@ def log(msg):
 
 
 def reachable(uri, hops=0):
-    """True, wenn der Server mit 2xx antwortet (HTTP oder ICY). Folgt bis zu 3 Weiterleitungen."""
+    """True if the server answers 2xx (HTTP or ICY). Follows up to 3 redirects."""
     try:
         u = urllib.parse.urlsplit(uri)
         if u.scheme not in ("http", "https") or not u.hostname:

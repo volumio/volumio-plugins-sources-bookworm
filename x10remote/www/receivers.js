@@ -1,4 +1,4 @@
-/* Empfaengeruebersicht: alle Empfaenger mit Bild, 433-MHz-Kennzeichen und zugeordneten Sendern */
+/* Receiver overview: all receivers with picture, 433 MHz mark and assigned transmitters */
 (function () {
   'use strict';
   var el = X10.el;
@@ -41,7 +41,7 @@
     });
   }
 
-  /** Angeschlossene Geraete ohne Empfaenger-Eintrag: als Empfaenger anlegen. */
+  /** Connected devices without a receiver entry: create them as receivers. */
   function loadDevices() {
     var box = X10.$('devices');
     box.textContent = '';

@@ -2,6 +2,9 @@
 Description=X10 RF Remote mapper (Volumio plugin x10remote)
 After=systemd-udevd.service systemd-modules-load.service
 Before=triggerhappy.service
+# At most 5 starts per minute - after that the service stays "failed" instead of restarting forever
+StartLimitIntervalSec=60
+StartLimitBurst=5
 
 [Service]
 Type=simple
@@ -10,7 +13,9 @@ ExecStart=/usr/bin/python3 -u /usr/local/bin/x10mapper.py --config /data/configu
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 RestartSec=3
+# 78 (EX_CONFIG): python3-evdev is missing or /dev/uinput is unusable - a restart does not help
+RestartPreventExitStatus=78
 
-# Wird vom Plugin in onStart gestartet und in onStop gestoppt (nicht beim Systemstart aktiviert).
+# Started by the plugin in onStart and stopped in onStop (not enabled at boot).
 [Install]
 WantedBy=multi-user.target

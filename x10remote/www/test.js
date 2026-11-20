@@ -1,17 +1,17 @@
-/* Tastentest: LED je Taste der aktiven Profile */
+/* Key test: one LED per key of the active profiles */
 (function () {
   'use strict';
   var el = X10.el;
   var cards = {};      // id -> card
   var unknown = {};    // device|type|code -> card
-  var audioconf = {};  // Befehle aus audio.conf (nur lesend)
+  var audioconf = {};  // commands from audio.conf (read only)
 
   function info0() { return X10.info() || {}; }
 
-  /** Info, ob die Taste in audio.conf belegt ist. */
+  /** Info whether the key is assigned in audio.conf. */
   function audioInfo(ev, c) {
     if (ev.type === 'scan') {
-      // umgesetzte Scan-Code-Taste: Triggerhappy sieht die erzeugte Taste (ev.key)
+      // translated scan-code key: Triggerhappy sees the generated key (ev.key)
       if (ev.event === 'press' && ev.key) {
         if (c && c.key.shielded && c.key.shown_key) {
           return X10.t('WEB_EV_THD_SHIELDED', { key: c.key.shown_key, out: ev.key });
@@ -96,7 +96,7 @@
     return el('button', { class: 'small cfg', type: 'button', text: X10.t('WEB_CONFIGURE'), onclick: function () {
       X10.configureKey({ device: ev.device, type: ev.type, code: ev.code, key_name: ev.key_name, scan: ev.scan }, function () {
         var u = unknown[ev.device + '|' + ev.code];
-        if (ev.type === 'scan' && u) {           // jetzt konfiguriert: aus "Unbekannte Tasten" entfernen
+        if (ev.type === 'scan' && u) {           // configured now: remove it from "Unknown keys"
           u.node.remove();
           delete unknown[ev.device + '|' + ev.code];
         }

@@ -1,17 +1,17 @@
 'use strict';
 /**
- * Radiosender: Erreichbarkeitspruefung, Vorlagen-Datei radiopresets.txt, Senderkatalog.
+ * Radio stations: reachability check, presets file radiopresets.txt, station catalogue.
  *
- * Pruefung ueber eine einfache HTTP-Anfrage auf Socket-Ebene, weil viele Radioserver (SHOUTcast v1)
- * mit "ICY 200 OK" statt "HTTP/1.x 200" antworten, was Node.js' HTTP-Parser ablehnt.
+ * The check uses a plain HTTP request on socket level, because many radio servers (SHOUTcast v1)
+ * answer "ICY 200 OK" instead of "HTTP/1.x 200", which Node.js' HTTP parser rejects.
  */
 var net = require('net');
 var tls = require('tls');
 var C = require('./constants');
 
 /**
- * Eine URI pruefen. Ergebnis: { uri, ok, status, type, final_uri, ms, error }.
- * ok = Antwort 2xx (HTTP oder ICY). Weiterleitungen (bis 3) werden verfolgt.
+ * Check one URI. Result: { uri, ok, status, type, final_uri, ms, error }.
+ * ok = answer 2xx (HTTP or ICY). Redirects (up to 3) are followed.
  */
 function checkUri(uri, timeoutMs, hops) {
   timeoutMs = timeoutMs || C.LIMITS.RADIO_CHECK_MS;
@@ -87,7 +87,7 @@ function checkUri(uri, timeoutMs, hops) {
   });
 }
 
-/** Mehrere URIs pruefen, hoechstens `parallel` gleichzeitig. */
+/** Check several URIs, at most `parallel` at the same time. */
 function checkMany(uris, parallel) {
   parallel = parallel || 4;
   var out = new Array(uris.length);
@@ -103,12 +103,12 @@ function checkMany(uris, parallel) {
 }
 
 /**
- * radiopresets.txt lesen. Bloecke durch Leerzeilen getrennt:
- *   Sendername
- *   http://uri-1            (1 bis 3 URIs, Reihenfolge = Failover)
+ * Read radiopresets.txt. Blocks separated by empty lines:
+ *   station name
+ *   http://uri-1            (1 to 3 URIs, order = failover)
  *   quality: 128k           (optional)
  *   format: MP3             (optional)
- * Zeilen, die mit '#' oder ';' beginnen, sind Kommentare.
+ * Lines starting with '#' or ';' are comments.
  */
 function parsePresets(text) {
   var stations = [];
@@ -134,8 +134,8 @@ function parsePresets(text) {
 }
 
 /**
- * Senderkatalog aller Profile (auch inaktiver). Gedacht fuer x10remote-action radio und fuer andere Plugins
- * (z. B. HD44780/VFD-Display): nur lesen, Sender ueber jede ihrer URIs zuordnen.
+ * Station catalogue of all profiles (inactive ones too). Meant for x10remote-action radio and for other
+ * plugins (e.g. HD44780/VFD display): read only, match a station through any of its URIs.
  */
 function buildCatalog(profiles, activeIds, version) {
   var stations = [];

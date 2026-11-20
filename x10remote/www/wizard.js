@@ -1,31 +1,33 @@
 /*
- * Einlese-Assistent:
- *   1 Sender/Profil (Name, Beschreibung, Notizen, 433 MHz) -> 2 Empfaenger erkennen und benennen ->
- *   3 Tasten nacheinander einlesen, jede sofort benennen und belegen -> "Fertig" speichert -> 4 Bilder.
- * Mit ?profile=<id> werden einem vorhandenen Profil Tasten hinzugefuegt (Start bei Schritt 3).
+ * Read-in wizard:
+ *   1 transmitter/profile (name, description, notes, 433 MHz) -> 2 detect and name the receiver ->
+ *   3 read in the keys one after another, name and assign each at once -> "Done" saves -> 4 pictures.
+ * With ?profile=<id> keys are added to an existing profile (starts at step 3).
  *
- * Ab dem Erkennen liest der Mapper die Geraete exklusiv: keine Taste loest waehrend des Einlesens etwas
- * aus (auch nicht die Ausschalttaste). Die Erfassung wird ohne Luecke vom Erkennen auf das gewaehlte
- * Geraet umgestellt.
+ * Detecting: the mapper only grabs remote-like devices; keyboards are only observed, mice and
+ * touchscreens not at all (a kiosk display stays usable). A device only counts as detected when the
+ * same key arrives twice or the user clicks "Use". After that only this device is grabbed: none of
+ * its keys triggers anything while being read in (not even the power key).
  */
 (function () {
   'use strict';
   var el = X10.el;
-  var device = null;            // { id, name } - USB-Geraet des Empfaengers
-  var receiver = null;          // Empfaenger-Eintrag (nach Schritt 2)
+  var device = null;            // { id, name } - USB device of the receiver
+  var receiver = null;          // receiver entry (after step 2)
   var receiverList = [];
-  var existing = null;          // Profil beim Erweitern
-  var keys = [];                // eingelesene Tasten (X10.normKey)
-  var current = null;           // { key, isNew } - Taste im Editor
+  var existing = null;          // profile when extending one
+  var keys = [];                // keys read in (X10.normKey)
+  var current = null;           // { key, isNew } - key in the editor
   var editor = null;
   var audioconf = {};
-  var serverUsed = {};          // Triggerhappy-Tasten anderer Profile
+  var serverUsed = {};          // Triggerhappy keys of other profiles
   var mode = 'idle';            // idle | identify | capture
   var keepTimer = null;
   var identifyTimer = null;
   var dirty = false;
-  var saved = null;             // gespeichertes Profil (Schritt 4)
+  var saved = null;             // saved profile (step 4)
   var lastGrab = null;
+  var candidate = null;         // detecting: { id, name, code, t } - waits for confirmation
 
   function step(n) {
     [1, 2, 3, 4].forEach(function (i) {
@@ -54,7 +56,7 @@
     }, 20000);
   }
 
-  /** Hinweis, ob die Tasten waehrend des Einlesens gesperrt sind. */
+  /** Notice whether the keys are locked while being read in. */
   function showGrab(grab) {
     lastGrab = grab;
     ['grabNote', 'grabNote3'].forEach(function (id) {
@@ -67,7 +69,7 @@
     });
   }
 
-  // ------------------------------------------------------------- 1 · Profil
+  // ------------------------------------------------------------- 1 · profile
   function toStep2() {
     var name = X10.$('pName').value.trim();
     if (!name) {
@@ -80,7 +82,7 @@
     loadDevices();
   }
 
-  // ------------------------------------------------------- 2 · Empfaenger
+  // ------------------------------------------------------- 2 · receiver
   function showChooser() {
     X10.$('recvPanel').classList.add('hidden');
     X10.$('recvChoose').classList.remove('hidden');
@@ -110,6 +112,7 @@
 
   function identify() {
     var left = 60;
+    candidate = null;
     X10.$('detected').textContent = '';
     X10.api('POST', 'api/capture/identify', {}).then(function (res) {
       mode = 'identify';
@@ -126,10 +129,42 @@
     }).catch(function (e) { X10.toast(X10.errText(e), 'err'); });
   }
 
-  /** Erste Taste beim Erkennen: dieses Geraet sofort uebernehmen (Erfassung ohne Luecke umstellen). */
+  /**
+   * Key while detecting: a candidate at first; the same key on the same device a second time (within
+   * 15 s) confirms it. This way a keyboard is not taken over by accident.
+   */
   function onIdentified(ev) {
     if (mode !== 'identify') return;
-    chooseDevice({ id: ev.device, name: ev.name });
+    var code = ev.key_code !== null && ev.key_code !== undefined ? 'k' + ev.key_code : 's' + ev.scan;
+    var now = Date.now();
+    // Keyboards are never taken over automatically (only by button) - the mapper does not report their keys either.
+    var isKeyboard = ev['class'] === 'keyboard' || ev.hidden;
+    if (!isKeyboard && candidate && candidate.id === ev.device && candidate.code === code && now - candidate.t < 15000) {
+      var d = candidate;
+      candidate = null;
+      X10.$('detected').textContent = '';
+      chooseDevice({ id: d.id, name: d.name });
+      return;
+    }
+    candidate = { id: ev.device, name: ev.name || '', code: code, t: now, cls: ev['class'] || '' };
+    showCandidate();
+  }
+
+  function showCandidate() {
+    var box = X10.$('detected');
+    box.textContent = '';
+    if (!candidate) return;
+    var d = candidate;
+    var rows = [el('div', { class: 'spacer' }, [el('div', { text: d.name || d.id }),
+      el('div', { class: 'muted mono', text: d.id }),
+      el('div', { class: 'muted small', text: X10.t(d.cls === 'keyboard' ? 'WEB_WIZ_CANDIDATE_BUTTON' : 'WEB_WIZ_CANDIDATE') })])];
+    if (d.cls === 'keyboard') rows.push(el('div', { class: 'note warn small', text: X10.t('WEB_WIZ_CANDIDATE_KEYBOARD') }));
+    rows.push(el('button', { class: 'small', type: 'button', text: X10.t('WEB_WIZ_USE'), onclick: function () {
+      candidate = null;
+      box.textContent = '';
+      chooseDevice({ id: d.id, name: d.name });
+    } }));
+    box.appendChild(el('label', null, rows));
   }
 
   function chooseDevice(d) {
@@ -143,7 +178,7 @@
     X10.$('identifyRun').classList.add('hidden');
     X10.$('btnIdentify').disabled = false;
     device = { id: d.id, name: d.name || '' };
-    mode = 'capture';                                 // Ereignisse ab jetzt als Tasten dieses Geraets
+    mode = 'capture';                                 // from now on events count as keys of this device
     return X10.api('POST', 'api/capture/start', { device: device.id }).then(function (res) {
       keepAlive();
       showGrab(res.grab);
@@ -168,7 +203,7 @@
     X10.$('rName').focus();
   }
 
-  /** Belegung des Empfaengers: ohne 433 MHz gehoert er genau einem Sender. */
+  /** Assignment of the receiver: without 433 MHz it belongs to exactly one transmitter. */
   function updateReceiverInfo() {
     var r = recvFor(device.id);
     var others = r ? r.transmitters.filter(function (t) { return !existing || t.id !== existing.id; }) : [];
@@ -184,7 +219,7 @@
     X10.$('btnTo3').disabled = blocked;
   }
 
-  /** Empfaenger speichern (anlegen oder Name/433 MHz aendern) und zu den Tasten. */
+  /** Save the receiver (create it or change name/433 MHz) and go on to the keys. */
   function toStep3() {
     var name = X10.$('rName').value.trim();
     if (!name) { X10.toast(X10.t('ERR_NAME_REQUIRED'), 'warn'); return; }
@@ -202,7 +237,7 @@
     }).then(function () { btn.disabled = false; });
   }
 
-  // ------------------------------------------------------------- 3 · Tasten
+  // ------------------------------------------------------------- 3 · keys
   function sameKey(a, type, code) { return a.type === type && Number(a.code) === Number(code); }
   function findKey(type, code) {
     for (var i = 0; i < keys.length; i++) if (sameKey(keys[i], type, code)) return keys[i];
@@ -226,10 +261,10 @@
     showCurrent();
     renderList();
     X10.api('GET', 'api/thdused?exclude=' + encodeURIComponent(existing ? existing.id : '') + '&devices=' + encodeURIComponent(receiverIds().join(',')))
-      .then(function (res) { serverUsed = res.used || {}; if (current) showCurrent(); }).catch(function () { /* nur Anzeige */ });
+      .then(function (res) { serverUsed = res.used || {}; if (current) showCurrent(); }).catch(function () { /* display only */ });
   }
 
-  /** Oberer Bereich: entweder "Taste druecken" oder der Editor der aktuellen Taste. */
+  /** Upper area: either "press a key" or the editor of the current key. */
   function showCurrent() {
     var editing = !!current;
     X10.$('waitBox').classList.toggle('hidden', editing);
@@ -247,7 +282,7 @@
     editor.edit(current.key).focus();
   }
 
-  /** Aktuelle Taste uebernehmen. Liefert die Taste (oder null). */
+  /** Accept the current key. Returns the key (or null). */
   function accept() {
     if (!current) return null;
     var k = current.key;
@@ -277,18 +312,18 @@
 
   function onCaptured(ev) {
     if (!device || ev.device !== device.id) return;
-    if (X10.$('step3').classList.contains('hidden')) {           // Schritt 2: Taste nur anzeigen (gesperrt)
+    if (X10.$('step3').classList.contains('hidden')) {           // step 2: only show the key (locked)
       X10.flash(X10.$('recvPanel'), 'flash', 500);
       return;
     }
     var isKey = ev.key_code !== null && ev.key_code !== undefined;
     var type = isKey ? 'key' : 'scan';
     var code = isKey ? ev.key_code : ev.scan;
-    if (current && sameKey(current.key, type, code)) {           // dieselbe Taste noch einmal / gehalten
+    if (current && sameKey(current.key, type, code)) {           // the same key again / held
       X10.flash(X10.$('curPanel'), 'flash', 500);
       return;
     }
-    if (current) {                                                // andere Taste: aktuelle automatisch uebernehmen
+    if (current) {                                                // another key: accept the current one automatically
       var done = accept();
       if (done) X10.toast(X10.t('WEB_WIZ_TAKEN', { name: keyTitle(done) }));
     }
@@ -369,7 +404,7 @@
         X10.$('savedNote').textContent = X10.t(existing ? 'WEB_WIZ_SAVED_MORE' : 'WEB_WIZ_SAVED', { name: saved.name, n: saved.keys.length });
         X10.$('btnToProfile').setAttribute('href', 'profile.html?id=' + encodeURIComponent(saved.id));
         X10.imageSlots(X10.$('images'), saved);
-        // Bilder des Empfaengers anbieten, solange er noch keine hat
+        // offer pictures of the receiver as long as it has none
         var rec = receiver;
         var recPromise = rec ? Promise.resolve({ receiver: rec }) : X10.api('GET', 'api/receivers').then(function (list) {
           var r = (list || []).filter(function (x) { return x.device.id === device.id; })[0];
@@ -426,7 +461,7 @@
       stopCapture();
       location.href = 'profile.html?id=' + encodeURIComponent(existing.id);
     } else {
-      step(2);                    // Erfassung bleibt aktiv (Tasten gesperrt)
+      step(2);                    // capture stays active (keys locked)
       showReceiverPanel();
     }
   });

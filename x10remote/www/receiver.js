@@ -1,4 +1,4 @@
-/* Empfaengerseite: Name, Beschreibung, Notizen, 433 MHz, Bilder, zugeordnete Sender */
+/* Receiver page: name, description, notes, 433 MHz, pictures, assigned transmitters */
 (function () {
   'use strict';
   var el = X10.el;

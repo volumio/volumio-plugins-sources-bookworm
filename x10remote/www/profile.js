@@ -1,4 +1,4 @@
-/* Profilseite: Beschreibung, bis zu 3 Bilder, Tasten mit Namen und Befehlen */
+/* Profile page: description, up to 6 pictures, keys with names and commands */
 (function () {
   'use strict';
   var el = X10.el;
@@ -7,7 +7,7 @@
   var table = null;
   var info = null;
   var dirty = false;
-  var receivers = [];           // Auswahl: { device, name, rf433, assigned, others[], connected, id }
+  var receivers = [];           // selection: { device, name, rf433, assigned, others[], connected, id }
 
   function setDirty(v) {
     dirty = v;
@@ -24,14 +24,14 @@
     var box = X10.$('problems');
     box.textContent = '';
     (list || []).forEach(function (p) {
-      box.appendChild(el('div', { class: 'note warn', text: X10.t('WEB_PROBLEM_' + String(p.code).toUpperCase(), { key: p.key || '', other: p.other || '', profile: p.profile || '' }) }));
+      box.appendChild(el('div', { class: 'note warn', text: X10.t('WEB_PROBLEM_' + String(p.code).toUpperCase(), { key: p.key || '', other: p.other || '', profile: p.profile || '', max: p.max || '' }) }));
     });
   }
 
-  // ------------------------------------------------------------- Empfaenger
+  // ------------------------------------------------------------- receivers
   /**
-   * Zuordnung: Ohne 433-MHz-Haken genau ein Empfaenger (Auswahlknopf), mit Haken mehrere (Haekchen).
-   * Ein Empfaenger ohne 433 MHz, der schon einem anderen Sender gehoert, ist nicht waehlbar.
+   * Assignment: without the 433 MHz mark exactly one receiver (radio button), with it several (checkboxes).
+   * A receiver without 433 MHz that already belongs to another transmitter cannot be selected.
    */
   function renderReceivers() {
     var box = X10.$('recvList');
@@ -63,16 +63,16 @@
     });
   }
 
-  /** Im Profil doppelt gewaehlte Triggerhappy-Tasten: erlaubt, solange das Profil nicht aktiv ist. */
+  /** Triggerhappy keys chosen several times in the profile: allowed - only a notice on how that works. */
   function showDuplicates(list) {
     var box = X10.$('dupNote');
     box.textContent = '';
     if (!list || !list.length) return;
-    box.appendChild(el('div', { class: 'note warn', text: X10.t('WEB_THD_DUPLICATES', {
+    box.appendChild(el('div', { class: 'note', text: X10.t('WEB_THD_DUPLICATES', {
       list: list.map(function (d) { return d.key + ' (' + d.names.join(', ') + ')'; }).join('; ') }) }));
   }
 
-  /** Sender dieses Profils zu Volumios "Meine Webradios" hinzufuegen. */
+  /** Add the stations of this profile to Volumio's "My Web Radios". */
   function toFavourites() {
     if (dirty) { X10.toast(X10.t('WEB_SAVE_FIRST'), 'warn'); return; }
     if (!confirm(X10.t('WEB_RADIO_FAV_CONFIRM'))) return;
@@ -93,15 +93,15 @@
   function loadThdUsed() {
     var devs = chosenReceivers().join(',');
     return X10.api('GET', 'api/thdused?exclude=' + encodeURIComponent(profile.id) + '&devices=' + encodeURIComponent(devs))
-      .then(function (res) { if (table) table.setThdUsed(res.used); }).catch(function () { /* nur Anzeige */ });
+      .then(function (res) { if (table) table.setThdUsed(res.used); }).catch(function () { /* display only */ });
   }
 
-  // ---------------------------------------------------------------- Bilder
+  // ---------------------------------------------------------------- pictures
   function renderImages() {
     X10.imageSlots(X10.$('images'), profile);
   }
 
-  // --------------------------------------------------------------- Laden/Speichern
+  // --------------------------------------------------------------- load/save
   function load() {
     return Promise.all([X10.api('GET', 'api/profile?id=' + encodeURIComponent(id)), X10.api('GET', 'api/audioconf')]).then(function (res) {
       var data = res[0];
@@ -139,7 +139,7 @@
     btn.disabled = true;
     X10.api('POST', 'api/profile/save', { profile: payload }).then(function (res) {
       if (res.id && res.id !== id) {
-        // Name geaendert: der Ordner (Kennung) heisst jetzt wie das Profil
+        // name changed: the folder (id) is now named like the profile
         id = res.id;
         history.replaceState(null, '', 'profile.html?id=' + encodeURIComponent(id));
       }
@@ -172,7 +172,7 @@
   X10.$('pNotes').addEventListener('input', function () { setDirty(true); });
   X10.$('pRf433').addEventListener('change', function () {
     if (!X10.$('pRf433').checked) {
-      // nur ein Empfaenger: den ersten gewaehlten behalten
+      // only one receiver: keep the first one chosen
       var first = true;
       receivers.forEach(function (r) { if (r.assigned) { r.assigned = first; first = false; } });
     }
@@ -204,6 +204,16 @@
       X10.toast(X10.errText(e), 'err');
     });
   });
+  X10.$('btnTemplate').addEventListener('click', function () {
+    if (dirty && !confirm(X10.t('WEB_TEMPLATE_UNSAVED'))) return;
+    var btn = X10.$('btnTemplate');
+    btn.disabled = true;
+    X10.api('POST', 'api/template/save', { id: profile.id }).then(function (res) {
+      X10.toast(X10.t('WEB_TEMPLATE_SAVED', { folder: res.folder }), null, 9000);
+    }).catch(function (e) {
+      X10.toast(X10.errText(e), 'err');
+    }).then(function () { btn.disabled = false; });
+  });
   X10.$('pName').addEventListener('input', function () {
     X10.$('title').textContent = X10.$('pName').value.trim() || profile.name;
   });
@@ -226,7 +236,10 @@
     X10.events(onEvent);
     if (X10.query('saved')) X10.toast(X10.t('WEB_PROFILE_CREATED'));
     if (X10.query('duplicated')) X10.toast(X10.t('WEB_DUPLICATED', { name: profile.name }));
-    if (X10.query('preset')) X10.toast(X10.t('WEB_PRESET_CREATED', { name: profile.name }));
+    if (X10.query('preset')) {
+      var skipped = parseInt(X10.query('skipped'), 10);
+      X10.toast(X10.t('WEB_PRESET_CREATED', { name: profile.name }) + (skipped > 0 ? ' ' + X10.t('WEB_TEMPLATE_CUSTOM_SKIPPED', { n: String(skipped) }) : ''), null, skipped > 0 ? 9000 : undefined);
+    }
   }).catch(function (e) {
     X10.$('actions').classList.add('hidden');
     X10.toast(X10.errText(e), 'err');

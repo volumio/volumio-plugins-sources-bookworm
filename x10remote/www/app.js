@@ -1,4 +1,4 @@
-/* Gemeinsame Hilfen der Weboberflaeche (X10 RF Remote) */
+/* Shared helpers of the web interface (X10 RF Remote) */
 (function () {
   'use strict';
 
@@ -6,7 +6,7 @@
   var T = {};
   var info = null;
 
-  // ------------------------------------------------------------------ Grundlagen
+  // ------------------------------------------------------------------ basics
   X10.t = function (key, vars) {
     var s = T[key] || key;
     if (vars) Object.keys(vars).forEach(function (k) { s = s.split('{' + k + '}').join(vars[k]); });
@@ -36,17 +36,17 @@
 
   X10.$ = function (id) { return document.getElementById(id); };
 
-  X10.CMD_MAX = 2000;     // wie LIMITS.COMMAND im Plugin
+  X10.CMD_MAX = 2000;     // same as LIMITS.COMMAND in the plugin
 
-  /** systemd-Zustand (active, inactive, failed …) uebersetzt. */
+  /** systemd state (active, inactive, failed …) translated. */
   X10.stateText = function (state) {
     var s = String(state || '').trim().toLowerCase();
     return X10.t('WEB_STATE_' + (/^(active|inactive|failed|activating|deactivating|reloading)$/.test(s) ? s.toUpperCase() : 'UNKNOWN'));
   };
 
   /**
-   * Mehrzeilig angezeigtes, aber einzeiliges Befehlsfeld: waechst mit dem Inhalt, Enter fuegt keinen
-   * Zeilenumbruch ein (Triggerhappy erwartet einen Befehl pro Zeile).
+   * Command field shown on several lines but holding one line: grows with its content, Enter does not
+   * insert a line break (Triggerhappy expects one command per line).
    */
   X10.commandInput = function (value, onInput) {
     var ta = X10.el('textarea', { class: 'cmdtext', rows: '2', maxlength: String(X10.CMD_MAX), spellcheck: 'false',
@@ -83,7 +83,7 @@
   // ---------------------------------------------------------------------- API
   X10.api = function (method, url, body) {
     var opts = { method: method, headers: { 'Accept': 'application/json' }, cache: 'no-store' };
-    // Texte, die der Server liefert (z. B. Aktionsnamen), in der Sprache der Weboberflaeche
+    // texts delivered by the server (e.g. action names) in the language of the web interface
     var lang = X10.langChoice ? X10.langChoice() : '';
     if (lang && method === 'GET' && !/[?&]lang=/.test(url)) url += (url.indexOf('?') === -1 ? '?' : '&') + 'lang=' + encodeURIComponent(lang);
     if (body !== undefined) {
@@ -134,29 +134,29 @@
     node._x10t = setTimeout(function () { node.classList.remove(cls); }, ms || 700);
   };
 
-  // ----------------------------------------------------------------- Seitenaufbau
+  // ----------------------------------------------------------------- page layout
   var LANG_KEY = 'x10.lang';
   var LANG_NAMES = { de: 'Deutsch', en: 'English', es: 'Español', fr: 'Français', it: 'Italiano' };
   var i18nInfo = null;
 
   /**
-   * Sprache der Weboberflaeche: standardmaessig wie Volumio. Eine feste Wahl im Kopf gilt nur, solange die
-   * Sprache in Volumio dieselbe bleibt wie beim Auswaehlen - stellt man Volumio um, folgt die Oberflaeche wieder
-   * automatisch. Gespeichert je Browser (reine Bequemlichkeit).
+   * Language of the web interface: by default the same as Volumio. A fixed choice in the header only
+   * applies while the language in Volumio stays the same as when it was chosen - if Volumio is switched,
+   * the interface follows automatically again. Stored per browser (pure convenience).
    */
   function readChoice() {
     try {
       var v = JSON.parse(localStorage.getItem(LANG_KEY) || 'null');
       if (v && typeof v === 'object' && v.l) return v;
-    } catch (e) { /* alter Eintrag (nur Text) */ }
-    try { localStorage.removeItem(LANG_KEY); } catch (e) { /* ignore */ }   // alte/ungueltige Eintraege verwerfen
+    } catch (e) { /* old entry (text only) */ }
+    try { localStorage.removeItem(LANG_KEY); } catch (e) { /* ignore */ }   // discard old/invalid entries
     return null;
   }
   function writeChoice(l, volumioLang) {
     try {
       if (l) localStorage.setItem(LANG_KEY, JSON.stringify({ l: l, v: volumioLang }));
       else localStorage.removeItem(LANG_KEY);
-    } catch (e) { /* ohne Speicher: gilt nur bis zum Neuladen */ }
+    } catch (e) { /* without storage: applies only until the page is reloaded */ }
   }
   X10.langChoice = function () {
     var c = readChoice();
@@ -170,7 +170,7 @@
     };
     return Promise.all([loadTexts(choice), X10.api('GET', 'api/info')]).then(function (res) {
       var c = readChoice();
-      // feste Wahl verfaellt, wenn Volumio inzwischen auf eine andere Sprache gestellt wurde
+      // a fixed choice expires when Volumio has been switched to another language in the meantime
       if (c && (c.v !== res[0].volumio_lang || c.l === res[0].volumio_lang)) {
         writeChoice('');
         return loadTexts('').then(function (t) { return [t, res[1]]; });
@@ -198,7 +198,7 @@
     var links = [
       ['index.html', 'WEB_NAV_HOME', 'home'], ['test.html', 'WEB_NAV_TEST', 'test'],
       ['wizard.html', 'WEB_NAV_WIZARD', 'wizard'], ['profiles.html', 'WEB_NAV_PROFILES', 'profiles'],
-      ['receivers.html', 'WEB_NAV_RECEIVERS', 'receivers']
+      ['receivers.html', 'WEB_NAV_RECEIVERS', 'receivers'], ['mobile.html', 'WEB_NAV_MOBILE', 'mobile']
     ];
     var nav = X10.el('nav', null, links.map(function (l) {
       return X10.el('a', { href: l[0], class: l[2] === page ? 'on' : null, text: X10.t(l[1]) });
@@ -229,7 +229,7 @@
     }
   }
 
-  // ------------------------------------------------------------- Live-Ereignisse
+  // ------------------------------------------------------------- live events
   X10.events = function (handler) {
     var es = new EventSource('api/events');
     var set = function (ok) {
@@ -243,12 +243,12 @@
     es.onmessage = function (msg) {
       var ev;
       try { ev = JSON.parse(msg.data); } catch (e) { return; }
-      try { handler(ev); } catch (e) { /* Anzeigefehler nicht weitergeben */ }
+      try { handler(ev); } catch (e) { /* do not pass on display errors */ }
     };
     return es;
   };
 
-  // ---------------------------------------------------------------- Aktionen
+  // ---------------------------------------------------------------- actions
   X10.actionLabel = function (type, action) {
     if (type === 'key' && action === 'none') return X10.t('ACTION_NONE_KEY');
     return X10.t('ACTION_' + String(action).toUpperCase());
@@ -266,26 +266,31 @@
     return s.charAt(0).toUpperCase() + s.slice(1);
   };
 
-  /** Vorschlag fuer eine Aktion anhand des erkannten Tastencodes (nur als Vorbelegung). */
+  /** Suggestion for an action based on the recognised key code (only as a preset). */
+  /** Volume up/down: preselect "repeat" (holding or tapping quickly then works every time). */
+  X10.repeatDefault = function (action) {
+    return action === 'volup' || action === 'voldown';
+  };
+
   X10.suggestAction = function (k) {
     return k.type === 'key' ? 'default' : 'none';
   };
 
-  // ------------------------------------------------------- gemeinsame Bausteine
-  /** Befehle aus audio.conf (und anderen fremden Dateien) fuer eine Taste als Text. */
+  // ------------------------------------------------------- shared building blocks
+  /** Commands from audio.conf (and other foreign files) for a key, as text. */
   X10.audioText = function (keyName, audioconf) {
     var list = (audioconf || {})[keyName] || [];
     return list.map(function (a) { return (a.file === 'audio.conf' ? '' : a.file + ': ') + a.command; }).join(' · ');
   };
 
-  /** Erster audio.conf-Befehl (Tastendruck) einer Taste - Vorbelegung fuer "Eigener Befehl". */
+  /** First audio.conf command (key press) of a key - preset for "custom command". */
   X10.audioCommand = function (keyName, audioconf) {
     var list = keyName ? ((audioconf || {})[keyName] || []) : [];
     var press = list.filter(function (a) { return a.value === 1; })[0] || list[0];
     return press ? press.command : '';
   };
 
-  /** Hinweis zu einer Tastenbelegung: { text, replace }. thdKey = gewaehlte bzw. automatische Triggerhappy-Taste. */
+  /** Notice about a key assignment: { text, replace }. thdKey = chosen or automatic Triggerhappy key. */
   X10.keyHint = function (type, action, keyName, thdKey, audioconf, isAuto) {
     if (type === 'scan') {
       var cmd = thdKey ? X10.audioText(thdKey, audioconf) : '';
@@ -306,8 +311,8 @@
   };
 
   /**
-   * Auswahl der Triggerhappy-Taste, in die der Wrapper einen Scan-Code umsetzt.
-   * Leerer Wert = automatisch (freie virtuelle Taste). autoKey = derzeit automatisch vergebene Taste (Anzeige).
+   * Selection of the Triggerhappy key the wrapper translates a scan code into.
+   * Empty value = automatic (free virtual key). autoKey = key currently assigned automatically (display).
    */
   X10.thdSelect = function (current, autoKey, audioconf, onChange) {
     var info = X10.info() || {};
@@ -332,39 +337,39 @@
   };
 
   /**
-   * Belegte Triggerhappy-Tasten zusammenstellen: server = { KEY: {profile, key} } (andere Profile),
-   * keys = Tasten des bearbeiteten Profils, self = die Taste, deren Auswahl gerade gilt (zaehlt nicht).
-   * Rueckgabe { KEY: "wer" }.
+   * Collect the Triggerhappy keys in use: server = { KEY: {profile, key} } (other profiles),
+   * keys = keys of the edited profile, self = the key whose selection currently applies (does not count).
+   * Returns { KEY: "who" }.
    */
   X10.thdUsedMap = function (server, keys, self) {
-    // Gleiche Triggerhappy-Taste in verschiedenen Profilen ist erlaubt (gleiche Funktion) - geprueft wird
-    // nur innerhalb des Profils. server bleibt fuer Aufrufer erhalten, wird aber nicht mehr verwendet.
+    // The same Triggerhappy key may be chosen several times. Shown is what it is already used for in the
+    // edited profile (key: action); server (other profiles) is not shown.
     var used = {};
+    var add = function (name, text) { used[name] = used[name] ? used[name] + '; ' + text : text; };
     (keys || []).forEach(function (k) {
       if (k === self) return;
       var who = k.remote_label || k.name || X10.source(k);
-      if (k.type === 'scan' && k.thd_key) used[k.thd_key] = who;
-      if (k.type === 'key' && k.key_name) used[k.key_name] = who;      // diese Taste erzeugt sie bereits
+      if (k.type === 'scan' && k.thd_key) add(k.thd_key, who + ' → ' + X10.keySummary(k));
+      if (k.type === 'key' && k.key_name) add(k.key_name, who);       // this key already produces it
     });
     return used;
   };
 
-  /** Vergebene Tasten in einer Triggerhappy-Auswahl ausgrauen (die eigene Auswahl bleibt waehlbar). */
+  /** Show in a Triggerhappy selection what a key is already used for (it stays selectable). */
   X10.thdMark = function (sel, used) {
     if (!sel) return;
     Array.prototype.forEach.call(sel.querySelectorAll('option'), function (o) {
       if (!o.value) return;
       if (o.getAttribute('data-base') === null) o.setAttribute('data-base', o.textContent);
       var who = used[o.value];
-      var taken = !!who && o.value !== sel.value;
-      o.disabled = taken;
-      o.textContent = o.getAttribute('data-base') + (taken ? '  –  ' + X10.t('WEB_THD_TAKEN', { by: who }) : '');
+      o.disabled = false;
+      o.textContent = o.getAttribute('data-base') + (who ? '  –  ' + X10.t('WEB_THD_TAKEN', { by: who.length > 90 ? who.slice(0, 88) + '…' : who }) : '');
     });
   };
 
   /**
-   * Hinweis, wenn eigene Befehle gesperrt sind. Freischalten geht bewusst nur im Expertenmodus der
-   * Volumio-Einstellungen (mit Hinweis auf die Risiken) - nicht ueber die Weboberflaeche.
+   * Notice when custom commands are locked. Unlocking is deliberately possible only in expert mode of the
+   * Volumio settings (with a notice about the risks) - not through the web interface.
    */
   X10.shellNotice = function () {
     var node = X10.el('div', { class: 'hint replace hidden' }, [X10.el('div', { text: X10.t('WEB_SHELL_LOCKED_EXPERT') })]);
@@ -377,10 +382,10 @@
     };
   };
 
-  // ------------------------------------------------------------ Befehlsreferenz
+  // ------------------------------------------------------------ command reference
   /**
-   * Zeigt "command reference.txt" zum Markieren und Kopieren. input (optional): Befehlsfeld, in das
-   * "Markierung übernehmen" bzw. ein Doppelklick auf eine Zeile den Befehl schreibt.
+   * Shows "command reference.txt" for selecting and copying. input (optional): command field into which
+   * "take over selection" or a double click on a line writes the command.
    */
   X10.commandRef = function (input) {
     var pre = X10.el('div', { class: 'cmdref', tabindex: '0' });
@@ -447,20 +452,20 @@
     });
   };
 
-  /** Button "Command reference" neben einem Befehlsfeld. */
+  /** Button "Command reference" next to a command field. */
   X10.cmdRefButton = function (input) {
     return X10.el('button', { class: 'small', type: 'button', text: X10.t('WEB_CMDREF_BTN'), title: X10.t('WEB_CMDREF_TITLE'),
       onclick: function (e) { e.preventDefault(); X10.commandRef(input); } });
   };
 
-  /** Befehlsfeld + Button als eine Zeile. */
+  /** Command field + button as one row. */
   X10.cmdLine = function (input) {
     return X10.el('div', { class: 'cmdline' }, [input, X10.cmdRefButton(input)]);
   };
 
-  // ------------------------------------------------------------ Tastentabelle
+  // ------------------------------------------------------------ key table
   /**
-   * Editierbare Tabelle der Tasten eines Profils.
+   * Editable table of the keys of a profile.
    * opts: { container, keys, audioconf, allowShell, mapped, onChange }
    */
   X10.KeyTable = function (opts) {
@@ -468,7 +473,7 @@
     this.rows = [];
     this.tbody = X10.el('tbody');
     var head = X10.el('thead', null, [X10.el('tr', null, [
-      X10.el('th', { text: '' }), X10.el('th', { text: X10.t('WEB_COL_NAME') }), X10.el('th', { text: X10.t('WEB_COL_SIGNAL') }),
+      X10.el('th', { text: '' }), X10.el('th', { text: X10.t(opts.nameHeader || 'WEB_COL_NAME') }), X10.el('th', { text: X10.t(opts.signalHeader || 'WEB_COL_SIGNAL') }),
       X10.el('th', { text: X10.t('WEB_COL_ACTION') }), X10.el('th', { text: '' })])]);
     this.table = X10.el('table', { class: 'keys' }, [head, this.tbody]);
     this.empty = X10.el('div', { class: 'muted', text: X10.t('WEB_NO_KEYS') });
@@ -503,7 +508,7 @@
     if (this.opts.onChange) this.opts.onChange();
   };
 
-  /** Neue Taste hinzufuegen (oder vorhandene Zeile liefern). */
+  /** Add a new key (or return the existing row). */
   X10.KeyTable.prototype.add = function (k, silent) {
     var existing = this.find(k.type, k.code);
     if (existing) return existing;
@@ -518,12 +523,14 @@
     };
 
     row.led = X10.el('div', { class: 'led' });
-    row.name = input('name', 60, 'WEB_COL_NAME');
+    row.name = input('name', self.opts.nameMax || 60, self.opts.nameHeader || 'WEB_COL_NAME');
     row.remote = input('remote_label', 40, 'WEB_REMOTE_LABEL_SHORT');
     row.desc = input('description', 200, 'WEB_KEY_DESCRIPTION');
 
     var badge = X10.el('span', { class: 'badge ' + key.type, text: X10.t(key.type === 'key' ? 'WEB_TYPE_KEY' : 'WEB_TYPE_SCAN') });
-    var orig = X10.el('div', { class: 'orig' }, [X10.source(key) + (key.type === 'key' && key.scan !== null ? '  (Scan ' + X10.hex(key.scan) + ')' : ''), ' ', badge]);
+    // opts.fixed: fixed key list (Mobile Remote) - no label of the remote, not deletable
+    var orig = self.opts.sourceText ? X10.el('div', { class: 'orig', text: self.opts.sourceText(key) })
+      : X10.el('div', { class: 'orig' }, [X10.source(key) + (key.type === 'key' && key.scan !== null ? '  (Scan ' + X10.hex(key.scan) + ')' : ''), ' ', badge]);
     row.hint = X10.el('div', { class: 'hint' });
     row.vkey = X10.el('div', { class: 'vkey' });
 
@@ -533,6 +540,8 @@
     row.select = X10.el('select', { 'aria-label': X10.t('WEB_COL_ACTION'),
       onchange: function () {
         key.action = row.select.value;
+        if (X10.repeatDefault(key.action)) { key.repeat = true; row.repeat.checked = true; }
+        self.markThd();                    // the selection lists name the action
         if (key.action === 'radio' && !key.radio) row.radio.open(true);
         if (key.action !== 'radio') row.prevAction = key.action;
         if (key.action === 'custom' && !key.command.trim()) {
@@ -559,7 +568,7 @@
     }
     row.cmd = X10.commandInput(key.command, function (v) { key.command = v; self.changed(); });
     row.cmdBox = X10.cmdLine(row.cmd);
-    // eigene Zeile ueber die volle Tabellenbreite, damit auch lange Befehle lesbar bleiben
+    // own row across the full table width so that long commands stay readable too
     row.cmdTr = X10.el('tr', { class: 'cmdrow' }, [X10.el('td', { class: 'ledcell' }),
       X10.el('td', { colspan: '4' }, [X10.el('div', { class: 'cmdlabel', text: X10.t('WEB_CFG_COMMAND') }), row.cmdBox])]);
     row.shell = X10.shellNotice(function () { self.rows.forEach(function (r) { self.update(r); }); });
@@ -578,11 +587,11 @@
 
     row.tr = X10.el('tr', null, [
       X10.el('td', { class: 'ledcell' }, [row.led]),
-      X10.el('td', { class: 'name' }, [row.name, X10.el('div', { class: 'cmd' }, [row.remote])]),
+      X10.el('td', { class: 'name' }, [row.name, self.opts.fixed ? null : X10.el('div', { class: 'cmd' }, [row.remote])]),
       X10.el('td', null, [orig, row.hint, row.vkey]),
       X10.el('td', { class: 'act' }, [row.thdBox, row.select, row.radio.node, row.shell.node,
         X10.el('div', { class: 'cmd' }, [row.desc]), X10.el('div', { class: 'cmd' }, [row.repeatLabel])]),
-      X10.el('td', null, [del])
+      X10.el('td', null, [self.opts.fixed ? null : del])
     ]);
     this.rows.push(row);
     this.tbody.appendChild(row.tr);
@@ -594,7 +603,7 @@
     return row;
   };
 
-  /** Triggerhappy-Auswahl aller Zeilen: von anderen Tasten belegte Eintraege ausgrauen. */
+  /** Triggerhappy selection of all rows: mark entries already used by other keys. */
   X10.KeyTable.prototype.markThd = function () {
     var self = this;
     var keys = this.rows.map(function (r) { return r.key; });
@@ -647,20 +656,19 @@
     return this.rows.map(function (r) { return X10.keyOut(r.key); });
   };
 
-  /** Taste in die bearbeitbare Form bringen (gemeinsam fuer Tabelle und Einzel-Editor). */
+  /** Bring a key into its editable form (shared by table and single-key editor). */
   X10.normKey = function (k) {
     var key = {
       id: k.id || null, name: k.name || '', type: k.type, code: k.code, scan: k.scan === undefined ? null : k.scan,
       key_name: k.key_name || null, action: k.action || X10.suggestAction(k), command: k.command || '', repeat: !!k.repeat,
-      thd_key: k.type === 'scan' ? (k.thd_key || (k.action === 'tkey' ? k.target : '') || '') : null,
+      thd_key: k.type === 'scan' ? (k.thd_key || '') : null,
       remote_label: k.remote_label || '', description: k.description || '',
       radio: k.radio ? JSON.parse(JSON.stringify(k.radio)) : null
     };
-    if (key.action === 'tkey') key.action = 'none';
     return key;
   };
 
-  /** Taste fuer das Speichern. */
+  /** Key for saving. */
   X10.keyOut = function (k) {
     return { id: k.id || undefined, name: String(k.name || '').trim(), type: k.type, code: k.code, scan: k.scan,
       key_name: k.key_name, action: k.action, command: k.action === 'custom' ? String(k.command || '').trim() : '', repeat: !!k.repeat,
@@ -669,17 +677,17 @@
       radio: k.action === 'radio' && k.radio ? k.radio : undefined };
   };
 
-  /** Kurzbeschreibung einer Taste fuer Listen: Aktion bzw. eigener Befehl. */
+  /** Short description of a key for lists: action or custom command. */
   X10.keySummary = function (k) {
     if (k.action === 'custom') return X10.t('ACTION_CUSTOM').replace(/\s*…$/, '') + (k.command ? ': ' + k.command : '');
     if (k.action === 'radio') return X10.t('ACTION_RADIO').replace(/\s*…$/, '') + (k.radio ? ': ' + k.radio.name : '');
     return X10.actionLabel(k.type, k.action);
   };
 
-  // ------------------------------------------------------------ Einzel-Editor
+  // ------------------------------------------------------------ single-key editor
   /**
-   * Formular fuer genau eine Taste (Assistent). opts: { container, audioconf, onChange }.
-   * edit(key) zeigt die Taste (das Objekt wird direkt veraendert), clear() leert das Formular.
+   * Form for exactly one key (wizard). opts: { container, audioconf, onChange }.
+   * edit(key) shows the key (the object is changed directly), clear() empties the form.
    */
   X10.KeyEditor = function (opts) {
     this.opts = opts;
@@ -715,6 +723,7 @@
       onCancelNew: function () { key.action = prevAction === 'radio' ? 'none' : prevAction; select.value = key.action; update(); } });
     var select = el('select', { onchange: function () {
       key.action = select.value;
+      if (X10.repeatDefault(key.action)) { key.repeat = true; repeat.checked = true; }
       if (key.action === 'radio' && !key.radio) radioBox.open(true);
       if (key.action !== 'radio') prevAction = key.action;
       if (key.action === 'custom' && !key.command.trim()) {
@@ -767,18 +776,18 @@
     if (this.nameInput) { this.nameInput.focus(); this.nameInput.select(); }
   };
 
-  // ------------------------------------------------------------- Radiosender
+  // ------------------------------------------------------------- radio stations
   var RADIO_API = 'http://127.0.0.1:3000/api/v1/replaceAndPlay';
 
-  /** Entsprechender curl-Befehl (Anzeige; ausgefuehrt wird x10remote-action radio mit Failover). */
+  /** Equivalent curl command (display; what runs is x10remote-action radio with failover). */
   X10.radioCurl = function (name, uri) {
     var json = JSON.stringify({ service: 'webradio', type: 'webradio', title: name || '', uri: uri || '' });
     return "curl -s -X POST -H 'Content-Type: application/json' -d '" + json.replace(/'/g, "'\\''") + "' " + RADIO_API;
   };
 
   /**
-   * Anzeige "Radiosender" unter der Aktionsauswahl einer Taste. opts: { profileId, onChange, onCancelNew }.
-   * open(isNew): Dialog; bei Abbruch eines neuen Senders wird die vorige Aktion wiederhergestellt.
+   * Display "Radio station" below the action selection of a key. opts: { profileId, onChange, onCancelNew }.
+   * open(isNew): dialog; if a new station is cancelled, the previous action is restored.
    */
   X10.radioBox = function (key, opts) {
     var el = X10.el;
@@ -808,7 +817,7 @@
     return { node: node, update: update, open: open };
   };
 
-  /** Dialog "Radiosender": Vorlage, Name, bis zu 3 URIs (Failover), Anzeige-Daten, Pruefung, curl-Vorschau. */
+  /** Dialog "Radio station": preset, name, up to 3 URIs (failover), display data, check, curl preview. */
   X10.radioDialog = function (radio, ctx, onOk, onCancel) {
     var el = X10.el;
     var r = radio ? JSON.parse(JSON.stringify(radio)) : { name: '', uris: [], logo: null, quality: '', format: '' };
@@ -959,14 +968,14 @@
     }).catch(function () { presetInfo.textContent = ''; });
   };
 
-  /** Kurzname eines Empfaengers fuer Listen. */
+  /** Short name of a receiver for lists. */
   X10.receiverLabel = function (r) {
     return (r.name || r.device) + (r.rf433 ? ' · 433 MHz' : '');
   };
 
-  // ----------------------------------------------------------------- Bilder
+  // ----------------------------------------------------------------- pictures
   /**
-   * Bildplaetze eines Profils (Profilseite und Assistent). profile: { id, images, updated } wird aktualisiert.
+   * Picture slots of a profile (profile page and wizard). profile: { id, images, updated } is updated.
    */
   X10.imageSlots = function (box, profile, kind) {
     var el = X10.el;
@@ -1023,11 +1032,11 @@
     return { render: render };
   };
 
-  // ----------------------------------------------------------------- Kamera
+  // ----------------------------------------------------------------- camera
   /**
-   * Foto aufnehmen. Liefert eine JPEG-data-URL (max. 1600 px) oder null bei Abbruch.
-   * Livebild nur in sicherem Kontext (HTTPS/localhost) moeglich; sonst oeffnet ein Dateifeld mit
-   * capture="environment" auf Handys direkt die Kamera-App (auf dem PC: Dateiauswahl).
+   * Take a photo. Returns a JPEG data URL (max. 1600 px) or null on cancel.
+   * A live picture is only possible in a secure context (HTTPS/localhost); otherwise a file field with
+   * capture="environment" opens the camera app directly on phones (on a PC: file selection).
    */
   X10.takePhoto = function () {
     if (window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -1049,7 +1058,7 @@
       };
       input.addEventListener('change', function () { finish(input.files && input.files[0]); });
       input.addEventListener('cancel', function () { finish(null); });
-      // Fallback fuer Browser ohne "cancel"-Ereignis: nach Rueckkehr ins Fenster ohne Auswahl abbrechen
+      // fallback for browsers without a "cancel" event: cancel after returning to the window without a selection
       window.addEventListener('focus', function onFocus() {
         window.removeEventListener('focus', onFocus);
         setTimeout(function () { if (!(input.files && input.files.length)) finish(null); }, 1500);
@@ -1091,8 +1100,8 @@
       });
   }
 
-  // ----------------------------------------------------------------- Bilder
-  /** Bild verkleinern (max. 1600 px) und als JPEG-data-URL liefern. */
+  // ----------------------------------------------------------------- pictures
+  /** Shrink a picture (max. 1600 px) and return it as a JPEG data URL. */
   X10.shrinkImage = function (file, max, png) {
     return new Promise(function (resolve, reject) {
       if (!file || !/^image\//.test(file.type)) { reject(Object.assign(new Error('image'), { code: 'image_invalid' })); return; }
@@ -1124,7 +1133,7 @@
   };
 })();
 
-/* Dialog "Taste konfigurieren" (Tastentest) */
+/* Dialog "Configure key" (key test) */
 (function () {
   'use strict';
   var X10 = window.X10;
@@ -1132,7 +1141,6 @@
 
   function actionText(type, action, command, target) {
     if (action === 'custom') return command || X10.t('ACTION_CUSTOM');
-    if (action === 'tkey') return X10.t('WEB_TKEY_AS', { key: target || '?' });
     if (action === 'none' && type === 'scan') return X10.t('ACTION_NONE');
     return X10.actionLabel(type, action);
   }
@@ -1146,8 +1154,8 @@
   }
 
   /**
-   * Oeffnet den Dialog fuer eine Taste.
-   * ev: { device, type, code, key_name?, scan? }   done: Rueckruf nach dem Speichern
+   * Opens the dialog for a key.
+   * ev: { device, type, code, key_name?, scan? }   done: callback after saving
    */
   X10.configureKey = function (ev, done) {
     var info = X10.info() || { actions: { scan: [], key: [] }, allow_shell: false };
@@ -1162,7 +1170,7 @@
       var cur = k.entries.filter(function (e) { return e.active; })[0] || k.entries[0] || null;
       var acts = k.type === 'key' ? info.actions.key : info.actions.scan;
 
-      // ---------- aktuelle Konfiguration
+      // ---------- current configuration
       var current = el('dl', { class: 'kv' });
       var add = function (label, value) { current.appendChild(el('dt', { text: label })); current.appendChild(el('dd', { class: 'mono', text: value })); };
       add(X10.t('WEB_CFG_SIGNAL'), src);
@@ -1173,10 +1181,10 @@
         if (cur.key.remote_label) add(X10.t('WEB_REMOTE_LABEL'), cur.key.remote_label);
         add(X10.t('WEB_COL_ACTION'), actionText(k.type, cur.key.action, cur.key.command, cur.key.target));
         if (cur.key.description) add(X10.t('WEB_KEY_DESCRIPTION'), cur.key.description);
-        var curThd = cur.key.thd_key || (cur.key.action === 'tkey' ? cur.key.target : '');
+        var curThd = cur.key.thd_key || '';
         if (k.type === 'scan') add(X10.t('WEB_CFG_THD'), (curThd || (k.mapping && k.mapping.key) || '–') + (curThd ? '' : ' (' + X10.t('WEB_THD_AUTO_SHORT') + ')'));
         if (k.type === 'scan' && (curThd || (k.mapping && k.mapping.key))) add('audio.conf', X10.audioText(curThd || k.mapping.key, audioconf) || '–');
-        if (['custom', 'none', 'default', 'tkey'].indexOf(cur.key.action) === -1) add(X10.t('WEB_CFG_COMMAND'), '/usr/local/bin/x10remote-action ' + cur.key.action);
+        if (['custom', 'none', 'default', 'radio'].indexOf(cur.key.action) === -1) add(X10.t('WEB_CFG_COMMAND'), '/usr/local/bin/x10remote-action ' + cur.key.action);
       } else {
         add(X10.t('WEB_CFG_PROFILE'), X10.t('WEB_CFG_NOT_CONFIGURED'));
       }
@@ -1184,7 +1192,7 @@
       if (k.type === 'key') add('audio.conf', k.audio.length ? k.audio.map(function (a) { return (a.file === 'audio.conf' ? '' : a.file + ': ') + a.command; }).join(' · ') : '–');
       if (k.entries.length > 1) add(X10.t('WEB_CFG_ALSO_IN'), k.entries.filter(function (e) { return e !== cur; }).map(function (e) { return e.profile_name; }).join(', '));
 
-      // ---------- neue Konfiguration
+      // ---------- new configuration
       var profSel = el('select', null, k.profiles.map(function (p) {
         return el('option', { value: p.id, text: p.name + (p.active ? '' : ' (' + X10.t('WEB_INACTIVE') + ')') });
       }).concat([el('option', { value: '', text: X10.t('WEB_CFG_NEW_PROFILE') })]));
@@ -1197,12 +1205,12 @@
       var action = el('select', null, acts.map(function (a) {
         return el('option', { value: a, text: X10.actionLabel(k.type, a) });
       }));
-      action.value = cur ? (cur.key.action === 'tkey' ? 'none' : cur.key.action) : (k.type === 'key' ? 'default' : 'none');
+      action.value = cur ? cur.key.action : (k.type === 'key' ? 'default' : 'none');
       if (action.value !== (cur ? cur.key.action : action.value)) action.value = acts[0];
       var command = X10.commandInput(cur ? cur.key.command || '' : '');
       var commandField = el('div', { class: 'field' }, [el('span', { text: X10.t('WEB_CFG_COMMAND') }), X10.cmdLine(command)]);
       var autoKey = k.mapping && k.mapping.virtual ? k.mapping.key : '';
-      var curThdKey = cur ? (cur.key.thd_key || (cur.key.action === 'tkey' ? cur.key.target : '')) : '';
+      var curThdKey = cur ? (cur.key.thd_key || '') : '';
       var targetSel = X10.thdSelect(curThdKey, autoKey, audioconf, function () { update(); });
       var targetField = el('label', { class: 'field' }, [el('span', { text: X10.t('WEB_THD_KEY') }), targetSel]);
       if (k.type !== 'scan') targetField = el('div', { class: 'vkey', text: X10.t('WEB_THD_KEY_FIXED', { key: k.key_name || ('Key ' + k.code) }) });
@@ -1228,6 +1236,7 @@
         save.textContent = X10.t('WEB_SAVE');
       }
       action.addEventListener('change', function () {
+        if (X10.repeatDefault(action.value)) repeat.checked = true;
         if (action.value === 'custom' && !command.value.trim()) {
           var pre = X10.audioCommand(k.type === 'key' ? k.key_name : targetSel.value, audioconf);
           if (pre) command.value = pre;
@@ -1281,7 +1290,7 @@
           var msg = X10.t(res.active ? 'WEB_SAVED_ACTIVE' : 'WEB_CFG_SAVED_INACTIVE');
           if (res.problems && res.problems.length) {
             var p = res.problems[0];
-            X10.toast(X10.t('WEB_PROBLEM_' + String(p.code).toUpperCase(), { key: p.key || '', other: p.other || '', profile: p.profile || '' }), 'warn');
+            X10.toast(X10.t('WEB_PROBLEM_' + String(p.code).toUpperCase(), { key: p.key || '', other: p.other || '', profile: p.profile || '', max: p.max || '' }), 'warn');
           } else {
             X10.toast(msg);
           }

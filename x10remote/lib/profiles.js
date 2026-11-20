@@ -1,10 +1,10 @@
 'use strict';
 
 /*
- * Profilverwaltung: /data/INTERNAL/X10/<id>/profile.json (+ image1..3.jpg|png|webp)
+ * Profile store: /data/INTERNAL/X10/<id>/profile.json (+ image1..6.jpg|png|webp)
  *
- * Alle Eingaben aus der Weboberflaeche werden hier streng geprueft (Typen, Laengen, erlaubte Werte).
- * Schreibzugriffe laufen nacheinander (Warteschlange) und atomar (tmp-Datei + rename).
+ * All input from the web interface is checked strictly here (types, lengths, allowed values).
+ * Writes run one after another (queue) and atomically (temp file + rename).
  */
 
 var fs = require('fs');
@@ -12,7 +12,7 @@ var fsp = fs.promises;
 var path = require('path');
 var C = require('./constants');
 
-var ID_RE = /^[a-z0-9][a-z0-9-]{0,39}$/;
+var ID_RE = /^[a-z0-9][a-z0-9-]{0,55}$/;
 var KEY_ID_RE = /^k[0-9a-z]{1,16}$/;
 var DEVICE_RE = /^([0-9a-f]{4}:[0-9a-f]{4}|name:[^\u0000-\u001f]{1,80})$/;
 var KEYNAME_RE = /^(KEY|BTN)_[A-Z0-9_]{1,40}$/;
@@ -22,7 +22,7 @@ var IMAGE_TYPES = {
   webp: { mime: 'image/webp', magic: function (b) { return b.length > 12 && b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 12) === 'WEBP'; } }
 };
 
-/** data-URL eines Bildes pruefen: { buf, ext } (Typ per Dateisignatur). */
+/** Check the data URL of an image: { buf, ext } (type by file signature). */
 function decodeImage(dataUrl, maxBytes) {
   var m = /^data:image\/(jpeg|jpg|png|webp);base64,([A-Za-z0-9+/=\s]+)$/.exec(String(dataUrl || ''));
   if (!m) throw ValidationError('image_invalid');
@@ -55,13 +55,18 @@ function slugify(name) {
     .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
     .normalize('NFKD').replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-  s = s.slice(0, 32).replace(/-+$/g, '');
+  if (s.length > 40) {
+    // do not cut in the middle of a word ("...-usb-empfae") as long as enough of the name remains
+    var cut = s.slice(0, 41).lastIndexOf('-');
+    s = s.slice(0, cut >= 20 ? cut : 40);
+  }
+  s = s.replace(/-+$/g, '');
   return s || 'profil';
 }
 
 var LOGO_RE = /^logo-[0-9a-f]{12}\.(png|jpg|webp)$/;
 
-/** Web-Adresse eines Radiosenders: http(s), ohne Leer-/Steuerzeichen; ein #-Anker wird nie gesendet und entfaellt. */
+/** Web address of a radio station: http(s), no whitespace/control characters; a # fragment is never sent and is dropped. */
 function cleanUri(value) {
   var u = String(value === undefined || value === null ? '' : value).trim().split('#')[0];
   if (!u) return '';
@@ -70,8 +75,8 @@ function cleanUri(value) {
 }
 
 /**
- * Aktion "radio": { name, uris[1..3] (Failover-Reihenfolge), logo, quality, format }.
- * logo/quality/format sind Anzeigedaten fuer Display-Plugins (z. B. HD44780/VFD).
+ * Action "radio": { name, uris[1..3] (failover order), logo, quality, format }.
+ * logo/quality/format are display data for display plugins (e.g. HD44780/VFD).
  */
 function sanitizeRadio(r, idx) {
   r = r && typeof r === 'object' ? r : {};
@@ -93,7 +98,7 @@ function sanitizeRadio(r, idx) {
   };
 }
 
-/** Im selben Profil mehrfach gewaehlte Triggerhappy-Tasten: [{ key, names[] }]. */
+/** Triggerhappy keys chosen more than once in the same profile: [{ key, names[] }]. */
 function thdDuplicates(p) {
   var by = {};
   ((p && p.keys) || []).forEach(function (k) {
@@ -105,7 +110,7 @@ function thdDuplicates(p) {
 }
 
 /**
- * Ordnername = gespeicherter Name (Empfaenger): nur Zeichen entfernen, die Windows/SMB nicht erlaubt.
+ * Folder name = stored name (receivers): only remove characters Windows/SMB does not allow.
  * "X10 WTI" -> "X10 WTI", "A/B: Test?" -> "A-B- Test-".
  */
 var WIN_RESERVED = /^(con|prn|aux|nul|com[0-9]|lpt[0-9])$/i;
@@ -117,10 +122,13 @@ function folderName(name) {
 }
 function isFolderName(id) {
   id = String(id || '');
-  return id.length > 0 && id.length <= 80 && id === folderName(id) && id !== C.RECEIVER_DIR;
+  if (id.length === 0 || id.length > 96 || id === C.RECEIVER_DIR) return false;
+  // "receiver-<Name>": the name part follows the folder rules (so do older folders without prefix)
+  var rest = id.indexOf(C.RECEIVER_PREFIX) === 0 ? id.slice(C.RECEIVER_PREFIX.length) : id;
+  return rest.length > 0 && rest.length <= 80 && rest === folderName(rest);
 }
 
-// Linux-Namen, die nur Bereichsgrenzen markieren (evdev liefert sie zuerst): echter Tastenname
+// Linux names that only mark range limits (evdev returns them first): real key name
 var KEY_ALIAS = { KEY_MIN_INTERESTING: 'KEY_MUTE' };
 
 function normDeviceId(value) {
@@ -128,15 +136,15 @@ function normDeviceId(value) {
   return d && d.indexOf('name:') !== 0 ? d.toLowerCase() : d;
 }
 
-/** Empfaenger eines Profils (aeltere Profile kennen nur "device"). */
+/** Receivers of a profile (older profiles only know "device"). */
 function receiversOf(p) {
   if (p && Array.isArray(p.receivers) && p.receivers.length) return p.receivers.slice();
   return p && p.device && p.device.id ? [p.device.id] : [];
 }
 
 /**
- * Empfaenger: /data/INTERNAL/X10/_receivers/<id>/receiver.json (+ Bilder). Ein Eintrag je USB-Geraet.
- * rf433: arbeitet mit mehreren Sendern (433-MHz-Funk); sonst gehoert er genau einem Sender.
+ * Receivers: /data/INTERNAL/X10/receiver-<Name>/receiver.json (+ pictures). One entry per USB device.
+ * rf433: works with several transmitters (433 MHz radio); otherwise it belongs to exactly one transmitter.
  */
 function sanitizeReceiver(input, existing, opts) {
   opts = opts || {};
@@ -144,7 +152,7 @@ function sanitizeReceiver(input, existing, opts) {
   var name = cleanText(input.name, C.LIMITS.PROFILE_NAME, false);
   if (!name) throw ValidationError('name_required');
   var device = input.device && typeof input.device === 'object' ? input.device : {};
-  var deviceId = existing ? existing.device.id : normDeviceId(device.id);
+  var deviceId = existing && existing.device ? existing.device.id : normDeviceId(device.id);
   if (!DEVICE_RE.test(deviceId)) throw ValidationError('device_invalid', deviceId);
   var now = new Date().toISOString();
   return {
@@ -153,7 +161,7 @@ function sanitizeReceiver(input, existing, opts) {
     name: name,
     description: cleanText(input.description, C.LIMITS.DESCRIPTION, true),
     notes: (input.notes === undefined && existing) ? (existing.notes || '') : cleanText(input.notes, C.LIMITS.NOTES, true),
-    device: { id: deviceId, name: cleanText(device.name !== undefined ? device.name : (existing && existing.device.name), 120, false) },
+    device: { id: deviceId, name: cleanText(device.name !== undefined ? device.name : (existing && existing.device && existing.device.name), 120, false) },
     rf433: input.rf433 === undefined && existing ? !!existing.rf433 : input.rf433 === true,
     images: existing && Array.isArray(existing.images) ? existing.images.slice(0, C.LIMITS.IMAGE_SLOTS) : new Array(C.LIMITS.IMAGE_SLOTS).fill(null),
     created: existing && existing.created ? existing.created : now,
@@ -169,9 +177,9 @@ function toInt(value) {
 }
 
 /**
- * Prueft und normalisiert ein Profil aus der Weboberflaeche.
- * @param {object} input       Rohdaten
- * @param {object|null} existing  vorhandenes Profil (fuer id, Bilder, Zeitstempel)
+ * Checks and normalises a profile coming from the web interface.
+ * @param {object} input       raw data
+ * @param {object|null} existing  existing profile (for id, pictures, timestamps)
  * @param {object} opts        { allowShell: bool, version: string }
  */
 function sanitizeProfile(input, existing, opts) {
@@ -183,7 +191,7 @@ function sanitizeProfile(input, existing, opts) {
 
   var device = input.device && typeof input.device === 'object' ? input.device : {};
   var deviceId = normDeviceId(device.id);
-  // Empfaenger (USB-Geraete), mit denen dieser Sender arbeitet. Ohne 433-MHz-Haken genau einer.
+  // receivers (USB devices) this transmitter works with. Without the 433 MHz mark exactly one.
   var rf433 = input.rf433 === true;
   var receivers = [];
   (Array.isArray(input.receivers) ? input.receivers : []).forEach(function (r) {
@@ -212,18 +220,18 @@ function sanitizeProfile(input, existing, opts) {
     if (!(code >= 0 && code <= 0xffffffff)) throw ValidationError('key_code_invalid', String(idx + 1));
     if (type === 'key' && code > 0x2ff) throw ValidationError('key_code_invalid', String(idx + 1));
     var ident = type + ':' + code;
-    if (seen[ident]) return;           // doppelte Taste: erste gewinnt
+    if (seen[ident]) return;           // duplicate key: the first one wins
     seen[ident] = true;
 
     var allowed = type === 'key' ? C.ACTIONS_KEY : C.ACTIONS_SCAN;
     var thdKey = '';
     if (type === 'scan') {
-      // Version 1.3.3 hatte "tkey" als eigene Aktion - jetzt ein eigenes Feld
-      thdKey = k.action === 'tkey' ? k.target : k.thd_key;
-      thdKey = typeof thdKey === 'string' ? thdKey.trim() : '';
+      thdKey = typeof k.thd_key === 'string' ? k.thd_key.trim() : '';
       if (thdKey === 'auto') thdKey = '';
-      var keyList = opts.thdKeys || C.FALLBACK_THD_KEYS.concat(C.VIRTUAL_KEYS);
-      if (thdKey && (!KEYNAME_RE.test(thdKey) || keyList.indexOf(thdKey) === -1)) {
+      // When reading from disk only the format is checked (the list of "thd --listevents" is not at
+      // hand then); when saving from the web interface the name is also checked against the list.
+      var keyList = opts.loading ? null : (opts.thdKeys || C.FALLBACK_THD_KEYS.concat(C.VIRTUAL_KEYS));
+      if (thdKey && (!KEYNAME_RE.test(thdKey) || (keyList && keyList.indexOf(thdKey) === -1))) {
         throw ValidationError('thd_key_invalid', String(idx + 1));
       }
     }
@@ -232,7 +240,7 @@ function sanitizeProfile(input, existing, opts) {
     if (action === 'custom') {
       command = cleanText(k.command, C.LIMITS.COMMAND, false);
       if (!command) throw ValidationError('command_required', String(idx + 1));
-      // Triggerhappy behandelt alles ab '#' als Kommentar - der Befehl waere abgeschnitten
+      // Triggerhappy treats everything from '#' on as a comment - the command would be cut off
       if (command.indexOf('#') !== -1) throw ValidationError('command_hash', String(idx + 1));
       if (!opts.allowShell) throw ValidationError('shell_disabled', String(idx + 1));
     }
@@ -282,8 +290,8 @@ function sanitizeProfile(input, existing, opts) {
 }
 
 /**
- * opts.onPermissionError: async Funktion, die Schreibrechte wiederherstellt (z. B. fuer Ordner, die per
- * SMB von Windows angelegt wurden und dem Gast gehoeren). Danach wird der Vorgang einmal wiederholt.
+ * opts.onPermissionError: async function that restores write permissions (e.g. for folders created
+ * from Windows over SMB that belong to the guest). The operation is then repeated once.
  */
 function ProfileStore(baseDir, logger, opts) {
   this.baseDir = baseDir || C.PROFILE_DIR;
@@ -294,17 +302,18 @@ function ProfileStore(baseDir, logger, opts) {
   this.isValid = this.opts.isValid || function (raw) { return Array.isArray(raw.keys); };
   this.notFound = this.opts.notFound || 'profile_not_found';
   this.kind = this.opts.kind || 'profile';
-  // exactNames: Ordner heisst wie der Name (Empfaenger); sonst Kurzform (Sender: "medion-20016398")
+  // exactNames: the folder is named like the name (receivers); otherwise a short form (transmitters: "medion-20016398")
   this.exact = !!this.opts.exactNames;
   this.idOk = this.exact ? isFolderName : function (id) { return ID_RE.test(String(id || '')) && id !== C.VANILLA_ID; };
   this._queue = Promise.resolve();
+  this.invalid = {};     // id -> reason: files that exist but are ignored because of invalid content
 }
 
 function isPermError(e) {
   return !!(e && (e.code === 'EACCES' || e.code === 'EPERM'));
 }
 
-/** Rechte fuer die SMB-Freigabe setzen (Fehler ignorieren: z. B. Datei gehoert dem SMB-Gast). */
+/** Set permissions for the SMB share (errors ignored: e.g. the file belongs to the SMB guest). */
 function shareMode(file, dir) {
   return fsp.chmod(file, dir ? C.SHARE_DIR_MODE : C.SHARE_FILE_MODE).catch(function () { /* ignore */ });
 }
@@ -324,8 +333,8 @@ ProfileStore.prototype._serial = function (fn) {
     });
   };
   var run = this._queue.then(guarded, guarded);
-  this._queue = run.catch(function () { /* Fehler gehen an den Aufrufer */ });
-  if (self.opts.onChange) run.then(function () { self.opts.onChange(); }, function () { /* nichts geaendert */ });
+  this._queue = run.catch(function () { /* errors go to the caller */ });
+  if (self.opts.onChange) run.then(function () { self.opts.onChange(); }, function () { /* nothing changed */ });
   return run;
 };
 
@@ -341,24 +350,74 @@ ProfileStore.prototype.ensureBase = function () {
 ProfileStore.prototype._writeJson = async function (file, data) {
   var tmp = file + '.tmp-' + process.pid;
   await fsp.writeFile(tmp, JSON.stringify(data, null, 2) + '\n', { mode: C.SHARE_FILE_MODE });
-  await shareMode(tmp, false);           // writeFile-Modus wird von der umask beschnitten
+  await shareMode(tmp, false);           // the writeFile mode is cut by the umask
   await fsp.rename(tmp, file);
 };
+
+var IMAGE_FILE_RE = /^image[1-6]\.(jpg|png|webp)$/;
+var ISO_RE = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?Z$/;
+
+/**
+ * Re-check a file read from disk. /data/INTERNAL/X10 is writable for guests through the SMB share:
+ * a profile.json edited there by hand is unchecked and is therefore cleaned on EVERY load with the
+ * same checks as on saving (lengths, control characters, allowed actions and key names). Invalid
+ * files are skipped (message in the log).
+ * Custom commands stay stored; whether they take effect is still decided by expert mode.
+ */
+function loadClean(sanitize, raw, id) {
+  var images = (Array.isArray(raw.images) ? raw.images : []).slice(0, C.LIMITS.IMAGE_SLOTS).map(function (f, i) {
+    return typeof f === 'string' && IMAGE_FILE_RE.test(f) && f.charAt(5) === String(i + 1) ? f : null;
+  });
+  while (images.length < C.LIMITS.IMAGE_SLOTS) images.push(null);
+  var created = typeof raw.created === 'string' && ISO_RE.test(raw.created) ? raw.created : null;
+  var clean = sanitize(raw, { id: id, images: images, created: created, notes: '' },
+    { loading: true, allowShell: true, version: cleanText(raw.plugin_version, 20, false) });
+  clean.id = id;
+  clean.images = images;
+  if (typeof raw.updated === 'string' && ISO_RE.test(raw.updated)) clean.updated = raw.updated;
+  return clean;
+}
 
 ProfileStore.prototype.get = async function (id) {
   var self = this;
   var dir = this.dirOf(id);
+  var raw;
   try {
-    var raw = JSON.parse(await fsp.readFile(path.join(dir, self.fileName), 'utf8'));
-    if (!raw || typeof raw !== 'object' || !self.isValid(raw)) return null;
-    raw.id = id;
-    if (!Array.isArray(raw.images)) raw.images = [];
-    while (raw.images.length < C.LIMITS.IMAGE_SLOTS) raw.images.push(null);
-    return raw;
+    raw = JSON.parse(await fsp.readFile(path.join(dir, self.fileName), 'utf8'));
   } catch (e) {
-    if (e.code !== 'ENOENT' && this.logger) this.logger.warn(C.LOG_PREFIX + self.kind + ' ' + id + ' unreadable: ' + e.message);
+    if (e.code === 'ENOENT') {
+      delete self.invalid[id];
+    } else {
+      self._markInvalid(id, e instanceof SyntaxError ? 'json_invalid' : (e.code || 'unreadable'));
+    }
     return null;
   }
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !self.isValid(raw)) {
+    self._markInvalid(id, 'structure_invalid');
+    return null;
+  }
+  try {
+    var clean = loadClean(self.sanitize, raw, id);
+    delete self.invalid[id];
+    return clean;
+  } catch (e) {
+    var known = self.invalid[id];
+    self.invalid[id] = String(e.code || 'invalid') + (e.detail ? ' ' + String(e.detail).replace(/[^\w .:-]/g, '').slice(0, 40) : '');
+    if (this.logger && known !== self.invalid[id]) this.logger.warn(C.LOG_PREFIX + self.kind + ' ' + id + ' ignored, invalid content: ' + (e.code || e.message) + (e.detail ? ' (' + e.detail + ')' : ''));
+    return null;
+  }
+};
+
+/** Remember an invalid file; log only when the reason changes (list() runs often). */
+ProfileStore.prototype._markInvalid = function (id, reason) {
+  if (this.invalid[id] !== reason && this.logger) this.logger.warn(C.LOG_PREFIX + this.kind + ' ' + id + ' ignored: ' + reason);
+  this.invalid[id] = reason;
+};
+
+/** Ignored files: [{ id, reason }] (current after list()). */
+ProfileStore.prototype.invalidList = function () {
+  var self = this;
+  return Object.keys(self.invalid).sort().map(function (id) { return { id: id, reason: self.invalid[id] }; });
 };
 
 ProfileStore.prototype.list = async function () {
@@ -372,6 +431,7 @@ ProfileStore.prototype.list = async function () {
   }
   var ids = entries.filter(function (d) { return d.isDirectory() && self.idOk(d.name); })
     .map(function (d) { return d.name; }).sort();
+  Object.keys(self.invalid).forEach(function (id) { if (ids.indexOf(id) === -1) delete self.invalid[id]; });
   var out = [];
   for (var i = 0; i < ids.length; i++) {
     var p = await self.get(ids[i]);
@@ -384,7 +444,7 @@ ProfileStore.prototype._uniqueId = function (name) {
   return this._idForName(name, null);
 };
 
-/** Belegte Namen im Ordner (Kleinschreibung: SMB/Windows unterscheiden Gross/Klein nicht). */
+/** Names taken in the folder (lower case: SMB/Windows do not distinguish case). */
 ProfileStore.prototype._taken = async function () {
   try {
     return (await fsp.readdir(this.baseDir)).map(function (n) { return n.toLowerCase(); });
@@ -393,7 +453,7 @@ ProfileStore.prototype._taken = async function () {
   }
 };
 
-/** Neues Profil anlegen oder vorhandenes aktualisieren. */
+/** Create a new profile or update an existing one. */
 ProfileStore.prototype.save = function (input, opts) {
   var self = this;
   return self._serial(async function () {
@@ -411,7 +471,7 @@ ProfileStore.prototype.save = function (input, opts) {
       try {
         await fsp.access(path.join(self.baseDir, opts.newId));
       } catch (e) {
-        profile.id = opts.newId;          // gewuenschte Kennung ist frei
+        profile.id = opts.newId;          // the requested id is free
       }
     }
     if (!profile.id) profile.id = await self._uniqueId(profile.name);
@@ -422,24 +482,27 @@ ProfileStore.prototype.save = function (input, opts) {
   });
 };
 
-/** Kennung (Ordnername) passend zum Namen; die eigene Kennung gilt als frei. */
+/** Id (folder name) matching the name; the own id counts as free. */
 ProfileStore.prototype._idForName = async function (name, ownId) {
-  var base = this.exact ? folderName(name) : slugify(name);
-  if (!this.exact && base === C.VANILLA_ID) base = 'profil-' + base;   // reserviert fuer das Vanilla-Profil
+  // Folders in /data/INTERNAL/X10 show their kind in the name: sender-<short name>, receiver-<Name>
+  // (templates: template-<short name>, see index.js). An identical beginning of the name is not doubled.
+  var base = this.exact
+    ? C.RECEIVER_PREFIX + folderName(String(name || '').replace(/^\s*receiver[\s_-]*/i, ''))
+    : C.SENDER_PREFIX + slugify(String(name || '').replace(/^\s*sender[\s_-]*/i, ''));
   var taken = await this._taken();
   for (var n = 1; n < 1000; n++) {
-    var cand = n === 1 ? base : (this.exact ? base.slice(0, 74) + ' (' + n + ')' : base + '-' + n);
+    var cand = n === 1 ? base : (this.exact ? base.slice(0, 83) + ' (' + n + ')' : base + '-' + n);
     if (cand === ownId) return cand;
-    if (ownId && cand.toLowerCase() === String(ownId).toLowerCase()) return cand;   // nur Gross/Klein geaendert
+    if (ownId && cand.toLowerCase() === String(ownId).toLowerCase()) return cand;   // only upper/lower case changed
     if (taken.indexOf(cand.toLowerCase()) === -1) return cand;
   }
   throw ValidationError('profile_id_exhausted');
 };
 
 /**
- * Profil umbenennen: Name und Ordner. Der Ordner unter /data/INTERNAL/X10 heisst danach wie der Name
- * (z. B. "Küche" -> kueche, belegt -> kueche-2). Tasten und Bilder bleiben erhalten.
- * Rueckgabe: Profil mit neuer Kennung; old_id = bisherige Kennung.
+ * Rename a profile: name and folder. Afterwards the folder below /data/INTERNAL/X10 is named like the
+ * name (e.g. "Küche" -> sender-kueche, taken -> sender-kueche-2). Keys and pictures are kept.
+ * Returns the profile with its new id; old_id = previous id.
  */
 ProfileStore.prototype.rename = function (id, name) {
   var self = this;
@@ -454,7 +517,7 @@ ProfileStore.prototype.rename = function (id, name) {
     profile.updated = new Date().toISOString();
     await self._writeJson(path.join(dir, self.fileName), profile);
     if (newId !== id) {
-      await fsp.rename(dir, self.dirOf(newId));       // gleiches Dateisystem: atomar
+      await fsp.rename(dir, self.dirOf(newId));       // same file system: atomic
       profile.id = newId;
       await self._writeJson(path.join(self.dirOf(newId), self.fileName), profile);
     }
@@ -463,7 +526,48 @@ ProfileStore.prototype.rename = function (id, name) {
   });
 };
 
-/** Freier Name "<name> copy", "<name> copy 2", ... */
+/**
+ * Rename older folders without prefix once (medion-20016398 -> sender-medion-20016398,
+ * "X10 WTI" -> "receiver-X10 WTI"). skip: ids that stay (e.g. Mobile Remote).
+ * Returns [{ old_id, id }]. A folder that cannot be renamed stays as it is.
+ */
+ProfileStore.prototype.adoptPrefix = function (skip) {
+  var self = this;
+  var prefix = self.exact ? C.RECEIVER_PREFIX : C.SENDER_PREFIX;
+  return self._serial(async function () {
+    var entries;
+    try { entries = await fsp.readdir(self.baseDir, { withFileTypes: true }); } catch (e) { return []; }
+    var moved = [];
+    for (var i = 0; i < entries.length; i++) {
+      var old = entries[i].name;
+      if (!entries[i].isDirectory() || !self.idOk(old) || old.indexOf(prefix) === 0 || (skip || []).indexOf(old) !== -1) continue;
+      if (old.indexOf(C.TEMPLATE_PREFIX) === 0) continue;
+      var raw;
+      try { raw = JSON.parse(await fsp.readFile(path.join(self.baseDir, old, self.fileName), 'utf8')); } catch (e) { continue; }
+      if (!raw || typeof raw !== 'object' || !self.isValid(raw)) continue;
+      try {
+        var taken = await self._taken();
+        var id = null;
+        for (var n = 1; n < 1000 && !id; n++) {
+          var cand = prefix + old + (n === 1 ? '' : (self.exact ? ' (' + n + ')' : '-' + n));
+          if (self.idOk(cand) && taken.indexOf(cand.toLowerCase()) === -1) id = cand;
+          else if (!self.idOk(cand)) break;
+        }
+        if (!id) id = await self._idForName(raw.name || old, null);
+        await fsp.rename(path.join(self.baseDir, old), self.dirOf(id));
+        raw.id = id;
+        await self._writeJson(path.join(self.dirOf(id), self.fileName), raw);
+        if (self.invalid[old]) delete self.invalid[old];
+        moved.push({ old_id: old, id: id });
+      } catch (e) {
+        if (self.logger) self.logger.warn(C.LOG_PREFIX + self.kind + ' folder ' + old + ' not renamed: ' + e.message);
+      }
+    }
+    return moved;
+  });
+};
+
+/** Free name "<name> copy", "<name> copy 2", ... */
 ProfileStore.prototype._copyName = async function (name) {
   var names = (await this.list()).map(function (p) { return p.name; });
   var suffix = ' copy';
@@ -474,8 +578,8 @@ ProfileStore.prototype._copyName = async function (name) {
 };
 
 /**
- * Profil duplizieren: neuer Name "<name> copy", neue Kennung, Tasten und Bilder werden kopiert.
- * Die Kopie ist inaktiv. Die Daten stammen aus einem bereits geprueften Profil und werden 1:1 uebernommen.
+ * Duplicate a profile: new name "<name> copy", new id, keys and pictures are copied.
+ * The copy is inactive. The data comes from an already checked profile and is taken over 1:1.
  */
 ProfileStore.prototype.duplicate = function (id) {
   var self = this;
@@ -517,7 +621,7 @@ ProfileStore.prototype.remove = function (id) {
   });
 };
 
-/** Bild (data-URL) in Platz 1..3 speichern. Prueft Typ anhand der Dateisignatur. */
+/** Store a picture (data URL) in slot 1..6. Checks the type by file signature. */
 ProfileStore.prototype.setImage = function (id, slot, dataUrl) {
   var self = this;
   return self._serial(async function () {
@@ -569,7 +673,7 @@ ProfileStore.prototype._removeOtherImageFiles = async function (dir, slot, keep)
   }
 };
 
-/** Pfad und MIME-Typ eines Bildes, oder null. */
+/** Path and MIME type of a picture, or null. */
 ProfileStore.prototype.imageFile = async function (id, slot) {
   var profile = await this.get(id);
   var s = parseInt(slot, 10);
@@ -580,7 +684,7 @@ ProfileStore.prototype.imageFile = async function (id, slot) {
   return { path: path.join(this.dirOf(id), file), mime: IMAGE_TYPES[ext].mime };
 };
 
-/** Bild aus einer Datei uebernehmen (Vorlagen). Prueft wie setImage. */
+/** Take over a picture from a file (templates). Checks like setImage. */
 ProfileStore.prototype.setImageFile = async function (id, slot, file) {
   var buf = await fsp.readFile(file);
   var ext = null;

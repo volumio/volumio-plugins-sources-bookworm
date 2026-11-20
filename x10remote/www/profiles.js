@@ -1,4 +1,4 @@
-/* Profiluebersicht mit Auswahl des aktiven Profils (inkl. eingebautem Vanilla-Profil) */
+/* Profile overview with selection of the active profile (including the built-in vanilla profile) */
 (function () {
   'use strict';
   var el = X10.el;
@@ -8,7 +8,7 @@
   function problemToast(res) {
     if (res && res.problems && res.problems.length) {
       var p = res.problems[0];
-      X10.toast(X10.t('WEB_PROBLEM_' + String(p.code).toUpperCase(), { key: p.key || '', other: p.other || '', profile: p.profile || '' }), 'warn');
+      X10.toast(X10.t('WEB_PROBLEM_' + String(p.code).toUpperCase(), { key: p.key || '', other: p.other || '', profile: p.profile || '', max: p.max || '' }), 'warn');
       return true;
     }
     return false;
@@ -124,37 +124,71 @@
     });
   }
 
-  // --------------------------------------------------------------- Vorlagen
+  // --------------------------------------------------------------- templates
   function renderPresets(list) {
     var box = X10.$('presets');
     box.textContent = '';
     X10.$('presetSection').classList.toggle('hidden', !list.length);
     list.forEach(function (t) {
       var slot = t.images.indexOf(true);
-      var btn = el('button', { class: 'small primary', type: 'button', text: X10.t('WEB_PRESET_CREATE') });
-      btn.addEventListener('click', function () {
-        btn.disabled = true;
-        X10.api('POST', 'api/preset/create', { id: t.id }).then(function (res) {
-          location.href = 'profile.html?id=' + encodeURIComponent(res.id) + '&preset=1';
-        }).catch(function (e) {
-          btn.disabled = false;
-          X10.toast(X10.errText(e), 'err');
+      var btn;
+      if (t.kind === 'mobile') {
+        // assignment of the Mobile Remote: loaded into the table there (nothing is overwritten unasked)
+        btn = el('a', { class: 'btn small primary', href: 'mobile.html?template=' + encodeURIComponent(t.id), text: X10.t('WEB_TEMPLATE_MOBILE_OPEN') });
+      } else {
+        btn = el('button', { class: 'small primary', type: 'button', text: X10.t('WEB_PRESET_CREATE') });
+        btn.addEventListener('click', function () {
+          btn.disabled = true;
+          X10.api('POST', 'api/template/create', { id: t.id }).then(function (res) {
+            location.href = 'profile.html?id=' + encodeURIComponent(res.id) + '&preset=1' + (res.skipped_custom ? '&skipped=' + res.skipped_custom : '');
+          }).catch(function (e) {
+            btn.disabled = false;
+            X10.toast(X10.errText(e), 'err');
+          });
         });
-      });
+      }
+      var del = t.user ? el('button', { class: 'small danger', type: 'button', text: X10.t('WEB_DELETE'), onclick: function () {
+        if (!confirm(X10.t('WEB_TEMPLATE_DELETE_CONFIRM', { name: t.name, folder: t.id }))) return;
+        X10.api('POST', 'api/template/delete', { id: t.id }).then(function () {
+          X10.toast(X10.t('WEB_TEMPLATE_DELETED'));
+          return loadTemplates();
+        }).catch(function (e) { X10.toast(X10.errText(e), 'err'); });
+      } }) : null;
       box.appendChild(el('div', { class: 'card' }, [
-        slot !== -1 ? el('img', { class: 'thumb', alt: '', src: 'pimg/' + t.id + '/' + (slot + 1) }) : null,
+        slot !== -1 ? el('img', { class: 'thumb', alt: '', src: 'pimg/' + encodeURIComponent(t.id) + '/' + (slot + 1) }) : null,
         el('div', { class: 'row' }, [el('span', { class: 'title', text: t.name }), el('span', { class: 'spacer' }),
-          el('span', { class: 'badge', text: X10.t('WEB_PRESET') })]),
+          el('span', { class: 'badge', text: X10.t(t.user ? 'WEB_TEMPLATE_OWN' : 'WEB_PRESET') })]),
         el('div', { class: 'muted', text: t.description }),
-        el('div', { class: 'muted', text: X10.t('WEB_RECEIVERS_OF', { list: t.receivers.map(function (r) { return r.name; }).join(', ') }) }),
+        t.kind === 'mobile' ? el('div', null, [el('span', { class: 'badge', text: X10.t('WEB_NAV_MOBILE') })])
+          : el('div', { class: 'muted', text: X10.t('WEB_RECEIVERS_OF', { list: t.receivers.map(function (r) { return r.name; }).join(', ') }) }),
         el('div', { class: 'muted', text: X10.t('WEB_KEYS_COUNT', { n: t.keys }) }),
+        t.user ? el('div', { class: 'muted small mono', text: t.id }) : null,
         t.rf433 ? el('div', null, [el('span', { class: 'badge', text: '433 MHz' })]) : null,
-        el('div', { class: 'row' }, [el('span', { class: 'spacer' }), btn])
+        el('div', { class: 'row' }, [del, el('span', { class: 'spacer' }), btn])
       ]));
     });
   }
 
+  function loadTemplates() {
+    return X10.api('GET', 'api/templates').then(renderPresets).catch(function () { /* without templates */ });
+  }
+
+  /** Make folders visible whose file is ignored because of invalid content (e.g. edited by hand). */
+  function renderInvalid(list) {
+    var box = X10.$('invalid');
+    if (!box) {
+      box = el('div', { id: 'invalid' });
+      var grid = X10.$('list');
+      grid.parentNode.insertBefore(box, grid);
+    }
+    box.textContent = '';
+    (list || []).forEach(function (x) {
+      box.appendChild(el('div', { class: 'note warn', text: X10.t(x.kind === 'receiver' ? 'WEB_RECEIVER_INVALID' : 'WEB_PROFILE_INVALID', { id: x.id, reason: x.reason }) }));
+    });
+  }
+
   function load() {
+    X10.api('GET', 'api/profiles/invalid').then(renderInvalid).catch(function () { /* only a notice */ });
     return X10.api('GET', 'api/profiles').then(render).catch(function (e) { X10.toast(X10.errText(e), 'err'); });
   }
 
@@ -166,7 +200,7 @@
 
   X10.init('profiles').then(function () {
     X10.events(function (ev) { if (ev.event === 'reload') load(); });
-    X10.api('GET', 'api/presets').then(renderPresets).catch(function () { /* ohne Vorlagen */ });
+    loadTemplates();
     return load();
   }).catch(function (e) { X10.toast(X10.errText(e), 'err'); });
 })();

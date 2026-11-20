@@ -1,9 +1,10 @@
 #!/bin/sh
-# Watchdog des Volumio-Plugins "X10 RF Remote" (gestartet von x10remote-watchdog.timer alle 5 Minuten).
-# Prueft Triggerhappy und den Wrapper (x10mapper) und startet sie neu, wenn sie gestoppt oder abgestuerzt sind.
-#  - x10mapper nur, wenn das Plugin ihn laufen lassen will (/run/x10remote/mapper.wanted)
-#  - Zustaende "activating"/"reloading" gelten als in Ordnung (Plugin startet gerade selbst neu)
-#  - der Timer laeuft nur, solange das Plugin aktiv ist (onStart/onStop)
+# Watchdog of the Volumio plugin "X10 RF Remote" (started by x10remote-watchdog.timer every 5 minutes).
+# Checks Triggerhappy and the wrapper (x10mapper) and restarts them if they crashed.
+# Off by default (setting "Watchdog").
+#  - x10mapper only if the plugin wants it running (/run/x10remote/mapper.wanted)
+#  - the states "activating"/"reloading" count as fine (the plugin is restarting it itself)
+#  - the timer runs only while the plugin is active (onStart/onStop)
 
 RUN=/run/x10remote
 LOG=$RUN/watchdog.log
@@ -19,12 +20,26 @@ log() {
   fi
 }
 
+# Only a service that CRASHED is restarted (failed, or inactive with an error result).
+# A service stopped on purpose (systemctl stop -> inactive, Result=success) stays stopped.
 check() {
-  state=$(systemctl is-active "$1" 2>/dev/null)
+  state=$(systemctl show -p ActiveState --value "$1" 2>/dev/null)
+  result=$(systemctl show -p Result --value "$1" 2>/dev/null)
   case "$state" in
-    active|activating|reloading) return 0 ;;
+    active|activating|reloading|deactivating) return 0 ;;
+    failed) ;;
+    inactive)
+      if [ -z "$result" ] || [ "$result" = "success" ]; then
+        return 0          # stopped (e.g. by hand) - do not interfere
+      fi ;;
+    *) return 0 ;;
   esac
-  log "$1: state '${state:-unknown}' - restarting"
+  # exit code 78 (python3-evdev or /dev/uinput missing): a restart does not help
+  if [ "$(systemctl show -p ExecMainStatus --value "$1" 2>/dev/null)" = "78" ]; then
+    log "$1: stopped with exit code 78 (missing python3-evdev or /dev/uinput) - not restarted"
+    return 0
+  fi
+  log "$1: state '${state:-unknown}', result '${result:-unknown}' - restarting"
   if systemctl restart "$1"; then
     sleep 2
     log "$1: restarted, state '$(systemctl is-active "$1" 2>/dev/null)'"
