@@ -1,0 +1,17 @@
+{
+  "PLUGIN_CONFIGURATION": "Mausberry Switch",
+  "SECTION_SWITCH": "Switch settings",
+  "SAVE": "Save",
+  "OUT_PIN": "OUT pin (GPIO)",
+  "OUT_PIN_DOC": "BCM GPIO number connected to the OUT lead of the Mausberry board (default 23).",
+  "IN_PIN": "IN pin (GPIO)",
+  "IN_PIN_DOC": "BCM GPIO number connected to the IN lead of the Mausberry board (default 24).",
+  "DELAY": "Shutdown delay (seconds)",
+  "DELAY_DOC": "Seconds to wait after the switch is turned off before shutting down. The shutdown cannot be cancelled during this time.",
+  "SAVED": "Settings saved, the switch service was restarted",
+  "ERR_PIN": "GPIO pins must be whole numbers from 2 to 27",
+  "ERR_SAME_PIN": "OUT and IN must be different pins",
+  "ERR_DELAY": "The delay must be a whole number from 0 to 3600",
+  "ERR_WRITE": "Could not save the settings, see the Volumio log",
+  "ERR_NOT_INSTALLED": "The mausberry-switch service is not installed. Reinstall the plugin."
+}

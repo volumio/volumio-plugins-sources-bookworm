@@ -1,0 +1,17 @@
+{
+  "PLUGIN_CONFIGURATION": "Mausberry Switch",
+  "SECTION_SWITCH": "Schalter-Einstellungen",
+  "SAVE": "Speichern",
+  "OUT_PIN": "OUT-Pin (GPIO)",
+  "OUT_PIN_DOC": "BCM-GPIO-Nummer, an der die OUT-Leitung der Mausberry-Platine hängt (Standard 23).",
+  "IN_PIN": "IN-Pin (GPIO)",
+  "IN_PIN_DOC": "BCM-GPIO-Nummer, an der die IN-Leitung der Mausberry-Platine hängt (Standard 24).",
+  "DELAY": "Verzögerung (Sekunden)",
+  "DELAY_DOC": "Wartezeit nach dem Ausschalten, bevor heruntergefahren wird. Das Herunterfahren lässt sich in dieser Zeit nicht abbrechen.",
+  "SAVED": "Einstellungen gespeichert, der Schalter-Dienst wurde neu gestartet",
+  "ERR_PIN": "GPIO-Pins müssen ganze Zahlen von 2 bis 27 sein",
+  "ERR_SAME_PIN": "OUT und IN müssen verschiedene Pins sein",
+  "ERR_DELAY": "Die Verzögerung muss eine ganze Zahl von 0 bis 3600 sein",
+  "ERR_WRITE": "Einstellungen konnten nicht gespeichert werden, siehe Volumio-Log",
+  "ERR_NOT_INSTALLED": "Der Dienst mausberry-switch ist nicht installiert. Bitte das Plugin neu installieren."
+}
