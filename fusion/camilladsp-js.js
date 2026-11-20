@@ -381,6 +381,22 @@ let CamillaDsp = function (logger, onStreamOpen) {
 
     };
 
+    /**
+     * Like start(), but leaves the spawn to the first stream, so CamillaDSP
+     * starts with that stream's rate instead of a guessed one.
+     */
+    this.waitForStream = function() {
+
+        run = true;
+        consecutiveRespawns = 0;
+        respawnStopped = false;
+
+        logger.info(`camilladsp waiting for the first stream, instance ${uniqueid}`);
+
+    };
+
+    this.streamIsOpen = streamIsOpen;
+
     this.isRunning = function() {
 
         return camilla !== null;

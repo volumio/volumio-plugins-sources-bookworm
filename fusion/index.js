@@ -239,7 +239,10 @@ FusionDsp.prototype.onStart = function () {
         self.readStreamParams();
         return true;
       });
-      self.camillaProcess.start();
+      // Starting now would use a guessed rate, and a waiting stream would
+      // make CamillaDSP grab the DAC before hwinfo probes it. checksamplerate
+      // starts it once a stream reports its rate.
+      self.camillaProcess.waitForStream();
 
       await self.hwinfo();
       if (self._isStopping) return;
@@ -254,6 +257,10 @@ FusionDsp.prototype.onStart = function () {
       self.volumioState();
       self.reportFusionEnabled();
       self.checksamplerate();
+      // A player may already be streaming, e.g. when Volumio restarts mid-track.
+      if (self.camillaProcess.streamIsOpen()) {
+        self.readStreamParams();
+      }
 
       if (self.config.get('loudness')) {
         self.sendvolumelevel();
