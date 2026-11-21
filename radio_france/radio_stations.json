@@ -28,6 +28,83 @@
         "metadataType": "national"
     },
     {
+        "id": "france-musique-classique-easy",
+        "title": "France Musique Classique Easy",
+        "stream": "https://icecast.radiofrance.fr/francemusiqueeasyclassique-hifi.aac",
+        "metadataId": 401,
+        "metadataType": "webradio"
+    },
+    {
+        "id": "france-musique-classique-love",
+        "title": "France Musique Classique Love",
+        "stream": "https://icecast.radiofrance.fr/francemusiqueclassiquelove-hifi.aac",
+        "metadataId": 411,
+        "metadataType": "webradio"
+    },
+    {
+        "id": "france-musique-classique-plus",
+        "title": "France Musique Classique Plus",
+        "stream": "https://icecast.radiofrance.fr/francemusiqueclassiqueplus-hifi.aac",
+        "metadataId": 402,
+        "metadataType": "webradio"
+    },
+    {
+        "id": "france-musique-concerts-radio-france",
+        "title": "France Musique Concerts Radio France",
+        "stream": "https://icecast.radiofrance.fr/francemusiqueconcertsradiofrance-hifi.aac",
+        "metadataId": 403,
+        "metadataType": "webradio"
+    },
+    {
+        "id": "france-musique-la-baroque",
+        "title": "France Musique La Baroque",
+        "stream": "https://icecast.radiofrance.fr/francemusiquebaroque-hifi.aac",
+        "metadataId": 408,
+        "metadataType": "webradio"
+    },
+    {
+        "id": "france-musique-la-contemporaine",
+        "title": "France Musique La Contemporaine",
+        "stream": "https://icecast.radiofrance.fr/francemusiquelacontemporaine-hifi.aac",
+        "metadataId": 406,
+        "metadataType": "webradio"
+    },
+    {
+        "id": "france-musique-la-jazz",
+        "title": "France Musique La Jazz",
+        "stream": "https://icecast.radiofrance.fr/francemusiquelajazz-hifi.aac",
+        "metadataId": 405,
+        "metadataType": "webradio"
+    },
+    {
+        "id": "france-musique-musique-de-films",
+        "title": "France Musique Musique de Films",
+        "stream": "https://icecast.radiofrance.fr/francemusiquelabo-hifi.aac",
+        "metadataId": 407,
+        "metadataType": "webradio"
+    },
+    {
+        "id": "france-musique-ocora-musiques-du-monde",
+        "title": "France Musique Ocora Musiques du monde",
+        "stream": "https://icecast.radiofrance.fr/francemusiqueocoramonde-hifi.aac",
+        "metadataId": 404,
+        "metadataType": "webradio"
+    },
+    {
+        "id": "france-musique-opera",
+        "title": "France Musique Opéra",
+        "stream": "https://icecast.radiofrance.fr/francemusiqueopera-hifi.aac",
+        "metadataId": 409,
+        "metadataType": "webradio"
+    },
+    {
+        "id": "france-musique-piano-zen",
+        "title": "France Musique Piano Zen",
+        "stream": "https://icecast.radiofrance.fr/francemusiquepianozen-hifi.aac",
+        "metadataId": 410,
+        "metadataType": "webradio"
+    },
+    {
         "id": "ici-alsace",
         "title": "ICI Alsace",
         "stream": "https://icecast.radiofrance.fr/fbalsace-midfi.mp3",

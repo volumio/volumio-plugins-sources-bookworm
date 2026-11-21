@@ -239,7 +239,10 @@ ControllerRadioFrance.prototype.getRadioType = function(station) {
     if (station && station.metadataType === 'ici') {
         return 'ICI';
     }
-    if (station && station.metadataType === 'national') {
+    if (station && (
+        station.metadataType === 'national' ||
+        station.metadataType === 'webradio'
+    )) {
         return 'Radio France';
     }
     return 'Radio-France';
@@ -633,6 +636,12 @@ ControllerRadioFrance.prototype.startMetadataTimer = function(station) {
     if (!station) {
         self.logger.error(
             'RadioFrance Cannot start metadata timer without station'
+        );
+        return;
+    }
+    if (station.metadataId === undefined || station.metadataId === null) {
+        self.debugLog(
+            'RadioFrance No metadata source for ' + station.title
         );
         return;
     }
