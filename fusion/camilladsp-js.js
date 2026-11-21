@@ -1,3 +1,8 @@
+/*
+contribution :Paolo Sabatino, squadgazzz
+November 2026
+*/
+
 "use strict";
 
 const { execFile } = require("child_process");
@@ -29,7 +34,7 @@ let CamillaDsp = function (logger, onStreamOpen) {
     const stopTimeoutMs = 3000;        // wait this long for SIGTERM before SIGKILL
     const stopPollIntervalMs = 50;
     const deviceReleaseDelayMs = 300;  // let ALSA finish releasing the output device
-
+    const loggerPrefix = "FusionDsp - CamillaDsp-js ";
     let run = false;
     let camilla = null;
     let uniqueid = ++counter;
@@ -67,7 +72,7 @@ let CamillaDsp = function (logger, onStreamOpen) {
         let timeout = 0;
         let uptime = Date.now() - lastSpawnTime;
 
-        logger.debug("close event");
+        logger.debug(loggerPrefix + "close event");
 
         // Nullify the camilla process since it has been fully terminated
         camilla = null;
@@ -85,14 +90,14 @@ let CamillaDsp = function (logger, onStreamOpen) {
         if (code === 0) {
 
             if (!streamIsOpen()) {
-                logger.info("camilladsp stream ended, waiting for the next one");
+                logger.info(loggerPrefix + "camilladsp stream ended, waiting for the next one");
                 return;
             }
 
             // The next stream is already open. Its params may have arrived
             // while this process was still exiting, so ask for another read.
             if (onStreamOpen && onStreamOpen()) {
-                logger.info("camilladsp stream ended, next one already open");
+                logger.info(loggerPrefix + "camilladsp stream ended, next one already open");
                 return;
             }
 
@@ -100,7 +105,7 @@ let CamillaDsp = function (logger, onStreamOpen) {
 
         // If respawning was stopped due to too many failures, don't respawn
         if (respawnStopped) {
-            logger.warn(`camilladsp respawn stopped due to repeated failures; not respawning`);
+            logger.warn(loggerPrefix + "camilladsp respawn stopped due to repeated failures; not respawning");
             return;
         }
 
@@ -116,7 +121,7 @@ let CamillaDsp = function (logger, onStreamOpen) {
 
         // Check if we've exceeded max consecutive respawns
         if (consecutiveRespawns > maxConsecutiveRespawns) {
-            logger.error(`camilladsp exceeded max consecutive respawns (${maxConsecutiveRespawns}); stopping respawn. Plugin restart required.`);
+            logger.error(loggerPrefix + `camilladsp exceeded max consecutive respawns (${maxConsecutiveRespawns}); stopping respawn. Plugin restart required.`);
             respawnStopped = true;
             return;
         }
@@ -129,8 +134,8 @@ let CamillaDsp = function (logger, onStreamOpen) {
             timeout = Math.min(baseRespawnDelayMs * Math.pow(2, consecutiveRespawns - 1), maxRespawnDelayMs);
         }
 
-        logger.debug(`camilladsp close event, exit code ${code}, signal ${signal}`);
-        logger.info(`camilladsp respawn in ${timeout} ms (attempt ${consecutiveRespawns}/${maxConsecutiveRespawns})`);
+        logger.debug(loggerPrefix + `camilladsp close event, exit code ${code}, signal ${signal}`);
+        logger.info(loggerPrefix + `camilladsp respawn in ${timeout} ms (attempt ${consecutiveRespawns}/${maxConsecutiveRespawns})`);
 
         setTimeout(function() {
 
@@ -147,7 +152,7 @@ let CamillaDsp = function (logger, onStreamOpen) {
                     "iflag=nonblock"
                 ], function(error) {
                     if (error) {
-                        logger.debug(`Could not flush CamillaDSP FIFO before respawn: ${error.message}`);
+                        logger.debug(loggerPrefix + `Could not flush CamillaDSP FIFO before respawn: ${error.message}`);
                     }
                     processSpawn();
                 });
@@ -165,7 +170,7 @@ let CamillaDsp = function (logger, onStreamOpen) {
      */
     let listenerExit = function(code, signal) {
 
-        logger.debug(`camilladsp exit event, exit code ${code}, signal ${signal}`);
+        logger.debug(loggerPrefix + `camilladsp exit event, exit code ${code}, signal ${signal}`);
 
     };
 
@@ -194,12 +199,12 @@ let CamillaDsp = function (logger, onStreamOpen) {
             cdPathConfig
         ];
 
-        logger.debug(`camilladsp spawning process`);
+        logger.debug(loggerPrefix + `camilladsp spawning process`);
 
         camilla = spawn(cdPath, args);
         lastSpawnTime = Date.now();
 
-     //   logger.info(`camilladsp spawned new process with pid ${camilla.pid}, instance ${uniqueid}, run: ${run}`);
+     //   logger.info(loggerPrefix + `camilladsp spawned new process with pid ${camilla.pid}, instance ${uniqueid}, run: ${run}`);
 
         //camilla.on("exit", listenerExit);
         camilla.on("close", listenerClose);
@@ -279,7 +284,7 @@ let CamillaDsp = function (logger, onStreamOpen) {
 
             pid = camilla.pid;
 
-            logger.info(`camilladsp stopping service pid ${pid}...`);
+            logger.info(loggerPrefix + `camilladsp stopping service pid ${pid}...`);
 
             // A deliberate stop must not look like a crash. Without this, a
             // stop() immediately followed by start() lets the queued close event
@@ -291,7 +296,7 @@ let CamillaDsp = function (logger, onStreamOpen) {
 
             if (waitForExit(pid, stopTimeoutMs) === false) {
 
-                logger.warn(`camilladsp pid ${pid} still alive after ${stopTimeoutMs} ms, sending SIGKILL`);
+                logger.warn(loggerPrefix + `camilladsp pid ${pid} still alive after ${stopTimeoutMs} ms, sending SIGKILL`);
 
                 camilla.kill("SIGKILL");
                 waitForExit(pid, stopTimeoutMs);
@@ -308,11 +313,11 @@ let CamillaDsp = function (logger, onStreamOpen) {
             // leaves the fifo with no reader.
             sleepSync(deviceReleaseDelayMs);
 
-            logger.debug(`camilladsp stopped pid ${pid}`);
+            logger.debug(loggerPrefix + `camilladsp stopped pid ${pid}`);
 
         } catch (e) {
 
-            logger.error(`camilladsp processStop exception. Reason: ${e}`);
+            logger.error(loggerPrefix + `camilladsp processStop exception. Reason: ${e}`);
 
         }
 
@@ -332,12 +337,12 @@ let CamillaDsp = function (logger, onStreamOpen) {
 
         if (processSpawn() === false) {
 
-            logger.warn(`camilladsp start requested but instance ${uniqueid} is already running, ignoring`);
+            logger.warn(loggerPrefix + `camilladsp start requested but instance ${uniqueid} is already running, ignoring`);
             return;
 
         }
 
-        logger.info(`camilladsp service started and running in background, instance ${uniqueid}`);
+        logger.info(loggerPrefix + `camilladsp service started and running in background, instance ${uniqueid}`);
 
     };
 
@@ -391,7 +396,7 @@ let CamillaDsp = function (logger, onStreamOpen) {
         consecutiveRespawns = 0;
         respawnStopped = false;
 
-        logger.info(`camilladsp waiting for the first stream, instance ${uniqueid}`);
+        logger.info(loggerPrefix + `camilladsp waiting for the first stream, instance ${uniqueid}`);
 
     };
 
@@ -413,7 +418,7 @@ let CamillaDsp = function (logger, onStreamOpen) {
 
         processStop();
 
-        logger.info(`camilladsp service terminated, instance ${uniqueid}`);
+        logger.info(loggerPrefix + `camilladsp service terminated, instance ${uniqueid}`);
 
     }
 

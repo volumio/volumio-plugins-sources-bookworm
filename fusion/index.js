@@ -1,5 +1,5 @@
 /*--------------------
-// FusionDsp plugin for volumio 4. By balbuze October 2026
+// FusionDsp plugin for volumio 4. By balbuze November 2026
 Camilladsp v4.1.3
 contribution : Nerd, Paolo Sabatino, squadgazzz
 Multi Dsp features
@@ -59,7 +59,7 @@ const sv = 34300 // sound velocity cm/s
 const logPrefix = "FusionDsp - "
 const fileStreamParams = "/tmp/fusiondsp_stream_params.log";
 const peqGraphPort = 10015;
-const startupDelayMs = 9000;
+const startupDelayMs = 500;
 
 const configReloadDebounceMs = 250;
 const camillaReloadTimeoutMs = 10000;
