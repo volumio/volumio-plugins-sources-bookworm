@@ -44,7 +44,7 @@ var DELAYS = [-1, 0, 1, 2, 5, 10];   // -1: always in ambient
 var TEXT_SIZES = ['s', 'm', 'l', 'xl'];
 var LAYOUTS = ['cover', 'clock', 'bleed'];
 var BACKGROUNDS = ['still', 'aurora'];   // the blurred cover alone, or soft colours from it drifting behind
-var CLOCKS = ['24', '12'];
+var CLOCKS = ['24', '12', 'off'];   // off: the ambient screen goes without its clock
 var EVENT = 'pushArtworkSettings';
 
 var UI_NAME = 'artwork';

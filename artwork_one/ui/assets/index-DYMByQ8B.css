@@ -1808,7 +1808,8 @@ body#artwork .aw-mm__item.active .aw-src-mark {
    One grid: the cover | the face switch, the text, the seek and the transport never move between
    Cover and Info. The block sits centred in what the top bar and the bottom bar leave; taller than
    that (Info or Lyrics under it on a compact screen) the stage scrolls. A roomy screen (≥1700 wide
-   and ≥1000 high) keeps Info and Lyrics inside the column, scrolling in their own box. The phone
+   and ≥1000 high) keeps Info and Lyrics inside the column, scrolling in their own box. The words
+   follow the current line and offer a way back to it (volumio-nowplaying.html). The phone
    (phone.scss) and a phone on its side (landscape.scss) keep their own layouts. */
 #np {
   --np-s: clamp(200px, min(36vw, 60vh), 720px); /* the cover */
@@ -2170,9 +2171,9 @@ body#artwork .aw-mm__item.active .aw-src-mark {
 #np .np-lyrics-host {
   display: flex;
   flex-direction: column;
-  height: clamp(320px, 56vh, 720px);
+  position: relative;
 }
-#np {
+#np { /* the button's box on a roomy screen */
   --lyr-near: var(--ink-muted);
   --lyr-mid: var(--ink-dim);
   --lyr-far: var(--ink-faint);
@@ -2441,6 +2442,78 @@ body#artwork .aw-mm__item.active .aw-src-mark {
 #np .np-lyrics__eyebrow--synced {
   flex: none;
   margin-bottom: 12px;
+}
+#np {
+  /* the desk's words (volumio-nowplaying.html): the text scrolls for real and follows the current line. Here (compact) it
+     lies in the page whole and the stage scrolls it; a roomy screen (below) scrolls the column. The phone's sheet keeps
+     the moving stack above. */
+}
+#np .np-lyrics--free {
+  flex: none;
+}
+#np .np-lyrics--free .np-lyrics__col {
+  flex: none;
+  overflow: visible;
+}
+#np .np-lyrics--free .np-lyrics__col--synced {
+  padding: 12px 0 8px;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+#np .np-lyrics--free .np-lyrics__stack {
+  will-change: auto;
+  transition: none;
+}
+#np .np-lyrics--free .np-lyrics__eyebrow--synced {
+  margin-bottom: 0;
+}
+#np {
+  /* back to the current line: shown only after the listener scrolled the line out of sight; the arrow points to it */
+}
+#np .np-lyrics__back {
+  position: sticky;
+  bottom: 14px;
+  align-self: flex-end;
+  margin-top: -44px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px 0 14px;
+  border-radius: 22px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--ink);
+  background: rgba(18, 18, 20, 0.78);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--fill-20);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+  animation: aw-lyr-back-in 0.18s ease-out;
+}
+#np .np-lyrics__back[hidden] {
+  display: none;
+}
+#np .np-lyrics__back svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.15s;
+}
+#np .np-lyrics__back[data-dir=up] svg {
+  transform: rotate(180deg);
+}
+#np .np-lyrics__back:focus-visible {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 2px;
 }
 #np {
   /* ---- the bottom bar: the seek row the whole width, then up next | the transport | volume · output · queue ---- */
@@ -2745,6 +2818,36 @@ body#artwork .aw-mm__item.active .aw-src-mark {
     mask-image: none;
     padding-bottom: 0;
   }
+  /* the words scroll in the column, the button in the panel's corner */
+  body#artwork #np .np-lyrics--free {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  body#artwork #np .np-lyrics--free .np-lyrics__col {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+  body#artwork #np .np-lyrics--free .np-lyrics__col--synced {
+    overflow-y: auto;
+    scrollbar-width: none;
+    overscroll-behavior: contain;
+    padding: 20px 0 40px;
+    -webkit-mask-image: linear-gradient(transparent, #000 28px, #000 calc(100% - 44px), transparent);
+    mask-image: linear-gradient(transparent, #000 28px, #000 calc(100% - 44px), transparent);
+  }
+  body#artwork #np .np-lyrics--free .np-lyrics__col--synced::-webkit-scrollbar {
+    display: none;
+  }
+  body#artwork #np .np-lyrics--free .np-lyrics__col--plain {
+    overflow-y: auto;
+  }
+  body#artwork #np .np-lyrics__back {
+    position: absolute;
+    right: 20px;
+    bottom: 14px;
+    margin-top: 0;
+  }
 }
 /* the phone's Info rows (the phone layout itself: phone.scss) */
 @media (max-width: 700px) {
@@ -2778,6 +2881,17 @@ body#artwork .aw-mm__item.active .aw-src-mark {
     opacity: 1;
   }
 }
+@keyframes aw-lyr-back-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body#artwork #np .np-lyrics__back {
+    animation: none;
+  }
+}
 html.aw-is-light body#artwork #np {
   --lyr-near: #5e646c;
   --lyr-mid: #676d74;
@@ -2797,6 +2911,11 @@ html.aw-is-light body#artwork #np .np-about__rule {
   background: rgba(20, 22, 26, 0.09);
 }
 
+/* daylight: the same pill as white glass over the paper, its hairline (--fill-20) and its shadow turned with the theme */
+html.aw-is-light body#artwork #np .np-lyrics__back {
+  background: var(--glass-2-fill);
+  box-shadow: 0 4px 14px -4px var(--shadow-soft);
+} /* on a light ground a cut shadow shows: this one ends in the 14px under the button */
 /* below this the seg control has no room to earn its keep: Cover is the only face on offer
    (Lyrics stays reachable through the phone's own tile once that layout kicks in) */
 @media (max-width: 700px) {
@@ -7048,7 +7167,9 @@ body#artwork .aw-listhead {
   row-gap: 10px;
 }
 
-@media (max-width: 640px) {
+/* the row's words on the phone: the name, and artist • album on one line under it. Up to 700px, the width the phone's rows
+   below start at — between 640 and 700 a plain list's row had the phone's columns and the desk's words, four lines of them */
+@media (max-width: 700px) {
   body#artwork #browse:not(.browsing-album):not(.browsing-artist) .music-item .item__info {
     display: flex !important;
     flex-wrap: wrap;
@@ -7086,6 +7207,8 @@ body#artwork .aw-listhead {
     overflow: hidden;
     text-overflow: ellipsis;
   }
+}
+@media (max-width: 640px) {
   body#artwork .aw-filter {
     flex-basis: 100%;
     margin-left: 0;
@@ -7429,6 +7552,24 @@ body#artwork #browse.browsing-album .aw-albumhead .aw-iconbtn:hover {
   body#artwork #browse.boxTable.browsing-list:not(.aw-tracklist) .music-item .item__title {
     font-size: 15px;
   }
+  /* the Artists list's round portrait is 52px, not a cover's 44: in the cover's column it ended 4px before the name */
+  body#artwork #browse.boxTable.browsing-artists.browsing-list:not(.aw-tracklist) .music-item:has(.item__image:not(.hidden)) {
+    grid-template-columns: 22px 52px minmax(0, 1fr) 24px;
+  }
+  /* artist • album under the name stays one line here too, as on the track rows above (a service's home as a list:
+     the • ended the line and the album took a third) */
+  body#artwork #browse.boxTable.browsing-list:not(.aw-tracklist) .music-item .item__artist {
+    max-width: 60%;
+    padding: 0;
+  }
+  body#artwork #browse.boxTable.browsing-list:not(.aw-tracklist) .music-item .item__info__separator {
+    flex: none;
+    padding: 0;
+  }
+  body#artwork #browse.boxTable.browsing-list:not(.aw-tracklist) .music-item .item__album {
+    flex: 1 1 0;
+    padding: 0;
+  }
   body#artwork #browse.boxTable.browsing-list:not(.aw-tracklist) .music-item .item__favorite, body#artwork #browse.boxTable.browsing-list:not(.aw-tracklist) .music-item .item__duration {
     display: none;
   }
@@ -7441,6 +7582,25 @@ body#artwork #browse.browsing-album .aw-albumhead .aw-iconbtn:hover {
   }
   body#artwork #browse.boxTable.browsing-list:not(.aw-tracklist) .music-item .item__play .play-btn .play-btn__icon {
     width: 22px;
+  }
+  /* a folder's row (the Music Library as a list) has no number cell: cover or glyph · name · ⋯. The columns above count the
+     number in, and without it the cover took the number's 22px, the name the cover's 44px and the ⋯ the name's room */
+  body#artwork #browse.boxTable.browsing-list:not(.aw-tracklist) .music-item.aw-dir {
+    grid-template-columns: minmax(0, 1fr) 24px;
+  }
+  body#artwork #browse.boxTable.browsing-list:not(.aw-tracklist) .music-item.aw-dir:has(.item__image:not(.hidden)) {
+    grid-template-columns: 44px minmax(0, 1fr) 24px;
+  }
+  body#artwork #browse.boxTable.browsing-list:not(.aw-tracklist) .music-item.aw-dir:has(.item__albumart.hidden + .item__albumart-icon:not(.hidden)) {
+    grid-template-columns: 24px minmax(0, 1fr) 24px;
+  }
+  /* a folder among track rows (a folder holding songs and folders): the track rows' columns without the number — the heart's
+     column stays, empty, as on every track row without a heart, so the ⋯ sits under the songs' */
+  body#artwork #browse.boxTable.aw-tracklist .music-item.aw-dir {
+    grid-template-columns: minmax(0, 1fr) 28px 24px;
+  }
+  body#artwork #browse.boxTable.aw-tracklist .music-item.aw-dir:has(.item__image:not(.hidden)) {
+    grid-template-columns: 44px minmax(0, 1fr) 28px 24px;
   }
 }
 body#artwork .aw-artist__hero {
@@ -20265,6 +20425,12 @@ body#artwork .aw-amb--cover .aw-amb__sleep {
   bottom: auto;
   top: clamp(16px, 4.8vh, 52px);
   right: calc(var(--amb-x) + 12vh);
+}
+body#artwork .aw-amb--cover {
+  /* without the clock the sleep note takes its corner */
+}
+body#artwork .aw-amb--cover.aw-amb--noclock .aw-amb__sleep {
+  right: var(--amb-x);
 }
 body#artwork .aw-amb--cover .aw-amb__seek {
   left: var(--amb-x);
