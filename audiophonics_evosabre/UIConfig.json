@@ -19,12 +19,13 @@
                 "data": [
                     "oled_active",
                     "contrast",
-                    "track_time",
+                    "track_time_size",
                     "meters",
                     "meters_style",
                     "meters_gain",
                     "clock_after",
                     "clock_segments",
+                    "snake",
                     "sleep_after",
                     "deep_sleep_after"
                 ]
@@ -57,11 +58,36 @@
                     ]
                 },
                 {
-                    "id": "track_time",
-                    "element": "switch",
+                    "id": "track_time_size",
+                    "element": "select",
                     "label": "TRANSLATE.EVOSABRE.TRACK_TIME",
                     "doc": "TRANSLATE.EVOSABRE.TRACK_TIME_DOC",
-                    "value": true
+                    "value": {
+                        "value": "small",
+                        "label": "TRANSLATE.EVOSABRE.TRACK_TIME_SMALL"
+                    },
+                    "options": [
+                        {
+                            "value": "off",
+                            "label": "TRANSLATE.EVOSABRE.TRACK_TIME_OFF"
+                        },
+                        {
+                            "value": "small",
+                            "label": "TRANSLATE.EVOSABRE.TRACK_TIME_SMALL"
+                        },
+                        {
+                            "value": "medium",
+                            "label": "TRANSLATE.EVOSABRE.TRACK_TIME_MEDIUM"
+                        },
+                        {
+                            "value": "large",
+                            "label": "TRANSLATE.EVOSABRE.TRACK_TIME_LARGE"
+                        },
+                        {
+                            "value": "extra_large",
+                            "label": "TRANSLATE.EVOSABRE.TRACK_TIME_EXTRA_LARGE"
+                        }
+                    ]
                 },
                 {
                     "id": "meters",
@@ -87,6 +113,10 @@
                         {
                             "value": "horizontal",
                             "label": "TRANSLATE.EVOSABRE.METERS_HORIZONTAL"
+                        },
+                        {
+                            "value": "horizontal_beside",
+                            "label": "TRANSLATE.EVOSABRE.METERS_HORIZONTAL_BESIDE"
                         },
                         {
                             "value": "vertical_left",
@@ -167,6 +197,13 @@
                             "label": "TRANSLATE.EVOSABRE.CLOCK_SEGMENTS_DIM"
                         }
                     ]
+                },
+                {
+                    "id": "snake",
+                    "element": "switch",
+                    "label": "TRANSLATE.EVOSABRE.SNAKE",
+                    "doc": "TRANSLATE.EVOSABRE.SNAKE_DOC",
+                    "value": false
                 },
                 {
                     "id": "sleep_after",

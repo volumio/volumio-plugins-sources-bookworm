@@ -11,14 +11,32 @@ const NUMBERS = {
     sleep_after: [0, 86400],
     deep_sleep_after: [0, 86400]
 };
-const SWITCHES = ['oled_active', 'remote_active', 'click_prevention', 'meters', 'track_time'];
-const SELECTS = { meters_style: ['horizontal', 'vertical_left', 'vertical_right'], clock_segments: ['off', 'very_faint', 'faint', 'dim'], log_level: ['error', 'info', 'debug'] };
+const SWITCHES = ['oled_active', 'remote_active', 'click_prevention', 'meters', 'snake'];
+const SELECTS = {
+    track_time_size: ['off', 'small', 'medium', 'large', 'extra_large'],
+    meters_style: ['horizontal', 'horizontal_beside', 'vertical_left', 'vertical_right'],
+    clock_segments: ['off', 'very_faint', 'faint', 'dim'],
+    log_level: ['error', 'info', 'debug']
+};
 
 // A switch as the store may hold it: a boolean, or its text.
 function isOn(value, fallback) {
     if (value === true || value === 'true') return true;
     if (value === false || value === 'false') return false;
     return fallback;
+}
+
+// A store as the page reads it. Before the track time had sizes the store
+// held a switch for it, track_time, and on was the size that is now the
+// smallest: a store with the switch and no size reads as that.
+function stored(get) {
+    return function (key) {
+        const value = get(key);
+        if (key !== 'track_time_size' || value !== undefined) return value;
+        const was = get('track_time');
+        if (was === undefined) return undefined;
+        return isOn(was, true) ? 'small' : 'off';
+    };
 }
 
 // The stored values into the page's controls. `get(key)` answers undefined
@@ -64,7 +82,11 @@ function take(data, keys) {
             if (SELECTS[key].indexOf(chosen) !== -1) values[key] = chosen;
         }
     }
+    // The switch the track time had before it had sizes is kept in step, so
+    // that a player put back to the version that reads it shows the time, or
+    // leaves it out, as it was last set.
+    if ('track_time_size' in values) values.track_time = values.track_time_size !== 'off';
     return { values: values };
 }
 
-module.exports = { NUMBERS, isOn, fill, take };
+module.exports = { NUMBERS, isOn, stored, fill, take };

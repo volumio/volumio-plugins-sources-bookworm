@@ -3,11 +3,11 @@
 // The player's volume across a rebuild of Volumio's ALSA configuration.
 //
 // When that file changes, Volumio has ALSA restore the mixer state it last
-// stored. On the EVO Sabre the stored state is rarely the present one: the
-// volume moves to what was stored, and the DAC's switch, which the kernel
-// also turns off whenever nothing plays, comes back off, so the player
-// reports itself muted while it plays. What the player had is noted before
-// the rebuild and asked for again after it.
+// stored. On these DAC boards the stored state is rarely the present one:
+// the volume moves to what was stored, and the DAC's switch, which the
+// kernel also turns off whenever nothing plays, comes back off, so the
+// player reports itself muted while it plays. What the player had is noted
+// before the rebuild and asked for again after it.
 
 // What to hold: the volume and the mute of a player state, or nothing where
 // the player has no volume of its own to put back.
