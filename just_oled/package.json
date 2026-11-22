@@ -1,6 +1,6 @@
 {
     "name": "just_oled",
-    "version": "0.2.3",
+    "version": "0.2.4",
     "description": "Spectrum, VU, now playing and a clock on any I2C or SPI OLED, with the player's boot and shutdown",
     "main": "index.js",
     "author": "Just a Nerd",
@@ -19,7 +19,7 @@
             "amd64"
         ],
         "details": "One plugin for the small OLED screens: SSD1306, SSD1309, SSD1315, SSD1305, SH1106, SH1107, SSD1327, SSD1322, SH1122, CH1120, and the colour SSD1331 and SSD1351, over I2C or SPI. An audio tap in the ALSA chain measures every source without touching the sound; the display shows a spectrum, VU bars, the track, a clock and date, and says when the player boots, restarts and shuts down.",
-        "changelog": "0.2.3 The lowest spectrum bars no longer go dark on 192 and 384 kHz streams: the analyser's window follows the sample rate. ssd1331 and ssd1327 verified."
+        "changelog": "0.2.4 A larger standby clock: fitted by its figures, 34 rows on a 128x64 panel where 17 were, 24 on a strip where 12 were. The address and the date stay."
     },
     "engines": {
         "node": ">=20",
