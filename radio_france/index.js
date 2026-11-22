@@ -3,7 +3,7 @@
  *
  *
  * balbuze 4, October 26
- * Inspiratted Stef with Rafio_Fip
+ * Inspirated BY Stef with Rafio_Fip
  *
  */
 
@@ -15,6 +15,27 @@ var Metadata = require('./metadata');
 
 // Set to true to enable debug logging
 var DEBUG = true;
+
+var STATION_CATEGORIES = [
+    {
+        id: 'national',
+        title: 'Radios nationales',
+        metadataType: 'national',
+        coverStationId: 'france-inter'
+    },
+    {
+        id: 'france-musique',
+        title: 'France Musique',
+        metadataType: 'webradio',
+        coverStationId: 'france-musique'
+    },
+    {
+        id: 'ici',
+        title: 'ICI',
+        metadataType: 'ici',
+        coverStationId: 'ici-alsace'
+    }
+];
 
 module.exports = ControllerRadioFrance;
 
@@ -301,8 +322,8 @@ ControllerRadioFrance.prototype.removeToBrowseSources = function() {
 /*
  * Handles browse requests from Volumio UI.
  *
- * Routes requests either to the root station list
- * or to a specific station.
+ * Routes requests to the root categories, category stations,
+ * or a specific station.
  */
 ControllerRadioFrance.prototype.handleBrowseUri = function(curUri) {
     this.logger.info(
@@ -310,6 +331,12 @@ ControllerRadioFrance.prototype.handleBrowseUri = function(curUri) {
     );
     if (!curUri || curUri === 'france-radio' || curUri === 'france-radio/') {
         return this.getRootContent();
+    }
+    var categoryPrefix = 'france-radio/category/';
+    if (curUri.indexOf(categoryPrefix) === 0) {
+        return this.getCategoryContent(
+            curUri.substring(categoryPrefix.length)
+        );
     }
     if (curUri.indexOf('france-radio/') === 0) {
         return this.getStationContent(curUri);
@@ -344,18 +371,66 @@ ControllerRadioFrance.prototype.getStationItem = function(station) {
 };
 
 /*
- * Builds the Radio France root navigation content.
- *
- * Creates the list of available Radio France stations.
+ * Builds the root navigation with the three station categories.
  */
 ControllerRadioFrance.prototype.getRootContent = function() {
     var self = this;
-    var items = self.radioStations.map(function(station) {
-        return self.getStationItem(station);
+    var items = STATION_CATEGORIES.map(function(category) {
+        var coverStation = self.radioStations.find(function(station) {
+            return station.id === category.coverStationId;
+        });
+        return {
+            service: self.serviceName,
+            type: 'item-no-menu',
+            title: category.title,
+            uri: 'france-radio/category/' + category.id,
+            albumart:
+                '/albumart?sourceicon=music_service/radio_france/images/' +
+                self.getStationLogo(coverStation)
+        };
     });
     return libQ.resolve({
         navigation: {
             lists: [{
+                availableListViews: ['grid', 'list'],
+                items: items
+            }]
+        }
+    });
+};
+
+/*
+ * Builds the station list for one category.
+ */
+ControllerRadioFrance.prototype.getCategoryContent = function(categoryId) {
+    var self = this;
+    var category = STATION_CATEGORIES.find(function(item) {
+        return item.id === categoryId;
+    });
+    if (!category) {
+        self.logger.error(
+            'RadioFrance Category not found: ' + categoryId
+        );
+        return libQ.resolve({
+            navigation: {
+                lists: [{
+                    availableListViews: ['list'],
+                    items: []
+                }]
+            }
+        });
+    }
+    var items = self.radioStations
+        .filter(function(station) {
+            return station.metadataType === category.metadataType;
+        })
+        .map(function(station) {
+            return self.getStationItem(station);
+        });
+    return libQ.resolve({
+        navigation: {
+            lists: [{
+                title: category.title,
                 availableListViews: ['list'],
                 items: items
             }]
