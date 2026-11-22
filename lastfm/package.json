@@ -1,6 +1,6 @@
 {
 	"name": "lastfm",
-	"version": "2.5.7",
+	"version": "2.5.8",
 	"description": "Installs a LastFM scrobbler which uses the Volumio artist and track info.",
 	"main": "index.js",
 	"scripts": {
@@ -20,7 +20,7 @@
 			"armhf"
 		],
 		"details": "LastFM scrobbler plugin.",
-		"changelog": "Fix crash on malformed/empty Last.fm API response; vendored a patched simple-lastfm instead of the external tarball dependency."
+		"changelog": "Scrobbling no longer stops until credentials are re-saved: automatic re-authentication with backoff, scrobbles queued while no LastFM session is available, re-auth on invalid session key."
 	},
 	"engines": {
 		"node": ">=20",
