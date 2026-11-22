@@ -398,9 +398,9 @@ EvoSabre.prototype.getUIConfig = function () {
         path.join(__dirname, 'i18n', 'strings_en.json'),
         path.join(__dirname, 'UIConfig.json'))
         .then(function (uiconf) {
-            form.fill(uiconf, function (key) {
+            form.fill(uiconf, form.stored(function (key) {
                 return self.config.has(key) ? self.config.get(key) : undefined;
-            });
+            }));
             defer.resolve(uiconf);
         })
         .fail(function (e) {
@@ -438,7 +438,7 @@ EvoSabre.prototype.saveDisplay = function (data) {
     var self = this;
     var was = form.isOn(self.config.get('oled_active'), true);
     var metered = form.isOn(self.config.get('meters'), false);
-    if (!self.save(data, ['oled_active', 'contrast', 'track_time', 'meters', 'meters_style', 'meters_gain', 'clock_after', 'clock_segments', 'sleep_after', 'deep_sleep_after'])) {
+    if (!self.save(data, ['oled_active', 'contrast', 'track_time_size', 'meters', 'meters_style', 'meters_gain', 'clock_after', 'clock_segments', 'snake', 'sleep_after', 'deep_sleep_after'])) {
         return libQ.resolve();
     }
     if (form.isOn(self.config.get('meters'), false) !== metered) {

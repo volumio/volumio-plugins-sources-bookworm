@@ -15,9 +15,9 @@
         "type": "number",
         "value": 100
     },
-    "track_time": {
-        "type": "boolean",
-        "value": true
+    "track_time_size": {
+        "type": "string",
+        "value": "small"
     },
     "meters": {
         "type": "boolean",
@@ -38,6 +38,10 @@
     "clock_segments": {
         "type": "string",
         "value": "very_faint"
+    },
+    "snake": {
+        "type": "boolean",
+        "value": false
     },
     "sleep_after": {
         "type": "number",

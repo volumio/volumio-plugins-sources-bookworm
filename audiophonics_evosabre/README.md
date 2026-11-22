@@ -4,9 +4,9 @@ A Volumio 4 plugin for the Audiophonics EVO Sabre. It drives the second display,
 
 ## What it does
 
-**The display** shows what is playing: the title, the artist and the album, the sample rate and bit depth, the volume, the player's address, and the time played against the track's length. A title too long for the glass scrolls. Text in any script is drawn; Chinese, Japanese, Korean, Cyrillic and Greek come from GNU Unifont.
+**The display** shows what is playing: the title, the artist and the album, the sample rate and bit depth, the volume, the player's address, and the time played against the track's length, at a size you choose. A title too long for the glass scrolls. Text in any script is drawn; Chinese, Japanese, Korean, Cyrillic and Greek come from GNU Unifont.
 
-While the player rests, paused or stopped, a clock takes the place of the track, with the day and the date. Left alone, the display dims, and while nothing plays it then goes dark; a key on the remote or playback starting brings it back. It greets with the Audiophonics mark when it starts and says goodbye when the player shuts down.
+While the player rests, paused or stopped, a clock takes the place of the track, with the day and the date; or, if you ask for it, a snake that plays by itself. Left alone, the display dims, and while nothing plays it then goes dark; a key on the remote or playback starting brings it back. It greets with the Audiophonics mark when it starts, says *Getting ready* until the player has finished starting, and says goodbye when the player shuts down.
 
 **The remote.** The streamer obeys five keys:
 
@@ -35,12 +35,13 @@ Installing over version 2 of the plugin replaces it and starts the new display a
 | --- | --- |
 | Display on | Off stops the display's program: the display stays dark and the transport keys are not read. |
 | Brightness | 1 to 255. |
-| Track time | The time played, the track's length and the bar between them, along the bottom. On unless you switch it off. |
+| Track time | The time played, the track's length and the bar between them: Off, Small, Medium, Large or Extra large. Small unless you choose another. |
 | Level meters | Two meters beside the track, one a channel. Off unless you switch them on. |
-| Meters: where they stand | Lying under the track, or upright at its left or its right. |
+| Meters: where they stand | Lying under the track, with the time under them or beside them, or upright at its left or its right. |
 | Meters: gain (dB) | Decibels added to what the meters show, -12 to 12. What is played is not touched. |
 | Clock after | Seconds of rest before the clock replaces the track. 0 keeps the track. |
-| Clock digits: unlit segments | The segments of the clock's digits that are not lit: Dark, Very faint, Faint or Dim. The first two greys are fainter than any other on the display. |
+| Clock digits: unlit segments | The segments of the clock's digits that are not lit: Dark, Very faint, Faint or Dim. The first two greys are fainter than any other on the display. The Extra large track time is drawn in the same digits and follows it. |
+| Snake me! | While the player rests, a snake has the display in place of the clock. Off unless you switch it on. |
 | Dim after | Seconds after the last key on the remote, or after playback started, before the display dims. 0 never dims. |
 | Dark after | Seconds after the last key, while nothing plays, before the display goes dark. 0 never goes dark. |
 | Obey the transport keys | Off leaves the remote to the DAC board alone. |
@@ -50,17 +51,38 @@ Installing over version 2 of the plugin replaces it and starts the new display a
 
 Settings take effect when saved.
 
+## Track time
+
+*Track time* sets how large the time played and the track's length are drawn. The bar that shows how far the track has played runs between the two.
+
+| Size | Its figures | The track above it |
+| --- | --- | --- |
+| Small | 6 pixels tall | The title, the artist and the album, a line each. |
+| Medium | 8 pixels tall | The same three lines. |
+| Large | 10 pixels tall | The artist and the album share a line. |
+| Extra large | 13 pixels tall, drawn in segments as the clock's digits are | The artist and the album share a line. |
+
+Small is the size the time has had since version 3.0.0. Small and Medium stand along the bottom of the display. Large and Extra large need the rows the album's line has, so the artist and the album share the line under the title, and the time stands in the middle of the rows under it.
+
+The time played is drawn as wide as the track's length, so the bar keeps its place and its length from the first second of a track to the last. A stream has no length, and no time is drawn for it. Off leaves the time and its bar out.
+
 ## Level meters
 
 Switch *Level meters* on and two meters stand beside the track, one a channel, on a scale of sixty decibels. The bright part of a meter is the level, averaged as a VU meter averages; the dimmer part reaches to the peak; a mark holds the highest peak for a moment before it falls. The marks between the two meters stand at 50, 40, 30, 20, 10, 6 and 3 decibels under full scale, and at full scale.
 
-*Meters: where they stand* places them. Lying under the track, the left channel is above the right and the scale runs from left to right; the artist and the album share the line under the title to make room. Upright at the left or the right of the track, the left channel comes first and the scale runs from the bottom up; the track keeps its three lines, each a little shorter.
+*Meters: where they stand* places them. Lying under the track, the left channel is above the right and the scale runs from left to right; the artist and the album share the line under the title to make room. Upright at the left or the right of the track, the left channel comes first and the scale runs from the bottom up; each line of the track is a little shorter.
+
+Lying meters have the track time in one of two places. Under them, the meters run from edge to edge and the time has a row of its own along the bottom; a Large time leaves the meters three rows a channel in place of four. Beside them, the time played stands at their left and the track's length at their right, with the meters and the bar between the two. An Extra large time is too tall to stand under the meters and is always beside them.
 
 With *Track time* off, meters lying under the track have the bottom rows as well and are drawn taller, with more room around them.
 
 *Meters: gain* adds up to twelve decibels to what the meters show, or takes as many away: up for music that leaves them low, down for music that keeps them at the top. It moves the meters only.
 
 The meters read evotap, a tap in the player's audio path. Every stream passes through it unchanged, PCM, DoP and native DSD alike, and it measures the stream ahead of the player's volume, so the meters show the music and not the volume it is played at. After the plugin is installed or updated the tap joins the audio path once the player has restarted; the plugin asks when that is needed. With the meters off, the tap is not in the path.
+
+## The snake
+
+Switch *Snake me!* on and, while the player rests, a snake has the display in place of the clock. It comes when the clock would, after the rest set in *Clock after*, and the whole display is its field. Nobody plays it: it goes for a note, grows with each one it eats, and starts over when it has run out of room. The display dims and goes dark as it does with the clock.
 
 ## Click prevention
 
