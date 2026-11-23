@@ -155,5 +155,6 @@
   "mon_dashboard_port": { "type": "string", "value": "8020" },
   "mon_dashboard_host": { "type": "string", "value": "" },
   "mon_level": { "type": "string", "value": "-60" },
-  "mon_seconds": { "type": "string", "value": "30" }
+  "mon_seconds": { "type": "string", "value": "30" },
+  "level_trim": { "type": "string", "value": "0" }
 }

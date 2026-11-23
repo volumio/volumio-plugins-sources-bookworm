@@ -626,6 +626,8 @@ Outcast.prototype.getUIConfig = function () {
                     if (djTab) djTab.hidden = true;
                 }
             }
+            // The programme's level: the trim on everything sent out.
+            setValue(section('level_section'), 'level_trim', String(c.get('level_trim', '0')));
             const mon = section('monitor_section');
             setValue(mon, 'mon_dashboard', c.get('mon_dashboard', true) !== false);
             setValue(mon, 'mon_dashboard_port', String(c.get('mon_dashboard_port', '8020')));
@@ -723,6 +725,10 @@ Outcast.prototype.updateTs = function (data) {
 
 Outcast.prototype.updateHls = function (data) {
     return this.saveSection(data, h.validateHls, h.applyHls);
+};
+
+Outcast.prototype.updateLevel = function (data) {
+    return this.saveSection(data, h.validateLevel, h.applyLevel);
 };
 
 Outcast.prototype.updateMonitor = function (data) {

@@ -361,6 +361,18 @@
       ]
     },
     {
+      "id": "level_section",
+      "element": "section",
+      "label": "TRANSLATE.OUTCAST.LEVEL_SECTION",
+      "icon": "fa-sliders",
+      "description": "TRANSLATE.OUTCAST.LEVEL_SECTION_DESC",
+      "onSave": { "type": "controller", "endpoint": "audio_interface/outcast", "method": "updateLevel" },
+      "saveButton": { "label": "TRANSLATE.OUTCAST.SAVE", "data": ["level_trim"] },
+      "content": [
+        { "id": "level_trim", "element": "input", "label": "TRANSLATE.OUTCAST.LEVEL_TRIM", "doc": "TRANSLATE.OUTCAST.LEVEL_TRIM_DESC", "value": "0" }
+      ]
+    },
+    {
       "id": "monitor_section",
       "element": "section",
       "label": "TRANSLATE.OUTCAST.MON_SECTION",
