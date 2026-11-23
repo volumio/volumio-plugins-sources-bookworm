@@ -14,6 +14,7 @@ const NUMBERS = {
 const SWITCHES = ['oled_active', 'remote_active', 'click_prevention', 'meters', 'snake'];
 const SELECTS = {
     track_time_size: ['off', 'small', 'medium', 'large', 'extra_large'],
+    track_time_face: ['segments', 'light', 'bold'],
     meters_style: ['horizontal', 'horizontal_beside', 'vertical_left', 'vertical_right'],
     clock_segments: ['off', 'very_faint', 'faint', 'dim'],
     log_level: ['error', 'info', 'debug']

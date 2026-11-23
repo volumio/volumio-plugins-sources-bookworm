@@ -20,6 +20,7 @@
                     "oled_active",
                     "contrast",
                     "track_time_size",
+                    "track_time_face",
                     "meters",
                     "meters_style",
                     "meters_gain",
@@ -86,6 +87,34 @@
                         {
                             "value": "extra_large",
                             "label": "TRANSLATE.EVOSABRE.TRACK_TIME_EXTRA_LARGE"
+                        }
+                    ]
+                },
+                {
+                    "id": "track_time_face",
+                    "element": "select",
+                    "label": "TRANSLATE.EVOSABRE.TRACK_TIME_FACE",
+                    "doc": "TRANSLATE.EVOSABRE.TRACK_TIME_FACE_DOC",
+                    "value": {
+                        "value": "segments",
+                        "label": "TRANSLATE.EVOSABRE.TRACK_TIME_FACE_SEGMENTS"
+                    },
+                    "visibleIf": {
+                        "field": "track_time_size",
+                        "value": "extra_large"
+                    },
+                    "options": [
+                        {
+                            "value": "segments",
+                            "label": "TRANSLATE.EVOSABRE.TRACK_TIME_FACE_SEGMENTS"
+                        },
+                        {
+                            "value": "light",
+                            "label": "TRANSLATE.EVOSABRE.TRACK_TIME_FACE_LIGHT"
+                        },
+                        {
+                            "value": "bold",
+                            "label": "TRANSLATE.EVOSABRE.TRACK_TIME_FACE_BOLD"
                         }
                     ]
                 },

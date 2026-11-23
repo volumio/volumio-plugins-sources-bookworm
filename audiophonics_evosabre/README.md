@@ -27,6 +27,8 @@ The volume, the mute, the input and the power keys are read by the DAC board its
 
 Install the plugin from Volumio's plugin store, under System Hardware, and enable it. The first installation switches on the SPI bus and the remote's receiver in the boot configuration: **restart the player once** when the plugin asks.
 
+After updating the plugin, restart the player.
+
 Installing over version 2 of the plugin replaces it and starts the new display at once; your settings are kept. Restart the player afterwards to finish the update: until then the settings page is still version 2's.
 
 ## Settings
@@ -36,11 +38,12 @@ Installing over version 2 of the plugin replaces it and starts the new display a
 | Display on | Off stops the display's program: the display stays dark and the transport keys are not read. |
 | Brightness | 1 to 255. |
 | Track time | The time played, the track's length and the bar between them: Off, Small, Medium, Large or Extra large. Small unless you choose another. |
+| Track time: Extra large digits | How the Extra large digits are drawn: Segments, Light or Bold. Shown while Track time is Extra large. Segments unless you choose another. |
 | Level meters | Two meters beside the track, one a channel. Off unless you switch them on. |
 | Meters: where they stand | Lying under the track, with the time under them or beside them, or upright at its left or its right. |
 | Meters: gain (dB) | Decibels added to what the meters show, -12 to 12. What is played is not touched. |
 | Clock after | Seconds of rest before the clock replaces the track. 0 keeps the track. |
-| Clock digits: unlit segments | The segments of the clock's digits that are not lit: Dark, Very faint, Faint or Dim. The first two greys are fainter than any other on the display. The Extra large track time is drawn in the same digits and follows it. |
+| Clock digits: unlit segments | The segments of the clock's digits that are not lit: Dark, Very faint, Faint or Dim. The first two greys are fainter than any other on the display. The Extra large track time follows it where its digits are Segments. |
 | Snake me! | While the player rests, a snake has the display in place of the clock. Off unless you switch it on. |
 | Dim after | Seconds after the last key on the remote, or after playback started, before the display dims. 0 never dims. |
 | Dark after | Seconds after the last key, while nothing plays, before the display goes dark. 0 never goes dark. |
@@ -60,9 +63,11 @@ Settings take effect when saved.
 | Small | 6 pixels tall | The title, the artist and the album, a line each. |
 | Medium | 8 pixels tall | The same three lines. |
 | Large | 10 pixels tall | The artist and the album share a line. |
-| Extra large | 13 pixels tall, drawn in segments as the clock's digits are | The artist and the album share a line. |
+| Extra large | 13 pixels tall, in a choice of three kinds of digit | The artist and the album share a line. |
 
 Small is the size the time has had since version 3.0.0. Small and Medium stand along the bottom of the display. Large and Extra large need the rows the album's line has, so the artist and the album share the line under the title, and the time stands in the middle of the rows under it.
+
+*Track time: Extra large digits* chooses how the largest digits are drawn, and is on the settings page while *Track time* is Extra large. Segments are LED digits, as the clock's. Light has thin strokes. Bold has heavier strokes and wider digits, and leaves the bar, and meters between the two times, a little less room.
 
 The time played is drawn as wide as the track's length, so the bar keeps its place and its length from the first second of a track to the last. A stream has no length, and no time is drawn for it. Off leaves the time and its bar out.
 

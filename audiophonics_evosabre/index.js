@@ -438,7 +438,7 @@ EvoSabre.prototype.saveDisplay = function (data) {
     var self = this;
     var was = form.isOn(self.config.get('oled_active'), true);
     var metered = form.isOn(self.config.get('meters'), false);
-    if (!self.save(data, ['oled_active', 'contrast', 'track_time_size', 'meters', 'meters_style', 'meters_gain', 'clock_after', 'clock_segments', 'snake', 'sleep_after', 'deep_sleep_after'])) {
+    if (!self.save(data, ['oled_active', 'contrast', 'track_time_size', 'track_time_face', 'meters', 'meters_style', 'meters_gain', 'clock_after', 'clock_segments', 'snake', 'sleep_after', 'deep_sleep_after'])) {
         return libQ.resolve();
     }
     if (form.isOn(self.config.get('meters'), false) !== metered) {
