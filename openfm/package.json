@@ -1,0 +1,35 @@
+{
+  "name": "openfm",
+  "version": "1.0.6",
+  "description": "Open FM internet radio (open.fm) for Volumio",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "pajretX",
+  "license": "MIT",
+  "repository": "https://github.com/pajretX/volumio-plugins-openfm",
+  "volumio_info": {
+    "prettyName": "Open FM",
+    "icon": "fa-music",
+    "plugin_type": "music_service",
+    "has_configuration": true,
+    "architectures": [
+      "amd64",
+      "armhf"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "details": "Internet radio from open.fm (categories, stations, token-signed streams) for Volumio.",
+    "changelog": "1.0.6: repository link fixed (dedicated repo created); 1.0.5: drop unsupported architecture, pin dependency versions"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.3"
+  }
+}
