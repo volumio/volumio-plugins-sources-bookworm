@@ -1,7 +1,6 @@
-#!/bin/bash
+#!/bin/sh
+set -e
 
-# Uninstall dependendencies
-# apt-get remove -y
+echo "Removing Example Plugin"
 
-echo "Done"
 echo "pluginuninstallend"

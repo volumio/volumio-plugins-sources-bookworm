@@ -3,5 +3,25 @@
     "label": "TRANSLATE.PLUGIN_CONFIGURATION"
   },
   "sections": [
+    {
+      "id": "settings",
+      "element": "section",
+      "label": "TRANSLATE.SETTINGS",
+      "icon": "fa-cog",
+      "onSave": {"type": "controller", "endpoint": "miscellanea/example_plugin", "method": "saveSettings"},
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": ["greeting"]
+      },
+      "content": [
+        {
+          "id": "greeting",
+          "type": "text",
+          "element": "input",
+          "label": "TRANSLATE.GREETING",
+          "value": ""
+        }
+      ]
+    }
   ]
 }
