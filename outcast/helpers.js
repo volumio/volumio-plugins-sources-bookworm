@@ -369,6 +369,30 @@ function applyMonitor(data, set) {
     set('mon_seconds', String(data.mon_seconds).trim());
 }
 
+// The programme's trim: dB taken off everything sent out, 0 (none) down to -12, to a
+// tenth. A comma for the decimal point and a typographic minus are taken as meant.
+const TRIM_MOST = -12;
+
+function trimText(v) {
+    return String(v === undefined || v === null ? '' : v).trim().replace(',', '.').replace(/^[\u2212\u2013]/, '-');
+}
+
+function trimOf(v) {
+    const s = trimText(v);
+    const n = /^-?\d+(\.\d+)?$/.test(s) ? parseFloat(s) : 0;
+    return Math.max(TRIM_MOST, Math.min(0, Math.round(n * 10) / 10)) || 0;
+}
+
+function validateLevel(data, t) {
+    const s = trimText(data.level_trim);
+    const n = parseFloat(s);
+    return /^-?\d+(\.\d+)?$/.test(s) && n >= TRIM_MOST && n <= 0 ? null : t('ERR_RANGE', { field: t('LEVEL_TRIM'), min: TRIM_MOST, max: 0 });
+}
+
+function applyLevel(data, set) {
+    set('level_trim', String(trimOf(data.level_trim)));
+}
+
 // The player's address on the network, for the dashboard's link: the first address
 // of a wired interface, else of a wireless one, else any that is not the loopback.
 function lanAddress(interfaces) {
@@ -561,6 +585,9 @@ function uplinksFrom(get) {
         dashboard: {
             enabled: get('mon_dashboard', true) !== false,
             port: num(get('mon_dashboard_port', '8020'), 8020)
+        },
+        programme: {
+            trim_db: trimOf(get('level_trim', '0'))
         }
     };
 }
@@ -651,6 +678,6 @@ function summarize(status, audioPath, audioPathError, t, tapNote) {
 
 module.exports = {
     screenTitle, checkConfig, chainHasTap, chainLibraries, lanAddress, dashboardLinks, fill, sel, PRESETS, DEFAULT_PRESET, ICE_SLOTS,
-    validateIcecast, validateLan, validateRecord, validateMonitor, validateSrt, validateRtmp, validateTs, validateHls,
-    applyIcecast, applyLan, applyRecord, applyMonitor, applySrt, applyRtmp, applyTs, applyHls, uplinksFrom, summarize, hideWhenOff
+    validateIcecast, validateLan, validateRecord, validateMonitor, validateLevel, validateSrt, validateRtmp, validateTs, validateHls,
+    applyIcecast, applyLan, applyRecord, applyMonitor, applyLevel, applySrt, applyRtmp, applyTs, applyHls, uplinksFrom, summarize, hideWhenOff
 };

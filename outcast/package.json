@@ -1,6 +1,6 @@
 {
   "name": "outcast",
-  "version": "0.1.31",
+  "version": "0.1.32",
   "description": "Casts whatever the player plays out to any uplink: Icecast, SHOUTcast, RTMP, SRT, HLS, the LAN or a file. An evo framework plugin built on evotap.",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "os": ["bookworm"],
     "architectures": ["armhf", "amd64"],
     "details": "Streams whatever the player plays, from any service, to Icecast, SHOUTcast, RTMP, SRT, HLS, the LAN or a file, with the screen's title. Built on evotap.",
-    "changelog": "0.1.31 The dashboard's Level meter and its last minute move with the sound: every measurement of the tap reaches the page thirty times a second, with a programme meter's fall and peak hold."
+    "changelog": "0.1.32 A trim for the level of everything sent out, 0 to -12 dB, gives lossy encoders the headroom that music mastered to full scale leaves them none of; the dashboard's Level shows the programme as sent and moves with the sound."
   },
   "dependencies": {
     "kew": "^0.7.0",
