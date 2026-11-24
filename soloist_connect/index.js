@@ -192,6 +192,7 @@ function SoloistConnect(context) {
   this.queueUri = '';   // the URI core asked us to play for this row
   this.queueIndex = -1; // the queue position that row occupies
   this.queueStartTimer = null; // waiting for the row we asked for to start
+  this.endedQueueUri = ''; // the row already handed back; its terminal state is not a new session
   // uri -> Soloist queue item, harvested from events. explodeUri has no
   // Spotify Web API to ask, so a playlist row shows what we have already seen.
   this.trackCache = new Map();
@@ -2382,6 +2383,7 @@ SoloistConnect.prototype.leaveQueueMode = function (reason, reclaim) {
   this.queueMode = false;
   this.queueUri = '';
   this.queueIndex = -1;
+  this.endedQueueUri = '';
   // The phone taking the session mid-row does not produce a fresh play
   // transition, so setStatus would never claim. Claim here instead. Core
   // stopping us is the opposite case and must not reclaim.
@@ -2485,9 +2487,14 @@ SoloistConnect.prototype.endQueueRow = function (reason) {
   this.state.status = 'stop';
   this.state.seek = (this.state.duration || 0) * 1000;
   const snapshot = this.stateSnapshot();
+  // The URI has to survive leaveQueueMode, which clears it. Soloist emits
+  // the terminal paused state of this row after core has already armed the
+  // next one. That event is the remainder of this row, not a new session.
+  const ended = this.queueUri;
   // Leave before the stop publish: syncState will play the next service in
   // the same turn, and that service is not us.
   this.leaveQueueMode('row ended', false);
+  this.endedQueueUri = ended;
   const publish = () => this.publishState(snapshot);
   // stop() and unsetVolatile wait for the PCM. Publishing stop immediately
   // lets core open MPD on a card we still hold. If we already released,
@@ -2504,8 +2511,32 @@ SoloistConnect.prototype.endQueueRow = function (reason) {
 //
 // Returns true when the event has been consumed and must not be published as
 // ordinary playback.
+// Terminal state of the row already returned to core. Paused, idle, or
+// buffering on its duration. A play of that URI from the start is a new
+// session and falls through.
+SoloistConnect.prototype.endedRowRemainder = function (msg, incomingUri) {
+  if (!this.endedQueueUri || !incomingUri || incomingUri !== this.endedQueueUri) {
+    return false;
+  }
+  if (incomingUri === this.queueUri) return false;
+  const status = msg && msg.status;
+  if (status === 'paused' || status === 'idle') return true;
+  const durationMs = this.itemMeta(msg.item).durationMs;
+  const positionMs = Number(
+    msg.position && msg.position.position_ms != null
+      ? msg.position.position_ms
+      : NaN
+  );
+  return status === 'buffering' &&
+    durationMs > 0 &&
+    Number.isFinite(positionMs) &&
+    durationMs - positionMs <= QUEUE_END_WINDOW_MS;
+};
+
 SoloistConnect.prototype.checkQueueRow = function (msg, incomingUri) {
   if (!this.queueMode) return false;
+
+  if (this.endedRowRemainder(msg, incomingUri)) return true;
 
   // Context alone is not a session move: play of a track URI may name the
   // album as context while the item is still our row. Only the item URI
@@ -3170,7 +3201,13 @@ SoloistConnect.prototype.stop = function () {
     this.logger.info('SoloistConnect: ignoring stop echo from volatile setup');
     return libQ.resolve();
   }
+  // Next stops this service and then plays the following row. The pause
+  // acknowledgement is the remainder of the row just stopped. leaveQueueMode
+  // clears that memory, so it is written back, the same as endQueueRow.
+  // A stop while queue mode is off forgets any leftover row.
+  const ended = this.queueMode ? this.queueUri : '';
   this.leaveQueueMode('core stopped this service', false);
+  this.endedQueueUri = ended;
   this.clearPendingSeek();
   this.clearInactiveHold();
   this.clearQualityRetry();
