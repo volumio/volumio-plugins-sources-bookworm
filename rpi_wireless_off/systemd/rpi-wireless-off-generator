@@ -1,0 +1,72 @@
+#!/bin/sh
+# Boot-time generator for the rpi_wireless_off plugin.
+#
+# systemd runs this at every boot and every daemon-reload, before any unit starts, with three
+# folders: normal, early and late. It reads the device tree. For each radio chip that is off
+# there, it writes a drop-in into the normal folder. The drop-in makes systemd skip the unit
+# that needs the chip. Without it, volumiobt.service restarts in a loop and wireless.service
+# fails at every boot.
+#
+#   rpi-wireless-off-generator <normal-dir> <early-dir> <late-dir>   write the drop-ins
+#   rpi-wireless-off-generator --report                              print wifi=... and bt=...
+#
+# A chip reads as on, off or absent. A tree that can't be read reads as absent, and an absent
+# chip gets no drop-in. With no arguments nothing is written. RWO_DT_ROOT overrides the
+# device-tree root. The exit code is always 0, so a boot never depends on this file.
+#
+# POSIX sh only. /bin/sh is dash on Volumio.
+
+DT=${RWO_DT_ROOT:-/proc/device-tree}
+
+# okay <folder>: true when the folder's status is "okay", "ok", missing or unreadable.
+# The file ends in a NUL byte, which tr strips.
+okay() {
+  [ -r "$1/status" ] || return 0
+  case $(tr -d '\000' < "$1/status") in
+    okay | ok) return 0 ;;
+  esac
+  return 1
+}
+
+# state <compatible string>: prints on, off or absent.
+# A node is a folder whose compatible file holds the string. It is enabled when its own status
+# and its parent's status are both okay. A chip with no node is absent, one with an enabled node
+# is on, and one with nodes but none enabled is off.
+# find needs -H, because /proc/device-tree is a symlink.
+state() {
+  find -H "$DT" -name compatible -type f -exec grep -l -a -F "$1" {} + 2>/dev/null |
+    {
+      result=absent
+      while IFS= read -r file; do
+        node=${file%/*}
+        if okay "$node" && okay "${node%/*}"; then
+          result=on
+        elif [ "$result" = absent ]; then
+          result=off
+        fi
+      done
+      echo "$result"
+    }
+}
+
+# dropin <unit> <chip> <path>: skip <unit>.service at start unless <path> exists.
+dropin() {
+  d=$out/$1.service.d
+  mkdir -p "$d" 2>/dev/null || return 0
+  printf '%s\n' "# Written by rpi-wireless-off-generator at boot: the $2 chip is off in the device tree." \
+    '[Unit]' "ConditionPathExists=$3" 2>/dev/null > "$d/50-rpi-wireless-off.conf"
+}
+
+[ -n "$1" ] || exit 0
+
+wifi=$(state brcm,bcm4329-fmac)
+bt=$(state brcm,bcm43438-bt)
+
+if [ "$1" = --report ]; then
+  printf 'wifi=%s\nbt=%s\n' "$wifi" "$bt"
+else
+  out=$1
+  [ "$bt" = off ] && dropin volumiobt Bluetooth /sys/class/bluetooth/hci0
+  [ "$wifi" = off ] && dropin wireless Wi-Fi /sys/class/net/wlan0
+fi
+exit 0
