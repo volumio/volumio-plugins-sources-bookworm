@@ -1,0 +1,34 @@
+{
+  "name": "disk_automount",
+  "version": "1.0.0",
+  "description": "Mounts an internal or secondary disk by UUID at boot and makes it available to the MPD library.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"no tests\""
+  },
+  "author": "karkolom223",
+  "license": "MIT",
+  "repository": "https://github.com/karkolom223/volumio_plugin",
+  "volumio_info": {
+    "prettyName": "Disk Automount",
+    "icon": "fa-hdd-o",
+    "plugin_type": "system_hardware",
+    "architectures": [
+      "amd64",
+      "armhf"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "details": "Keeps Volumio on a flash drive or SD card and your music on a separate internal/SATA/NVMe disk. Select the disk by UUID; it is mounted at boot by a small systemd service (no sudo rules, no fstab edits) and linked into the MPD library. Reinstalling Volumio never touches the music disk.",
+    "changelog": "1.0.0 - first release: root work is done by a systemd service started from a settings file, the plugin itself runs unprivileged"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.0"
+  }
+}
