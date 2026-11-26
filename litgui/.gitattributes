@@ -1,0 +1,2 @@
+*.sh text eol=lf
+litgui-panel.js binary
