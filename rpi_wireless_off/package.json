@@ -1,6 +1,6 @@
 {
   "name": "rpi_wireless_off",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Powers off a Raspberry Pi 4's Wi-Fi and Bluetooth chips at boot, without restart loops",
   "main": "index.js",
   "category": "system_hardware",
@@ -18,7 +18,7 @@
       "armhf"
     ],
     "details": "Powers off the Wi-Fi and Bluetooth chips of a Raspberry Pi 4, Pi 400 or Compute Module 4 at boot, and keeps Volumio's Bluetooth and Wi-Fi services from restarting in a loop while they're gone.",
-    "changelog": "0.1.0: First release."
+    "changelog": "0.1.1: Refuses to install on boards other than the Pi 4, Pi 400 and CM4, and the boot generator does nothing on them."
   },
   "engines": {
     "node": ">=20",

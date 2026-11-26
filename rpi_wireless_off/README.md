@@ -4,7 +4,7 @@ Powers off the Wi-Fi and Bluetooth chips of a Raspberry Pi 4, Pi 400 or Compute 
 
 The settings page has one switch per chip, a status line and a health line. The status line says what each chip does now and what changes at the next boot. The health line counts restarts of `volumio.service` and `volumiobt.service` since boot and lists failed units, so a restart loop is easy to spot.
 
-Chips change state only at boot, so Save offers a reboot. On any other board the page hides the switches and says it isn't supported. The plugin still installs the generator described below, and the status section still shows.
+Chips change state only at boot, so Save offers a reboot. On any other board the plugin refuses to install.
 
 Volumio 4 on Debian Bookworm, 32-bit (`armhf`).
 

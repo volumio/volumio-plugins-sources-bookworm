@@ -10,9 +10,10 @@
 #   rpi-wireless-off-generator <normal-dir> <early-dir> <late-dir>   write the drop-ins
 #   rpi-wireless-off-generator --report                              print wifi=... and bt=...
 #
-# A chip reads as on, off or absent. A tree that can't be read reads as absent, and an absent
-# chip gets no drop-in. With no arguments nothing is written. RWO_DT_ROOT overrides the
-# device-tree root. The exit code is always 0, so a boot never depends on this file.
+# A chip reads as on, off or absent. Both chips read as absent on a board other than a Pi 4,
+# Pi 400 or CM4, and in a tree that can't be read. An absent chip gets no drop-in. With no
+# arguments nothing is written. RWO_DT_ROOT overrides the device-tree root. The exit code is
+# always 0, so a boot never depends on this file.
 #
 # POSIX sh only. /bin/sh is dash on Volumio.
 
@@ -59,8 +60,14 @@ dropin() {
 
 [ -n "$1" ] || exit 0
 
-wifi=$(state brcm,bcm4329-fmac)
-bt=$(state brcm,bcm43438-bt)
+# brcm,bcm2711 is the SoC of the Pi 4, Pi 400 and CM4. install.sh and isSupportedBoard in
+# lib/radios.js check the same string.
+if grep -qsxzF brcm,bcm2711 "$DT/compatible"; then
+  wifi=$(state brcm,bcm4329-fmac)
+  bt=$(state brcm,bcm43438-bt)
+else
+  wifi=absent bt=absent
+fi
 
 if [ "$1" = --report ]; then
   printf 'wifi=%s\nbt=%s\n' "$wifi" "$bt"

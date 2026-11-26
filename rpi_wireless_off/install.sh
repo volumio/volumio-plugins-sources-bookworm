@@ -1,14 +1,28 @@
 #!/bin/sh
 # The plugin manager runs this as root when RPi Wireless Off is installed or updated, and a
-# non-zero exit fails the step. Updates run it again, so a second run has to change nothing, and
-# it must never delete the plugin folder. uninstall.sh takes back what this puts outside that
-# folder. RWO_GENERATOR_DIR moves the generator's folder. Only the tests set it.
+# non-zero exit fails the step. Updates run it again, so a second run has to change nothing. Only
+# an unsupported board makes it delete the plugin folder. uninstall.sh takes back what this puts
+# outside that folder. RWO_DT_ROOT moves the device tree and RWO_GENERATOR_DIR the generator's
+# folder. Only the tests set them.
 
 echo "Installing RPi Wireless Off"
 
 PLUGIN_DIR="$(cd "$(dirname "$0")" && pwd)"
 SOURCE="$PLUGIN_DIR/systemd/rpi-wireless-off-generator"
 TARGET="${RWO_GENERATOR_DIR:-/lib/systemd/system-generators}/rpi-wireless-off-generator"
+
+# A refused install leaves nothing behind, so the next attempt starts clean.
+refuse() {
+  echo ""
+  echo "$@"
+  rm -rf "$PLUGIN_DIR"
+  exit 1
+}
+
+# The SoC of the Pi 4, Pi 400 and CM4. The generator and isSupportedBoard in lib/radios.js check
+# the same string.
+grep -qsxzF brcm,bcm2711 "${RWO_DT_ROOT:-/proc/device-tree}/compatible" ||
+  refuse "ERROR: RPi Wireless Off only supports the Raspberry Pi 4, Pi 400 and Compute Module 4. On other boards, use Flight Mode."
 
 if [ ! -f "$SOURCE" ]; then
   echo "ERROR: the generator is missing from the package ($SOURCE)"
