@@ -1,0 +1,35 @@
+{
+	"name": "lcd_backlight",
+	"version": "1.2.0",
+	"description": "Automatic backlight control of LCD displays with ambient light sensor VEML7700",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "lubomirkarlik",
+	"license": "ISC",
+	"repository": "https://github.com/lubomirkarlik/volumio-plugins-sources-bookworm/tree/lcd_backlight/lcd_backlight",
+	"volumio_info": {
+		"prettyName": "LCD Backlight control",
+		"icon": "fa-lightbulb-o",
+		"plugin_type": "system_hardware",
+		"architectures": [
+			"armhf"
+		],
+		"os": [
+			"buster",
+			"bookworm"
+		],
+		"details": "Automatically adjusts the LCD backlight (/sys/class/backlight) according to ambient light measured by a VEML7700 I2C sensor, with optional brightness boost during playback.",
+		"changelog": "1.2.0 - Volumio 3 (buster) and Volumio 4 (bookworm) support, input validation, brightness restored when the plugin is disabled, service auto-restart fixes"
+	},
+	"engines": {
+		"node": ">=14",
+		"volumio": ">=3"
+	},
+	"dependencies": {
+		"fs-extra": "^0.28.0",
+		"kew": "^0.7.0",
+		"v-conf": "^1.4.0"
+	}
+}
