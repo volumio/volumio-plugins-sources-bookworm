@@ -8,6 +8,7 @@ var io = require('socket.io-client');
 var pTimer = require('./pausableTimer');
 var socket = io.connect('http://localhost:3000');
 var lastfm = require("./lib/simple-lastfm");
+var ListenBrainz = require('./listenbrainz');
 var libQ = require('kew');
 var net = require('net');
 var os = require('os');
@@ -47,6 +48,9 @@ function ControllerLastFM(context)
     self.sessionRetryAttempt = 0;
     self.pendingScrobbles = [];
     self.stopped = false;
+    // ListenBrainz client (null while ListenBrainz scrobbling is switched off)
+    self.lb = null;
+    self.lbErrorShown = false;
 	self.previousScrobble = 
     {	artist: '',
         title: '',
@@ -91,7 +95,12 @@ ControllerLastFM.prototype.onStop = function() {
 	self.sessionGeneration++;
 	self.authenticating = false;
 	self.clearSessionRetry();
-	
+	if (self.lb)
+	{
+		self.lb.stop();
+		self.lb = null;
+	}
+
 	return libQ.resolve();
 };
 
@@ -105,7 +114,9 @@ ControllerLastFM.prototype.stop = function() {
 ControllerLastFM.prototype.onStart = function() {
     var self = this;
 	//self.logger.info("Performing onStart action");
-    self.addToBrowseSources();
+    // The browse entries (similar artists/tracks) are Last.fm only.
+    if (self.useLastFM())
+        self.addToBrowseSources();
 
     debugEnabled = self.config.get('enable_debug_logging');
     self.logger.info('[LastFM] scrobbler initiated!');
@@ -116,7 +127,10 @@ ControllerLastFM.prototype.onStart = function() {
     self.initScrobbleSettings();
     self.stopped = false;
     self.sessionRetryAttempt = 0;
-    self.initLastFMSession().then(result => self.logger.info('[LastFM] finished init: ' + result), error => self.logger.info('[LastFM] finished init with error: ' + error) );
+    self.logger.info('[LastFM] scrobbling service: ' + self.getScrobbleService());
+    if (self.useLastFM())
+        self.initLastFMSession().then(result => self.logger.info('[LastFM] finished init: ' + result), error => self.logger.info('[LastFM] finished init with error: ' + error) );
+    self.initListenBrainz();
     self.logger.info('[LastFM] Left init routine');
  
 	self.logger.info('[LastFM] Socket already connected: ' + socket.connected);
@@ -194,7 +208,20 @@ ControllerLastFM.prototype.getUIConfig = function() {
 		
 		uiconf.sections[2].content[0].value = debugEnabled;
 		self.logger.info("3/3 settings loaded");
-		
+
+		// Scrobbling service and ListenBrainz token
+		var serviceSelect = uiconf.sections[3].content[0];
+		for (var s = 0; s < serviceSelect.options.length; s++){
+			if(serviceSelect.options[s].value == self.getScrobbleService())
+			{
+				serviceSelect.value.value = serviceSelect.options[s].value;
+				serviceSelect.value.label = serviceSelect.options[s].label;
+			}
+		}
+		uiconf.sections[3].content[1].value = self.config.get('lb_token') ? '******' : '';
+		// Show "Scrobbling service" first (the sections above are filled in by index, so it stays last in UIConfig.json).
+		uiconf.sections.unshift(uiconf.sections.splice(3, 1)[0]);
+
 		self.logger.info("Populated config screen.");
 		
 		self.logger.info("LFM object: " + self.lfm);
@@ -639,12 +666,166 @@ ControllerLastFM.prototype.updateCredentials = function (data)
 	self.config.set('authToken', md5(data['username'] + md5(data['password'])));
 	
     // Should init new LastFM session after credentials were updated.
-    self.sessionRetryAttempt = 0;
-    self.initLastFMSession().fail(function () {});
+    if (self.useLastFM())
+    {
+        self.sessionRetryAttempt = 0;
+        self.initLastFMSession().fail(function () {});
+    }
     // To-Do: check that session has started properly...
     defer.resolve();
-		
+
 	return defer.promise;
+};
+
+// Scrobbling service (Last.fm, ListenBrainz or both) -----------------------------------------------------
+
+// config.set() silently does nothing for a key that is not in the config file yet, as is the case for the
+// ListenBrainz settings on installations that were upgraded from an older version: add the key then.
+ControllerLastFM.prototype.setConfigValue = function (key, value)
+{
+    if (this.config.has(key))
+        this.config.set(key, value);
+    else
+        this.config.addConfigValue(key, 'string', value);
+};
+
+// Installations from before ListenBrainz support have no setting: they keep scrobbling to Last.fm only.
+ControllerLastFM.prototype.getScrobbleService = function ()
+{
+    var service = this.config.get('scrobbleService');
+    return (service == 'listenbrainz' || service == 'both') ? service : 'lastfm';
+};
+
+ControllerLastFM.prototype.useLastFM = function ()
+{
+    return this.getScrobbleService() != 'listenbrainz';
+};
+
+ControllerLastFM.prototype.useListenBrainz = function ()
+{
+    return this.getScrobbleService() != 'lastfm';
+};
+
+// Creates or removes the ListenBrainz client according to the settings and checks the token.
+ControllerLastFM.prototype.initListenBrainz = function ()
+{
+    var self = this;
+    var token = self.config.get('lb_token') || '';
+
+    if (!self.useListenBrainz())
+    {
+        if (self.lb)
+        {
+            self.lb.stop();
+            self.lb = null;
+        }
+        return;
+    }
+
+    if (token == '')
+    {
+        if (self.lb)
+        {
+            self.lb.stop();
+            self.lb = null;
+        }
+        var msg = 'ListenBrainz token missing, scrobbling to ListenBrainz is disabled until it is filled in.';
+        self.commandRouter.pushToastMessage('error', 'ListenBrainz connection failed', msg);
+        self.logger.info('[ListenBrainz] ' + msg);
+        return;
+    }
+
+    if (self.lb)
+        self.lb.setToken(token);
+    else
+    {
+        self.lbErrorShown = false;
+        self.lb = new ListenBrainz({
+            token: token,
+            logger: self.logger,
+            isDebug: function () { return debugEnabled; },
+            onScrobble: function (success, data, error, willRetry) { self.onListenBrainzScrobble(success, data, error, willRetry); },
+            onAuthError: function (message) { self.commandRouter.pushToastMessage('error', 'ListenBrainz connection failed', message); }
+        });
+    }
+
+    var client = self.lb;
+    client.validateToken(function (result)
+    {
+        if (self.lb !== client)
+            return;
+        if (result.valid)
+        {
+            self.logger.info('[ListenBrainz] token accepted' + (result.userName ? ' (user ' + result.userName + ')' : ''));
+            self.commandRouter.pushToastMessage('success', 'ListenBrainz connection', 'Connected to ListenBrainz' + (result.userName ? ' as ' + result.userName : '') + '.');
+        }
+        else if (result.valid === false)
+            client.handleAuthError();
+        else
+            // Could not be checked (network down at boot, for instance): scrobbles are queued and sent later.
+            self.logger.info('[ListenBrainz] token could not be checked now: ' + result.error);
+    });
+};
+
+// Result of a ListenBrainz scrobble: shown in the UI like the Last.fm ones, but only once per series of failures.
+ControllerLastFM.prototype.onListenBrainzScrobble = function (success, data, error, willRetry)
+{
+    var self = this;
+    if (success)
+    {
+        self.lbErrorShown = false;
+        // With both services on, the Last.fm toast already says that the track was scrobbled.
+        if (self.config.get('pushToastOnScrobble') && !self.useLastFM())
+        {
+            var album = data.album ? data.album : '[unknown album]';
+            self.commandRouter.pushToastMessage('success', 'Scrobble succesful', 'Scrobbled to ListenBrainz: ' + data.artist + ' - ' + data.title + ' (' + album + ').');
+        }
+    }
+    else if (!self.lbErrorShown)
+    {
+        self.lbErrorShown = true;
+        if (self.config.get('pushToastOnScrobble'))
+            self.commandRouter.pushToastMessage('error', 'ListenBrainz scrobble failed', (willRetry ? 'Could not send to ListenBrainz now, will retry: ' : 'Rejected by ListenBrainz: ') + data.artist + ' - ' + data.title + '.');
+    }
+};
+
+ControllerLastFM.prototype.updateServiceSettings = function (data)
+{
+    var self = this;
+    var defer = libQ.defer();
+
+    var wasUsingLastFM = self.useLastFM();
+    self.setConfigValue('scrobbleService', data['scrobbleService'].value);
+    // The field shows ****** when a token is stored: keep it unless something else was typed in.
+    var token = (data['lb_token'] || '').trim();
+    if (token != '******')
+        self.setConfigValue('lb_token', token);
+
+    if (self.useLastFM())
+    {
+        if (!wasUsingLastFM)
+        {
+            self.addToBrowseSources();
+            self.sessionRetryAttempt = 0;
+            self.initLastFMSession().fail(function () {});
+        }
+    }
+    else if (wasUsingLastFM)
+    {
+        // Last.fm switched off: forget the session and what was waiting for it.
+        self.sessionGeneration++;
+        self.authenticating = false;
+        self.clearSessionRetry();
+        self.lfm = null;
+        self.pendingScrobbles = [];
+        try { self.commandRouter.volumioRemoveToBrowseSources('LastFM'); } catch (e) { /* browse entry is not essential */ }
+    }
+    self.initListenBrainz();
+
+    self.commandRouter.pushToastMessage('info', "Updated configuration", "Scrobbling service settings have been updated successfully.");
+    defer.resolve();
+
+    return defer.promise;
 };
 
 ControllerLastFM.prototype.updateScrobbleSettings = function (data)
@@ -1152,7 +1333,10 @@ ControllerLastFM.prototype.updateNowPlaying = function ()
 	if(debugEnabled)
 		self.logger.info('[LastFM] Updating now playing');
 
-    if (self.scrobblableTrack && self.lfm != null) {
+    if (self.scrobblableTrack && self.lb != null)
+        self.lb.nowPlaying(self.scrobbleData);
+
+    if (self.scrobblableTrack && self.useLastFM() && self.lfm != null) {
         self.updatingNowPlaying = true;
 
         // Try to fetch track info
@@ -1219,7 +1403,10 @@ ControllerLastFM.prototype.updateNowPlaying = function ()
 	else
 	{
 		defer.reject(new Error('No LastFM session key available to use, or track info could not be determined'));
-		self.logger.error("[LastFM] plugin is not authenticated, please retry, or track info could not be determined (very rare)");
+		{
+			if (self.useLastFM())
+				self.logger.error("[LastFM] plugin is not authenticated, please retry, or track info could not be determined (very rare)");
+		}
 	}
 	return defer.promise;
 };
@@ -1235,7 +1422,9 @@ ControllerLastFM.prototype.scrobble = function ()
 		self.logger.info('[LastFM] previous scrobble: ' + JSON.stringify(self.previousScrobble));
 	}
 		
-	if (self.scrobblableTrack && self.lfm != null)
+	var toLastFM = self.useLastFM() && self.lfm != null;
+		var toListenBrainz = self.useListenBrainz() && self.lb != null;
+		if (self.scrobblableTrack && (toLastFM || toListenBrainz))
 	{					
 		if(debugEnabled)
 			self.logger.info('[LastFM] preparing to scrobble...');
@@ -1245,9 +1434,17 @@ ControllerLastFM.prototype.scrobble = function ()
 			title: self.scrobbleData.title,
 			album: self.scrobbleData.album,
 			timestamp: trackStartTime,
-			attempts: 0
+			duration: self.scrobbleData.duration,
+				attempts: 0
 		};
-		if (self.hasLastFMSession())
+		if (toListenBrainz)
+				self.lb.scrobble(data);
+			if (!toLastFM)
+			{
+				if (debugEnabled)
+					self.logger.info('[LastFM] Last.fm scrobbling is switched off, scrobble only sent to ListenBrainz');
+			}
+			else if (self.hasLastFMSession())
 			self.sendScrobble(data);
 		else
 		{

@@ -47,6 +47,14 @@
     "type": "boolean",
     "value": true
   },
+  "scrobbleService": {
+    "type": "string",
+    "value": "listenbrainz"
+  },
+  "lb_token": {
+    "type": "string",
+    "value": ""
+  },
   "enable_debug_logging": {
     "type": "boolean",
     "value": false

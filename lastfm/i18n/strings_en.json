@@ -1,8 +1,8 @@
 {
 	"LASTFM":{
-	"PLUGINCONF":"LastFM Scrobbler Configuration",
+	"PLUGINCONF":"LastFM / ListenBrainz Scrobbler Configuration",
 		"CONFIG":"LastFM Credentials",
-		"D_CONFIG":"Fill in your authentication settings.",
+		"D_CONFIG":"Fill in your authentication settings. These are used only when the scrobbling service is Last.fm or both (see \"Scrobbling service\" below).",
 			"API_KEY":"LastFM API key",
 			"D_API_KEY":"Fill in the API key you received from Last.fm.",
 			"DD_API_KEY":"Go to https://www.last.fm/api/account/create to create an API account.",
@@ -41,6 +41,13 @@
 		"D_DEBUGSETTINGS":"Configure the debug settings for the plugin.",
 			"ENABLE_DEBUG_LOGGING":"Debug logging",
 			"D_ENABLE_DEBUG_LOGGING":"En- or disable debug logging, this means extended logging will be available for debugging purposes.",
+		"SERVICESETTINGS":"Scrobbling service",
+		"D_SERVICESETTINGS":"Choose where to scrobble: Last.fm, ListenBrainz or both, and fill in the ListenBrainz token.",
+			"SCROBBLE_SERVICE":"Scrobble to",
+			"D_SCROBBLE_SERVICE":"ListenBrainz is free and needs only the token below. Last.fm needs the credentials above, and Last.fm has announced that API keys will require a Last.fm Pro subscription from 1 December 2026. With both selected every scrobble is sent to both services.",
+			"LB_TOKEN":"ListenBrainz user token",
+			"D_LB_TOKEN":"Paste the user token of your ListenBrainz account.",
+			"DD_LB_TOKEN":"You can find it at https://listenbrainz.org/settings/ . Only needed when ListenBrainz is selected.",
 	"SAVE": "Save"
 	}
 }

@@ -1,7 +1,7 @@
 {
 	"name": "lastfm",
-	"version": "2.5.8",
-	"description": "Installs a LastFM scrobbler which uses the Volumio artist and track info.",
+	"version": "2.6.0",
+	"description": "Installs a LastFM / ListenBrainz scrobbler which uses the Volumio artist and track info.",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
@@ -9,7 +9,7 @@
 	"author": "Saiyato",
 	"license": "GPL-3.0",
 	"volumio_info": {
-		"prettyName": "LastFM Scrobbler",
+		"prettyName": "LastFM / ListenBrainz Scrobbler",
 		"icon": "fa-lastfm",
 		"plugin_type": "user_interface",
 		"os": [
@@ -19,8 +19,8 @@
 			"amd64",
 			"armhf"
 		],
-		"details": "LastFM scrobbler plugin.",
-		"changelog": "Scrobbling no longer stops until credentials are re-saved: automatic re-authentication with backoff, scrobbles queued while no LastFM session is available, re-auth on invalid session key."
+		"details": "LastFM and ListenBrainz scrobbler plugin.",
+		"changelog": "Scrobbling to ListenBrainz, alone or together with Last.fm (choose \"Scrobbling service\" in the settings). New installations default to ListenBrainz; existing installations keep scrobbling to Last.fm."
 	},
 	"engines": {
 		"node": ">=20",
@@ -37,6 +37,7 @@
 	"repository": "https://github.com/Saiyato/volumio-lastfm-plugin",
 	"keywords": [	
 		"fm",
+		"listenbrainz",
 		"lastfm",
 		"last",
 		"scrobble",
