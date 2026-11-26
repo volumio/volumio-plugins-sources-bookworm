@@ -21,6 +21,8 @@
   "PLEX_CROSSFADE_ENABLED_DOC": "Fade audio between tracks instead of cutting abruptly. Can be used with or without gapless playback.",
   "PLEX_CROSSFADE_DURATION": "Crossfade Duration (seconds)",
   "PLEX_CROSSFADE_DURATION_DOC": "How many seconds to overlap audio between tracks. Between 1 and 12 seconds. Due to technical limitations, the maximum effective crossfade is probably around 2s.",
+  "PLEX_SCROBBLE": "Send Playback Data to Plex",
+  "PLEX_SCROBBLE_DOC": "Report playback events (play, pause, stop) to your Plex server. Allows Plex to track listening history, update play counts, and mark tracks as played.",
   "SAVE": "Save",
   "PLEX_LOGIN": "Login with Plex",
   "PLEX_LOGIN_BTN": "Login with Plex",
