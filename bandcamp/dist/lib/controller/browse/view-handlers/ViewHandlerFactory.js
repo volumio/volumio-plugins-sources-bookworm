@@ -8,6 +8,7 @@ const ArticleViewHandler_1 = __importDefault(require("./ArticleViewHandler"));
 const BandViewHandler_1 = __importDefault(require("./BandViewHandler"));
 const DiscoverViewHandler_1 = __importDefault(require("./DiscoverViewHandler"));
 const FanViewHandler_1 = __importDefault(require("./FanViewHandler"));
+const PlaylistViewHandler_1 = __importDefault(require("./PlaylistViewHandler"));
 const RootViewHandler_1 = __importDefault(require("./RootViewHandler"));
 const SearchViewHandler_1 = __importDefault(require("./SearchViewHandler"));
 const ShowViewHandler_1 = __importDefault(require("./ShowViewHandler"));
@@ -24,7 +25,8 @@ const VIEW_NAME_TO_CLASS = {
     'show': ShowViewHandler_1.default,
     'article': ArticleViewHandler_1.default,
     'tag': TagViewHandler_1.default,
-    'fan': FanViewHandler_1.default
+    'fan': FanViewHandler_1.default,
+    'playlist': PlaylistViewHandler_1.default
 };
 class ViewHandlerFactory {
     static getHandler(uri) {

@@ -2,32 +2,32 @@ import type AlbumEntity from './AlbumEntity';
 import type TrackEntity from './TrackEntity';
 
 interface ArticleEntity {
-  type: 'article',
+  type: 'article';
   url: string;
   title: string;
   date: string;
   thumbnail?: string;
   description?: string;
   category?: {
-    name: string,
-    url?: string
+    name: string;
+    url?: string;
   };
   author?: {
-    name: string,
-    url: string
+    name: string;
+    url: string;
   };
   mediaItems?: ArticleEntityMediaItem<AlbumEntity | TrackEntity>[];
   sections?: ArticleEntitySection[];
 }
 
 export type ArticleEntityMediaItem<T extends AlbumEntity | TrackEntity> = T & {
-  mediaItemRef?: string,
-  featuredTrackPosition: number
+  mediaItemRef?: string;
+  featuredTrackPosition: number;
 };
 
 export type ArticleEntitySection = {
   heading?: {
-    text: string
+    text: string;
   };
   text: string;
   mediaItemRef?: string;

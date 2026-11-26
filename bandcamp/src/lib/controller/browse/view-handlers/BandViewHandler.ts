@@ -1,7 +1,10 @@
 import bandcamp from '../../../BandcampContext';
 import type TrackEntity from '../../../entities/TrackEntity';
 import { ModelType } from '../../../model';
-import { type BandModelGetDiscographyParams, type BandModelGetLabelArtistsParams } from '../../../model/BandModel';
+import {
+  type BandModelGetDiscographyParams,
+  type BandModelGetLabelArtistsParams
+} from '../../../model/BandModel';
 import UIHelper, { type UILink } from '../../../util/UIHelper';
 import ExplodableViewHandler from './ExplodableViewHandler';
 import type View from './View';
@@ -17,7 +20,6 @@ export interface BandView extends View {
 }
 
 export default class BandViewHandler extends ExplodableViewHandler<BandView> {
-
   async browse(): Promise<RenderedPage> {
     const bandUrl = this.currentView.bandUrl;
     const bandInfo = await this.getModel(ModelType.Band).getBand(bandUrl);
@@ -30,14 +32,22 @@ export default class BandViewHandler extends ExplodableViewHandler<BandView> {
       const _getBackToUri = (labelUrl: string, matchLevel: number) => {
         const prevViews = this.previousViews;
         const viewToMatch = prevViews[prevViews.length - (matchLevel + 1)];
-        if (viewToMatch && viewToMatch.name === 'band' && viewToMatch.bandUrl === labelUrl) {
-          return ViewHelper.constructUriFromViews(prevViews.slice(0, prevViews.length - matchLevel));
+        if (
+          viewToMatch &&
+          viewToMatch.name === 'band' &&
+          viewToMatch.bandUrl === labelUrl
+        ) {
+          return ViewHelper.constructUriFromViews(
+            prevViews.slice(0, prevViews.length - matchLevel)
+          );
         }
         return null;
       };
 
       let labelLinkListItem: RenderedListItem;
-      const backToUri = _getBackToUri(bandInfo.label.url, 0) || _getBackToUri(bandInfo.label.url, 1);
+      const backToUri =
+        _getBackToUri(bandInfo.label.url, 0) ||
+        _getBackToUri(bandInfo.label.url, 1);
       if (backToUri) {
         labelLinkListItem = {
           service: 'bandcamp',
@@ -45,8 +55,7 @@ export default class BandViewHandler extends ExplodableViewHandler<BandView> {
           title: bandcamp.getI18n('BANDCAMP_BACK_TO', bandInfo.label.name),
           uri: backToUri
         };
-      }
-      else {
+      } else {
         const bandView: BandView = {
           name: 'band',
           bandUrl: bandInfo.label.url
@@ -61,8 +70,8 @@ export default class BandViewHandler extends ExplodableViewHandler<BandView> {
       labelLinkListItem.icon = 'fa fa-link';
 
       backToList = {
-        availableListViews: [ 'list' ],
-        items: [ labelLinkListItem ]
+        availableListViews: ['list'],
+        items: [labelLinkListItem]
       };
     }
 
@@ -90,10 +99,17 @@ export default class BandViewHandler extends ExplodableViewHandler<BandView> {
     };
 
     if (contentLists.length > 1) {
-      contentLists[1].title = UIHelper.constructListTitleWithLink(contentLists[1].title || '', viewBandExternalLink, false);
-    }
-    else {
-      contentLists[0].title = UIHelper.constructListTitleWithLink(contentLists[0].title || '', viewBandExternalLink, true);
+      contentLists[1].title = UIHelper.constructListTitleWithLink(
+        contentLists[1].title || '',
+        viewBandExternalLink,
+        false
+      );
+    } else {
+      contentLists[0].title = UIHelper.constructListTitleWithLink(
+        contentLists[0].title || '',
+        viewBandExternalLink,
+        true
+      );
     }
 
     return {
@@ -106,7 +122,7 @@ export default class BandViewHandler extends ExplodableViewHandler<BandView> {
   }
 
   async #getContentListsForArtist(artistUrl: string) {
-    return [ await this.#getDiscographyList(artistUrl) ];
+    return [await this.#getDiscographyList(artistUrl)];
   }
 
   async #getContentListsForLabel(labelUrl: string): Promise<RenderedList[]> {
@@ -126,8 +142,7 @@ export default class BandViewHandler extends ExplodableViewHandler<BandView> {
         title: bandcamp.getI18n('BANDCAMP_DISCOGRAPHY'),
         uri: `${this.uri}/${ViewHelper.constructUriSegmentFromView(bandView)}`
       };
-    }
-    else {
+    } else {
       contentsList = await this.#getDiscographyList(labelUrl);
       const bandView: BandView = {
         name: 'band',
@@ -143,11 +158,11 @@ export default class BandViewHandler extends ExplodableViewHandler<BandView> {
       };
     }
     const linksList: RenderedList = {
-      availableListViews: [ 'list' ],
-      items: [ viewLinkListItem ]
+      availableListViews: ['list'],
+      items: [viewLinkListItem]
     };
 
-    return [ linksList, contentsList ];
+    return [linksList, contentsList];
   }
 
   async #getDiscographyList(bandUrl: string): Promise<RenderedList> {
@@ -167,21 +182,31 @@ export default class BandViewHandler extends ExplodableViewHandler<BandView> {
     }
 
     const discog = await model.getDiscography(modelParams);
-    const listItems = discog.items.reduce<RenderedListItem[]>((result, discogItem) => {
-      let rendered;
-      if (discogItem.type === 'album') {
-        rendered = albumRenderer.renderToListItem(discogItem);
-      }
-      else { // Track
-        rendered = trackRenderer.renderToListItem(discogItem, true, true, false);
-      }
-      if (rendered) {
-        result.push(rendered);
-      }
-      return result;
-    }, []);
+    const listItems = discog.items.reduce<RenderedListItem[]>(
+      (result, discogItem) => {
+        let rendered;
+        if (discogItem.type === 'album') {
+          rendered = albumRenderer.renderToListItem(discogItem);
+        } else {
+          // Track
+          rendered = trackRenderer.renderToListItem(discogItem, {
+            addType: true,
+            fakeAlbum: true,
+            addNonPlayableText: false
+          });
+        }
+        if (rendered) {
+          result.push(rendered);
+        }
+        return result;
+      },
+      []
+    );
 
-    const nextPageRef = this.constructPageRef(discog.nextPageToken, discog.nextPageOffset);
+    const nextPageRef = this.constructPageRef(
+      discog.nextPageToken,
+      discog.nextPageOffset
+    );
     if (nextPageRef) {
       const nextUri = this.constructNextUri(nextPageRef);
       listItems.push(this.constructNextPageItem(nextUri));
@@ -189,13 +214,12 @@ export default class BandViewHandler extends ExplodableViewHandler<BandView> {
 
     return {
       title: bandcamp.getI18n('BANDCAMP_DISCOGRAPHY'),
-      availableListViews: [ 'list', 'grid' ],
+      availableListViews: ['list', 'grid'],
       items: listItems
     };
   }
 
   async #getLabelArtistsList(labelUrl: string): Promise<RenderedList> {
-
     const modelParams: BandModelGetLabelArtistsParams = {
       labelUrl,
       limit: bandcamp.getConfigValue('itemsPerPage', 47)
@@ -206,17 +230,25 @@ export default class BandViewHandler extends ExplodableViewHandler<BandView> {
       modelParams.pageOffset = this.currentView.pageRef.pageOffset;
     }
 
-    const artists = await this.getModel(ModelType.Band).getLabelArtists(modelParams);
+    const artists = await this.getModel(ModelType.Band).getLabelArtists(
+      modelParams
+    );
     const artistRenderer = this.getRenderer(RendererType.Band);
-    const listItems = artists.items.reduce<RenderedListItem[]>((result, artist) => {
-      const rendered = artistRenderer.renderToListItem(artist);
-      if (rendered) {
-        result.push(rendered);
-      }
-      return result;
-    }, []);
+    const listItems = artists.items.reduce<RenderedListItem[]>(
+      (result, artist) => {
+        const rendered = artistRenderer.renderToListItem(artist);
+        if (rendered) {
+          result.push(rendered);
+        }
+        return result;
+      },
+      []
+    );
 
-    const nextPageRef = this.constructPageRef(artists.nextPageToken, artists.nextPageOffset);
+    const nextPageRef = this.constructPageRef(
+      artists.nextPageToken,
+      artists.nextPageOffset
+    );
     if (nextPageRef) {
       const nextUri = this.constructNextUri(nextPageRef);
       listItems.push(this.constructNextPageItem(nextUri));
@@ -224,7 +256,7 @@ export default class BandViewHandler extends ExplodableViewHandler<BandView> {
 
     return {
       title: bandcamp.getI18n('BANDCAMP_LABEL_ARTISTS'),
-      availableListViews: [ 'list', 'grid' ],
+      availableListViews: ['list', 'grid'],
       items: listItems
     };
   }
@@ -251,19 +283,19 @@ export default class BandViewHandler extends ExplodableViewHandler<BandView> {
       bandUrl
     };
 
-    const discog = await this.getModel(ModelType.Band).getDiscography(modelParams);
+    const discog = await this.getModel(ModelType.Band).getDiscography(
+      modelParams
+    );
     const first = discog.items[0] || {};
     if (first.type === 'track' && first.url) {
       const trackModel = this.getModel(ModelType.Track);
       return trackModel.getTrack(first.url);
-    }
-    else if (first.type === 'album' && first.url) {
+    } else if (first.type === 'album' && first.url) {
       const albumModel = this.getModel(ModelType.Album);
       const album = await albumModel.getAlbum(first.url);
       return album.tracks || [];
     }
 
     return [];
-
   }
 }

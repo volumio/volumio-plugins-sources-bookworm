@@ -5,7 +5,6 @@ import type AlbumEntity from '../entities/AlbumEntity';
 import EntityConverter from '../util/EntityConverter';
 
 export default class AlbumModel extends BaseModel {
-
   async getAlbum(albumUrl: string): Promise<AlbumEntity> {
     const queryParams = {
       albumUrl,
@@ -13,9 +12,11 @@ export default class AlbumModel extends BaseModel {
       artistImageFormat: this.getArtistImageFormat(),
       includeRawData: false
     };
-    const album = await bandcamp.getCache().getOrSet(
-      this.getCacheKeyForFetch('album', queryParams),
-      () => bcfetch.limiter.album.getInfo(queryParams));
+    const album = await bandcamp
+      .getCache()
+      .getOrSet(this.getCacheKeyForFetch('album', queryParams), () =>
+        bcfetch.limiter.album.getInfo(queryParams)
+      );
 
     const albumEntity = this.#converFetchedAlbumToEntity(album);
 
@@ -30,7 +31,12 @@ export default class AlbumModel extends BaseModel {
     }
     tracks.forEach((track) => {
       if (track.url) {
-        bandcamp.getCache().put(this.getCacheKeyForFetch('track', { trackUrl: track.url }), track);
+        bandcamp
+          .getCache()
+          .put(
+            this.getCacheKeyForFetch('track', { trackUrl: track.url }),
+            track
+          );
       }
     });
   }

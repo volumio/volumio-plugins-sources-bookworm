@@ -7,6 +7,7 @@ exports.RendererType = void 0;
 const AlbumRenderer_1 = __importDefault(require("./AlbumRenderer"));
 const ArticleRenderer_1 = __importDefault(require("./ArticleRenderer"));
 const BandRenderer_1 = __importDefault(require("./BandRenderer"));
+const PlaylistRenderer_1 = __importDefault(require("./PlaylistRenderer"));
 const SearchResultParser_1 = __importDefault(require("./SearchResultParser"));
 const ShowRenderer_1 = __importDefault(require("./ShowRenderer"));
 const TagRenderer_1 = __importDefault(require("./TagRenderer"));
@@ -20,6 +21,7 @@ var RendererType;
     RendererType["Show"] = "Fan";
     RendererType["Tag"] = "Search";
     RendererType["Track"] = "Show";
+    RendererType["Playlist"] = "Playlist";
 })(RendererType || (exports.RendererType = RendererType = {}));
 const RENDERER_TYPE_TO_CLASS = {
     [RendererType.Album]: AlbumRenderer_1.default,
@@ -28,7 +30,8 @@ const RENDERER_TYPE_TO_CLASS = {
     [RendererType.SearchResult]: SearchResultParser_1.default,
     [RendererType.Show]: ShowRenderer_1.default,
     [RendererType.Tag]: TagRenderer_1.default,
-    [RendererType.Track]: TrackRenderer_1.default
+    [RendererType.Track]: TrackRenderer_1.default,
+    [RendererType.Playlist]: PlaylistRenderer_1.default
 };
 class Renderer {
     static getInstance(type, uri, currentView, previousViews) {

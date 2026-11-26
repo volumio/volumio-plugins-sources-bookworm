@@ -260,5 +260,37 @@ class EntityConverter {
         }
         return result;
     }
+    static convertPlaylistListItem(data) {
+        return {
+            type: 'playlist',
+            ...data
+        };
+    }
+    static convertPlaylist(data) {
+        return {
+            type: 'playlist',
+            ...data,
+            tracks: data.tracks.map((track, i) => ({
+                type: 'track',
+                id: track.id,
+                name: track.title,
+                url: track.url,
+                duration: track.duration,
+                thumbnail: track.imageUrl ?? undefined,
+                streamUrl: track.streamUrl ?? undefined,
+                position: i,
+                album: track.album ? {
+                    type: 'album',
+                    name: track.album.title,
+                    url: track.album.url
+                } : undefined,
+                artist: track.artist ? {
+                    type: 'artist',
+                    name: track.artist.name,
+                    thumbnail: track.artist.imageUrl ?? undefined,
+                } : undefined
+            }))
+        };
+    }
 }
 exports.default = EntityConverter;

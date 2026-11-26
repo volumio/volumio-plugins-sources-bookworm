@@ -10,7 +10,6 @@ export interface RootView extends View {
 }
 
 export default class RootViewHandler extends BaseViewHandler<RootView> {
-
   async browse(): Promise<RenderedPage> {
     const fetches: Promise<RenderedList[]>[] = [];
 
@@ -23,14 +22,16 @@ export default class RootViewHandler extends BaseViewHandler<RootView> {
         try {
           const myFanInfo = await fanModel.getInfo();
           myUsername = myFanInfo.username;
-        }
-        catch (error) {
-          bandcamp.getLogger().error(`[bandcamp] Error getting fan info by cookie${error instanceof Error ? `: ${error.message}` : '.'}`);
+        } catch (error) {
+          bandcamp
+            .getLogger()
+            .error(
+              `[bandcamp] Error getting fan info by cookie${error instanceof Error ? `: ${error.message}` : '.'}`
+            );
           bandcamp.toast('error', bandcamp.getI18n('BANDCAMP_ERR_MY_FAN_INFO'));
         }
       }
-    }
-    else if (myBandcampType === 'username') {
+    } else if (myBandcampType === 'username') {
       myUsername = bandcamp.getConfigValue('myUsername', '');
     }
 

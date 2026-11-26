@@ -12,16 +12,31 @@ class ShowRenderer extends BaseRenderer_1.default {
         if (!data.url) {
             return null;
         }
+        const common = {
+            title: data.name,
+            artist: UIHelper_1.default.reformatDate(data.date),
+            albumart: data.thumbnail
+        };
         const showView = {
             name: 'show',
-            showUrl: data.url
+            showUrl: data.url,
+            explode: {
+                ...common,
+                uri: ViewHelper_1.default.constructUriFromViews([
+                    {
+                        name: 'root'
+                    },
+                    {
+                        name: 'show',
+                        showUrl: data.url,
+                    }
+                ]),
+            }
         };
         const result = {
             service: 'bandcamp',
             type: 'folder',
-            title: data.name,
-            artist: UIHelper_1.default.reformatDate(data.date),
-            albumart: data.thumbnail,
+            ...common,
             uri: `${this.uri}/${ViewHelper_1.default.constructUriSegmentFromView(showView)}`
         };
         if (playOnClick) {

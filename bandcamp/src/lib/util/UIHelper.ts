@@ -3,10 +3,10 @@ import bandcamp from '../BandcampContext';
 
 export interface UILink {
   icon?: {
-    type: 'fa' | 'bandcamp',
-    float?: string,
-    color?: string,
-    class?: string
+    type: 'fa' | 'bandcamp';
+    float?: string;
+    color?: string;
+    class?: string;
   };
   target?: string;
   text: string;
@@ -34,7 +34,6 @@ export const UI_STYLES = {
 };
 
 export default class UIHelper {
-
   static getBandcampIcon() {
     return `<img src="/albumart?sourceicon=${encodeURIComponent('music_service/bandcamp/dist/assets/images/bandcamp.svg')}" style="width: 23px; height: 23px; margin-right: 8px; margin-top: -3px;" />`;
   }
@@ -65,14 +64,25 @@ export default class UIHelper {
   }
 
   static addNonPlayableText(s: string) {
-    return this.addTextBefore(s, bandcamp.getI18n('BANDCAMP_NON_PLAYABLE'), UI_STYLES.NON_PLAYABLE);
+    return this.addTextBefore(
+      s,
+      bandcamp.getI18n('BANDCAMP_NON_PLAYABLE'),
+      UI_STYLES.NON_PLAYABLE
+    );
   }
 
   static getMoreText() {
-    return this.styleText(bandcamp.getI18n('BANDCAMP_MORE'), UI_STYLES.NEXT_PAGE);
+    return this.styleText(
+      bandcamp.getI18n('BANDCAMP_MORE'),
+      UI_STYLES.NEXT_PAGE
+    );
   }
 
-  static constructListTitleWithLink(title: string, links: UILink | UILink[], isFirstList: boolean) {
+  static constructListTitleWithLink(
+    title: string,
+    links: UILink | UILink[],
+    isFirstList: boolean
+  ) {
     if (!this.supportsEnhancedTitles()) {
       return title;
     }
@@ -87,8 +97,7 @@ export default class UIHelper {
           html += '<span style="padding: 0px 5px;">|</span>';
         }
       });
-    }
-    else {
+    } else {
       html += this.#constructLinkItem(links);
     }
 
@@ -102,8 +111,7 @@ export default class UIHelper {
     if (link.icon) {
       if (link.icon.type === 'fa' && link.icon.float !== 'right') {
         html += `<i class="${link.icon.class}" style="position: relative; top: 1px; margin-right: 2px; font-size: 16px;${link.icon.color ? ` color: ${link.icon.color};` : ''}"></i>`;
-      }
-      else if (link.icon.type === 'bandcamp') {
+      } else if (link.icon.type === 'bandcamp') {
         html += `<img src="/albumart?sourceicon=${encodeURIComponent('music_service/bandcamp/dist/assets/images/bandcamp.svg')}" style="width: 23px; height: 23px; margin-top: -3px;" />`;
       }
     }
@@ -122,7 +130,9 @@ export default class UIHelper {
       return params.title;
     }
     const { imgSrc, title, secondaryTitle, link } = params;
-    const imgHtml = imgSrc ? `<div>
+    const imgHtml =
+      imgSrc ?
+        `<div>
             <img src="${imgSrc}" style="width: 48px; height: 48px; margin-right: 12px; margin-top: -3px; border-radius: 50%;"></div>`
       : '';
 
@@ -151,6 +161,9 @@ export default class UIHelper {
   static isManifestUI() {
     const volumioManifestUIDir = '/volumio/http/www4';
     const volumioManifestUIDisabledFile = '/data/disableManifestUI';
-    return existsSync(volumioManifestUIDir) && !existsSync(volumioManifestUIDisabledFile);
+    return (
+      existsSync(volumioManifestUIDir) &&
+      !existsSync(volumioManifestUIDisabledFile)
+    );
   }
 }
