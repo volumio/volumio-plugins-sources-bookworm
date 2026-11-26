@@ -3,19 +3,11 @@
     "type": "string",
     "value": "Offline"
   },
-  "streamCheckInterval": {
-    "type": "number",
-    "value": 30
-  },
   "restoreCheckInterval": {
     "type": "number",
     "value": 60
   },
   "autoRestore": {
-    "type": "boolean",
-    "value": true
-  },
-  "shuffleOffline": {
     "type": "boolean",
     "value": true
   }
