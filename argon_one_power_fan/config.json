@@ -1,0 +1,50 @@
+{
+  "powerEnabled": {
+    "type": "boolean",
+    "value": true
+  },
+  "powerLogOnly": {
+    "type": "boolean",
+    "value": false
+  },
+  "powerDoubleTap": {
+    "type": "string",
+    "value": "reboot"
+  },
+  "uartSignal": {
+    "type": "boolean",
+    "value": false
+  },
+  "fanEnabled": {
+    "type": "boolean",
+    "value": true
+  },
+  "fanSpeedSteps": {
+    "type": "boolean",
+    "value": false
+  },
+  "fanT1": {
+    "type": "number",
+    "value": 55
+  },
+  "fanS1": {
+    "type": "number",
+    "value": 30
+  },
+  "fanT2": {
+    "type": "number",
+    "value": 60
+  },
+  "fanS2": {
+    "type": "number",
+    "value": 55
+  },
+  "fanT3": {
+    "type": "number",
+    "value": 65
+  },
+  "fanS3": {
+    "type": "number",
+    "value": 100
+  }
+}
