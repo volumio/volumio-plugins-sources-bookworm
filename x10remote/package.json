@@ -1,0 +1,35 @@
+{
+  "name": "x10remote",
+  "version": "0.67.2",
+  "description": "RF/IR remotes for Volumio: wizard to read in remotes, profiles and templates, keys only known as MSC_SCAN made usable for Triggerhappy, own commands replace audio.conf defaults per remote, optional phone page (Mobile Remote).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No tests\" && exit 0"
+  },
+  "author": "josh2000",
+  "license": "MIT",
+  "repository": "https://github.com/volumio/volumio-plugins-sources-bookworm/tree/master/x10remote",
+  "volumio_info": {
+    "prettyName": "X10 RF Remote",
+    "icon": "fa-gamepad",
+    "plugin_type": "system_hardware",
+    "architectures": [
+      "armhf",
+      "amd64"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "has_alsa_contribution": false,
+    "details": "Makes RF/IR remote keys usable in Volumio - including keys the kernel driver only reports as MSC_SCAN (e.g. X10 WTI RF receiver 0bc7:0006 with ati_remote). A wizard reads in all keys of a remote, lets you name them and assign Volumio commands or radio stations, and saves everything as a profile (description, notes, up to 6 pictures) in /data/INTERNAL/X10. Templates for known remotes are included; own profiles can be saved as templates. Own commands for keys that already have a Volumio default replace it for that remote only; audio.conf is never modified. Includes a live key test page and an optional phone page (Mobile Remote) with 20 assignable buttons. Kernel and drivers are not modified.",
+    "changelog": "0.67.2: source comments translated to English; key names of the new templates in all five languages; texts for eleven error codes that had none; 0.67.1: nothing is loaded or registered at boot any more (uinput autoload file and udev rule of older versions are removed, the mapper service handles both itself); a failed installation leaves no files behind; install/uninstall scripts are executable; no pending timer after the plugin is stopped (full history: CHANGELOG.md)"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.0"
+  }
+}

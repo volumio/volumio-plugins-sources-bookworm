@@ -1,0 +1,6 @@
+[Unit]
+Description=X10 RF Remote watchdog (Triggerhappy + x10mapper)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/x10remote-watchdog

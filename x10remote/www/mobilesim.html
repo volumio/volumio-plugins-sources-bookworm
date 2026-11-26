@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="WEB_TITLE_MOBILESIM">X10 RF Remote</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<main class="wrap">
+  <h1 data-i18n="WEB_SIM_TITLE"></h1>
+  <p class="lead" data-i18n="WEB_SIM_LEAD"></p>
+  <div class="row">
+    <button type="button" class="small" id="btnLight" data-i18n="WEB_SIM_LIGHT"></button>
+    <button type="button" class="small" id="btnDark" data-i18n="WEB_SIM_DARK"></button>
+    <span class="spacer"></span>
+    <a class="btn small" href="mobile.html" data-i18n="WEB_SIM_CONFIG"></a>
+  </div>
+  <div id="simNote"></div>
+  <div class="simstage">
+    <div class="simphone" id="phone">
+      <iframe id="simFrame" class="simscreen" title="Mobile Remote"></iframe>
+    </div>
+  </div>
+</main>
+<script src="app.js"></script>
+<script src="mobilesim.js"></script>
+</body>
+</html>

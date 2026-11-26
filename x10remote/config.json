@@ -1,0 +1,74 @@
+{
+  "enabled": {
+    "type": "boolean",
+    "value": true
+  },
+  "debounce_ms": {
+    "type": "number",
+    "value": 600
+  },
+  "repeat_ms": {
+    "type": "number",
+    "value": 150
+  },
+  "ignore_scancodes": {
+    "type": "string",
+    "value": "0x00"
+  },
+  "allow_shell": {
+    "type": "boolean",
+    "value": false
+  },
+  "log_presses": {
+    "type": "boolean",
+    "value": false
+  },
+  "web_port": {
+    "type": "number",
+    "value": 7810
+  },
+  "active_profiles": {
+    "type": "string",
+    "value": "[]"
+  },
+  "migrated": {
+    "type": "boolean",
+    "value": false
+  },
+  "thd_exclusive": {
+    "type": "boolean",
+    "value": false
+  },
+  "thd_exclusive_delay": {
+    "type": "number",
+    "value": 10
+  },
+  "watchdog": {
+    "type": "boolean",
+    "value": false
+  },
+  "expert_mode": {
+    "type": "boolean",
+    "value": false
+  },
+  "debounce_v59": {
+    "type": "boolean",
+    "value": true
+  },
+  "mobile_enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "mobile_port": {
+    "type": "number",
+    "value": 7812
+  },
+  "event_port": {
+    "type": "number",
+    "value": 7811
+  },
+  "ports_v62": {
+    "type": "boolean",
+    "value": true
+  }
+}

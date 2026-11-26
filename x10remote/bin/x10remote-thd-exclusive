@@ -1,0 +1,96 @@
+#!/bin/sh
+# Volumio plugin "X10 RF Remote": switch Triggerhappy's exclusive mode on or off.
+# Runs as root via x10remote-thd-exclusive@on.service / @off.service (the plugin calls
+# "sudo systemctl start ..."). Takes no input except the fixed word on|off.
+#
+# on : creates a RUNTIME drop-in /run/systemd/system/triggerhappy.service.d/x10remote-exclusive.conf
+#      that only replaces the directory behind --triggers by /run/x10remote/triggers.d/.
+#      /run is a tmpfs: the drop-in disappears on every reboot, nothing is left in /etc.
+#      Refuses (exit 3) if another drop-in already overrides ExecStart= (e.g. the Bluetooth remote
+#      plugin pointing --triggers elsewhere) - the plugin never takes over a foreign override.
+# off: removes the drop-in again and restarts Triggerhappy (reads /etc/triggerhappy/triggers.d again).
+#
+# Result for the plugin: /run/x10remote/exclusive.result (one line: ok | conflict <file> | no_triggers | error <text>)
+
+UNIT=triggerhappy.service
+DIR=/run/systemd/system/triggerhappy.service.d
+DROPIN="$DIR/x10remote-exclusive.conf"
+LEGACY=/etc/systemd/system/triggerhappy.service.d/x10remote.conf
+EXCL=/run/x10remote/triggers.d/
+RESULT=/run/x10remote/exclusive.result
+
+result() {
+  mkdir -p /run/x10remote 2>/dev/null
+  echo "$*" > "$RESULT" 2>/dev/null
+  chmod 644 "$RESULT" 2>/dev/null
+  echo "x10remote-thd-exclusive: $*"
+}
+
+# Drop-in of versions before 0.59.0 (installed for everybody in /etc) - remove if it is ours
+remove_legacy() {
+  if [ -f "$LEGACY" ] && grep -q 'X10 RF Remote' "$LEGACY" 2>/dev/null; then
+    rm -f "$LEGACY"
+    rmdir /etc/systemd/system/triggerhappy.service.d 2>/dev/null
+    return 0
+  fi
+  return 1
+}
+
+case "$1" in
+  on)
+    remove_legacy
+    rm -f "$DROPIN"
+    systemctl daemon-reload
+    # Foreign drop-ins that redefine ExecStart= -> refuse instead of silently winning by file name order
+    for f in $(systemctl show -p DropInPaths --value "$UNIT" 2>/dev/null); do
+      [ "$f" = "$DROPIN" ] && continue
+      if [ -f "$f" ] && grep -q '^[[:space:]]*ExecStart=' "$f" 2>/dev/null; then
+        result "conflict $f"
+        exit 3
+      fi
+    done
+    # effective ExecStart (last non-empty ExecStart= of unit file + drop-ins)
+    EXEC=$(systemctl cat "$UNIT" 2>/dev/null | awk '
+      /^# \// { next }
+      /^[ \t]*ExecStart=/ { v = $0; sub(/^[ \t]*ExecStart=/, "", v); if (v != "") last = v }
+      END { print last }')
+    if ! printf '%s\n' "$EXEC" | grep -Eq -- '--triggers[ =][^ ]+'; then
+      result "no_triggers"
+      exit 4
+    fi
+    NEWEXEC=$(printf '%s\n' "$EXEC" | sed -E "s#--triggers[ =][^ ]+#--triggers $EXCL#")
+    mkdir -p "$DIR"
+    {
+      echo '# Volumio plugin "X10 RF Remote": exclusive mode (runtime only, removed on stop and reboot)'
+      echo '[Service]'
+      echo 'ExecStart='
+      echo "ExecStart=$NEWEXEC"
+    } > "$DROPIN.tmp" && mv "$DROPIN.tmp" "$DROPIN"
+    systemctl daemon-reload
+    if systemctl restart "$UNIT"; then
+      result "ok"
+      exit 0
+    fi
+    rm -f "$DROPIN"
+    systemctl daemon-reload
+    systemctl restart "$UNIT"
+    result "error restart failed"
+    exit 5
+    ;;
+  off)
+    CHANGED=0
+    [ -f "$DROPIN" ] && { rm -f "$DROPIN"; CHANGED=1; }
+    rmdir "$DIR" 2>/dev/null
+    remove_legacy && CHANGED=1
+    if [ "$CHANGED" = "1" ]; then
+      systemctl daemon-reload
+      systemctl restart "$UNIT"
+    fi
+    result "ok"
+    exit 0
+    ;;
+  *)
+    echo "usage: $0 on|off" >&2
+    exit 2
+    ;;
+esac
