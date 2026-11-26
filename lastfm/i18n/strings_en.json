@@ -44,7 +44,7 @@
 		"SERVICESETTINGS":"Scrobbling service",
 		"D_SERVICESETTINGS":"Choose where to scrobble: Last.fm, ListenBrainz or both, and fill in the ListenBrainz token.",
 			"SCROBBLE_SERVICE":"Scrobble to",
-			"D_SCROBBLE_SERVICE":"ListenBrainz is free and needs only the token below. Last.fm needs the credentials above, and Last.fm has announced that API keys will require a Last.fm Pro subscription from 1 December 2026. With both selected every scrobble is sent to both services.",
+			"D_SCROBBLE_SERVICE":"ListenBrainz is free and needs only the token below. Last.fm needs the credentials above and a Last.fm API key. With both selected every scrobble is sent to both services.",
 			"LB_TOKEN":"ListenBrainz user token",
 			"D_LB_TOKEN":"Paste the user token of your ListenBrainz account.",
 			"DD_LB_TOKEN":"You can find it at https://listenbrainz.org/settings/ . Only needed when ListenBrainz is selected.",
