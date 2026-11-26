@@ -238,7 +238,7 @@ remotepi.prototype.detectPi5 = function () {
       defer.reject(err);
     } else {
       data = data.match(/^Revision\s*:\s.*$/m)[0].split(': ')[1];
-      defer.resolve(parseInt(data, 16).toString(2).charAt(1) === '1' && data.substr(-3, 2) === '17');
+      defer.resolve(parseInt(data, 16).toString(2).charAt(1) === '1' && ['17', '18', '19', '1a'].includes(data.slice(-3, -1)));
     }
   });
   return defer.promise;
