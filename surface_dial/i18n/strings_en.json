@@ -1,0 +1,8 @@
+{
+  "SURFACE_DIAL":"Surface Dial","STATUS":"Device","SAVE":"Save",
+  "DEVICE_MAC":"Surface Dial Bluetooth address","DEVICE_MAC_DOC":"Leave blank and use Scan. The plugin will look for a paired or discoverable Microsoft Surface Dial.",
+  "SCAN":"Scan for Surface Dial","PAIR":"Pair selected Surface Dial","FORGET":"Forget Surface Dial","CONTROLS":"Controls",
+  "REVERSE_ROTATION":"Reverse rotation direction","SINGLE_PRESS":"Single press","DOUBLE_PRESS":"Double press","LONG_PRESS":"Long press",
+  "HAPTICS":"Haptics","HAPTICS_DOC":"Enable tactile feedback for rotation detents and button actions. Enabled by default.",
+  "ADVANCED":"Advanced","DOUBLE_PRESS_MS":"Double-press window (ms)","LONG_PRESS_MS":"Long-press threshold (ms)","RECONNECT_SECONDS":"Reconnect interval (seconds)"
+}
