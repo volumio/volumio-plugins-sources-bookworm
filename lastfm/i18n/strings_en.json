@@ -15,7 +15,7 @@
 			"STORE_PASSWORD":"Store the password in the config file",			
 			"D_STORE_PASSWORD":"From a security awareness point of view this is advised against. A authentication token will be stored, which is hashed and suffices to log into LastFM.",
 			"DD_STORE_PASSWORD":"Don't just store your password, read the info.",
-		"SCROBBLESETTINGS":"LastFM scrobble settings",
+		"SCROBBLESETTINGS":"Scrobble settings",
 		"D_SCROBBLESETTINGS":"Configure what services to scrobble, when to scrobble and how to format metadata.",
 			"BLACKLIST_SERVICES":"Blacklist the following services",
 			"D_BLACKLIST_SERVICES":"Include all services that you wish to exclude from scrobbling, e.g. if you're having trouble scrobbling from certain radio stations.",
