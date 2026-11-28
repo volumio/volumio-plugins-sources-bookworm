@@ -303,7 +303,7 @@ def main():
                 run.run_script("apply_replaygain.py", *loose)
         run.finish("done")
     except Cancelled:
-        run.line("⏹ Остановлено пользователем (после текущего шага)")
+        run.line("⏹ Stopped by the user (after the current step)")
         run.finish("cancelled", "stopped by user")
     except Exception as e:                      # noqa: BLE001
         problem(f"pipeline crashed: {e}")

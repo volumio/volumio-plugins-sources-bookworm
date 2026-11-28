@@ -164,10 +164,54 @@ def check_dir(label, d):
         line(True, f"{label}: символы ':' '?' в именах НЕДОПУСТИМЫ (NTFS/exFAT/FAT) — плагин заменяет их на '_'")
 
 
+MPD_CONF = Path("/etc/mpd.conf")
+
+
+def check_mpd():
+    """ReplayGain включён в MPD? Без этого MPD не использует записанные теги."""
+    if not MPD_CONF.is_file():
+        line(False, f"MPD: {MPD_CONF} не найден — это не Volumio или MPD настроен иначе")
+        return
+    try:
+        text = MPD_CONF.read_text(encoding="utf-8", errors="replace")
+    except OSError as e:
+        line(False, f"MPD: не удалось прочитать {MPD_CONF}: {e}")
+        return
+    active = {}
+    normalization = None
+    for raw in text.splitlines():
+        l = raw.strip()
+        if not l or l.startswith("#"):
+            continue
+        m = re.match(r'(replaygain(?:_preamp|_missing_preamp|_limit)?|volume_normalization)\s+"?([^"\s]+)"?', l)
+        if not m:
+            continue
+        if m.group(1) == "volume_normalization":
+            normalization = m.group(2)
+        else:
+            active[m.group(1)] = m.group(2)
+    mode = active.get("replaygain")
+    on = mode not in (None, "off")
+    line(on, f"MPD: replaygain в {MPD_CONF} = {mode!r}"
+             + ("" if on else " — выключен, теги не используются (тумблер в настройках плагина)"))
+    for k in ("replaygain_preamp", "replaygain_missing_preamp", "replaygain_limit"):
+        if k in active:
+            line(True, f"MPD: {k} = {active[k]!r}")
+    if normalization is None and "#TP_RG# volume_normalization" in text:
+        line(True, "MPD: volume_normalization закомментирована плагином (пока тумблер включён)")
+    else:
+      line(normalization != "yes",
+         f"MPD: volume_normalization = {normalization!r}"
+         + (" — включена встроенная нормализация, громкость будет корректироваться дважды"
+            if normalization == "yes" else ""))
+    line(True, f"MPD: блок плагина: {'есть' if 'track_preparer plugin: ReplayGain' in text else 'нет'}")
+
+
 def main():
     print("=== Track Preparer: диагностика ===")
     check_python()
     check_ffmpeg()
+    check_mpd()
     tmp = Path(tempfile.mkdtemp(prefix="tp_diag_"))
     try:
         selftest(tmp)

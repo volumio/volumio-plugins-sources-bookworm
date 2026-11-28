@@ -1,18 +1,18 @@
 {
   "name": "track_preparer",
-  "version": "1.8.2",
-  "description": "Prepares music (CUE splitting, silence trim, covers, ReplayGain, multi-disc merge) for the Volumio library.",
+  "version": "1.12.3",
+  "description": "Prepares a music collection for the Volumio library in one run: unpacks archives, splits CUE+image albums, converts formats to FLAC or MP3, trims silence, embeds covers, merges multi-disc albums, sorts files into Artist/Album by tags and writes ReplayGain tags. Files are moved to a second folder, so the input is emptied as albums are finished.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"no tests\""
   },
   "author": "karkolom223",
-  "license": "ISC",
+  "license": "MIT",
   "repository": "https://github.com/karkolom223/volumio_plugin",
   "volumio_info": {
     "prettyName": "Track Preparer",
+    "plugin_type": "music_service",
     "icon": "fa-music",
-    "plugin_type": "miscellanea",
     "architectures": [
       "amd64",
       "armhf"
@@ -20,16 +20,16 @@
     "os": [
       "bookworm"
     ],
-    "details": "Splits CUE+image albums (also several cue files, side A/B images), trims silence, adds covers and ReplayGain, merges multi-disc albums and sorts them by tags.",
-    "changelog": "1.8.2: the progress page follows the Volumio system language (Russian or English) instead of the browser language; the fallback page is bilingual too"
+    "details": "One button turns a folder of unsorted music into a clean, tagged library in a second folder: unpacks .zip, .iso and .iso.wv archives (Cyrillic names from Windows archives are restored), splits CUE+image albums (several cue files in one folder, side A/B images, images stored in parts, cue files for already split tracks), converts lossless formats to FLAC and lossy ones to MP3 VBR V0, trims silence, finds and embeds covers, merges multi-disc albums (cd1/cd2 folders and discs marked in the album name, such as Album CD2), cleans file names, sorts everything into Artist/Album by tags and writes ReplayGain 2.0 track gain. It works as a move, not a copy: finished albums are moved to the output and the input folder is emptied, together with empty folders and leftover covers/nfo, but a source file is deleted only after the converted copy is checked by size and duration. Folders with a CUE that cannot be split, or with files the plugin does not recognize, stay in place and are logged. A progress page with start and stop is served on the network.",
+    "changelog": "1.12.3 - category changed to music_service: miscellanea is not a category supported by the Volumio store; the plugin no longer edits /etc/mpd.conf (writing it needs root), Volumio's built-in volume normalization has to be switched off by hand in Playback Options. 1.12.2: the ReplayGain switch also commented out volume_normalization in mpd.conf while it was on. 1.12.1: fixed the ReplayGain switch not being saved when the plugin is enabled without a reboot (config now loads on demand); the preparation window follows the Volumio language. 1.12.0: ReplayGain switch moved to the top of the plugin settings; it asks Volumio's MPD plugin to add the replaygain lines (registerConfigCallback) instead of writing /etc/mpd.conf, so no root access and no template edits are needed"
   },
   "engines": {
     "node": ">=20",
     "volumio": ">=4"
   },
   "dependencies": {
-    "fs-extra": "*",
-    "kew": "*",
-    "v-conf": "*"
+    "fs-extra": "^11.1.0",
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.2"
   }
 }

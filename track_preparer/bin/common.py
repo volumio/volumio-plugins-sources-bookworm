@@ -28,7 +28,23 @@ LOG_MAX_BYTES = 1_000_000
 
 DISC        = re.compile(r"^(cd|disc|disk|d)[\s._-]*\d+$", re.I)
 # суффикс "(Disc 1)" / "[CD2]" в теге album: общий для sort_library и replaygain
-DISC_SUFFIX = re.compile(r"\s*[\(\[]\s*(?:cd|disc|disk|диск)\s*\d+\s*[\)\]]\s*$", re.I)
+DISC_SUFFIX = re.compile(
+    r"\s*(?:[\(\[]\s*(?:cd|disc|disk|диск)\s*\.?\s*(\d{1,2})\s*[\)\]]"      # (Disc 1) [CD2]
+    r"|[-–—:,]?\s*\b(?:cd|disc|disk|диск)\s*\.?\s*(\d{1,2}))\s*$",             # ... CD1, - Disc 2
+    re.I)
+
+
+def split_disc(album):
+    """'Альбом CD2' -> ('Альбом', 2); без метки диска или если кроме неё ничего нет ->
+    (album, None). Метка — в конце названия, 1–2 цифры (так 'CD 2000' не задевается)."""
+    album = (album or "").strip()
+    m = DISC_SUFFIX.search(album)
+    if not m:
+        return album, None
+    base = album[:m.start()].strip()
+    if not base:
+        return album, None
+    return base, int(m.group(1) or m.group(2))
 MUSIC_EXTS  = (".flac", ".mp3")
 IMAGE_EXTS  = (".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp")
 # Любое аудио: нужно, чтобы НИЧЕГО не удалить по ошибке
@@ -55,6 +71,11 @@ def note(msg):
     _write(f"[INFO] {msg}")
     print("·", msg)
     sys.stdout.flush()
+
+
+def log_only(msg):
+    """Подробность только для лога (errors.log), без вывода в окно выполнения."""
+    _write(f"[INFO] {msg}")
 
 
 def problem(msg):

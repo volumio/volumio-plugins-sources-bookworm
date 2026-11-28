@@ -2,7 +2,7 @@
 
 **English** · [Русский](#русский)
 
-One-button preparation of a music collection for the [Volumio](https://volumio.com) library: splits CUE+image albums, converts formats, trims silence, embeds covers, merges multi-disc albums, sorts everything into `Artist/Album/` by tags and writes ReplayGain tags. Your files go in one folder, clean and tagged files come out of another.
+One-button preparation of a music collection for the [Volumio](https://volumio.com) library: splits CUE+image albums, converts formats, trims silence, embeds covers, merges multi-disc albums, sorts everything into `Artist/Album/` by tags and writes ReplayGain tags. Your files go in one folder, clean and tagged files come out of another: the plugin moves them, so the input folder is emptied as albums are finished.
 
 ---
 
@@ -13,6 +13,7 @@ One-button preparation of a music collection for the [Volumio](https://volumio.c
 - [Features](#features)
 - [How it works](#how-it-works)
 - [ReplayGain](#replaygain)
+- [Enabling ReplayGain in Volumio](#enabling-replaygain-in-volumio)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -51,7 +52,7 @@ The input folder is `/mnt/HDD/in/music`. **Its structure does not matter:** ever
 | 5. Silence | Silence below −50 dB at the start/end is trimmed. Tracks without silence are not touched. |
 | 6. Discs | `cd1/cd2/…` are merged into one album with continuous numbering. |
 | 7. Names | Track numbers are removed from file names; forbidden characters are cleaned. |
-| 8. Sorting | Moved to `<output>/<artist>/<album>/`. Album = most frequent `album` tag (without a "(Disc 1)" suffix), else the folder name. Artist = `albumartist`, else `artist` if it covers ≥ 60 % of tracks; different artists → `Various Artists`; no tags → `_unknown`. Loose files in the input root are sorted the same way, each by its own tags. |
+| 8. Sorting | Moved to `<output>/<artist>/<album>/`. Album = most frequent `album` tag without a trailing disc marker (`CD1`, `- Disc 2`, `(Disc 1)`), else the folder name. Disc markers are also removed from the `album` tag itself, `discnumber` is filled in, and when several discs of one album end up in the same folder (even from different runs, in any order) the track numbers are renumbered continuously in "disc, track" order. Artist = `albumartist`, else `artist` if it covers ≥ 60 % of tracks; different artists → `Various Artists`; no tags → `_unknown`. Loose files in the input root are sorted the same way, each by its own tags. |
 | 9. ReplayGain | The last step, run on the final files in the output folder. See below. |
 
 At the end of a run, folders that no longer contain audio or CUE are removed from the input folder, including leftovers such as `folder.jpg`, `Thumbs.db`, hidden files and nfo/txt/log. A folder with audio, a CUE or other files (e.g. a PDF) stays and the reason is logged.
@@ -63,11 +64,37 @@ Built-in calculator: `ffmpeg` (`ebur128`) + `mutagen`. No external tools are nee
 - **Track gain only**, reference −18 LUFS (ReplayGain 2.0), plus `REPLAYGAIN_TRACK_PEAK` (True Peak) and `REPLAYGAIN_REFERENCE_LOUDNESS`. Album gain is deliberately not written (the library is played in shuffle).
 - **Input data is not trusted.** Every file is measured again and its tags are force-rewritten. All old ReplayGain-like tags are removed first: `REPLAYGAIN_*` (including `ALBUM_*`), `R128_*`, ID3 `RVA2`/`RVAD`/`RVA`, `iTunNORM`, and ReplayGain keys in an APEv2 tag on MP3 — including zeroed or foreign values.
 - **Clip protection in the tag:** the gain value is lowered if, after applying it, True Peak would exceed −1 dBTP (like `loudgain -k`). Audio files are never modified. Set `CLIP_PROTECT = False` in `bin/replaygain.py` to write pure `−18 − LUFS` values.
-- Silence (ffmpeg reports −70 LUFS) is not measured and gets no tags, instead of an absurd +52 dB gain.
+- Silence (ffmpeg reports −70 LUFS) is not measured and gets no tags, instead of an absurd +52 dB gain. The same applies to any track that cannot be measured: its old ReplayGain tags are removed (no tags are better than false ones) and a single `⚠` line per folder is shown. The measurement works with ffmpeg 4.2 – 7.x (checked on 4.2, 4.4, 5.1, 6.1, 7.0).
 - If the True Peak cannot be measured, the peak tag is skipped (rather than written as zero); a sample-peak fallback (`astats`/`volumedetect`) is tried first.
 - **Advice:** for tracks with True Peak **above 0 dBTP** the run window (yellow `⚠` lines) and `errors.log` (`[ADVICE]`) list the track, its value and a recommendation to replace it with a better source. Advice does not count as a problem.
 
 Keep in mind that True Peak above 0 dBTP is common in loud masters and in MP3, so treat the list as a hint, not a verdict — start with the highest values.
+
+### Enabling ReplayGain in Volumio
+
+Writing the tags is not enough: **volume leveling is off by default in Volumio.** MPD ignores the tags, and web radio plays noticeably louder than the library. That is why the first section of the plugin settings is **Volume leveling (ReplayGain)** with a switch. Nothing is changed until you turn it on.
+
+The switch does not edit any file by hand. The plugin registers a configuration callback in Volumio's own MPD plugin (`registerConfigCallback` — the same public mechanism the official `mpdoutput` plugin uses for its `audio_output` blocks) and asks it to rebuild `/etc/mpd.conf` and restart MPD. MPD appends these lines itself:
+
+```
+replaygain "track"
+replaygain_preamp "0"
+replaygain_missing_preamp "-8"
+replaygain_limit "yes"
+```
+
+So:
+
+- no root access and no `sudoers` rules, no edits of `mpd.conf.tmpl`, no writes to `/etc/mpd.conf` from the plugin;
+- the lines are present at every rebuild — after a reboot, a settings change or an MPD restart — because MPD asks the plugin for them;
+- turning the switch off, disabling the plugin or uninstalling it removes the lines and rebuilds the file; the switch position is stored in `rg_enabled`;
+- MPD restarts once on each change, so playback stops for a few seconds.
+
+`replaygain_preamp "0"` applies the measured gain to tagged tracks (they are measured at −18 LUFS, so no extra offset is needed). `replaygain_missing_preamp "-8"` attenuates streams and files without tags (web radio) by 8 dB. `replaygain_limit "yes"` prevents clipping.
+
+If Volumio's own **volume normalization** is enabled in Playback Options, switch it off: it would correct the volume a second time on top of ReplayGain, and the result is worse than either correction alone. The plugin cannot do this for you — the line is written by Volumio's MPD template, and a configuration callback can only append to it.
+
+The standalone `tools/enable-replaygain.sh` script in the repository root is only for machines where the plugin is not installed. **Do not run it while the switch is on:** it edits the template, and together with the plugin's own lines MPD would get a duplicate directive and refuse to start. The script checks for this and stops.
 
 ### Requirements
 
@@ -107,13 +134,13 @@ The plugin serves its own page at **`http://<volumio-address>:8765/`** (the next
 - `log/errors.log` — cumulative log; `[PROBLEM]` lines are counted in the final notification, `[ADVICE]` lines are recommendations.
 
 ```bash
-tail -f /data/plugins/miscellanea/track_preparer/log/errors.log
+tail -f /data/plugins/music_service/track_preparer/log/errors.log
 ```
 
 Manual run for debugging:
 
 ```bash
-cd /data/plugins/miscellanea/track_preparer/bin
+cd /data/plugins/music_service/track_preparer/bin
 export TP_IN_MUSIC=/mnt/HDD/in/music TP_OUT_MUSIC=/mnt/HDD/out/music   # optional
 python3 run_pipeline.py
 ```
@@ -121,7 +148,7 @@ python3 run_pipeline.py
 Self-check (send the output when reporting a problem):
 
 ```bash
-cd /data/plugins/miscellanea/track_preparer/bin
+cd /data/plugins/music_service/track_preparer/bin
 python3 diagnose.py /mnt/HDD/in/music /mnt/HDD/out/music
 ```
 
@@ -129,6 +156,7 @@ It reports Python/mutagen/ffmpeg versions, the presence of `shnsplit`/`flac`/`me
 
 ### Safety guarantees
 
+- **It works as a move, not a copy.** Finished albums are moved to the output folder; the album folder itself, covers, nfo and other leftovers are then removed from the input. After a successful run the input folder is empty again (the folder itself stays); only folders the plugin cannot sort remain, each with a reason in the log.
 - A source file is deleted only after its result is verified to exist (size/duration): conversion, CUE splitting and the move to the output folder.
 - If an image cannot be split by its CUE, the folder is **not processed further and nothing is deleted** — it stays in the input folder with a `[PROBLEM]` entry, so an image never ends up in the library as one long track.
 - The image for a CUE is found regardless of name and extension: the `FILE` name (e.g. `Album.iso.wv`) is matched to the real file (`Album.flac`); otherwise the only audio file is used, and among several files the one the CUE fits into by duration. A CUE with a foreign extension (`Album.cue.iso.wv`) is renamed to `.cue`.
@@ -153,7 +181,7 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ### License
 
-ISC (see `LICENSE`).
+MIT (see `LICENSE` and `package.json`).
 
 ---
 
@@ -163,13 +191,14 @@ ISC (see `LICENSE`).
 
 **[English](#track-preparer--a-volumio-plugin)** · Русский
 
-Плагин Volumio, который готовит музыкальную коллекцию для библиотеки одной кнопкой: режет образы CUE, конвертирует форматы, обрезает тишину, встраивает обложки, объединяет многодисковые альбомы, раскладывает всё по `Артист/Альбом/` по тегам и записывает теги ReplayGain. Файлы кладутся в одну папку, готовые и размеченные забираются из другой.
+Плагин Volumio, который готовит музыкальную коллекцию для библиотеки одной кнопкой: режет образы CUE, конвертирует форматы, обрезает тишину, встраивает обложки, объединяет многодисковые альбомы, раскладывает всё по `Артист/Альбом/` по тегам и записывает теги ReplayGain. Файлы кладутся в одну папку, готовые и размеченные забираются из другой: плагин их переносит, поэтому входная папка по мере работы очищается.
 
 ### Содержание
 
 - [Возможности](#возможности)
 - [Как это работает](#как-это-работает)
 - [ReplayGain](#replaygain-1)
+- [Включение ReplayGain в Volumio](#включение-replaygain-в-volumio)
 - [Требования](#требования)
 - [Установка](#установка)
 - [Использование](#использование)
@@ -208,7 +237,7 @@ ISC (see `LICENSE`).
 | 5. Тишина | Тишина тише −50 дБ в начале/конце обрезается. Файлы без тишины не трогаются. |
 | 6. Диски | `cd1/cd2/…` объединяются в один альбом со сквозной нумерацией. |
 | 7. Имена | Номер трека убирается из имени файла, запрещённые символы чистятся. |
-| 8. Раскладка | Перенос в `<выход>/<артист>/<альбом>/`. Альбом — самый частый тег album (без суффикса «(Disc 1)»), иначе имя папки. Артист — albumartist, иначе artist, если он у ≥ 60 % треков; разные исполнители — `Various Artists`; тегов нет — `_unknown`. Одиночные файлы в корне входной папки раскладываются так же, каждый по своим тегам. |
+| 8. Раскладка | Перенос в `<выход>/<артист>/<альбом>/`. Альбом — самый частый тег album без метки диска в конце (`CD1`, `- Disc 2`, `(Disc 1)`), иначе имя папки. Метка также убирается из самого тега `album`, заполняется `discnumber`, а когда в одной папке оказываются несколько дисков альбома (даже из разных запусков и в любом порядке), нумерация треков становится сквозной в порядке «диск, трек». Артист — albumartist, иначе artist, если он у ≥ 60 % треков; разные исполнители — `Various Artists`; тегов нет — `_unknown`. Одиночные файлы в корне входной папки раскладываются так же, каждый по своим тегам. |
 | 9. ReplayGain | Последний шаг, на готовых файлах в выходной папке. См. ниже. |
 
 В конце запуска из входной папки убираются папки, где нет аудио и cue, в том числе с остатками (`folder.jpg`, `Thumbs.db`, скрытые файлы, nfo/txt/log). Папка с аудио, cue или другими файлами (например PDF) остаётся, причина пишется в лог.
@@ -220,11 +249,37 @@ ISC (see `LICENSE`).
 - **Только track gain**, эталон −18 LUFS (ReplayGain 2.0), плюс `REPLAYGAIN_TRACK_PEAK` (True Peak) и `REPLAYGAIN_REFERENCE_LOUDNESS`. Album gain сознательно не пишется (библиотека играет в shuffle).
 - **Входным данным нет доверия.** Каждый файл измеряется заново, теги перезаписываются принудительно. Сначала удаляются все старые ReplayGain-подобные теги: `REPLAYGAIN_*` (включая `ALBUM_*`), `R128_*`, ID3 `RVA2`/`RVAD`/`RVA`, `iTunNORM` и ключи ReplayGain в APEv2 у mp3, в том числе нулевые и чужие значения.
 - **Защита от клиппинга в теге:** значение gain занижается, если после его применения True Peak превысил бы −1 dBTP (как `loudgain -k`). Аудиофайлы не меняются. Чтобы писать «чистое» значение `−18 − LUFS`, поставьте `CLIP_PROTECT = False` в `bin/replaygain.py`.
-- Тишина (ffmpeg выдаёт −70 LUFS) не измеряется и тегов не получает — вместо абсурдного gain +52 dB.
+- Тишина (ffmpeg выдаёт −70 LUFS) не измеряется и тегов не получает — вместо абсурдного gain +52 dB. То же для любого трека, который измерить не удалось: старые ReplayGain-теги в нём удаляются (лучше без тегов, чем с ложными), а в окне показывается одна строка `⚠` на папку. Замер работает с ffmpeg 4.2 – 7.x (проверено на 4.2, 4.4, 5.1, 6.1, 7.0).
 - Если True Peak измерить нельзя, тег пика не пишется (вместо нулевого значения); сначала пробуется запасной сэмпловый пик (`astats`/`volumedetect`).
 - **Рекомендация:** для треков с True Peak **выше 0 dBTP** в окне выполнения (жёлтые строки `⚠`) и в `errors.log` (`[ADVICE]`) выводятся трек, значение и совет заменить его на лучший источник. В счётчик проблем это не входит.
 
 Учтите: True Peak выше 0 dBTP — обычное дело для громких мастеров и mp3, поэтому список — подсказка, а не вердикт; начинайте с самых высоких значений.
+
+### Включение ReplayGain в Volumio
+
+Записать теги мало: **выравнивание громкости в Volumio по умолчанию выключено.** MPD игнорирует теги, а веб-радио играет заметно громче медиатеки. Поэтому первая секция настроек плагина — **Выравнивание громкости (ReplayGain)** с тумблером. Пока вы его не включили, ничего не меняется.
+
+Тумблер ничего не правит руками. Плагин регистрирует колбэк конфигурации в MPD-плагине Volumio (`registerConfigCallback` — тот же публичный механизм, которым официальный плагин `mpdoutput` добавляет свои блоки `audio_output`), и просит пересобрать `/etc/mpd.conf` и перезапустить MPD. Сами строки MPD добавляет сам:
+
+```
+replaygain "track"
+replaygain_preamp "0"
+replaygain_missing_preamp "-8"
+replaygain_limit "yes"
+```
+
+Поэтому:
+
+- не нужны root, правила `sudoers`, правка `mpd.conf.tmpl` и запись в `/etc/mpd.conf` из плагина;
+- строки есть при каждой пересборке — после перезагрузки, смены настроек или перезапуска MPD, потому что MPD сам спрашивает их у плагина;
+- выключение тумблера, отключение и удаление плагина убирают строки и пересобирают файл; положение тумблера хранится в `rg_enabled`;
+- при каждом изменении MPD перезапускается один раз, воспроизведение прерывается на несколько секунд.
+
+`replaygain_preamp "0"` применяет измеренный gain к размеченным трекам (они измерены в −18 LUFS, поэтому добавочный сдвиг не нужен). `replaygain_missing_preamp "-8"` убавляет на 8 дБ потоки и файлы без тегов (веб-радио). `replaygain_limit "yes"` не даёт клиппировать.
+
+Если в настройках воспроизведения Volumio включена встроенная **нормализация громкости**, выключите её: это вторая, более грубая коррекция поверх ReplayGain.
+
+Отдельный скрипт `tools/enable-replaygain.sh` в корне репозитория нужен только на машинах, где плагин не установлен. **Не запускайте его при включённом тумблере:** он правит шаблон, и вместе со строками плагина MPD получит дубль директивы и не запустится. Скрипт это проверяет и останавливается.
 
 ### Требования
 
@@ -264,13 +319,13 @@ volumio plugin install
 - `log/errors.log` — накопительный журнал; строки `[PROBLEM]` учитываются в итоговом уведомлении, строки `[ADVICE]` — рекомендации.
 
 ```bash
-tail -f /data/plugins/miscellanea/track_preparer/log/errors.log
+tail -f /data/plugins/music_service/track_preparer/log/errors.log
 ```
 
 Ручной запуск (отладка):
 
 ```bash
-cd /data/plugins/miscellanea/track_preparer/bin
+cd /data/plugins/music_service/track_preparer/bin
 export TP_IN_MUSIC=/mnt/HDD/in/music TP_OUT_MUSIC=/mnt/HDD/out/music   # при необходимости
 python3 run_pipeline.py
 ```
@@ -278,7 +333,7 @@ python3 run_pipeline.py
 Самопроверка (присылайте её вывод, если что-то не работает):
 
 ```bash
-cd /data/plugins/miscellanea/track_preparer/bin
+cd /data/plugins/music_service/track_preparer/bin
 python3 diagnose.py /mnt/HDD/in/music /mnt/HDD/out/music
 ```
 
@@ -286,6 +341,7 @@ python3 diagnose.py /mnt/HDD/in/music /mnt/HDD/out/music
 
 ### Надёжность
 
+- **Это перенос, а не копирование.** Готовые альбомы уезжают в выходную папку, а сама папка альбома, обложки, nfo и прочий мусор удаляются из входной. После успешного прогона входная папка снова пустая (сама папка остаётся); остаются только папки, которые плагин не смог разобрать, — каждая с причиной в логе.
 - Файл-источник удаляется только после проверки, что результат реально существует (размер/длительность): конвертация, нарезка по cue и перенос в выходную папку.
 - Если образ не удалось порезать по cue, папка **не обрабатывается дальше и ничего не удаляется**: она остаётся во входной с записью `[PROBLEM]`, образ не попадёт в библиотеку одним длинным треком.
 - Образ для cue ищется независимо от имени и расширения: имя в строке `FILE` (например `Album.iso.wv`) сопоставляется с реальным файлом (`Album.flac`); если имена не совпали — берётся единственный аудиофайл, а среди нескольких — тот, в который по длительности укладывается cue. Cue с «чужим» расширением (`Album.cue.iso.wv`) переименовывается в `.cue`.
@@ -310,4 +366,4 @@ python3 diagnose.py /mnt/HDD/in/music /mnt/HDD/out/music
 
 ### Лицензия
 
-ISC (см. `LICENSE`).
+MIT (см. `LICENSE` и `package.json`).

@@ -5,6 +5,33 @@
   },
   "sections": [
     {
+      "id": "section_replaygain",
+      "element": "section",
+      "label": "TRANSLATE.SECTION_REPLAYGAIN",
+      "icon": "fa-volume-up",
+      "description": "TRANSLATE.REPLAYGAIN_DESC",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "music_service/track_preparer",
+        "method": "updateReplayGain"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.SAVE",
+        "data": [
+          "rg_enabled"
+        ]
+      },
+      "content": [
+        {
+          "id": "rg_enabled",
+          "element": "switch",
+          "label": "TRANSLATE.RG_TOGGLE",
+          "doc": "TRANSLATE.RG_DOC",
+          "value": false
+        }
+      ]
+    },
+    {
       "id": "section_prepare",
       "element": "section",
       "label": "TRANSLATE.SECTION_PREPARE",

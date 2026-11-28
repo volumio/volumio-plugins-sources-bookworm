@@ -6,5 +6,9 @@
   "out_music": {
     "type": "string",
     "value": "/mnt/HDD/out/music"
+  },
+  "rg_enabled": {
+    "type": "boolean",
+    "value": false
   }
 }

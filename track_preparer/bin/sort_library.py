@@ -10,7 +10,8 @@ from collections import Counter
 from pathlib import Path
 
 from common import (DISC_SUFFIX, MUSIC_EXTS, OUT_MUSIC, audio_files, get_easy_tag, leftover_audio,
-                    note, problem, safe_filename, safe_move, safe_target)
+                    natural_key, note, problem, safe_filename, safe_move, safe_target,
+                    set_easy_tags, split_disc)
 
 UNKNOWN = "_unknown"
 UNSORTED = "_unsorted"
@@ -50,7 +51,7 @@ def _top(values):
 
 def destination(files, folder_name):
     """Папка в выходной библиотеке: out/<артист>/<альбом>/ по тегам файлов.
-    Альбом — самый частый тег album (без суффикса "(Disc 1)"), иначе имя папки.
+    Альбом — самый частый тег album (без метки диска: "(Disc 1)", "CD2", "- Disc 3"), иначе имя папки.
     Артист — самый частый albumartist; если его нет — самый частый artist,
     когда он у >=60% треков; если исполнители разные — "Various Artists";
     тегов нет вовсе — _unknown. Структура входных папок не используется."""
@@ -68,6 +69,54 @@ def destination(files, folder_name):
 DESTS = []          # папки назначения этого запуска (печатаются в конце как '→ путь')
 
 
+def normalize_disc_tags(files):
+    """«Альбом CD1» / «Альбом (Disc 2)» в теге album -> «Альбом» + discnumber (если пуст).
+    Иначе диски одного альбома выглядят в Volumio разными альбомами."""
+    for f in files:
+        try:
+            album = get_easy_tag(f, "album")
+            base, disc = split_disc(album)
+            if disc is None:
+                continue
+            tags = {"album": base}
+            if not get_easy_tag(f, "discnumber"):
+                tags["discnumber"] = str(disc)
+            set_easy_tags(f, **tags)
+        except Exception as e:                           # noqa: BLE001
+            note(f"disc tags not normalized for {f.name}: {e}")
+
+
+def _num(value):
+    """'3/17' -> 3; пусто/мусор -> 0."""
+    try:
+        return int(str(value).split("/")[0].strip())
+    except ValueError:
+        return 0
+
+
+def renumber_discs(out_dir):
+    """Если в папке треки с разными discnumber (диски одного альбома, пришедшие
+    отдельными папками или в разное время) — сквозная нумерация tracknumber в порядке
+    «диск, трек», как делает merge_discs. Повторный вызов ничего не меняет."""
+    files = audio_files(out_dir, MUSIC_EXTS)
+    keyed = [(f, _num(get_easy_tag(f, "discnumber")), _num(get_easy_tag(f, "tracknumber")))
+             for f in files]
+    if len({d for _, d, _ in keyed if d}) < 2:
+        return
+    keyed.sort(key=lambda x: (x[1] or 10 ** 6, x[2] or 10 ** 6, natural_key(x[0].name)))
+    changed = 0
+    for n, (f, _, old) in enumerate(keyed, 1):
+        if old == n:
+            continue
+        try:
+            set_easy_tags(f, tracknumber=n)
+            changed += 1
+        except Exception as e:                           # noqa: BLE001
+            problem(f"tracknumber {f.name}: {e}")
+    if changed:
+        note(f"discs renumbered continuously ({len(keyed)} tracks): {out_dir.name}")
+
+
 def process_album(album_dir):
     files = audio_files(album_dir, MUSIC_EXTS)
     if not files:
@@ -77,10 +126,12 @@ def process_album(album_dir):
                     f"{left[0].relative_to(album_dir)}): {album_dir}")
         return
     out_dir = destination(files, album_dir.name)
+    normalize_disc_tags(files)
     moved = move_files(files, out_dir)      # обложка встроена в треки, файл обложки не переносим
     note(f"moved {moved}/{len(files)} file(s) -> {out_dir}")
     if moved:
         DESTS.append(out_dir)
+        renumber_discs(out_dir)
     if moved < len(files):
         problem(f"left in place (not all files moved): {album_dir}")
         return
@@ -102,10 +153,13 @@ def process_root_files(in_music):
     n = 0
     for f in files:
         dest = destination([f], UNSORTED)
+        normalize_disc_tags([f])
         got = move_files([f], dest)
         n += got
         if got and dest not in DESTS:
             DESTS.append(dest)
+        if got:
+            renumber_discs(dest)
     if files:
         note(f"{n}/{len(files)} loose files sorted by tags")
 

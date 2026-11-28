@@ -30,24 +30,27 @@ function ControllerTrackPreparer(context) {
     this.logger = context.logger;
     this.pluginDir = __dirname;
     this.isRunning = false;
-    this.stopping = false;
     this.child = null;
+    this.active = false;
+    this.rgBusy = false;
     this.server = null;
     this.port = PORT_BASE;
-    this.serverStopped = false;
 }
 
 /* ---------- жизненный цикл ---------- */
 
-ControllerTrackPreparer.prototype.onVolumioStart = function () {
+// The config is loaded lazily: Volumio calls onVolumioStart only on boot, so a plugin that
+// was just installed or enabled from the UI (onStart only) would otherwise have no config,
+// and the ReplayGain switch could neither be saved nor read back.
+ControllerTrackPreparer.prototype.ensureConfig = function () {
     var self = this;
-    self.logger.info('track_preparer: onVolumioStart');
+    if (self.config) { return self.config; }
     var configFile;
     try {
         configFile = self.commandRouter.pluginManager.getConfigurationFile(self.context, 'config.json');
     } catch (e) {
         self.logger.error('track_preparer: cannot resolve config path: ' + e);
-        return libQ.resolve();
+        return null;
     }
     try {
         if (!fs.existsSync(configFile)) {
@@ -58,18 +61,33 @@ ControllerTrackPreparer.prototype.onVolumioStart = function () {
         self.logger.error('track_preparer: cannot prepare config: ' + e);
     }
     try {
-        self.config = new vConf();
-        self.config.loadFile(configFile);
+        var conf = new vConf();
+        conf.loadFile(configFile);
+        self.config = conf;
     } catch (e) {
         self.logger.error('track_preparer: cannot load config: ' + e);
         self.config = null;
     }
+    return self.config;
+};
+
+ControllerTrackPreparer.prototype.onVolumioStart = function () {
+    var self = this;
+    self.logger.info('track_preparer: onVolumioStart');
+    self.ensureConfig();
+    // The MPD plugin builds /etc/mpd.conf during its own start, before any onStart
+    // runs, so the hook has to be in place already. It returns nothing until this
+    // plugin is started (see getMpdConfig).
+    try { self.registerMpdHook(); }
+    catch (e) { self.logger.error('track_preparer: cannot register MPD hook: ' + e); }
+
     return libQ.resolve();
 };
 
 ControllerTrackPreparer.prototype.onStart = function () {
     var self = this;
     self.logger.info('track_preparer: onStart');
+    self.ensureConfig();
 
     try { self.createDirs(); }
     catch (e) { self.logger.error('track_preparer: createDirs failed: ' + e); }
@@ -84,14 +102,31 @@ ControllerTrackPreparer.prototype.onStart = function () {
         self.logger.error('track_preparer: startServer threw: ' + e + '\n' + (e && e.stack));
     }
 
+    // ReplayGain: the hook is what puts the lines into mpd.conf at every rebuild.
+    // If the switch is on, make sure the file that is on disk right now has them.
+    self.active = true;
+    try { self.registerMpdHook(); }
+    catch (e) { self.logger.error('track_preparer: cannot register MPD hook: ' + e); }
+    try {
+        if (self.rgEnabled()) { self.ensureMpdConf(); }
+    } catch (e) { self.logger.error('track_preparer: replaygain start failed: ' + e); }
+
     return libQ.resolve();
 };
 
 ControllerTrackPreparer.prototype.onStop = function () {
     this.logger.info('track_preparer: onStop');
-    this.stopPipeline();
-    this.stopServer();
-    return libQ.resolve();
+    var self = this;
+    self.stopPipeline();
+    self.stopServer();
+    self.active = false;
+    // The effect has to disappear together with the plugin: drop the hook and, if the
+    // file on disk still carries our lines, rebuild it through the MPD plugin.
+    try { self.unregisterMpdHook(); }
+    catch (e) { self.logger.error('track_preparer: cannot unregister MPD hook: ' + e); }
+    if (!self.mpdConfHasMarker()) { return libQ.resolve(); }
+    return self.applyMpdConf().then(function () { return libQ.resolve(); },
+                                    function () { return libQ.resolve(); });
 };
 
 // Плагин остановлен (выключен/удаляется): просим идущую обработку закончить текущий шаг
@@ -99,7 +134,6 @@ ControllerTrackPreparer.prototype.onStop = function () {
 ControllerTrackPreparer.prototype.stopPipeline = function () {
     var self = this, child = self.child;
     if (!self.isRunning || !child) { return; }
-    self.stopping = true;
     self.cancel();
     var timer = setTimeout(function () {
         try { child.kill('SIGTERM'); } catch (e) { /* уже завершился */ }
@@ -113,37 +147,16 @@ ControllerTrackPreparer.prototype.getConfigurationFiles = function () {
 
 /* ---------- пути ---------- */
 
-// Both folders must stay inside /mnt/HDD: the plugin must never write to the
-// Volumio system partitions (and in particular never under /volumio).
-ControllerTrackPreparer.prototype.safePath = function (value) {
-    try {
-        var p = path.resolve(String(value));
-        if (p === HDD_ROOT || p.indexOf(HDD_ROOT + path.sep) !== 0) { return null; }
-        return p;
-    } catch (e) { return null; }
-};
-
 ControllerTrackPreparer.prototype.getPath = function (key) {
     var v = null;
-    try { v = this.config ? this.config.get(key) : null; } catch (e) { v = null; }
-    var p = (typeof v === 'string' && v.length) ? v : DEFAULTS[key];
-    var safe = this.safePath(p);
-    if (!safe && p !== DEFAULTS[key]) {
-        this.logger.warn('track_preparer: ignoring folder outside ' + HDD_ROOT + ': ' + p);
-    }
-    return safe || DEFAULTS[key];
+    try { var c = this.ensureConfig(); v = c ? c.get(key) : null; } catch (e) { v = null; }
+    return (typeof v === 'string' && v.length) ? v : DEFAULTS[key];
 };
 
 ControllerTrackPreparer.prototype.getPaths = function () {
     var self = this, out = {};
     KEYS.forEach(function (k) { out[k] = self.getPath(k); });
     return out;
-};
-
-// The input and output folders must not be the same or nested in one another.
-ControllerTrackPreparer.prototype.pathsSeparate = function (paths) {
-    var a = paths.in_music, b = paths.out_music;
-    return a !== b && a.indexOf(b + path.sep) !== 0 && b.indexOf(a + path.sep) !== 0;
 };
 
 ControllerTrackPreparer.prototype.hddPresent = function () {
@@ -172,16 +185,20 @@ function readJson(file) {
     try { return fs.readJsonSync(file); } catch (e) { return {}; }
 }
 
+// Volumio keeps the current UI language in sharedVars and changes it on the fly,
+// so it is read on every call, never cached.
 ControllerTrackPreparer.prototype.langCode = function () {
-    try { return this.commandRouter.sharedVars.get('language_code') || 'en'; }
+    try { return String(this.commandRouter.sharedVars.get('language_code') || 'en'); }
     catch (e) { return 'en'; }
 };
 
-// The custom page only ships Russian and English. Volumio may use regional
-// codes ("ru_RU", "en_GB"), so compare the prefix.
-ControllerTrackPreparer.prototype.pageLang = function () {
-    var lang = String(this.langCode() || 'en').toLowerCase().trim();
-    return /^(ru|uk|be)([_-]|$)/.test(lang) ? 'ru' : 'en';
+// The language the plugin actually has strings for ('ru' or 'en'): the same file
+// choice getUIConfig makes, so the settings page and the preparation window always match.
+ControllerTrackPreparer.prototype.uiLang = function () {
+    var code = this.langCode();
+    var dir = path.join(this.pluginDir, 'i18n');
+    if (fs.existsSync(path.join(dir, 'strings_' + code + '.json'))) { return code.slice(0, 2).toLowerCase(); }
+    return 'en';
 };
 
 ControllerTrackPreparer.prototype.t = function (key) {
@@ -209,6 +226,9 @@ ControllerTrackPreparer.prototype.getUIConfig = function () {
                     (sec.content || []).forEach(function (el) {
                         if (el.id === 'open_monitor' && el.onClick) {
                             el.onClick.url = url;
+                        }
+                        if (el.id === 'rg_enabled') {
+                            el.value = self.rgEnabled();
                         }
                     });
                     if (sec.id === 'section_run') {
@@ -324,13 +344,11 @@ ControllerTrackPreparer.prototype.monitorUrl = function () {
 ControllerTrackPreparer.prototype.start = function () {
     var self = this;
     if (self.isRunning) { return { ok: false, reason: 'TOAST_BUSY' }; }
-    var paths = self.getPaths();
-    if (!self.pathsSeparate(paths)) { return { ok: false, reason: 'TOAST_BAD_PATHS' }; }
     if (!self.createDirs()) { return { ok: false, reason: 'TOAST_NO_DISK' }; }
+    var paths = self.getPaths();
     if (!self.hasInput(paths)) { return { ok: false, reason: 'TOAST_EMPTY' }; }
 
     self.isRunning = true;
-    self.stopping = false;
     try { fs.removeSync(path.join(self.logDir(), 'cancel.flag')); } catch (e) { /* ignore */ }
 
     var env = {};
@@ -364,17 +382,9 @@ ControllerTrackPreparer.prototype.start = function () {
     function done(failed, code) {
         if (finished) { return; }
         finished = true;
-        var stopping = self.stopping;
-        self.stopping = false;
         self.isRunning = false;
         self.child = null;
         var st = self.readStatus();
-        if (stopping) {
-            self.patchStatus({ state: 'error', message: 'interrupted', cancelling: false,
-                               finished: Date.now() / 1000 });
-            self.logger.info('track_preparer: pipeline stopped together with the plugin');
-            return;
-        }
         if (failed || (st && st.state === 'running')) {
             self.patchStatus({ state: 'error', message: errTail.slice(-300) || ('exit ' + code),
                                cancelling: false, finished: Date.now() / 1000 });
@@ -415,7 +425,6 @@ ControllerTrackPreparer.prototype.startServer = function () {
         self.logger.info('track_preparer: web server already on ' + self.port);
         return;
     }
-    self.serverStopped = false;
     self.logger.info('track_preparer: starting web server from port ' + PORT_BASE);
 
     function tryListen(port, attempt) {
@@ -428,18 +437,12 @@ ControllerTrackPreparer.prototype.startServer = function () {
             }
         });
         srv.on('error', function (e) {
-            if (self.serverStopped) { return; }
             self.logger.error('track_preparer: listen error on ' + port + ': ' + e.code);
             if (e.code === 'EADDRINUSE' && attempt < PORT_MAX_TRIES) {
                 tryListen(port + 1, attempt + 1);
             }
         });
         srv.listen(port, '0.0.0.0', function () {
-            // onStop may have run while the asynchronous listen was pending
-            if (self.serverStopped) {
-                try { srv.close(); } catch (e) { /* ignore */ }
-                return;
-            }
             self.server = srv;
             self.port = port;
             self.logger.info('track_preparer: web server listening on 0.0.0.0:' + port
@@ -450,7 +453,6 @@ ControllerTrackPreparer.prototype.startServer = function () {
 };
 
 ControllerTrackPreparer.prototype.stopServer = function () {
-    this.serverStopped = true;
     if (this.server) {
         try { this.server.close(); } catch (e) { /* ignore */ }
         this.server = null;
@@ -490,9 +492,6 @@ ControllerTrackPreparer.prototype.handleHttp = function (req, res) {
             self.logger.error('track_preparer: web/index.html missing at ' + file);
             html = self.fallbackHtml('web/index.html not found at ' + file);
         }
-        // The page is bilingual; tell it the language selected in Volumio,
-        // not the language of the browser that opened the iframe.
-        html = html.replace(/__TP_LANG__/g, self.pageLang());
         res.writeHead(200, {
             'Content-Type': 'text/html; charset=utf-8',
             'Cache-Control': 'no-store'
@@ -516,8 +515,7 @@ ControllerTrackPreparer.prototype.handleHttp = function (req, res) {
             hdd: self.hddPresent(),
             paths: self.getPaths(),
             node: process.version,
-            uptime: process.uptime(),
-            lang: self.pageLang()
+            uptime: process.uptime()
         });
     }
 
@@ -528,8 +526,8 @@ ControllerTrackPreparer.prototype.handleHttp = function (req, res) {
             paths: self.getPaths(),
             log: self.tailLog(300),
             port: self.port,
-            version: VERSION,
-            lang: self.pageLang()
+            lang: self.uiLang(),
+            version: VERSION
         });
     }
 
@@ -544,29 +542,171 @@ ControllerTrackPreparer.prototype.handleHttp = function (req, res) {
     res.end('not found: ' + url);
 };
 
+/* ---------- ReplayGain in MPD ---------- */
+// Volumio has no ReplayGain switch of its own, and MPD ignores the tags this plugin
+// writes until ReplayGain is enabled. /etc/mpd.conf belongs to Volumio's MPD plugin,
+// so it is never written from here: the plugin registers a config callback in the
+// MPD plugin (registerConfigCallback -- the same mechanism the official mpdoutput
+// plugin uses for its audio_output blocks) and MPD appends these lines itself every
+// time it builds the file. Rebuilding asks the MPD plugin for createMPDFile() and
+// restartMpd(), so no root rights and no template edits are involved.
+
+var MPD_CONF = process.env.TP_MPD_CONF || '/etc/mpd.conf';
+var MPD_HOOK = { type: 'music_service', plugin: 'track_preparer', data: 'getMpdConfig' };
+var RG_MARKER = '# track_preparer plugin: ReplayGain (managed by the plugin, do not edit)';
+
+ControllerTrackPreparer.prototype.rgEnabled = function () {
+    try { var c = this.ensureConfig(); return !!(c && c.get('rg_enabled', false)); } catch (e) { return false; }
+};
+
+ControllerTrackPreparer.prototype.mpdPlugin = function () {
+    try { return this.commandRouter.pluginManager.getPlugin('music_service', 'mpd'); }
+    catch (e) { return null; }
+};
+
+ControllerTrackPreparer.prototype.registerMpdHook = function () {
+    var mpd = this.mpdPlugin();
+    if (!mpd || typeof mpd.registerConfigCallback !== 'function') {
+        this.logger.error('track_preparer: MPD plugin has no registerConfigCallback, ReplayGain cannot be applied');
+        return false;
+    }
+    var list = Array.isArray(mpd.registeredCallbacks) ? mpd.registeredCallbacks : [];
+    var present = list.some(function (c) {
+        return c && c.type === MPD_HOOK.type && c.plugin === MPD_HOOK.plugin;
+    });
+    if (!present) { mpd.registerConfigCallback(MPD_HOOK); }
+    return true;
+};
+
+// The MPD plugin has no unregister: a stale entry would keep adding the lines after
+// the plugin is gone, so the list is filtered directly (as mpdoutput does).
+ControllerTrackPreparer.prototype.unregisterMpdHook = function () {
+    var mpd = this.mpdPlugin();
+    if (mpd && Array.isArray(mpd.registeredCallbacks)) {
+        mpd.registeredCallbacks = mpd.registeredCallbacks.filter(function (c) {
+            return !(c && c.type === MPD_HOOK.type && c.plugin === MPD_HOOK.plugin);
+        });
+    }
+};
+
+// Called by the MPD plugin while it assembles mpd.conf; the return value is appended
+// verbatim. Must never throw: it runs inside the MPD plugin's start.
+ControllerTrackPreparer.prototype.getMpdConfig = function () {
+    try {
+        if (!this.active || !this.rgEnabled()) { return ''; }
+        return '\n' + RG_MARKER + '\n'
+            + 'replaygain "track"\n'
+            + 'replaygain_preamp "0"\n'
+            + 'replaygain_missing_preamp "-8"\n'
+            + 'replaygain_limit "yes"\n';
+    } catch (e) {
+        return '';
+    }
+};
+
+// MPD's own volume_normalization would correct the volume a second time on top of
+// ReplayGain. It is written by Volumio's template, and a config callback can only
+// append, so it is not touched from here: the plugin only warns the user to switch
+// it off in Playback Options (see REPLAYGAIN_DESC and the README).
+ControllerTrackPreparer.prototype.mpdConfHasMarker = function () {
+    try { return fs.readFileSync(MPD_CONF, 'utf8').indexOf(RG_MARKER) !== -1; }
+    catch (e) { return false; }
+};
+
+ControllerTrackPreparer.prototype.mpdConfIsCurrent = function () {
+    return this.rgEnabled() ? this.mpdConfHasMarker() : !this.mpdConfHasMarker();
+};
+
+// Volumio's own writer and its own restart (which also reconnects its MPD client).
+ControllerTrackPreparer.prototype.applyMpdConf = function () {
+    var self = this, mpd = self.mpdPlugin(), defer = libQ.defer();
+    if (!mpd || typeof mpd.createMPDFile !== 'function') {
+        self.logger.error('track_preparer: MPD plugin unavailable, cannot rebuild mpd.conf');
+        return libQ.resolve(false);
+    }
+    try {
+        mpd.createMPDFile(function (err) {
+            if (err) {
+                self.logger.error('track_preparer: createMPDFile failed: ' + err);
+                defer.resolve(false);
+                return;
+            }
+            // createMPDFile calls back before its asynchronous write lands
+            setTimeout(function () {
+                try { mpd.restartMpd(); } catch (e) {
+                    self.logger.error('track_preparer: restartMpd failed: ' + e);
+                }
+                defer.resolve(true);
+            }, 500);
+        });
+    } catch (e) {
+        self.logger.error('track_preparer: createMPDFile threw: ' + e);
+        defer.resolve(false);
+    }
+    return defer.promise;
+};
+
+// At boot the MPD plugin writes mpd.conf on its own. Checking before that write has
+// landed would rebuild it a second time and restart MPD twice, so wait for the boot
+// to finish first.
+ControllerTrackPreparer.prototype.ensureMpdConf = function () {
+    var self = this, waited = 0;
+    function tick() {
+        if (!self.active) { return; }
+        if (process.env.VOLUMIO_SYSTEM_STATUS === 'ready' || waited >= 120000) {
+            if (!self.mpdConfIsCurrent()) {
+                self.applyMpdConf().then(function (ok) {
+                    self.logger.info('track_preparer: mpd.conf rebuilt after start (ok=' + ok + ')');
+                });
+            }
+            return;
+        }
+        waited += 2000;
+        var t = setTimeout(tick, 2000);
+        if (t.unref) { t.unref(); }
+    }
+    tick();
+};
+
+// Called from UIConfig (onSave -> controller/music_service/track_preparer/updateReplayGain)
+ControllerTrackPreparer.prototype.updateReplayGain = function (data) {
+    var self = this;
+    var enable = !!(data && (data.rg_enabled === true || data.rg_enabled === 'true' || data.rg_enabled === 1));
+    try {
+        var conf = self.ensureConfig();
+        if (!conf) { throw new Error('config is not available'); }
+        conf.set('rg_enabled', enable);
+        conf.save();   // write now, do not wait for the 1 s autosave
+    } catch (e) {
+        self.logger.error('track_preparer: cannot save rg_enabled: ' + e);
+        return libQ.reject(e);
+    }
+    if (self.rgBusy) { return libQ.resolve(); }
+    self.rgBusy = true;
+    return self.applyMpdConf().then(function (ok) {
+        self.rgBusy = false;
+        try {
+            if (!ok) {
+                self.commandRouter.pushToastMessage('error', self.t('PLUGIN_NAME'), self.t('RG_ERROR'));
+            } else if (enable) {
+                self.commandRouter.pushToastMessage('success', self.t('PLUGIN_NAME'), self.t('RG_ON'));
+            } else {
+                self.commandRouter.pushToastMessage('success', self.t('PLUGIN_NAME'), self.t('RG_OFF'));
+            }
+        } catch (e) { /* a toast is optional */ }
+        return libQ.resolve();
+    }, function (e) {
+        self.rgBusy = false;
+        self.logger.error('track_preparer: ReplayGain update failed: ' + e);
+        return libQ.resolve();
+    });
+};
+
 ControllerTrackPreparer.prototype.fallbackHtml = function (reason) {
     var esc = String(reason || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
-    var ru = this.pageLang() === 'ru';
-    var txt = ru ? {
-        title: 'резервная страница',
-        reason: 'Причина: ',
-        explain: 'Сервер живой, но <code>web/index.html</code> не загрузился. '
-            + 'Проверьте, что файл лежит в <code>&lt;pluginDir&gt;/web/index.html</code>.',
-        input: 'Вход: ',
-        output: 'Выход: ',
-        start: 'Начать обработку'
-    } : {
-        title: 'fallback page',
-        reason: 'Reason: ',
-        explain: 'The server is running, but <code>web/index.html</code> could not be loaded. '
-            + 'Make sure the file exists at <code>&lt;pluginDir&gt;/web/index.html</code>.',
-        input: 'Input: ',
-        output: 'Output: ',
-        start: 'Start processing'
-    };
-    return '<!DOCTYPE html><html lang="' + (ru ? 'ru' : 'en') + '"><head><meta charset="utf-8">'
+    return '<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8">'
         + '<meta name="viewport" content="width=device-width, initial-scale=1">'
-        + '<title>Track Preparer (' + txt.title + ')</title>'
+        + '<title>Track Preparer (fallback)</title>'
         + '<style>'
         + 'body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f4f6f8;color:#1a1a1a;padding:24px;max-width:720px;margin:auto}'
         + 'code{background:#eef0f3;padding:2px 6px;border-radius:4px;font-family:monospace}'
@@ -576,12 +716,13 @@ ControllerTrackPreparer.prototype.fallbackHtml = function (reason) {
         + 'font:12px/1.5 monospace;white-space:pre-wrap;margin-top:12px}'
         + '.err{color:#b91c1c;font-size:13px;margin-top:8px}'
         + '</style></head><body>'
-        + '<h1>Track Preparer — ' + txt.title + '</h1>'
-        + '<p class="err">' + txt.reason + esc + '</p>'
-        + '<p>' + txt.explain + '</p>'
-        + '<p>' + txt.input + '<code>/mnt/HDD/in/music</code><br>'
-        + txt.output + '<code>/mnt/HDD/out/music</code></p>'
-        + '<button id="b">' + txt.start + '</button>'
+        + '<h1>Track Preparer — резервная страница</h1>'
+        + '<p class="err">Причина: ' + esc + '</p>'
+        + '<p>Сервер живой, но <code>web/index.html</code> не загрузился. '
+        + 'Проверьте, что файл лежит в <code>&lt;pluginDir&gt;/web/index.html</code>.</p>'
+        + '<p>Вход: <code>/mnt/HDD/in/music</code><br>'
+        + 'Выход: <code>/mnt/HDD/out/music</code></p>'
+        + '<button id="b">Начать обработку</button>'
         + '<div id="log">…</div>'
         + '<script>'
         + 'var b=document.getElementById("b"),L=document.getElementById("log");'

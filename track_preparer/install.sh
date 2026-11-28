@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Track Preparer (Volumio 4 / Debian 12 Bookworm) — установка зависимостей.
 # Запускается Volumio от root. Уже имеющиеся в системе утилиты не переустанавливаются.
 PLUGIN_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -27,6 +27,8 @@ have_cmd metaflac                     || install_pkg flac
 
 if [ -n "$FAILED" ]; then
     echo "ERROR: required packages could not be installed:$FAILED"
+    # Do not leave a broken plugin behind (Volumio submission checklist)
+    case "$PLUGIN_DIR" in ""|"/") ;; *) rm -rf "$PLUGIN_DIR" ;; esac
     exit 1
 fi
 

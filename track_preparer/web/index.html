@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="__TP_LANG__">
+<html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="tp-lang" content="__TP_LANG__">
 <title>Track Preparer</title>
 <style>
   * { box-sizing: border-box; }
@@ -85,6 +84,9 @@
     font: 12px/1.5 ui-monospace, Menlo, Consolas, monospace; white-space: pre-wrap; word-break: break-word;
   }
   #log .e { color: #ff8a80; } #log .h { color: #82b1ff; font-weight: 600; } #log .k { color: #69f0ae; } #log .w { color: #ffd54f; }
+
+  .slider { position: absolute; cursor: pointer; inset: 0; background: #9ca3af; border-radius: 26px; transition: .2s; }
+  .slider:before { content: ""; position: absolute; height: 20px; width: 20px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; }
 </style>
 </head>
 <body>
@@ -147,18 +149,8 @@
 </div>
 <script>
 (function () {
-  // The Volumio language comes from the plugin (meta tag replaced on the server),
-  // because navigator.language reflects the browser/OS, not the Volumio setting.
-  var meta = document.querySelector('meta[name="tp-lang"]');
-  var sysLang = meta ? String(meta.content || '').toLowerCase() : '';
-  var ru;
-  if (sysLang === 'ru' || sysLang === 'en') {
-    ru = sysLang === 'ru';
-  } else {
-    ru = /^(ru|uk|be)(?:-|$)/i.test(navigator.language || '');
-  }
-  var pageLang = ru ? 'ru' : 'en';
-  var T = ru ? {
+  // Language comes from Volumio (the server reports it in /api/status), not from the browser.
+  var DICT = { ru: {
     title: 'Подготовка аудиофайлов',
     sub: 'Подготовьте файлы к обработке и запустите процесс.',
     s1: '1. Подготовьте файлы',
@@ -185,10 +177,9 @@
     reasons: {
       TOAST_BUSY: 'Уже выполняется.',
       TOAST_NO_DISK: '/mnt/HDD недоступен.',
-      TOAST_BAD_PATHS: 'Входная и выходная папки должны быть разными и не вложенными друг в друга.',
       TOAST_EMPTY: 'Во входной папке нет аудиофайлов.'
     }
-  } : {
+  }, en: {
     title: 'Audio preparation',
     sub: 'Get your files ready and start the process.',
     s1: '1. Prepare your files',
@@ -215,20 +206,33 @@
     reasons: {
       TOAST_BUSY: 'Already running.',
       TOAST_NO_DISK: '/mnt/HDD is not available.',
-      TOAST_BAD_PATHS: 'The input and output folders must be different and must not be inside one another.',
       TOAST_EMPTY: 'No audio files in the input folder.'
     }
-  };
+  } };
+  var T = DICT.en, curLang = null, lastData = null;
 
   var $ = function (id) { return document.getElementById(id); };
   var set = function (id, txt) { $(id).textContent = txt; };
-  set('t_title', T.title); set('t_sub', T.sub); set('t_s1', T.s1); set('t_s1text', T.s1text);
-  set('t_music', T.music); set('t_s2', T.s2); set('t_s2text', T.s2text); set('t_ready', T.ready);
-  set('t_note', T.note); set('t_hint', T.hint); set('t_state', T.state); set('l_log', T.log);
-  set('start', T.start); set('cancel', T.cancel);
-  set('k_item', T.k.item); set('k_step', T.k.step); set('k_file', T.k.file);
-  set('k_done', T.k.done); set('k_prob', T.k.prob);
-  document.title = T.title;
+  function applyLang(code) {
+    code = DICT[code] ? code : 'en';
+    if (code === curLang) { return false; }
+    curLang = code;
+    T = DICT[code];
+    document.documentElement.lang = code;
+    set('t_title', T.title); set('t_sub', T.sub); set('t_s1', T.s1); set('t_s1text', T.s1text);
+    set('t_music', T.music); set('t_s2', T.s2); set('t_s2text', T.s2text); set('t_ready', T.ready);
+    set('t_note', T.note); set('t_hint', T.hint); set('t_state', T.state); set('l_log', T.log);
+    set('start', T.start); set('cancel', T.cancel);
+    set('k_item', T.k.item); set('k_step', T.k.step); set('k_file', T.k.file);
+    set('k_done', T.k.done); set('k_prob', T.k.prob);
+    document.title = T.title;
+    try { localStorage.setItem('tp_lang', code); } catch (e) { /* private mode */ }
+    return true;
+  }
+  // First paint: the language seen last time (so there is no flash), until the server answers.
+  var cached = null;
+  try { cached = localStorage.getItem('tp_lang'); } catch (e) { /* ignore */ }
+  applyLang(cached || 'en');
 
   function fmt(sec) {
     sec = Math.max(0, Math.round(sec));
@@ -256,9 +260,8 @@
   }
 
   function render(d) {
-    // The system language was changed while the page was open: reload so the
-    // server can inject the other language into the HTML.
-    if (d && d.lang && d.lang !== pageLang) { location.reload(); return; }
+    lastData = d;
+    if (d.lang) { applyLang(d.lang); }
     if (d.paths) {
       if (d.paths.in_music) { set('p_in', d.paths.in_music); }
       if (d.paths.out_music) { set('p_out', d.paths.out_music); }
