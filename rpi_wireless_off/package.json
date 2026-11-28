@@ -1,0 +1,31 @@
+{
+  "name": "rpi_wireless_off",
+  "version": "0.1.1",
+  "description": "Powers off a Raspberry Pi 4's Wi-Fi and Bluetooth chips at boot, without restart loops",
+  "main": "index.js",
+  "category": "system_hardware",
+  "author": "squadgazzz",
+  "license": "ISC",
+  "repository": "https://github.com/squadgazzz/volumio-rpi-wireless-off",
+  "volumio_info": {
+    "prettyName": "RPi Wireless Off",
+    "icon": "fa-wifi",
+    "plugin_type": "system_hardware",
+    "os": [
+      "bookworm"
+    ],
+    "architectures": [
+      "armhf"
+    ],
+    "details": "Powers off the Wi-Fi and Bluetooth chips of a Raspberry Pi 4, Pi 400 or Compute Module 4 at boot, and keeps Volumio's Bluetooth and Wi-Fi services from restarting in a loop while they're gone.",
+    "changelog": "0.1.1: Refuses to install on boards other than the Pi 4, Pi 400 and CM4, and the boot generator does nothing on them."
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  },
+  "dependencies": {
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.3"
+  }
+}

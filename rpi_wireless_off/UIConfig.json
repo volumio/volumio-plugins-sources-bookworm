@@ -1,0 +1,49 @@
+{
+  "page": {
+    "label": "TRANSLATE.RPI_WIRELESS_OFF.PLUGIN_NAME"
+  },
+  "sections": [
+    {
+      "id": "section_chips",
+      "element": "section",
+      "label": "TRANSLATE.RPI_WIRELESS_OFF.SECTION_CHIPS",
+      "description": "TRANSLATE.RPI_WIRELESS_OFF.SECTION_CHIPS_DOC",
+      "icon": "fa-wifi",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "system_hardware/rpi_wireless_off",
+        "method": "saveSettings"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.RPI_WIRELESS_OFF.SAVE",
+        "data": [
+          "wifi_chip",
+          "bt_chip"
+        ]
+      },
+      "content": [
+        {
+          "id": "wifi_chip",
+          "element": "switch",
+          "label": "TRANSLATE.RPI_WIRELESS_OFF.WIFI_CHIP",
+          "doc": "TRANSLATE.RPI_WIRELESS_OFF.WIFI_CHIP_DOC",
+          "value": true
+        },
+        {
+          "id": "bt_chip",
+          "element": "switch",
+          "label": "TRANSLATE.RPI_WIRELESS_OFF.BT_CHIP",
+          "doc": "TRANSLATE.RPI_WIRELESS_OFF.BT_CHIP_DOC",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "section_status",
+      "element": "section",
+      "label": "TRANSLATE.RPI_WIRELESS_OFF.SECTION_STATUS",
+      "icon": "fa-info-circle",
+      "content": []
+    }
+  ]
+}
