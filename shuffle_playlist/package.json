@@ -1,0 +1,34 @@
+{
+  "name": "shuffle_playlist",
+  "version": "1.0.5",
+  "description": "Creates a shuffled copy of any Volumio playlist, named '<playlist> shuffle'.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"no tests\""
+  },
+  "author": "karkolom223",
+  "license": "MIT",
+  "repository": "https://github.com/karkolom223/volumio_plugin",
+  "dependencies": {
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.0"
+  },
+  "volumio_info": {
+    "prettyName": "Shuffle Playlist",
+    "plugin_type": "music_service",
+    "icon": "fa-random",
+    "architectures": [
+      "amd64",
+      "armhf"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "details": "Turn your library into a personal radio: put the folders you want into one playlist (audiobooks and podcasts simply stay out), then create a shuffled clone with 'shuffle' added to its name. Every track plays once per pass and the Previous button works normally. Recommended together with an autostart plugin that remembers and resumes the queue, so tracks do not repeat after a restart.",
+    "changelog": "1.0.5 - category changed to music_service: miscellanea is not a category supported by the Volumio store. 1.0.4 - bookworm version (Volumio 4, Node 20)"
+  },
+  "engines": {
+    "node": ">=20",
+    "volumio": ">=4"
+  }
+}
