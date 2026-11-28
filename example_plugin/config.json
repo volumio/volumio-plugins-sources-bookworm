@@ -1,3 +1,6 @@
 {
- 
+  "greeting": {
+    "type": "string",
+    "value": "Hello"
+  }
 }

@@ -1,4 +1,6 @@
 {
-  "PLUGIN_CONFIGURATION":"Example Plugin Configuration",
-  "SAVE":"Save"
+  "PLUGIN_CONFIGURATION": "Example Plugin Configuration",
+  "SETTINGS": "Settings",
+  "GREETING": "Greeting",
+  "SAVE": "Save"
 }

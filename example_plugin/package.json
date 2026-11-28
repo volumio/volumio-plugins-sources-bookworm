@@ -1,35 +1,34 @@
 {
   "name": "example_plugin",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Example Plugin for Volumio",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "yourname",
-  "license": "ISC", 
-  "repository": "https://github.com/yourname/yourrepo",
+  "license": "MIT",
+  "repository": "https://github.com/yourname/volumio-plugins-sources-bookworm",
   "volumio_info": {
-    "prettyName": "Example Plugin", 
-    "icon": "fa-lightbulb-o", 
-    "plugin_type": "music_service", 
+    "prettyName": "Example Plugin",
+    "icon": "fa-lightbulb-o",
+    "plugin_type": "miscellanea",
     "architectures": [
-			"amd64",
-			"armhf"
-		],
-		"os": [ 
-			"bookworm"
-		],
-		"details": "Lorem ipsum",  
-		"changelog": "Lorem ipsum" 
+      "amd64",
+      "armhf"
+    ],
+    "os": [
+      "bookworm"
+    ],
+    "details": "Describe what your plugin does",
+    "changelog": "First release"
   },
   "engines": {
-		"node": ">=20",
-		"volumio": ">=0" 
-	},
+    "node": ">=20",
+    "volumio": ">=4"
+  },
   "dependencies": {
-    "fs-extra": "^0.28.0",
-    "kew": "^0.7.0",
-    "v-conf": "^1.4.0"
+    "kew": "0.7.0",
+    "v-conf": "1.4.3"
   }
 }
