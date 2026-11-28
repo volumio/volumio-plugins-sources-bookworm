@@ -1,6 +1,6 @@
 {
   "name": "fusiondsp",
-  "version": "3.1.11",
+  "version": "3.1.12",
   "description": "A complete Dsp centre for Volumio",
   "main": "index.js",
   "repository": "https://github.com/balbuze/volumio-plugins/tree/alsa_modular/plugins/audio_interface/FusionDsp",
@@ -16,7 +16,7 @@
     "os": [
       "bookworm"
     ],
-    "changelog": "* 3.1.11: Start CamillaDSP at the first stream's rate, and start cleanly while a player is streaming",
+    "changelog": "3.1.12: Auto preamp button visible in the UI",
     "details": "Multimode Dsp, with graphic equalizer, parametric equalizer, FIR filters, Loudness, AutoEq profile for headphone and more",
     "architectures": [
       "armhf",

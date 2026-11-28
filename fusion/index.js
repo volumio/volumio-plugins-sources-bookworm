@@ -1080,7 +1080,7 @@ function configureAdvancedSettings(self, uiconf, selectedsp) {
       label: self.commandRouter.getI18nString('AUTO_ATT') + ' (' + ((Number(self.config.get('gainapplied')) || 0).toFixed(1)) + '\u200CdB)',
       // label: self.commandRouter.getI18nString('AUTO_ATT') + ' (' + (Number(self.config.get('gainapplied')) || 0) + ' dB)',
       value: self.config.get('autoatt'),
-      visibleIf: { field: 'showeq', value: true }
+  //    visibleIf: { field: 'showeq', value: true }
     }] : []),
     { id: 'monooutput', element: 'switch', doc: self.commandRouter.getI18nString('MONOOUTPUT_DOC'), label: self.commandRouter.getI18nString('MONOOUTPUT'), value: self.config.get('monooutput'), visibleIf: { field: 'showeq', value: true } },
     { id: 'permutchannel', element: 'switch', doc: self.commandRouter.getI18nString('PERMUT_CHANNEL_DOC'), label: self.commandRouter.getI18nString('PERMUT_CHANNEL'), value: self.config.get('permutchannel'), visibleIf: { field: 'showeq', value: true } },
@@ -1315,6 +1315,7 @@ function configureResampling(self, uiconf) {
   ['+', '++', '+++', '++++'].forEach(q => {
     self.configManager.pushUIConfigParam(uiconf, 'sections[8].content[2].options', { value: q, label: q });
   });
+
 }
 
 function configureDrc(self, uiconf) {
@@ -1618,6 +1619,7 @@ FusionDsp.prototype.startPeqGraphServer = function () {
       var result = {
         sampleRate: sampleRate,
         mode: mode,
+        autoatt: self.config.get('autoatt') === true,
         eqbypass: self.config.get('eqbypass') || false,
         filters: filters
       };
@@ -2209,6 +2211,40 @@ FusionDsp.prototype.startPeqGraphServer = function () {
 
         res.writeHead(200, corsHeaders);
         res.end(JSON.stringify({ ok: true, muted: mutes[bandIndex] === '1' }));
+      });
+
+    } else if (req.method === 'POST' && req.url === '/api/peq/autoatt') {
+      readPeqRequestBody(req, res, function (body) {
+        var corsHeaders = {
+          'Content-Type': 'application/json'
+        };
+        var payload;
+
+        try {
+          payload = JSON.parse(body);
+        } catch (e) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Invalid JSON' }));
+          return;
+        }
+
+        var mode = self.config.get('selectedsp');
+        if (!payload || typeof payload !== 'object' || Array.isArray(payload) ||
+          typeof payload.autoatt !== 'boolean' ||
+          (mode !== 'PEQ' && mode !== 'EQ15' && mode !== '2XEQ15' && mode !== 'EQ3')) {
+          res.writeHead(400, corsHeaders);
+          res.end(JSON.stringify({ error: 'Invalid auto pre-amp setting or unsupported mode' }));
+          return;
+        }
+
+        self.config.set('autoatt', payload.autoatt);
+        setTimeout(function () {
+          self.createCamilladspfile();
+          self.refreshUI();
+        }, 100);
+
+        res.writeHead(200, corsHeaders);
+        res.end(JSON.stringify({ ok: true, autoatt: payload.autoatt }));
       });
 
     } else if (req.method === 'POST' && req.url === '/api/peq/bypass') {

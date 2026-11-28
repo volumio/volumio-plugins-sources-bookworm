@@ -228,6 +228,21 @@
       box-shadow: inset 0 0 0 1px rgba(81, 178, 137, 0.15);
     }
 
+    .header-btn.autoatt-off,
+    .header-btn.autoatt-off:hover,
+    .header-btn.autoatt-off:active {
+      background: rgba(217, 69, 59, 0.12);
+      border-color: var(--content-error);
+      color: var(--content-error);
+    }
+
+    #autoatt-warning {
+      color: var(--content-error);
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
     .header-btn.save-btn {
       background: rgba(81, 178, 137, 0.12);
       border-color: rgba(81, 178, 137, 0.36);
@@ -716,6 +731,9 @@
       <button class="header-btn channel-toggle active" id="btn-toggle-right" style="display:none;">R</button>
       <div id="info">Sample rate: <span id="samplerate">--</span> Hz <span id="peakgain-info"
           style="margin-left: 12px;"></span></div>
+      <button class="header-btn" id="btn-toggle-autoatt" type="button" aria-pressed="false"
+        aria-describedby="autoatt-warning" disabled>Auto pre-amp: --</button>
+      <span id="autoatt-warning" role="status" aria-live="polite" hidden>Warning: clipping may occur</span>
     </div>
   </div>
   <div id="canvas-container">
@@ -816,6 +834,8 @@
       var btnToggleLeft = document.getElementById('btn-toggle-left');
       var btnToggleRight = document.getElementById('btn-toggle-right');
       var btnBypassEq = document.getElementById('btn-bypass-eq');
+      var btnToggleAutoatt = document.getElementById('btn-toggle-autoatt');
+      var autoattWarning = document.getElementById('autoatt-warning');
 
       btnToggleLeft.addEventListener('click', function () {
         showL = !showL;
@@ -844,6 +864,41 @@
         xhr.send('{}');
       });
 
+      btnToggleAutoatt.addEventListener('click', function () {
+        if (!currentData || btnToggleAutoatt.disabled) return;
+
+        btnToggleAutoatt.disabled = true;
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/peq/autoatt', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.timeout = 5000;
+        xhr.onload = function () {
+          if (xhr.status === 200) {
+            try {
+              var response = JSON.parse(xhr.responseText);
+              if (typeof response.autoatt !== 'boolean') throw new Error('Invalid auto pre-amp response');
+              currentData.autoatt = response.autoatt;
+              updateAutoattButton();
+              return;
+            } catch (e) {
+              showStatus('Failed to update auto pre-amp', 3000);
+            }
+          } else {
+            showStatus('Failed to update auto pre-amp', 3000);
+          }
+          btnToggleAutoatt.disabled = false;
+        };
+        xhr.onerror = function () {
+          btnToggleAutoatt.disabled = false;
+          showStatus('Failed to update auto pre-amp', 3000);
+        };
+        xhr.ontimeout = function () {
+          btnToggleAutoatt.disabled = false;
+          showStatus('Auto pre-amp request timed out', 3000);
+        };
+        xhr.send(JSON.stringify({ autoatt: currentData.autoatt !== true }));
+      });
+
       function updateBypassButton() {
         if (eqBypassed) {
           btnBypassEq.classList.add('active');
@@ -852,6 +907,16 @@
           btnBypassEq.classList.remove('active');
           btnBypassEq.textContent = 'Bypass EQ';
         }
+      }
+
+      function updateAutoattButton() {
+        var enabled = currentData && currentData.autoatt === true;
+        btnToggleAutoatt.textContent = 'Auto pre-amp: ' + (enabled ? 'On' : 'Off');
+        btnToggleAutoatt.classList.toggle('active', enabled);
+        btnToggleAutoatt.classList.toggle('autoatt-off', !enabled);
+        btnToggleAutoatt.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+        autoattWarning.hidden = enabled;
+        btnToggleAutoatt.disabled = false;
       }
 
       // Panel toggle helper
@@ -2955,6 +3020,8 @@ lineSvg.style.display = 'block';
               currentMode = currentData.mode || 'PEQ';
               errorMsg.style.display = 'none';
               samplerateEl.textContent = currentData.sampleRate || '--';
+              btnToggleAutoatt.style.display = ['PEQ', 'EQ15', '2XEQ15', 'EQ3'].indexOf(currentMode) !== -1 ? '' : 'none';
+              updateAutoattButton();
               // Show/hide buttons based on mode
               var isEQ15 = (currentMode === 'EQ15' || currentMode === '2XEQ15');
               btnAddFilter.style.display = isEQ15 ? 'none' : '';
