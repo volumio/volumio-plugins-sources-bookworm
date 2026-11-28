@@ -200,5 +200,50 @@
 			  "value": false
 			}
 		]
+	},
+	{
+		"id": "section_service",
+		"element": "section",
+		"label": "TRANSLATE.LASTFM.SERVICESETTINGS",
+		"description": "TRANSLATE.LASTFM.D_SERVICESETTINGS",
+		"icon": "fa-exchange",
+		"onSave": {
+			"type": "controller",
+			"endpoint": "user_interface/lastfm",
+			"method": "updateServiceSettings"
+		},
+		"saveButton": {
+			"label": "TRANSLATE.LASTFM.SAVE",
+			"data": [
+				"scrobbleService",
+				"lb_token"
+			]
+		},
+		"content": [
+			{
+				"id": "scrobbleService",
+				"element": "select",
+				"label": "TRANSLATE.LASTFM.SCROBBLE_SERVICE",
+				"doc": "TRANSLATE.LASTFM.D_SCROBBLE_SERVICE",
+				"value": {
+					"value": "listenbrainz",
+					"label": "ListenBrainz"
+				},
+				"options": [
+					{"label":"ListenBrainz","value":"listenbrainz"},
+					{"label":"Last.fm","value":"lastfm"},
+					{"label":"Last.fm + ListenBrainz","value":"both"}
+				]
+			},
+			{
+				"id": "lb_token",
+				"type": "password",
+				"element": "input",
+				"label": "TRANSLATE.LASTFM.LB_TOKEN",
+				"doc": "TRANSLATE.LASTFM.D_LB_TOKEN",
+				"description": "TRANSLATE.LASTFM.DD_LB_TOKEN",
+				"value": ""
+			}
+		]
 	}]
 }

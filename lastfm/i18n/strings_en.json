@@ -1,8 +1,8 @@
 {
 	"LASTFM":{
-	"PLUGINCONF":"LastFM Scrobbler Configuration",
+	"PLUGINCONF":"LastFM / ListenBrainz Scrobbler Configuration",
 		"CONFIG":"LastFM Credentials",
-		"D_CONFIG":"Fill in your authentication settings.",
+		"D_CONFIG":"Fill in your authentication settings. These are used only when the scrobbling service is Last.fm or both (see \"Scrobbling service\" below).",
 			"API_KEY":"LastFM API key",
 			"D_API_KEY":"Fill in the API key you received from Last.fm.",
 			"DD_API_KEY":"Go to https://www.last.fm/api/account/create to create an API account.",
@@ -15,7 +15,7 @@
 			"STORE_PASSWORD":"Store the password in the config file",			
 			"D_STORE_PASSWORD":"From a security awareness point of view this is advised against. A authentication token will be stored, which is hashed and suffices to log into LastFM.",
 			"DD_STORE_PASSWORD":"Don't just store your password, read the info.",
-		"SCROBBLESETTINGS":"LastFM scrobble settings",
+		"SCROBBLESETTINGS":"Scrobble settings",
 		"D_SCROBBLESETTINGS":"Configure what services to scrobble, when to scrobble and how to format metadata.",
 			"BLACKLIST_SERVICES":"Blacklist the following services",
 			"D_BLACKLIST_SERVICES":"Include all services that you wish to exclude from scrobbling, e.g. if you're having trouble scrobbling from certain radio stations.",
@@ -41,6 +41,13 @@
 		"D_DEBUGSETTINGS":"Configure the debug settings for the plugin.",
 			"ENABLE_DEBUG_LOGGING":"Debug logging",
 			"D_ENABLE_DEBUG_LOGGING":"En- or disable debug logging, this means extended logging will be available for debugging purposes.",
+		"SERVICESETTINGS":"Scrobbling service",
+		"D_SERVICESETTINGS":"Choose where to scrobble: Last.fm, ListenBrainz or both, and fill in the ListenBrainz token.",
+			"SCROBBLE_SERVICE":"Scrobble to",
+			"D_SCROBBLE_SERVICE":"ListenBrainz is free and needs only the token below. Last.fm needs the credentials above and a Last.fm API key. With both selected every scrobble is sent to both services.",
+			"LB_TOKEN":"ListenBrainz user token",
+			"D_LB_TOKEN":"Paste the user token of your ListenBrainz account.",
+			"DD_LB_TOKEN":"You can find it at https://listenbrainz.org/settings/ . Only needed when ListenBrainz is selected.",
 	"SAVE": "Save"
 	}
 }
