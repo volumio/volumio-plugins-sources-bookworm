@@ -1,0 +1,22 @@
+# This file is part of the alsa-rme-adi2-volume-control project
+
+[Unit]
+Description=Service exposing ALSA mute/volume controls on an RME ADI-2 device via MIDI
+Documentation=https://github.com/pettarin/alsa-rme-adi2-volume-control
+After=sound.target
+Before=mpd.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/alsa-rme-adi2-volume-control
+Restart=on-failure
+RestartSec=5
+
+# Security hardening
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+# This file is part of the alsa-rme-adi2-volume-control project
+#
+# Restart the alsa-rme-adi2-volume-control service
+# every time an RME ADI-2 device is connected,
+# ensuring the ALSA virtual mixer is ready to control it.
+#
+# Note that this also handles the case when the device
+# stays physically connected, but it is powered off and then on again.
+#
+# "2a39" is the USB Vendor ID for RME.
+
+ACTION=="add", SUBSYSTEM=="sound", ATTRS{idVendor}=="2a39", TAG+="systemd", RUN+="/bin/systemctl restart alsa-rme-adi2-volume-control.service"
