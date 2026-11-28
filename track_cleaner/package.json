@@ -1,6 +1,6 @@
 {
   "name": "track_cleaner",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Hides blocked and dead web radio stations, blocks the playing station with one button, checks stations for a live stream, and deletes the playing music file from disk.",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,7 @@
   },
   "volumio_info": {
     "prettyName": "Track Cleaner",
-    "plugin_type": "miscellanea",
+    "plugin_type": "music_service",
     "icon": "fa-ban",
     "architectures": [
       "amd64",
@@ -29,6 +29,6 @@
       "bookworm"
     ],
     "details": "Keeps web radio lists clean. One button blocks the radio station that is playing, so it no longer shows up in web radio lists and search (your own lists are left alone). A daily check reads the radio screen and the folders on it by itself, one level deep, then finds stations that no longer deliver a stream and hides them, and brings them back if they come alive. A second button deletes the playing music file from disk, only inside the folders you allow. All actions are on the plugin settings page.",
-    "changelog": "1.0.5 - a language change in the Volumio interface is applied at once: the texts are re-read when the system language changes, no restart of Volumio is needed. Regional codes such as ru_RU are understood. 1.0.4 - the station list is now collected automatically: the plugin opens the radio root and every folder on it once, one level deep, so no folder has to be opened by hand before a check. 1.0.3 - the toasts now say plainly whether the file was deleted from disk or not; the log shows what the button sees: the player service, the current uri and the saved roots, plus the reason of every early return. 1.0.2 - the file is deleted before the queue and the playlists are touched, so their errors can no longer stop the deletion; a file owned by root is removed through the Volumio sudo rule for /bin/rm; the log now shows the resolved path and the reason of a failure. 1.0.1 - settings: the delete button is above the block button; the music folders field lists mounted folders as hints, but roots are still typed manually. 1.0.0 - first release: station blocking, liveness check, file deletion. Replaces Remove Track 1.1.0 and no longer touches any file under /volumio."
+    "changelog": "1.0.6 - category changed to music_service: miscellanea is not a category supported by the Volumio store. 1.0.5 - a language change in the Volumio interface is applied at once: the texts are re-read when the system language changes, no restart of Volumio is needed. Regional codes such as ru_RU are understood. 1.0.4 - the station list is now collected automatically: the plugin opens the radio root and every folder on it once, one level deep, so no folder has to be opened by hand before a check. 1.0.3 - the toasts now say plainly whether the file was deleted from disk or not; the log shows what the button sees: the player service, the current uri and the saved roots, plus the reason of every early return. 1.0.2 - the file is deleted before the queue and the playlists are touched, so their errors can no longer stop the deletion; a file owned by root is removed through the Volumio sudo rule for /bin/rm; the log now shows the resolved path and the reason of a failure. 1.0.1 - settings: the delete button is above the block button; the music folders field lists mounted folders as hints, but roots are still typed manually. 1.0.0 - first release: station blocking, liveness check, file deletion. Replaces Remove Track 1.1.0 and no longer touches any file under /volumio."
   }
 }

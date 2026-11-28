@@ -14,7 +14,7 @@ Plugins > Installed > Track Cleaner > Settings.
 
 ## Screenshots
 
-![Settings page](images/screenshot-1.jpg)
+![Settings page](images/screenshot-1.png)
 
 ## Files
 

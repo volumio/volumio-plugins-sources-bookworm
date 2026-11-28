@@ -11,7 +11,7 @@ const track = require('./lib/track');
 
 module.exports = TrackCleaner;
 
-const ENDPOINT = 'miscellanea/track_cleaner';
+const ENDPOINT = 'music_service/track_cleaner';
 const LEGACY_FILTER = '/data/favourites/webradio-filter.json'; // written by Remove Track 1.1.0
 const MAX_CHECK_PER_RUN = 1500;
 const WRAP_TRIES = 8;

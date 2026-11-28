@@ -18,7 +18,7 @@
             "type": "emit",
             "message": "callMethod",
             "data": {
-              "endpoint": "miscellanea/track_cleaner",
+              "endpoint": "music_service/track_cleaner",
               "method": "removeCurrentTrack",
               "data": ""
             },
@@ -37,7 +37,7 @@
             "type": "emit",
             "message": "callMethod",
             "data": {
-              "endpoint": "miscellanea/track_cleaner",
+              "endpoint": "music_service/track_cleaner",
               "method": "blockCurrentStation",
               "data": ""
             }
@@ -53,7 +53,7 @@
       "description": "",
       "onSave": {
         "type": "controller",
-        "endpoint": "miscellanea/track_cleaner",
+        "endpoint": "music_service/track_cleaner",
         "method": "saveSettings"
       },
       "saveButton": {
@@ -419,7 +419,7 @@
             "type": "emit",
             "message": "callMethod",
             "data": {
-              "endpoint": "miscellanea/track_cleaner",
+              "endpoint": "music_service/track_cleaner",
               "method": "checkNow",
               "data": ""
             }
@@ -434,7 +434,7 @@
             "type": "emit",
             "message": "callMethod",
             "data": {
-              "endpoint": "miscellanea/track_cleaner",
+              "endpoint": "music_service/track_cleaner",
               "method": "unblockDead",
               "data": ""
             }
@@ -449,7 +449,7 @@
             "type": "emit",
             "message": "callMethod",
             "data": {
-              "endpoint": "miscellanea/track_cleaner",
+              "endpoint": "music_service/track_cleaner",
               "method": "unblockManual",
               "data": ""
             },
@@ -468,7 +468,7 @@
       "icon": "fa-trash",
       "onSave": {
         "type": "controller",
-        "endpoint": "miscellanea/track_cleaner",
+        "endpoint": "music_service/track_cleaner",
         "method": "saveSettings"
       },
       "saveButton": {
