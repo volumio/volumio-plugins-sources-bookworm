@@ -306,7 +306,7 @@ ControllerShufflePlaylist.prototype.shufflePlaylist = function (data) {
 ControllerShufflePlaylist.prototype.refreshUI = function () {
   var self = this;
   try {
-    self.commandRouter.getUIConfigOnPlugin('miscellanea', 'shuffle_playlist', {})
+    self.commandRouter.getUIConfigOnPlugin('music_service', 'shuffle_playlist', {})
       .then(function (conf) {
         self.commandRouter.broadcastMessage('pushUiConfig', conf);
       })

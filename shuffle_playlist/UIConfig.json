@@ -11,7 +11,7 @@
       "description": "TRANSLATE.SECTION_DESC",
       "onSave": {
         "type": "controller",
-        "endpoint": "miscellanea/shuffle_playlist",
+        "endpoint": "music_service/shuffle_playlist",
         "method": "shufflePlaylist"
       },
       "saveButton": {

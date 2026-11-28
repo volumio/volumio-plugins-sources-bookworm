@@ -66,6 +66,10 @@ when the plugin starts.
 
 The suffix added to the copy's name is stored in `config.json` (`suffix`, default `" shuffle"`).
 
+## Screenshot
+
+![Settings page](images/screenshot-1.png)
+
 ## License
 
-ISC
+MIT
